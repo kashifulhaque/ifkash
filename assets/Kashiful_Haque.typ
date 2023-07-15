@@ -28,7 +28,7 @@ Bachelor of Technology, _Electronics and Communications Engineering_ \
 #chiline()
 
 *Electronics for Imaging* #h(1fr) 07/2023 -- Present \
-Associate Software Engineer, Data Scientist #h(1fr) Bengaluru, India \
+Associate Software Engineer, Data Science #h(1fr) Bengaluru, India \
 
 *Electronics for Imaging* #h(1fr) 01/2023 -- 07/2023 \
 Data Scientist, Intern #h(1fr) Bengaluru, India \

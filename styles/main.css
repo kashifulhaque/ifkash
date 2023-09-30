@@ -1,6 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=Readex+Pro:wght@300;400;500;600;700&display=swap");
-@import url('https://fonts.googleapis.com/css2?family=Flow+Circular&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Sacramento&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Flow+Circular&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Pixelify+Sans&display=swap");
 
 :root {
   --mainTextColor-light: #000;
@@ -13,8 +13,7 @@
   --secondaryTextColor-dark: #adb0b1;
   --mainLinkColor-dark: #ffad29;
   --mainBorderColor-dark: #2b3031;
-  --mainBgColor-dark: #050809;
-  /* --mainBgColor-dark: #242424; */
+  --mainBgColor-dark: #000101;
 
   --mainTextColor: var(--mainTextColor-dark);
   --secondaryTextColor: var(--secondaryTextColor-dark);
@@ -24,7 +23,8 @@
 }
 
 * {
-  font-family: "Readex Pro";
+  /* font-family: "Readex Pro"; */
+  font-family: 'Pixelify Sans', cursive;
   line-height: 1.5em;
   box-sizing: border-box;
   color: var(--mainTextColor);
@@ -38,7 +38,7 @@ p,
 span,
 li {
   color: var(--secondaryTextColor);
-  font-size: 1em;
+  font-size: 1.1em;
 }
 
 a {
@@ -78,20 +78,8 @@ a {
 }
 
 #user-name {
-  font-family: 'Sacramento', cursive;
-  font-size: 48px;
+  font-size: 42px;
   line-height: 1em;
-}
-
-.breathe {
-  animation: breathe 4s linear infinite;
-}
-
-@keyframes breathe{
-  0%{transform: scale(1);}
-  25%{transform: scale(1.1);}
-  60%{transform: scale(1);}
-  100%{transform: scale(1.1);}
 }
 
 #profile-pic {
@@ -116,7 +104,7 @@ a {
 #socials--list a {
   font-weight: 500;
   color: var(--mainLinkColor);
-  font-size: 1em;
+  font-size: 1.1em;
   transition: 0.3s;
 }
 
@@ -143,7 +131,7 @@ a {
   display: flex;
   flex-wrap: wrap;
   gap: 1em;
-  font-size: 0.9em;
+  font-size: 1em;
 }
 
 .card--techstack {
@@ -249,7 +237,7 @@ hr.center-ball:before {
 }
 
 .flow-circular {
-  font-family: 'Flow Circular', cursive;
+  font-family: "Flow Circular", cursive;
 }
 
 .company {

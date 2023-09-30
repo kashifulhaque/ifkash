@@ -1,5 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=Readex+Pro:wght@300;400;500;600;700&display=swap");
 @import url('https://fonts.googleapis.com/css2?family=Flow+Circular&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Sacramento&display=swap');
 
 :root {
   --mainTextColor-light: #000;
@@ -77,8 +78,20 @@ a {
 }
 
 #user-name {
+  font-family: 'Sacramento', cursive;
   font-size: 48px;
   line-height: 1em;
+}
+
+.breathe {
+  animation: breathe 4s linear infinite;
+}
+
+@keyframes breathe{
+  0%{transform: scale(1);}
+  25%{transform: scale(1.1);}
+  60%{transform: scale(1);}
+  100%{transform: scale(1.1);}
 }
 
 #profile-pic {

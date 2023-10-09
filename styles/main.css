@@ -146,18 +146,17 @@ a {
   color: var(--mainTextColor-dark);
   margin-left: 0.2em;
   margin-right: 0.2em;
-  font-size: 1.1em;
+  font-size: 1em;
 }
 
 .card--project {
   padding-top: 1em;
   padding-bottom: 1em;
-  border-top: 1px solid var(--mainBorderColor);
 }
 
 .card--project a {
   color: var(--mainTextColor);
-
+  font-size: 1.1em;
   transition: 0.3s;
 }
 
@@ -246,4 +245,26 @@ hr.center-ball:before {
 
 .company {
   scale: 1.1;
+}
+
+a {
+  position: relative;
+}
+
+a::after {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 4px; /* Adjust the underline height as needed */
+  background-color: #1ed4bc; /* Adjust the underline color as needed */
+  bottom: 0;
+  left: 0;
+  transform: scaleX(0);
+  transform-origin: bottom right;
+  transition: transform 0.2s ease; /* Add a transition for a smooth effect */
+}
+
+a:hover::after {
+  transform: scaleX(1);
+  transform-origin: bottom left;
 }

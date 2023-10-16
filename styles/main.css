@@ -1,6 +1,7 @@
 @import url("https://fonts.googleapis.com/css2?family=Readex+Pro:wght@300;400;500;600;700&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Flow+Circular&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Pixelify+Sans&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Figtree&display=swap');
 
 :root {
   --mainTextColor-light: #000;
@@ -23,7 +24,6 @@
 }
 
 * {
-  /* font-family: "Readex Pro"; */
   font-family: 'Pixelify Sans', cursive;
   line-height: 1.5em;
   box-sizing: border-box;
@@ -32,6 +32,21 @@
 
 body {
   background-color: var(--mainBgColor);
+}
+
+.resume {
+  color: lightblue;
+  font-family: 'Figtree', sans-serif;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.margin-right {
+  margin-right: 0.25rem;
+}
+
+.margin-left {
+  margin-left: 0.25rem;
 }
 
 p,

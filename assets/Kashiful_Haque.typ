@@ -11,7 +11,7 @@
 = kashiful haque
 
 +91 82408 68544 | #link("mailto:haque.kashiful7@gmail.com")[haque.kashiful7\@gmail.com] |
-#link("https://github.com/kashifulhaque")[github/kashifulhaque]  | #link("https://www.linkedin.com/in/kashifulhaque")[linkedin/kashifulhaque] | #link("https://ifkash.hashnode.dev")[blog] | #link("https://ifkash.pages.dev")[ifkash.pages.dev]
+#link("https://github.com/kashifulhaque")[github/kashifulhaque]  | #link("https://www.linkedin.com/in/kashifulhaque")[linkedin/kashifulhaque] | #link("https://ifkash.vercel.app")[ifkash.vercel.app]
 
 Data Scientist specialising in Natural Language Processing (NLP). Demonstrated expertise in developing NLP pipelines, enhancing text extraction efficiency, and improving accuracy of text classification models. Skilled in leveraging NLP techniques and methodologies to drive automation, optimize processes, and deliver impactful solutions.
 

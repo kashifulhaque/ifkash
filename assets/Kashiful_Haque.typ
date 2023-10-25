@@ -27,12 +27,12 @@ Bachelor of Technology, _Electronics and Communications Engineering_ \
 == work experience.
 #chiline()
 
-*Fiery (previously Electronics for Imaging)* #h(1fr) 07/2023 -- Present \
+*Fiery (formerly known as EFI)* #h(1fr) 07/2023 -- Present \
 Associate Software Engineer, Data Science #h(1fr) Bengaluru, India \
 - Working on AWS Serverless stack.
 - Working on building an ad database to implement an multi-model algorithm to identify ads and capture user metrics.
 
-*Fiery (previously Electronics for Imaging)* #h(1fr) 01/2023 -- 07/2023 \
+*Fiery (formerly known as EFI)* #h(1fr) 01/2023 -- 07/2023 \
 Data Scientist, Intern #h(1fr) Bengaluru, India \
 - Improved efficiency by developing a pipeline to eliminate manual labour in text extraction.
 - Created realistic conversational dataset to amplify accuracy of text classification model.

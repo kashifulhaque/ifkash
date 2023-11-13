@@ -57,7 +57,7 @@ Fullstack Developer, Intern #h(1fr) Hyderabad, India \
 - Angular, Vue
 
 *backend frameworks*
-- Flask, Node.js
+- FastAPI, Flask, Node.js
 
 *databases*
 - SQL, MySQL, PostgreSQL, SQLite, SQLAlchemy, Prisma

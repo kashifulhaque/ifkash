@@ -1,0 +1,10 @@
+version: '3'
+
+services:
+  ifkash:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ifkash:1.0
+    ports:
+      - "3000:80"

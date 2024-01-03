@@ -97,8 +97,8 @@ a {
 }
 
 #profile-pic {
-  width: 150px;
-  height: 150px;
+  width: 192px;
+  height: 192px;
   object-fit: cover;
   border-radius: 50%;
 }
@@ -123,9 +123,7 @@ a {
 }
 
 #socials--list a:hover {
-  font-weight: 700;
   color: var(--mainLinkColor);
-  font-size: 1.2em;
 }
 
 .profile-icon {
@@ -255,10 +253,6 @@ hr.center-ball:before {
 
 .flow-circular {
   font-family: "Flow Circular", cursive;
-}
-
-.company {
-  scale: 1.1;
 }
 
 a {

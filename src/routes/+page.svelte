@@ -1,16 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <title>Kashiful Haque</title>
-    <meta name="description" content="" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="./styles/main.css" />
-    <link rel="favicon" type="image/x-icon" href="favicon.ico" />
-  </head>
-
-  <body>
     <div id="container--main">
       <section id="wrapper--hero" class="section--page">
         <a
@@ -20,7 +7,7 @@
         >
           <img
             id="profile-pic"
-            src="./assets/images/gojo.webp"
+            src="images/gojo.webp"
             alt="Gojo Satoru in Shibuya"
             title="Gojo Satoru in Shibuya • Source: @Deltanpopo"
           />
@@ -28,17 +15,17 @@
 
         <div>
           <h1 id="user-name">Kashiful Haque</h1>
-          <p id="bio">
-            Building cool products leveraging NLP @
+          <p>
+            Work @
             <a
               href="https://fiery.com"
               target="_blank"
               rel="noopener noreferrer"
-              >Fiery (formerly known as EFI)</a
+              >Fiery (previously EFI)</a
             >
           </p>
           <p>
-            Pursuing BS in Data Science and Applications @
+            Study @
             <a
               href="https://study.iitm.ac.in/ds"
               target="_blank"
@@ -46,7 +33,8 @@
               >IIT Madras</a
             >
           </p>
-          <p id="email">
+          <p>
+            Email @
             <a
               href="mailto:haque.kashiful7@gmail.com"
               target="_blank"
@@ -110,13 +98,15 @@
       </section>
 
       <section class="section--page">
-        <h2>Short summary</h2>
+        <h2>Summary</h2>
         <p>
-          Data Scientist specialising in Natural Language Processing (NLP).
-          Demonstrated expertise in developing NLP pipelines, enhancing text
-          extraction efficiency, and improving accuracy of text classification
-          models. Skilled in leveraging NLP techniques and methodologies to
-          drive automation, optimize processes, and deliver impactful solutions
+          Born and brought up in Kolkata, I spend most of my time there.
+          Recently, since 2022, I have travelled to cities such as Hyderabad
+          and Bengaluru (currently residing) for work.
+          <br /><br />
+          I am currently an Associate Software Engineer at
+          <a href="https://fiery.com" target="_blank" rel="noopener noreferrer">Fiery (previously EFI)</a>
+          I specialize in Software Engineering, Data Science and Machine Learning.
         </p>
       </section>
 
@@ -139,68 +129,33 @@
       </section>
 
       <section id="work-history-wrapper" class="section--page">
-        <h2>Work Experience</h2>
+        <h2>Work</h2>
 
         <div class="card--work-history">
           Associate Software Engineer, Data Science •
-          <strong class="company">Fiery (formerly known as EFI)</strong>
+          <strong class="company"><a href="https://fiery.com" target="_blank" ref="noopener noreferrer">Fiery (previosly EFI)</a></strong>
           <p>07/2023 - Present • Bengaluru, India</p>
-          <ul>
-            <li>Working on AWS Serverless stack.</li>
-            <li>
-              Working on building an ad database to implement an multi-model
-              algorithm to identify ads and capture user metrics.
-            </li>
-          </ul>
         </div>
 
         <div class="line-break"></div>
 
         <div class="card--work-history">
           Data Scientist, Intern •
-          <strong class="company">Fiery (formerly known as EFI)</strong>
+          <strong class="company"><a href="https://fiery.com" target="_blank" rel="noopener noreferrer">Fiery (previously EFI)</a></strong>
           <p>01/2023 - 07/2023 • Bengaluru, India</p>
-          <ul>
-            <li>
-              Improved efficiency by developing a pipeline to eliminate manual
-              labour in text extraction.
-            </li>
-            <li>
-              Created realistic conversational dataset to amplify accuracy of
-              text classification model.
-            </li>
-            <li>
-              Built cost-effective solution for creating product mockups using
-              ImageMagick & Node.js/Python, surpassing results of expensive
-              Photoshop APIs hence saving significant costs for the company.
-            </li>
-          </ul>
         </div>
 
         <div class="line-break"></div>
 
         <div class="card--work-history">
           Fullstack Developer, Intern •
-          <strong class="company">Corteva AgriScience</strong>
+          <strong class="company"><a href="https://www.corteva.com" target="_blank" rel="noopener noreferrer">Corteva AgriScience<a/></strong>
           <p>07/2022 - 12/2022 • Hyderabad, India</p>
-          <ul>
-            <li>
-              Improved Flask codebase resulting in 30% faster AutoML job
-              triggering on Kubernetes
-            </li>
-            <li>
-              Led migration of Flask monolith to scalable REST API
-              microservices, reducing deployment time by 40%
-            </li>
-            <li>
-              Worked under Corteva AgriScience incubation centre @ CIE, IIITH
-            </li>
-          </ul>
         </div>
       </section>
 
       <section class="section--page">
-        <h2>Tech stack</h2>
+        <h2>Tech</h2>
 
         <div id="wrapper--techstack__items">
           <div class="card--techstack">
@@ -417,69 +372,28 @@
         </div>
       </section>
 
-      <section class="section--page">
-        <h2>My recent blog posts</h2>
-
-        <div id="my-posts" class="card--project"></div>
-      </section>
-
-      <section class="section--page">
-        <h2>Projects</h2>
-
-        <div class="card--project">
-          <a
-            href="https://github.com/kashifulhaque/NYC-Vehicles-Collision-Project"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            NYC Vehicle Collision Visualization
-          </a>
-        </div>
-
-        <div class="card--project">
-          <a
-            href="https://github.com/kashifulhaque/discord-bot-for-gcp"
-            target="_blank"
-            rel="noopener noreferrer"
-            >Discord bot for Google Cloud</a
-          >
-        </div>
-
-        <div class="card--project">
-          <a
-            href="https://github.com/kashifulhaque?tab=repositories"
-            target="_blank"
-            rel="noopener noreferrer"
-            >Find all of my projects on GitHub</a
-          >
-        </div>
-      </section>
-
       <hr class="center-ball" />
       <section class="section--page section--page-text-center">
         <a
           target="_blank"
           rel="noopener noreferrer"
+          href="https://kit.svelte.dev"
+          >SvelteKit</a
+        >
+        💪
+        <a
+          target="_blank"
+          rel="noopener noreferrer"
           href="https://github.com/ayu-theme/ayu-colors"
-          >Ayu Dark colours</a
+          >Ayu Dark</a
         >
         🚧
         <a
           target="_blank"
           rel="noopener noreferrer"
           href="https://github.com/kashifulhaque/ifkash"
-          >Fork me on GitHub</a
+          >Source</a
         >
       </section>
     </div>
 
-    <script src="./scripts/main.js"></script>
-
-    <!-- Font Awesome Icons -->
-    <script
-      defer
-      src="https://kit.fontawesome.com/bc8464fd2b.js"
-      crossorigin="anonymous"
-    ></script>
-  </body>
-</html>

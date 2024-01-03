@@ -1,22 +1,38 @@
-# **[Kashiful Haque 🔗](https://ifkash.vercel.app)**
+# create-svelte
 
-![Overview](assets/images/overview.png?raw=true)
+Everything you need to build a Svelte project, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/main/packages/create-svelte).
 
-## Docker 🐳
-> Docker image available [here](https://hub.docker.com/r/notifkash/ifkash)
+## Creating a project
 
-To run in a Docker container, follow the steps below 👇:
+If you're seeing this, you've probably already done this step. Congrats!
 
-1. `docker build .` (Optionally, give it a tag)
-2. `docker run -d -p <HOST_PORT>:80 <IMAGE_NAME>:<TAG>`
-
-**Example** 🏁
 ```bash
-docker build -t ifkash:1.0 .
-docker run -d -p 3000:80 ifkash:1.0
+# create a new project in the current directory
+npm create svelte@latest
+
+# create a new project in my-app
+npm create svelte@latest my-app
 ```
 
-To use Docker Compose service, follow the steps below 👇:
+## Developing
+
+Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+
 ```bash
-docker compose up --build -d
+npm run dev
+
+# or start the server and open the app in a new browser tab
+npm run dev -- --open
 ```
+
+## Building
+
+To create a production version of your app:
+
+```bash
+npm run build
+```
+
+You can preview the production build with `npm run preview`.
+
+> To deploy your app, you may need to install an [adapter](https://kit.svelte.dev/docs/adapters) for your target environment.

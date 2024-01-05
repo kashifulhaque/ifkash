@@ -2,6 +2,7 @@
 @import url("https://fonts.googleapis.com/css2?family=Pixelify+Sans&display=swap");
 @import url('https://fonts.googleapis.com/css2?family=Figtree&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@700&display=swap');
 
 :root {
   --mainTextColor-light: #000;
@@ -92,7 +93,8 @@ a {
 }
 
 #user-name {
-  font-size: 42px;
+  font-family: 'Caveat', cursive;
+  font-size: 52px;
   line-height: 1em;
 }
 

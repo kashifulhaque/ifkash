@@ -49,8 +49,7 @@
               href="./assets/Kashiful_Haque.pdf"
               target="_blank"
               rel="noopener noreferrer"
-              ><i class="fa-regular fa-circle-down margin-right"></i>Download
-              Resume
+              >Download Resume
               <i class="fa-regular fa-file-pdf margin-left"></i>
             </a>
           </p>
@@ -106,6 +105,7 @@
           <br /><br />
           I am currently an Associate Software Engineer at
           <a href="https://fiery.com" target="_blank" rel="noopener noreferrer">Fiery (previously EFI)</a>
+          <br />
           I specialize in Software Engineering, Data Science and Machine Learning.
         </p>
       </section>

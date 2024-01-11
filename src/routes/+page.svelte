@@ -40,12 +40,13 @@
         >
       </p>
       <p>
+        Resume @
         <a
           class="resume"
           href="./assets/Kashiful_Haque.pdf"
           target="_blank"
           rel="noopener noreferrer"
-          >Download Resume
+          >Download
           <i class="fa-regular fa-file-pdf margin-left"></i>
         </a>
       </p>
@@ -123,7 +124,7 @@
       Associate Software Engineer, Data Science •
       <strong class="company"
         ><a href="https://fiery.com" target="_blank" rel="noopener noreferrer"
-          >Fiery (previosly EFI)</a
+          >Fiery (previously EFI)</a
         ></strong
       >
       <p>07/2023 - Present • Bengaluru, India</p>

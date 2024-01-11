@@ -36,9 +36,8 @@ body {
 }
 
 .resume {
-  color: lightblue;
-  font-weight: bold;
-  text-transform: uppercase;
+  color: var(mainLinkColor);
+  font-weight: 500;
 }
 
 .margin-right {

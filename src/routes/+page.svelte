@@ -1,399 +1,366 @@
-    <div id="container--main">
-      <section id="wrapper--hero" class="section--page">
+<div id="container--main">
+  <section id="wrapper--hero" class="section--page">
+    <a
+      href="https://twitter.com/Deltanpopo/status/1701793604967231699"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      <img
+        id="profile-pic"
+        src="images/gojo.webp"
+        alt="Gojo Satoru in Shibuya"
+        title="Gojo Satoru in Shibuya • Source: @Deltanpopo"
+      />
+    </a>
+
+    <div>
+      <h1 id="user-name">Kashiful Haque</h1>
+      <p>
+        Work @
+        <a href="https://fiery.com" target="_blank" rel="noopener noreferrer"
+          >Fiery (previously EFI)</a
+        >
+      </p>
+      <p>
+        Study @
         <a
-          href="https://twitter.com/Deltanpopo/status/1701793604967231699"
+          href="https://study.iitm.ac.in/ds"
+          target="_blank"
+          rel="noopener noreferrer">IIT Madras</a
+        >
+      </p>
+      <p>
+        Email @
+        <a
+          href="mailto:haque.kashiful7@gmail.com"
           target="_blank"
           rel="noopener noreferrer"
         >
-          <img
-            id="profile-pic"
-            src="images/gojo.webp"
-            alt="Gojo Satoru in Shibuya"
-            title="Gojo Satoru in Shibuya • Source: @Deltanpopo"
-          />
+          haque.kashiful7@gmail.com</a
+        >
+      </p>
+      <p>
+        <a
+          class="resume"
+          href="./assets/Kashiful_Haque.pdf"
+          target="_blank"
+          rel="noopener noreferrer"
+          >Download Resume
+          <i class="fa-regular fa-file-pdf margin-left"></i>
         </a>
+      </p>
+    </div>
+  </section>
 
-        <div>
-          <h1 id="user-name">Kashiful Haque</h1>
-          <p>
-            Work @
-            <a
-              href="https://fiery.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              >Fiery (previously EFI)</a
-            >
-          </p>
-          <p>
-            Study @
-            <a
-              href="https://study.iitm.ac.in/ds"
-              target="_blank"
-              rel="noopener noreferrer"
-              >IIT Madras</a
-            >
-          </p>
-          <p>
-            Email @
-            <a
-              href="mailto:haque.kashiful7@gmail.com"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              haque.kashiful7@gmail.com</a
-            >
-          </p>
-          <p>
-            <a
-              class="resume"
-              href="./assets/Kashiful_Haque.pdf"
-              target="_blank"
-              rel="noopener noreferrer"
-              >Download Resume
-              <i class="fa-regular fa-file-pdf margin-left"></i>
-            </a>
-          </p>
-        </div>
-      </section>
+  <section class="section--page">
+    <div id="socials--list">
+      <a
+        href="https://ifkash.hashnode.dev"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="profiles"><i class="fa-brands fa-hashnode"></i> Blog</a
+      >
+      <a
+        href="https://www.linkedin.com/in/kashifulhaque"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="profiles"><i class="fa-brands fa-linkedin"></i> Linkedin</a
+      >
+      <a
+        href="https://github.com/kashifulhaque"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="profiles"><i class="fa-brands fa-github"></i> Github</a
+      >
+      <a
+        href="https://www.instagram.com/enderboi25/"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="profiles"><i class="fa-brands fa-instagram"></i> Instagram</a
+      >
+      <a
+        href="https://x.com/notifkash"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="profiles"><i class="fa-brands fa-x-twitter"></i> Twitter</a
+      >
+    </div>
+  </section>
 
-      <section class="section--page">
-        <div id="socials--list">
-          <a
-            href="https://ifkash.hashnode.dev"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="profiles"
-            ><i class="fa-brands fa-hashnode"></i> Blog</a
-          >
-          <a
-            href="https://www.linkedin.com/in/kashifulhaque"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="profiles"
-            ><i class="fa-brands fa-linkedin"></i> Linkedin</a
-          >
-          <a
-            href="https://github.com/kashifulhaque"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="profiles"
-            ><i class="fa-brands fa-github"></i> Github</a
-          >
-          <a
-            href="https://www.instagram.com/enderboi25/"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="profiles"
-            ><i class="fa-brands fa-instagram"></i> Instagram</a
-          >
-          <a
-            href="https://x.com/notifkash"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="profiles"
-            ><i class="fa-brands fa-x-twitter"></i> Twitter</a
-          >
-        </div>
-      </section>
+  <section class="section--page">
+    <h2>Summary</h2>
+    <p>
+      Born and brought up in Kolkata, I spend most of my time there. Recently,
+      since 2022, I have travelled to cities such as Hyderabad and Bengaluru
+      (currently residing) for work.
+      <br /><br />
+      I am currently an Associate Software Engineer at
+      <a href="https://fiery.com" target="_blank" rel="noopener noreferrer"
+        >Fiery (previously EFI)</a
+      >
+      <br />
+      I specialize in Software Engineering, Data Science and Machine Learning.
+    </p>
+  </section>
 
-      <section class="section--page">
-        <h2>Summary</h2>
-        <p>
-          Born and brought up in Kolkata, I spend most of my time there.
-          Recently, since 2022, I have travelled to cities such as Hyderabad
-          and Bengaluru (currently residing) for work.
-          <br /><br />
-          I am currently an Associate Software Engineer at
-          <a href="https://fiery.com" target="_blank" rel="noopener noreferrer">Fiery (previously EFI)</a>
-          <br />
-          I specialize in Software Engineering, Data Science and Machine Learning.
-        </p>
-      </section>
-
-      <section id="work-history-wrapper" class="section--page">
-        <h2>Education</h2>
-        <div class="card--work-history">
-          <strong>Indian Institute of Technology Madras</strong>
-          <p>Bachelor of Science, Data Science and Applications</p>
-          <p>12/2020 - Present</p>
-        </div>
-
-        <div class="line-break"></div>
-        <div class="card--work-history">
-          <strong>University of Calcutta</strong>
-          <p>
-            Bachelor of Technology, Electronics & Communications Engineering
-          </p>
-          <p>08/2016 - 03/2019</p>
-        </div>
-      </section>
-
-      <section id="work-history-wrapper" class="section--page">
-        <h2>Work</h2>
-
-        <div class="card--work-history">
-          Associate Software Engineer, Data Science •
-          <strong class="company"><a href="https://fiery.com" target="_blank" ref="noopener noreferrer">Fiery (previosly EFI)</a></strong>
-          <p>07/2023 - Present • Bengaluru, India</p>
-        </div>
-
-        <div class="line-break"></div>
-
-        <div class="card--work-history">
-          Data Scientist, Intern •
-          <strong class="company"><a href="https://fiery.com" target="_blank" rel="noopener noreferrer">Fiery (previously EFI)</a></strong>
-          <p>01/2023 - 07/2023 • Bengaluru, India</p>
-        </div>
-
-        <div class="line-break"></div>
-
-        <div class="card--work-history">
-          Fullstack Developer, Intern •
-          <strong class="company"><a href="https://www.corteva.com" target="_blank" rel="noopener noreferrer">Corteva AgriScience<a/></strong>
-          <p>07/2022 - 12/2022 • Hyderabad, India</p>
-        </div>
-      </section>
-
-      <section class="section--page">
-        <h2>Tech</h2>
-
-        <div id="wrapper--techstack__items">
-          <div class="card--techstack">
-            <span>
-              <a
-                href="https://www.python.org/"
-                target="_blank"
-                rel="noopener noreferrer"
-                >Python</a
-              >
-              •
-              <a
-                href="https://developer.mozilla.org/en-US/docs/Web/JavaScript"
-                target="_blank"
-                rel="noopener noreferrer"
-                >JavaScript</a
-              >
-              •
-              <a
-                href="https://www.typescriptlang.org/"
-                target="_blank"
-                rel="noopener noreferrer"
-                >TypeScript</a
-              >
-              •
-              <a
-                href="https://www.java.com/en/"
-                target="_blank"
-                rel="noopener noreferrer"
-                >Java</a
-              >
-              •
-              <a
-                href="https://www.rust-lang.org/"
-                target="_blank"
-                rel="noopener noreferrer"
-                >Rust</a
-              >
-            </span>
-          </div>
-          <div class="card--techstack">
-            <span>
-              <a
-                href="https://nodejs.org/en/"
-                target="_blank"
-                rel="noopener noreferrer"
-                >NodeJS</a
-              >
-              •
-              <a
-                href="http://expressjs.com/"
-                target="_blank"
-                rel="noopener noreferrer"
-                >ExpressJS</a
-              >
-              •
-              <a
-                href="https://vuejs.org/"
-                target="_blank"
-                rel="noopener noreferrer"
-                >Vue</a
-              >
-              •
-              <a
-                href="https://angular.io/"
-                target="_blank"
-                rel="noopener noreferrer"
-                >Angular</a
-              >
-            </span>
-          </div>
-          <div class="card--techstack">
-            <span>
-              <a
-                href="https://fastapi.tiangolo.com/"
-                target="_blank"
-                rel="noopener noreferrer"
-                >FastAPI</a
-              >
-              •
-              <a
-                href="https://flask.palletsprojects.com/"
-                target="_blank"
-                rel="noopener noreferrer"
-                >Flask</a
-              >
-              •
-              <a
-                href="https://numpy.org/"
-                target="_blank"
-                rel="noopener noreferrer"
-                >NumPy</a
-              >
-              •
-              <a
-                href="https://pandas.pydata.org/"
-                target="_blank"
-                rel="noopener noreferrer"
-                >Pandas</a
-              >
-              •
-              <a
-                href="https://scikit-learn.org/"
-                target="_blank"
-                rel="noopener noreferrer"
-                >scikit-learn</a
-              >
-              •
-              <a
-                href="https://www.tensorflow.org/"
-                target="_blank"
-                rel="noopener noreferrer"
-                >TensorFlow</a
-              >
-              •
-              <a
-                href="https://pytorch.org/"
-                target="_blank"
-                rel="noopener noreferrer"
-                >PyTorch</a
-              ></span
-            >
-          </div>
-          <div class="card--techstack">
-            <span
-              ><a
-                href="https://en.wikipedia.org/wiki/SQL"
-                target="_blank"
-                rel="noopener noreferrer"
-                >SQL</a
-              >
-              •
-              <a
-                href="https://mariadb.org"
-                target="_blank"
-                rel="noopener noreferrer"
-                >MariaDB</a
-              >
-              •
-              <a
-                href="https://www.mysql.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                >MySQL</a
-              >
-              •
-              <a
-                href="https://www.sqlite.org/index.html"
-                target="_blank"
-                rel="noopener noreferrer"
-                >SQLite</a
-              >
-              •
-              <a
-                href="https://www.postgresql.org/"
-                target="_blank"
-                rel="noopener noreferrer"
-                >PostgreSQL</a
-              >
-              •
-              <a
-                href="https://www.sqlalchemy.org/"
-                target="_blank"
-                rel="noopener noreferrer"
-                >SQLAlchemy</a
-              >
-              •
-              <a
-                href="https://firebase.google.com/"
-                target="_blank"
-                rel="noopener noreferrer"
-                >Firebase</a
-              ></span
-            >
-          </div>
-          <div class="card--techstack">
-            <span
-              ><a
-                href="https://git-scm.com/"
-                target="_blank"
-                rel="noopener noreferrer"
-                >Git</a
-              >
-              •
-              <a
-                href="https://github.com/"
-                target="_blank"
-                rel="noopener noreferrer"
-                >GitHub</a
-              >
-              •
-              <a
-                href="https://code.visualstudio.com/"
-                target="_blank"
-                rel="noopener noreferrer"
-                >VS Code</a
-              >
-              •
-              <a
-                href="https://www.docker.com/"
-                target="_blank"
-                rel="noopener noreferrer"
-                >Docker</a
-              >
-              •
-              <a
-                href="https://kubernetes.io/"
-                target="_blank"
-                rel="noopener noreferrer"
-                >Kubernetes</a
-              ></span
-            >
-          </div>
-        </div>
-      </section>
-
-      <hr class="center-ball" />
-      <section class="section--page section--page-text-center">
-        <a
-          target="_blank"
-          rel="noopener noreferrer"
-          href="https://kit.svelte.dev"
-          >SvelteKit</a
-        >
-        💪
-        <a
-          target="_blank"
-          rel="noopener noreferrer"
-          href="https://github.com/ayu-theme/ayu-colors"
-          >Ayu Dark</a
-        >
-        🚧
-        <a
-          target="_blank"
-          rel="noopener noreferrer"
-          href="https://github.com/kashifulhaque/ifkash"
-          >Source</a
-        >
-      </section>
+  <section id="work-history-wrapper" class="section--page">
+    <h2>Education</h2>
+    <div class="card--work-history">
+      <strong>Indian Institute of Technology Madras</strong>
+      <p>Bachelor of Science, Data Science and Applications</p>
+      <p>12/2020 - Present</p>
     </div>
 
+    <div class="line-break"></div>
+    <div class="card--work-history">
+      <strong>University of Calcutta</strong>
+      <p>Bachelor of Technology, Electronics & Communications Engineering</p>
+      <p>08/2016 - 03/2019</p>
+    </div>
+  </section>
+
+  <section id="work-history-wrapper" class="section--page">
+    <h2>Work</h2>
+
+    <div class="card--work-history">
+      Associate Software Engineer, Data Science •
+      <strong class="company"
+        ><a href="https://fiery.com" target="_blank" ref="noopener noreferrer"
+          >Fiery (previosly EFI)</a
+        ></strong
+      >
+      <p>07/2023 - Present • Bengaluru, India</p>
+    </div>
+
+    <div class="line-break"></div>
+
+    <div class="card--work-history">
+      Data Scientist, Intern •
+      <strong class="company"
+        ><a href="https://fiery.com" target="_blank" rel="noopener noreferrer"
+          >Fiery (previously EFI)</a
+        ></strong
+      >
+      <p>01/2023 - 07/2023 • Bengaluru, India</p>
+    </div>
+
+    <div class="line-break"></div>
+
+    <div class="card--work-history">
+      Fullstack Developer, Intern •
+      <strong class="company"
+        ><a
+          href="https://www.corteva.com"
+          target="_blank"
+          rel="noopener noreferrer">Corteva AgriScience<a /></a
+        ></strong
+      >
+      <p>07/2022 - 12/2022 • Hyderabad, India</p>
+    </div>
+  </section>
+
+  <section class="section--page">
+    <h2>Tech</h2>
+
+    <div id="wrapper--techstack__items">
+      <div class="card--techstack">
+        <span>
+          <a
+            href="https://www.python.org/"
+            target="_blank"
+            rel="noopener noreferrer">Python</a
+          >
+          •
+          <a
+            href="https://developer.mozilla.org/en-US/docs/Web/JavaScript"
+            target="_blank"
+            rel="noopener noreferrer">JavaScript</a
+          >
+          •
+          <a
+            href="https://www.typescriptlang.org/"
+            target="_blank"
+            rel="noopener noreferrer">TypeScript</a
+          >
+          •
+          <a
+            href="https://www.java.com/en/"
+            target="_blank"
+            rel="noopener noreferrer">Java</a
+          >
+          •
+          <a
+            href="https://www.rust-lang.org/"
+            target="_blank"
+            rel="noopener noreferrer">Rust</a
+          >
+        </span>
+      </div>
+      <div class="card--techstack">
+        <span>
+          <a
+            href="https://nodejs.org/en/"
+            target="_blank"
+            rel="noopener noreferrer">NodeJS</a
+          >
+          •
+          <a
+            href="http://expressjs.com/"
+            target="_blank"
+            rel="noopener noreferrer">ExpressJS</a
+          >
+          •
+          <a href="https://vuejs.org/" target="_blank" rel="noopener noreferrer"
+            >Vue</a
+          >
+          •
+          <a
+            href="https://angular.io/"
+            target="_blank"
+            rel="noopener noreferrer">Angular</a
+          >
+        </span>
+      </div>
+      <div class="card--techstack">
+        <span>
+          <a
+            href="https://fastapi.tiangolo.com/"
+            target="_blank"
+            rel="noopener noreferrer">FastAPI</a
+          >
+          •
+          <a
+            href="https://flask.palletsprojects.com/"
+            target="_blank"
+            rel="noopener noreferrer">Flask</a
+          >
+          •
+          <a href="https://numpy.org/" target="_blank" rel="noopener noreferrer"
+            >NumPy</a
+          >
+          •
+          <a
+            href="https://pandas.pydata.org/"
+            target="_blank"
+            rel="noopener noreferrer">Pandas</a
+          >
+          •
+          <a
+            href="https://scikit-learn.org/"
+            target="_blank"
+            rel="noopener noreferrer">scikit-learn</a
+          >
+          •
+          <a
+            href="https://www.tensorflow.org/"
+            target="_blank"
+            rel="noopener noreferrer">TensorFlow</a
+          >
+          •
+          <a
+            href="https://pytorch.org/"
+            target="_blank"
+            rel="noopener noreferrer">PyTorch</a
+          ></span
+        >
+      </div>
+      <div class="card--techstack">
+        <span
+          ><a
+            href="https://en.wikipedia.org/wiki/SQL"
+            target="_blank"
+            rel="noopener noreferrer">SQL</a
+          >
+          •
+          <a
+            href="https://mariadb.org"
+            target="_blank"
+            rel="noopener noreferrer">MariaDB</a
+          >
+          •
+          <a
+            href="https://www.mysql.com"
+            target="_blank"
+            rel="noopener noreferrer">MySQL</a
+          >
+          •
+          <a
+            href="https://www.sqlite.org/index.html"
+            target="_blank"
+            rel="noopener noreferrer">SQLite</a
+          >
+          •
+          <a
+            href="https://www.postgresql.org/"
+            target="_blank"
+            rel="noopener noreferrer">PostgreSQL</a
+          >
+          •
+          <a
+            href="https://www.sqlalchemy.org/"
+            target="_blank"
+            rel="noopener noreferrer">SQLAlchemy</a
+          >
+          •
+          <a
+            href="https://firebase.google.com/"
+            target="_blank"
+            rel="noopener noreferrer">Firebase</a
+          ></span
+        >
+      </div>
+      <div class="card--techstack">
+        <span
+          ><a
+            href="https://git-scm.com/"
+            target="_blank"
+            rel="noopener noreferrer">Git</a
+          >
+          •
+          <a
+            href="https://github.com/"
+            target="_blank"
+            rel="noopener noreferrer">GitHub</a
+          >
+          •
+          <a
+            href="https://code.visualstudio.com/"
+            target="_blank"
+            rel="noopener noreferrer">VS Code</a
+          >
+          •
+          <a
+            href="https://www.docker.com/"
+            target="_blank"
+            rel="noopener noreferrer">Docker</a
+          >
+          •
+          <a
+            href="https://kubernetes.io/"
+            target="_blank"
+            rel="noopener noreferrer">Kubernetes</a
+          ></span
+        >
+      </div>
+    </div>
+  </section>
+
+  <hr class="center-ball" />
+  <section class="section--page section--page-text-center">
+    <a target="_blank" rel="noopener noreferrer" href="https://kit.svelte.dev"
+      >SvelteKit</a
+    >
+    💪
+    <a
+      target="_blank"
+      rel="noopener noreferrer"
+      href="https://github.com/ayu-theme/ayu-colors">Ayu Dark</a
+    >
+    🚧
+    <a
+      target="_blank"
+      rel="noopener noreferrer"
+      href="https://github.com/kashifulhaque/ifkash">Source</a
+    >
+  </section>
+</div>

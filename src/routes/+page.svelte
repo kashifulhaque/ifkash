@@ -125,7 +125,7 @@
     <div class="card--work-history">
       Associate Software Engineer, Data Science •
       <strong class="company"
-        ><a href="https://fiery.com" target="_blank" ref="noopener noreferrer"
+        ><a href="https://fiery.com" target="_blank" rel="noopener noreferrer"
           >Fiery (previosly EFI)</a
         ></strong
       >
@@ -152,7 +152,7 @@
         ><a
           href="https://www.corteva.com"
           target="_blank"
-          rel="noopener noreferrer">Corteva AgriScience<a /></a
+          rel="noopener noreferrer">Corteva AgriScience</a
         ></strong
       >
       <p>07/2022 - 12/2022 • Hyderabad, India</p>

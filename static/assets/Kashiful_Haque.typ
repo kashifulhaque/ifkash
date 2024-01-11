@@ -8,12 +8,10 @@
 
 #let chiline() = {v(-3pt); line(length: 100%); v(-5pt)}
 
-= kashiful haque
+= Kashiful Haque
 
 +91 82408 68544 | #link("mailto:haque.kashiful7@gmail.com")[haque.kashiful7\@gmail.com] |
 #link("https://github.com/kashifulhaque")[github/kashifulhaque]  | #link("https://www.linkedin.com/in/kashifulhaque")[linkedin/kashifulhaque] | #link("https://ifkash.vercel.app")[ifkash.vercel.app]
-
-Data Scientist specialising in Natural Language Processing (NLP). Demonstrated expertise in developing NLP pipelines, enhancing text extraction efficiency, and improving accuracy of text classification models. Skilled in leveraging NLP techniques and methodologies to drive automation, optimize processes, and deliver impactful solutions.
 
 == education.
 #chiline()
@@ -29,8 +27,9 @@ Bachelor of Technology, _Electronics and Communications Engineering_ \
 
 *Fiery (formerly known as EFI)* #h(1fr) 07/2023 -- Present \
 Associate Software Engineer, Data Science #h(1fr) Bengaluru, India \
-- Working on AWS Serverless stack.
-- Working on building an ad database to implement an multi-model algorithm to identify ads and capture user metrics.
+- Working on vector databases for similarity matching of images and text to enhance search experience.
+- Built a pipeline to identify ads played on commercial stations like TV, etc.
+- Improved product image mockup generation by a significant amount.
 
 *Fiery (formerly known as EFI)* #h(1fr) 01/2023 -- 07/2023 \
 Data Scientist, Intern #h(1fr) Bengaluru, India \
@@ -48,22 +47,19 @@ Fullstack Developer, Intern #h(1fr) Hyderabad, India \
 #chiline()
 
 *programming languages*
-- Python, JavaScript, TypeScript, Java, Rust
-
-*data science \& machine learning*
-- NumPy, Pandas, scikit-learn, TensorFlow, Pytorch, HuggingFace
+- Python, JavaScript, TypeScript, Java, Rust, C, C++, Go
 
 *web frameworks*
-- Angular, Vue
+- Node.js, Express.js, Vue, Angular, FastAPI, Flask
 
-*backend frameworks*
-- FastAPI, Flask, Node.js
+*data science \& machine learning*
+- NumPy, Pandas, scikit-learn, Pytorch, HuggingFace
 
 *databases*
-- SQL, MySQL, PostgreSQL, SQLite, SQLAlchemy, Prisma
+- MySQL, SQLite, SQLAlchemy, Knex.js
 
-*other tech*
-- Git, GitHub, VS Code, Docker, Linux
+*other tools*
+- Git, GitHub, VS Code, Linux (Arch btw), NeoVim, Docker
 
 == projects.
 #chiline()
@@ -71,3 +67,7 @@ Fullstack Developer, Intern #h(1fr) Hyderabad, India \
 *Product Mockups using ImageMagick \& Node.js/Python* • #link("https://ifkash.hashnode.dev/imagemagick-product-mockups")[blog post] • #link("https://github.com/kashifulhaque/product-mockup-node-python")[git repo] \
 _ImageMagick, Bash, Node.js, Python_
 - Starter code to help get started with creating product mockups programatically
+
+*Architected a software engineering project* • #link("https://github.com/se-sept-14/satoru")[git repo] \
+_Python, FastAPI, MySQL, Peewee, Vue.js, Vite.js, Docker, Cloudflare \& Cloudflare Pages, AWS_
+- BS final year project at IIT Madras

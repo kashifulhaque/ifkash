@@ -90,16 +90,13 @@
   <section class="section--page">
     <h2>Summary</h2>
     <p>
-      Born and brought up in Kolkata, I spend most of my time there. Recently,
-      since 2022, I have travelled to cities such as Hyderabad and Bengaluru
-      (currently residing) for work.
-      <br /><br />
-      I am currently an Associate Software Engineer at
-      <a href="https://fiery.com" target="_blank" rel="noopener noreferrer"
-        >Fiery (previously EFI)</a
-      >
+      Born and brought up in Kolkata, I spent most of my time there. Since 2022,
+      I have travelled to cities such as Hyderabad and Bengaluru (currently
+      residing) for work.
       <br />
-      I specialize in Software Engineering, Data Science and Machine Learning.
+      <br />
+      I specialize in Software Engineering, Data Science and Machine Learning with
+      a side of DevOps.
     </p>
   </section>
 
@@ -194,6 +191,22 @@
             target="_blank"
             rel="noopener noreferrer">Rust</a
           >
+          •
+          <a
+            href="https://www.gnu.org/software/gnu-c-manual/gnu-c-manual.html"
+            target="_blank"
+            rel="noopener noreferrer">C</a
+          >
+          •
+          <a
+            href="https://cplusplus.com/doc/tutorial/"
+            target="_blank"
+            rel="noopener noreferrer">C++</a
+          >
+          •
+          <a href="https://go.dev/" target="_blank" rel="noopener noreferrer"
+            >Go</a
+          >
         </span>
       </div>
       <div class="card--techstack">
@@ -201,13 +214,13 @@
           <a
             href="https://nodejs.org/en/"
             target="_blank"
-            rel="noopener noreferrer">NodeJS</a
+            rel="noopener noreferrer">Node.js</a
           >
           •
           <a
             href="http://expressjs.com/"
             target="_blank"
-            rel="noopener noreferrer">ExpressJS</a
+            rel="noopener noreferrer">Express.js</a
           >
           •
           <a href="https://vuejs.org/" target="_blank" rel="noopener noreferrer"
@@ -219,10 +232,7 @@
             target="_blank"
             rel="noopener noreferrer">Angular</a
           >
-        </span>
-      </div>
-      <div class="card--techstack">
-        <span>
+          •
           <a
             href="https://fastapi.tiangolo.com/"
             target="_blank"
@@ -234,7 +244,10 @@
             target="_blank"
             rel="noopener noreferrer">Flask</a
           >
-          •
+        </span>
+      </div>
+      <div class="card--techstack">
+        <span>
           <a href="https://numpy.org/" target="_blank" rel="noopener noreferrer"
             >NumPy</a
           >
@@ -252,9 +265,9 @@
           >
           •
           <a
-            href="https://www.tensorflow.org/"
+            href="https://huggingface.co/"
             target="_blank"
-            rel="noopener noreferrer">TensorFlow</a
+            rel="noopener noreferrer">HuggingFace</a
           >
           •
           <a
@@ -265,19 +278,7 @@
         >
       </div>
       <div class="card--techstack">
-        <span
-          ><a
-            href="https://en.wikipedia.org/wiki/SQL"
-            target="_blank"
-            rel="noopener noreferrer">SQL</a
-          >
-          •
-          <a
-            href="https://mariadb.org"
-            target="_blank"
-            rel="noopener noreferrer">MariaDB</a
-          >
-          •
+        <span>
           <a
             href="https://www.mysql.com"
             target="_blank"
@@ -291,23 +292,17 @@
           >
           •
           <a
-            href="https://www.postgresql.org/"
-            target="_blank"
-            rel="noopener noreferrer">PostgreSQL</a
-          >
-          •
-          <a
             href="https://www.sqlalchemy.org/"
             target="_blank"
             rel="noopener noreferrer">SQLAlchemy</a
           >
           •
           <a
-            href="https://firebase.google.com/"
+            href="https://knexjs.org/"
             target="_blank"
-            rel="noopener noreferrer">Firebase</a
-          ></span
-        >
+            rel="noopener noreferrer">Knex.js</a
+          >
+        </span>
       </div>
       <div class="card--techstack">
         <span
@@ -330,15 +325,21 @@
           >
           •
           <a
-            href="https://www.docker.com/"
+            href="https://kernel.org/"
             target="_blank"
-            rel="noopener noreferrer">Docker</a
+            rel="noopener noreferrer">Linux (Arch btw)</a
           >
           •
           <a
-            href="https://kubernetes.io/"
+            href="https://neovim.io/"
             target="_blank"
-            rel="noopener noreferrer">Kubernetes</a
+            rel="noopener noreferrer">NeoVim</a
+          >
+          •
+          <a
+            href="https://www.docker.com/"
+            target="_blank"
+            rel="noopener noreferrer">Docker</a
           ></span
         >
       </div>

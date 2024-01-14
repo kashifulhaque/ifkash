@@ -1,8 +1,8 @@
 @import url("https://fonts.googleapis.com/css2?family=Flow+Circular&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Pixelify+Sans&display=swap");
-@import url('https://fonts.googleapis.com/css2?family=Figtree&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;500&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Salsa&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Figtree&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;500&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Salsa&display=swap");
 
 :root {
   --mainTextColor-light: #000;
@@ -11,9 +11,9 @@
   --mainBorderColor-light: rgb(218, 218, 218);
   --mainBgColor-light: rgb(249, 250, 251);
 
-  --mainTextColor-dark: #39BAE6;
+  --mainTextColor-dark: #39bae6;
   --secondaryTextColor-dark: #adb0b1;
-  --mainLinkColor-dark: #EEB454;
+  --mainLinkColor-dark: #eeb454;
   --mainBorderColor-dark: #2b3031;
   --mainBgColor-dark: #0f1419;
 
@@ -25,7 +25,7 @@
 }
 
 * {
-  font-family: 'DM Mono', monospace;
+  font-family: "DM Mono", monospace;
   line-height: 1.2em;
   box-sizing: border-box;
   color: var(--mainTextColor);
@@ -92,7 +92,7 @@ a {
 }
 
 #user-name {
-  font-family: 'Salsa', cursive;
+  font-family: "Salsa", cursive;
   font-size: 44px;
   line-height: 1em;
 }
@@ -272,4 +272,3 @@ a::after {
   transform-origin: bottom right;
   transition: transform 0.2s ease; /* Add a transition for a smooth effect */
 }
-

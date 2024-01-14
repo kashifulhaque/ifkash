@@ -273,7 +273,3 @@ a::after {
   transition: transform 0.2s ease; /* Add a transition for a smooth effect */
 }
 
-a:hover::after {
-  transform: scaleX(1);
-  transform-origin: bottom left;
-}

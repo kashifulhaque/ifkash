@@ -315,10 +315,8 @@
             rel="noopener noreferrer">Linux (Arch btw)</a
           >
           •
-          <a
-            href="https://neovim.io/"
-            target="_blank"
-            rel="noopener noreferrer">NeoVim</a
+          <a href="https://neovim.io/" target="_blank" rel="noopener noreferrer"
+            >NeoVim</a
           >
           •
           <a
@@ -350,3 +348,11 @@
     >
   </section>
 </div>
+
+<script lang="ts">
+  let title: string = 'Kashiful Haque';
+</script>
+
+<svelte:head>
+  <title>{title}</title>
+</svelte:head>

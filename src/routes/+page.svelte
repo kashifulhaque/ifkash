@@ -16,21 +16,6 @@
     <div>
       <h1 id="user-name">Kashiful Haque</h1>
       <p>
-        Work @
-        <a href="https://fiery.com" target="_blank" rel="noopener noreferrer"
-          >Fiery (previously EFI)</a
-        >
-      </p>
-      <p>
-        Study @
-        <a
-          href="https://study.iitm.ac.in/ds"
-          target="_blank"
-          rel="noopener noreferrer">IIT Madras</a
-        >
-      </p>
-      <p>
-        Email @
         <a
           href="mailto:haque.kashiful7@gmail.com"
           target="_blank"
@@ -40,13 +25,12 @@
         >
       </p>
       <p>
-        Resume @
         <a
           class="resume"
           href="./assets/Kashiful_Haque.pdf"
           target="_blank"
           rel="noopener noreferrer"
-          >Download
+          >Download Resume
           <i class="fa-regular fa-file-pdf margin-left"></i>
         </a>
       </p>

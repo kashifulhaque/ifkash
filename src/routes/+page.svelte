@@ -1,3 +1,7 @@
+<script lang="ts">
+  let title: string = "Kashiful Haque";
+</script>
+
 <div id="container--main">
   <section id="wrapper--hero" class="section--page">
     <a
@@ -30,7 +34,7 @@
           href="./assets/Kashiful_Haque.pdf"
           target="_blank"
           rel="noopener noreferrer"
-          >👉 Download Resume
+          >Download my resume by clicking here
           <i class="fa-regular fa-file-pdf margin-left"></i>
         </a>
       </p>
@@ -76,8 +80,8 @@
     <h2>Summary</h2>
     <p>
       Born and brought up in Kolkata, I spent most of my time there. Since 2022,
-      I have travelled to cities such as Hyderabad and Bengaluru (currently
-      residing) for work.
+      I have travelled to cities such as Hyderabad, Chennai and Bengaluru
+      (currently residing) for work/studies.
       <br />
       <br />
       I specialize in Software Engineering, Data Science and Machine Learning with
@@ -348,10 +352,6 @@
     >
   </section>
 </div>
-
-<script lang="ts">
-  let title: string = 'Kashiful Haque';
-</script>
 
 <svelte:head>
   <title>{title}</title>

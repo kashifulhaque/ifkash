@@ -27,16 +27,19 @@ Bachelor of Technology, _Electronics and Communications Engineering_ \
 
 *Fiery (formerly known as EFI)* #h(1fr) 07/2023 -- Present \
 Associate Software Engineer, Data Science #h(1fr) Bengaluru, India \
+- Implemented Retrieval-Augmented Generation using Qdrant vector DB and Phi-2/Mistral-7B.
 - Working on vector databases for similarity matching of images and text to enhance search experience.
 - Built a pipeline to identify ads played on commercial stations like TV, etc.
 - Improved product image mockup generation by a significant amount.
 
+\
 *Fiery (formerly known as EFI)* #h(1fr) 01/2023 -- 07/2023 \
 Data Scientist, Intern #h(1fr) Bengaluru, India \
 - Improved efficiency by developing a pipeline to eliminate manual labour in text extraction.
 - Created realistic conversational dataset to amplify accuracy of text classification model.
 - Built cost-effective solution for creating product mockups using ImageMagick \& Node.js/Python, surpassing results of expensive Photoshop APIs hence saving significant costs for the company.
 
+\
 *Corteva AgriScience* #h(1fr) 07/2022 -- 12/2022 \
 Fullstack Developer, Intern #h(1fr) Hyderabad, India \
 - Improved Flask codebase resulting in 30% faster AutoML job triggering on Kubernetes.
@@ -61,13 +64,13 @@ Fullstack Developer, Intern #h(1fr) Hyderabad, India \
 *other tools*
 - Git, GitHub, VS Code, Linux (Arch btw), NeoVim, Docker
 
-== projects.
-#chiline()
+// == projects.
+// #chiline()
 
-*Product Mockups using ImageMagick \& Node.js/Python* • #link("https://ifkash.hashnode.dev/imagemagick-product-mockups")[blog post] • #link("https://github.com/kashifulhaque/product-mockup-node-python")[git repo] \
-_ImageMagick, Bash, Node.js, Python_
-- Starter code to help get started with creating product mockups programatically
+// *Product Mockups using ImageMagick \& Node.js/Python* • #link("https://ifkash.hashnode.dev/imagemagick-product-mockups")[blog post] • #link("https://github.com/kashifulhaque/product-mockup-node-python")[git repo] \
+// _ImageMagick, Bash, Node.js, Python_
+// - Starter code to help get started with creating product mockups programatically
 
-*Architected a software engineering project* • #link("https://github.com/se-sept-14/satoru")[git repo] \
-_Python, FastAPI, MySQL, Peewee, Vue.js, Vite.js, Docker, Cloudflare \& Cloudflare Pages, AWS_
-- BS final year project at IIT Madras
+// *Architected a software engineering project* • #link("https://github.com/se-sept-14/satoru")[git repo] \
+// _Python, FastAPI, MySQL, Peewee, Vue.js, Vite.js, Docker, Cloudflare \& Cloudflare Pages, AWS_
+// - BS final year project at IIT Madras

@@ -1,7 +1,5 @@
 @import url("https://fonts.googleapis.com/css2?family=Flow+Circular&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Pixelify+Sans&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;500&display=swap");
-@import url('https://fonts.googleapis.com/css2?family=Crimson+Text&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Song+Myung&display=swap');
 
 :root {
   --mainTextColor-light: #000;
@@ -24,7 +22,7 @@
 }
 
 * {
-  font-family: 'Crimson Text', serif;
+  font-family: 'Song Myung', serif;
   line-height: 1.2em;
   box-sizing: border-box;
   color: var(--mainTextColor);

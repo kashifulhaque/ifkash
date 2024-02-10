@@ -34,7 +34,7 @@
           href="./assets/Kashiful_Haque.pdf"
           target="_blank"
           rel="noopener noreferrer"
-          >Download my resume by clicking here
+          >Download my Resume
           <i class="fa-regular fa-file-pdf margin-left"></i>
         </a>
       </p>

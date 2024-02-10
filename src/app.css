@@ -2,17 +2,17 @@
 @import url('https://fonts.googleapis.com/css2?family=Song+Myung&display=swap');
 
 :root {
-  --mainTextColor-light: #000;
+  --mainTextColor-light: #cdd6f4;
   --secondaryTextColor-light: rgb(51 51 51);
   --mainLinkColor-light: #ffad29;
   --mainBorderColor-light: rgb(218, 218, 218);
   --mainBgColor-light: rgb(249, 250, 251);
 
-  --mainTextColor-dark: #39bae6;
+  --mainTextColor-dark: #89b4fa;
   --secondaryTextColor-dark: #adb0b1;
-  --mainLinkColor-dark: #eeb454;
+  --mainLinkColor-dark: #f9e2af;
   --mainBorderColor-dark: #2b3031;
-  --mainBgColor-dark: #0f1419;
+  --mainBgColor-dark: #11111b;
 
   --mainTextColor: var(--mainTextColor-dark);
   --secondaryTextColor: var(--secondaryTextColor-dark);

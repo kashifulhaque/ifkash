@@ -27,10 +27,9 @@ Bachelor of Technology, _Electronics and Communications Engineering_ \
 
 *Fiery (formerly known as EFI)* #h(1fr) 07/2023 -- Present \
 Associate Software Engineer, Data Science #h(1fr) Bengaluru, India \
-- Improved product image mockup generation by a significant amount.
-- Built a pipeline to identify ads played on commercial stations like TV, etc.
-- Working on vector databases for similarity matching of images and text to enhance search experience.
-- Implemented Retrieval-Augmented Generation pipline using Qdrant vector DB and fed into Phi-2/Mistral-7B trained on company dataset.
+- Built a solution to identify (watermarked) ads played on commercial stations like TV, etc.
+- Worked on a solution using vector databases for similarity matching of images and text to enhance search experience.
+- Build a Retrieval-Augmented Generation (RAG) based chat product using Mistral-7B LLM, trained on company data for Question and Answering.
 
 \
 *Fiery (formerly known as EFI)* #h(1fr) 01/2023 -- 07/2023 \

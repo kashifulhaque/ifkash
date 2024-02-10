@@ -339,6 +339,12 @@
       >SvelteKit</a
     >
     💪
+    A mix of
+    <a
+      target="_blank"
+      rel="noopened noreferrer"
+      href="https://github.com/catppuccin/catppuccin">Catppuccin Mocha</a
+    > and
     <a
       target="_blank"
       rel="noopener noreferrer"

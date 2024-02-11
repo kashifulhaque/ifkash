@@ -84,8 +84,8 @@
       (currently residing) for work/studies.
       <br />
       <br />
-      I specialize in Software Engineering, Data Science and Machine Learning with
-      a side of DevOps.
+      Associate Software Engineer with main course of Data Science & Machine Learning
+      and a side of DevOps.
     </p>
   </section>
 
@@ -338,13 +338,13 @@
     <a target="_blank" rel="noopener noreferrer" href="https://kit.svelte.dev"
       >SvelteKit</a
     >
-    💪
-    A mix of
+    💪 A mix of
     <a
       target="_blank"
       rel="noopened noreferrer"
       href="https://github.com/catppuccin/catppuccin">Catppuccin Mocha</a
-    > and
+    >
+    and
     <a
       target="_blank"
       rel="noopener noreferrer"

@@ -97,7 +97,6 @@
       <p>12/2020 - Present</p>
     </div>
 
-    <div class="line-break"></div>
     <div class="card--work-history">
       <strong>University of Calcutta</strong>
       <p>Bachelor of Technology, Electronics & Communications Engineering</p>
@@ -118,8 +117,6 @@
       <p>07/2023 - Present • Bengaluru, India</p>
     </div>
 
-    <div class="line-break"></div>
-
     <div class="card--work-history">
       Data Scientist, Intern •
       <strong class="company"
@@ -129,8 +126,6 @@
       >
       <p>01/2023 - 07/2023 • Bengaluru, India</p>
     </div>
-
-    <div class="line-break"></div>
 
     <div class="card--work-history">
       Fullstack Developer, Intern •

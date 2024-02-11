@@ -1,5 +1,6 @@
+@import url("https://fonts.googleapis.com/css2?family=Song+Myung&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Space+Mono&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Flow+Circular&display=swap");
-@import url('https://fonts.googleapis.com/css2?family=Song+Myung&display=swap');
 
 :root {
   --mainTextColor-light: #cdd6f4;
@@ -22,7 +23,7 @@
 }
 
 * {
-  font-family: 'Song Myung', serif;
+  font-family: "Song Myung", serif;
   line-height: 1.2em;
   box-sizing: border-box;
   color: var(--mainTextColor);
@@ -144,15 +145,13 @@ a {
 }
 
 .card--techstack {
-  border: 2px solid var(--mainBorderColor);
-  border-radius: 5px;
   padding: 0.5em 1em;
   align-items: center;
   width: 100%;
 }
 
 .card--techstack a {
-  color: var(--mainTextColor-dark);
+  color: var(--mainLinkColor-dark);
   margin-left: 0.2em;
   margin-right: 0.2em;
   font-size: 1em;
@@ -260,11 +259,19 @@ a::after {
   content: "";
   position: absolute;
   width: 100%;
-  height: 4px; /* Adjust the underline height as needed */
-  background-color: #1ed4bc; /* Adjust the underline color as needed */
+  height: 4px;
+  background-color: #1ed4bc;
   bottom: 0;
   left: 0;
   transform: scaleX(0);
   transform-origin: bottom right;
-  transition: transform 0.2s ease; /* Add a transition for a smooth effect */
+  transition: transform 0.2s ease;
+}
+
+.footer {
+  font-family: "Space Mono", monospace;
+}
+
+.footer a {
+  font-family: "Space Mono", monospace;
 }

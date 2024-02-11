@@ -315,7 +315,7 @@
           >
           •
           <a href="https://neovim.io/" target="_blank" rel="noopener noreferrer"
-            >NeoVim</a
+            >Neovim</a
           >
           •
           <a
@@ -329,21 +329,17 @@
   </section>
 
   <hr class="center-ball" />
-  <section class="section--page section--page-text-center">
-    <a target="_blank" rel="noopener noreferrer" href="https://kit.svelte.dev"
-      >SvelteKit</a
+  <section class="section--page section--page-text-center footer">
+    <a
+      target="_blank"
+      rel="noopener noreferrer"
+      href="https://kit.svelte.dev">SvelteKit</a
     >
-    💪 A mix of
+    💪
     <a
       target="_blank"
       rel="noopened noreferrer"
       href="https://github.com/catppuccin/catppuccin">Catppuccin Mocha</a
-    >
-    and
-    <a
-      target="_blank"
-      rel="noopener noreferrer"
-      href="https://github.com/ayu-theme/ayu-colors">Ayu Dark</a
     >
     🚧
     <a

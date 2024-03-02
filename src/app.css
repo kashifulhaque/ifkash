@@ -9,11 +9,11 @@
   --mainBorderColor-light: rgb(218, 218, 218);
   --mainBgColor-light: rgb(249, 250, 251);
 
-  --mainTextColor-dark: #89b4fa;
+  --mainTextColor-dark: #e7eae0;
   --secondaryTextColor-dark: #adb0b1;
-  --mainLinkColor-dark: #f9e2af;
+  --mainLinkColor-dark: #89c559;
   --mainBorderColor-dark: #2b3031;
-  --mainBgColor-dark: #11111b;
+  --mainBgColor-dark: #191a1b;
 
   --mainTextColor: var(--mainTextColor-dark);
   --secondaryTextColor: var(--secondaryTextColor-dark);

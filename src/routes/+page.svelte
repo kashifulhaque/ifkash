@@ -335,17 +335,11 @@
       rel="noopener noreferrer"
       href="https://kit.svelte.dev">SvelteKit</a
     >
-    💪
-    <a
-      target="_blank"
-      rel="noopened noreferrer"
-      href="https://github.com/catppuccin/catppuccin">Catppuccin Mocha</a
-    >
     🚧
     <a
       target="_blank"
       rel="noopener noreferrer"
-      href="https://github.com/kashifulhaque/ifkash">Source</a
+      href="https://github.com/kashifulhaque/ifkash">Fork me on GitHub</a
     >
   </section>
 </div>

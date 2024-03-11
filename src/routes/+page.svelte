@@ -311,7 +311,7 @@
           <a
             href="https://kernel.org/"
             target="_blank"
-            rel="noopener noreferrer">Linux (Arch btw)</a
+            rel="noopener noreferrer">Linux (Nix btw)</a
           >
           •
           <a href="https://neovim.io/" target="_blank" rel="noopener noreferrer"

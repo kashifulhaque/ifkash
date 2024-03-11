@@ -311,7 +311,12 @@
           <a
             href="https://kernel.org/"
             target="_blank"
-            rel="noopener noreferrer">Linux (Nix btw)</a
+            rel="noopener noreferrer"
+            >Linux <a
+              href="https://nixos.org/"
+              target="_blank"
+              rel="noopener noreferrer">(Nix btw)</a
+            ></a
           >
           •
           <a href="https://neovim.io/" target="_blank" rel="noopener noreferrer"
@@ -330,10 +335,8 @@
 
   <hr class="center-ball" />
   <section class="section--page section--page-text-center footer">
-    <a
-      target="_blank"
-      rel="noopener noreferrer"
-      href="https://kit.svelte.dev">SvelteKit</a
+    <a target="_blank" rel="noopener noreferrer" href="https://kit.svelte.dev"
+      >SvelteKit</a
     >
     🚧
     <a

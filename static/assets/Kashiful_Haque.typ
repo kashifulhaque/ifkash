@@ -61,7 +61,7 @@ Fullstack Developer, Intern #h(1fr) Hyderabad, India \
 - MySQL, SQLite, SQLAlchemy, Knex.js
 
 *other tools*
-- Git, GitHub, VS Code, Linux (Nix btw), NeoVim, Docker
+- Git, GitHub, VS Code, Linux (Nix btw), Neovim, Docker
 
 // == projects.
 // #chiline()

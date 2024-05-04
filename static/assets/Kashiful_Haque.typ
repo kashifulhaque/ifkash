@@ -13,16 +13,7 @@
 +91 82408 68544 | #link("mailto:haque.kashiful7@gmail.com")[haque.kashiful7\@gmail.com] |
 #link("https://github.com/kashifulhaque")[github/kashifulhaque]  | #link("https://www.linkedin.com/in/kashifulhaque")[linkedin/kashifulhaque] | #link("https://ifkash.vercel.app")[ifkash.vercel.app]
 
-== education.
-#chiline()
-
-*Indian Institute of Technology Madras* #h(1fr) 12/2020 -- 09/2024 \
-Bachelor of Science, _Data Science and Applications_ \
-
-*University of Calcutta* #h(1fr) 08/2016 -- 03/2019 \
-Bachelor of Technology, _Electronics and Communications Engineering_ \
-
-== work experience.
+= Work Experience
 #chiline()
 
 *Fiery (formerly known as EFI)* #h(1fr) 07/2023 -- Present \
@@ -45,31 +36,35 @@ Fullstack Developer, Intern #h(1fr) Hyderabad, India \
 - Led migration of Flask monolith to scalable REST API microservices, reducing deployment time by 40%
 - Worked under Corteva AgriScience incubation centre \@ CIE, IIITH
 
-== skills.
+= Education
 #chiline()
 
-*programming languages*
-- Python, JavaScript, TypeScript, Java, Rust, C, C++, Go
+*Indian Institute of Technology Madras* #h(1fr) 12/2020 -- 09/2024 \
+Bachelor of Science, _Data Science and Applications_ \
 
-*web frameworks*
-- Node.js, Express.js, Vue, Angular, FastAPI, Flask
+*University of Calcutta* #h(1fr) 08/2016 -- 03/2019 \
+Bachelor of Technology, _Electronics and Communications Engineering_ \
 
-*data science \& machine learning*
-- NumPy, Pandas, scikit-learn, Pytorch, HuggingFace
+= Projects
+#chiline()
 
-*databases*
-- MySQL, SQLite, SQLAlchemy, Knex.js
-
-*other tools*
-- Git, GitHub, VS Code, Linux (Nix btw), Neovim, Docker
-
-// == projects.
-// #chiline()
+*FieryGPT* \
+_Python, PyTorch, Ollama, llama.cpp, Mistral-7B, FastAPI, Node.js, Vue.js_
+- Engineered a retrieval-augmented generation LLM, integrating company data from vector databases for contextualized responses.
+- Implemented innovative LLM architecture, optimizing information retrieval and generation for enhanced organizational knowledge utilization.
 
 // *Product Mockups using ImageMagick \& Node.js/Python* • #link("https://ifkash.hashnode.dev/imagemagick-product-mockups")[blog post] • #link("https://github.com/kashifulhaque/product-mockup-node-python")[git repo] \
 // _ImageMagick, Bash, Node.js, Python_
 // - Starter code to help get started with creating product mockups programatically
 
-// *Architected a software engineering project* • #link("https://github.com/se-sept-14/satoru")[git repo] \
-// _Python, FastAPI, MySQL, Peewee, Vue.js, Vite.js, Docker, Cloudflare \& Cloudflare Pages, AWS_
-// - BS final year project at IIT Madras
+= Skills
+#chiline()
+
+*Language proficiency*
+- Python, JavaScript, TypeScript, C/C++, Rust
+
+*Web technologies*
+- Node.js, Express.js, Vue, Angular, FastAPI, Flask
+
+*Data Science \& Machine Learning*
+- NumPy, Pandas, scikit-learn, Pytorch, HuggingFace

@@ -79,29 +79,15 @@
   <section class="section--page">
     <h2>Summary</h2>
     <p>
-      Born and brought up in Kolkata, I spent most of my time there. Since 2022,
-      I have travelled to cities such as Hyderabad, Chennai and Bengaluru
-      (currently residing) for work/studies.
+      I work at the intersection of Software Engineering, Data Science & Machine
+      Learning focussing on Large Language Models (LLMs). I also have a keen
+      interest in cloud, linux and other sort of tools surrounding tech.
       <br />
       <br />
-      Associate Software Engineer with main course of Data Science & Machine Learning
-      and a side of DevOps.
+      Born and brought up in Kolkata, I lived most of my life there. Since 2022,
+      I have travelled to cities such as Hyderabad, Chennai and Bengaluru (current)
+      for work/studies.
     </p>
-  </section>
-
-  <section id="work-history-wrapper" class="section--page">
-    <h2>Education</h2>
-    <div class="card--work-history">
-      <strong>Indian Institute of Technology Madras</strong>
-      <p>Bachelor of Science, Data Science and Applications</p>
-      <p>12/2020 - Present</p>
-    </div>
-
-    <div class="card--work-history">
-      <strong>University of Calcutta</strong>
-      <p>Bachelor of Technology, Electronics & Communications Engineering</p>
-      <p>08/2016 - 03/2019</p>
-    </div>
   </section>
 
   <section id="work-history-wrapper" class="section--page">
@@ -140,6 +126,21 @@
     </div>
   </section>
 
+  <section id="work-history-wrapper" class="section--page">
+    <h2>Education</h2>
+    <div class="card--work-history">
+      <strong>Indian Institute of Technology Madras</strong>
+      <p>Bachelor of Science, Data Science and Applications</p>
+      <p>12/2020 - Present</p>
+    </div>
+
+    <div class="card--work-history">
+      <strong>University of Calcutta</strong>
+      <p>Bachelor of Technology, Electronics & Communications Engineering</p>
+      <p>08/2016 - 03/2019</p>
+    </div>
+  </section>
+
   <section class="section--page">
     <h2>Tech</h2>
 
@@ -165,18 +166,6 @@
           >
           •
           <a
-            href="https://www.java.com/en/"
-            target="_blank"
-            rel="noopener noreferrer">Java</a
-          >
-          •
-          <a
-            href="https://www.rust-lang.org/"
-            target="_blank"
-            rel="noopener noreferrer">Rust</a
-          >
-          •
-          <a
             href="https://www.gnu.org/software/gnu-c-manual/gnu-c-manual.html"
             target="_blank"
             rel="noopener noreferrer">C</a
@@ -188,8 +177,10 @@
             rel="noopener noreferrer">C++</a
           >
           •
-          <a href="https://go.dev/" target="_blank" rel="noopener noreferrer"
-            >Go</a
+          <a
+            href="https://www.rust-lang.org/"
+            target="_blank"
+            rel="noopener noreferrer">Rust</a
           >
         </span>
       </div>
@@ -258,75 +249,6 @@
             href="https://pytorch.org/"
             target="_blank"
             rel="noopener noreferrer">PyTorch</a
-          ></span
-        >
-      </div>
-      <div class="card--techstack">
-        <span>
-          <a
-            href="https://www.mysql.com"
-            target="_blank"
-            rel="noopener noreferrer">MySQL</a
-          >
-          •
-          <a
-            href="https://www.sqlite.org/index.html"
-            target="_blank"
-            rel="noopener noreferrer">SQLite</a
-          >
-          •
-          <a
-            href="https://www.sqlalchemy.org/"
-            target="_blank"
-            rel="noopener noreferrer">SQLAlchemy</a
-          >
-          •
-          <a
-            href="https://knexjs.org/"
-            target="_blank"
-            rel="noopener noreferrer">Knex.js</a
-          >
-        </span>
-      </div>
-      <div class="card--techstack">
-        <span
-          ><a
-            href="https://git-scm.com/"
-            target="_blank"
-            rel="noopener noreferrer">Git</a
-          >
-          •
-          <a
-            href="https://github.com/"
-            target="_blank"
-            rel="noopener noreferrer">GitHub</a
-          >
-          •
-          <a
-            href="https://code.visualstudio.com/"
-            target="_blank"
-            rel="noopener noreferrer">VS Code</a
-          >
-          •
-          <a
-            href="https://kernel.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-            >Linux <a
-              href="https://nixos.org/"
-              target="_blank"
-              rel="noopener noreferrer">(Nix btw)</a
-            ></a
-          >
-          •
-          <a href="https://neovim.io/" target="_blank" rel="noopener noreferrer"
-            >Neovim</a
-          >
-          •
-          <a
-            href="https://www.docker.com/"
-            target="_blank"
-            rel="noopener noreferrer">Docker</a
           ></span
         >
       </div>

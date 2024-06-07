@@ -31,7 +31,7 @@ _Electronics for Imaging, EFI_ #h(1fr) Bangalore, India \
 - Built cost-effective solution for creating product mockups using ImageMagick \& Node.js/Python, surpassing results of expensive Photoshop APIs hence saving significant costs for the company.
 \
 *Fullstack Developer, Intern* #h(1fr) 07/2022 -- 12/2022 \
-_Corteva AgriScience_ #h(1fr) Hyderabad, India \
+_Corteva Agriscience_ #h(1fr) Hyderabad, India \
 - Improved Flask codebase resulting in 30% faster AutoML job triggering on Kubernetes.
 - Led migration of refactoring of Flask monolith to scalable REST API microservices, improving scalability and reduced deployment time by 20%
 

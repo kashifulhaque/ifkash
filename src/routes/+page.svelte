@@ -119,7 +119,7 @@
         ><a
           href="https://www.corteva.com"
           target="_blank"
-          rel="noopener noreferrer">Corteva AgriScience</a
+          rel="noopener noreferrer">Corteva Agriscience</a
         ></strong
       >
       <p>07/2022 - 12/2022 • Hyderabad, India</p>

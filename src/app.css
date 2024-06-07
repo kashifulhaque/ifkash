@@ -275,3 +275,8 @@ a::after {
 .footer a {
   font-family: "Space Mono", monospace;
 }
+
+.email {
+  font-weight: normal;
+  color: #cdd6f4;
+}

@@ -24,6 +24,7 @@
           href="mailto:haque.kashiful7@gmail.com"
           target="_blank"
           rel="noopener noreferrer"
+          class="email"
         >
           haque.kashiful7@gmail.com</a
         >
@@ -33,9 +34,8 @@
           class="resume"
           href="./assets/Kashiful_Haque.pdf"
           target="_blank"
-          rel="noopener noreferrer"
-          >Download my Resume
-          <i class="fa-regular fa-file-pdf margin-left"></i>
+          >Download Resume
+          <i class="fa-solid fa-download margin-left"></i>
         </a>
       </p>
     </div>
@@ -68,10 +68,10 @@
         class="profiles"><i class="fa-brands fa-instagram"></i> Instagram</a
       >
       <a
-        href="https://x.com/notifkash"
+        href="https://leetcode.com/u/ifkash/"
         target="_blank"
         rel="noopener noreferrer"
-        class="profiles"><i class="fa-brands fa-x-twitter"></i> Twitter</a
+        class="profiles"><i class="fa-solid fa-code"></i> Leetcode</a
       >
     </div>
   </section>
@@ -255,7 +255,7 @@
     </div>
   </section>
 
-  <hr class="center-ball" />
+  <a href="./assets/Kashiful_Haque-dark.pdf" target="_blank"><hr class="center-ball" /></a>
   <section class="section--page section--page-text-center footer">
     <a target="_blank" rel="noopener noreferrer" href="https://kit.svelte.dev"
       >SvelteKit</a

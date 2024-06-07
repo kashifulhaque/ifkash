@@ -2,9 +2,11 @@
 
 #show link: underline
 #set page(
- margin: (x: 0.9cm, y: 1.3cm),
+  fill: rgb("#282828"),
+  margin: (x: 0.9cm, y: 1.3cm),
 )
 #set par(justify: true)
+#set text(fill: white)
 
 #let chiline() = {v(-3pt); line(length: 100%); v(-5pt)}
 

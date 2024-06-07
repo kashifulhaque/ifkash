@@ -18,25 +18,22 @@ Software Engineer with 2 years of experience in Backend, Data Science, AI, ML an
 = Work Experience
 #chiline()
 
-*Fiery (formerly known as EFI)* #h(1fr) 07/2023 -- Present \
-Associate Software Engineer, Data Science #h(1fr) Bengaluru, India \
-- Built a solution to identify (watermarked) ads played on commercial stations like TV, etc.
+*Associate Software Engineer, Data Science* #h(1fr) 07/2023 -- Present \
+_Fiery (formerly known as EFI)_ #h(1fr) Bangalore, India \
+- Built an audio fingerprinting solution to identify ads played on commercial stations like TV, etc.
 - Worked on a solution using vector databases for similarity matching of images and text to enhance search experience.
-- Build a Retrieval-Augmented Generation (RAG) based chat product using Mistral-7B LLM, trained on company data for Question and Answering.
-
+- Build an RAG based chat product using Mistral-7B LLM, trained on company data for Question and Answering.
 \
-*Fiery (formerly known as EFI)* #h(1fr) 01/2023 -- 07/2023 \
-Data Scientist, Intern #h(1fr) Bengaluru, India \
+*Data Scientist, Intern* #h(1fr) 01/2023 -- 07/2023 \
+_Electronics for Imaging, EFI_ #h(1fr) Bangalore, India \
 - Improved efficiency by developing a pipeline to eliminate manual labour in text extraction.
 - Created realistic conversational dataset to amplify accuracy of text classification model.
 - Built cost-effective solution for creating product mockups using ImageMagick \& Node.js/Python, surpassing results of expensive Photoshop APIs hence saving significant costs for the company.
-
 \
-*Corteva AgriScience* #h(1fr) 07/2022 -- 12/2022 \
-Fullstack Developer, Intern #h(1fr) Hyderabad, India \
+*Fullstack Developer, Intern* #h(1fr) 07/2022 -- 12/2022 \
+_Corteva AgriScience_ #h(1fr) Hyderabad, India \
 - Improved Flask codebase resulting in 30% faster AutoML job triggering on Kubernetes.
-- Led migration of Flask monolith to scalable REST API microservices, reducing deployment time by 40%
-- Worked under Corteva AgriScience incubation centre \@ CIE, IIITH
+- Led migration of refactoring of Flask monolith to scalable REST API microservices, improving scalability and reduced deployment time by 20%
 
 = Education
 #chiline()
@@ -63,10 +60,13 @@ _Python, PyTorch, Ollama, llama.cpp, Mistral-7B, FastAPI, Node.js, Vue.js_
 #chiline()
 
 *Language proficiency*
-- Python, JavaScript, TypeScript, C/C++, Rust
+- Python, JavaScript, TypeScript, C, C++, Rust, HTML, CSS
 
 *Web technologies*
 - Node.js, Express.js, Vue, Angular, FastAPI, Flask
 
 *Data Science \& Machine Learning*
 - NumPy, Pandas, scikit-learn, Pytorch, HuggingFace
+
+*Databases and Tools*
+- Vector database, MySQL, Docker, Git, Linux

@@ -1,6 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Song+Myung&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Space+Mono&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Flow+Circular&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Ubuntu+Sans+Mono:ital,wght@0,400..700;1,400..700&display=swap');
 
 :root {
   --mainTextColor-light: #cdd6f4;
@@ -23,8 +21,7 @@
 }
 
 * {
-  font-family: "Song Myung", serif;
-  line-height: 1.2em;
+  font-family: "Ubuntu Sans Mono", monospace;
   box-sizing: border-box;
   color: var(--mainTextColor);
 }
@@ -247,10 +244,6 @@ hr.center-ball:before {
   margin: 0 0 0 -3px;
 }
 
-.flow-circular {
-  font-family: "Flow Circular", cursive;
-}
-
 a {
   position: relative;
 }
@@ -266,14 +259,6 @@ a::after {
   transform: scaleX(0);
   transform-origin: bottom right;
   transition: transform 0.2s ease;
-}
-
-.footer {
-  font-family: "Space Mono", monospace;
-}
-
-.footer a {
-  font-family: "Space Mono", monospace;
 }
 
 .email {

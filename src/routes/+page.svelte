@@ -30,10 +30,7 @@
         >
       </p>
       <p>
-        <a
-          class="resume"
-          href="./assets/Kashiful_Haque.pdf"
-          target="_blank"
+        <a class="resume" href="./assets/Kashiful_Haque.pdf" target="_blank"
           >Download Resume
           <i class="fa-solid fa-download margin-left"></i>
         </a>
@@ -79,14 +76,17 @@
   <section class="section--page">
     <h2>Summary</h2>
     <p>
-      I work at the intersection of Software Engineering, Data Science & Machine
-      Learning focussing on Large Language Models (LLMs). I also have a keen
-      interest in cloud, linux and other sort of tools surrounding tech.
+      I work at the intersection of <strong>Software Engineering</strong>,
+      <strong>Data Science</strong>
+      & <strong>Machine Learning</strong> focussing on
+      <strong>Large Language Models (LLMs)</strong>. I also have a keen interest
+      in <strong>cloud</strong>, <strong>linux</strong> and other tools
+      surrounding tech.
       <br />
       <br />
-      Born and brought up in Kolkata, I lived most of my life there. Since 2022,
+      <small>Born and brought up in Kolkata, I lived most of my life there. Since 2022,
       I have travelled to cities such as Hyderabad, Chennai and Bengaluru (current)
-      for work/studies.
+      for work/studies.</small>
     </p>
   </section>
 
@@ -117,7 +117,7 @@
       Fullstack Developer, Intern •
       <strong class="company"
         ><a
-          href="https://www.corteva.com"
+          href="https://www.corteva.in"
           target="_blank"
           rel="noopener noreferrer">Corteva Agriscience</a
         ></strong
@@ -255,7 +255,9 @@
     </div>
   </section>
 
-  <a href="./assets/Kashiful_Haque-dark.pdf" target="_blank"><hr class="center-ball" /></a>
+  <a href="./assets/Kashiful_Haque-dark.pdf" target="_blank"
+    ><hr class="center-ball" /></a
+  >
   <section class="section--page section--page-text-center footer">
     <a target="_blank" rel="noopener noreferrer" href="https://kit.svelte.dev"
       >SvelteKit</a

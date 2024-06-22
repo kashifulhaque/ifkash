@@ -26,13 +26,12 @@
           rel="noopener noreferrer"
           class="email"
         >
-          haque.kashiful7@gmail.com</a
+          <i class="fa-solid fa-envelope"></i> haque.kashiful7@gmail.com</a
         >
       </p>
       <p>
         <a class="resume" href="./assets/Kashiful_Haque.pdf" target="_blank"
-          >Download Resume
-          <i class="fa-solid fa-download margin-left"></i>
+          ><i class="fa-solid fa-download"></i> Download Resume
         </a>
       </p>
     </div>
@@ -74,47 +73,51 @@
   </section>
 
   <section class="section--page">
-    <h2>Summary</h2>
+    <h2><i class="fa-solid fa-bolt"></i> Summary</h2>
     <p>
-      I work at the intersection of <strong>Software Engineering</strong>,
-      <strong>Data Science</strong>
-      & <strong>Machine Learning</strong> focussing on
-      <strong>Large Language Models (LLMs)</strong>. I also have a keen interest
-      in <strong>cloud</strong>, <strong>linux</strong> and other tools
-      surrounding tech.
+      I work at the intersection of Software Engineering, Data Science & Machine
+      Learning focussing on Natural Language Processing (NLP), Generative AI
+      (GenAI) and Large Language Models (LLMs). I also have a keen interest in
+      cloud, linux and other tools surrounding tech.
       <br />
       <br />
-      <small>Born and brought up in Kolkata, I lived most of my life there. Since 2022,
-      I have travelled to cities such as Hyderabad, Chennai and Bengaluru (current)
-      for work/studies.</small>
+      <small
+        >Born and brought up in Kolkata, I lived most of my life there. Since
+        2022, I have travelled to cities such as Hyderabad, Chennai and
+        Bengaluru (current) for work/studies.</small
+      >
     </p>
   </section>
 
   <section id="work-history-wrapper" class="section--page">
-    <h2>Work</h2>
+    <h2><i class="fa-solid fa-briefcase"></i> Work</h2>
 
     <div class="card--work-history">
-      Associate Software Engineer, Data Science •
+      👨‍💻 Associate Software Engineer @
       <strong class="company"
-        ><a href="https://fiery.com" target="_blank" rel="noopener noreferrer"
-          >Fiery (previously EFI)</a
+        ><a href="https://www.efi.com" target="_blank" rel="noopener noreferrer"
+          >Electronics for Imaging</a
         ></strong
       >
-      <p>07/2023 - Present • Bengaluru, India</p>
+      🏢
+      <p>
+        📅 07/2023 - <span class="present">Present</span> • Bengaluru, India 📍
+      </p>
     </div>
 
     <div class="card--work-history">
-      Data Scientist, Intern •
+      👨‍🔬 Data Scientist, Intern @
       <strong class="company"
-        ><a href="https://fiery.com" target="_blank" rel="noopener noreferrer"
-          >Fiery (previously EFI)</a
+        ><a href="https://www.efi.com" target="_blank" rel="noopener noreferrer"
+          >Electronics for Imaging</a
         ></strong
       >
-      <p>01/2023 - 07/2023 • Bengaluru, India</p>
+      🏢
+      <p>🗓️ 01/2023 - 07/2023 • Bengaluru, India 📍</p>
     </div>
 
     <div class="card--work-history">
-      Fullstack Developer, Intern •
+      👨‍💻 Fullstack Developer, Intern @
       <strong class="company"
         ><a
           href="https://www.corteva.in"
@@ -122,16 +125,17 @@
           rel="noopener noreferrer">Corteva Agriscience</a
         ></strong
       >
-      <p>07/2022 - 12/2022 • Hyderabad, India</p>
+      🏢
+      <p>📆 07/2022 - 12/2022 • Hyderabad, India 📍</p>
     </div>
   </section>
 
   <section id="work-history-wrapper" class="section--page">
-    <h2>Education</h2>
+    <h2><i class="fa-solid fa-graduation-cap"></i> Education</h2>
     <div class="card--work-history">
       <strong>Indian Institute of Technology Madras</strong>
       <p>Bachelor of Science, Data Science and Applications</p>
-      <p>12/2020 - Present</p>
+      <p>12/2020 - 09/2024</p>
     </div>
 
     <div class="card--work-history">
@@ -142,7 +146,7 @@
   </section>
 
   <section class="section--page">
-    <h2>Tech</h2>
+    <h2><i class="fa-solid fa-microchip"></i> Tech</h2>
 
     <div id="wrapper--techstack__items">
       <div class="card--techstack">
@@ -166,12 +170,6 @@
           >
           •
           <a
-            href="https://www.gnu.org/software/gnu-c-manual/gnu-c-manual.html"
-            target="_blank"
-            rel="noopener noreferrer">C</a
-          >
-          •
-          <a
             href="https://cplusplus.com/doc/tutorial/"
             target="_blank"
             rel="noopener noreferrer">C++</a
@@ -181,6 +179,12 @@
             href="https://www.rust-lang.org/"
             target="_blank"
             rel="noopener noreferrer">Rust</a
+          >
+          •
+          <a
+            href="https://en.wikipedia.org/wiki/SQL"
+            target="_blank"
+            rel="noopener noreferrer">SQL</a
           >
         </span>
       </div>
@@ -219,6 +223,12 @@
             target="_blank"
             rel="noopener noreferrer">Flask</a
           >
+          •
+          <a
+            href="https://tailwindcss.com/"
+            target="_blank"
+            rel="noopener noreferrer">Tailwind</a
+          >
         </span>
       </div>
       <div class="card--techstack">
@@ -240,17 +250,64 @@
           >
           •
           <a
-            href="https://huggingface.co/"
-            target="_blank"
-            rel="noopener noreferrer">HuggingFace</a
-          >
-          •
-          <a
             href="https://pytorch.org/"
             target="_blank"
             rel="noopener noreferrer">PyTorch</a
-          ></span
-        >
+          >
+          •
+          <a
+            href="https://jax.readthedocs.io/en/latest/"
+            target="_blank"
+            rel="noopener noreferrer">JAX</a
+          >
+          •
+          <a
+            href="https://www.nltk.org/"
+            target="_blank"
+            rel="noopener noreferrer">NLTK</a
+          >
+          •
+          <a href="https://spacy.io/" target="_blank" rel="noopener noreferrer"
+            >spaCy</a
+          >
+          •
+          <a
+            href="https://developer.nvidia.com/cuda-toolkit"
+            target="_blank"
+            rel="noopener noreferrer">CUDA</a
+          >
+        </span>
+      </div>
+      <div class="card--techstack">
+        <span>
+          <a
+            href="https://www.pinecone.io/learn/vector-database/"
+            target="_blank"
+            rel="noopener noreferrer">Vector Database</a
+          >
+          •
+          <a
+            href="https://qdrant.tech/"
+            target="_blank"
+            rel="noopener noreferrer">Qdrant</a
+          >
+          •
+          <a
+            href="https://www.mysql.com/"
+            target="_blank"
+            rel="noopener noreferrer">MySQL</a
+          >
+          •
+          <a
+            href="https://www.sqlite.org/"
+            target="_blank"
+            rel="noopener noreferrer">SQLite</a
+          >
+          •
+          <a href="https://redis.io/" target="_blank" rel="noopener noreferrer"
+            >Redis</a
+          >
+        </span>
       </div>
     </div>
   </section>
@@ -260,7 +317,7 @@
   >
   <section class="section--page section--page-text-center footer">
     <a target="_blank" rel="noopener noreferrer" href="https://kit.svelte.dev"
-      >SvelteKit</a
+      >Made with <i class="fa-solid fa-heart"></i> using SvelteKit</a
     >
     🚧
     <a

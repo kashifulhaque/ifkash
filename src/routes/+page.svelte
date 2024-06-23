@@ -58,16 +58,16 @@
         class="profiles"><i class="fa-brands fa-github"></i> Github</a
       >
       <a
-        href="https://www.instagram.com/enderboi25/"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="profiles"><i class="fa-brands fa-instagram"></i> Instagram</a
-      >
-      <a
         href="https://leetcode.com/u/ifkash/"
         target="_blank"
         rel="noopener noreferrer"
         class="profiles"><i class="fa-solid fa-code"></i> Leetcode</a
+      >
+      <a
+        href="https://www.instagram.com/enderboi25/"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="profiles"><i class="fa-brands fa-instagram"></i> Instagram</a
       >
     </div>
   </section>

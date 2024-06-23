@@ -256,6 +256,12 @@
           >
           •
           <a
+            href="https://huggingface.co/"
+            target="_blank"
+            rel="noopener noreferrer">huggingface</a
+          >
+          •
+          <a
             href="https://jax.readthedocs.io/en/latest/"
             target="_blank"
             rel="noopener noreferrer">JAX</a
@@ -306,6 +312,24 @@
           •
           <a href="https://redis.io/" target="_blank" rel="noopener noreferrer"
             >Redis</a
+          >
+          •
+          <a
+            href="https://www.docker.com/"
+            target="_blank"
+            rel="noopener noreferrer">Docker</a
+          >
+          •
+          <a
+            href="https://git-scm.com/"
+            target="_blank"
+            rel="noopener noreferrer">Git</a
+          >
+          •
+          <a
+            href="https://www.kernel.org/"
+            target="_blank"
+            rel="noopener noreferrer">Linux</a
           >
         </span>
       </div>

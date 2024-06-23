@@ -47,26 +47,25 @@ Bachelor of Technology, _Electronics and Communications Engineering_ \
 = Projects and Blogs
 #chiline()
 
-*FieryGPT* \
-_Python, PyTorch, Ollama, llama.cpp, Mistral-7B, FastAPI, Node.js, Vue.js_
-- Engineered a retrieval-augmented generation LLM, integrating company data from vector databases for contextualized responses.
-- Implemented innovative LLM architecture, optimizing information retrieval and generation for enhanced organizational knowledge utilization.
+*Beginner's Guide to CUDA Programming* • #link("https://ifkash.hashnode.dev/intro-to-cuda")[blog here] \
+_C++, CUDA, Google Colab_
 
-// *Product Mockups using ImageMagick \& Node.js/Python* • #link("https://ifkash.hashnode.dev/imagemagick-product-mockups")[blog post] • #link("https://github.com/kashifulhaque/product-mockup-node-python")[git repo] \
-// _ImageMagick, Bash, Node.js, Python_
-// - Starter code to help get started with creating product mockups programatically
+*berzifetch* • #link("https://github.com/kashifulhaque/berzifetch-rs")[git repo] \
+_Rust, system fetch, Linux_
+
+*Introduction to Deep Learning* • #link("https://ifkash.hashnode.dev/1-introduction-to-deep-learning-mcculloch-pitts-neuron")[blog here] \
+_Deep Learning, Perceptron, Python, PyTorch_
+
+*Vuether* • #link("https://github.com/kashifulhaque/vuether")[git repo] • #link("https://vuether.vercel.app")[website] \
+_Vue, REST API, OpenWeatherMap_
 
 = Skills
 #chiline()
 
-*Language proficiency*
-- Python, JavaScript, TypeScript, C, C++, Rust, HTML, CSS
+- Python, JavaScript, TypeScript, C++, Rust, SQL
 
-*Web technologies*
-- Node.js, Express.js, Vue, Angular, FastAPI, Flask
+- Node.js, Express.js, Vue, Angular, FastAPI, Flask, Tailwind
 
-*Data Science \& Machine Learning*
-- NumPy, Pandas, scikit-learn, Pytorch, HuggingFace
+- NumPy, Pandas, scikit-learn, Pytorch, HuggingFace, JAX, NLTK, spaCy, CUDA
 
-*Databases and Tools*
-- Vector database, MySQL, Docker, Git, Linux
+- Vector database, Qdrant, MySQL, SQLite, Redis, Docker, Git, Linux

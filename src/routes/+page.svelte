@@ -1,5 +1,80 @@
 <script lang="ts">
   let title: string = "Kashiful Haque";
+
+  const socialLinks = [
+    {
+      href: "https://ifkash.hashnode.dev",
+      icon: "fa-brands fa-hashnode",
+      text: "Blog",
+    },
+    {
+      href: "https://www.linkedin.com/in/kashifulhaque",
+      icon: "fa-brands fa-linkedin",
+      text: "Linkedin",
+    },
+    {
+      href: "https://github.com/kashifulhaque",
+      icon: "fa-brands fa-github",
+      text: "Github",
+    },
+    {
+      href: "https://leetcode.com/u/ifkash/",
+      icon: "fa-solid fa-code",
+      text: "Leetcode",
+    },
+    {
+      href: "https://www.instagram.com/enderboi25/",
+      icon: "fa-brands fa-instagram",
+      text: "Instagram",
+    },
+  ];
+
+  const techStack = [
+    [
+      { href: "https://www.python.org/", text: "Python" },
+      {
+        href: "https://developer.mozilla.org/en-US/docs/Web/JavaScript",
+        text: "JavaScript",
+      },
+      { href: "https://www.typescriptlang.org/", text: "TypeScript" },
+      { href: "https://cplusplus.com/doc/tutorial/", text: "C++" },
+      { href: "https://www.rust-lang.org/", text: "Rust" },
+      { href: "https://en.wikipedia.org/wiki/SQL", text: "SQL" },
+    ],
+    [
+      { href: "https://nodejs.org/en/", text: "Node.js" },
+      { href: "https://expressjs.com/", text: "Express.js" },
+      { href: "https://vuejs.org/", text: "Vue" },
+      { href: "https://angular.io/", text: "Angular" },
+      { href: "https://fastapi.tiangolo.com/", text: "FastAPI" },
+      { href: "https://flask.palletsprojects.com/", text: "Flask" },
+      { href: "https://tailwindcss.com/", text: "Tailwind" },
+    ],
+    [
+      { href: "https://numpy.org/", text: "NumPy" },
+      { href: "https://pandas.pydata.org/", text: "Pandas" },
+      { href: "https://scikit-learn.org/", text: "scikit-learn" },
+      { href: "https://pytorch.org/", text: "PyTorch" },
+      { href: "https://huggingface.co/", text: "huggingface" },
+      { href: "https://jax.readthedocs.io/en/latest/", text: "JAX" },
+      { href: "https://www.nltk.org/", text: "NLTK" },
+      { href: "https://spacy.io/", text: "spaCy" },
+      { href: "https://developer.nvidia.com/cuda-toolkit", text: "CUDA" },
+    ],
+    [
+      {
+        href: "https://www.pinecone.io/learn/vector-database/",
+        text: "Vector Database",
+      },
+      { href: "https://qdrant.tech/", text: "Qdrant" },
+      { href: "https://www.mysql.com/", text: "MySQL" },
+      { href: "https://www.sqlite.org/", text: "SQLite" },
+      { href: "https://redis.io/", text: "Redis" },
+      { href: "https://www.docker.com/", text: "Docker" },
+      { href: "https://git-scm.com/", text: "Git" },
+      { href: "https://www.kernel.org/", text: "Linux" },
+    ],
+  ];
 </script>
 
 <div id="container--main">
@@ -18,7 +93,7 @@
     </a>
 
     <div>
-      <h1 id="user-name">Kashiful Haque</h1>
+      <h1 id="user-name">{title}</h1>
       <p>
         <a
           href="mailto:haque.kashiful7@gmail.com"
@@ -39,36 +114,12 @@
 
   <section class="section--page">
     <div id="socials--list">
-      <a
-        href="https://ifkash.hashnode.dev"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="profiles"><i class="fa-brands fa-hashnode"></i> Blog</a
-      >
-      <a
-        href="https://www.linkedin.com/in/kashifulhaque"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="profiles"><i class="fa-brands fa-linkedin"></i> Linkedin</a
-      >
-      <a
-        href="https://github.com/kashifulhaque"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="profiles"><i class="fa-brands fa-github"></i> Github</a
-      >
-      <a
-        href="https://leetcode.com/u/ifkash/"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="profiles"><i class="fa-solid fa-code"></i> Leetcode</a
-      >
-      <a
-        href="https://www.instagram.com/enderboi25/"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="profiles"><i class="fa-brands fa-instagram"></i> Instagram</a
-      >
+      {#each socialLinks as { href, icon, text }}
+        <a {href} target="_blank" rel="noopener noreferrer" class="profiles">
+          <i class={icon}></i>
+          {text}
+        </a>
+      {/each}
     </div>
   </section>
 
@@ -149,190 +200,18 @@
     <h2><i class="fa-solid fa-microchip"></i> Tech</h2>
 
     <div id="wrapper--techstack__items">
-      <div class="card--techstack">
-        <span>
-          <a
-            href="https://www.python.org/"
-            target="_blank"
-            rel="noopener noreferrer">Python</a
-          >
-          •
-          <a
-            href="https://developer.mozilla.org/en-US/docs/Web/JavaScript"
-            target="_blank"
-            rel="noopener noreferrer">JavaScript</a
-          >
-          •
-          <a
-            href="https://www.typescriptlang.org/"
-            target="_blank"
-            rel="noopener noreferrer">TypeScript</a
-          >
-          •
-          <a
-            href="https://cplusplus.com/doc/tutorial/"
-            target="_blank"
-            rel="noopener noreferrer">C++</a
-          >
-          •
-          <a
-            href="https://www.rust-lang.org/"
-            target="_blank"
-            rel="noopener noreferrer">Rust</a
-          >
-          •
-          <a
-            href="https://en.wikipedia.org/wiki/SQL"
-            target="_blank"
-            rel="noopener noreferrer">SQL</a
-          >
-        </span>
-      </div>
-      <div class="card--techstack">
-        <span>
-          <a
-            href="https://nodejs.org/en/"
-            target="_blank"
-            rel="noopener noreferrer">Node.js</a
-          >
-          •
-          <a
-            href="http://expressjs.com/"
-            target="_blank"
-            rel="noopener noreferrer">Express.js</a
-          >
-          •
-          <a href="https://vuejs.org/" target="_blank" rel="noopener noreferrer"
-            >Vue</a
-          >
-          •
-          <a
-            href="https://angular.io/"
-            target="_blank"
-            rel="noopener noreferrer">Angular</a
-          >
-          •
-          <a
-            href="https://fastapi.tiangolo.com/"
-            target="_blank"
-            rel="noopener noreferrer">FastAPI</a
-          >
-          •
-          <a
-            href="https://flask.palletsprojects.com/"
-            target="_blank"
-            rel="noopener noreferrer">Flask</a
-          >
-          •
-          <a
-            href="https://tailwindcss.com/"
-            target="_blank"
-            rel="noopener noreferrer">Tailwind</a
-          >
-        </span>
-      </div>
-      <div class="card--techstack">
-        <span>
-          <a href="https://numpy.org/" target="_blank" rel="noopener noreferrer"
-            >NumPy</a
-          >
-          •
-          <a
-            href="https://pandas.pydata.org/"
-            target="_blank"
-            rel="noopener noreferrer">Pandas</a
-          >
-          •
-          <a
-            href="https://scikit-learn.org/"
-            target="_blank"
-            rel="noopener noreferrer">scikit-learn</a
-          >
-          •
-          <a
-            href="https://pytorch.org/"
-            target="_blank"
-            rel="noopener noreferrer">PyTorch</a
-          >
-          •
-          <a
-            href="https://huggingface.co/"
-            target="_blank"
-            rel="noopener noreferrer">huggingface</a
-          >
-          •
-          <a
-            href="https://jax.readthedocs.io/en/latest/"
-            target="_blank"
-            rel="noopener noreferrer">JAX</a
-          >
-          •
-          <a
-            href="https://www.nltk.org/"
-            target="_blank"
-            rel="noopener noreferrer">NLTK</a
-          >
-          •
-          <a href="https://spacy.io/" target="_blank" rel="noopener noreferrer"
-            >spaCy</a
-          >
-          •
-          <a
-            href="https://developer.nvidia.com/cuda-toolkit"
-            target="_blank"
-            rel="noopener noreferrer">CUDA</a
-          >
-        </span>
-      </div>
-      <div class="card--techstack">
-        <span>
-          <a
-            href="https://www.pinecone.io/learn/vector-database/"
-            target="_blank"
-            rel="noopener noreferrer">Vector Database</a
-          >
-          •
-          <a
-            href="https://qdrant.tech/"
-            target="_blank"
-            rel="noopener noreferrer">Qdrant</a
-          >
-          •
-          <a
-            href="https://www.mysql.com/"
-            target="_blank"
-            rel="noopener noreferrer">MySQL</a
-          >
-          •
-          <a
-            href="https://www.sqlite.org/"
-            target="_blank"
-            rel="noopener noreferrer">SQLite</a
-          >
-          •
-          <a href="https://redis.io/" target="_blank" rel="noopener noreferrer"
-            >Redis</a
-          >
-          •
-          <a
-            href="https://www.docker.com/"
-            target="_blank"
-            rel="noopener noreferrer">Docker</a
-          >
-          •
-          <a
-            href="https://git-scm.com/"
-            target="_blank"
-            rel="noopener noreferrer">Git</a
-          >
-          •
-          <a
-            href="https://www.kernel.org/"
-            target="_blank"
-            rel="noopener noreferrer">Linux</a
-          >
-        </span>
-      </div>
+      {#each techStack as group}
+        <div class="card--techstack">
+          <span>
+            {#each group as { href, text }, i}
+              <a {href} target="_blank" rel="noopener noreferrer">{text}</a
+              >{#if i < group.length - 1}
+                {", "}
+              {/if}
+            {/each}
+          </span>
+        </div>
+      {/each}
     </div>
   </section>
 

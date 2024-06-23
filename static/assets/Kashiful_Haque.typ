@@ -66,6 +66,6 @@ _Vue, REST API, OpenWeatherMap_
 
 - Node.js, Express.js, Vue, Angular, FastAPI, Flask, Tailwind
 
-- NumPy, Pandas, scikit-learn, Pytorch, HuggingFace, JAX, NLTK, spaCy, CUDA
+- NumPy, Pandas, scikit-learn, Pytorch, huggingface, JAX, NLTK, spaCy, CUDA
 
 - Vector database, Qdrant, MySQL, SQLite, Redis, Docker, Git, Linux

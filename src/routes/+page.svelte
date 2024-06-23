@@ -232,5 +232,5 @@
 </div>
 
 <svelte:head>
-  <title>{title}</title>
+  <title>{title} • Portfolio</title>
 </svelte:head>

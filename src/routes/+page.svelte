@@ -106,7 +106,7 @@
       </p>
       <p>
         <a class="resume" href="./assets/Kashiful_Haque.pdf" target="_blank"
-          ><i class="fa-solid fa-download"></i> Download Resume
+          ><i class="fa-solid fa-download"></i> Resume
         </a>
       </p>
     </div>

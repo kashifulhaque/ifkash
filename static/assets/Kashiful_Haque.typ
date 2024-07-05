@@ -47,14 +47,14 @@ Bachelor of Technology, _Electronics and Communications Engineering_ \
 = Projects and Blogs
 #chiline()
 
+*FieryGPT* \
+_Ollama (llama.cpp), PyTorch, FastEmbed, Sentence Transformer, Qdrant, FastAPI, Express.js, Vue.js_
+
 *Beginner's Guide to CUDA Programming* • #link("https://ifkash.hashnode.dev/intro-to-cuda")[blog here] \
 _C++, CUDA, Google Colab_
 
 *berzifetch* • #link("https://github.com/kashifulhaque/berzifetch-rs")[git repo] \
 _Rust, system fetch, Linux_
-
-*Introduction to Deep Learning* • #link("https://ifkash.hashnode.dev/1-introduction-to-deep-learning-mcculloch-pitts-neuron")[blog here] \
-_Deep Learning, Perceptron, Python, PyTorch_
 
 *Vuether* • #link("https://github.com/kashifulhaque/vuether")[git repo] • #link("https://vuether.vercel.app")[website] \
 _Vue, REST API, OpenWeatherMap_

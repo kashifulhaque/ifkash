@@ -12,30 +12,30 @@
 
 = Kashiful Haque
 
-+91 82408 68544 | #link("mailto:haque.kashiful7@gmail.com")[haque.kashiful7\@gmail.com] |
++918240868544 | #link("mailto:haque.kashiful7@gmail.com")[haque.kashiful7\@gmail.com] |
 #link("https://github.com/kashifulhaque")[github/kashifulhaque]  | #link("https://www.linkedin.com/in/kashifulhaque")[linkedin/kashifulhaque] | #link("https://ifkash.vercel.app")[ifkash.vercel.app]
 
-Software Engineer with 2 years of experience in Backend, Data Science, AI, ML and NLP. Expertise in fine-tuning LLMs and building RAG solutions. Studied Data Science at IIT Madras. \
+Software Engineer with 2 years of experience in Backend Development, Data Science, AI, ML and NLP. Expertise in fine-tuning LLMs, Generative AI and building RAG solutions. Studied Data Science at IIT Madras. \
 
 = Work Experience
 #chiline()
 
-*Associate Software Engineer, Data Science* #h(1fr) 07/2023 -- Present \
-_Fiery (formerly known as EFI)_ #h(1fr) Bangalore, India \
+*Associate Software Engineer* #h(1fr) 07/2023 -- Present \
+_Electronics for Imaging_ #h(1fr) Bangalore, India \
 - Built an audio fingerprinting solution to identify ads played on commercial stations like TV, etc.
-- Worked on a solution using vector databases for similarity matching of images and text to enhance search experience.
-- Build an RAG based chat product using Mistral-7B LLM, trained on company data for Question and Answering.
+- Developed vector database solution for superior image and text search experience.
+- Built RAG based chat solution using Mistral-7B LLM, trained on company data for Question and Answering.
 \
 *Data Scientist, Intern* #h(1fr) 01/2023 -- 07/2023 \
-_Electronics for Imaging, EFI_ #h(1fr) Bangalore, India \
+_Electronics for Imaging_ #h(1fr) Bangalore, India \
 - Improved efficiency by developing a pipeline to eliminate manual labour in text extraction.
 - Created realistic conversational dataset to amplify accuracy of text classification model.
 - Built cost-effective solution for creating product mockups using ImageMagick \& Node.js/Python, surpassing results of expensive Photoshop APIs hence saving significant costs for the company.
 \
 *Fullstack Developer, Intern* #h(1fr) 07/2022 -- 12/2022 \
 _Corteva Agriscience_ #h(1fr) Hyderabad, India \
-- Improved Flask codebase resulting in 30% faster AutoML job triggering on Kubernetes.
-- Led migration of refactoring of Flask monolith to scalable REST API microservices, improving scalability and reduced deployment time by 20%
+- Improved Flask codebase, resulting in 15% faster AutoML job triggering on Kubernetes.
+- Led migration of refactoring of Flask monolith to scalable APIs, improving scalability and reduced deployment time by around 10%
 
 = Education
 #chiline()
@@ -46,29 +46,28 @@ Bachelor of Science, _Data Science and Applications_ \
 *University of Calcutta* #h(1fr) 08/2016 -- 03/2019 \
 Bachelor of Technology, _Electronics and Communications Engineering_ \
 
-= Projects
+= Projects and Blogs
 #chiline()
 
 *FieryGPT* \
-_Python, PyTorch, Ollama, llama.cpp, Mistral-7B, FastAPI, Node.js, Vue.js_
-- Engineered a retrieval-augmented generation LLM, integrating company data from vector databases for contextualized responses.
-- Implemented innovative LLM architecture, optimizing information retrieval and generation for enhanced organizational knowledge utilization.
+_Ollama (llama.cpp), PyTorch, FastEmbed, Sentence Transformer, Qdrant, FastAPI, Express.js, Vue.js_
 
-// *Product Mockups using ImageMagick \& Node.js/Python* • #link("https://ifkash.hashnode.dev/imagemagick-product-mockups")[blog post] • #link("https://github.com/kashifulhaque/product-mockup-node-python")[git repo] \
-// _ImageMagick, Bash, Node.js, Python_
-// - Starter code to help get started with creating product mockups programatically
+*Beginner's Guide to CUDA Programming* • #link("https://ifkash.hashnode.dev/intro-to-cuda")[blog here] \
+_C++, CUDA, Google Colab_
+
+*berzifetch* • #link("https://github.com/kashifulhaque/berzifetch-rs")[git repo] \
+_Rust, system fetch, Linux_
+
+*Vuether* • #link("https://github.com/kashifulhaque/vuether")[git repo] • #link("https://vuether.vercel.app")[website] \
+_Vue, REST API, OpenWeatherMap_
 
 = Skills
 #chiline()
 
-*Language proficiency*
-- Python, JavaScript, TypeScript, C, C++, Rust, HTML, CSS
+- Python, JavaScript, TypeScript, C++, Rust, SQL
 
-*Web technologies*
-- Node.js, Express.js, Vue, Angular, FastAPI, Flask
+- Node.js, Express.js, Vue, Angular, FastAPI, Flask, Tailwind
 
-*Data Science \& Machine Learning*
-- NumPy, Pandas, scikit-learn, Pytorch, HuggingFace
+- NumPy, Pandas, scikit-learn, Pytorch, huggingface, JAX, NLTK, spaCy, CUDA
 
-*Databases and Tools*
-- Vector database, MySQL, Docker, Git, Linux
+- Vector database, Qdrant, MySQL, SQLite, Redis, Docker, Git, Linux

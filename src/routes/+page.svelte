@@ -6,8 +6,22 @@
 
   // Trigger when the component is mounted
   onMount(async () => {
-    const { data } = await axios.get("/api");
-    console.log(data);
+    let leetcodeStats = {};
+
+    try {
+      const { data } = await axios.get("/api");
+      leetcodeStats = data;
+    } catch(err) {
+      console.error(err);
+      leetcodeStats = {
+        easy: { complete: 100, total: 810 },
+        medium: { complete: 58, total: 1687 },
+        hard: { complete: 2, total: 717 },
+        total: { complete: 160, total: 3214 }
+      };
+    } finally {
+      console.log(leetcodeStats);
+    }
   });
 
   const socialLinks = [

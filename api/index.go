@@ -11,7 +11,7 @@ import (
   "strings"
 )
 
-func handler(w http.ResponseWriter, r *http.Request) {
+func serve_deez(w http.ResponseWriter, r *http.Request) {
   url := "https://leetcode.com/graphql"
   payload := strings.NewReader(`{
     "query": "query userProblemsSolved($username: String!) { allQuestionsCount { difficulty count } matchedUser (username: $username) { submitStatsGlobal { acSubmissionNum { difficulty count } } } }",
@@ -138,10 +138,9 @@ func handler(w http.ResponseWriter, r *http.Request) {
   w.Write(resultJSON)
 }
 
-func main() {
-  http.HandleFunc("/", handler)
+func Handler() {
+  http.HandleFunc("/", serve_deez)
   fmt.Println("Server is listening on port 8080...")
   http.ListenAndServe(":8080", nil)
-
 }
 

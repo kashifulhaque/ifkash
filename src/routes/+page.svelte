@@ -1,5 +1,24 @@
 <script lang="ts">
+  import axios from "axios";
+  import { onMount } from "svelte";
+
   let title: string = "Kashiful Haque";
+
+  // Trigger when the component is mounted
+  onMount(async () => {
+    const options = {
+      method: "POST",
+      url: "https://leetcode.com/graphql",
+      data: {
+        query: "query userProblemsSolved($username: String!) { allQuestionsCount { difficulty count } matchedUser (username: $username) { submitStatsGlobal { acSubmissionNum { difficulty count } } } }",
+        variables: { username: "ifkash" },
+        operationName: "userProblemsSolved"
+      },
+    };
+
+    const { data } = await axios.request(options);
+    console.log(data);
+  });
 
   const socialLinks = [
     {

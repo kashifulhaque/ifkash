@@ -6,17 +6,7 @@
 
   // Trigger when the component is mounted
   onMount(async () => {
-    const options = {
-      method: "POST",
-      url: "https://leetcode.com/graphql",
-      data: {
-        query: "query userProblemsSolved($username: String!) { allQuestionsCount { difficulty count } matchedUser (username: $username) { submitStatsGlobal { acSubmissionNum { difficulty count } } } }",
-        variables: { username: "ifkash" },
-        operationName: "userProblemsSolved"
-      },
-    };
-
-    const { data } = await axios.request(options);
+    const { data } = await axios.get("/api");
     console.log(data);
   });
 

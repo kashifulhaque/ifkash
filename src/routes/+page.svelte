@@ -3,22 +3,20 @@
   import { onMount } from "svelte";
 
   let title: string = "Kashiful Haque";
+  let leetcodeStats = {
+    easy: { complete: 100, total: 810 },
+    medium: { complete: 58, total: 1687 },
+    hard: { complete: 2, total: 717 },
+    total: { complete: 160, total: 3214 },
+  };
 
   // Trigger when the component is mounted
   onMount(async () => {
-    let leetcodeStats = {};
-
     try {
       const { data } = await axios.get("/api");
       leetcodeStats = data;
-    } catch(err) {
+    } catch (err) {
       console.error(err);
-      leetcodeStats = {
-        easy: { complete: 100, total: 810 },
-        medium: { complete: 58, total: 1687 },
-        hard: { complete: 2, total: 717 },
-        total: { complete: 160, total: 3214 }
-      };
     } finally {
       console.log(leetcodeStats);
     }
@@ -242,6 +240,20 @@
     ><hr class="center-ball" /></a
   >
   <section class="section--page section--page-text-center footer">
+    <div>
+      <p>
+        <span class="lc-easy"
+          >{leetcodeStats.easy.complete}/{leetcodeStats.easy.total} easy</span
+        >,
+        <span class="lc-medium"
+          >{leetcodeStats.medium.complete}/{leetcodeStats.medium.total} medium</span
+        >
+        and
+        <span class="lc-hard"
+          >{leetcodeStats.hard.complete}/{leetcodeStats.hard.total} hard</span
+        > on leetcode
+      </p>
+    </div>
     <a target="_blank" rel="noopener noreferrer" href="https://kit.svelte.dev"
       >Made with <i class="fa-solid fa-heart"></i> using SvelteKit</a
     >

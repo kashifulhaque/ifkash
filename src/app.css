@@ -269,3 +269,15 @@ a::after {
 .present {
   color: var(--mainLinkColor-dark);
 }
+
+.lc-easy {
+  color: #1cbaba;
+}
+
+.lc-medium {
+  color: #ffb700;
+}
+
+.lc-hard {
+  color: #f63737;
+}

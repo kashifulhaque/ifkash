@@ -4,10 +4,10 @@
 
   let title: string = "Kashiful Haque";
   let leetcodeStats = {
-    easy: { complete: 100, total: 810 },
-    medium: { complete: 58, total: 1687 },
-    hard: { complete: 2, total: 717 },
-    total: { complete: 160, total: 3214 },
+    easy: { complete: 0, total: 0 },
+    medium: { complete: 0, total: 0 },
+    hard: { complete: 0, total: 0 },
+    total: { complete: 0, total: 0 },
   };
 
   // Trigger when the component is mounted

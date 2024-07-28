@@ -24,7 +24,7 @@ Software Engineer with 2 years of experience in Backend Development, Data Scienc
 _Electronics for Imaging_ #h(1fr) Bangalore, India \
 - Built an audio fingerprinting solution to identify ads played on commercial stations like TV, etc.
 - Developed vector database solution for superior image and text search experience.
-- Built RAG based chat solution using Mistral-7B LLM, trained on company data for Question and Answering.
+- Built RAG based FieryGPT using LLaMa 3.1 8B LLM, trained on company data for Question and Answering.
 \
 *Data Scientist, Intern* #h(1fr) 01/2023 -- 07/2023 \
 _Electronics for Imaging_ #h(1fr) Bangalore, India \
@@ -49,8 +49,8 @@ Bachelor of Technology, _Electronics and Communications Engineering_ \
 = Projects and Blogs
 #chiline()
 
-*FieryGPT* \
-_Ollama (llama.cpp), PyTorch, FastEmbed, Sentence Transformer, Qdrant, FastAPI, Express.js, Vue.js_
+*Odeer* • #link("https://github.com/kashifulhaque/odeer")[git repo]  \
+_Go, Gin, Cloudflare_
 
 *Beginner's Guide to CUDA Programming* • #link("https://ifkash.hashnode.dev/intro-to-cuda")[blog here] \
 _C++, CUDA, Google Colab_
@@ -65,9 +65,6 @@ _Vue, REST API, OpenWeatherMap_
 #chiline()
 
 - Python, JavaScript, TypeScript, C++, Rust, SQL
-
 - Node.js, Express.js, Vue, Angular, FastAPI, Flask, Tailwind
-
 - NumPy, Pandas, scikit-learn, Pytorch, huggingface, JAX, NLTK, spaCy, CUDA
-
 - Vector database, Qdrant, MySQL, SQLite, Redis, Docker, Git, Linux

@@ -60,6 +60,7 @@
       { href: "https://www.typescriptlang.org/", text: "TypeScript" },
       { href: "https://cplusplus.com/doc/tutorial/", text: "C++" },
       { href: "https://www.rust-lang.org/", text: "Rust" },
+      { href: "https://go.dev/", text: "Go" },
       { href: "https://en.wikipedia.org/wiki/SQL", text: "SQL" },
     ],
     [

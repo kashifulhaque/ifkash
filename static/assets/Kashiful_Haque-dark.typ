@@ -1,12 +1,12 @@
-#show heading: set text(font: "Linux Biolinum")
+#show heading: set text(font: "Linux Libertine")
 
 #show link: underline
 #set page(
-  fill: rgb("#282828"),
+  fill: rgb("#121416"),
   margin: (x: 0.9cm, y: 1.3cm),
 )
 #set par(justify: true)
-#set text(fill: white)
+#set text(fill: white, font: "Linux Libertine")
 
 #let chiline() = {v(-3pt); line(length: 100%); v(-5pt)}
 
@@ -15,13 +15,16 @@
 +918240868544 | #link("mailto:haque.kashiful7@gmail.com")[haque.kashiful7\@gmail.com] |
 #link("https://github.com/kashifulhaque")[github/kashifulhaque]  | #link("https://www.linkedin.com/in/kashifulhaque")[linkedin/kashifulhaque] | #link("https://ifkash.vercel.app")[ifkash.vercel.app]
 
-Software Engineer with 2 years of experience in Backend Development, Data Science, AI, ML and NLP. Expertise in fine-tuning LLMs, Generative AI and building RAG solutions. Studied Data Science at IIT Madras. \
+Software Engineer with more than 2 years of experience in Backend Development, Data Science, AI and ML. Expertise in NER, NLP, fine-tuning LLMs, Generative AI and building RAG solutions. Studied Data Science at IIT Madras. \
 
 = Work Experience
-#chiline()
+#line(
+  stroke: 1pt + white,
+)
 
 *Associate Software Engineer* #h(1fr) 07/2023 -- Present \
 _Electronics for Imaging_ #h(1fr) Bangalore, India \
+- Created state-of-the-art LLM based NER for automatic print job submissions
 - Built an audio fingerprinting solution to identify ads played on commercial stations like TV, etc.
 - Developed vector database solution for superior image and text search experience.
 - Built RAG based FieryGPT using LLaMa 3.1 8B LLM, trained on company data for Question and Answering.
@@ -29,7 +32,6 @@ _Electronics for Imaging_ #h(1fr) Bangalore, India \
 *Data Scientist, Intern* #h(1fr) 01/2023 -- 07/2023 \
 _Electronics for Imaging_ #h(1fr) Bangalore, India \
 - Improved efficiency by developing a pipeline to eliminate manual labour in text extraction.
-- Created realistic conversational dataset to amplify accuracy of text classification model.
 - Built cost-effective solution for creating product mockups using ImageMagick \& Node.js/Python, surpassing results of expensive Photoshop APIs hence saving significant costs for the company.
 \
 *Fullstack Developer, Intern* #h(1fr) 07/2022 -- 12/2022 \
@@ -38,7 +40,9 @@ _Corteva Agriscience_ #h(1fr) Hyderabad, India \
 - Led migration of refactoring of Flask monolith to scalable APIs, improving scalability and reduced deployment time by around 10%
 
 = Education
-#chiline()
+#line(
+  stroke: 1pt + white,
+)
 
 *Indian Institute of Technology Madras* #h(1fr) 12/2020 -- 09/2024 \
 Bachelor of Science, _Data Science and Applications_ \
@@ -47,7 +51,9 @@ Bachelor of Science, _Data Science and Applications_ \
 Bachelor of Technology, _Electronics and Communications Engineering_ \
 
 = Projects and Blogs
-#chiline()
+#line(
+  stroke: 1pt + white,
+)
 
 *Odeer* • #link("https://github.com/kashifulhaque/odeer")[git repo]  \
 _Go, Gin, Cloudflare_
@@ -62,9 +68,11 @@ _Rust, system fetch, Linux_
 _Vue, REST API, OpenWeatherMap_
 
 = Skills
-#chiline()
+#line(
+  stroke: 1pt + white,
+)
 
-- Python, JavaScript, TypeScript, C++, Rust, SQL
+- Python, JavaScript, TypeScript, C++, Rust, Go, SQL
 - Node.js, Express.js, Vue, Angular, FastAPI, Flask, Tailwind
 - NumPy, Pandas, scikit-learn, Pytorch, huggingface, JAX, NLTK, spaCy, CUDA
 - Vector database, Qdrant, MySQL, SQLite, Redis, Docker, Git, Linux

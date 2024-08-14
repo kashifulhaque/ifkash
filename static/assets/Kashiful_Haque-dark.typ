@@ -19,7 +19,7 @@ Software Engineer with more than 2 years of experience in Backend Development, D
 
 = Work Experience
 #line(
-  stroke: 1pt + white,
+  stroke: 1pt + gray,
 )
 
 *Associate Software Engineer* #h(1fr) 07/2023 -- Present \
@@ -41,7 +41,7 @@ _Corteva Agriscience_ #h(1fr) Hyderabad, India \
 
 = Education
 #line(
-  stroke: 1pt + white,
+  stroke: 1pt + gray,
 )
 
 *Indian Institute of Technology Madras* #h(1fr) 12/2020 -- 09/2024 \
@@ -52,14 +52,14 @@ Bachelor of Technology, _Electronics and Communications Engineering_ \
 
 = Projects and Blogs
 #line(
-  stroke: 1pt + white,
+  stroke: 1pt + gray,
 )
+
+*Boo* • #link("https://github.com/kashifulhaque/boo")[git repo] \
+_Python, Discord.py, Cloudflare, Google Cloud_
 
 *Odeer* • #link("https://github.com/kashifulhaque/odeer")[git repo]  \
 _Go, Gin, Cloudflare_
-
-*Beginner's Guide to CUDA Programming* • #link("https://ifkash.hashnode.dev/intro-to-cuda")[blog here] \
-_C++, CUDA, Google Colab_
 
 *berzifetch* • #link("https://github.com/kashifulhaque/berzifetch-rs")[git repo] \
 _Rust, system fetch, Linux_
@@ -69,7 +69,7 @@ _Vue, REST API, OpenWeatherMap_
 
 = Skills
 #line(
-  stroke: 1pt + white,
+  stroke: 1pt + gray,
 )
 
 - Python, JavaScript, TypeScript, C++, Rust, Go, SQL

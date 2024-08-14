@@ -53,11 +53,11 @@ Bachelor of Technology, _Electronics and Communications Engineering_ \
   stroke: 1pt + gray,
 )
 
+*Boo* • #link("https://github.com/kashifulhaque/boo")[git repo] \
+_Python, Discord.py, Cloudflare, Google Cloud_
+
 *Odeer* • #link("https://github.com/kashifulhaque/odeer")[git repo]  \
 _Go, Gin, Cloudflare_
-
-*Beginner's Guide to CUDA Programming* • #link("https://ifkash.hashnode.dev/intro-to-cuda")[blog here] \
-_C++, CUDA, Google Colab_
 
 *berzifetch* • #link("https://github.com/kashifulhaque/berzifetch-rs")[git repo] \
 _Rust, system fetch, Linux_

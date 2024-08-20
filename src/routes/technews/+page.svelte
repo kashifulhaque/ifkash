@@ -50,7 +50,7 @@
         <li>
           <article>
             <h2>
-              <a href={story.url} target="_blank" rel="noopener noreferrer">
+              <a href={story.url} target="_blank" rel="noopener noreferrer" class="lc-medium">
                 {story.title}
               </a>
             </h2>
@@ -60,6 +60,7 @@
                 href={`https://news.ycombinator.com/item?id=${story.id}`}
                 target="_blank"
                 rel="noopener noreferrer"
+                class="lc-easy"
               >
                 HN Discussion
               </a>

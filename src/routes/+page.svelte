@@ -243,6 +243,11 @@
   <section class="section--page section--page-text-center footer">
     <div>
       <p>
+        <a href="/technews">Read top tech news</a>
+      </p>
+    </div>
+    <div>
+      <p>
         <span class="lc-easy"
           >{leetcodeStats.easy.complete}/{leetcodeStats.easy.total} easy</span
         >,
@@ -255,15 +260,17 @@
         > on leetcode
       </p>
     </div>
-    <a target="_blank" rel="noopener noreferrer" href="https://kit.svelte.dev"
-      >Made with <i class="fa-solid fa-heart"></i> using SvelteKit</a
-    >
-    🚧
-    <a
-      target="_blank"
-      rel="noopener noreferrer"
-      href="https://github.com/kashifulhaque/ifkash">Fork me on GitHub</a
-    >
+    <div>
+      <a target="_blank" rel="noopener noreferrer" href="https://kit.svelte.dev"
+        >Made with <i class="fa-solid fa-heart"></i> using SvelteKit</a
+      >
+      🚧
+      <a
+        target="_blank"
+        rel="noopener noreferrer"
+        href="https://github.com/kashifulhaque/ifkash">Fork me on GitHub</a
+      >
+    </div>
   </section>
 </div>
 

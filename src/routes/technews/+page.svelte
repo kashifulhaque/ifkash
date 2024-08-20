@@ -101,7 +101,6 @@
   }
 
   a {
-    color: #2e2e2e;
     text-decoration: none;
   }
 

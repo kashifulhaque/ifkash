@@ -1,0 +1,6 @@
+{
+  "routes": [
+    { "src": "/leetcode", "dest": "/api/leetcode.go" },
+    { "src": "/hn", "dest": "/api/hn.go" }
+  ]
+}

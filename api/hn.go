@@ -91,8 +91,8 @@ func HNHandler(w http.ResponseWriter, r *http.Request) {
 		return stories[i].Score > stories[j].Score
 	})
 
-	if len(stories) > 15 {
-		stories = stories[:15]
+	if len(stories) > 20 {
+		stories = stories[:20]
 	}
 
 	w.Header().Set("Content-Type", "application/json")

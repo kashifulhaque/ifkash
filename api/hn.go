@@ -82,7 +82,7 @@ func HNHandler(w http.ResponseWriter, r *http.Request) {
 			stories = append(stories, story)
 		}
 
-		if len(stories) >= 15 {
+		if len(stories) >= 20 {
 			break
 		}
 	}

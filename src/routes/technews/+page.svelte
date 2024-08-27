@@ -14,7 +14,7 @@
 
   let stories: Story[] = [];
   let isLoading = true;
-  let error = null;
+  let error: string = "";
 
   onMount(async () => {
     try {
@@ -34,11 +34,11 @@
 </script>
 
 <svelte:head>
-  <title>Tech News | Top 15 Hacker News Stories</title>
+  <title>Tech News | Top {stories.length} Hacker News Stories</title>
 </svelte:head>
 
 <main>
-  <h1>Top 15 Hacker News Stories of the Week</h1>
+  <h1>Top {stories.length} Hacker News Stories of the Week</h1>
 
   {#if isLoading}
     <p>Loading stories...</p>

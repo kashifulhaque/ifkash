@@ -1,36 +1,23 @@
-# [Kashiful Haque](https://ifkash.vercel.app) 🧑🏽
+# [**Kashiful Haque**](https://ifkash.vercel.app) 🧑🏽
+My personal website 👋
 
-My personal website, powered by [`SvelteKit`](https://kit.svelte.dev/)
+### **Tech stack**
+- [SvelteKit](https://kit.svelte.dev)
+- [Bun](https://bun.sh)
+- [Go](https://go.dev)
+- [Typst](https://github.com/typst/typst)
+- [Vercel](https://vercel.com)
 
-## Creating a project ⚙️
-
-```bash
-# create a new project in the current directory
-bun create svelte@latest
-
-# create a new project in my-app
-bun create svelte@latest my-app
+### **To run locally**
+```sh
+git clone https://github.com/kashifulhaque/ifkash;
+cd ifkash;
+bun install;
+bun run dev;
 ```
 
-## Developing 🛠️
-
-Install dependencies with `bun install`
-
-Start a development server:
-
-```bash
-bun run dev
-
-# or start the server and open the app in a new browser tab
-bun run dev -- --open
-```
-
-## Building 🔨
-
-To create a production version:
-
-```bash
-bun run build
-```
-
-To preview the production build, run `bun run preview`.
+### **To deploy**
+- Fork this repo
+- Change values
+- Create a new project on Vercel
+- Select the forked repo

@@ -54,7 +54,7 @@ Bachelor of Technology, _Electronics and Communications Engineering_ \
 )
 
 *Boo* • #link("https://github.com/kashifulhaque/boo")[git repo] \
-_Python, Discord.py, Cloudflare, Google Cloud_
+_Python, Discord.py, Go, PostgreSQL, Cloudflare Workers, Linode_
 
 *Odeer* • #link("https://github.com/kashifulhaque/odeer")[git repo]  \
 _Go, Gin, Cloudflare_

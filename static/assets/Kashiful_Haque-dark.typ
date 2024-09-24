@@ -23,19 +23,19 @@ Software Engineer with more than 2 years of experience in Backend Development, D
 )
 
 *Associate Software Engineer* #h(1fr) 07/2023 -- Present \
-_Electronics for Imaging_ #h(1fr) Bangalore, India \
-- Created state-of-the-art LLM based NER for automatic print job submissions
+_Electronics for Imaging_ #h(1fr) _Bangalore, India_ \
+- Led development of "Beacon", an innovative NLP-driven system utilizing LLMs and entity extraction for intelligent print job processing.
+- Engineered automated workflow to extract print specifications from user emails, significantly streamlining the printing process and enhancing user experience.
 - Built an audio fingerprinting solution to identify ads played on commercial stations like TV, etc.
-- Developed vector database solution for superior image and text search experience.
-- Built RAG based FieryGPT using LLaMa 3.1 8B LLM, trained on company data for Question and Answering.
+- Built RAG based FieryGPT using LLaMa 3.1 8B LLM, trained LORA adapter on company data for Question and Answering.
 \
 *Data Scientist, Intern* #h(1fr) 01/2023 -- 07/2023 \
-_Electronics for Imaging_ #h(1fr) Bangalore, India \
-- Improved efficiency by developing a pipeline to eliminate manual labour in text extraction.
-- Built cost-effective solution for creating product mockups using ImageMagick \& Node.js/Python, surpassing results of expensive Photoshop APIs hence saving significant costs for the company.
+_Electronics for Imaging_ #h(1fr) _Bangalore, India_ \
+- Developed an innovative product mockup solution using ImageMagick, Node.js, and Python, delivering superior results compared to expensive Photoshop APIs.
+- Implemented cost-effective image processing techniques, resulting in significant cost savings and improved efficiency for the company's product visualization workflow.
 \
 *Fullstack Developer, Intern* #h(1fr) 07/2022 -- 12/2022 \
-_Corteva Agriscience_ #h(1fr) Hyderabad, India \
+_Corteva Agriscience_ #h(1fr) _Hyderabad, India_ \
 - Improved Flask codebase, resulting in 15% faster AutoML job triggering on Kubernetes.
 - Led migration of refactoring of Flask monolith to scalable APIs, improving scalability and reduced deployment time by around 10%
 
@@ -44,28 +44,22 @@ _Corteva Agriscience_ #h(1fr) Hyderabad, India \
   stroke: 1pt + gray,
 )
 
-*Indian Institute of Technology Madras* #h(1fr) 12/2020 -- 09/2024 \
+*Indian Institute of Technology Madras* #h(1fr) 2020 -- 2024 \
 Bachelor of Science, _Data Science and Applications_ \
 
-*University of Calcutta* #h(1fr) 08/2016 -- 03/2019 \
+*University of Calcutta* #h(1fr) 2016 -- 2019 \
 Bachelor of Technology, _Electronics and Communications Engineering_ \
 
-= Projects and Blogs
+= Projects
 #line(
   stroke: 1pt + gray,
 )
 
 *Boo* • #link("https://github.com/kashifulhaque/boo")[git repo] \
-_Python, Discord.py, Cloudflare, Google Cloud_
+_Python, Discord.py, Go, PostgreSQL, Cloudflare Workers, Linode_
 
 *Odeer* • #link("https://github.com/kashifulhaque/odeer")[git repo]  \
 _Go, Gin, Cloudflare_
-
-*berzifetch* • #link("https://github.com/kashifulhaque/berzifetch-rs")[git repo] \
-_Rust, system fetch, Linux_
-
-*Vuether* • #link("https://github.com/kashifulhaque/vuether")[git repo] • #link("https://vuether.vercel.app")[website] \
-_Vue, REST API, OpenWeatherMap_
 
 = Skills
 #line(

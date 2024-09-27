@@ -169,12 +169,16 @@
       👨‍💻 Associate Software Engineer @
       <strong class="company"
         ><a href="https://www.efi.com" target="_blank" rel="noopener noreferrer"
-          >Electronics for Imaging</a
+          >Fiery</a
+        >{" "}<a
+          href="https://corporate.epson/en/news/2024/240919.html"
+          target="_blank"
+          rel="noopener noreferrer">(an Epson company)</a
         ></strong
       >
       🏢
       <p>
-        📅 07/2023 - <span class="present">Present</span> • Bengaluru, India 📍
+        📅 <i>Jul 2023 till now</i> • Bengaluru 📍
       </p>
     </div>
 
@@ -186,7 +190,7 @@
         ></strong
       >
       🏢
-      <p>🗓️ 01/2023 - 07/2023 • Bengaluru, India 📍</p>
+      <p>🗓️ <i>Jan 2023 till Jul 2023</i> • Bengaluru 📍</p>
     </div>
 
     <div class="card--work-history">
@@ -199,7 +203,7 @@
         ></strong
       >
       🏢
-      <p>📆 07/2022 - 12/2022 • Hyderabad, India 📍</p>
+      <p>📆 <i>Jul 2022 till Dec 2022</i> • Hyderabad 📍</p>
     </div>
   </section>
 
@@ -208,13 +212,13 @@
     <div class="card--work-history">
       <strong>Indian Institute of Technology Madras</strong>
       <p>Bachelor of Science, Data Science and Applications</p>
-      <p>12/2020 - 09/2024</p>
+      <p>2020 - 2024</p>
     </div>
 
     <div class="card--work-history">
       <strong>University of Calcutta</strong>
-      <p>Bachelor of Technology, Electronics & Communications Engineering</p>
-      <p>08/2016 - 03/2019</p>
+      <p>Bachelor of Technology, Electronics and Communications Engineering</p>
+      <p>2016 - 2019</p>
     </div>
   </section>
 
@@ -243,7 +247,7 @@
   <section class="section--page section--page-text-center footer">
     <div>
       <p>
-        <a href="/technews">Read top tech news</a>
+        <a href="/news">Read top HN articles</a>
       </p>
     </div>
     <div>

@@ -21,7 +21,7 @@ Software Engineer with more than 2 years of experience in Backend Development, D
 )
 
 *Associate Software Engineer* #h(1fr) 07/2023 -- Present \
-_Electronics for Imaging_ #h(1fr) _Bangalore, India_ \
+_Fiery (an Epson company)_ #h(1fr) _Bangalore, India_ \
 - Led development of "Beacon", an innovative NLP-driven system utilizing LLMs and entity extraction for intelligent print job processing.
 - Engineered automated workflow to extract print specifications from user emails, significantly streamlining the printing process and enhancing user experience.
 - Built an audio fingerprinting solution to identify ads played on commercial stations like TV, etc.

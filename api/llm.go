@@ -11,9 +11,8 @@ import (
 
 // RequestBody struct defines the expected structure of the incoming request.
 type RequestBody struct {
-	Model    string    `json:"model"`
+	Model   string    `json:"model"`
 	Messages []Message `json:"messages"`
-	Stream   bool      `json:"stream,omitempty"` // Optional field to enable streaming
 }
 
 // Message represents the structure of a single message in the request body.
@@ -47,14 +46,6 @@ func ProxyHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	// Parse the incoming request body to check for the "stream" key
-	var requestBody RequestBody
-	err = json.Unmarshal(reqBody, &requestBody)
-	if err != nil {
-		http.Error(w, "Failed to parse request body", http.StatusBadRequest)
-		return
-	}
-
 	// Create the Cloudflare API URL
 	cloudflareAPIURL := fmt.Sprintf("https://api.cloudflare.com/client/v4/accounts/%s/ai/v1/chat/completions", cloudflareAccountID)
 
@@ -78,29 +69,7 @@ func ProxyHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer resp.Body.Close()
 
-	// Handle the streaming case
-	if requestBody.Stream {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-
-		// Stream the response back to the client as chunks arrive
-		buf := make([]byte, 1024)
-		for {
-			n, err := resp.Body.Read(buf)
-			if err != nil {
-				if err == io.EOF {
-					break
-				}
-				http.Error(w, "Error reading streaming response", http.StatusInternalServerError)
-				return
-			}
-			w.Write(buf[:n])
-			w.(http.Flusher).Flush() // Flush the data to the client as it arrives
-		}
-		return
-	}
-
-	// For non-streaming response, simply forward the entire response
+	// Read the response body from Cloudflare API
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
 		http.Error(w, "Failed to read response from Cloudflare API", http.StatusInternalServerError)

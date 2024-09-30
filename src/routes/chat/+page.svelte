@@ -5,8 +5,7 @@
   let userMessage = "";
   let loading = false;
 
-  // Replace this with your actual deployed Vercel proxy URL
-  const API_URL = "/api/your-go-proxy-endpoint"; // e.g., '/api/proxy'
+  const API_URL = "/llm";
 
   async function sendMessage() {
     if (userMessage.trim() === "") return;

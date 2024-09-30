@@ -1,3 +1,3 @@
 module github.com/kashifulhaque/ifkash
 
-go 1.20.14
+go 1.20

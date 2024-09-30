@@ -148,10 +148,12 @@
   <section class="section--page">
     <h2><i class="fa-solid fa-bolt"></i> Summary</h2>
     <p>
-      I work at the intersection of Software Engineering, Data Science & Machine
-      Learning focussing on Natural Language Processing (NLP), Generative AI
-      (GenAI) and Large Language Models (LLMs). I also have a keen interest in
-      cloud, linux and other tools surrounding tech.
+      <small>
+        I work at the intersection of Software Engineering, Data Science &
+        Machine Learning focussing on Natural Language Processing (NLP),
+        Generative AI (GenAI) and Large Language Models (LLMs). I also have a
+        keen interest in cloud, linux and other tools surrounding tech.
+      </small>
       <br />
       <br />
       <small

@@ -250,6 +250,8 @@
     <div>
       <p>
         <a href="/news">Read top HN articles</a>
+        •
+        <a href="/chat">Chat with LLM</a>
       </p>
     </div>
     <div>

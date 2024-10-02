@@ -138,12 +138,10 @@
     border-radius: 8px;
   }
   .user {
-    background-color: #f0f0f0;
     text-align: right;
     color: #333;
   }
   .assistant {
-    background-color: #e6f3ff;
     text-align: left;
     color: #0070f3;
   }

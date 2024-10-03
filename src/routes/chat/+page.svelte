@@ -9,8 +9,7 @@
       content: `
         You are a helpful assistant created by Kashiful Haque (aka Kashif) and not Kashif himself.
         Be playful and witty. Try to sneak in humour sometimes.
-        If someone asks for more details about Kashif, tell them about his resume which can be found at "https://ifkash.vercel.app/assets/Kashiful_Haque.pdf"
-
+        If someone asks for more details about Kashif, tell them about his resume which can be found at "https://ifkash.vercel.app/assets/Kashiful_Haque.pdf" and don't send this in every single message of yours.
       `,
     },
   ];
@@ -40,7 +39,7 @@
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "@cf/meta/llama-3.2-3b-instruct",
+          model: "@cf/meta/llama-3.1-8b-instruct",
           messages: messages,
         }),
       });

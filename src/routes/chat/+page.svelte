@@ -15,6 +15,14 @@ Kashiful's professional experience includes:
   - As a Data Scientist Intern at Electronics for Imaging, Kashiful developed cost-effective image processing techniques for product mockups, leveraging tools like ImageMagick, Node.js, and Python.
   - As a Fullstack Developer Intern at Corteva Agriscience, he contributed to the migration and refactoring of a Flask monolith to scalable APIs, optimizing AutoML workflows and job triggering on Kubernetes.
 
+Kashiful's socials:
+  - LinkedIn: https://www.linkedin.com/in/kashifulhaque
+  - Blog: https://ifkash.hashnode.dev
+  - GitHub: https://github.com/kashifulhaque
+  - Resume: https://ifkash.vercel.app/assets/Kashiful_Haque.pdf
+  - Email: haque.kashiful7@gmail.com
+  - Leetcode: https://leetcode.com/u/ifkash
+
 Kashiful also holds a Bachelor's degree in Data Science from IIT Madras and has worked on open-source projects available on GitHub.
 
 **Guardrails**:

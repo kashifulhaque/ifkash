@@ -111,6 +111,12 @@ Kashiful also holds a Bachelor's degree in Data Science from IIT Madras and has 
         {/if}
       </div>
     {/each}
+
+    {#if loading}
+      <div class="loading">
+        <img alt="Waiting for bot to answer" src="images/thinking.gif" />
+      </div>
+    {/if}
   </div>
 
   <div class="input-area">
@@ -129,12 +135,6 @@ Kashiful also holds a Bachelor's degree in Data Science from IIT Madras and has 
       Send
     </button>
   </div>
-
-  {#if loading}
-    <div class="loading">
-      <img alt="Waiting for bot to answer" src="images/thinking.gif" />
-    </div>
-  {/if}
 </div>
 
 <style>
@@ -144,7 +144,6 @@ Kashiful also holds a Bachelor's degree in Data Science from IIT Madras and has 
     height: 100vh;
     display: flex;
     flex-direction: column;
-    padding: 1rem;
     box-sizing: border-box;
   }
   .messages {
@@ -155,6 +154,8 @@ Kashiful also holds a Bachelor's degree in Data Science from IIT Madras and has 
     border: 1px solid #eaeaea;
     border-radius: 8px;
     padding: 1rem;
+    display: flex;
+    flex-direction: column;
   }
   .message {
     margin-bottom: 0.5rem;
@@ -195,8 +196,12 @@ Kashiful also holds a Bachelor's degree in Data Science from IIT Madras and has 
     cursor: not-allowed;
   }
   .loading {
-    text-align: center;
+    align-self: center;
     margin-top: 1rem;
+    /* position: absolute; */
+    /* bottom: 70px; */
+    /* left: 50%; */
+    /* transform: translateX(-50%); */
   }
 
   @media (max-width: 600px) {

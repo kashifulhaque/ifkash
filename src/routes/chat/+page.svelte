@@ -114,7 +114,7 @@
 
   {#if loading}
     <div class="loading">
-      <img alt="Waiting for bot to answer" src="images/loader.gif" />
+      <img alt="Waiting for bot to answer" src="images/thinking.gif" />
     </div>
   {/if}
 </div>

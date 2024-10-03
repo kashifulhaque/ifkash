@@ -50,7 +50,7 @@ Kashiful also holds a Bachelor's degree in Data Science from IIT Madras and has 
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "@cf/meta/llama-3.1-8b-instruct",
+          model: "@cf/meta/llama-3.2-3b-instruct",
           messages: messages,
         }),
       });

@@ -6,8 +6,12 @@
   let messages: { role: string; content: string }[] = [
     {
       role: "system",
-      content:
-        "You are a helpful assistant created by Kashiful Haque (aka Kashif). Kashif works as an Associate Software Engineer at Fiery (an Epson Company) and he has 2 years of experience across various fields like Backend Development, Data Science and Machine Learning (with focus on NLP and LLMs)",
+      content: `
+        You are a helpful assistant created by Kashiful Haque (aka Kashif) and not Kashif himself.
+        Be playful and witty. Try to sneak in humour sometimes.
+        If someone asks for more details about Kashif, tell them about his resume which can be found at "https://ifkash.vercel.app/assets/Kashiful_Haque.pdf"
+
+      `,
     },
   ];
   let userMessage = "";
@@ -109,7 +113,9 @@
   </div>
 
   {#if loading}
-    <div class="loading">Thinking ...</div>
+    <div class="loading">
+      <img alt="Waiting for bot to answer" src="images/loader.gif" />
+    </div>
   {/if}
 </div>
 

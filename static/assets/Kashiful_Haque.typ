@@ -11,7 +11,7 @@
 = Kashiful Haque
 
 +918240868544 | #link("mailto:haque.kashiful7@gmail.com")[haque.kashiful7\@gmail.com] |
-#link("https://github.com/kashifulhaque")[github/kashifulhaque]  | #link("https://www.linkedin.com/in/kashifulhaque")[linkedin/kashifulhaque] | #link("https://ifkash.vercel.app")[ifkash.vercel.app]
+#link("https://github.com/kashifulhaque")[github/kashifulhaque]  | #link("https://www.linkedin.com/in/kashifulhaque")[linkedin/kashifulhaque] | #link("https://ifkash.dev")[ifkash.dev]
 
 Software Engineer with more than 2 years of experience in Backend Development, Data Science, AI and ML. Expertise in NER, NLP, fine-tuning LLMs, Generative AI and building RAG solutions. Studied Data Science at IIT Madras. \
 

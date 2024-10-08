@@ -1,4 +1,4 @@
-# [**Kashiful Haque**](https://ifkash.vercel.app) 🧑🏽
+# [**Kashiful Haque**](https://ifkash.dev) 🧑🏽
 My personal website 👋
 
 ### **Tech stack** 📚

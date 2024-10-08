@@ -69,6 +69,16 @@ Kashiful also holds a Bachelor's degree in Data Science from IIT Madras and has 
     localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
   }
 
+  function clearChat() {
+    messages = [
+      {
+        role: "system",
+        content: systemPrompt,
+      },
+    ];
+    localStorage.removeItem(STORAGE_KEY);
+  }
+
   async function sendMessage() {
     if (userMessage.trim() === "") return;
 
@@ -161,6 +171,14 @@ Kashiful also holds a Bachelor's degree in Data Science from IIT Madras and has 
     >
       Send
     </button>
+
+    <button
+      class="clear-button"
+      on:click={clearChat}
+      disabled={loading || displayMessages.length === 0}
+    >
+      Clear Chat
+    </button>
   </div>
 </div>
 
@@ -228,6 +246,11 @@ Kashiful also holds a Bachelor's degree in Data Science from IIT Madras and has 
     margin-top: 1rem;
   }
 
+  .clear-button {
+    background-color: #ff4136;
+    margin-left: 0.5rem;
+  }
+
   @media (max-width: 600px) {
     .chat-container {
       padding: 0.5rem;
@@ -241,6 +264,12 @@ Kashiful also holds a Bachelor's degree in Data Science from IIT Madras and has 
     input {
       margin-right: 0;
       margin-bottom: 0.5rem;
+    }
+    button {
+      margin-bottom: 0.5rem;
+    }
+    .clear-button {
+      margin-left: 0;
     }
   }
 </style>

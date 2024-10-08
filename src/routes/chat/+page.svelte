@@ -3,10 +3,7 @@
   import { onMount } from "svelte";
   import DOMPurify from "dompurify";
 
-  let messages: { role: string; content: string }[] = [
-    {
-      role: "system",
-      content: `
+  const systemPrompt = `
 You are a friendly and knowledgeable assistant with your own identity. You have detailed knowledge about Kashiful Haque, a Software Engineer with over two years of experience specializing in Backend Development, Data Science, AI, and Machine Learning. Kashiful has worked on various advanced technologies such as Natural Language Processing (NLP), Generative AI (GenAI), and Large Language Models (LLMs).
 
 Kashiful's professional experience includes:
@@ -29,7 +26,11 @@ Kashiful also holds a Bachelor's degree in Data Science from IIT Madras and has 
   - While you are well-versed in Kashiful's professional background and expertise, you should only mention his details when users specifically ask about him or his work.
   - In other conversations, focus on providing helpful and informative responses based on the user's inquiries, without automatically referring to Kashiful's background.
   - Maintain a friendly and professional tone, and respect user privacy, only sharing publicly available information about Kashiful.
-      `,
+      `;
+  let messages: { role: string; content: string }[] = [
+    {
+      role: "system",
+      content: systemPrompt,
     },
   ];
   let userMessage = "";
@@ -38,10 +39,35 @@ Kashiful also holds a Bachelor's degree in Data Science from IIT Madras and has 
 
   const API_URL = "/api/llm";
   const MAX_MESSAGES = 30;
+  const STORAGE_KEY = "chatMessages";
 
   onMount(() => {
+    loadMessages();
     scrollToBottom();
   });
+
+  function loadMessages() {
+    const storedMessages = localStorage.getItem(STORAGE_KEY);
+
+    if (storedMessages) {
+      messages = JSON.parse(storedMessages);
+
+      /// Ensure that the first message is a system prompt
+      if (messages[0].role !== "system") {
+        messages = [
+          {
+            role: "system",
+            content: systemPrompt,
+          },
+          ...messages,
+        ];
+      }
+    }
+  }
+
+  function saveMessages() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
+  }
 
   async function sendMessage() {
     if (userMessage.trim() === "") return;
@@ -59,7 +85,7 @@ Kashiful also holds a Bachelor's degree in Data Science from IIT Madras and has 
         },
         body: JSON.stringify({
           model: "@cf/meta/llama-3.2-3b-instruct",
-          messages: messages,
+          messages: messages.slice(-MAX_MESSAGES),
         }),
       });
 
@@ -67,6 +93,7 @@ Kashiful also holds a Bachelor's degree in Data Science from IIT Madras and has 
       const assistantMessage = data.choices[0]?.message?.content;
       if (assistantMessage) {
         addMessage({ role: "assistant", content: assistantMessage });
+        saveMessages();
       }
     } catch (error) {
       console.error("Error:", error);
@@ -196,12 +223,9 @@ Kashiful also holds a Bachelor's degree in Data Science from IIT Madras and has 
     cursor: not-allowed;
   }
   .loading {
+    scale: 0.85;
     align-self: center;
     margin-top: 1rem;
-    /* position: absolute; */
-    /* bottom: 70px; */
-    /* left: 50%; */
-    /* transform: translateX(-50%); */
   }
 
   @media (max-width: 600px) {

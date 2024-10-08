@@ -18,7 +18,7 @@
 
   onMount(async () => {
     try {
-      const { data } = await axios.get<Story[]>("/hn");
+      const { data } = await axios.get<Story[]>("/api/hn");
       stories = data;
     } catch (err) {
       console.error(err);

@@ -1,7 +1,7 @@
 {
   "routes": [
-    { "src": "/hn", "dest": "/api/hn.go" },
-    { "src": "/llm", "dest": "/api/llm.go" },
-    { "src": "/leetcode", "dest": "/api/leetcode.go" }
+    { "src": "/api/hn", "dest": "/api/hn.go" },
+    { "src": "/api/llm", "dest": "/api/llm.go" },
+    { "src": "/api/leetcode", "dest": "/api/leetcode.go" }
   ]
 }

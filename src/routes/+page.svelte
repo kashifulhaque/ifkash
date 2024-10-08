@@ -13,7 +13,7 @@
   // Trigger when the component is mounted
   onMount(async () => {
     try {
-      const { data } = await axios.get("/leetcode");
+      const { data } = await axios.get("/api/leetcode");
       leetcodeStats = data;
     } catch (err) {
       console.error(err);

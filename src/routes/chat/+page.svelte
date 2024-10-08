@@ -36,7 +36,7 @@ Kashiful also holds a Bachelor's degree in Data Science from IIT Madras and has 
   let loading = false;
   let chatContainer: HTMLElement;
 
-  const API_URL = "/llm";
+  const API_URL = "/api/llm";
   const MAX_MESSAGES = 30;
 
   onMount(() => {

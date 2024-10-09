@@ -7,6 +7,7 @@ My personal website 👋
 - [Go](https://go.dev)
 - [Typst](https://github.com/typst/typst)
 - [Vercel](https://vercel.com)
+- [Cloudflare Workers AI](https://developers.cloudflare.com/workers-ai/)
 
 ### **To run locally** 🏃🏼‍♂️
 ```sh

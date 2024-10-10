@@ -157,6 +157,8 @@ Kashiful also holds a Bachelor's degree in Data Science from IIT Madras and has 
   </div>
 
   <div class="input-area">
+    <a href="/" class="home-link">home</a>
+
     <input
       type="text"
       bind:value={userMessage}
@@ -177,7 +179,7 @@ Kashiful also holds a Bachelor's degree in Data Science from IIT Madras and has 
       on:click={clearChat}
       disabled={loading || displayMessages.length === 0}
     >
-      Clear Chat
+      <i class="fa-solid fa-trash"></i>
     </button>
   </div>
 </div>
@@ -186,7 +188,7 @@ Kashiful also holds a Bachelor's degree in Data Science from IIT Madras and has 
   .chat-container {
     max-width: 800px;
     margin: 0 auto;
-    height: 100vh;
+    height: 98vh;
     display: flex;
     flex-direction: column;
     box-sizing: border-box;
@@ -249,6 +251,11 @@ Kashiful also holds a Bachelor's degree in Data Science from IIT Madras and has 
   .clear-button {
     background-color: #ff4136;
     margin-left: 0.5rem;
+  }
+
+  .home-link {
+    margin: auto;
+    margin-right: 0.5rem;
   }
 
   @media (max-width: 600px) {

@@ -38,7 +38,7 @@
 </svelte:head>
 
 <main>
-  <h1>Top {stories.length} Hacker News Stories of the Week</h1>
+  <h1>Top {stories.length} Hacker News Stories of the Week • <a href="/">home</a></h1>
 
   {#if isLoading}
     <p>Loading stories...</p>

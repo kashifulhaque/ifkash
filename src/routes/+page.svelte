@@ -10,7 +10,7 @@
     total: { complete: 0, total: 0 },
   };
 
-  // Trigger when the component is mounted
+  /// Trigger when the component is mounted
   onMount(async () => {
     try {
       const { data } = await axios.get("/api/leetcode");
@@ -24,7 +24,7 @@
 
   const socialLinks = [
     {
-      href: "https://ifkash.hashnode.dev",
+      href: "https://blog.ifkash.dev",
       icon: "fa-brands fa-hashnode",
       text: "Blog",
     },
@@ -101,18 +101,12 @@
 
 <div id="container--main">
   <section id="wrapper--hero" class="section--page">
-    <a
-      href="https://twitter.com/Deltanpopo/status/1701793604967231699"
-      target="_blank"
-      rel="noopener noreferrer"
-    >
-      <img
-        id="profile-pic"
-        src="images/gojo.webp"
-        alt="Gojo Satoru in Shibuya"
-        title="Gojo Satoru in Shibuya • Source: @Deltanpopo"
-      />
-    </a>
+    <img
+      id="profile-pic"
+      src="images/gojo.webp"
+      alt="Gojo Satoru in Shibuya"
+      title="Gojo Satoru in Shibuya • Source: @Deltanpopo on X (formerly Twitter)"
+    />
 
     <div>
       <h1 id="user-name">{title}</h1>
@@ -127,8 +121,18 @@
         >
       </p>
       <p>
+        <a
+          href="mailto:me@ifkash.dev"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="email"
+        >
+          <i class="fa-solid fa-envelope"></i> me@ifkash.dev</a
+        >
+      </p>
+      <p>
         <a class="resume" href="./assets/Kashiful_Haque.pdf" target="_blank"
-          ><i class="fa-solid fa-download"></i> Resume
+          ><i class="fa-solid fa-download"></i> Download Resume
         </a>
       </p>
     </div>
@@ -168,7 +172,7 @@
     <h2><i class="fa-solid fa-briefcase"></i> Work</h2>
 
     <div class="card--work-history">
-      👨‍💻 Associate Software Engineer @
+      Associate Software Engineer @
       <strong class="company"
         ><a href="https://www.efi.com" target="_blank" rel="noopener noreferrer"
           >Fiery</a
@@ -178,25 +182,23 @@
           rel="noopener noreferrer">(an Epson company)</a
         ></strong
       >
-      🏢
       <p>
-        📅 <i>Jul 2023 till now</i> • Bengaluru 📍
+        <i>Jul 2023 till now</i> • Bengaluru
       </p>
     </div>
 
     <div class="card--work-history">
-      👨‍🔬 Data Scientist, Intern @
+      Data Scientist, Intern @
       <strong class="company"
         ><a href="https://www.efi.com" target="_blank" rel="noopener noreferrer"
           >Electronics for Imaging</a
         ></strong
       >
-      🏢
-      <p>🗓️ <i>Jan 2023 till Jul 2023</i> • Bengaluru 📍</p>
+      <p><i>Jan 2023 till Jul 2023</i> • Bengaluru</p>
     </div>
 
     <div class="card--work-history">
-      👨‍💻 Fullstack Developer, Intern @
+      Fullstack Developer, Intern @
       <strong class="company"
         ><a
           href="https://www.corteva.in"
@@ -204,8 +206,7 @@
           rel="noopener noreferrer">Corteva Agriscience</a
         ></strong
       >
-      🏢
-      <p>📆 <i>Jul 2022 till Dec 2022</i> • Hyderabad 📍</p>
+      <p><i>Jul 2022 till Dec 2022</i> • Hyderabad</p>
     </div>
   </section>
 
@@ -221,6 +222,70 @@
       <strong>University of Calcutta</strong>
       <p>Bachelor of Technology, Electronics and Communications Engineering</p>
       <p>2016 - 2019</p>
+    </div>
+  </section>
+
+  <section id="projects-wrapper" class="projects--page">
+    <h2><i class="fa-solid fa-diagram-project"></i> Projects</h2>
+    <div class="card--work-history">
+      <strong>Boo</strong> •
+      <a
+        target="_blank"
+        rel="noopener noreferrer"
+        href="https://github.com/VVIP-Kitchen/boo">git repo</a
+      >
+      <p>
+        <small>
+          A Discord bot whom you can talk to. Understands image inputs and can
+          generate images too! It can RAG through IITM's BS in Data Science's
+          Discourse.
+        </small>
+      </p>
+      <p>Tech used:</p>
+      <ul>
+        <li>Go</li>
+        <li>Docker</li>
+        <li>Python</li>
+        <li>Discord.py</li>
+        <li>Large Language Models (LLM)</li>
+        <li>Meta's LLaMa 3.1 8B</li>
+        <li>Cloudflare Workers AI</li>
+        <li>GitHub Models</li>
+      </ul>
+    </div>
+
+    <div class="card--work-history">
+      <strong>Personal LLM</strong> •
+      <a
+        target="_blank"
+        rel="noopener noreferrer"
+        href="https://github.com/kashifulhaque/ifkash">git repo</a
+      >
+      •
+      <a href="/chat">demo</a>
+      <p>
+        <small>
+          My personal assistant who knows about me and can provide general info
+          too!
+        </small>
+      </p>
+      <p>Tech used:</p>
+      <ul>
+        <li>Go</li>
+        <li>Large Language Models (LLM)</li>
+        <li>Meta's LLaMa 3.2 3B</li>
+        <li>Cloudflare Workers AI</li>
+      </ul>
+    </div>
+
+    <div class="card--work-history">
+      <strong
+        ><a href="/projects"
+          >View all of my projects <i
+            class="fa-solid fa-arrow-up-right-from-square"
+          ></i></a
+        ></strong
+      >
     </div>
   </section>
 
@@ -249,9 +314,9 @@
   <section class="section--page section--page-text-center footer">
     <div>
       <p>
-        <a href="/news">Read top HN articles</a>
+        <a href="/news">Catchup on latest HN articles</a>
         •
-        <a href="/chat">Chat with LLM</a>
+        <a href="/chat">Chat with my LLM</a>
       </p>
     </div>
     <div>

@@ -186,7 +186,7 @@ Kashiful also holds a Bachelor's degree in Data Science from IIT Madras and has 
   .chat-container {
     max-width: 800px;
     margin: 0 auto;
-    height: 98vh;
+    height: 100vh;
     display: flex;
     flex-direction: column;
     box-sizing: border-box;

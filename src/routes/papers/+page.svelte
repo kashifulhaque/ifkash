@@ -12,6 +12,7 @@
         throw new Error("Failed to fetch papers");
       }
       papers = await response.json();
+      console.log(papers);
     } catch (err) {
       error = err.message;
     } finally {

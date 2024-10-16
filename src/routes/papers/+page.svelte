@@ -29,10 +29,15 @@
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data = await response.json();
+      console.log(data);
+
+      // Ensure that data is an array and contains objects with expected properties
       if (!data || !Array.isArray(data)) {
         throw new Error("Invalid data received from API");
       }
-      papers = data;
+
+      // Optional: Add additional validation for individual paper objects
+      papers = data.filter((paper) => paper && paper.title && paper.paper_url);
     } catch (err) {
       console.error("Error fetching papers:", err);
       error = err.message;

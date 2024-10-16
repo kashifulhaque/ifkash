@@ -53,7 +53,7 @@
 
 <main id="container--main">
   <h1 class="section--page-text-center">Papers with Code</h1>
-  <p>{papers}</p>
+  <p>{papers[0]}</p>
 
   {#if loading}
     <p class="section--page-text-center">Loading papers...</p>

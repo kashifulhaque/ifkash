@@ -15,7 +15,7 @@
     framework: string;
     publish_date: string;
     description: string;
-    tags: Tag[]
+    tags: Tag[];
   }
 
   let papers: Paper[] = [];
@@ -26,10 +26,15 @@
     try {
       const response = await fetch("/api/pwc");
       if (!response.ok) {
-        throw new Error("Failed to fetch papers");
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-      papers = await response.json();
+      const data = await response.json();
+      if (!data || !Array.isArray(data)) {
+        throw new Error("Invalid data received from API");
+      }
+      papers = data;
     } catch (err) {
+      console.error("Error fetching papers:", err);
       error = err.message;
     } finally {
       loading = false;
@@ -213,5 +218,10 @@
       flex-direction: column;
       gap: 1em;
     }
+  }
+
+  .error-message {
+    color: #f63737;
+    font-weight: bold;
   }
 </style>

@@ -321,19 +321,21 @@
     </div>
     <div>
       <p>
-        <span class="lc-easy"
-          >{leetcodeStats.easy.complete}/{leetcodeStats.easy.total} easy</span
-        >,
-        <span class="lc-medium"
-          >{leetcodeStats.medium.complete}/{leetcodeStats.medium.total} medium</span
-        >
-        and
-        <span class="lc-hard"
-          >{leetcodeStats.hard.complete}/{leetcodeStats.hard.total} hard</span
-        > on leetcode
+        <small>
+          <span class="lc-easy"
+            >{leetcodeStats.easy.complete}/{leetcodeStats.easy.total} easy</span
+          >,
+          <span class="lc-medium"
+            >{leetcodeStats.medium.complete}/{leetcodeStats.medium.total} medium</span
+          >
+          and
+          <span class="lc-hard"
+            >{leetcodeStats.hard.complete}/{leetcodeStats.hard.total} hard</span
+          > on leetcode
+        </small>
       </p>
     </div>
-    <div>
+    <p>
       <a target="_blank" rel="noopener noreferrer" href="https://kit.svelte.dev"
         >Made with <i class="fa-solid fa-heart"></i> using SvelteKit</a
       >
@@ -343,7 +345,7 @@
         rel="noopener noreferrer"
         href="https://github.com/kashifulhaque/ifkash">Fork me on GitHub</a
       >
-    </div>
+    </p>
   </section>
 </div>
 

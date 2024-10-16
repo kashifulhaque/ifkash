@@ -29,7 +29,6 @@
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data = await response.json();
-      console.log(data);
 
       // Ensure that data is an array and contains objects with expected properties
       if (!data || !Array.isArray(data)) {
@@ -53,7 +52,6 @@
 
 <main id="container--main">
   <h1 class="section--page-text-center">Papers with Code</h1>
-  <p>{papers[0]}</p>
 
   {#if loading}
     <p class="section--page-text-center">Loading papers...</p>
@@ -89,18 +87,20 @@
                 </a>
               {/if}
             </div>
-            <div class="paper-tags">
-              {#each paper.tags as tag}
-                <a
-                  href={tag.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="tag"
-                >
-                  {tag.name}
-                </a>
-              {/each}
-            </div>
+            {#if paper.tags && paper.tags.length > 0}
+              <div class="paper-tags">
+                {#each paper.tags as tag}
+                  <a
+                    href={tag.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="tag"
+                  >
+                    {tag.name}
+                  </a>
+                {/each}
+              </div>
+            {/if}
             <div class="paper-links">
               <a
                 href={paper.paper_url}

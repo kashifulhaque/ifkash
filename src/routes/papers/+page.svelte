@@ -1,9 +1,26 @@
-<script>
+<script lang="ts">
   import { onMount } from "svelte";
 
-  let papers = [];
-  let loading = true;
-  let error = null;
+  interface Tag {
+    name: string;
+    url: string;
+  }
+
+  interface Paper {
+    paper_url: string;
+    code_url: string;
+    image_url: string;
+    title: string;
+    github_repo: string;
+    framework: string;
+    publish_date: string;
+    description: string;
+    tags: Tag[]
+  }
+
+  let papers: Paper[] = [];
+  let loading: boolean = true;
+  let error: any = null;
 
   onMount(async () => {
     try {
@@ -12,7 +29,6 @@
         throw new Error("Failed to fetch papers");
       }
       papers = await response.json();
-      console.log(papers);
     } catch (err) {
       error = err.message;
     } finally {

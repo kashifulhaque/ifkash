@@ -17,8 +17,6 @@
       leetcodeStats = data;
     } catch (err) {
       console.error(err);
-    } finally {
-      console.log(leetcodeStats);
     }
   });
 

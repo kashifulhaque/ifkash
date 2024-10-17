@@ -75,6 +75,8 @@
       <img src={paperImage} alt={paper.title} />
     {/if}
 
+    <br />
+
     <ul class="authors-list">
       {#each paper.authors as author, index}
         <li style="display: inline; margin-right: 0.5em;">
@@ -115,6 +117,11 @@
     font-size: 0.95rem;
     line-height: 1.75rem;
     margin: 1em 0;
+  }
+
+  img {
+    display: block;
+    margin: auto;
   }
 
   ul {

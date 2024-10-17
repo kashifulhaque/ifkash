@@ -52,17 +52,14 @@ func scrapePaperDetails(paperURL string) (*PaperDetails, error) {
 
 		author := Author{}
 		authorLink := s.Find("a")
-		if(len(authorLink.Text) == 0) {
-			return
-		}
-		author.Name = authorLink.Text()
-
+		
+		author.Name = strings.TrimSpace(authorLink.Text())
 		authorURL, exists := authorLink.Attr("href")
-		if exists {
-			author.URL = baseUrl + authorURL
-		}
 
-		paper.Authors = append(paper.Authors, author)
+		if author.Name != "" && exists {
+			author.URL = baseURL + authorURL
+			paper.Authors = append(paper.Authors, author)
+		}
 	})
 
 	/// 3. Extract the dataset URL

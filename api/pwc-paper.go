@@ -41,7 +41,7 @@ func scrapePaperDetails(paperURL string) (*PaperDetails, error) {
 	paper := &PaperDetails{}
 
 	/// 1. Extract the title (from first h1 tag)
-	paper.Title = strings.TrimSpace(doc.Find("h1").First().Text())
+	paper.Title = strings.TrimSpace(doc.Find("div.paper-title h1").First().Text())
 
 	/// 2. Extract the list of authors
 	doc.Find("div.authors span").Each(func(i int, s *goquery.Selection) {

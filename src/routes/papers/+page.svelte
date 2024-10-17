@@ -101,7 +101,7 @@
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  <i class="fa-brands fa-github"></i> Code
+                  <i class="fa-brands fa-github"></i> code
                 </a>
               {/if}
             </div>
@@ -215,8 +215,9 @@
 
   .paper-links {
     display: flex;
-    justify-content: flex-start;
     margin-bottom: 0.75em;
+    justify-content: flex-start;
+    color: var(--mainLinkColor);
   }
 
   .btn-primary:hover {

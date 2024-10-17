@@ -80,21 +80,7 @@
               <small>{paper.description}</small>
             </div>
 
-            <!-- <div class="paper-meta">
-              <small class="publish-date margin-right"
-                >{paper.publish_date}</small
-              >
-            </div> -->
-
             <div class="paper-links">
-              <!-- <a
-                href={paper.paper_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                class="view-paper-btn"
-              >
-                view paper
-              </a> -->
               {#if paper.github_repo}
                 <a
                   href={paper.github_repo}
@@ -143,13 +129,6 @@
     margin-bottom: 0.75em;
   }
 
-  .view-paper-btn {
-    text-decoration: none;
-    color: var(--mainLinkColor);
-    font-weight: 500;
-    margin-right: 1em;
-  }
-
   .paper-title {
     color: var(--mainTextColor-light);
     font-family: "Inter", sans-serif;
@@ -188,17 +167,6 @@
     padding-bottom: 0.25em;
   }
 
-  .paper-meta {
-    display: flex;
-    align-items: center;
-    margin-bottom: 0.5em;
-  }
-
-  .publish-date {
-    font-size: 0.9em;
-    color: var(--secondaryTextColor);
-  }
-
   .paper-tags {
     display: flex;
     flex-direction: column;
@@ -218,19 +186,6 @@
     margin-bottom: 0.75em;
     justify-content: flex-start;
     color: var(--mainLinkColor);
-  }
-
-  .btn-primary:hover {
-    background-color: var(--mainTextColor);
-  }
-
-  .btn-secondary {
-    background-color: var(--mainBorderColor);
-    color: var(--mainTextColor);
-  }
-
-  .btn-secondary:hover {
-    background-color: var(--secondaryTextColor);
   }
 
   .error-message {

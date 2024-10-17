@@ -87,14 +87,14 @@
             </div> -->
 
             <div class="paper-links">
-              <a
+              <!-- <a
                 href={paper.paper_url}
                 target="_blank"
                 rel="noopener noreferrer"
                 class="view-paper-btn"
               >
                 view paper
-              </a>
+              </a> -->
               {#if paper.github_repo}
                 <a
                   href={paper.github_repo}

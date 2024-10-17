@@ -69,6 +69,12 @@ li {
   padding: 1em;
 }
 
+#container--papers {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 1em;
+}
+
 .section--page {
   padding-top: 1em;
   padding-bottom: 1em;
@@ -135,6 +141,11 @@ a {
 
 .margin--bottom {
   margin-bottom: 0.6em;
+}
+
+.margin-y {
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
 }
 
 #wrapper--techstack__items {

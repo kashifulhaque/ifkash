@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
 
+  /// Schema for API response
   interface Tag {
     name: string;
     url: string;
@@ -15,13 +16,14 @@
     framework: string;
     publish_date: string;
     description: string;
-    tags: Tag[];
+    tags: Tag[] | null;
   }
 
   let papers: Paper[] = [];
   let loading: boolean = true;
   let error: any = null;
 
+  /// This gets triggered when the component is mounted
   onMount(async () => {
     try {
       const response = await fetch("/api/pwc");
@@ -30,12 +32,10 @@
       }
       const data = await response.json();
 
-      // Ensure that data is an array and contains objects with expected properties
       if (!data || !Array.isArray(data)) {
         throw new Error("Invalid data received from API");
       }
 
-      // Optional: Add additional validation for individual paper objects
       papers = data.filter((paper) => paper && paper.title && paper.paper_url);
     } catch (err) {
       console.error("Error fetching papers:", err);
@@ -50,8 +50,11 @@
   <title>Papers with Code</title>
 </svelte:head>
 
-<main id="container--main">
-  <h1 class="section--page-text-center">Papers with Code</h1>
+<main id="container--papers">
+  <h1 class="margin-y">
+    <i class="fa-solid fa-file-contract"></i> Papers with Code •
+    <a href="/">home</a>
+  </h1>
 
   {#if loading}
     <p class="section--page-text-center">Loading papers...</p>
@@ -68,57 +71,57 @@
                 href={paper.paper_url}
                 target="_blank"
                 rel="noopener noreferrer"
+                class="paper-title"
               >
                 {paper.title}
               </a>
             </h2>
-            <p>{paper.description}</p>
-            <div class="paper-meta">
-              <span class="publish-date margin-right">{paper.publish_date}</span
-              >
-              {#if paper.github_repo}
-                <a
-                  href={paper.github_repo}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="margin-left"
-                >
-                  GitHub Repo
-                </a>
-              {/if}
+            <div class="paper-description">
+              <small>{paper.description}</small>
             </div>
-            {#if paper.tags && paper.tags.length > 0}
-              <div class="paper-tags">
-                {#each paper.tags as tag}
-                  <a
-                    href={tag.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="tag"
-                  >
-                    {tag.name}
-                  </a>
-                {/each}
-              </div>
-            {/if}
+
+            <!-- <div class="paper-meta">
+              <small class="publish-date margin-right"
+                >{paper.publish_date}</small
+              >
+            </div> -->
+
             <div class="paper-links">
               <a
                 href={paper.paper_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                class="btn btn-primary"
+                class="view-paper-btn"
               >
-                View Paper
+                view paper
               </a>
-              <a
-                href={paper.code_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                class="btn btn-secondary"
-              >
-                View Code
-              </a>
+              {#if paper.github_repo}
+                <a
+                  href={paper.github_repo}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <i class="fa-brands fa-github"></i>
+                </a>
+              {/if}
             </div>
+
+            {#if paper.tags && paper.tags.length > 0}
+              <div class="paper-tags">
+                {#each paper.tags as tag}
+                  {#if tag.name.length != 0}
+                    <a
+                      href={tag.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="tag"
+                    >
+                      {tag.name}
+                    </a>
+                  {/if}
+                {/each}
+              </div>
+            {/if}
           </div>
         </div>
       {/each}
@@ -127,6 +130,38 @@
 </main>
 
 <style>
+  @import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
+
+  small {
+    opacity: 0.64;
+    font-size: small;
+    font-style: italic;
+  }
+
+  h2 {
+    margin-top: 0.5em;
+    margin-bottom: 0.75em;
+  }
+
+  .view-paper-btn {
+    text-decoration: none;
+    color: var(--mainLinkColor);
+    font-weight: 500;
+    margin-right: 1em;
+  }
+
+  .paper-title {
+    color: var(--mainTextColor-light);
+    font-family: "Inter", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 400;
+    font-style: normal;
+  }
+
+  .paper-description {
+    margin-bottom: 0.5em;
+  }
+
   .papers-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -135,24 +170,22 @@
 
   .card--project {
     background-color: var(--mainBgColor);
-    border: 1px solid var(--mainBorderColor);
-    border-radius: 8px;
     overflow: hidden;
     transition: transform 0.3s ease;
-  }
-
-  .card--project:hover {
-    transform: translateY(-5px);
   }
 
   .paper-image {
     width: 100%;
     height: 200px;
     object-fit: cover;
+    border-radius: 4px;
   }
 
   .paper-content {
-    padding: 1em;
+    padding-top: 0em;
+    padding-left: 0.25em;
+    padding-right: 0.25em;
+    padding-bottom: 0.25em;
   }
 
   .paper-meta {
@@ -168,34 +201,22 @@
 
   .paper-tags {
     display: flex;
+    flex-direction: column;
     flex-wrap: wrap;
-    gap: 0.5em;
-    margin-bottom: 1em;
   }
 
   .tag {
-    background-color: var(--mainBorderColor);
+    text-transform: lowercase;
     color: var(--mainTextColor);
-    padding: 0.2em 0.5em;
-    border-radius: 4px;
-    font-size: 0.9em;
+    padding-top: 0.2em;
+    padding-bottom: 0.2em;
+    font-size: 0.7em;
   }
 
   .paper-links {
     display: flex;
-    justify-content: space-between;
-  }
-
-  .btn {
-    padding: 0.5em 1em;
-    border-radius: 4px;
-    text-align: center;
-    transition: background-color 0.3s ease;
-  }
-
-  .btn-primary {
-    background-color: var(--mainLinkColor);
-    color: var(--mainBgColor);
+    justify-content: flex-start;
+    margin-bottom: 0.75em;
   }
 
   .btn-primary:hover {

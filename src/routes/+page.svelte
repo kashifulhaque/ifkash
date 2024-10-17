@@ -10,7 +10,7 @@
     total: { complete: 0, total: 0 },
   };
 
-  /// Trigger when the component is mounted
+  /// Triggers when the component is mounted
   onMount(async () => {
     try {
       const { data } = await axios.get("/api/leetcode");
@@ -293,14 +293,14 @@
     <div id="wrapper--techstack__items">
       {#each techStack as group}
         <div class="card--techstack">
-          <span>
+          <small>
             {#each group as { href, text }, i}
               <a {href} target="_blank" rel="noopener noreferrer">{text}</a
               >{#if i < group.length - 1}
                 {", "}
               {/if}
             {/each}
-          </span>
+          </small>
         </div>
       {/each}
     </div>
@@ -311,11 +311,13 @@
   >
   <section class="section--page section--page-text-center footer">
     <div>
-      <p>
-        <a href="/news">Catchup on latest HN articles</a>
+      <small>
+        <a href="/news">hot tech news</a>
         •
-        <a href="/chat">Chat with my LLM</a>
-      </p>
+        <a href="/chat">chat with me</a>
+        •
+        <a href="/papers">hot ml papers</a>
+      </small>
     </div>
     <div>
       <p>

@@ -23,7 +23,7 @@
   let loading: boolean = true;
   let paper: Paper;
 
-  $: slug = $page.params.slug;
+  const slug = $page.params.slug;
   if (slug.length == 0) {
     (error.isError = true), (error.message = "slug not found");
   }

@@ -185,6 +185,9 @@
     display: flex;
     margin-bottom: 0.75em;
     justify-content: flex-start;
+  }
+
+  .paper-links a {
     color: var(--mainLinkColor);
   }
 

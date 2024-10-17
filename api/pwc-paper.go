@@ -82,7 +82,7 @@ func scrapePaperDetails(paperURL string) (*PaperDetails, error) {
 	})
 
 	/// 5. Extract the paper's description
-	paper.Description = strings.TrimSpace(doc.Find("div.col-md-12 p").Text())
+	paper.Description = strings.TrimSpace(doc.Find("div.paper-abstract p").Text())
 
 	return paper, nil
 }

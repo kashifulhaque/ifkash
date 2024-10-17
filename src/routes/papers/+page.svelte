@@ -101,7 +101,7 @@
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  <i class="fa-brands fa-github"></i>
+                  <i class="fa-brands fa-github"></i> Code
                 </a>
               {/if}
             </div>

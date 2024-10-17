@@ -8,6 +8,7 @@
   }
 
   interface Paper {
+    slug: string;
     paper_url: string;
     code_url: string;
     image_url: string;
@@ -68,7 +69,7 @@
           <div class="paper-content">
             <h2>
               <a
-                href={paper.paper_url}
+                href={"/papers" + paper.slug}
                 target="_blank"
                 rel="noopener noreferrer"
                 class="paper-title"
@@ -189,6 +190,7 @@
 
   .paper-links a {
     color: var(--mainLinkColor);
+    font-size: 1rem;
   }
 
   .error-message {

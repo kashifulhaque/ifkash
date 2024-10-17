@@ -2,6 +2,7 @@
   import { onMount } from "svelte";
   import { page } from "$app/stores";
   import { browser } from "$app/environment";
+  import { paperImageUrl } from "../../../../stores/paperStore";
 
   interface Author {
     name: string;
@@ -23,6 +24,11 @@
   };
   let loading: boolean = true;
   let paper: Paper | undefined;
+  let paperImage: string | null;
+
+  paperImageUrl.subscribe((value) => {
+    paperImage = value;
+  });
 
   const slug = $page.params.slug;
   if (!slug) {
@@ -64,6 +70,10 @@
     <p>{error.message}</p>
   {:else if paper}
     <h1>{paper.title} • <a on:click={goBack}>back</a></h1>
+
+    {#if paperImage}
+      <img src={paperImage} alt={paper.title} />
+    {/if}
 
     <ul class="authors-list">
       {#each paper.authors as author, index}

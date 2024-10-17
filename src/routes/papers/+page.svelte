@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
+  import { paperImageUrl } from "../../stores/paperStore";
 
   /// Schema for API response
   interface Tag {
@@ -45,6 +46,10 @@
       loading = false;
     }
   });
+
+  const handleClick = (paper: string) => {
+    paperImageUrl.set(paper);
+  };
 </script>
 
 <svelte:head>
@@ -65,12 +70,12 @@
     <div class="papers-grid">
       {#each papers as paper}
         <div class="card--project">
-          <a href={"/papers" + paper.slug}>
+          <a href={"/papers" + paper.slug} on:click={() => handleClick(paper.image_url)}>
             <img src={paper.image_url} alt={paper.title} class="paper-image" />
           </a>
           <div class="paper-content">
             <h2>
-              <a href={"/papers" + paper.slug} class="paper-title">
+              <a href={"/papers" + paper.slug} class="paper-title" on:click={() => handleClick(paper.image_url)}>
                 {paper.title}
               </a>
             </h2>

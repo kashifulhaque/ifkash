@@ -2,29 +2,29 @@ package handler
 
 /// Imports
 import (
-	"fmt"
-	"strings"
-	"net/http"
 	"encoding/json"
+	"fmt"
+	"net/http"
+	"strings"
 
 	"github.com/PuerkitoBio/goquery"
 )
 
-/// Constants
+// / Constants
 const baseURL = "https://paperswithcode.com"
 
-/// Enums
+// / Enums
 type Paper struct {
-	Slug				string   `json:"slug"`
-	PaperURL    string   `json:"paper_url"`
-	CodeURL     string   `json:"code_url"`
-	ImageURL    string   `json:"image_url"`
-	Title       string   `json:"title"`
-	GithubRepo  string   `json:"github_repo"`
-	Framework   string   `json:"framework"`
-	PublishDate string   `json:"publish_date"`
-	Description string   `json:"description"`
-	Tags        []Tag    `json:"tags"`
+	Slug        string `json:"slug"`
+	PaperURL    string `json:"paper_url"`
+	CodeURL     string `json:"code_url"`
+	ImageURL    string `json:"image_url"`
+	Title       string `json:"title"`
+	GithubRepo  string `json:"github_repo"`
+	Framework   string `json:"framework"`
+	PublishDate string `json:"publish_date"`
+	Description string `json:"description"`
+	Tags        []Tag  `json:"tags"`
 }
 
 type Tag struct {
@@ -32,7 +32,7 @@ type Tag struct {
 	URL  string `json:"url"`
 }
 
-/// Helpers
+// / Helpers
 func scrapePapers(url string) ([]Paper, error) {
 	res, err := http.Get(url)
 	if err != nil {
@@ -55,7 +55,7 @@ func scrapePapers(url string) ([]Paper, error) {
 		paperURL, exists := s.Find("h1 a").Attr("href")
 		if exists {
 			paper.Slug = paperURL
-			paper.PaperURL = baseURL + paperURL
+			paper.PaperURL = baseUrl + paperURL
 			paper.CodeURL = paper.PaperURL + "#code"
 		}
 
@@ -92,7 +92,7 @@ func scrapePapers(url string) ([]Paper, error) {
 			if exists {
 				tag := Tag{
 					Name: tagSel.Find("span.badge span:last-child").Text(),
-					URL:  baseURL + tagURL,
+					URL:  baseUrl + tagURL,
 				}
 				paper.Tags = append(paper.Tags, tag)
 			}
@@ -113,9 +113,9 @@ func extractImageURL(style string) string {
 	return ""
 }
 
-/// Entrypoint
+// / Entrypoint
 func PWCHandler(w http.ResponseWriter, r *http.Request) {
-	papers, err := scrapePapers(baseURL)
+	papers, err := scrapePapers(baseUrl)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Error scraping papers: %v", err), http.StatusInternalServerError)
 		return

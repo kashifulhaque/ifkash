@@ -10,10 +10,8 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
-// / Constants
-const baseURL = "https://paperswithcode.com"
+const baseUrl = "https://paperswithcode.com"
 
-// / Structs
 type PaperDetails struct {
 	Title        string   `json:"title"`
 	Authors      []Author `json:"authors"`
@@ -27,7 +25,6 @@ type Author struct {
 	URL  string `json:"url"`
 }
 
-// / Helper to scrape a paper's details
 func scrapePaperDetails(paperURL string) (*PaperDetails, error) {
 	res, err := http.Get(paperURL)
 	if err != nil {
@@ -58,7 +55,7 @@ func scrapePaperDetails(paperURL string) (*PaperDetails, error) {
 
 		authorURL, exists := authorLink.Attr("href")
 		if exists {
-			author.URL = baseURL + authorURL
+			author.URL = baseUrl + authorURL
 		}
 
 		paper.Authors = append(paper.Authors, author)
@@ -68,7 +65,7 @@ func scrapePaperDetails(paperURL string) (*PaperDetails, error) {
 	datasetElement := doc.Find("div.paper-datasets a span").Parent()
 	datasetURL, exists := datasetElement.Attr("href")
 	if exists {
-		paper.DatasetURL = baseURL + datasetURL
+		paper.DatasetURL = baseUrl + datasetURL
 	}
 
 	/// 4. Extract the Arxiv page and PDF URLs

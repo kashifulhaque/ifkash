@@ -15,7 +15,7 @@ const baseURL = "https://paperswithcode.com"
 
 /// Enums
 type Paper struct {
-	slug				string   `json:"slug"`
+	Slug				string   `json:"slug"`
 	PaperURL    string   `json:"paper_url"`
 	CodeURL     string   `json:"code_url"`
 	ImageURL    string   `json:"image_url"`
@@ -54,7 +54,7 @@ func scrapePapers(url string) ([]Paper, error) {
 		/// Extract URL for the paper and append "#code" at the end to get paper's code URL
 		paperURL, exists := s.Find("h1 a").Attr("href")
 		if exists {
-			paper.slug = paperURL
+			paper.Slug = paperURL
 			paper.PaperURL = baseURL + paperURL
 			paper.CodeURL = paper.PaperURL + "#code"
 		}

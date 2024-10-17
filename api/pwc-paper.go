@@ -40,7 +40,7 @@ func scrapePaperDetails(paperURL string) (*PaperDetails, error) {
 	paper := &PaperDetails{}
 
 	/// 1. Extract the title (from first h1 tag)
-	paper.Title = doc.Find("h1").First().Text()
+	paper.Title = strings.ReplaceAll(strings.ReplaceAll(doc.Find("h1").First().Text(), "\n", ""), " ", "")
 
 	/// 2. Extract the list of authors
 	doc.Find("div.authors span").Each(func(i int, s *goquery.Selection) {
@@ -51,6 +51,9 @@ func scrapePaperDetails(paperURL string) (*PaperDetails, error) {
 
 		author := Author{}
 		authorLink := s.Find("a")
+		if(len(authorLink.Text) == 0) {
+			return
+		}
 		author.Name = authorLink.Text()
 
 		authorURL, exists := authorLink.Attr("href")

@@ -65,7 +65,9 @@
     <div class="papers-grid">
       {#each papers as paper}
         <div class="card--project">
-          <img src={paper.image_url} alt={paper.title} class="paper-image" />
+          <a href={"/papers" + paper.slug}>
+            <img src={paper.image_url} alt={paper.title} class="paper-image" />
+          </a>
           <div class="paper-content">
             <h2>
               <a href={"/papers" + paper.slug} class="paper-title">

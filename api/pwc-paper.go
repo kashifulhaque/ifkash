@@ -18,6 +18,7 @@ type PaperDetails struct {
 	DatasetURL   string   `json:"dataset_url"`
 	ArxivPageURL string   `json:"arxiv_page_url"`
 	ArxivPDFURL  string   `json:"arxiv_pdf_url"`
+	Description   string   `json:"description"`
 }
 
 type Author struct {
@@ -40,7 +41,7 @@ func scrapePaperDetails(paperURL string) (*PaperDetails, error) {
 	paper := &PaperDetails{}
 
 	/// 1. Extract the title (from first h1 tag)
-	paper.Title = strings.ReplaceAll(strings.ReplaceAll(doc.Find("h1").First().Text(), "\n", ""), " ", "")
+	paper.Title = strings.TrimSpace(doc.Find("h1").First().Text())
 
 	/// 2. Extract the list of authors
 	doc.Find("div.authors span").Each(func(i int, s *goquery.Selection) {
@@ -82,6 +83,9 @@ func scrapePaperDetails(paperURL string) (*PaperDetails, error) {
 			}
 		}
 	})
+
+	/// 5. Extract the paper's description
+	paper.Description = strings.TrimSpace(doc.Find("div.col-md-12 p").Text())
 
 	return paper, nil
 }

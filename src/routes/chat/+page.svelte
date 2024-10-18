@@ -252,7 +252,7 @@ Kashiful also holds a Bachelor's degree in Data Science from IIT Madras and has 
   }
 
   img {
-    height: 2rem;
+    height: 3.5rem;
   }
 
   @media (max-width: 600px) {

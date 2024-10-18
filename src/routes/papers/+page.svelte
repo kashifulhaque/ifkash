@@ -9,6 +9,7 @@
   }
 
   interface Paper {
+    stars: string;
     slug: string;
     paper_url: string;
     code_url: string;

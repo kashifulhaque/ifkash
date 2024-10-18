@@ -10,11 +10,12 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
-// / Constants
+/// Constants
 const baseURL = "https://paperswithcode.com"
 
-// / Enums
+/// Enums
 type Paper struct {
+	Stars				string `json:"stars"`
 	Slug        string `json:"slug"`
 	PaperURL    string `json:"paper_url"`
 	CodeURL     string `json:"code_url"`
@@ -32,7 +33,7 @@ type Tag struct {
 	URL  string `json:"url"`
 }
 
-// / Helpers
+/// Helpers
 func scrapePapers(url string) ([]Paper, error) {
 	res, err := http.Get(url)
 	if err != nil {
@@ -67,6 +68,9 @@ func scrapePapers(url string) ([]Paper, error) {
 
 		/// Extract the paper's title
 		paper.Title = s.Find("h1 a").Text()
+
+		/// Extract the number of stars
+		paper.Stars = s.Find("span.badge.badge-secondary").Text()
 
 		/// Extract the GitHub repo for that paper, if it exists
 		githubRepo, exists := s.Find("span.item-github-link a").Attr("href")

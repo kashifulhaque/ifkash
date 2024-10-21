@@ -17,9 +17,12 @@
       >
       <p>
         <small>
-          A Discord bot whom you can talk to. Understands image inputs and can
-          generate images too! It can RAG through IITM's BS in Data Science's
-          Discourse.
+          Innovative AI-Powered Discord Bot who engages in natural
+          conversations, interprets and responds to image inputs, and generates
+          high-quality images on demand. Equipped with advanced
+          retrieval-augmented generation (RAG) capabilities, it seamlessly
+          navigates and provides insights from IITM's BS in Data Science
+          Discourse, enhancing community interactions and access to knowledge.
         </small>
       </p>
       <p>Tech used:</p>
@@ -111,9 +114,7 @@
         >demo</a
       >
       <p>
-        <small>
-          A plain, simple weather web-app written in Vue.js
-        </small>
+        <small> A plain, simple weather web-app written in Vue.js </small>
       </p>
       <p>Tech used:</p>
       <ul>

@@ -115,17 +115,14 @@
           rel="noopener noreferrer"
           class="email"
         >
-          <i class="fa-solid fa-envelope"></i> haque.kashiful7@gmail.com</a
+          haque.kashiful7@gmail.com</a
         >
-      </p>
-      <p>
+        •
         <a
           href="mailto:me@ifkash.dev"
           target="_blank"
           rel="noopener noreferrer"
-          class="email"
-        >
-          <i class="fa-solid fa-envelope"></i> me@ifkash.dev</a
+          class="email">me@ifkash.dev</a
         >
       </p>
       <p>
@@ -224,7 +221,10 @@
   </section>
 
   <section id="projects-wrapper" class="projects--page">
-    <h2><i class="fa-solid fa-diagram-project"></i> Projects</h2>
+    <h2>
+      <i class="fa-solid fa-diagram-project"></i> Projects •
+      <a href="/projects">view all</a>
+    </h2>
     <div class="card--work-history">
       <strong>Boo</strong> •
       <a

@@ -95,4 +95,8 @@
     padding: 20px;
     font-family: "Roboto", sans-serif;
   }
+
+  span {
+    color: #000000;
+  }
 </style>

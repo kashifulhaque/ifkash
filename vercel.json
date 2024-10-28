@@ -1,10 +1,5 @@
 {
   "routes": [
-    { "src": "/api/hn", "dest": "/api/hn.go" },
-    { "src": "/api/llm", "dest": "/api/llm.go" },
-    { "src": "/api/pwc", "dest": "/api/pwc.go" },
-    { "src": "/api/docs", "dest": "/api/docs.go" },
-    { "src": "/api/leetcode", "dest": "/api/leetcode.go" },
-    { "src": "/api/pwc/paper", "dest": "/api/pwc-paper.go" }
+    { "src": "/api/(.*)", "dest": "/api/main.go" }
   ]
 }

@@ -137,11 +137,9 @@
   <section class="section--page">
     <div id="socials--list">
       {#each pageRoutes as { href, text }}
-        <small>
-          <a {href} class="profiles">
-            {text}
-          </a>
-        </small>
+        <a {href} class="profiles">
+          {text}
+        </a>
       {/each}
     </div>
   </section>
@@ -151,13 +149,11 @@
   >
   <section class="section--page section--page-text-center footer">
     <div>
-      <small>
-        <a href="/news">hot tech news</a>
-        •
-        <a href="/chat">chat with me</a>
-        •
-        <a href="/papers">hot ml papers</a>
-      </small>
+      <a href="/news">hot tech news</a>
+      •
+      <a href="/chat">chat with me</a>
+      •
+      <a href="/papers">hot ml papers</a>
     </div>
     <div>
       <p>

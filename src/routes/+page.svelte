@@ -116,21 +116,17 @@
   </section>
 
   <section class="section--page">
-    <h2><i class="fa-solid fa-bolt"></i> Summary</h2>
+    <h2><i class="fa-solid fa-bolt"></i> SUMMARY</h2>
     <p>
-      <small>
-        I work at the intersection of Software Engineering, Data Science &
-        Machine Learning focussing on Natural Language Processing (NLP),
-        Generative AI (GenAI) and Large Language Models (LLMs). I also have a
-        keen interest in cloud, linux and other tools surrounding tech.
-      </small>
+      I work at the intersection of Software Engineering, Data Science & Machine
+      Learning focussing on Natural Language Processing (NLP), Generative AI
+      (GenAI) and Large Language Models (LLMs). I also have a keen interest in
+      cloud, linux and other tools surrounding tech.
       <br />
       <br />
-      <small
-        >Born and brought up in Kolkata, I lived most of my life there. Since
-        2022, I have travelled to cities such as Hyderabad, Chennai and
-        Bengaluru (current) for work/studies.</small
-      >
+      Born and brought up in Kolkata, I lived most of my life there. Since 2022,
+      I have travelled to cities such as Hyderabad, Chennai and Bengaluru (current)
+      for work/studies.
     </p>
   </section>
 
@@ -153,29 +149,28 @@
       •
       <a href="/chat">chat with me</a>
       •
-      <a href="/papers">hot ml papers</a>
+      <a href="/papers">hot ML papers</a>
     </div>
     <div>
       <p>
-        <small>
-          <span class="lc-easy"
-            >{leetcodeStats.easy.complete}/{leetcodeStats.easy.total} easy</span
-          >,
-          <span class="lc-medium"
-            >{leetcodeStats.medium.complete}/{leetcodeStats.medium.total} medium</span
-          >
-          and
-          <span class="lc-hard"
-            >{leetcodeStats.hard.complete}/{leetcodeStats.hard.total} hard</span
-          > on leetcode
-        </small>
+        <span class="lc-easy"
+          >{leetcodeStats.easy.complete}/{leetcodeStats.easy.total} easy</span
+        >
+        •
+        <span class="lc-medium"
+          >{leetcodeStats.medium.complete}/{leetcodeStats.medium.total} medium</span
+        >
+        •
+        <span class="lc-hard"
+          >{leetcodeStats.hard.complete}/{leetcodeStats.hard.total} hard</span
+        > on leetcode
       </p>
     </div>
     <p>
       <a target="_blank" rel="noopener noreferrer" href="https://kit.svelte.dev"
-        >Made with <i class="fa-solid fa-heart"></i> using SvelteKit</a
+        >Built with SvelteKit</a
       >
-      🚧
+      •
       <a
         target="_blank"
         rel="noopener noreferrer"

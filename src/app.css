@@ -1,17 +1,15 @@
-/* @import url('https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&display=swap'); */
-/* @import url('https://fonts.googleapis.com/css2?family=Victor+Mono:ital,wght@0,100..700;1,100..700&display=swap'); */
-@import url('https://fonts.googleapis.com/css2?family=Spline+Sans+Mono:ital,wght@0,300..700;1,300..700&family=Victor+Mono:ital,wght@0,100..700;1,100..700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
 
 :root {
   --mainTextColor-light: #cdd6f4;
   --secondaryTextColor-light: rgb(51 51 51);
-  --mainLinkColor-light: #df9f38;
+  --mainLinkColor-light: #cdd6f4;
   --mainBorderColor-light: rgb(218, 218, 218);
   --mainBgColor-light: rgb(249, 250, 251);
 
   --mainTextColor-dark: #e7eae0;
   --secondaryTextColor-dark: #adb0b1;
-  --mainLinkColor-dark: #8bd84c;
+  --mainLinkColor-dark: #cdd6f4;
   --mainBorderColor-dark: #2b3031;
   --mainBgColor-dark: #101111;
 
@@ -23,7 +21,8 @@
 }
 
 * {
-  font-family: "Spline Sans Mono", monospace;
+  font-family: "Inter", sans-serif;
+  font-optical-sizing: auto;
   font-size: medium;
   box-sizing: border-box;
   color: var(--mainTextColor);
@@ -80,6 +79,19 @@ li {
   padding-bottom: 1em;
 }
 
+.section--page h2 {
+  color: #FFFFFF;
+  font-weight: 300;
+}
+
+.section--page p {
+  color: #FFFFFF;
+  font-weight: 200;
+  font-size: 1rem;
+  opacity: 0.64;
+  word-spacing: 0.1rem;
+}
+
 .section--page-text-center {
   text-align: center;
 }
@@ -96,7 +108,7 @@ a {
 }
 
 #user-name {
-  font-size: 44px;
+  font-size: 1.5rem;
   line-height: 1em;
 }
 
@@ -121,7 +133,7 @@ a {
 
 #socials--list a {
   font-weight: 500;
-  color: var(--mainLinkColor);
+  color: var(--mainLinkColor-light);
   font-size: 1.1em;
   transition: 0.3s;
 }
@@ -285,13 +297,16 @@ a::after {
 }
 
 .lc-easy {
-  color: #1cbaba;
+  color: #41dddd;
+  font-weight: 400;
 }
 
 .lc-medium {
   color: #ffb700;
+  font-weight: 400;
 }
 
 .lc-hard {
   color: #f63737;
+  font-weight: 400;
 }

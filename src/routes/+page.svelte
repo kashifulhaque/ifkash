@@ -155,40 +155,61 @@
     </div>
   </section>
 
-  <a href="./assets/Kashiful_Haque-dark.pdf" target="_blank"
-    ><hr class="center-ball" style="visibility: hidden;" /></a
-  >
-
   <section class="section--page">
-    <h2>Recent LeetCode Submissions</h2>
+    <h2><i class="fa-solid fa-list-check"></i> RECENT LEETCODE SUBMISSIONS</h2>
+
+    <!-- LeetCode Stats Bar -->
+    <div class="lc-stats-bar">
+      <span class="lc-badge easy">
+        <i class="fa-solid fa-egg"></i>
+        {leetcodeStats.easy.complete}/{leetcodeStats.easy.total} Easy
+      </span>
+      <span class="lc-badge medium">
+        <i class="fa-solid fa-square"></i>
+        {leetcodeStats.medium.complete}/{leetcodeStats.medium.total} Medium
+      </span>
+      <span class="lc-badge hard">
+        <i class="fa-solid fa-person-running"></i>
+        {leetcodeStats.hard.complete}/{leetcodeStats.hard.total} Hard
+      </span>
+    </div>
+
+    <!-- LeetCode Submissions Table -->
     <table class="submissions-table">
       <thead>
         <tr>
+          <th>Date</th>
           <th>Title</th>
-          <th>Timestamp</th>
-          <th>Link</th>
         </tr>
       </thead>
       <tbody>
         {#if recentSubmissions.length > 0}
           {#each recentSubmissions as { id, title, titleSlug, timestamp }}
             <tr>
-              <td>{title}</td>
-              <td>{new Date(parseInt(timestamp) * 1000).toLocaleString()}</td>
               <td>
+                {new Date(parseInt(timestamp) * 1000).toLocaleDateString(
+                  "en-US",
+                  {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                  }
+                )}
+              </td>
+              <td class="leetcode-submission-title">
                 <a
                   href={`https://leetcode.com/problems/${titleSlug}/`}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  View Problem
+                  {title}
                 </a>
               </td>
             </tr>
           {/each}
         {:else}
           <tr>
-            <td colspan="3">No recent submissions found.</td>
+            <td colspan="2">No recent submissions found.</td>
           </tr>
         {/if}
       </tbody>
@@ -203,32 +224,7 @@
       •
       <a href="/papers">hot ML papers</a>
     </div>
-    <div>
-      <p>
-        <span class="lc-easy"
-          >{leetcodeStats.easy.complete}/{leetcodeStats.easy.total} easy</span
-        >
-        •
-        <span class="lc-medium"
-          >{leetcodeStats.medium.complete}/{leetcodeStats.medium.total} medium</span
-        >
-        •
-        <span class="lc-hard"
-          >{leetcodeStats.hard.complete}/{leetcodeStats.hard.total} hard</span
-        > on leetcode
-      </p>
-    </div>
-    <p>
-      <a target="_blank" rel="noopener noreferrer" href="https://kit.svelte.dev"
-        >Built with SvelteKit</a
-      >
-      •
-      <a
-        target="_blank"
-        rel="noopener noreferrer"
-        href="https://github.com/kashifulhaque/ifkash">Fork me on GitHub</a
-      >
-    </p>
+    <div></div>
   </section>
 </div>
 

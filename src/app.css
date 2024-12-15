@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
 
 :root {
   --mainTextColor-light: #cdd6f4;
@@ -80,12 +80,12 @@ li {
 }
 
 .section--page h2 {
-  color: #FFFFFF;
+  color: #ffffff;
   font-weight: 300;
 }
 
 .section--page p {
-  color: #FFFFFF;
+  color: #ffffff;
   font-weight: 200;
   font-size: 1rem;
   opacity: 0.64;
@@ -309,4 +309,66 @@ a::after {
 .lc-hard {
   color: #f63737;
   font-weight: 400;
+}
+
+/* Stats Bar Styling */
+.lc-stats-bar {
+  display: flex;
+  gap: 1rem;
+  margin: 1rem 0;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+}
+
+.lc-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: #444;
+  text-transform: capitalize;
+}
+
+.lc-badge.easy {
+  background-color: #a8e6cf;
+}
+
+.lc-badge.medium {
+  background-color: #ffd3b6;
+}
+
+.lc-badge.hard {
+  background-color: #ffaaa5;
+}
+
+.lc-badge i {
+  color: #444;
+}
+
+.submissions-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+.submissions-table thead th {
+  color: #def;
+  text-align: left;
+  padding: 0.8rem;
+  border-bottom: 2px solid #ddd;
+}
+
+.submissions-table tbody td {
+  padding: 0.8rem;
+}
+
+.leetcode-submission-title a {
+  text-decoration: none;
+}
+
+.leetcode-submission-title a:hover {
+  text-decoration: underline;
 }

@@ -348,7 +348,7 @@ a::after {
 #fa-square,
 #fa-person-running,
 .lc-badge i {
-  color: #444;
+  color: #444 !important;
 }
 
 .submissions-table {

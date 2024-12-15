@@ -119,6 +119,6 @@ func serveDeez(w http.ResponseWriter, r *http.Request) {
 }
 
 // Handler is the entry point for the Vercel serverless function
-func Handler(w http.ResponseWriter, r *http.Request) {
+func LCProfileHandler(w http.ResponseWriter, r *http.Request) {
 	serveDeez(w, r)
 }

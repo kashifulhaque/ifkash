@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -10,7 +9,7 @@ import (
 )
 
 // Handler is the entry point for the Vercel serverless function.
-func Handler(w http.ResponseWriter, r *http.Request) {
+func LCSubmissionsHandler(w http.ResponseWriter, r *http.Request) {
 	// Parse the request URL path to extract username and count.
 	path := strings.TrimPrefix(r.URL.Path, "/api/lc/submissions/")
 	parts := strings.Split(path, "/")

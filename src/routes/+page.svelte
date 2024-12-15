@@ -3,6 +3,12 @@
   import { onMount } from "svelte";
 
   let title: string = "Kashiful Haque";
+  let recentSubmissions: Array<{
+    id: string;
+    title: string;
+    titleSlug: string;
+    timestamp: string;
+  }> = [];
   let leetcodeStats = {
     easy: { complete: 0, total: 0 },
     medium: { complete: 0, total: 0 },
@@ -10,11 +16,20 @@
     total: { complete: 0, total: 0 },
   };
 
-  /// Triggers when the component is mounted
+  /// Fetches profile and submissions data
   onMount(async () => {
     try {
-      const { data } = await axios.get("/api/lc/profile");
-      leetcodeStats = data;
+      // Fetch leetcode stats
+      const statsResponse = await axios.get("/api/lc/profile");
+      leetcodeStats = statsResponse.data;
+
+      // Fetch recent submissions
+      const submissionsResponse = await axios.post("/api/lc/submissions", {
+        username: "ifkash",
+        count: 5,
+      });
+      recentSubmissions =
+        submissionsResponse.data.data.recentAcSubmissionList || [];
     } catch (err) {
       console.error(err);
     }
@@ -143,6 +158,43 @@
   <a href="./assets/Kashiful_Haque-dark.pdf" target="_blank"
     ><hr class="center-ball" style="visibility: hidden;" /></a
   >
+
+  <section class="section--page">
+    <h2>Recent LeetCode Submissions</h2>
+    <table class="submissions-table">
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Timestamp</th>
+          <th>Link</th>
+        </tr>
+      </thead>
+      <tbody>
+        {#if recentSubmissions.length > 0}
+          {#each recentSubmissions as { id, title, titleSlug, timestamp }}
+            <tr>
+              <td>{title}</td>
+              <td>{new Date(parseInt(timestamp) * 1000).toLocaleString()}</td>
+              <td>
+                <a
+                  href={`https://leetcode.com/problems/${titleSlug}/`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  View Problem
+                </a>
+              </td>
+            </tr>
+          {/each}
+        {:else}
+          <tr>
+            <td colspan="3">No recent submissions found.</td>
+          </tr>
+        {/if}
+      </tbody>
+    </table>
+  </section>
+
   <section class="section--page section--page-text-center footer">
     <div>
       <a href="/news">hot tech news</a>

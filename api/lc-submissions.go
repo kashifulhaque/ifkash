@@ -1,28 +1,41 @@
 package handler
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
-	"strconv"
 	"strings"
 )
 
-// Handler is the entry point for the Vercel serverless function.
 func LCSubmissionsHandler(w http.ResponseWriter, r *http.Request) {
-	// Parse the request URL path to extract username and count.
-	path := strings.TrimPrefix(r.URL.Path, "/api/lc/submissions/")
-	parts := strings.Split(path, "/")
-	if len(parts) != 2 {
-		http.Error(w, "Invalid URL format. Use /api/lc/submissions/USERNAME/COUNT", http.StatusBadRequest)
+	if r.Method != http.MethodPost {
+		http.Error(w, "Only POST method is allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
-	username := parts[0]
-	count, err := strconv.Atoi(parts[1])
-	if err != nil || count < 1 || count > 10 {
-		http.Error(w, "COUNT must be an integer between 1 and 10", http.StatusBadRequest)
+	// Parse the JSON body to extract username and count.
+	var reqBody struct {
+		Username string `json:"username"`
+		Count    int    `json:"count"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
+	}
+
+	username := reqBody.Username
+	count := reqBody.Count
+	if username == "" {
+		http.Error(w, "Invalid username", http.StatusBadRequest)
+		return
+	}
+
+	if count < 0 {
+		count = 0
+	}
+	if count > 10 {
+		count = 10
 	}
 
 	// Prepare the GraphQL payload.

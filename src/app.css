@@ -1,4 +1,10 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
+
+@font-face {
+  font-family: 'Outfit';
+  font-display: swap;
+  src: url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
+}
 
 :root {
   --mainTextColor-light: #cdd6f4;
@@ -21,8 +27,9 @@
 }
 
 * {
-  font-family: "Inter", sans-serif;
+  font-family: "Outfit", serif;
   font-optical-sizing: auto;
+  font-style: normal;
   font-size: medium;
   box-sizing: border-box;
   color: var(--mainTextColor);
@@ -88,7 +95,7 @@ li {
   color: #ffffff;
   font-weight: 200;
   font-size: 1rem;
-  opacity: 0.64;
+  opacity: 0.85;
   word-spacing: 0.1rem;
 }
 
@@ -333,15 +340,15 @@ a::after {
 }
 
 .lc-badge.easy {
-  background-color: #a8e6cf;
+  color: #a8e6cf;
 }
 
 .lc-badge.medium {
-  background-color: #ffd3b6;
+  color: #ffd3b6;
 }
 
 .lc-badge.hard {
-  background-color: #ffaaa5;
+  color: #ffaaa5;
 }
 
 #fa-egg,

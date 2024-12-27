@@ -132,7 +132,7 @@
 
   <section class="section--page">
     <h2><i class="fa-solid fa-bolt"></i> SUMMARY</h2>
-    <p>
+    <p class="summary">
       I work at the intersection of Software Engineering, Data Science & Machine
       Learning focussing on Natural Language Processing (NLP), Generative AI
       (GenAI) and Large Language Models (LLMs). I also have a keen interest in

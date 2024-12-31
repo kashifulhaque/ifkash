@@ -6,7 +6,7 @@
     </h2>
 
     <div class="card--work-history">
-      Associate Software Engineer @
+      <p>Associate Software Engineer</p>
       <strong class="company"
         ><a href="https://www.efi.com" target="_blank" rel="noopener noreferrer"
           >Fiery</a
@@ -22,7 +22,7 @@
     </div>
 
     <div class="card--work-history">
-      Data Scientist, Intern @
+      <p>Data Scientist, Intern</p>
       <strong class="company"
         ><a href="https://www.efi.com" target="_blank" rel="noopener noreferrer"
           >Electronics for Imaging</a
@@ -32,7 +32,7 @@
     </div>
 
     <div class="card--work-history">
-      Fullstack Developer, Intern @
+      <p>Fullstack Developer, Intern</p>
       <strong class="company"
         ><a
           href="https://www.corteva.in"

@@ -1,9 +1,9 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap");
 
 @font-face {
-  font-family: 'Outfit';
+  font-family: "Outfit";
   font-display: swap;
-  src: url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
+  src: url("https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap");
 }
 
 :root {
@@ -27,7 +27,7 @@
 }
 
 * {
-  font-family: "Outfit", serif;
+  font-family: "Outfit", sans-serif;
   font-optical-sizing: auto;
   font-style: normal;
   font-size: medium;
@@ -37,6 +37,13 @@
 
 body {
   background-color: var(--mainBgColor);
+}
+
+table {
+  font-family: "Outfit", sans-serif;
+  font-optical-sizing: auto;
+  font-style: normal;
+  font-size: medium;
 }
 
 .resume {

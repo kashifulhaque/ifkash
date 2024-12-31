@@ -1,5 +1,5 @@
 <svelte:head>
-  <title>All of my projects</title>
+  <title>Some of my side projects</title>
 </svelte:head>
 
 <div id="container--main">
@@ -16,7 +16,7 @@
         href="https://github.com/VVIP-Kitchen/boo">git repo</a
       >
       <p>
-        <small>
+        <small class="project-description">
           Innovative AI-Powered Discord Bot who engages in natural
           conversations, interprets and responds to image inputs, and generates
           high-quality images on demand. Equipped with advanced
@@ -48,7 +48,7 @@
       •
       <a href="/chat">demo</a>
       <p>
-        <small>
+        <small class="project-description">
           My personal assistant who knows about me and can provide general info
           too!
         </small>
@@ -70,7 +70,7 @@
         href="https://github.com/kashifulhaque/odeer">git repo</a
       >
       <p>
-        <small>
+        <small class="project-description">
           It's a cli tool like <a
             href="https://ollama.com/"
             target="_blank"
@@ -94,7 +94,7 @@
         href="https://github.com/kashifulhaque/berzifetch-rs">git repo</a
       >
       <p>
-        <small> A system fetch for Linux written in Rust. </small>
+        <small class="project-description"> A system fetch for Linux written in Rust. </small>
       </p>
       <p>Tech used:</p>
       <ul>
@@ -114,7 +114,7 @@
         >demo</a
       >
       <p>
-        <small> A plain, simple weather web-app written in Vue.js </small>
+        <small class="project-description"> A plain, simple weather web-app written in Vue.js </small>
       </p>
       <p>Tech used:</p>
       <ul>

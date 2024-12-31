@@ -191,34 +191,47 @@ Kashiful also holds a Bachelor's degree in Data Science from IIT Madras and has 
     flex-direction: column;
     box-sizing: border-box;
   }
+
   .messages {
     flex-grow: 1;
     overflow-y: auto;
-    padding-bottom: 1rem;
-    margin-bottom: 1rem;
-    border: 1px solid #eaeaea;
-    border-radius: 8px;
     padding: 1rem;
     display: flex;
     flex-direction: column;
   }
+
+  /* Hide scrollbar for Chrome, Safari and Opera */
+  .messages::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Hide scrollbar for IE, Edge and Firefox */
+  .messages {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+
   .message {
     margin-bottom: 0.5rem;
     padding: 0.5rem;
     border-radius: 8px;
   }
+
   .user {
     text-align: right;
     color: #333;
   }
+
   .assistant {
     text-align: left;
     color: #0070f3;
   }
+
   .input-area {
     display: flex;
     margin-top: auto;
   }
+
   input {
     flex-grow: 1;
     padding: 0.5rem;
@@ -227,6 +240,7 @@ Kashiful also holds a Bachelor's degree in Data Science from IIT Madras and has 
     margin-right: 0.5rem;
     color: black;
   }
+
   button {
     padding: 0.5rem 1rem;
     background-color: #0070f3;
@@ -235,11 +249,13 @@ Kashiful also holds a Bachelor's degree in Data Science from IIT Madras and has 
     border-radius: 4px;
     cursor: pointer;
   }
+
   button:disabled {
     background-color: #ccc;
     color: gray;
     cursor: not-allowed;
   }
+
   .loading {
     scale: 0.85;
     align-self: center;

@@ -19,7 +19,7 @@
     username: "ifkash",
     count: 20,
   };
-
+ 
   let loadingStats = true;
   let loadingSubmissions = true;
 
@@ -33,7 +33,7 @@
     try {
       /// Fetch leetcode stats
       const statsResponse = await axios.get("/api/lc/profile", {
-        params: { username: leetcodePayload.username }
+        params: { username: leetcodePayload.username, count: 20 }
       });
       leetcodeStats = statsResponse.data;
       loadingStats = false;

@@ -1,6 +1,7 @@
 <script lang="ts">
   import axios from "axios";
   import { onMount } from "svelte";
+  import { page } from "$app/stores";
 
   let recentSubmissions: Array<{
     id: string;
@@ -16,17 +17,24 @@
   };
   let leetcodePayload = {
     username: "ifkash",
-    count: 25,
+    count: 20,
   };
 
   let loadingStats = true;
   let loadingSubmissions = true;
 
+  $: {
+    const params = $page.params;
+    leetcodePayload.username = params.username || "ifkash";
+  }
+
   /// Fetches profile and submissions data
   onMount(async () => {
     try {
       /// Fetch leetcode stats
-      const statsResponse = await axios.get("/api/lc/profile");
+      const statsResponse = await axios.get("/api/lc/profile", {
+        params: { username: leetcodePayload.username }
+      });
       leetcodeStats = statsResponse.data;
       loadingStats = false;
 

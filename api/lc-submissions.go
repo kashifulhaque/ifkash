@@ -34,8 +34,8 @@ func LCSubmissionsHandler(w http.ResponseWriter, r *http.Request) {
 	if count < 0 {
 		count = 0
 	}
-	if count > 10 {
-		count = 10
+	if count > 20 {
+		count = 20
 	}
 
 	// Prepare the GraphQL payload.

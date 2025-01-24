@@ -51,9 +51,9 @@
   <section id="wrapper--hero" class="section--page">
     <img
       id="profile-pic"
-      src="images/gojo.webp"
-      alt="Gojo Satoru in Shibuya"
-      title="Gojo Satoru in Shibuya • Source: @Deltanpopo on X (formerly Twitter)"
+      src="images/sekiro.jpg"
+      alt="Sekiro holding Kusabimaru"
+      title="Sekiro holding Kusabimaru"
     />
 
     <div>

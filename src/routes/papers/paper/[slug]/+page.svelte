@@ -101,7 +101,7 @@
       {/each}
     </ul>
 
-    <p class="text-base text-blue-200 leading-relaxed my-4">{paper.description}</p>
+    <p class="text-base text-blue-100 leading-relaxed my-4">{paper.description}</p>
 
     <ul class="flex flex-wrap items-center gap-2">
       <li>

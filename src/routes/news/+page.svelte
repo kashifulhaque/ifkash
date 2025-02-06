@@ -40,10 +40,10 @@
 <main
   class="max-w-3xl mx-auto p-5 bg-neutral-900 text-gray-100 space-grotesk-400"
 >
-  <h1 class="text-3xl font-bold text-orange-500 mb-5">
+  <h1 class="text-2xl font-bold text-orange-400 mb-5">
     Top {stories.length} Hacker News Stories of the Week
-    <span class="text-gray-400 mx-2">•</span>
-    <a href="/" class="hover:underline">home</a>
+    <span class="text-sm text-gray-400 mx-2">•</span>
+    <a href="/" class="text-base text-blue-300 hover:underline">go back</a>
   </h1>
 
   {#if isLoading}
@@ -55,7 +55,7 @@
       {#each stories as story (story.id)}
         <li class="mb-5">
           <article>
-            <h2 class="text-lg mb-1 text-blue-300">
+            <h2 class="text-lg mb-1 text-blue-200">
               <a
                 href={story.url}
                 target="_blank"
@@ -65,13 +65,13 @@
                 {story.title}
               </a>
             </h2>
-            <p class="text-sm text-blue-300">
+            <p class="text-sm text-gray-200">
               {story.score} points by {story.by} |
               <a
                 href={`https://news.ycombinator.com/item?id=${story.id}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                class="hover:underline"
+                class="hover:underline text-blue-300"
               >
                 HN Discussion
               </a>

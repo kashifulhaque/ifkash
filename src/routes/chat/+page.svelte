@@ -126,8 +126,8 @@ Kashiful also holds a Bachelor's degree in Data Science from IIT Madras and has 
     {#each displayMessages as message}
       <div
         class="mb-2 p-2 rounded-lg {message.role === 'user'
-          ? 'text-right bg-neutral-700 text-gray-100'
-          : 'text-left bg-neutral-800 text-blue-300'}"
+          ? 'text-right text-gray-100'
+          : 'text-left text-blue-300'}"
       >
         <strong>{message.role === "user" ? "You" : "Assistant"}:</strong>
         {#if message.role === "assistant"}

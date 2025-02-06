@@ -62,7 +62,7 @@
     <i class="fa-solid fa-file-contract"></i>
     Papers with Code
     <span class="text-sm text-gray-400">•</span>
-    <a href="/" class="text-blue-300 hover:underline">go back</a>
+    <a href="/" class="text-base text-blue-300 hover:underline">go back</a>
   </h1>
 
   {#if loading}

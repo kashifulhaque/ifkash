@@ -107,7 +107,7 @@
           {#if recentSubmissions.length > 0}
             {#each recentSubmissions as { id, title, titleSlug, timestamp }}
               <tr class="hover:bg-gray-800">
-                <td class="py-2 text-sm">
+                <td class="py-2 text-sm text-gray-300">
                   {new Date(parseInt(timestamp) * 1000).toLocaleDateString(
                     "en-US",
                     {
@@ -122,7 +122,7 @@
                     href={`https://leetcode.com/problems/${titleSlug}/`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="text-blue-500 hover:underline"
+                    class="text-blue-200 hover:underline"
                   >
                     {title}
                   </a>

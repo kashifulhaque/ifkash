@@ -64,7 +64,7 @@
 </svelte:head>
 
 <main
-  class="min-h-screen bg-gray-900 text-gray-100 font-sans px-4 sm:px-8 py-8"
+  class="min-h-screen bg-neutral-900 text-gray-100 space-grotesk-400 px-4 sm:px-8 py-8"
 >
   {#if loading}
     <p class="text-center text-lg">Loading...</p>
@@ -93,7 +93,7 @@
           <a
             href={author.url}
             target="_blank"
-            class="text-blue-500 hover:underline"
+            class="text-gray-300 hover:underline"
           >
             <small class="text-xs italic">{author.name}</small>
           </a>
@@ -101,14 +101,14 @@
       {/each}
     </ul>
 
-    <p class="text-base leading-relaxed my-4">{paper.description}</p>
+    <p class="text-base text-blue-200 leading-relaxed my-4">{paper.description}</p>
 
     <ul class="flex flex-wrap items-center gap-2">
       <li>
         <a
           href={paper.dataset_url}
           target="_blank"
-          class="text-blue-500 hover:underline"
+          class="text-blue-300 hover:underline"
         >
           dataset
         </a>
@@ -118,7 +118,7 @@
         <a
           href={paper.arxiv_page_url}
           target="_blank"
-          class="text-blue-500 hover:underline"
+          class="text-blue-300 hover:underline"
         >
           ArXiv page
         </a>
@@ -128,7 +128,7 @@
         <a
           href={paper.arxiv_pdf_url}
           target="_blank"
-          class="text-blue-500 hover:underline"
+          class="text-blue-300 hover:underline"
         >
           pdf
         </a>
@@ -137,7 +137,7 @@
         <a
           href="https://example.com"
           target="_blank"
-          class="text-blue-500 hover:underline"
+          class="text-blue-200 hover:underline"
         >
           teach me
         </a>

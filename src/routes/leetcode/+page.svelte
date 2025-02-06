@@ -53,13 +53,13 @@
   });
 </script>
 
-<div class="min-h-screen bg-gray-900 text-gray-100 font-sans px-4 sm:px-8 py-8">
+<div class="min-h-screen bg-neutral-900 text-gray-100 space-grotesk-400 px-4 sm:px-8 py-8">
   <section>
-    <h1 class="text-3xl font-bold mb-6 flex items-center gap-2">
+    <h1 class="text-2xl font-bold mb-6 flex items-center gap-2">
       <i class="fa-solid fa-list-check"></i>
       Leetcode stats
-      <span class="text-gray-400">•</span>
-      <a href="/" class="text-blue-500 hover:underline">home</a>
+      <span class="text-sm text-gray-400">•</span>
+      <a href="/" class="text-base text-blue-300 hover:underline">go back</a>
     </h1>
 
     {#if loadingStats}

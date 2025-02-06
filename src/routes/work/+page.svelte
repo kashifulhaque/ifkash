@@ -35,25 +35,21 @@
   <title>Work History • Portfolio</title>
 </svelte:head>
 
-<div
-  class="min-h-screen bg-gray-900 text-gray-100 space-grotesk-400 px-4 sm:px-8 py-8"
->
+<div class="min-h-screen bg-neutral-900 text-gray-100 space-grotesk-400 px-4 sm:px-8 py-8">
   <!-- Header Section -->
   <section class="mb-8">
-    <h2 class="text-3xl font-bold space-grotesk-700 flex items-center gap-2">
+    <h2 class="text-2xl font-bold space-grotesk-700 flex items-center gap-2">
       <i class="fa-solid fa-briefcase"></i>
       Work
       <span class="text-sm text-gray-400">•</span>
-      <a href="/" class="text-blue-500 hover:underline">home</a>
+      <a href="/" class="text-base text-blue-300 hover:underline">go back</a>
     </h2>
   </section>
 
   <!-- Work History Cards -->
   <section class="space-y-6">
     {#each workHistory as work}
-      <div
-        class="p-4 border border-gray-700 rounded hover:bg-gray-800 transition-colors"
-      >
+      <div class="p-4">
         <p class="text-lg">{work.role}</p>
         <strong class="block my-2 space-grotesk-600">
           {#each work.companies as company, i (company.url)}
@@ -61,13 +57,13 @@
               href={company.url}
               target="_blank"
               rel="noopener noreferrer"
-              class="text-blue-400 hover:underline"
+              class="text-base text-blue-300 hover:underline"
             >
               {company.name}
             </a>{i < work.companies.length - 1 ? " " : ""}
           {/each}
         </strong>
-        <p class="text-sm text-gray-400">
+        <p class="text-base text-gray-400">
           <i>{work.duration}</i> • {work.location}
         </p>
       </div>

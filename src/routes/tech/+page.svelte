@@ -53,34 +53,32 @@
 </svelte:head>
 
 <div
-  class="min-h-screen bg-gray-900 text-gray-100 space-grotesk-400 px-4 sm:px-8 py-8"
+  class="min-h-screen bg-neutral-900 text-gray-100 space-grotesk-400 px-4 sm:px-8 py-8"
 >
   <!-- Header Section -->
   <section class="mb-8">
-    <h2 class="text-3xl font-bold space-grotesk-700 flex items-center gap-2">
+    <h2 class="text-2xl font-bold space-grotesk-700 flex items-center gap-2">
       <i class="fa-solid fa-microchip"></i>
       Tech
       <span class="text-sm text-gray-400">•</span>
-      <a href="/" class="text-blue-500 hover:underline">home</a>
+      <a href="/" class="text-base text-blue-300 hover:underline">go back</a>
     </h2>
   </section>
 
   <!-- Tech Stack Cards -->
-  <section class="space-y-6">
+  <section class="space-y-4">
     {#each techStack as group}
-      <div
-        class="p-4 border border-gray-700 rounded hover:bg-gray-800 transition-colors"
-      >
-        <small class="text-sm">
+      <div>
+        <small class="text-base">
           {#each group as { href, text }, i (href)}
             <a
               {href}
               target="_blank"
               rel="noopener noreferrer"
-              class="text-blue-400 hover:underline"
+              class="text-blue-300 hover:underline"
             >
               {text}
-            </a>{#if i < group.length - 1}, 
+            </a>{#if i < group.length - 1}{" • "}
             {/if}
           {/each}
         </small>

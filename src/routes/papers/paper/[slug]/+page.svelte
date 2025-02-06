@@ -71,10 +71,10 @@
   {:else if error.isError}
     <p class="text-center text-red-500 font-bold mt-4">{error.message}</p>
   {:else if paper}
-    <h1 class="text-3xl font-bold mb-4">
+    <h1 class="text-2xl font-bold mb-4">
       {paper.title}
-      <span class="text-gray-400 mx-2">•</span>
-      <a on:click={goBack} class="text-blue-500 hover:underline cursor-pointer"
+      <span class="text-sm text-gray-400 mx-2">•</span>
+      <a on:click={goBack} class="text-base text-blue-300 hover:underline cursor-pointer"
         >back</a
       >
     </h1>

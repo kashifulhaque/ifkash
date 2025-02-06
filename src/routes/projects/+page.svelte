@@ -68,25 +68,26 @@
 </svelte:head>
 
 <div
-  class="min-h-screen bg-gray-900 text-gray-100 space-grotesk-400 px-4 sm:px-8 py-8"
+  class="min-h-screen bg-neutral-900 text-gray-100 space-grotesk-400 px-4 sm:px-8 py-8"
 >
   <!-- Header Section -->
   <section class="mb-8">
-    <h2 class="text-3xl font-bold space-grotesk-700 flex items-center gap-2">
+    <h2 class="text-2xl font-bold space-grotesk-700 flex items-center gap-2">
       <i class="fa-solid fa-diagram-project"></i>
       Projects
       <span class="text-sm text-gray-400">•</span>
-      <a href="/" class="text-blue-500 hover:underline">home</a>
+      <a href="/" class="text-base text-blue-300 hover:underline">go back</a>
     </h2>
   </section>
 
   <!-- Projects List -->
   <section class="space-y-6">
     {#each projects as project}
-      <div
-        class="p-4 border border-gray-700 rounded hover:bg-gray-800 transition-colors"
-      >
+      <div class="p-4">
+        <!-- Project Title -->
         <strong class="block text-xl space-grotesk-600">{project.title}</strong>
+        
+        <!-- Project Links, if any -->
         <div class="my-2">
           {#each project.links as link, j}
             <a
@@ -101,15 +102,18 @@
             {/if}
           {/each}
         </div>
-        <p class="mb-2 text-sm text-gray-300">
+        
+        <!-- Project description -->
+        <p class="mb-2 text-base text-gray-300">
           {#if project.htmlDescription}
             {@html project.htmlDescription}
           {:else}
             {project.description}
           {/if}
         </p>
+
         <p class="text-sm text-gray-400 mb-1">Tech used:</p>
-        <ul class="list-disc list-inside text-sm text-gray-300 space-y-1">
+        <ul class="list-disc list-inside text-sm text-gray-400 space-y-1">
           {#each project.tech as techItem}
             <li>{techItem}</li>
           {/each}

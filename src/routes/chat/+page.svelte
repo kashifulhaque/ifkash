@@ -117,9 +117,7 @@ Kashiful also holds a Bachelor's degree in Data Science from IIT Madras and has 
   $: displayMessages = messages.filter((message) => message.role !== "system");
 </script>
 
-<div
-  class="max-w-3xl mx-auto h-screen flex flex-col p-2 sm:p-4 bg-gray-900 text-gray-100"
->
+<div class="max-w-3xl mx-auto h-screen flex flex-col p-2 sm:p-4 bg-neutral-900 text-gray-100 space-grotesk-400">
   <!-- Messages Container -->
   <div
     class="flex-grow overflow-y-auto p-2 sm:p-4 flex flex-col"
@@ -128,8 +126,8 @@ Kashiful also holds a Bachelor's degree in Data Science from IIT Madras and has 
     {#each displayMessages as message}
       <div
         class="mb-2 p-2 rounded-lg {message.role === 'user'
-          ? 'text-right bg-gray-700 text-gray-100'
-          : 'text-left bg-gray-800 text-blue-500'}"
+          ? 'text-right bg-neutral-700 text-gray-100'
+          : 'text-left bg-neutral-800 text-blue-300'}"
       >
         <strong>{message.role === "user" ? "You" : "Assistant"}:</strong>
         {#if message.role === "assistant"}
@@ -161,17 +159,21 @@ Kashiful also holds a Bachelor's degree in Data Science from IIT Madras and has 
       disabled={loading}
       class="flex-grow p-2 border border-gray-600 rounded mr-0 sm:mr-2 mb-2 sm:mb-0 bg-gray-800 text-gray-100"
     />
+
+    <!-- Send message button -->
     <button
       on:click={sendMessage}
       disabled={loading || userMessage.trim() === ""}
-      class="px-4 py-2 bg-blue-500 text-white rounded disabled:bg-gray-600 disabled:cursor-not-allowed mb-2 sm:mb-0"
+      class="px-4 py-2 bg-teal-700 hover:bg-teal-800 transition-colors text-white rounded disabled:bg-gray-700 disabled:cursor-not-allowed cursor-pointer mb-2 sm:mb-0"
     >
       Send
     </button>
+
+    <!-- Clear convo button -->
     <button
       on:click={clearChat}
       disabled={loading || displayMessages.length === 0}
-      class="px-4 py-2 bg-red-500 text-white rounded disabled:bg-gray-600 disabled:cursor-not-allowed ml-0 sm:ml-2 mb-2 sm:mb-0"
+      class="px-4 py-2 bg-red-500 text-white rounded disabled:bg-gray-600 disabled:cursor-not-allowed cursor-pointer ml-0 sm:ml-2 mb-2 sm:mb-0"
     >
       <i class="fa-solid fa-trash"></i>
     </button>

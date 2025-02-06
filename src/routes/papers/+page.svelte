@@ -56,13 +56,13 @@
 </svelte:head>
 
 <main
-  class="min-h-screen bg-gray-900 text-gray-100 font-sans px-4 sm:px-8 py-8"
+  class="min-h-screen bg-neutral-900 text-gray-100 space-grotesk-400 px-4 sm:px-8 py-8"
 >
-  <h1 class="flex items-center gap-2 text-3xl font-bold mb-8">
+  <h1 class="flex items-center gap-2 text-2xl font-bold mb-8">
     <i class="fa-solid fa-file-contract"></i>
     Papers with Code
     <span class="text-sm text-gray-400">•</span>
-    <a href="/" class="text-blue-500 hover:underline">home</a>
+    <a href="/" class="text-blue-300 hover:underline">go back</a>
   </h1>
 
   {#if loading}

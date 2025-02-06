@@ -27,11 +27,6 @@
       icon: "fa-solid fa-code",
       text: "Leetcode",
     },
-    {
-      href: "https://www.instagram.com/enderboi25/",
-      icon: "fa-brands fa-instagram",
-      text: "Instagram",
-    },
   ];
 </script>
 
@@ -39,10 +34,7 @@
   <title>{title} • Portfolio</title>
 </svelte:head>
 
-<!-- Main container with dark theme, responsive paddings, and Space Grotesk applied -->
-<div
-  class="min-h-screen bg-gray-900 text-gray-100 space-grotesk-400 px-4 sm:px-8 py-8"
->
+<div class="min-h-screen bg-neutral-900 text-gray-100 space-grotesk-400 px-4 sm:px-8 py-8">
   <!-- Hero Section -->
   <section class="flex flex-col items-center text-center mb-8">
     <img
@@ -52,12 +44,12 @@
       class="w-32 h-32 rounded-full object-cover border-2 border-gray-700 mb-4"
     />
     <h1 class="text-3xl font-bold space-grotesk-700">{title}</h1>
-    <p class="text-sm text-gray-400 mt-2">
+    <p class="text-md text-gray-400 mt-2">
       <a
         href="mailto:haque.kashiful7@gmail.com"
         target="_blank"
         rel="noopener noreferrer"
-        class="text-blue-500 hover:underline"
+        class="text-blue-300 hover:underline"
       >
         haque.kashiful7@gmail.com
       </a>
@@ -66,15 +58,17 @@
         href="mailto:me@ifkash.dev"
         target="_blank"
         rel="noopener noreferrer"
-        class="text-blue-500 hover:underline"
+        class="text-blue-300 hover:underline"
       >
         me@ifkash.dev
       </a>
     </p>
+
+    <!-- Download Resume button -->
     <a
       href="./assets/Kashiful_Haque.pdf"
       target="_blank"
-      class="mt-4 inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 transition-colors rounded text-white text-xs"
+      class="mt-4 inline-flex items-center px-4 py-2 bg-teal-400 hover:bg-teal-500 transition-colors rounded text-neutral-900 text-md font-semibold"
     >
       <i class="fa-solid fa-download mr-2"></i>
       Download Resume
@@ -89,7 +83,7 @@
           {href}
           target="_blank"
           rel="noopener noreferrer"
-          class="flex items-center gap-2 hover:text-blue-500 transition-colors text-gray-200"
+          class="flex items-center gap-2 hover:text-blue-400 transition-colors text-blue-100"
         >
           <i class={`${icon} text-xl`}></i>
           <!-- Hide descriptive text on extra-small screens -->
@@ -105,7 +99,7 @@
       {#each pageRoutes as { href, text }}
         <a
           {href}
-          class="px-3 py-1 border border-gray-700 rounded transition-colors hover:bg-gray-800 text-sm"
+          class="px-3 py-1 border border-teal-700 rounded transition-colors hover:bg-teal-800 text-md"
         >
           {text}
         </a>
@@ -115,13 +109,7 @@
 
   <!-- Summary -->
   <section class="mb-8 max-w-2xl mx-auto">
-    <h2
-      class="text-2xl font-bold flex items-center justify-center mb-4 space-grotesk-600"
-    >
-      <i class="fa-solid fa-bolt text-yellow-500 mr-2"></i>
-      SUMMARY
-    </h2>
-    <p class="text-base text-gray-300 text-center leading-relaxed">
+    <p class="text-base text-teal-100 text-center leading-relaxed">
       I work at the intersection of Software Engineering, Data Science & Machine
       Learning focusing on Natural Language Processing (NLP), Generative AI
       (GenAI) and Large Language Models (LLMs). I also have a keen interest in
@@ -135,9 +123,7 @@
 
   <!-- Footer Links -->
   <footer class="text-center">
-    <div
-      class="flex flex-wrap items-center justify-center gap-2 text-blue-500 text-xs"
-    >
+    <div class="flex flex-wrap items-center justify-center gap-2 text-blue-200 text-sm">
       <a href="/news" class="hover:underline">hot tech news</a>
       <span>•</span>
       <a href="/papers" class="hover:underline">hot ML papers</a>

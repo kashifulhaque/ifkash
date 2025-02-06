@@ -48,19 +48,10 @@ Kashiful also holds a Bachelor's degree in Data Science from IIT Madras and has 
 
   function loadMessages() {
     const storedMessages = localStorage.getItem(STORAGE_KEY);
-
     if (storedMessages) {
       messages = JSON.parse(storedMessages);
-
-      /// Ensure that the first message is a system prompt
       if (messages[0].role !== "system") {
-        messages = [
-          {
-            role: "system",
-            content: systemPrompt,
-          },
-          ...messages,
-        ];
+        messages = [{ role: "system", content: systemPrompt }, ...messages];
       }
     }
   }
@@ -70,18 +61,12 @@ Kashiful also holds a Bachelor's degree in Data Science from IIT Madras and has 
   }
 
   function clearChat() {
-    messages = [
-      {
-        role: "system",
-        content: systemPrompt,
-      },
-    ];
+    messages = [{ role: "system", content: systemPrompt }];
     localStorage.removeItem(STORAGE_KEY);
   }
 
   async function sendMessage() {
     if (userMessage.trim() === "") return;
-
     const userContent = userMessage.trim();
     addMessage({ role: "user", content: userContent });
     userMessage = "";
@@ -90,15 +75,12 @@ Kashiful also holds a Bachelor's degree in Data Science from IIT Madras and has 
     try {
       const response = await fetch(API_URL, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           model: "@cf/meta/llama-3.2-3b-instruct",
           messages: messages.slice(-MAX_MESSAGES),
         }),
       });
-
       const data = await response.json();
       const assistantMessage = data.choices[0]?.message?.content;
       if (assistantMessage) {
@@ -135,14 +117,23 @@ Kashiful also holds a Bachelor's degree in Data Science from IIT Madras and has 
   $: displayMessages = messages.filter((message) => message.role !== "system");
 </script>
 
-<div class="chat-container">
-  <div class="messages" bind:this={chatContainer}>
+<div
+  class="max-w-3xl mx-auto h-screen flex flex-col p-2 sm:p-4 bg-gray-900 text-gray-100"
+>
+  <!-- Messages Container -->
+  <div
+    class="flex-grow overflow-y-auto p-2 sm:p-4 flex flex-col"
+    bind:this={chatContainer}
+  >
     {#each displayMessages as message}
-      <div class="message {message.role}">
+      <div
+        class="mb-2 p-2 rounded-lg {message.role === 'user'
+          ? 'text-right bg-gray-700 text-gray-100'
+          : 'text-left bg-gray-800 text-blue-500'}"
+      >
         <strong>{message.role === "user" ? "You" : "Assistant"}:</strong>
-
         {#if message.role === "assistant"}
-          <div class="assistant">{@html parseMarkdown(message.content)}</div>
+          <div>{@html parseMarkdown(message.content)}</div>
         {:else}
           <p>{message.content}</p>
         {/if}
@@ -150,146 +141,39 @@ Kashiful also holds a Bachelor's degree in Data Science from IIT Madras and has 
     {/each}
 
     {#if loading}
-      <div class="loading">
-        <img alt="Waiting for bot to answer" src="images/thinking.gif" />
+      <div class="transform scale-[0.85] self-center mt-4">
+        <img
+          alt="Waiting for bot to answer"
+          src="images/thinking.gif"
+          class="h-14"
+        />
       </div>
     {/if}
   </div>
 
-  <div class="input-area">
+  <!-- Input Area -->
+  <div class="flex flex-col sm:flex-row mt-auto">
     <input
       type="text"
       bind:value={userMessage}
       placeholder="Type your message ..."
       on:keypress={(e) => e.key === "Enter" && sendMessage()}
       disabled={loading}
+      class="flex-grow p-2 border border-gray-600 rounded mr-0 sm:mr-2 mb-2 sm:mb-0 bg-gray-800 text-gray-100"
     />
-
     <button
       on:click={sendMessage}
       disabled={loading || userMessage.trim() === ""}
+      class="px-4 py-2 bg-blue-500 text-white rounded disabled:bg-gray-600 disabled:cursor-not-allowed mb-2 sm:mb-0"
     >
       Send
     </button>
-
     <button
-      class="clear-button"
       on:click={clearChat}
       disabled={loading || displayMessages.length === 0}
+      class="px-4 py-2 bg-red-500 text-white rounded disabled:bg-gray-600 disabled:cursor-not-allowed ml-0 sm:ml-2 mb-2 sm:mb-0"
     >
       <i class="fa-solid fa-trash"></i>
     </button>
   </div>
 </div>
-
-<style>
-  .chat-container {
-    max-width: 800px;
-    margin: 0 auto;
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    box-sizing: border-box;
-  }
-
-  .messages {
-    flex-grow: 1;
-    overflow-y: auto;
-    padding: 1rem;
-    display: flex;
-    flex-direction: column;
-  }
-
-  /* Hide scrollbar for Chrome, Safari and Opera */
-  .messages::-webkit-scrollbar {
-    display: none;
-  }
-
-  /* Hide scrollbar for IE, Edge and Firefox */
-  .messages {
-    -ms-overflow-style: none; /* IE and Edge */
-    scrollbar-width: none; /* Firefox */
-  }
-
-  .message {
-    margin-bottom: 0.5rem;
-    padding: 0.5rem;
-    border-radius: 8px;
-  }
-
-  .user {
-    text-align: right;
-    color: #333;
-  }
-
-  .assistant {
-    text-align: left;
-    color: #0070f3;
-  }
-
-  .input-area {
-    display: flex;
-    margin-top: auto;
-  }
-
-  input {
-    flex-grow: 1;
-    padding: 0.5rem;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    margin-right: 0.5rem;
-    color: black;
-  }
-
-  button {
-    padding: 0.5rem 1rem;
-    background-color: #0070f3;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-
-  button:disabled {
-    background-color: #ccc;
-    color: gray;
-    cursor: not-allowed;
-  }
-
-  .loading {
-    scale: 0.85;
-    align-self: center;
-    margin-top: 1rem;
-  }
-
-  .clear-button {
-    background-color: #ff4136;
-    margin-left: 0.5rem;
-  }
-
-  img {
-    height: 3.5rem;
-  }
-
-  @media (max-width: 600px) {
-    .chat-container {
-      padding: 0.5rem;
-    }
-    .messages {
-      padding: 0.5rem;
-    }
-    .input-area {
-      flex-direction: column;
-    }
-    input {
-      margin-right: 0;
-      margin-bottom: 0.5rem;
-    }
-    button {
-      margin-bottom: 0.5rem;
-    }
-    .clear-button {
-      margin-left: 0;
-    }
-  }
-</style>

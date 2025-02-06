@@ -19,7 +19,7 @@
     username: "ifkash",
     count: 20,
   };
- 
+
   let loadingStats = true;
   let loadingSubmissions = true;
 
@@ -28,17 +28,16 @@
     leetcodePayload.username = params.username || "ifkash";
   }
 
-  /// Fetches profile and submissions data
   onMount(async () => {
     try {
-      /// Fetch leetcode stats
+      // Fetch LeetCode stats
       const statsResponse = await axios.get("/api/lc/profile", {
-        params: { username: leetcodePayload.username, count: 20 }
+        params: { username: leetcodePayload.username, count: 20 },
       });
       leetcodeStats = statsResponse.data;
       loadingStats = false;
 
-      /// Fetch recent submissions
+      // Fetch recent submissions
       const submissionsResponse = await axios.post(
         "/api/lc/submissions",
         leetcodePayload
@@ -54,49 +53,61 @@
   });
 </script>
 
-<div id="container--main">
-  <section class="section--page">
-    <h1>
-      <i class="fa-solid fa-list-check"></i> Leetcode stats •
-      <a href="/">home</a>
+<div class="min-h-screen bg-gray-900 text-gray-100 font-sans px-4 sm:px-8 py-8">
+  <section>
+    <h1 class="text-3xl font-bold mb-6 flex items-center gap-2">
+      <i class="fa-solid fa-list-check"></i>
+      Leetcode stats
+      <span class="text-gray-400">•</span>
+      <a href="/" class="text-blue-500 hover:underline">home</a>
     </h1>
 
-    <!-- LeetCode Stats Bar -->
     {#if loadingStats}
-      <p>Loading stats...</p>
+      <p class="text-lg text-center">Loading stats...</p>
     {:else}
-      <div class="lc-stats-bar">
-        <span class="lc-badge easy">
+      <div class="flex gap-4 mb-6">
+        <span
+          class="inline-flex items-center gap-1 bg-green-800 px-2 py-1 rounded text-sm font-medium"
+        >
           <i class="fa-solid fa-egg"></i>
           {leetcodeStats.easy.complete}/{leetcodeStats.easy.total} Easy
         </span>
-        <span class="lc-badge medium">
+        <span
+          class="inline-flex items-center gap-1 bg-yellow-800 px-2 py-1 rounded text-sm font-medium"
+        >
           <i class="fa-solid fa-square"></i>
           {leetcodeStats.medium.complete}/{leetcodeStats.medium.total} Medium
         </span>
-        <span class="lc-badge hard">
+        <span
+          class="inline-flex items-center gap-1 bg-red-800 px-2 py-1 rounded text-sm font-medium"
+        >
           <i class="fa-solid fa-person-running"></i>
           {leetcodeStats.hard.complete}/{leetcodeStats.hard.total} Hard
         </span>
       </div>
     {/if}
 
-    <!-- LeetCode Submissions Table -->
     {#if loadingSubmissions}
-      <p>Loading submissions...</p>
+      <p class="text-lg text-center">Loading submissions...</p>
     {:else}
-      <table class="submissions-table">
+      <table class="w-full table-auto border-collapse">
         <thead>
           <tr>
-            <th>Date</th>
-            <th>Title</th>
+            <th
+              class="border-b border-gray-700 pb-2 text-left text-sm font-semibold"
+              >Date</th
+            >
+            <th
+              class="border-b border-gray-700 pb-2 text-left text-sm font-semibold"
+              >Title</th
+            >
           </tr>
         </thead>
         <tbody>
           {#if recentSubmissions.length > 0}
             {#each recentSubmissions as { id, title, titleSlug, timestamp }}
-              <tr>
-                <td>
+              <tr class="hover:bg-gray-800">
+                <td class="py-2 text-sm">
                   {new Date(parseInt(timestamp) * 1000).toLocaleDateString(
                     "en-US",
                     {
@@ -106,11 +117,12 @@
                     }
                   )}
                 </td>
-                <td class="leetcode-submission-title">
+                <td class="py-2 text-sm">
                   <a
                     href={`https://leetcode.com/problems/${titleSlug}/`}
                     target="_blank"
                     rel="noopener noreferrer"
+                    class="text-blue-500 hover:underline"
                   >
                     {title}
                   </a>
@@ -119,7 +131,9 @@
             {/each}
           {:else}
             <tr>
-              <td colspan="2">No recent submissions found.</td>
+              <td colspan="2" class="py-2 text-center text-sm">
+                No recent submissions found.
+              </td>
             </tr>
           {/if}
         </tbody>

@@ -37,35 +37,43 @@
   <title>Tech News | Top {stories.length} Hacker News Stories</title>
 </svelte:head>
 
-<main>
-  <h1>Top {stories.length} Hacker News Stories of the Week • <a href="/">home</a></h1>
+<main class="max-w-3xl mx-auto p-5 bg-gray-900 text-gray-100 font-sans">
+  <h1 class="text-3xl font-bold text-orange-500 mb-5">
+    Top {stories.length} Hacker News Stories of the Week
+    <span class="text-gray-400 mx-2">•</span>
+    <a href="/" class="hover:underline">home</a>
+  </h1>
 
   {#if isLoading}
-    <p>Loading stories...</p>
+    <p class="text-lg text-center">Loading stories...</p>
   {:else if error}
-    <p class="error">{error}</p>
+    <p class="text-center text-red-500 font-bold mt-4">{error}</p>
   {:else}
-    <ol>
+    <ol class="list-decimal pl-5">
       {#each stories as story (story.id)}
-        <li>
+        <li class="mb-5">
           <article>
-            <h2>
-              <a href={story.url} target="_blank" rel="noopener noreferrer" class="lc-medium">
+            <h2 class="text-lg mb-1">
+              <a
+                href={story.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="hover:underline"
+              >
                 {story.title}
               </a>
             </h2>
-            <p>
+            <p class="text-sm text-gray-400">
               {story.score} points by {story.by} |
               <a
                 href={`https://news.ycombinator.com/item?id=${story.id}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                class="lc-easy"
+                class="hover:underline"
               >
                 HN Discussion
               </a>
-              |
-              {formatDate(story.time)}
+              | {formatDate(story.time)}
             </p>
           </article>
         </li>
@@ -73,47 +81,3 @@
     </ol>
   {/if}
 </main>
-
-<style>
-  main {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 20px;
-  }
-
-  h1 {
-    color: #ff6600;
-    margin-bottom: 20px;
-  }
-
-  ol {
-    list-style-type: decimal;
-    padding-left: 20px;
-  }
-
-  li {
-    margin-bottom: 20px;
-  }
-
-  h2 {
-    font-size: 1.2em;
-    margin-bottom: 5px;
-  }
-
-  a {
-    text-decoration: none;
-  }
-
-  a:hover {
-    text-decoration: underline;
-  }
-
-  p {
-    font-size: 0.9em;
-    color: #828282;
-  }
-
-  .error {
-    color: red;
-  }
-</style>

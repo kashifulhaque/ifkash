@@ -2,7 +2,6 @@
   import { onMount } from "svelte";
   import { paperImageUrl } from "../../stores/paperStore";
 
-  /// Schema for API response
   interface Tag {
     name: string;
     url: string;
@@ -26,7 +25,6 @@
   let loading: boolean = true;
   let error: any = null;
 
-  /// This gets triggered when the component is mounted
   onMount(async () => {
     try {
       const response = await fetch("/api/pwc");
@@ -57,54 +55,72 @@
   <title>Papers with Code</title>
 </svelte:head>
 
-<main id="container--papers">
-  <h1 class="margin-y">
-    <i class="fa-solid fa-file-contract"></i> Papers with Code •
-    <a href="/">home</a>
+<main
+  class="min-h-screen bg-gray-900 text-gray-100 font-sans px-4 sm:px-8 py-8"
+>
+  <h1 class="flex items-center gap-2 text-3xl font-bold mb-8">
+    <i class="fa-solid fa-file-contract"></i>
+    Papers with Code
+    <span class="text-sm text-gray-400">•</span>
+    <a href="/" class="text-blue-500 hover:underline">home</a>
   </h1>
 
   {#if loading}
-    <p class="section--page-text-center">Loading papers...</p>
+    <p class="text-center">Loading papers...</p>
   {:else if error}
-    <p class="section--page-text-center error-message">{error}</p>
+    <p class="text-center text-red-500 font-bold mt-4">{error}</p>
   {:else}
-    <div class="papers-grid">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
       {#each papers as paper}
-        <div class="card--project">
-          <a href={"/papers" + paper.slug} on:click={() => handleClick(paper.image_url)}>
-            <img src={paper.image_url} alt={paper.title} class="paper-image" />
+        <div
+          class="bg-gray-800 rounded-lg overflow-hidden transition-transform duration-300 ease-in-out hover:scale-105"
+        >
+          <a
+            href={"/papers" + paper.slug}
+            on:click={() => handleClick(paper.image_url)}
+          >
+            <img
+              src={paper.image_url}
+              alt={paper.title}
+              class="w-full h-48 object-cover"
+            />
           </a>
-          <div class="paper-content">
-            <h2>
-              <a href={"/papers" + paper.slug} class="paper-title" on:click={() => handleClick(paper.image_url)}>
+          <div class="p-4">
+            <h2 class="mb-2 text-lg font-bold">
+              <a
+                href={"/papers" + paper.slug}
+                on:click={() => handleClick(paper.image_url)}
+                class="text-gray-100 hover:underline"
+              >
                 {paper.title}
               </a>
             </h2>
-            <div class="paper-description">
-              <small>{paper.description}</small>
+            <div class="mb-2">
+              <small class="text-sm italic opacity-70"
+                >{paper.description}</small
+              >
             </div>
-
-            <div class="paper-links">
+            <div class="flex mb-3">
               {#if paper.github_repo}
                 <a
                   href={paper.github_repo}
                   target="_blank"
                   rel="noopener noreferrer"
+                  class="text-blue-500 hover:underline flex items-center gap-1 text-base"
                 >
                   <i class="fa-brands fa-github"></i> code
                 </a>
               {/if}
             </div>
-
             {#if paper.tags && paper.tags.length > 0}
-              <div class="paper-tags">
+              <div class="flex flex-wrap gap-2 mt-2">
                 {#each paper.tags as tag}
-                  {#if tag.name.length != 0}
+                  {#if tag.name.length !== 0}
                     <a
                       href={tag.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      class="tag"
+                      class="text-xs lowercase text-gray-300 hover:underline"
                     >
                       {tag.name}
                     </a>
@@ -118,101 +134,3 @@
     </div>
   {/if}
 </main>
-
-<style>
-  @import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
-
-  small {
-    opacity: 0.64;
-    font-size: small;
-    font-style: italic;
-  }
-
-  h2 {
-    margin-top: 0.5em;
-    margin-bottom: 0.75em;
-  }
-
-  .paper-title {
-    color: var(--mainTextColor-light);
-    font-family: "Inter", sans-serif;
-    font-optical-sizing: auto;
-    font-weight: 400;
-    font-style: normal;
-  }
-
-  .paper-description {
-    margin-bottom: 0.5em;
-  }
-
-  .papers-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 2em;
-  }
-
-  .card--project {
-    background-color: var(--mainBgColor);
-    overflow: hidden;
-    transition: transform 0.3s ease;
-  }
-
-  .paper-image {
-    width: 100%;
-    height: 200px;
-    object-fit: cover;
-    border-radius: 4px;
-  }
-
-  .paper-content {
-    padding-top: 0em;
-    padding-left: 0.25em;
-    padding-right: 0.25em;
-    padding-bottom: 0.25em;
-  }
-
-  .paper-tags {
-    display: flex;
-    flex-direction: column;
-    flex-wrap: wrap;
-  }
-
-  .tag {
-    text-transform: lowercase;
-    color: var(--mainTextColor);
-    padding-top: 0.2em;
-    padding-bottom: 0.2em;
-    font-size: 0.7em;
-  }
-
-  .paper-links {
-    display: flex;
-    margin-bottom: 0.75em;
-    justify-content: flex-start;
-  }
-
-  .paper-links a {
-    color: var(--mainLinkColor);
-    font-size: 1rem;
-  }
-
-  .error-message {
-    color: #f63737;
-  }
-
-  @media (max-width: 600px) {
-    .papers-grid {
-      grid-template-columns: 1fr;
-    }
-
-    .paper-links {
-      flex-direction: column;
-      gap: 1em;
-    }
-  }
-
-  .error-message {
-    color: #f63737;
-    font-weight: bold;
-  }
-</style>

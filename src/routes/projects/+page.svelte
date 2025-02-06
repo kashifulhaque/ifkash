@@ -1,126 +1,120 @@
+<script lang="ts">
+  const projects = [
+    {
+      title: "Boo",
+      links: [{ text: "git repo", url: "https://github.com/VVIP-Kitchen/boo" }],
+      description:
+        "Innovative AI-Powered Discord Bot who engages in natural conversations, interprets and responds to image inputs, and generates high-quality images on demand. Equipped with advanced retrieval-augmented generation (RAG) capabilities, it seamlessly navigates and provides insights from IITM's BS in Data Science Discourse, enhancing community interactions and access to knowledge.",
+      tech: [
+        "Go",
+        "Docker",
+        "Python",
+        "Discord.py",
+        "Large Language Models (LLM)",
+        "Meta's LLaMa 3.1 8B",
+        "Cloudflare Workers AI",
+        "GitHub Models",
+      ],
+    },
+    {
+      title: "Personal LLM",
+      links: [
+        { text: "git repo", url: "https://github.com/kashifulhaque/ifkash" },
+        { text: "demo", url: "/chat" },
+      ],
+      description:
+        "My personal assistant who knows about me and can provide general info too!",
+      tech: [
+        "Go",
+        "Large Language Models (LLM)",
+        "Meta's LLaMa 3.2 3B",
+        "Cloudflare Workers AI",
+      ],
+    },
+    {
+      title: "Odeer",
+      links: [
+        { text: "git repo", url: "https://github.com/kashifulhaque/odeer" },
+      ],
+      htmlDescription:
+        "It's a CLI tool like <a href='https://ollama.com/' target='_blank' rel='noopener noreferrer' class='text-blue-400 hover:underline'>ollama</a> to interact with LLMs on your terminal",
+      tech: ["Go", "Large Language Models (LLM)", "Cloudflare Workers AI"],
+    },
+    {
+      title: "berzifetch-rs",
+      links: [
+        {
+          text: "git repo",
+          url: "https://github.com/kashifulhaque/berzifetch-rs",
+        },
+      ],
+      description: "A system fetch for Linux written in Rust.",
+      tech: ["Rust"],
+    },
+    {
+      title: "Vuether",
+      links: [
+        { text: "git repo", url: "https://github.com/kashifulhaque/vuether" },
+        { text: "demo", url: "https://vuether.now.sh" },
+      ],
+      description: "A plain, simple weather web-app written in Vue.js",
+      tech: ["Vue.js", "OpenWeatherMap API"],
+    },
+  ];
+</script>
+
 <svelte:head>
   <title>Some of my side projects</title>
 </svelte:head>
 
-<div id="container--main">
-  <section id="projects-wrapper" class="projects--page">
-    <h2>
-      <i class="fa-solid fa-diagram-project"></i> Projects •
-      <a href="/">home</a>
+<div
+  class="min-h-screen bg-gray-900 text-gray-100 space-grotesk-400 px-4 sm:px-8 py-8"
+>
+  <!-- Header Section -->
+  <section class="mb-8">
+    <h2 class="text-3xl font-bold space-grotesk-700 flex items-center gap-2">
+      <i class="fa-solid fa-diagram-project"></i>
+      Projects
+      <span class="text-sm text-gray-400">•</span>
+      <a href="/" class="text-blue-500 hover:underline">home</a>
     </h2>
-    <div class="card--work-history">
-      <strong>Boo</strong> •
-      <a
-        target="_blank"
-        rel="noopener noreferrer"
-        href="https://github.com/VVIP-Kitchen/boo">git repo</a
-      >
-      <p>
-        <small class="project-description">
-          Innovative AI-Powered Discord Bot who engages in natural
-          conversations, interprets and responds to image inputs, and generates
-          high-quality images on demand. Equipped with advanced
-          retrieval-augmented generation (RAG) capabilities, it seamlessly
-          navigates and provides insights from IITM's BS in Data Science
-          Discourse, enhancing community interactions and access to knowledge.
-        </small>
-      </p>
-      <p>Tech used:</p>
-      <ul>
-        <li>Go</li>
-        <li>Docker</li>
-        <li>Python</li>
-        <li>Discord.py</li>
-        <li>Large Language Models (LLM)</li>
-        <li>Meta's LLaMa 3.1 8B</li>
-        <li>Cloudflare Workers AI</li>
-        <li>GitHub Models</li>
-      </ul>
-    </div>
+  </section>
 
-    <div class="card--work-history">
-      <strong>Personal LLM</strong> •
-      <a
-        target="_blank"
-        rel="noopener noreferrer"
-        href="https://github.com/kashifulhaque/ifkash">git repo</a
+  <!-- Projects List -->
+  <section class="space-y-6">
+    {#each projects as project}
+      <div
+        class="p-4 border border-gray-700 rounded hover:bg-gray-800 transition-colors"
       >
-      •
-      <a href="/chat">demo</a>
-      <p>
-        <small class="project-description">
-          My personal assistant who knows about me and can provide general info
-          too!
-        </small>
-      </p>
-      <p>Tech used:</p>
-      <ul>
-        <li>Go</li>
-        <li>Large Language Models (LLM)</li>
-        <li>Meta's LLaMa 3.2 3B</li>
-        <li>Cloudflare Workers AI</li>
-      </ul>
-    </div>
-
-    <div class="card--work-history">
-      <strong>Odeer</strong> •
-      <a
-        target="_blank"
-        rel="noopener noreferrer"
-        href="https://github.com/kashifulhaque/odeer">git repo</a
-      >
-      <p>
-        <small class="project-description">
-          It's a cli tool like <a
-            href="https://ollama.com/"
-            target="_blank"
-            rel="noopener noreferrer">ollama</a
-          > to interact with LLMs on your terminal
-        </small>
-      </p>
-      <p>Tech used:</p>
-      <ul>
-        <li>Go</li>
-        <li>Large Language Models (LLM)</li>
-        <li>Cloudflare Workers AI</li>
-      </ul>
-    </div>
-
-    <div class="card--work-history">
-      <strong>berzifetch-rs</strong> •
-      <a
-        target="_blank"
-        rel="noopener noreferrer"
-        href="https://github.com/kashifulhaque/berzifetch-rs">git repo</a
-      >
-      <p>
-        <small class="project-description"> A system fetch for Linux written in Rust. </small>
-      </p>
-      <p>Tech used:</p>
-      <ul>
-        <li>Rust</li>
-      </ul>
-    </div>
-
-    <div class="card--work-history">
-      <strong>Vuether</strong> •
-      <a
-        target="_blank"
-        rel="noopener noreferrer"
-        href="https://github.com/kashifulhaque/vuether">git repo</a
-      >
-      •
-      <a href="https://vuether.now.sh" target="_blank" rel="noopener noreferrer"
-        >demo</a
-      >
-      <p>
-        <small class="project-description"> A plain, simple weather web-app written in Vue.js </small>
-      </p>
-      <p>Tech used:</p>
-      <ul>
-        <li>Vue.js</li>
-        <li>OpenWeatherMap API</li>
-      </ul>
-    </div>
+        <strong class="block text-xl space-grotesk-600">{project.title}</strong>
+        <div class="my-2">
+          {#each project.links as link, j}
+            <a
+              href={link.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-blue-400 hover:underline"
+            >
+              {link.text}
+            </a>{#if j < project.links.length - 1}
+              <span class="mx-1">•</span>
+            {/if}
+          {/each}
+        </div>
+        <p class="mb-2 text-sm text-gray-300">
+          {#if project.htmlDescription}
+            {@html project.htmlDescription}
+          {:else}
+            {project.description}
+          {/if}
+        </p>
+        <p class="text-sm text-gray-400 mb-1">Tech used:</p>
+        <ul class="list-disc list-inside text-sm text-gray-300 space-y-1">
+          {#each project.tech as techItem}
+            <li>{techItem}</li>
+          {/each}
+        </ul>
+      </div>
+    {/each}
   </section>
 </div>

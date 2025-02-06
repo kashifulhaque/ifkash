@@ -18,10 +18,7 @@
     description: string;
   }
 
-  let error = {
-    isError: false,
-    message: "",
-  };
+  let error = { isError: false, message: "" };
   let loading: boolean = true;
   let paper: Paper | undefined;
   let paperImage: string | null;
@@ -32,7 +29,8 @@
 
   const slug = $page.params.slug;
   if (!slug) {
-    (error.isError = true), (error.message = "slug not found");
+    error.isError = true;
+    error.message = "slug not found";
   }
 
   onMount(async () => {
@@ -43,11 +41,9 @@
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data = await response.json();
-
       if (!data) {
         throw new Error("Invalid data received from API");
       }
-
       paper = data;
     } catch (err) {
       error.isError = true;
@@ -63,113 +59,91 @@
   }
 </script>
 
-<main id="container--main">
+<svelte:head>
+  <title>Papers with Code</title>
+</svelte:head>
+
+<main
+  class="min-h-screen bg-gray-900 text-gray-100 font-sans px-4 sm:px-8 py-8"
+>
   {#if loading}
-    <p>Loading...</p>
+    <p class="text-center text-lg">Loading...</p>
   {:else if error.isError}
-    <p>{error.message}</p>
+    <p class="text-center text-red-500 font-bold mt-4">{error.message}</p>
   {:else if paper}
-    <h1>{paper.title} • <a on:click={goBack}>back</a></h1>
+    <h1 class="text-3xl font-bold mb-4">
+      {paper.title}
+      <span class="text-gray-400 mx-2">•</span>
+      <a on:click={goBack} class="text-blue-500 hover:underline cursor-pointer"
+        >back</a
+      >
+    </h1>
 
     {#if paperImage}
-      <img src={paperImage} alt={paper.title} />
+      <img
+        src={paperImage}
+        alt={paper.title}
+        class="block mx-auto my-4 rounded-lg"
+      />
     {/if}
 
-    <br />
-
-    <ul class="authors-list">
-      {#each paper.authors as author, index}
-        <li style="display: inline; margin-right: 0.5em;">
-          <a href={author.url} target="_blank"><small>{author.name}</small></a>
+    <ul class="flex flex-wrap gap-2 mb-4">
+      {#each paper.authors as author}
+        <li class="list-none">
+          <a
+            href={author.url}
+            target="_blank"
+            class="text-blue-500 hover:underline"
+          >
+            <small class="text-xs italic">{author.name}</small>
+          </a>
         </li>
       {/each}
     </ul>
 
-    <p class="description">{paper.description}</p>
+    <p class="text-base leading-relaxed my-4">{paper.description}</p>
 
-    <ul class="link-list">
-      <li class="link-item">
-        <a href={paper.dataset_url} target="_blank">dataset</a> •
+    <ul class="flex flex-wrap items-center gap-2">
+      <li>
+        <a
+          href={paper.dataset_url}
+          target="_blank"
+          class="text-blue-500 hover:underline"
+        >
+          dataset
+        </a>
+        <span> •</span>
       </li>
-      <li class="link-item">
-        <a href={paper.arxiv_page_url} target="_blank">ArXiv page</a> •
+      <li>
+        <a
+          href={paper.arxiv_page_url}
+          target="_blank"
+          class="text-blue-500 hover:underline"
+        >
+          ArXiv page
+        </a>
+        <span> •</span>
       </li>
-      <li class="link-item">
-        <a href={paper.arxiv_pdf_url} target="_blank">pdf</a>
+      <li>
+        <a
+          href={paper.arxiv_pdf_url}
+          target="_blank"
+          class="text-blue-500 hover:underline"
+        >
+          pdf
+        </a>
       </li>
-      <li class="link-item last-item">
-        <a href="https://example.com" target="_blank">teach me</a>
+      <li class="ml-auto">
+        <a
+          href="https://example.com"
+          target="_blank"
+          class="text-blue-500 hover:underline"
+        >
+          teach me
+        </a>
       </li>
     </ul>
   {:else}
-    <p>No paper found.</p>
+    <p class="text-center">No paper found.</p>
   {/if}
 </main>
-
-<style>
-  @import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
-
-  .description {
-    font-family: "Inter", sans-serif;
-    font-optical-sizing: auto;
-    font-weight: 400;
-    font-style: normal;
-    font-size: 0.95rem;
-    line-height: 1.75rem;
-    margin: 1em 0;
-  }
-
-  img {
-    display: block;
-    margin: auto;
-  }
-
-  ul {
-    padding-left: 1.2em;
-    margin: 0.5em 0;
-  }
-
-  li {
-    list-style-type: none;
-    margin-bottom: 0.5em;
-  }
-
-  a {
-    cursor: pointer;
-    text-decoration: none;
-    color: var(--mainLinkColor);
-    font-weight: 500;
-  }
-
-  a:hover {
-    text-decoration: underline;
-  }
-
-  small {
-    font-size: 0.85rem;
-    font-family: "Inter", sans-serif;
-    font-weight: 100;
-    font-style: italic;
-  }
-
-  .authors-list {
-    margin: 0;
-    padding-left: 0;
-    display: inline;
-  }
-
-  .link-list {
-    display: flex;
-    justify-content: space-between; /* Distributes space between items */
-    padding-left: 0;
-    margin: 0;
-  }
-
-  .link-item {
-    margin-right: 0.5em;
-  }
-
-  .last-item {
-    margin-left: auto; /* Pushes the last item to the right */
-  }
-</style>

@@ -48,26 +48,43 @@
   ];
 </script>
 
-<div id="container--main">
-  <section class="section--page">
-    <h2>
-      <i class="fa-solid fa-microchip"></i> Tech •
-      <a href="/">home</a>
-    </h2>
+<svelte:head>
+  <title>Tech Stack • Portfolio</title>
+</svelte:head>
 
-    <div id="wrapper--techstack__items">
-      {#each techStack as group}
-        <div class="card--techstack">
-          <small>
-            {#each group as { href, text }, i}
-              <a {href} target="_blank" rel="noopener noreferrer">{text}</a
-              >{#if i < group.length - 1}
-                {", "}
-              {/if}
-            {/each}
-          </small>
-        </div>
-      {/each}
-    </div>
+<div
+  class="min-h-screen bg-gray-900 text-gray-100 space-grotesk-400 px-4 sm:px-8 py-8"
+>
+  <!-- Header Section -->
+  <section class="mb-8">
+    <h2 class="text-3xl font-bold space-grotesk-700 flex items-center gap-2">
+      <i class="fa-solid fa-microchip"></i>
+      Tech
+      <span class="text-sm text-gray-400">•</span>
+      <a href="/" class="text-blue-500 hover:underline">home</a>
+    </h2>
+  </section>
+
+  <!-- Tech Stack Cards -->
+  <section class="space-y-6">
+    {#each techStack as group}
+      <div
+        class="p-4 border border-gray-700 rounded hover:bg-gray-800 transition-colors"
+      >
+        <small class="text-sm">
+          {#each group as { href, text }, i (href)}
+            <a
+              {href}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-blue-400 hover:underline"
+            >
+              {text}
+            </a>{#if i < group.length - 1}, 
+            {/if}
+          {/each}
+        </small>
+      </div>
+    {/each}
   </section>
 </div>

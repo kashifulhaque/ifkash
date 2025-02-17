@@ -22,14 +22,6 @@
         </p>
         <p class="text-gray-400">2020 - 2024</p>
       </div>
-
-      <div class="p-4">
-        <strong class="block text-xl mb-1">University of Calcutta</strong>
-        <p class="text-gray-300">
-          Bachelor of Technology, Electronics and Communications Engineering
-        </p>
-        <p class="text-gray-400">2016 - 2019</p>
-      </div>
     </div>
   </section>
 </div>

@@ -22,11 +22,12 @@
   },
   "type": "module",
   "dependencies": {
-    "@tailwindcss/vite": "^4.0.6",
+    "@tailwindcss/vite": "^4.0.7",
+    "@vercel/analytics": "^1.5.0",
     "axios": "^1.7.9",
     "dompurify": "^3.2.4",
     "marked": "^14.1.4",
-    "tailwindcss": "^4.0.6"
+    "tailwindcss": "^4.0.7"
   },
   "trustedDependencies": [
     "svelte-preprocess"

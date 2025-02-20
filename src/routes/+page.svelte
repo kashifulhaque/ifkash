@@ -1,11 +1,30 @@
 <script lang="ts">
-  let title: string = "Kashiful Haque";
+  import { onMount } from "svelte";
+
+  // Name translations
+  const nameTranslations = [
+    { lang: "English", text: "Kashiful Haque" },
+    { lang: "Japanese", text: "カシフル・ハック" },
+    { lang: "Hindi", text: "कशिफुल हक़" },
+    { lang: "Arabic", text: "كاشف الحق" },
+    { lang: "Kannada", text: "ಕಶಿಫುಲ್ ಹಕ್" },
+    { lang: "Thai", text: "คาชิฟุล ฮัก" },
+    { lang: "Korean", text: "카시풀 하크" },
+  ];
+
+  let currentNameIndex = 0;
+  let name = nameTranslations[currentNameIndex].text;
+  let longPressTimer: number | null = null;
+  let isLongPressing = false;
+
+  // Page routes and social links
   const pageRoutes = [
     { href: "/work", text: "Work Experience" },
     { href: "/education", text: "Education" },
     { href: "/projects", text: "Projects" },
     { href: "/tech", text: "Tech stack" },
   ];
+
   const socialLinks = [
     {
       href: "https://blog.ifkash.dev",
@@ -28,13 +47,56 @@
       text: "Leetcode",
     },
   ];
+
+  onMount(() => {
+    // Rotate name every 2 seconds
+    const nameRotationInterval = setInterval(() => {
+      currentNameIndex = (currentNameIndex + 1) % nameTranslations.length;
+      name = nameTranslations[currentNameIndex].text;
+    }, 2500);
+
+    return () => {
+      clearInterval(nameRotationInterval);
+    };
+  });
+
+  // Long press detection handlers
+  function handleMouseDown() {
+    isLongPressing = false;
+    longPressTimer = window.setTimeout(() => {
+      isLongPressing = true;
+      window.open("./assets/Kashiful_Haque-dark.pdf", "_blank");
+    }, 2000);
+  }
+
+  function handleMouseUp() {
+    if (longPressTimer) {
+      clearTimeout(longPressTimer);
+      longPressTimer = null;
+    }
+    // Only navigate to regular PDF if not long-pressed
+    if (!isLongPressing) {
+      window.open("./assets/Kashiful_Haque.pdf", "_blank");
+    }
+    isLongPressing = false;
+  }
+
+  function handleMouseLeave() {
+    if (longPressTimer) {
+      clearTimeout(longPressTimer);
+      longPressTimer = null;
+    }
+    isLongPressing = false;
+  }
 </script>
 
 <svelte:head>
-  <title>{title} • Portfolio</title>
+  <title>{name} • Portfolio</title>
 </svelte:head>
 
-<div class="min-h-screen bg-neutral-900 text-gray-100 space-grotesk-400 px-4 sm:px-8 py-8">
+<div
+  class="min-h-screen bg-neutral-900 text-gray-100 space-grotesk-400 px-4 sm:px-8 py-8"
+>
   <!-- Hero Section -->
   <section class="flex flex-col items-center text-center mb-8">
     <img
@@ -43,7 +105,11 @@
       title="Sekiro holding Kusabimaru"
       class="w-32 h-32 rounded-full object-cover border-2 border-gray-700 mb-4"
     />
-    <h1 class="text-3xl font-bold space-grotesk-700">{title}</h1>
+    <h1
+      class="text-3xl font-bold space-grotesk-700 transition-opacity duration-500"
+    >
+      {name}
+    </h1>
     <p class="text-md text-gray-400 mt-2">
       <a
         href="mailto:haque.kashiful7@gmail.com"
@@ -64,15 +130,26 @@
       </a>
     </p>
 
-    <!-- Download Resume button -->
-    <a
-      href="./assets/Kashiful_Haque.pdf"
-      target="_blank"
-      class="mt-4 inline-flex items-center px-4 py-2 bg-teal-400 hover:bg-teal-500 transition-colors rounded text-neutral-900 text-md font-semibold"
+    <!-- Download Resume button with long press detection -->
+    <button
+      on:mousedown={handleMouseDown}
+      on:mouseup={handleMouseUp}
+      on:mouseleave={handleMouseLeave}
+      on:touchstart={handleMouseDown}
+      on:touchend={handleMouseUp}
+      on:touchcancel={handleMouseLeave}
+      class="mt-4 inline-flex items-center px-4 py-2 bg-teal-400 hover:bg-teal-500 transition-colors rounded text-neutral-900 text-md font-semibold cursor-pointer relative overflow-hidden"
     >
       <i class="fa-solid fa-download mr-2"></i>
       Download Resume
-    </a>
+      <div
+        class="absolute bottom-0 left-0 h-1 bg-blue-500 transition-all duration-300"
+        style={`width: ${isLongPressing ? "100%" : "0%"}`}
+      ></div>
+    </button>
+    <div class="text-xs text-gray-500 mt-1">
+      Hold for 2 seconds for dark mode version
+    </div>
   </section>
 
   <!-- Social Links -->
@@ -123,7 +200,9 @@
 
   <!-- Footer Links -->
   <footer class="text-center">
-    <div class="flex flex-wrap items-center justify-center gap-2 text-blue-200 text-sm">
+    <div
+      class="flex flex-wrap items-center justify-center gap-2 text-blue-200 text-sm"
+    >
       <a href="/news" class="hover:underline">hot tech news</a>
       <span>•</span>
       <a href="/papers" class="hover:underline">hot ML papers</a>

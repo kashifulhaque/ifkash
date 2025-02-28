@@ -15,8 +15,12 @@ Software Engineer with over 2 YOE in Backend and AI/ML at Fiery Digital India (a
 = Work Experience
 #line(stroke: 1pt + gray)
 
-*Associate Software Engineer* #h(1fr) 07/2023 -- Present \
-_Fiery (an Epson company)_ #h(1fr) _Bangalore, India_ \
+*Machine Learning Engineer* #h(1fr) 02/2025 -- Present \
+_American Express_ #h(1fr) _Bengaluru, India_ \
+- via IntraEdge
+\
+*Associate Software Engineer* #h(1fr) 07/2023 -- 02/2025 \
+_Fiery (an Epson company)_ #h(1fr) _Bengaluru, India_ \
 - Built AskDB, a platform for upper management to know how the company is performing.
 - Built an audio fingerprinting solution to identify ads played on TV.
 - Built RAG based FieryGPT using LLaMa 3.1 LLM, trained LoRA adapter on company data for QnA.
@@ -24,7 +28,7 @@ _Fiery (an Epson company)_ #h(1fr) _Bangalore, India_ \
 - #text(weight: "medium")[Tech:] TypeScript, Python, FastAPI, huggingface, Transformers, vLLM, ollama, ImageMagick, PyTorch, Qdrant, Docker, Numpy, Pandas
 \
 *Data Scientist, Intern* #h(1fr) 01/2023 -- 07/2023 \
-_Electronics for Imaging_ #h(1fr) _Bangalore, India_ \
+_Electronics for Imaging_ #h(1fr) _Bengaluru, India_ \
 - Cost-effective results compared to costly Photoshop APIs.
 - Built a product mockup solution using ImageMagick and Node.js
 - #text(weight: "medium")[Tech:] TypeScript, Angular, Node.js, Python, Flask, ImageMagick, MySQL, NLTK, spaCy
@@ -49,10 +53,6 @@ _Python, Discord.py, Go, PostgreSQL, Cloudflare Workers, Linode_
 
 *Odeer* • #link("https://github.com/kashifulhaque/odeer")[git repo]  \
 _Go, Gin, Cloudflare_
-
-= Blogs
-#line(stroke: 1pt + gray)
-Beginner's guide to CUDA programming • #link("https://blog.ifkash.dev/intro-to-cuda")[read here]
 
 = Skills
 #line(stroke: 1pt + gray)

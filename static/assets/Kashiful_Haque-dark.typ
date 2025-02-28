@@ -1,10 +1,18 @@
-#set text(fill: white, font: "Crimson Text")
+#let bg-color = rgb("#1e2a23") // Dark forest green
+#let text-color = rgb("#e8f1e8") // Light mint text
+#let accent-color = rgb("#3a7d44") // Medium green accent
 
-#show link: underline
-#set page(fill: rgb("#0c0a09"), margin: (x: 0.9cm, y: 1.3cm))
+#set text(fill: text-color, font: "Crimson Text")
+#show link: it => [#underline[#text(fill: rgb("#6baa75"))[#it]]]
+
+#set page(fill: bg-color, margin: (x: 0.9cm, y: 1.3cm))
 #set par(justify: true)
 
-#let chiline() = {v(-3pt); line(length: 100%); v(-5pt)}
+#let chiline() = {
+  v(-3pt)
+  line(length: 100%, stroke: accent-color)
+  v(-5pt)
+}
 
 = Kashiful Haque
 +918240868544 • #link("mailto:haque.kashiful7@gmail.com")[haque.kashiful7\@gmail.com] • #link("https://github.com/kashifulhaque")[github] • #link("https://www.linkedin.com/in/kashifulhaque")[linkedin] • #link("https://ifkash.dev")[ifkash.dev]
@@ -15,8 +23,12 @@ Software Engineer with over 2 YOE in Backend and AI/ML at Fiery Digital India (a
 = Work Experience
 #line(stroke: 1pt + teal)
 
-*Associate Software Engineer* #h(1fr) 07/2023 -- Present \
-_Fiery (an Epson company)_ #h(1fr) _Bangalore, India_ \
+*Machine Learning Engineer* #h(1fr) 02/2025 -- Present \
+_American Express_ #h(1fr) _Bengaluru, India_ \
+- via IntraEdge
+\
+*Associate Software Engineer* #h(1fr) 07/2023 -- 02/2025 \
+_Fiery (an Epson company)_ #h(1fr) _Bengaluru, India_ \
 - Built AskDB, a platform for upper management to know how the company is performing.
 - Built an audio fingerprinting solution to identify ads played on TV.
 - Built RAG based FieryGPT using LLaMa 3.1 LLM, trained LoRA adapter on company data for QnA.
@@ -24,7 +36,7 @@ _Fiery (an Epson company)_ #h(1fr) _Bangalore, India_ \
 - #text(weight: "medium")[Tech:] TypeScript, Python, FastAPI, huggingface, Transformers, vLLM, ollama, ImageMagick, PyTorch, Qdrant, Docker, Numpy, Pandas
 \
 *Data Scientist, Intern* #h(1fr) 01/2023 -- 07/2023 \
-_Electronics for Imaging_ #h(1fr) _Bangalore, India_ \
+_Electronics for Imaging_ #h(1fr) _Bengaluru, India_ \
 - Cost-effective results compared to costly Photoshop APIs.
 - Built a product mockup solution using ImageMagick and Node.js
 - #text(weight: "medium")[Tech:] TypeScript, Angular, Node.js, Python, Flask, ImageMagick, MySQL, NLTK, spaCy
@@ -49,10 +61,6 @@ _Python, Discord.py, Go, PostgreSQL, Cloudflare Workers, Linode_
 
 *Odeer* • #link("https://github.com/kashifulhaque/odeer")[git repo]  \
 _Go, Gin, Cloudflare_
-
-= Blogs
-#line(stroke: 1pt + teal)
-Beginner's guide to CUDA programming • #link("https://blog.ifkash.dev/intro-to-cuda")[read here]
 
 = Skills
 #line(stroke: 1pt + teal)

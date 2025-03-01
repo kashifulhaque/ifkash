@@ -9,7 +9,6 @@
     { "src": "/api/docs", "dest": "/api/docs.go" },
 
     { "src": "/api/blogs", "dest": "/api/blogs.go" },
-    { "src": "/api/blogs/(.*)", "dest": "/api/blogs.go?source=$1" },
 
     { "src": "/api/lc/profile", "dest": "/api/lc-profile.go" },
     { "src": "/api/lc/submissions", "dest": "/api/lc-submissions.go" }

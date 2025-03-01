@@ -205,7 +205,7 @@
     >
       <a href="/news" class="hover:underline">tech news</a>
       <span>•</span>
-      <a href="/blogs" class="hover:underline">tech blogs</a>
+      <a href="/tech-blogs" class="hover:underline">tech blogs</a>
       <span>•</span>
       <a href="/papers" class="hover:underline">ML papers</a>
       <span>•</span>

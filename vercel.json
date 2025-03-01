@@ -2,9 +2,15 @@
   "routes": [
     { "src": "/api/hn", "dest": "/api/hn.go" },
     { "src": "/api/llm", "dest": "/api/llm.go" },
+
     { "src": "/api/pwc", "dest": "/api/pwc.go" },
-    { "src": "/api/docs", "dest": "/api/docs.go" },
     { "src": "/api/pwc/paper", "dest": "/api/pwc-paper.go" },
+
+    { "src": "/api/docs", "dest": "/api/docs.go" },
+
+    { "src": "/api/blogs", "dest": "/api/blogs.go" },
+    { "src": "/api/blogs/(.*)", "dest": "/api/blogs.go?source=$1" },
+
     { "src": "/api/lc/profile", "dest": "/api/lc-profile.go" },
     { "src": "/api/lc/submissions", "dest": "/api/lc-submissions.go" }
   ]

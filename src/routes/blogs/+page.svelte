@@ -66,7 +66,8 @@
       <div class="flex gap-2 flex-wrap">
         {#each blogs as blog}
           <button
-            class="px-3 py-1 rounded-full text-sm {selectedBlog === blog
+            class="px-3 py-1 rounded-full text-sm cursor-pointer {selectedBlog ===
+            blog
               ? 'bg-blue-600'
               : 'bg-neutral-700 hover:bg-neutral-600'}"
             on:click={() => (selectedBlog = blog)}

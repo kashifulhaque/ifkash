@@ -203,13 +203,15 @@
     <div
       class="flex flex-wrap items-center justify-center gap-2 text-blue-200 text-sm"
     >
-      <a href="/news" class="hover:underline">hot tech news</a>
+      <a href="/news" class="hover:underline">tech news</a>
       <span>•</span>
-      <a href="/papers" class="hover:underline">hot ML papers</a>
+      <a href="/blogs" class="hover:underline">tech blogs</a>
       <span>•</span>
-      <a href="/chat" class="hover:underline">chat with me</a>
+      <a href="/papers" class="hover:underline">ML papers</a>
       <span>•</span>
-      <a href="/leetcode" class="hover:underline">my leetcode stats</a>
+      <a href="/chat" class="hover:underline">chat</a>
+      <span>•</span>
+      <a href="/leetcode" class="hover:underline">leetcode stats</a>
     </div>
   </footer>
 </div>

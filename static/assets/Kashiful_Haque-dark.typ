@@ -25,7 +25,6 @@ Software Engineer with over 2 YOE in Backend and AI/ML at Fiery Digital India (a
 
 *Machine Learning Engineer* #h(1fr) 02/2025 -- Present \
 _American Express_ #h(1fr) _Bengaluru, India_ \
-- via IntraEdge
 \
 *Associate Software Engineer* #h(1fr) 07/2023 -- 02/2025 \
 _Fiery (an Epson company)_ #h(1fr) _Bengaluru, India_ \

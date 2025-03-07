@@ -49,7 +49,7 @@
 </svelte:head>
 
 <main
-  class="max-w-3xl mx-auto p-5 text-gray-100 space-grotesk-400"
+  class="max-w-3xl mx-auto p-5 text-gray-100 space-grotesk-400 bg-neutral-900"
 >
   <h1 class="text-2xl font-bold text-orange-400 mb-5">
     Latest Engineering Blog Posts

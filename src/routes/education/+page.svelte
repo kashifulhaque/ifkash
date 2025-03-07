@@ -6,7 +6,7 @@
   class="min-h-screen text-gray-100 space-grotesk-400 px-4 sm:px-8 py-8"
 >
   <section>
-    <h2 class="text-2xl font-bold space-grotesk-700 mb-6 flex items-center gap-2">
+    <h2 class="text-2xl font-bold space-grotesk-700 mb-6 flex items-center gap-2 bg-neutral-900">
       <i class="fa-solid fa-graduation-cap"></i>
       Education
       <span class="text-sm text-gray-400">•</span>

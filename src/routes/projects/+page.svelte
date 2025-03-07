@@ -68,7 +68,7 @@
 </svelte:head>
 
 <div
-  class="min-h-screen text-gray-100 space-grotesk-400 px-4 sm:px-8 py-8"
+  class="min-h-screen text-gray-100 space-grotesk-400 px-4 sm:px-8 py-8 bg-neutral-900"
 >
   <!-- Header Section -->
   <section class="mb-8">

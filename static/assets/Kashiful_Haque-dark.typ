@@ -16,12 +16,12 @@
 
 = Kashiful Haque
 +918240868544 • #link("mailto:haque.kashiful7@gmail.com")[haque.kashiful7\@gmail.com] • #link("https://github.com/kashifulhaque")[github] • #link("https://www.linkedin.com/in/kashifulhaque")[linkedin] • #link("https://ifkash.dev")[ifkash.dev]
-#line(stroke: 1pt + teal)
+#line(stroke: 1pt + gray)
 
-Software Engineer with over 2 YOE in Backend and AI/ML at Fiery Digital India (an Epson company). Studied Data Science at IIT Madras. \
+Software Engineer with almost 3 YOE in Machine Learning and Backend Development. Current MLE \@ AMEX, formerly worked as Associate SE \@ Fiery (an Epson company). Studied Data Science at IIT Madras. \
 
 = Work Experience
-#line(stroke: 1pt + teal)
+#line(stroke: 1pt + gray)
 
 *Machine Learning Engineer* #h(1fr) 02/2025 -- Present \
 _American Express_ #h(1fr) _Bengaluru, India_ \
@@ -47,13 +47,13 @@ _Corteva Agriscience_ #h(1fr) _Hyderabad, India_ \
 - #text(weight: "medium")[Tech:] Python, Flask, Docker
 
 = Education
-#line(stroke: 1pt + teal)
+#line(stroke: 1pt + gray)
 
 *Indian Institute of Technology Madras* #h(1fr) 2020 -- 2024 \
 Bachelor of Science, _Data Science and Applications_ \
 
 = Projects
-#line(stroke: 1pt + teal)
+#line(stroke: 1pt + gray)
 
 *Boo* • #link("https://github.com/kashifulhaque/boo")[git repo] \
 _Python, Discord.py, Go, PostgreSQL, Cloudflare Workers, Linode_
@@ -62,7 +62,7 @@ _Python, Discord.py, Go, PostgreSQL, Cloudflare Workers, Linode_
 _Go, Gin, Cloudflare_
 
 = Skills
-#line(stroke: 1pt + teal)
+#line(stroke: 1pt + gray)
 
 - Python, TypeScript, C, C++, Rust, Go
 - Node.js, Express.js, Vue, Angular, FastAPI, Flask, Tailwind

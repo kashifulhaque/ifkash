@@ -53,7 +53,7 @@
   });
 </script>
 
-<div class="min-h-screen bg-neutral-900 text-gray-100 space-grotesk-400 px-4 sm:px-8 py-8">
+<div class="min-h-screen text-gray-100 space-grotesk-400 px-4 sm:px-8 py-8">
   <section>
     <h1 class="text-2xl font-bold mb-6 flex items-center gap-2">
       <i class="fa-solid fa-list-check"></i>

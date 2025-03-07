@@ -3,7 +3,7 @@
 </svelte:head>
 
 <div
-  class="min-h-screen bg-neutral-900 text-gray-100 space-grotesk-400 px-4 sm:px-8 py-8"
+  class="min-h-screen text-gray-100 space-grotesk-400 px-4 sm:px-8 py-8"
 >
   <section>
     <h2 class="text-2xl font-bold space-grotesk-700 mb-6 flex items-center gap-2">

@@ -10,7 +10,7 @@
 +918240868544 • #link("mailto:haque.kashiful7@gmail.com")[haque.kashiful7\@gmail.com] • #link("https://github.com/kashifulhaque")[github] • #link("https://www.linkedin.com/in/kashifulhaque")[linkedin] • #link("https://ifkash.dev")[ifkash.dev]
 #line(stroke: 1pt + gray)
 
-Software Engineer with over 2 YOE in Backend and AI/ML at Fiery Digital India (an Epson company). Studied Data Science at IIT Madras. \
+Software Engineer with almost 3 YOE in Machine Learning and Backend Development. Current MLE \@ AMEX, formerly worked as Associate SE \@ Fiery (an Epson company). Studied Data Science at IIT Madras. \
 
 = Work Experience
 #line(stroke: 1pt + gray)

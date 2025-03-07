@@ -56,7 +56,7 @@
 </svelte:head>
 
 <main
-  class="min-h-screen bg-neutral-900 text-gray-100 space-grotesk-400 px-4 sm:px-8 py-8"
+  class="min-h-screen text-gray-100 space-grotesk-400 px-4 sm:px-8 py-8"
 >
   <h1 class="flex items-center gap-2 text-2xl font-bold mb-8">
     <i class="fa-solid fa-file-contract"></i>

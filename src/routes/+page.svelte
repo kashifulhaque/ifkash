@@ -203,6 +203,8 @@
     <div
       class="flex flex-wrap items-center justify-center gap-2 text-blue-200 text-sm"
     >
+      <a href="/dotfiles" class="hover:underline">dotfiles</a>
+      <span>•</span>
       <a href="/news" class="hover:underline">tech news</a>
       <span>•</span>
       <a href="/tech-blogs" class="hover:underline">tech blogs</a>

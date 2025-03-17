@@ -4,6 +4,7 @@
       role: "Machine Learning Engineer",
       companies: [
         { name: "American Express", url: "https://www.americanexpress.com" },
+        { name: "(client for IntraEdge)", url: "https://intraedge.com" }
       ],
       duration: "February 2025 till present",
       location: "Bengaluru, IN"

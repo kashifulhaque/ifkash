@@ -17,6 +17,7 @@ Software Engineer with almost 3 YOE in Machine Learning and Backend Development.
 
 *Machine Learning Engineer* #h(1fr) 02/2025 -- Present \
 _American Express_ #h(1fr) _Bengaluru, India_ \
+- client for IntraEdge
 \
 *Associate Software Engineer* #h(1fr) 07/2023 -- 02/2025 \
 _Fiery (an Epson company)_ #h(1fr) _Bengaluru, India_ \

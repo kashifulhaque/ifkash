@@ -117,7 +117,9 @@ Kashiful also holds a Bachelor's degree in Data Science from IIT Madras and has 
   $: displayMessages = messages.filter((message) => message.role !== "system");
 </script>
 
-<div class="max-w-3xl mx-auto h-screen flex flex-col p-2 sm:p-4 text-gray-100 space-grotesk-400 bg-neutral-900">
+<div
+  class="max-w-3xl mx-auto h-screen flex flex-col p-2 sm:p-4 text-gray-100 space-grotesk-400 bg-neutral-900"
+>
   <!-- Messages Container -->
   <div
     class="flex-grow overflow-y-auto p-2 sm:p-4 flex flex-col"
@@ -151,31 +153,38 @@ Kashiful also holds a Bachelor's degree in Data Science from IIT Madras and has 
 
   <!-- Input Area -->
   <div class="flex flex-col sm:flex-row mt-auto">
-    <input
-      type="text"
-      bind:value={userMessage}
-      placeholder="Type your message ..."
-      on:keypress={(e) => e.key === "Enter" && sendMessage()}
-      disabled={loading}
-      class="flex-grow p-2 border border-gray-600 rounded mr-0 sm:mr-2 mb-2 sm:mb-0 bg-gray-800 text-gray-100"
-    />
+    <div class="flex-grow relative mr-0 sm:mr-2 mb-2 sm:mb-0">
+      <textarea
+        bind:value={userMessage}
+        placeholder="Type your message ..."
+        on:keypress={(e) => e.key === "Enter" && !e.shiftKey && sendMessage()}
+        disabled={loading}
+        class="w-full p-2 border border-gray-600 rounded bg-gray-800 text-gray-100 resize-none min-h-[60px] max-h-[200px] overflow-y-auto"
+        rows="2"
+      ></textarea>
+      <div class="text-xs text-gray-400 absolute bottom-2 right-2">
+        Shift+Enter for new line
+      </div>
+    </div>
 
-    <!-- Send message button -->
-    <button
-      on:click={sendMessage}
-      disabled={loading || userMessage.trim() === ""}
-      class="px-4 py-2 bg-teal-700 hover:bg-teal-800 transition-colors text-white rounded disabled:bg-gray-700 disabled:cursor-not-allowed cursor-pointer mb-2 sm:mb-0"
-    >
-      Send
-    </button>
+    <div class="flex flex-row space-x-2">
+      <!-- Send message button -->
+      <button
+        on:click={sendMessage}
+        disabled={loading || userMessage.trim() === ""}
+        class="px-4 py-2 bg-teal-700 hover:bg-teal-800 transition-colors text-white rounded disabled:bg-gray-700 disabled:cursor-not-allowed cursor-pointer"
+      >
+        Send
+      </button>
 
-    <!-- Clear convo button -->
-    <button
-      on:click={clearChat}
-      disabled={loading || displayMessages.length === 0}
-      class="px-4 py-2 bg-red-500 text-white rounded disabled:bg-gray-600 disabled:cursor-not-allowed cursor-pointer ml-0 sm:ml-2 mb-2 sm:mb-0"
-    >
-      <i class="fa-solid fa-trash"></i>
-    </button>
+      <!-- Clear convo button -->
+      <button
+        on:click={clearChat}
+        disabled={loading || displayMessages.length === 0}
+        class="px-4 py-2 bg-red-500 text-white rounded disabled:bg-gray-600 disabled:cursor-not-allowed cursor-pointer"
+      >
+        <i class="fa-solid fa-trash"></i>
+      </button>
+    </div>
   </div>
 </div>

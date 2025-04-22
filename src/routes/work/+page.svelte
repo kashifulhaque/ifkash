@@ -4,10 +4,10 @@
       role: "Machine Learning Engineer",
       companies: [
         { name: "American Express", url: "https://www.americanexpress.com" },
-        { name: "(client for IntraEdge)", url: "https://intraedge.com" }
+        { name: "(client for IntraEdge)", url: "https://intraedge.com" },
       ],
       duration: "February 2025 till present",
-      location: "Bengaluru, IN"
+      location: "Bengaluru, IN",
     },
     {
       role: "Associate Software Engineer",
@@ -24,7 +24,11 @@
     {
       role: "Data Scientist, Intern",
       companies: [
-        { name: "Electronics for Imaging", url: "https://www.efi.com" },
+        { name: "Fiery", url: "https://www.efi.com" },
+        {
+          name: "(an Epson company)",
+          url: "https://corporate.epson/en/news/2024/240919.html",
+        },
       ],
       duration: "Jan 2023 till Jul 2023",
       location: "Bengaluru, IN",
@@ -44,7 +48,9 @@
   <title>Work History • Portfolio</title>
 </svelte:head>
 
-<div class="min-h-screen text-gray-100 space-grotesk-400 px-4 sm:px-8 py-8 bg-neutral-900">
+<div
+  class="min-h-screen text-gray-100 space-grotesk-400 px-4 sm:px-8 py-8 bg-neutral-900"
+>
   <!-- Header Section -->
   <section class="mb-8">
     <h2 class="text-2xl font-bold space-grotesk-700 flex items-center gap-2">

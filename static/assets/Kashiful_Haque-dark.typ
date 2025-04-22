@@ -36,7 +36,7 @@ _Fiery (an Epson company)_ #h(1fr) _Bengaluru, India_ \
 - #text(weight: "medium")[Tech:] TypeScript, Python, FastAPI, huggingface, Transformers, vLLM, ollama, ImageMagick, PyTorch, Qdrant, Docker, Numpy, Pandas
 \
 *Data Scientist, Intern* #h(1fr) 01/2023 -- 07/2023 \
-_Electronics for Imaging_ #h(1fr) _Bengaluru, India_ \
+_Fiery (an Epson company)_ #h(1fr) _Bengaluru, India_ \
 - Cost-effective results compared to costly Photoshop APIs.
 - Built a product mockup solution using ImageMagick and Node.js
 - #text(weight: "medium")[Tech:] TypeScript, Angular, Node.js, Python, Flask, ImageMagick, MySQL, NLTK, spaCy

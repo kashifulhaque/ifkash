@@ -10,14 +10,15 @@
 +918240868544 • #link("mailto:haque.kashiful7@gmail.com")[haque.kashiful7\@gmail.com] • #link("https://github.com/kashifulhaque")[github] • #link("https://www.linkedin.com/in/kashifulhaque")[linkedin] • #link("https://ifkash.dev")[ifkash.dev]
 #line(stroke: 1pt + gray)
 
-Software Engineer with almost 3 YOE in Machine Learning and Backend Development. Current MLE \@ AMEX, formerly worked as Associate SE \@ Fiery (an Epson company). Studied Data Science at IIT Madras. \
+Software Engineer with almost 3 YOE in Machine Learning and Backend Development. Current Engineer III \@ AMEX. \
 
 = Work Experience
 #line(stroke: 1pt + gray)
 
-*Machine Learning Engineer* #h(1fr) 02/2025 -- Present \
-_American Express_ #h(1fr) _Bengaluru, India_ \
-- client for IntraEdge
+*Engineer III* #h(1fr) 02/2025 -- Present \
+_American Express (client for IntraEdge)_ #h(1fr) _Bengaluru, India_ \
+- Building internal bots which live summary webex meetings
+- Building a search engine for company confluence pages, can be queried using natural language
 \
 *Associate Software Engineer* #h(1fr) 07/2023 -- 02/2025 \
 _Fiery (an Epson company)_ #h(1fr) _Bengaluru, India_ \
@@ -57,7 +58,7 @@ _Go, Gin, Cloudflare_
 = Skills
 #line(stroke: 1pt + gray)
 
-- Python, TypeScript, C, C++, Rust, Go
+- Python, TypeScript, C++, Rust, Go
 - Node.js, Express.js, Vue, Angular, FastAPI, Flask, Tailwind
-- NumPy, Pandas, scikit-learn, Pytorch, huggingface, JAX, NLTK, spaCy, CUDA
+- NumPy, Pandas, scikit-learn, Pytorch, huggingface, NLTK, spaCy, CUDA, Langchain
 - Vector database, Qdrant, SQL, MySQL, SQLite, Redis, Docker, Git, Linux

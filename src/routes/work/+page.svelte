@@ -1,7 +1,7 @@
 <script lang="ts">
   const workHistory = [
     {
-      role: "Machine Learning Engineer",
+      role: "Engineer III",
       companies: [
         { name: "American Express", url: "https://www.americanexpress.com" },
         { name: "(client for IntraEdge)", url: "https://intraedge.com" },

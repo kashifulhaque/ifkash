@@ -46,6 +46,11 @@
       icon: "fa-solid fa-code",
       text: "Leetcode",
     },
+    {
+      href: "https://deepwiki.com/kashifulhaque/ifkash",
+      icon: "fa-solid fa-book",
+      text: "DeepWiki"
+    }
   ];
 
   onMount(() => {

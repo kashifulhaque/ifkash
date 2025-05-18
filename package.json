@@ -11,7 +11,7 @@
   },
   "devDependencies": {
     "@sveltejs/adapter-auto": "^3.3.1",
-    "@sveltejs/kit": "^2.20.8",
+    "@sveltejs/kit": "^2.21.0",
     "@sveltejs/vite-plugin-svelte": "^3.1.2",
     "@types/dompurify": "^3.2.0",
     "svelte": "^4.2.19",
@@ -22,7 +22,7 @@
   },
   "type": "module",
   "dependencies": {
-    "@tailwindcss/vite": "^4.1.5",
+    "@tailwindcss/vite": "^4.1.7",
     "@vercel/analytics": "^1.5.0",
     "@vercel/speed-insights": "^1.2.0",
     "axios": "^1.9.0",
@@ -31,9 +31,12 @@
     "rehype-katex": "^7.0.1",
     "remark-math": "^6.0.0",
     "svelte-markdown": "^0.4.1",
-    "tailwindcss": "^4.1.5"
+    "tailwindcss": "^4.1.7"
   },
   "trustedDependencies": [
+    "@tailwindcss/oxide",
+    "@vercel/speed-insights",
+    "esbuild",
     "svelte-preprocess"
   ]
 }

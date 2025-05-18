@@ -68,57 +68,65 @@
 </svelte:head>
 
 <div
-  class="min-h-screen text-gray-100 space-grotesk-400 px-4 sm:px-8 py-8 bg-neutral-900"
+  class="min-h-screen text-gray-100 space-grotesk-400 px-4 sm:px-8 py-8 bg-neutral-900 flex justify-center"
 >
-  <!-- Header Section -->
-  <section class="mb-8">
-    <h2 class="text-2xl font-bold space-grotesk-700 flex items-center gap-2">
-      <i class="fa-solid fa-diagram-project"></i>
-      Projects
-      <span class="text-sm text-gray-400">•</span>
-      <a href="/" class="text-base text-blue-300 hover:underline">go back</a>
-    </h2>
-  </section>
+  <div class="w-full max-w-2xl mx-auto">
+    <!-- Header Section -->
+    <section class="mb-8">
+      <h2
+        class="text-2xl font-bold space-grotesk-700 flex items-center gap-2"
+      >
+        <i class="fa-solid fa-diagram-project"></i>
+        Projects
+        <span class="text-sm text-gray-400">•</span>
+        <a href="/" class="text-base text-blue-300 hover:underline">go back</a>
+      </h2>
+    </section>
 
-  <!-- Projects List -->
-  <section class="space-y-6">
-    {#each projects as project}
-      <div class="p-4">
-        <!-- Project Title -->
-        <strong class="block text-xl space-grotesk-600">{project.title}</strong>
-        
-        <!-- Project Links, if any -->
-        <div class="my-2">
-          {#each project.links as link, j}
-            <a
-              href={link.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              class="text-blue-400 hover:underline"
-            >
-              {link.text}
-            </a>{#if j < project.links.length - 1}
-              <span class="mx-1">•</span>
+    <!-- Projects List -->
+    <section class="space-y-6">
+      {#each projects as project}
+        <div class="p-4">
+          <!-- Project Title -->
+          <strong class="block text-xl space-grotesk-600"
+            >{project.title}</strong
+          >
+
+          <!-- Project Links, if any -->
+          <div class="my-2">
+            {#each project.links as link, j}
+              <a
+                href={link.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="text-blue-400 hover:underline"
+              >
+                {link.text}
+              </a>{#if j < project.links.length - 1}
+                <span class="mx-1">•</span>
+              {/if}
+            {/each}
+          </div>
+
+          <!-- Project description -->
+          <p class="mb-2 text-base text-gray-300 text-justify">
+            {#if project.htmlDescription}
+              {@html project.htmlDescription}
+            {:else}
+              {project.description}
             {/if}
-          {/each}
-        </div>
-        
-        <!-- Project description -->
-        <p class="mb-2 text-base text-gray-300">
-          {#if project.htmlDescription}
-            {@html project.htmlDescription}
-          {:else}
-            {project.description}
-          {/if}
-        </p>
+          </p>
 
-        <p class="text-sm text-gray-400 mb-1">Tech used:</p>
-        <ul class="list-disc list-inside text-sm text-gray-400 space-y-1">
-          {#each project.tech as techItem}
-            <li>{techItem}</li>
-          {/each}
-        </ul>
-      </div>
-    {/each}
-  </section>
+          <p class="text-sm text-gray-400 mb-1">Tech used:</p>
+          <ul
+            class="list-disc list-inside text-sm text-gray-400 space-y-1 text-left"
+          >
+            {#each project.tech as techItem}
+              <li>{techItem}</li>
+            {/each}
+          </ul>
+        </div>
+      {/each}
+    </section>
+  </div>
 </div>

@@ -6,11 +6,28 @@
   import remarkMath from "remark-math";
   import rehypeKatex from "rehype-katex";
 
-  let post: any = null;
+  interface PostContent {
+    markdown: string;
+  }
+
+  interface Post {
+    title: string;
+    content: PostContent;
+    brief?: string; // brief might not be used on this page but good to have
+    coverImage?: { url: string };
+    publishedAt: string;
+    slug: string;
+  }
+
+  interface GQLError {
+    message: string;
+  }
+
+  let post: Post | null = null;
   let loading = true;
   let error = "";
 
-  async function fetchPost(slug: string) {
+  async function fetchPost(slug: string): Promise<Post> {
     const query = `
       query PostBySlug($slug: String!) {
         publication(host: \"blog.ifkash.dev\") {
@@ -31,7 +48,12 @@
       body: JSON.stringify({ query, variables: { slug } }),
     });
     const { data, errors } = await res.json();
-    if (errors) throw new Error(errors.map((e) => e.message).join(", "));
+    if (errors && errors.length > 0) {
+      throw new Error(errors.map((e: GQLError) => e.message).join(", "));
+    }
+    if (!data || !data.publication || !data.publication.post) {
+      throw new Error("Post data is not in the expected format.");
+    }
     return data.publication.post;
   }
 
@@ -39,8 +61,12 @@
     const slug = get(page).params.slug;
     try {
       post = await fetchPost(slug);
-    } catch {
-      error = "Failed to load post.";
+    } catch (err) {
+      if (err instanceof Error) {
+        error = err.message;
+      } else {
+        error = "An unknown error occurred while fetching the post.";
+      }
     } finally {
       loading = false;
     }
@@ -62,20 +88,20 @@
   />
 </svelte:head>
 
-<div class="min-h-screen bg-neutral-900 py-8 px-4">
-  <div class="max-w-3xl mx-auto prose space-y-6">
+<div class="min-h-screen bg-neutral-900 px-4 py-8">
+  <div class="prose mx-auto max-w-3xl space-y-6">
     {#if loading}
       <p>Loading post...</p>
     {:else if error}
       <p class="text-red-400">{error}</p>
-    {:else}
-      <div class="flex justify-between items-center">
+    {:else if post}
+      <div class="flex items-center justify-between">
         <h1 class="text-3xl font-bold text-gray-100">{post.title}</h1>
         <a
           href={`https://blog.ifkash.dev/${post.slug}`}
           target="_blank"
           rel="noopener noreferrer"
-          class="px-4 py-2 bg-blue-500 rounded-lg text-white hover:bg-blue-600"
+          class="rounded-lg bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
         >
           Read on Hashnode
         </a>
@@ -85,11 +111,15 @@
         <img
           src={post.coverImage.url}
           alt="Cover image"
-          class="rounded-lg w-full"
+          class="w-full rounded-lg"
         />
       {/if}
       <!-- render markdown with math support -->
-      <Markdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]} source={post.content.markdown} />
+      <Markdown
+        remarkPlugins={[remarkMath]}
+        rehypePlugins={[rehypeKatex]}
+        source={post.content.markdown}
+      />
     {/if}
   </div>
 </div>

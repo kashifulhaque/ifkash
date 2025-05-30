@@ -38,24 +38,24 @@
 </svelte:head>
 
 <main
-  class="max-w-3xl mx-auto p-5 text-gray-100 space-grotesk-400 bg-neutral-900"
+  class="space-grotesk-400 mx-auto max-w-3xl bg-neutral-900 p-5 text-gray-100"
 >
-  <h1 class="text-2xl font-bold text-orange-400 mb-5">
+  <h1 class="mb-5 text-2xl font-bold text-orange-400">
     Top {stories.length} Hacker News Stories of the Week
-    <span class="text-sm text-gray-400 mx-2">•</span>
+    <span class="mx-2 text-sm text-gray-400">•</span>
     <a href="/" class="text-base text-blue-300 hover:underline">go back</a>
   </h1>
 
   {#if isLoading}
-    <p class="text-lg text-center">Loading stories...</p>
+    <p class="text-center text-lg">Loading stories...</p>
   {:else if error}
-    <p class="text-center text-red-500 font-bold mt-4">{error}</p>
+    <p class="mt-4 text-center font-bold text-red-500">{error}</p>
   {:else}
     <ol class="list-decimal pl-5">
       {#each stories as story (story.id)}
         <li class="mb-5">
           <article>
-            <h2 class="text-lg mb-1 text-blue-200">
+            <h2 class="mb-1 text-lg text-blue-200">
               <a
                 href={story.url}
                 target="_blank"
@@ -71,7 +71,7 @@
                 href={`https://news.ycombinator.com/item?id=${story.id}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                class="hover:underline text-blue-300"
+                class="text-blue-300 hover:underline"
               >
                 HN Discussion
               </a>

@@ -64,30 +64,35 @@
 </svelte:head>
 
 <main
-  class="min-h-screen text-gray-100 space-grotesk-400 px-4 sm:px-8 py-8 bg-neutral-900"
+  class="space-grotesk-400 min-h-screen bg-neutral-900 px-4 py-8 text-gray-100 sm:px-8"
 >
   {#if loading}
     <p class="text-center text-lg">Loading...</p>
   {:else if error.isError}
-    <p class="text-center text-red-500 font-bold mt-4">{error.message}</p>
+    <p class="mt-4 text-center font-bold text-red-500">{error.message}</p>
   {:else if paper}
-    <h1 class="text-2xl font-bold mb-4">
+    <h1 class="mb-4 text-2xl font-bold">
       {paper.title}
-      <span class="text-sm text-gray-400 mx-2">•</span>
-      <a on:click={goBack} class="text-base text-blue-300 hover:underline cursor-pointer"
-        >back</a
+      <span class="mx-2 text-sm text-gray-400">•</span>
+      <button
+        type="button"
+        on:click={goBack}
+        class="cursor-pointer text-base text-blue-300 hover:underline"
+        aria-label="Go back to previous page"
       >
+        back
+      </button>
     </h1>
 
     {#if paperImage}
       <img
         src={paperImage}
         alt={paper.title}
-        class="block mx-auto my-4 rounded-lg"
+        class="mx-auto my-4 block rounded-lg"
       />
     {/if}
 
-    <ul class="flex flex-wrap gap-2 mb-4">
+    <ul class="mb-4 flex flex-wrap gap-2">
       {#each paper.authors as author}
         <li class="list-none">
           <a
@@ -101,7 +106,9 @@
       {/each}
     </ul>
 
-    <p class="text-base text-blue-100 leading-relaxed my-4">{paper.description}</p>
+    <p class="my-4 text-base leading-relaxed text-blue-100">
+      {paper.description}
+    </p>
 
     <ul class="flex flex-wrap items-center gap-2">
       <li>

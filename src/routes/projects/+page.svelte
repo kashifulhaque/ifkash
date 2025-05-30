@@ -68,14 +68,12 @@
 </svelte:head>
 
 <div
-  class="min-h-screen text-gray-100 space-grotesk-400 px-4 sm:px-8 py-8 bg-neutral-900 flex justify-center"
+  class="space-grotesk-400 flex min-h-screen justify-center bg-neutral-900 px-4 py-8 text-gray-100 sm:px-8"
 >
-  <div class="w-full max-w-2xl mx-auto">
+  <div class="mx-auto w-full max-w-2xl">
     <!-- Header Section -->
     <section class="mb-8">
-      <h2
-        class="text-2xl font-bold space-grotesk-700 flex items-center gap-2"
-      >
+      <h2 class="space-grotesk-700 flex items-center gap-2 text-2xl font-bold">
         <i class="fa-solid fa-diagram-project"></i>
         Projects
         <span class="text-sm text-gray-400">•</span>
@@ -88,7 +86,7 @@
       {#each projects as project}
         <div class="p-4">
           <!-- Project Title -->
-          <strong class="block text-xl space-grotesk-600"
+          <strong class="space-grotesk-600 block text-xl"
             >{project.title}</strong
           >
 
@@ -109,7 +107,7 @@
           </div>
 
           <!-- Project description -->
-          <p class="mb-2 text-base text-gray-300 text-justify">
+          <p class="mb-2 text-justify text-base text-gray-300">
             {#if project.htmlDescription}
               {@html project.htmlDescription}
             {:else}
@@ -117,9 +115,9 @@
             {/if}
           </p>
 
-          <p class="text-sm text-gray-400 mb-1">Tech used:</p>
+          <p class="mb-1 text-sm text-gray-400">Tech used:</p>
           <ul
-            class="list-disc list-inside text-sm text-gray-400 space-y-1 text-left"
+            class="list-inside list-disc space-y-1 text-left text-sm text-gray-400"
           >
             {#each project.tech as techItem}
               <li>{techItem}</li>

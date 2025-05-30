@@ -49,24 +49,24 @@
 </svelte:head>
 
 <main
-  class="max-w-3xl mx-auto p-5 text-gray-100 space-grotesk-400 bg-neutral-900"
+  class="space-grotesk-400 mx-auto max-w-3xl bg-neutral-900 p-5 text-gray-100"
 >
-  <h1 class="text-2xl font-bold text-orange-400 mb-5">
+  <h1 class="mb-5 text-2xl font-bold text-orange-400">
     Latest Engineering Blog Posts
-    <span class="text-sm text-gray-400 mx-2">•</span>
+    <span class="mx-2 text-sm text-gray-400">•</span>
     <a href="/" class="text-base text-blue-300 hover:underline">go back</a>
   </h1>
 
   {#if isLoading}
-    <p class="text-lg text-center">Loading blog posts...</p>
+    <p class="text-center text-lg">Loading blog posts...</p>
   {:else if error}
-    <p class="text-center text-red-500 font-bold mt-4">{error}</p>
+    <p class="mt-4 text-center font-bold text-red-500">{error}</p>
   {:else}
     <div class="mb-6">
-      <div class="flex gap-2 flex-wrap">
+      <div class="flex flex-wrap gap-2">
         {#each blogs as blog}
           <button
-            class="px-3 py-1 rounded-full text-sm cursor-pointer {selectedBlog ===
+            class="cursor-pointer rounded-full px-3 py-1 text-sm {selectedBlog ===
             blog
               ? 'bg-blue-600'
               : 'bg-neutral-700 hover:bg-neutral-600'}"
@@ -81,9 +81,9 @@
     <div class="space-y-6">
       {#each filteredPosts as post}
         <article
-          class="border border-neutral-700 rounded-lg p-4 hover:bg-neutral-800 transition-colors"
+          class="rounded-lg border border-neutral-700 p-4 transition-colors hover:bg-neutral-800"
         >
-          <h2 class="text-lg mb-1 text-blue-200">
+          <h2 class="mb-1 text-lg text-blue-200">
             <a
               href={post.link}
               target="_blank"
@@ -93,9 +93,9 @@
               {post.title}
             </a>
           </h2>
-          <div class="flex items-center text-sm text-gray-200 mt-2">
+          <div class="mt-2 flex items-center text-sm text-gray-200">
             <span
-              class="bg-neutral-700 px-2 py-0.5 rounded text-xs font-semibold"
+              class="rounded bg-neutral-700 px-2 py-0.5 text-xs font-semibold"
             >
               {post.source}
             </span>
@@ -108,7 +108,7 @@
       {/each}
 
       {#if filteredPosts.length === 0}
-        <p class="text-center text-gray-400 py-10">
+        <p class="py-10 text-center text-gray-400">
           No posts found for the selected blog.
         </p>
       {/if}

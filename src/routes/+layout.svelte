@@ -6,7 +6,7 @@
 
   injectSpeedInsights();
   injectAnalytics({
-    mode: dev ? "development" : "production"
+    mode: dev ? "development" : "production",
   });
 </script>
 

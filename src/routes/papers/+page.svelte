@@ -23,7 +23,7 @@
 
   let papers: Paper[] = [];
   let loading: boolean = true;
-  let error: any = null;
+  let error: string | null = null;
 
   onMount(async () => {
     try {
@@ -40,7 +40,11 @@
       papers = data.filter((paper) => paper && paper.title && paper.paper_url);
     } catch (err) {
       console.error("Error fetching papers:", err);
-      error = err.message;
+      if (err instanceof Error) {
+        error = err.message;
+      } else {
+        error = "An unknown error occurred while fetching papers.";
+      }
     } finally {
       loading = false;
     }
@@ -56,9 +60,9 @@
 </svelte:head>
 
 <main
-  class="min-h-screen text-gray-100 space-grotesk-400 px-4 sm:px-8 py-8 bg-neutral-900"
+  class="space-grotesk-400 min-h-screen bg-neutral-900 px-4 py-8 text-gray-100 sm:px-8"
 >
-  <h1 class="flex items-center gap-2 text-2xl font-bold mb-8">
+  <h1 class="mb-8 flex items-center gap-2 text-2xl font-bold">
     <i class="fa-solid fa-file-contract"></i>
     Papers with Code
     <span class="text-sm text-gray-400">•</span>
@@ -68,12 +72,12 @@
   {#if loading}
     <p class="text-center">Loading papers...</p>
   {:else if error}
-    <p class="text-center text-red-500 font-bold mt-4">{error}</p>
+    <p class="mt-4 text-center font-bold text-red-500">{error}</p>
   {:else}
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+    <div class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
       {#each papers as paper}
         <div
-          class="bg-gray-800 rounded-lg overflow-hidden transition-transform duration-300 ease-in-out hover:scale-105"
+          class="overflow-hidden rounded-lg bg-gray-800 transition-transform duration-300 ease-in-out hover:scale-105"
         >
           <a
             href={"/papers" + paper.slug}
@@ -82,7 +86,7 @@
             <img
               src={paper.image_url}
               alt={paper.title}
-              class="w-full h-48 object-cover"
+              class="h-48 w-full object-cover"
             />
           </a>
           <div class="p-4">
@@ -100,27 +104,27 @@
                 >{paper.description}</small
               >
             </div>
-            <div class="flex mb-3">
+            <div class="mb-3 flex">
               {#if paper.github_repo}
                 <a
                   href={paper.github_repo}
                   target="_blank"
                   rel="noopener noreferrer"
-                  class="text-blue-500 hover:underline flex items-center gap-1 text-base"
+                  class="flex items-center gap-1 text-base text-blue-500 hover:underline"
                 >
                   <i class="fa-brands fa-github"></i> code
                 </a>
               {/if}
             </div>
             {#if paper.tags && paper.tags.length > 0}
-              <div class="flex flex-wrap gap-2 mt-2">
+              <div class="mt-2 flex flex-wrap gap-2">
                 {#each paper.tags as tag}
                   {#if tag.name.length !== 0}
                     <a
                       href={tag.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      class="text-xs lowercase text-gray-300 hover:underline"
+                      class="text-xs text-gray-300 lowercase hover:underline"
                     >
                       {tag.name}
                     </a>

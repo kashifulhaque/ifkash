@@ -1,9 +1,19 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  let posts = [];
+
+  interface BlogPost {
+    id: string;
+    title: string;
+    brief: string;
+    url: string;
+    coverImage?: { url: string }; // Optional as it might not always be present
+    publishedAt: string; // This is a string date
+  }
+
+  let posts: BlogPost[] = [];
   let loading = true;
   let error = "";
-  const options = {
+  const options: Intl.DateTimeFormatOptions = {
     month: "long",
     day: "2-digit",
     year: "numeric",
@@ -40,10 +50,17 @@
         body: JSON.stringify({ query }),
       });
       const result = await res.json();
-      posts = result.data.publication.posts.edges.map((edge: any) => edge.node);
+      // Assuming result.data.publication.posts.edges is an array of { node: BlogPost }
+      posts = result.data.publication.posts.edges.map(
+        (edge: { node: BlogPost }) => edge.node,
+      );
       console.log(posts);
     } catch (e) {
-      error = "Failed to load blog posts.";
+      if (e instanceof Error) {
+        error = e.message;
+      } else {
+        error = "An unknown error occurred while fetching blog posts.";
+      }
     } finally {
       loading = false;
     }
@@ -54,11 +71,11 @@
   <title>Blog • Portfolio</title>
 </svelte:head>
 
-<div class="min-h-screen bg-neutral-900 py-8 px-4">
-  <div class="max-w-3xl mx-auto">
+<div class="min-h-screen bg-neutral-900 px-4 py-8">
+  <div class="mx-auto max-w-3xl">
     <!-- Header -->
     <section class="mb-8">
-      <h2 class="text-2xl font-bold flex items-center gap-2 text-gray-100">
+      <h2 class="flex items-center gap-2 text-2xl font-bold text-gray-100">
         <i class="fa-solid fa-blog"></i>
         Blog
         <span class="text-sm text-gray-400">•</span>
@@ -77,21 +94,21 @@
       {:else}
         {#each posts as post}
           <div
-            class="bg-neutral-800 rounded-lg shadow flex flex-col md:grid md:grid-cols-4 md:gap-4 overflow-hidden"
+            class="flex flex-col overflow-hidden rounded-lg bg-neutral-800 shadow md:grid md:grid-cols-4 md:gap-4"
           >
-            <div class="md:col-span-3 flex flex-col justify-between p-4">
+            <div class="flex flex-col justify-between p-4 md:col-span-3">
               <a
                 href={`${post.url}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                class="text-xl font-bold text-blue-300 hover:underline block mb-2"
+                class="mb-2 block text-xl font-bold text-blue-300 hover:underline"
               >
                 {post.title}
               </a>
-              <p class="text-gray-300 text-base mb-2 line-clamp-3">
+              <p class="mb-2 line-clamp-3 text-base text-gray-300">
                 {post.brief}
               </p>
-              <p class="text-xs text-gray-500 mt-auto">
+              <p class="mt-auto text-xs text-gray-500">
                 {new Date(post.publishedAt)
                   .toLocaleString("en-US", options)
                   .replace(",", "")

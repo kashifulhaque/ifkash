@@ -111,23 +111,27 @@ Kashiful also holds a Bachelor's degree in Data Science from IIT Madras and has 
   }
 
   function parseMarkdown(content: string) {
-    return DOMPurify.sanitize(marked(content));
+    // Assuming marked is used synchronously here.
+    // If marked were configured to be async, we would need to `await marked(content)`.
+    // The type error suggests TypeScript thinks marked(content) might be a Promise.
+    // Casting to string as a workaround if we are sure it's synchronous.
+    return DOMPurify.sanitize(marked(content) as string);
   }
 
   $: displayMessages = messages.filter((message) => message.role !== "system");
 </script>
 
 <div
-  class="max-w-3xl mx-auto h-screen flex flex-col p-2 sm:p-4 text-gray-100 space-grotesk-400 bg-neutral-900"
+  class="space-grotesk-400 mx-auto flex h-screen max-w-3xl flex-col bg-neutral-900 p-2 text-gray-100 sm:p-4"
 >
   <!-- Messages Container -->
   <div
-    class="flex-grow overflow-y-auto p-2 sm:p-4 flex flex-col"
+    class="flex flex-grow flex-col overflow-y-auto p-2 sm:p-4"
     bind:this={chatContainer}
   >
     {#each displayMessages as message}
       <div
-        class="mb-2 p-2 rounded-lg {message.role === 'user'
+        class="mb-2 rounded-lg p-2 {message.role === 'user'
           ? 'text-right text-gray-100'
           : 'text-left text-blue-300'}"
       >
@@ -141,7 +145,7 @@ Kashiful also holds a Bachelor's degree in Data Science from IIT Madras and has 
     {/each}
 
     {#if loading}
-      <div class="transform scale-[0.85] self-center mt-4">
+      <div class="mt-4 scale-[0.85] transform self-center">
         <img
           alt="Waiting for bot to answer"
           src="images/thinking.gif"
@@ -152,17 +156,17 @@ Kashiful also holds a Bachelor's degree in Data Science from IIT Madras and has 
   </div>
 
   <!-- Input Area -->
-  <div class="flex flex-col sm:flex-row mt-auto">
-    <div class="flex-grow relative mr-0 sm:mr-2 mb-2 sm:mb-0">
+  <div class="mt-auto flex flex-col sm:flex-row">
+    <div class="relative mr-0 mb-2 flex-grow sm:mr-2 sm:mb-0">
       <textarea
         bind:value={userMessage}
         placeholder="Type your message ..."
         on:keypress={(e) => e.key === "Enter" && !e.shiftKey && sendMessage()}
         disabled={loading}
-        class="w-full p-2 border border-gray-600 rounded bg-gray-800 text-gray-100 resize-none min-h-[60px] max-h-[200px] overflow-y-auto"
+        class="max-h-[200px] min-h-[60px] w-full resize-none overflow-y-auto rounded border border-gray-600 bg-gray-800 p-2 text-gray-100"
         rows="2"
       ></textarea>
-      <div class="text-xs text-gray-400 absolute bottom-2 right-2">
+      <div class="absolute right-2 bottom-2 text-xs text-gray-400">
         Shift+Enter for new line
       </div>
     </div>
@@ -172,7 +176,7 @@ Kashiful also holds a Bachelor's degree in Data Science from IIT Madras and has 
       <button
         on:click={sendMessage}
         disabled={loading || userMessage.trim() === ""}
-        class="px-4 py-2 bg-teal-700 hover:bg-teal-800 transition-colors text-white rounded disabled:bg-gray-700 disabled:cursor-not-allowed cursor-pointer"
+        class="cursor-pointer rounded bg-teal-700 px-4 py-2 text-white transition-colors hover:bg-teal-800 disabled:cursor-not-allowed disabled:bg-gray-700"
       >
         Send
       </button>
@@ -181,7 +185,7 @@ Kashiful also holds a Bachelor's degree in Data Science from IIT Madras and has 
       <button
         on:click={clearChat}
         disabled={loading || displayMessages.length === 0}
-        class="px-4 py-2 bg-red-500 text-white rounded disabled:bg-gray-600 disabled:cursor-not-allowed cursor-pointer"
+        class="cursor-pointer rounded bg-red-500 px-4 py-2 text-white disabled:cursor-not-allowed disabled:bg-gray-600"
       >
         <i class="fa-solid fa-trash"></i>
       </button>

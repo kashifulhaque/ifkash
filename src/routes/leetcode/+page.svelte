@@ -40,7 +40,7 @@
       // Fetch recent submissions
       const submissionsResponse = await axios.post(
         "/api/lc/submissions",
-        leetcodePayload
+        leetcodePayload,
       );
       recentSubmissions =
         submissionsResponse.data.data.recentAcSubmissionList || [];
@@ -53,9 +53,11 @@
   });
 </script>
 
-<div class="min-h-screen text-gray-100 space-grotesk-400 px-4 sm:px-8 py-8 bg-neutral-900">
+<div
+  class="space-grotesk-400 min-h-screen bg-neutral-900 px-4 py-8 text-gray-100 sm:px-8"
+>
   <section>
-    <h1 class="text-2xl font-bold mb-6 flex items-center gap-2">
+    <h1 class="mb-6 flex items-center gap-2 text-2xl font-bold">
       <i class="fa-solid fa-list-check"></i>
       Leetcode stats
       <span class="text-sm text-gray-400">•</span>
@@ -63,23 +65,23 @@
     </h1>
 
     {#if loadingStats}
-      <p class="text-lg text-center">Loading stats...</p>
+      <p class="text-center text-lg">Loading stats...</p>
     {:else}
-      <div class="flex gap-4 mb-6">
+      <div class="mb-6 flex gap-4">
         <span
-          class="inline-flex items-center gap-1 bg-green-800 px-2 py-1 rounded text-sm font-medium"
+          class="inline-flex items-center gap-1 rounded bg-green-800 px-2 py-1 text-sm font-medium"
         >
           <i class="fa-solid fa-egg"></i>
           {leetcodeStats.easy.complete}/{leetcodeStats.easy.total} Easy
         </span>
         <span
-          class="inline-flex items-center gap-1 bg-yellow-800 px-2 py-1 rounded text-sm font-medium"
+          class="inline-flex items-center gap-1 rounded bg-yellow-800 px-2 py-1 text-sm font-medium"
         >
           <i class="fa-solid fa-square"></i>
           {leetcodeStats.medium.complete}/{leetcodeStats.medium.total} Medium
         </span>
         <span
-          class="inline-flex items-center gap-1 bg-red-800 px-2 py-1 rounded text-sm font-medium"
+          class="inline-flex items-center gap-1 rounded bg-red-800 px-2 py-1 text-sm font-medium"
         >
           <i class="fa-solid fa-person-running"></i>
           {leetcodeStats.hard.complete}/{leetcodeStats.hard.total} Hard
@@ -88,7 +90,7 @@
     {/if}
 
     {#if loadingSubmissions}
-      <p class="text-lg text-center">Loading submissions...</p>
+      <p class="text-center text-lg">Loading submissions...</p>
     {:else}
       <table class="w-full table-auto border-collapse">
         <thead>
@@ -114,7 +116,7 @@
                       year: "numeric",
                       month: "short",
                       day: "numeric",
-                    }
+                    },
                   )}
                 </td>
                 <td class="py-2 text-sm">

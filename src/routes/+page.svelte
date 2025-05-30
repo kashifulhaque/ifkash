@@ -49,8 +49,8 @@
     {
       href: "https://deepwiki.com/kashifulhaque/ifkash",
       icon: "fa-solid fa-book",
-      text: "DeepWiki"
-    }
+      text: "DeepWiki",
+    },
   ];
 
   onMount(() => {
@@ -97,25 +97,26 @@
 
 <svelte:head>
   <title>{name} • Portfolio</title>
+  <meta property="og:title" content="{name} • Portfolio" />
 </svelte:head>
 
 <div
-  class="min-h-screen  text-gray-100 space-grotesk-400 px-4 sm:px-8 py-8 bg-neutral-900"
+  class="space-grotesk-400 min-h-screen bg-neutral-900 px-4 py-8 text-gray-100 sm:px-8"
 >
   <!-- Hero Section -->
-  <section class="flex flex-col items-center text-center mb-8">
+  <section class="mb-8 flex flex-col items-center text-center">
     <img
       src="images/sekiro.jpg"
       alt="Sekiro holding Kusabimaru"
       title="Sekiro holding Kusabimaru"
-      class="w-32 h-32 rounded-full object-cover border-2 border-gray-700 mb-4"
+      class="mb-4 h-32 w-32 rounded-full border-2 border-gray-700 object-cover"
     />
     <h1
-      class="text-3xl font-bold space-grotesk-700 transition-opacity duration-500"
+      class="space-grotesk-700 text-3xl font-bold transition-opacity duration-500"
     >
       {name}
     </h1>
-    <p class="text-md text-gray-400 mt-2">
+    <p class="text-md mt-2 text-gray-400">
       <a
         href="mailto:haque.kashiful7@gmail.com"
         target="_blank"
@@ -143,7 +144,7 @@
       on:touchstart={handleMouseDown}
       on:touchend={handleMouseUp}
       on:touchcancel={handleMouseLeave}
-      class="mt-4 inline-flex items-center px-4 py-2 bg-teal-400 hover:bg-teal-500 transition-colors rounded text-neutral-900 text-md font-semibold cursor-pointer relative overflow-hidden"
+      class="text-md relative mt-4 inline-flex cursor-pointer items-center overflow-hidden rounded bg-teal-400 px-4 py-2 font-semibold text-neutral-900 transition-colors hover:bg-teal-500"
     >
       <i class="fa-solid fa-download mr-2"></i>
       Download Resume
@@ -152,9 +153,19 @@
         style={`width: ${isLongPressing ? "100%" : "0%"}`}
       ></div>
     </button>
-    <div class="text-xs text-gray-500 mt-1">
+    <div class="mt-1 text-xs text-gray-500">
       Hold for 2 seconds for dark mode version
     </div>
+    <a
+      href="./assets/Kashiful_Haque-dark.pdf"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="text-md mt-4 inline-flex cursor-pointer items-center rounded bg-teal-400 px-4 py-2 font-semibold text-neutral-900 transition-colors hover:bg-teal-500"
+      role="button"
+    >
+      <i class="fa-solid fa-download mr-2"></i>
+      Download Resume (Dark Mode)
+    </a>
   </section>
 
   <!-- Social Links -->
@@ -165,10 +176,11 @@
           {href}
           target="_blank"
           rel="noopener noreferrer"
-          class="flex items-center gap-2 hover:text-blue-400 transition-colors text-blue-100"
+          class="flex items-center gap-2 text-blue-100 transition-colors hover:text-blue-400"
+          aria-label={text}
         >
-          <i class={`${icon} text-xl`}></i>
-          <!-- Hide descriptive text on extra-small screens -->
+          <i class={`${icon} text-xl`} aria-hidden="true"></i>
+          <!-- Screen readers will use aria-label; visual text shown when space permits -->
           <span class="hidden sm:inline">{text}</span>
         </a>
       {/each}
@@ -181,7 +193,7 @@
       {#each pageRoutes as { href, text }}
         <a
           {href}
-          class="px-3 py-1 border border-teal-700 rounded transition-colors hover:bg-teal-800 text-md"
+          class="text-md rounded border border-teal-700 px-3 py-1 transition-colors hover:bg-teal-800"
         >
           {text}
         </a>
@@ -190,8 +202,8 @@
   </section>
 
   <!-- Summary -->
-  <section class="mb-8 max-w-2xl mx-auto">
-    <p class="text-base text-teal-100 text-center leading-relaxed">
+  <section class="mx-auto mb-8 max-w-2xl">
+    <p class="text-center text-base leading-relaxed text-teal-100">
       I work at the intersection of Software Engineering, Data Science & Machine
       Learning focusing on Natural Language Processing (NLP), Generative AI
       (GenAI) and Large Language Models (LLMs). I also have a keen interest in
@@ -206,7 +218,7 @@
   <!-- Footer Links -->
   <footer class="text-center">
     <div
-      class="flex flex-wrap items-center justify-center gap-2 text-blue-200 text-sm"
+      class="flex flex-wrap items-center justify-center gap-2 text-sm text-blue-200"
     >
       <a href="/dotfiles" class="hover:underline">dotfiles</a>
       <span>•</span>

@@ -3,12 +3,12 @@
 </svelte:head>
 
 <div
-  class="min-h-screen text-gray-100 space-grotesk-400 px-4 sm:px-8 py-8 bg-neutral-900 flex justify-center"
+  class="space-grotesk-400 flex min-h-screen justify-center bg-neutral-900 px-4 py-8 text-gray-100 sm:px-8"
 >
-  <div class="w-full max-w-2xl mx-auto">
+  <div class="mx-auto w-full max-w-2xl">
     <section>
       <h2
-        class="text-2xl font-bold space-grotesk-700 mb-6 flex items-center gap-2"
+        class="space-grotesk-700 mb-6 flex items-center gap-2 text-2xl font-bold"
       >
         <i class="fa-solid fa-graduation-cap"></i>
         Education
@@ -17,7 +17,7 @@
       </h2>
       <div class="space-y-4">
         <div class="p-4">
-          <strong class="block text-xl mb-1">
+          <strong class="mb-1 block text-xl">
             Indian Institute of Technology Madras
           </strong>
           <p class="text-gray-300">

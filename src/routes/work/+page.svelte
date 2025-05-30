@@ -69,12 +69,12 @@
 </svelte:head>
 
 <div
-  class="min-h-screen text-gray-100 space-grotesk-400 px-4 sm:px-8 py-8 bg-neutral-900 flex justify-center"
+  class="space-grotesk-400 flex min-h-screen justify-center bg-neutral-900 px-4 py-8 text-gray-100 sm:px-8"
 >
-  <div class="w-full max-w-2xl mx-auto">
+  <div class="mx-auto w-full max-w-2xl">
     <!-- Header Section -->
     <section class="mb-8">
-      <h2 class="text-2xl font-bold space-grotesk-700 flex items-center gap-2">
+      <h2 class="space-grotesk-700 flex items-center gap-2 text-2xl font-bold">
         <i class="fa-solid fa-briefcase"></i>
         Work
         <span class="text-sm text-gray-400">•</span>
@@ -88,7 +88,7 @@
       {#each workHistory as work}
         <div class="p-4">
           <p class="text-lg">{work.role}</p>
-          <strong class="block my-2 space-grotesk-600">
+          <strong class="space-grotesk-600 my-2 block">
             {#each work.companies as company, i (company.url)}
               <a
                 href={company.url}
@@ -104,13 +104,13 @@
             <i>{work.duration}</i> • {work.location}
           </p>
           <!-- Experience Bullet Points -->
-          <ul class="list-disc ml-6 mt-2 space-y-1 text-base text-gray-200">
+          <ul class="mt-2 ml-6 list-disc space-y-1 text-base text-gray-200">
             {#each work.points as point}
               <li>
                 {@html point.replace(
                   // Allow _italic_ syntax for tech stacks
                   /^_(.*?)_$/g,
-                  "<em>$1</em>"
+                  "<em>$1</em>",
                 )}
               </li>
             {/each}

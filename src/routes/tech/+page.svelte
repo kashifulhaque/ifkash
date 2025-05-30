@@ -53,14 +53,12 @@
 </svelte:head>
 
 <div
-  class="min-h-screen text-gray-100 space-grotesk-400 px-4 sm:px-8 py-8 bg-neutral-900 flex justify-center"
+  class="space-grotesk-400 flex min-h-screen justify-center bg-neutral-900 px-4 py-8 text-gray-100 sm:px-8"
 >
-  <div class="w-full max-w-2xl mx-auto">
+  <div class="mx-auto w-full max-w-2xl">
     <!-- Header Section -->
     <section class="mb-8">
-      <h2
-        class="text-2xl font-bold space-grotesk-700 flex items-center gap-2"
-      >
+      <h2 class="space-grotesk-700 flex items-center gap-2 text-2xl font-bold">
         <i class="fa-solid fa-microchip"></i>
         Tech
         <span class="text-sm text-gray-400">•</span>
@@ -72,7 +70,7 @@
     <section class="space-y-4">
       {#each techStack as group}
         <div>
-          <small class="text-base flex flex-wrap gap-x-2">
+          <small class="flex flex-wrap gap-x-2 text-base">
             {#each group as { href, text }, i (href)}
               <a
                 {href}

@@ -4,14 +4,16 @@
       role: "Engineer III",
       companies: [
         { name: "American Express", url: "https://www.americanexpress.com" },
-        { name: "(IntraEdge)", url: "https://intraedge.com" },
+        { name: "(via IntraEdge)", url: "https://intraedge.com" },
       ],
       duration: "February 2025 till present",
       location: "Bengaluru, IN",
       points: [
-        "Shipped a real-time NLP pipeline that live summarizes 1,000+ WebEx meetings weekly, cutting down manual meeting note taking.",
-        "Built an NLP-powered Confluence search service (FastAPI, PGVector) indexing 2M+ pages, supporting sub-1500ms 95th-percentile search results latency.",
-        "_Tech stack: Python, FastAPI, Langchain, PGVector, Streamlit, Node.js, Puppeteer, WebEx JS SDK, OpenShift._",
+        "Built CC Listener module for Bridge Intelligence, capturing real-time CCs captions for thousands of Webex meetings, streaming them into Redis for downstream summarization using GPT-4o.",
+        "Deployed CC Listener to Amex’s Hydra platform (RedHat OpenShift) across dev, QA, and pre-prod using Helm, Jenkins, and Docker; navigated complex internal infra and CI/CD pipelines.",
+        "Built a hybrid semantic + fuzzy (trigram) retrieval system over 2M+ Confluence pages (runbooks); reduced latency from 30s (native search) to under 2s.",
+        "Designed a multimodal runbook generation pipeline using GPT-4o, converting raw incident data (text + screenshots) into standardized Confluence pages.",
+        "Tech stack: _Python, FastAPI, Langchain, PGVector, Streamlit, Node.js, Puppeteer, WebEx JS SDK, OpenShift_",
       ],
     },
     {
@@ -26,11 +28,11 @@
       duration: "Jul 2023 till February 2025",
       location: "Bengaluru, IN",
       points: [
-        "Fine-tuned Mistral‑7B using LoRA adapters on 4070 Ti Super, baking company knowledge into model.",
-        "Deployed the fine-tuned model on a 4x1080 Ti GPU cluster via vLLM; engineered dynamic batching and employed mixed-precision inference for sub-750ms 95th-percentile Time-To-First-Token.",
-        `Led development of "Beacon", an NER-based print-request automation service integrating with emails and natural language interfaces, leveraging a custom fine-tuned ModernBERT model.`,
-        "Built AskDB, a natural language to insights platform, used by 300+ internal users to query company DBs and auto-generate visual insights.",
-        "_Tech stack: vLLM, Python, PyTorch, LoRA, SFT, Mistral, Llama, Ollama, SQL, FastAPI._",
+        "Fine-tuned Mistral-7B using QLoRA on 4070 Ti Super to incorporate internal documentation and company workflows.",
+        "Deployed the fine-tuned model via vLLM on an NVIDIA T4 cluster; leveraged dynamic batching and quantized inference for sub-second 95th-percentile latency (TTFT).",
+        "Led development of 'Beacon', a print-request automation tool powered by a fine-tuned ModernBERT NER model; parsed email and chat inputs to trigger document workflows.",
+        "Built AskDB, an AI agent used by 300+ internal users; used llama 3.1 to translate business queries into SQL, fetch data and auto-generate charts and summaries.",
+        "Tech stack: _vLLM, Python, PyTorch, QLoRA, peft, SFT, Mistral, Llama, SQL, FastAPI_",
       ],
     },
     {
@@ -46,7 +48,7 @@
       location: "Bengaluru, IN",
       points: [
         "Created a product mockup pipeline using ImageMagick and Node.js, achieving cost-effective design automation.",
-        "_Tech stack: Node.js, ImageMagick, Angular._",
+        "Tech stack: _Node.js, ImageMagick, Angular_",
       ],
     },
     {
@@ -57,8 +59,8 @@
       duration: "Jul 2022 till Dec 2022",
       location: "Hyderabad, IN",
       points: [
-        "Migrated Flask monolith to microservices (Python, Docker, Kubernetes), optimizing AutoML job triggering and reducing job-launch latency by 40%.",
-        "_Tech stack: Python, Flask, Docker, Kubernetes._",
+        "Migrated a Flask monolith to containerized microservices (Docker, Kubernetes), reducing AutoML job-launch latency by 40%.",
+        "Tech stack: _Python, Flask, Docker, Kubernetes._",
       ],
     },
   ];
@@ -69,12 +71,12 @@
 </svelte:head>
 
 <div
-  class="min-h-screen text-gray-100 space-grotesk-400 px-4 sm:px-8 py-8 bg-neutral-900 flex justify-center"
+  class="min-h-screen text-gray-100 glegoo-regular px-4 sm:px-8 py-8 bg-neutral-900 flex justify-center"
 >
   <div class="w-full max-w-2xl mx-auto">
     <!-- Header Section -->
     <section class="mb-8">
-      <h2 class="text-2xl font-bold space-grotesk-700 flex items-center gap-2">
+      <h2 class="text-2xl font-bold cormorant-garamond-700 flex items-center gap-2">
         <i class="fa-solid fa-briefcase"></i>
         Work
         <span class="text-sm text-gray-400">•</span>
@@ -88,7 +90,7 @@
       {#each workHistory as work}
         <div class="p-4">
           <p class="text-lg">{work.role}</p>
-          <strong class="block my-2 space-grotesk-600">
+          <strong class="block my-2 glegoo-bold">
             {#each work.companies as company, i (company.url)}
               <a
                 href={company.url}

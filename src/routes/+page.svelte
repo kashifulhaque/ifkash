@@ -100,7 +100,7 @@
 </svelte:head>
 
 <div
-  class="min-h-screen  text-gray-100 space-grotesk-400 px-4 sm:px-8 py-8 bg-neutral-900"
+  class="min-h-screen text-gray-100 glegoo-regular px-4 sm:px-8 py-8 bg-neutral-900"
 >
   <!-- Hero Section -->
   <section class="flex flex-col items-center text-center mb-8">
@@ -111,16 +111,16 @@
       class="w-32 h-32 rounded-full object-cover border-2 border-gray-700 mb-4"
     />
     <h1
-      class="text-3xl font-bold space-grotesk-700 transition-opacity duration-500"
+      class="text-3xl font-bold cormorant-garamond-700 transition-opacity duration-500"
     >
       {name}
     </h1>
-    <p class="text-md text-gray-400 mt-2">
+    <p class="text-lg text-gray-400 mt-2">
       <a
         href="mailto:haque.kashiful7@gmail.com"
         target="_blank"
         rel="noopener noreferrer"
-        class="text-blue-300 hover:underline"
+        class="text-blue-200 hover:underline"
       >
         haque.kashiful7@gmail.com
       </a>
@@ -129,7 +129,7 @@
         href="mailto:me@ifkash.dev"
         target="_blank"
         rel="noopener noreferrer"
-        class="text-blue-300 hover:underline"
+        class="text-blue-200 hover:underline"
       >
         me@ifkash.dev
       </a>
@@ -143,7 +143,7 @@
       on:touchstart={handleMouseDown}
       on:touchend={handleMouseUp}
       on:touchcancel={handleMouseLeave}
-      class="mt-4 inline-flex items-center px-4 py-2 bg-teal-400 hover:bg-teal-500 transition-colors rounded text-neutral-900 text-md font-semibold cursor-pointer relative overflow-hidden"
+      class="mt-4 inline-flex items-center px-4 py-2 bg-teal-300 hover:bg-teal-500 transition-colors rounded text-neutral-800 text-lg font-semibold cursor-pointer relative overflow-hidden"
     >
       <i class="fa-solid fa-download mr-2"></i>
       Download Resume
@@ -152,7 +152,7 @@
         style={`width: ${isLongPressing ? "100%" : "0%"}`}
       ></div>
     </button>
-    <div class="text-xs text-gray-500 mt-1">
+    <div class="text-xs text-gray-400 mt-1">
       Hold for 2 seconds for dark mode version
     </div>
   </section>

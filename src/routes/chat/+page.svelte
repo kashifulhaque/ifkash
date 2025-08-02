@@ -118,7 +118,7 @@ Kashiful also holds a Bachelor's degree in Data Science from IIT Madras and has 
 </script>
 
 <div
-  class="max-w-3xl mx-auto h-screen flex flex-col p-2 sm:p-4 text-gray-100 space-grotesk-400 bg-neutral-900"
+  class="max-w-3xl mx-auto h-screen flex flex-col p-2 sm:p-4 text-gray-100 glegoo-regular bg-neutral-900"
 >
   <!-- Messages Container -->
   <div

@@ -53,13 +53,13 @@
 </svelte:head>
 
 <div
-  class="min-h-screen text-gray-100 space-grotesk-400 px-4 sm:px-8 py-8 bg-neutral-900 flex justify-center"
+  class="min-h-screen text-gray-100 glegoo-regular px-4 sm:px-8 py-8 bg-neutral-900 flex justify-center"
 >
   <div class="w-full max-w-2xl mx-auto">
     <!-- Header Section -->
     <section class="mb-8">
       <h2
-        class="text-2xl font-bold space-grotesk-700 flex items-center gap-2"
+        class="text-2xl font-bold cormorant-garamond-700 flex items-center gap-2"
       >
         <i class="fa-solid fa-microchip"></i>
         Tech

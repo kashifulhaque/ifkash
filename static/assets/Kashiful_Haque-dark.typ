@@ -34,11 +34,11 @@ _Associate Software Engineer_ #h(1fr) 07/2023 -- 02/2025 \
 - Fine-tuned Mistral-7B using QLoRA on 4070 Ti Super to incorporate internal documentation and company workflows.
 - Deployed the fine-tuned model via vLLM on an NVIDIA T4 cluster; leveraged dynamic batching and quantized inference for sub-second 95th-percentile latency (TTFT).
 - #link("https://www.printweek.com/content/news/fiery-shows-off-new-ai-features-at-printing-united#:~:text=Brand%20new%20at%20Printing%20United%20is%20Fiery%E2%80%99s%20Ticketing%20Assistant%20software%2C%20currently%20in%20development%20for%20a%20late%202024%20launch.%20Leaning%20on%20large%20language%20models%20(LLMs)%20of%20AI%2C%20the%20programme%20can%20read%20emails%20and%20automatically%20translate%20them%20into%20job%20tickets.")[Led development of "Beacon"], a print-request automation tool powered by a fine-tuned ModernBERT NER model; parsed email and chat inputs to trigger document workflows.
-- Built AskDB, a natural language insights platform used by 300+ internal users; used llama 3.1 to translate business queries into SQL, fetch data and auto-generate charts and summaries.
+- Built AskDB, an AI agent used by 300+ internal users; used llama 3.1 to translate business queries into SQL, fetch data and auto-generate charts and summaries.
 - _vLLM, Python, PyTorch, QLoRA, peft, SFT, Mistral, Llama, SQL, FastAPI_
 \
 *Fiery (an Epson company, formerly EFI)* #h(1fr) _Bengaluru, India_ \
-_Intern_ #h(1fr) 01/2023 -- 07/2023 \
+_Internship_ #h(1fr) 01/2023 -- 07/2023 \
 - Created a product mockup pipeline using ImageMagick and Node.js, achieving cost-effective design automation.
 - _Node.js, ImageMagick, Angular_
 \

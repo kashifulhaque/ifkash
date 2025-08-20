@@ -214,8 +214,6 @@
       <span>•</span>
       <a href="/tech-blogs" class="hover:underline">tech blogs</a>
       <span>•</span>
-      <a href="/papers" class="hover:underline">ML papers</a>
-      <span>•</span>
       <a href="/chat" class="hover:underline">chat</a>
       <span>•</span>
       <a href="/leetcode" class="hover:underline">leetcode stats</a>

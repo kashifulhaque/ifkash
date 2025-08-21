@@ -7,9 +7,6 @@
     { lang: "Japanese", text: "カシフル・ハック" },
     { lang: "Hindi", text: "कशिफुल हक़" },
     { lang: "Arabic", text: "كاشف الحق" },
-    { lang: "Kannada", text: "ಕಶಿಫುಲ್ ಹಕ್" },
-    { lang: "Thai", text: "คาชิฟุล ฮัก" },
-    { lang: "Korean", text: "카시풀 하크" },
   ];
 
   let currentNameIndex = 0;

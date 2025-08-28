@@ -1,4 +1,4 @@
-#set text(font: "Alegreya")
+#set text(font: "Crimson Pro")
 
 #show link: underline
 #set page(margin: (x: 0.9cm, y: 1.3cm))
@@ -35,6 +35,10 @@ _Internship_ #h(1fr) 07/2022 -- 12/2022 \
 - Migrated Flask monolith to containerized microservices, reducing AutoML job-launch latency by 40%.
 
 = Projects
+
+*NoPokeDB: a Lightweight Vector Database* • #link("https://github.com/kashifulhaque/nopokedb")[github] • #link("https://pypi.org/project/nopokedb/")[pypi] • #link("https://blog.ifkash.dev/tiny-vector-db")[blog]
+- Designed a disk-backed vector db in Python using hnswlib for ANN search and SQLite for metadata.
+- Added durability via a write-ahead oplog with crash recovery; supported batch inserts, auto-resize, CRUD.
 
 *Mini-Numpy in Rust* • #link("https://github.com/kashifulhaque/tinyndarray")[github]
 - Implemented a lightweight NumPy clone in Rust with Python bindings to deeply understand tensor internals and performance optimizations in ML frameworks.

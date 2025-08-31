@@ -1,4 +1,4 @@
-#set text(font: "Crimson Pro")
+#set text(font: "Alegreya")
 
 #show link: underline
 #set page(margin: (x: 0.9cm, y: 1.3cm))
@@ -23,27 +23,26 @@ _Engineer III_ #h(1fr) 02/2025 -- Present \
 _Associate Software Engineer_ #h(1fr) 07/2023 -- 02/2025 \
 - Fine-tuned Mistral-7B using QLoRA on 4070 Ti Super to incorporate internal documentation and company workflows.
 - Deployed the fine-tuned model via vLLM on an NVIDIA T4 cluster; leveraged dynamic batching and quantized inference for sub-second 95th-percentile latency (TTFT).
-- #link("https://www.printweek.com/content/news/fiery-shows-off-new-ai-features-at-printing-united#:~:text=Brand%20new%20at%20Printing%20United%20is%20Fiery%E2%80%99s%20Ticketing%20Assistant%20software%2C%20currently%20in%20development%20for%20a%20late%202024%20launch.%20Leaning%20on%20large%20language%20models%20(LLMs)%20of%20AI%2C%20the%20programme%20can%20read%20emails%20and%20automatically%20translate%20them%20into%20job%20tickets.")[Led development of "Beacon"], a print-request automation tool powered by a fine-tuned ModernBERT NER model; parsed email and chat inputs to trigger document workflows.
-- Built AskDB, an AI agent used by 300+ internal users; used llama 3.1 to translate business queries into SQL, fetch data and auto-generate charts and summaries.
+- #link("https://www.printweek.com/content/news/fiery-shows-off-new-ai-features-at-printing-united#:~:text=Brand%20new%20at%20Printing%20United%20is%20Fiery%E2%80%99s%20Ticketing%20Assistant%20software%2C%20currently%20in%20development%20for%20a%20late%202024%20launch.%20Leaning%20on%20large%20language%20models%20(LLMs)%20of%20AI%2C%20the%20programme%20can%20read%20emails%20and%20automatically%20translate%20them%20into%20job%20tickets.")[Led development of "Beacon"], a print-request automation tool powered by a fine-tuned ModernBERT NER model; parsed email and chat inputs to trigger document workflows. Demoed at Printing United 2024, Las Vegas
+- Built AskDB, an AI agent used by 300+ internal users; used llama 3.1 to translate business queries into SQL with 90%+ accuracy, in turn generate business reports.
 
 *Fiery (an Epson company, formerly EFI)* #h(1fr) _Bengaluru, India_ \
 _Internship_ #h(1fr) 01/2023 -- 07/2023 \
-- Built product mockup pipeline using ImageMagick, achieving cost-effective design automation.
 
 *Corteva Agriscience* #h(1fr) _Hyderabad, India_ \
 _Internship_ #h(1fr) 07/2022 -- 12/2022 \
-- Migrated Flask monolith to containerized microservices, reducing AutoML job-launch latency by 40%.
 
 = Projects
 
 *NoPokeDB: a Lightweight Vector Database* • #link("https://github.com/kashifulhaque/nopokedb")[github] • #link("https://pypi.org/project/nopokedb/")[pypi] • #link("https://blog.ifkash.dev/tiny-vector-db")[blog]
 - Designed a disk-backed vector db in Python using hnswlib for ANN search and SQLite for metadata.
 - Added durability via a write-ahead oplog with crash recovery; supported batch inserts, auto-resize, CRUD.
+- Has over 2K total PyPI downloads!
 
 *Mini-Numpy in Rust* • #link("https://github.com/kashifulhaque/tinyndarray")[github]
 - Implemented a lightweight NumPy clone in Rust with Python bindings to deeply understand tensor internals and performance optimizations in ML frameworks.
 
-*Boo: AI-powered Discord Bot* • #link("https://github.com/VVIP-Kitchen/boo")[github] • #link("https://deepwiki.com/VVIP-Kitchen/boo")[deepwiki]
+*Boo: AI-powered Discord Bot* • #link("https://github.com/VVIP-Kitchen/boo")[github] • #link("https://deepwiki.com/VVIP-Kitchen/boo")[deepwiki] • #link("https://vvip-blog.pages.dev/blog/boo/")[blog]
 - Architected a multi-service AI bot running as a Docker Compose stack with multiple services.
 - Features: conversational AI (LLMs), image analysis & generation, weather, GIF & HN search via function/tool calling.
 

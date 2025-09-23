@@ -36,9 +36,11 @@ _Associate Software Engineer_ #h(1fr) 07/2023 -- 02/2025 \
 
 *Fiery (an Epson company, formerly EFI)* #h(1fr) _Bengaluru, India_ \
 _Internship_ #h(1fr) 01/2023 -- 07/2023 \
+- Built a product mockup generation system using ImageMagick. #link("https://blog.ifkash.dev/imagemagick-product-mockups")[read blog here]
 
 *Corteva Agriscience* #h(1fr) _Hyderabad, India_ \
 _Internship_ #h(1fr) 07/2022 -- 12/2022 \
+- Migrated old Flask monolith API to microservices architecture to speed up deployments.
 
 = projects
 

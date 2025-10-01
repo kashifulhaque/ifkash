@@ -193,10 +193,6 @@
       Learning focusing on Natural Language Processing (NLP), Generative AI
       (GenAI) and Large Language Models (LLMs). I also have a keen interest in
       cloud, linux and other tools surrounding tech.
-      <br /><br />
-      Born and brought up in Kolkata, I lived most of my life there. Since 2022,
-      I have travelled to cities such as Hyderabad, Chennai, and Bengaluru (current)
-      for work/studies.
     </p>
   </section>
 

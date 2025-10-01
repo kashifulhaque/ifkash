@@ -15,3 +15,7 @@ watch_dir = "src"
 [[routes]]
 pattern = "ifkash.dev/api/*"
 zone_name = "ifkash.dev"
+
+[[kv_namespaces]]
+binding = "IFKASH_HN"
+id = "85ed35403df24a01942b9ed8d3bbf3f4"

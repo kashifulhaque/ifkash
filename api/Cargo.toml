@@ -8,7 +8,8 @@ authors = ["kashifulhaque <haque.kashiful7@gmail.com>"]
 crate-type = ["cdylib"]
 
 [dependencies]
-worker = { version = "0.6", features = ['http', 'axum'] }
+worker = { version = "0.6", features = ['http'] }
 worker-macros = { version = "0.6", features = ['http'] }
 serde = { version = "1.0.228", features = ["derive"] }
 serde_json = "1.0.145"
+futures = "0.3.31"

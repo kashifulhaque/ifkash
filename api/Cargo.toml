@@ -1,0 +1,14 @@
+[package]
+name = "ifkash"
+version = "0.1.0"
+edition = "2021"
+authors = ["kashifulhaque <haque.kashiful7@gmail.com>"]
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+worker = { version = "0.6", features = ['http', 'axum'] }
+worker-macros = { version = "0.6", features = ['http'] }
+serde = { version = "1.0.228", features = ["derive"] }
+serde_json = "1.0.145"

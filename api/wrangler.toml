@@ -1,0 +1,17 @@
+# ./api/wrangler.toml
+
+name = "ifkash-api"                 # avoid colliding with your Pages project name
+main = "build/worker/shim.mjs"      # preferred output of worker-build (see note below)
+compatibility_date = "2025-10-01"
+workers_dev = true                   # gives you a preview *.workers.dev URL too
+observability = { enabled = true }
+
+[build]
+command = "cargo install -q worker-build && worker-build --release"
+watch_dir = "src"
+
+# Route only /api/* on your domain to this Worker.
+# Ensure your domain is a Cloudflare zone in your account.
+[[routes]]
+pattern = "ifkash.dev/api/*"
+zone_name = "ifkash.dev"

@@ -4,10 +4,8 @@ My personal website 👋
 ### **Tech stack** 📚
 - [SvelteKit](https://kit.svelte.dev)
 - [Bun](https://bun.sh)
-- [Go](https://go.dev)
-- [Typst](https://github.com/typst/typst)
-- [Vercel](https://vercel.com)
-- [Cloudflare Workers AI](https://developers.cloudflare.com/workers-ai/)
+- [Rust](https://rust-lang.org)
+- [Cloudflare](https://www.cloudflare.com)
 
 ### **To run locally** 🏃🏼‍♂️
 ```sh
@@ -16,9 +14,3 @@ cd ifkash;
 bun install;
 bun run dev;
 ```
-
-### **To deploy** 🗃️
-- Fork this repo
-- Change values
-- Create a new project on Vercel
-- Select the forked repo

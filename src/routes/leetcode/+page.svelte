@@ -53,7 +53,7 @@
   });
 </script>
 
-<div class="min-h-screen text-gray-100 glegoo-regular px-4 sm:px-8 py-8 bg-neutral-900">
+<div class="max-w-3xl mx-auto text-gray-100 glegoo-regular px-4 sm:px-8 py-8 bg-neutral-900">
   <section>
     <h1 class="text-2xl font-bold mb-6 flex items-center gap-2">
       <i class="fa-solid fa-list-check"></i>

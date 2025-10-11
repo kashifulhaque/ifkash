@@ -4,7 +4,7 @@
   // Props (optional): provide lat/lon to skip geolocation; set initial preferences
   export let lat: number | null = null;
   export let lon: number | null = null;
-  export let use24hDefault: boolean = true;
+  export let use24hDefault: boolean = false;
   export let showSecondsDefault: boolean = false;
 
   let now = new Date();
@@ -17,6 +17,7 @@
   type Weather = { tempC: number | null; description: string | null };
   let weather: Weather = { tempC: null, description: null };
   let weatherError: string | null = null;
+  let weatherTimer: number;
 
   const storageKey = 'minimal-clock-prefs-v1';
   type Prefs = { use24h: boolean; showSeconds: boolean; showWeather: boolean };
@@ -104,13 +105,24 @@
     loadPrefs();
     timer = window.setInterval(() => (now = new Date()), 1000);
     loadWeather();
+    // Update weather every 30 minutes
+    weatherTimer = window.setInterval(() => loadWeather(), 30 * 60 * 1000);
   });
-  onDestroy(() => clearInterval(timer));
+  onDestroy(() => {
+    clearInterval(timer);
+    clearInterval(weatherTimer);
+  });
 
   function toggle24h() { use24h = !use24h; savePrefs(); }
   function toggleSeconds() { showSeconds = !showSeconds; savePrefs(); }
   function toggleWeather() { showWeather = !showWeather; savePrefs(); }
 </script>
+
+<svelte:head>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400&display=swap" rel="stylesheet">
+</svelte:head>
 
 <!-- Background with subtle vignette and grain -->
 <div class="relative isolate min-h-screen w-full overflow-hidden bg-neutral-950 text-neutral-200">
@@ -119,20 +131,20 @@
 
   <!-- Controls -->
   <div class="absolute right-4 top-4 flex items-center gap-2 text-sm text-neutral-400">
-    <button class="rounded-xl border border-neutral-800 px-3 py-1.5 hover:border-neutral-700 hover:text-neutral-200" on:click={toggle24h} aria-label="Toggle 24h">
+    <button type="button" class="rounded-xl border border-neutral-800 px-3 py-1.5 hover:border-neutral-700 hover:text-neutral-200" on:click={toggle24h} aria-label="Toggle 24h">
       {use24h ? '24h' : '12h'}
     </button>
-    <button class="rounded-xl border border-neutral-800 px-3 py-1.5 hover:border-neutral-700 hover:text-neutral-200" on:click={toggleSeconds} aria-label="Toggle seconds">
+    <button type="button" class="rounded-xl border border-neutral-800 px-3 py-1.5 hover:border-neutral-700 hover:text-neutral-200" on:click={toggleSeconds} aria-label="Toggle seconds">
       {showSeconds ? 'sec on' : 'sec off'}
     </button>
-    <button class="rounded-xl border border-neutral-800 px-3 py-1.5 hover:border-neutral-700 hover:text-neutral-200" on:click={toggleWeather} aria-label="Toggle weather">
+    <button type="button" class="rounded-xl border border-neutral-800 px-3 py-1.5 hover:border-neutral-700 hover:text-neutral-200" on:click={toggleWeather} aria-label="Toggle weather">
       {showWeather ? 'wx on' : 'wx off'}
     </button>
   </div>
 
   <!-- Center content -->
   <main class="relative mx-auto flex min-h-screen max-w-7xl flex-col items-center justify-center px-6 text-center">
-    <h1 class="select-none font-light tracking-wide" style="font-size:clamp(3rem,14vw,11rem); line-height:0.95;">
+    <h1 class="select-none font-light tracking-wide clock-font" style="font-size:clamp(3rem,14vw,11rem); line-height:0.95;">
       {formatTime(now)}
     </h1>
     <p class="mt-3 text-balance text-lg text-neutral-400 sm:text-xl">
@@ -161,8 +173,26 @@
 </div>
 
 <style>
-  /* Optional: better text rendering */
-  :global(html) { text-rendering: optimizeLegibility; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
-.grain-overlay{background-image:url("data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22120%22 height=%22120%22 viewBox=%220 0 120 120%22><filter id=%22n%22><feTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%222%22/></filter><rect width=%22120%22 height=%22120%22 filter=%22url(%23n)%22 opacity=%220.6%22/></svg>");background-repeat:repeat;background-size:120px 120px;}
-</style>
+  /* Inter font for consistent rendering across platforms */
+  :global(body) {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
 
+  .clock-font {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-feature-settings: 'tnum' 1; /* Tabular numbers for consistent spacing */
+  }
+
+  /* Better text rendering */
+  :global(html) {
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  .grain-overlay {
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='2'/></filter><rect width='120' height='120' filter='url(%23n)' opacity='0.6'/></svg>");
+    background-repeat: repeat;
+    background-size: 120px 120px;
+  }
+</style>

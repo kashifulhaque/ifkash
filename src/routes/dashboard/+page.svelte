@@ -13,14 +13,22 @@
   let use24h = use24hDefault;
   let showSeconds = showSecondsDefault;
   let showWeather = true;
+  let showF1 = true;
 
   type Weather = { tempC: number | null; description: string | null };
   let weather: Weather = { tempC: null, description: null };
   let weatherError: string | null = null;
   let weatherTimer: number;
 
+  // F1 Data
+  let nextGP: any = null;
+  let lastGP: any = null;
+  let driversStandings: any[] = [];
+  let constructorsStandings: any[] = [];
+  let f1Loading = true;
+
   const storageKey = 'minimal-clock-prefs-v1';
-  type Prefs = { use24h: boolean; showSeconds: boolean; showWeather: boolean };
+  type Prefs = { use24h: boolean; showSeconds: boolean; showWeather: boolean; showF1: boolean };
 
   function loadPrefs() {
     try {
@@ -30,11 +38,12 @@
         use24h = p.use24h ?? use24h;
         showSeconds = p.showSeconds ?? showSeconds;
         showWeather = p.showWeather ?? showWeather;
+        showF1 = p.showF1 ?? showF1;
       }
     } catch {}
   }
   function savePrefs() {
-    const p: Prefs = { use24h, showSeconds, showWeather };
+    const p: Prefs = { use24h, showSeconds, showWeather, showF1 };
     localStorage.setItem(storageKey, JSON.stringify(p));
   }
 
@@ -73,7 +82,6 @@
       }
       if (la == null || lo == null) throw new Error('missing coords');
 
-      // Open-Meteo: no API key, returns current_weather
       const url = `https://api.open-meteo.com/v1/forecast?latitude=${la}&longitude=${lo}&current_weather=true`;
       const res = await fetch(url);
       if (!res.ok) throw new Error('weather http ' + res.status);
@@ -88,8 +96,67 @@
     }
   }
 
+  async function loadF1Data() {
+    try {
+      // Fetch next race
+      const nextRaceRes = await fetch('https://api.jolpi.ca/ergast/f1/current/next.json');
+      const nextRaceData = await nextRaceRes.json();
+      const race = nextRaceData.MRData.RaceTable.Races[0];
+
+      nextGP = {
+        name: race.raceName,
+        location: race.Circuit.Location.country,
+        raceTime: convertToIST(race.date, race.time),
+        qualiTime: convertToIST(race.Qualifying.date, race.Qualifying.time)
+      };
+
+      // Fetch last race result
+      const lastRaceRes = await fetch('https://api.jolpi.ca/ergast/f1/current/last/results.json');
+      const lastRaceData = await lastRaceRes.json();
+      const lastRaceInfo = lastRaceData.MRData.RaceTable.Races[0];
+
+      lastGP = {
+        name: lastRaceInfo.raceName,
+        podium: lastRaceInfo.Results.slice(0, 3).map((result: any) =>
+          `${result.Driver.familyName}`
+        )
+      };
+
+      // Fetch driver standings (top 3)
+      const driversRes = await fetch('https://api.jolpi.ca/ergast/f1/current/driverStandings.json');
+      const driversData = await driversRes.json();
+      driversStandings = driversData.MRData.StandingsTable.StandingsLists[0].DriverStandings.slice(0, 3).map((standing: any) => ({
+        driver: standing.Driver.familyName,
+        points: parseInt(standing.points)
+      }));
+
+      // Fetch constructor standings (top 3)
+      const constructorsRes = await fetch('https://api.jolpi.ca/ergast/f1/current/constructorStandings.json');
+      const constructorsData = await constructorsRes.json();
+      constructorsStandings = constructorsData.MRData.StandingsTable.StandingsLists[0].ConstructorStandings.slice(0, 3).map((standing: any) => ({
+        team: standing.Constructor.name,
+        points: parseInt(standing.points)
+      }));
+
+      f1Loading = false;
+    } catch (error) {
+      console.error('F1 data error:', error);
+      f1Loading = false;
+    }
+  }
+
+  function convertToIST(date: string, time: string) {
+    const utcDate = new Date(date + 'T' + time);
+    return utcDate.toLocaleString('en-IN', {
+      timeZone: 'Asia/Kolkata',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }
+
   function codeToDesc(code: number): string {
-    // Minimal mapping for ambient feel
     const map: Record<number, string> = {
       0: 'Clear', 1: 'Mainly clear', 2: 'Partly cloudy', 3: 'Overcast',
       45: 'Fog', 48: 'Depositing rime fog',
@@ -105,7 +172,7 @@
     loadPrefs();
     timer = window.setInterval(() => (now = new Date()), 1000);
     loadWeather();
-    // Update weather every 30 minutes
+    loadF1Data();
     weatherTimer = window.setInterval(() => loadWeather(), 30 * 60 * 1000);
   });
   onDestroy(() => {
@@ -116,6 +183,7 @@
   function toggle24h() { use24h = !use24h; savePrefs(); }
   function toggleSeconds() { showSeconds = !showSeconds; savePrefs(); }
   function toggleWeather() { showWeather = !showWeather; savePrefs(); }
+  function toggleF1() { showF1 = !showF1; savePrefs(); }
 </script>
 
 <svelte:head>
@@ -139,6 +207,9 @@
     </button>
     <button type="button" class="rounded-xl border border-neutral-800 px-3 py-1.5 hover:border-neutral-700 hover:text-neutral-200" on:click={toggleWeather} aria-label="Toggle weather">
       {showWeather ? 'wx on' : 'wx off'}
+    </button>
+    <button type="button" class="rounded-xl border border-neutral-800 px-3 py-1.5 hover:border-neutral-700 hover:text-neutral-200" on:click={toggleF1} aria-label="Toggle F1">
+      {showF1 ? 'f1 on' : 'f1 off'}
     </button>
   </div>
 
@@ -166,7 +237,53 @@
     </aside>
   {/if}
 
-  <!-- Tiny footer hint (can delete) -->
+  <!-- F1 in left corner -->
+  {#if showF1 && !f1Loading && nextGP}
+    <aside class="pointer-events-auto absolute bottom-6 left-6 rounded-2xl border border-neutral-800/80 bg-neutral-900/30 px-4 py-3 backdrop-blur-sm max-w-sm">
+      <div class="space-y-2.5 text-sm">
+        <!-- Next GP -->
+        <div class="border-b border-neutral-800/50 pb-2.5">
+          <div class="text-xs text-neutral-500 mb-1">Next GP</div>
+          <div class="font-light text-base">{nextGP.name}</div>
+          <div class="text-neutral-400 text-xs mt-0.5">
+            Race: {nextGP.raceTime} • Quali: {nextGP.qualiTime}
+          </div>
+        </div>
+
+        <!-- Last GP Podium -->
+        {#if lastGP}
+          <div class="border-b border-neutral-800/50 pb-2.5">
+            <div class="text-xs text-neutral-500 mb-1">Last GP: {lastGP.name}</div>
+            <div class="text-neutral-400 text-xs">
+              🥇 {lastGP.podium[0]} • 🥈 {lastGP.podium[1]} • 🥉 {lastGP.podium[2]}
+            </div>
+          </div>
+        {/if}
+
+        <!-- Standings -->
+        <div class="grid grid-cols-2 gap-3 pt-0.5">
+          <div>
+            <div class="text-xs text-neutral-500 mb-1.5">Drivers</div>
+            {#each driversStandings as driver, i}
+              <div class="text-xs text-neutral-400 leading-relaxed">
+                {i + 1}. {driver.driver} <span class="text-neutral-600">({driver.points})</span>
+              </div>
+            {/each}
+          </div>
+          <div>
+            <div class="text-xs text-neutral-500 mb-1.5">Constructors</div>
+            {#each constructorsStandings as team, i}
+              <div class="text-xs text-neutral-400 leading-relaxed">
+                {i + 1}. {team.team} <span class="text-neutral-600">({team.points})</span>
+              </div>
+            {/each}
+          </div>
+        </div>
+      </div>
+    </aside>
+  {/if}
+
+  <!-- Tiny footer hint -->
   <footer class="pointer-events-none absolute bottom-3 left-0 right-0 flex items-center justify-center text-xs text-neutral-600">
     <span class="rounded-full border border-neutral-800/70 px-3 py-1">Press F11 / full-screen for kiosk vibes</span>
   </footer>
@@ -176,7 +293,6 @@
   @import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap');
   @import url('https://fonts.googleapis.com/css2?family=Zalando+Sans:ital,wght@0,200..900;1,200..900&display=swap');
 
-  /* Inter font for consistent rendering across platforms */
   :global(body) {
     font-family: 'Zalando Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   }
@@ -186,7 +302,6 @@
     font-weight: 500;
   }
 
-  /* Better text rendering */
   :global(html) {
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;

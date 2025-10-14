@@ -23,8 +23,6 @@
   // F1 Data
   let nextGP: any = null;
   let lastGP: any = null;
-  let driversStandings: any[] = [];
-  let constructorsStandings: any[] = [];
   let f1Loading = true;
 
   const storageKey = 'minimal-clock-prefs-v1';
@@ -57,7 +55,7 @@
     if (!use24h) {
       const ampm = h >= 12 ? 'PM' : 'AM';
       h = h % 12 || 12;
-      return showSeconds ? `${h}:${m}:${s} ${ampm}` : `${h}:${m} ${ampm}`;
+      return showSeconds ? `${h}:${m}:${s}${ampm}` : `${h}:${m}${ampm}`;
     }
     return showSeconds ? `${pad(h)}:${m}:${s}` : `${pad(h)}:${m}`;
   }
@@ -122,22 +120,6 @@
         )
       };
 
-      // Fetch driver standings (top 3)
-      const driversRes = await fetch('https://api.jolpi.ca/ergast/f1/current/driverStandings.json');
-      const driversData = await driversRes.json();
-      driversStandings = driversData.MRData.StandingsTable.StandingsLists[0].DriverStandings.slice(0, 3).map((standing: any) => ({
-        driver: standing.Driver.familyName,
-        points: parseInt(standing.points)
-      }));
-
-      // Fetch constructor standings (top 3)
-      const constructorsRes = await fetch('https://api.jolpi.ca/ergast/f1/current/constructorStandings.json');
-      const constructorsData = await constructorsRes.json();
-      constructorsStandings = constructorsData.MRData.StandingsTable.StandingsLists[0].ConstructorStandings.slice(0, 3).map((standing: any) => ({
-        team: standing.Constructor.name,
-        points: parseInt(standing.points)
-      }));
-
       f1Loading = false;
     } catch (error) {
       console.error('F1 data error:', error);
@@ -168,7 +150,10 @@
     return map[code] ?? '—';
   }
 
+  let prayerInterval: any;
   onMount(() => {
+    updatePrayerTimings();
+    prayerInterval = setInterval(updatePrayerTimings, 30000);
     loadPrefs();
     timer = window.setInterval(() => (now = new Date()), 1000);
     loadWeather();
@@ -176,14 +161,91 @@
     weatherTimer = window.setInterval(() => loadWeather(), 30 * 60 * 1000);
   });
   onDestroy(() => {
+    try { clearInterval(prayerInterval); } catch {}
     clearInterval(timer);
     clearInterval(weatherTimer);
   });
 
-  function toggle24h() { use24h = !use24h; savePrefs(); }
-  function toggleSeconds() { showSeconds = !showSeconds; savePrefs(); }
-  function toggleWeather() { showWeather = !showWeather; savePrefs(); }
-  function toggleF1() { showF1 = !showF1; savePrefs(); }
+  // --- Namaaz / Prayer timings ---
+  let nextPrayerName: string = '';
+  let nextPrayerTimeDisplay: string = '';
+  let minutesRemaining: number = 0;
+
+  async function updatePrayerTimings() {
+    try {
+      // geolocate or use provided props
+      let la = lat, lo = lon;
+      if (la == null || lo == null) {
+        try {
+          const pos: GeolocationPosition = await new Promise((resolve, reject) => {
+            if (!navigator.geolocation) return reject(new Error('Geolocation not available'));
+            navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 8000 });
+          }) as GeolocationPosition;
+          la = pos.coords.latitude; lo = pos.coords.longitude;
+        } catch (e) {
+          // fallback: Bangalore coords
+          la = 12.9716; lo = 77.5946;
+        }
+      }
+
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, '0');
+      const dd = String(today.getDate()).padStart(2, '0');
+
+      const buildUrl = (dateStr: string) =>
+        `https://api.aladhan.com/v1/timings/${dateStr}?latitude=${la}&longitude=${lo}&method=3`; // MWL
+
+      const [res1, res2] = await Promise.all([
+        fetch(buildUrl(`${dd}-${mm}-${yyyy}`)),
+        fetch(buildUrl(new Date(today.getTime()+86400000).toLocaleDateString('en-GB').split('/').reverse().join('-')))
+      ]);
+      const j1 = await res1.json();
+      const j2 = await res2.json();
+      const t1 = j1?.data?.timings || {};
+      const t2 = j2?.data?.timings || {};
+
+      function parseTime(hm: string, baseDate: Date) {
+        if (!hm) return null;
+        const [h, m] = hm.split(':').map(Number);
+        const d = new Date(baseDate);
+        d.setHours(h, m, 0, 0);
+        return d;
+      }
+
+      const nowLocal = new Date();
+
+      const order = [
+        ['Fajr', t1.Fajr],
+        ['Sunrise', t1.Sunrise],
+        ['Dhuhr', t1.Dhuhr],
+        ['Asr', t1.Asr],
+        ['Maghrib', t1.Maghrib],
+        ['Isha', t1.Isha],
+      ] as const;
+
+      let upcoming: {name:string, time: Date, display:string} | null = null;
+      for (const [name, str] of order) {
+        const dt = parseTime(String(str || ''), today);
+        if (dt && dt.getTime() > nowLocal.getTime()) {
+          upcoming = { name, time: dt, display: String(str) };
+          break;
+        }
+      }
+      if (!upcoming) {
+        // take Fajr from tomorrow
+        const t = parseTime(String(t2.Fajr || ''), new Date(today.getTime()+86400000));
+        if (t) upcoming = { name: 'Fajr', time: t, display: String(t2.Fajr) };
+      }
+      if (upcoming) {
+        nextPrayerName = upcoming.name;
+        nextPrayerTimeDisplay = formatTime(upcoming.time);
+        minutesRemaining = Math.max(0, Math.round((upcoming.time.getTime() - nowLocal.getTime())/60000));
+      }
+    } catch (err) {
+      console.error('prayer timings error', err);
+    }
+  }
 </script>
 
 <svelte:head>
@@ -193,27 +255,20 @@
 </svelte:head>
 
 <!-- Background with subtle vignette and grain -->
-<div class="relative isolate min-h-screen w-full overflow-hidden bg-neutral-950 text-neutral-200">
-  <div class="pointer-events-none absolute inset-0 opacity-70 [background:radial-gradient(60%_40%_at_50%_0%,rgba(255,255,255,0.06)_0%,rgba(255,255,255,0)_70%)]"></div>
-  <div class="pointer-events-none absolute inset-0 mix-blend-overlay opacity-[0.08] grain-overlay"></div>
-
-  <!-- Controls -->
-  <div class="absolute right-4 top-4 flex items-center gap-2 text-sm text-neutral-400">
-    <button type="button" class="rounded-xl border border-neutral-800 px-3 py-1.5 hover:border-neutral-700 hover:text-neutral-200" on:click={toggle24h} aria-label="Toggle 24h">
-      {use24h ? '24h' : '12h'}
-    </button>
-    <button type="button" class="rounded-xl border border-neutral-800 px-3 py-1.5 hover:border-neutral-700 hover:text-neutral-200" on:click={toggleSeconds} aria-label="Toggle seconds">
-      {showSeconds ? 'sec on' : 'sec off'}
-    </button>
-    <button type="button" class="rounded-xl border border-neutral-800 px-3 py-1.5 hover:border-neutral-700 hover:text-neutral-200" on:click={toggleWeather} aria-label="Toggle weather">
-      {showWeather ? 'wx on' : 'wx off'}
-    </button>
-    <button type="button" class="rounded-xl border border-neutral-800 px-3 py-1.5 hover:border-neutral-700 hover:text-neutral-200" on:click={toggleF1} aria-label="Toggle F1">
-      {showF1 ? 'f1 on' : 'f1 off'}
-    </button>
+<div class="relative isolate min-h-screen w-full overflow-hidden bg-black text-neutral-200">
+  <!-- Next Namaaz badge (top-right) -->
+  <div class="fixed right-4 top-4 z-50">
+    <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-2 shadow-lg backdrop-blur supports-[backdrop-filter]:bg-white/10">
+      <div class="text-sm text-neutral-500 mb-1 tracking-wide">Next Namaaz</div>
+      <div class="flex items-baseline gap-2">
+        <span class="text-medium font-medium">{nextPrayerName}</span>
+        <span class="text-medium tabular-nums font-semibold">{nextPrayerTimeDisplay}</span>
+        <span class="text-sm opacity-70">({minutesRemaining} min)</span>
+      </div>
+    </div>
   </div>
 
-  <!-- Center content -->
+<!-- Center content -->
   <main class="relative mx-auto flex min-h-screen max-w-7xl flex-col items-center justify-center px-6 text-center">
     <h1 class="select-none font-light tracking-wide clock-font" style="font-size:clamp(3rem,14vw,11rem); line-height:0.95;">
       {formatTime(now)}
@@ -252,41 +307,16 @@
 
         <!-- Last GP Podium -->
         {#if lastGP}
-          <div class="border-b border-neutral-800/50 pb-2.5">
+          <div>
             <div class="text-xs text-neutral-500 mb-1">Last GP: {lastGP.name}</div>
             <div class="text-neutral-400 text-xs">
               🥇 {lastGP.podium[0]} • 🥈 {lastGP.podium[1]} • 🥉 {lastGP.podium[2]}
             </div>
           </div>
         {/if}
-
-        <!-- Standings -->
-        <div class="grid grid-cols-2 gap-3 pt-0.5">
-          <div>
-            <div class="text-xs text-neutral-500 mb-1.5">Drivers</div>
-            {#each driversStandings as driver, i}
-              <div class="text-xs text-neutral-400 leading-relaxed">
-                {i + 1}. {driver.driver} <span class="text-neutral-600">({driver.points})</span>
-              </div>
-            {/each}
-          </div>
-          <div>
-            <div class="text-xs text-neutral-500 mb-1.5">Constructors</div>
-            {#each constructorsStandings as team, i}
-              <div class="text-xs text-neutral-400 leading-relaxed">
-                {i + 1}. {team.team} <span class="text-neutral-600">({team.points})</span>
-              </div>
-            {/each}
-          </div>
-        </div>
       </div>
     </aside>
   {/if}
-
-  <!-- Tiny footer hint -->
-  <footer class="pointer-events-none absolute bottom-3 left-0 right-0 flex items-center justify-center text-xs text-neutral-600">
-    <span class="rounded-full border border-neutral-800/70 px-3 py-1">Press F11 / full-screen for kiosk vibes</span>
-  </footer>
 </div>
 
 <style>

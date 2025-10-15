@@ -95,7 +95,7 @@
                   rel="noopener noreferrer"
                   class="hover:underline text-neutral-300"
                 >
-                  HN discussion →
+                  HN discussion ↗
                 </a>
               </p>
             </article>

@@ -101,8 +101,13 @@
     <section class="pt-14 sm:pt-20" aria-labelledby="lc-title">
       <div class="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 id="lc-title" class="text-3xl sm:text-4xl font-semibold leading-tight tracking-tight text-neutral-100">LeetCode</h1>
-          <p class="mt-2 text-neutral-400">Recent ACs and problem totals. <span class="rounded-full border border-neutral-800 bg-neutral-900 px-2 py-0.5 text-xs text-neutral-300">@{username}</span></p>
+          <h1 id="lc-title" class="text-3xl sm:text-4xl font-semibold leading-tight tracking-tight text-neutral-100">Leetcode</h1>
+          <p class="mt-2 text-neutral-400">
+            Recent ACs and problem totals.
+            <a href="https://leetcode.com/u/{username}" target="_blank" rel="noopener noreferrer" class="rounded-full border border-neutral-800 bg-neutral-900 px-2 py-0.5 text-xs text-neutral-300 hover:border-neutral-700 hover:bg-neutral-800 transition-colors">
+              @{username}
+            </a>
+          </p>
         </div>
       </div>
     </section>

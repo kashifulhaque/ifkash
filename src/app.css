@@ -1,14 +1,1 @@
-@import url('https://fonts.googleapis.com/css2?family=Glegoo:wght@400;700&display=swap');
 @import "tailwindcss";
-
-.glegoo-regular {
-  font-family: "Glegoo", serif;
-  font-weight: 400;
-  font-style: normal;
-}
-
-.glegoo-bold {
-  font-family: "Glegoo", serif;
-  font-weight: 700;
-  font-style: normal;
-}

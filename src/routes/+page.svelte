@@ -1,5 +1,5 @@
 <svelte:head>
-  <title>Kashif — Engineer & Builder</title>
+  <title>Kashif</title>
   <meta name="description" content="Engineer III at American Express. I design robust systems and ship thoughtful tools.">
 </svelte:head>
 

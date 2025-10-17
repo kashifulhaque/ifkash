@@ -15,8 +15,8 @@
   let showWeather = true;
   let showF1 = true;
 
-  type Weather = { tempC: number | null; description: string | null };
-  let weather: Weather = { tempC: null, description: null };
+  type Weather = { tempC: number | null; description: string | null; minC: number | null; maxC: number | null };
+  let weather: Weather = { tempC: null, description: null, minC: null, maxC: null };
   let weatherError: string | null = null;
   let weatherTimer: number;
 
@@ -80,14 +80,27 @@
       }
       if (la == null || lo == null) throw new Error('missing coords');
 
-      const url = `https://api.open-meteo.com/v1/forecast?latitude=${la}&longitude=${lo}&current_weather=true`;
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'auto';
+      const url =
+        `https://api.open-meteo.com/v1/forecast?latitude=${la}&longitude=${lo}` +
+        `&current_weather=true&daily=temperature_2m_max,temperature_2m_min&timezone=${encodeURIComponent(tz)}`;
+
       const res = await fetch(url);
       if (!res.ok) throw new Error('weather http ' + res.status);
       const data = await res.json();
+
       const cw = data.current_weather;
       if (!cw) throw new Error('no current_weather');
+
       weather.tempC = cw.temperature ?? null;
       weather.description = codeToDesc(cw.weathercode);
+
+      const d = data.daily ?? {};
+      const maxArr = d.temperature_2m_max ?? [];
+      const minArr = d.temperature_2m_min ?? [];
+      weather.maxC = (maxArr.length ? maxArr[0] : null);
+      weather.minC = (minArr.length ? minArr[0] : null);
+
       weatherError = null;
     } catch (e) {
       weatherError = 'Weather unavailable';
@@ -284,7 +297,14 @@
       {#if weather.tempC !== null}
         <div class="flex items-end gap-3">
           <div class="text-3xl font-light leading-none">{Math.round(weather.tempC)}°C</div>
-          <div class="pb-[2px] text-sm text-neutral-400">{weather.description}</div>
+          <div class="pb-[2px] text-sm text-neutral-400">
+            <div>{weather.description}</div>
+            {#if weather.maxC !== null && weather.minC !== null}
+              <div class="mt-0.5 text-xs text-neutral-500">
+                H {Math.round(weather.maxC)}° • L {Math.round(weather.minC)}°
+              </div>
+            {/if}
+          </div>
         </div>
       {:else}
         <div class="text-sm text-neutral-500">{weatherError ?? 'Loading weather…'}</div>

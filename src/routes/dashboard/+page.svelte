@@ -295,9 +295,9 @@
   {#if showWeather}
     <aside class="pointer-events-auto absolute bottom-6 right-6 rounded-2xl border border-neutral-800/80 bg-neutral-900/30 px-4 py-3 backdrop-blur-sm">
       {#if weather.tempC !== null}
-        <div class="flex items-end gap-3">
+        <div class="flex items-center gap-3">
           <div class="text-3xl font-light leading-none">{Math.round(weather.tempC)}°C</div>
-          <div class="pb-[2px] text-sm text-neutral-400">
+          <div class="text-sm text-neutral-400 leading-tight">
             <div>{weather.description}</div>
             {#if weather.maxC !== null && weather.minC !== null}
               <div class="mt-0.5 text-xs text-neutral-500">

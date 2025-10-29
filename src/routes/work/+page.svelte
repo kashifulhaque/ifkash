@@ -10,66 +10,42 @@
     companies: Company[];
     duration: string;
     location: string;
-    points: string[];
   };
 
   const workHistory: Job[] = [
     {
       role: 'Engineer III',
       companies: [
-        { name: 'American Express', url: 'https://www.americanexpress.com' },
-        { name: '(via IntraEdge)', url: 'https://intraedge.com' }
+        { name: 'American Express', url: 'https://www.americanexpress.com' }
       ],
       duration: 'February 2025 – Present',
-      location: 'Bengaluru, IN',
-      points: [
-        'Built CC Listener module for Bridge Intelligence, capturing real-time CCs captions for thousands of Webex meetings, streaming them into Redis for downstream summarization using GPT-4o.',
-        'Deployed CC Listener to Amex’s Hydra platform (RedHat OpenShift) across dev, QA, and pre-prod using Helm, Jenkins, and Docker; navigated complex internal infra and CI/CD pipelines.',
-        'Built a hybrid semantic + fuzzy (trigram) retrieval system over 2M+ Confluence pages (runbooks); reduced latency from 30s (native search) to under 2s.',
-        'Designed a multimodal runbook generation pipeline using GPT-4o, converting raw incident data (text + screenshots) into standardized Confluence pages.',
-        'Tech stack: _Python, FastAPI, LangChain, PGVector, Streamlit, Node.js, Puppeteer, WebEx JS SDK, OpenShift_'
-      ]
+      location: 'Bengaluru, India',
     },
     {
       role: 'Associate Software Engineer',
       companies: [
-        { name: 'Fiery, formerly known as EFI', url: 'https://www.fiery.com' },
+        { name: 'Fiery, previously EFI', url: 'https://www.fiery.com' },
         { name: '(an Epson company)', url: 'https://corporate.epson/en/news/2024/240919.html' }
       ],
       duration: 'July 2023 – February 2025',
-      location: 'Bengaluru, IN',
-      points: [
-        'Fine-tuned Mistral-7B using QLoRA on 4070 Ti Super to incorporate internal documentation and company workflows.',
-        'Deployed the fine-tuned model via vLLM on an NVIDIA T4 cluster; leveraged dynamic batching and quantized inference for sub-second 95th-percentile latency (TTFT).',
-        'Led development of “Beacon”, a print-request automation tool powered by a fine-tuned ModernBERT NER model; parsed email and chat inputs to trigger document workflows.',
-        'Built AskDB, an AI agent used by 300+ internal users; used Llama 3.1 to translate business queries into SQL, fetch data and auto-generate charts and summaries.',
-        'Tech stack: _vLLM, Python, PyTorch, QLoRA, PEFT, SFT, Mistral, Llama, SQL, FastAPI_'
-      ]
+      location: 'Bengaluru, India',
     },
     {
-      role: 'Data Scientist, Intern',
+      role: 'Internship',
       companies: [
-        { name: 'Fiery, formerly known as EFI', url: 'https://www.fiery.com' },
+        { name: 'Fiery, previously EFI', url: 'https://www.fiery.com' },
         { name: '(an Epson company)', url: 'https://corporate.epson/en/news/2024/240919.html' }
       ],
       duration: 'January 2023 – July 2023',
-      location: 'Bengaluru, IN',
-      points: [
-        'Created a product mockup pipeline using ImageMagick and Node.js, achieving cost-effective design automation.',
-        'Tech stack: _Node.js, ImageMagick, Angular_'
-      ]
+      location: 'Bengaluru, India',
     },
     {
-      role: 'Fullstack Developer, Intern',
+      role: 'Internship',
       companies: [
         { name: 'Corteva Agriscience', url: 'https://www.corteva.in' }
       ],
       duration: 'July 2022 – December 2022',
-      location: 'Hyderabad, IN',
-      points: [
-        'Migrated a Flask monolith to containerized microservices (Docker, Kubernetes), reducing AutoML job-launch latency by 40%.',
-        'Tech stack: _Python, Flask, Docker, Kubernetes_'
-      ]
+      location: 'Hyderabad, India',
     }
   ];
 
@@ -100,7 +76,7 @@
 
     <!-- Timeline -->
     <section class="mt-8 grid gap-4">
-      {#each workHistory as work (work.role)}
+      {#each workHistory as work, i (i)}
         <article class="group rounded-2xl border border-neutral-800 bg-neutral-900/60 p-5 hover:border-neutral-700 hover:bg-neutral-900">
           <header class="flex flex-wrap items-start justify-between gap-3">
             <div>
@@ -113,15 +89,9 @@
             </div>
             <div class="shrink-0 text-right text-sm text-neutral-400">
               <div>{work.duration}</div>
-              <div class="text-neutral-500">{work.location}</div>
+              <div class="text-neutral-500">📍 {work.location}</div>
             </div>
           </header>
-
-          <ul class="mt-3 space-y-2 text-sm text-neutral-300 list-disc pl-5">
-            {#each work.points as point}
-              <li>{@html em(point)}</li>
-            {/each}
-          </ul>
         </article>
       {/each}
     </section>

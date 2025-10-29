@@ -27,6 +27,18 @@
         "Llama 4",
         'OpenRouter',
       ]
+    },
+    {
+      title: 'NoPokeDB – lightweight vector DB',
+      links: [{ text: 'git repo', url: 'https://github.com/kashifulhaque/nopokedb' }],
+      description: 'A lightweight, disk-backed vector database implementation using hnswlib + SQLite with durability guarantees and operational log for crash recovery. 2K+ PyPI downloads',
+      tech: ['Python', 'SQLite', 'hnswlib', 'Vector Search']
+    },
+    {
+      title: 'NumPy-in-Rust sketch',
+      links: [{ text: 'git repo', url: 'https://github.com/kashifulhaque/tinyndarray' }],
+      description: 'A learning project implementing NumPy-like ndarray functionality in Rust with Python bindings.',
+      tech: ['Rust', 'Python', 'NumPy']
     }
   ];
 </script>

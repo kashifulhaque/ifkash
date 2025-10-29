@@ -14,30 +14,20 @@
     resume: '/assets/Kashiful_Haque.pdf'
   };
 
-  const projects = [
-    {
-      title: 'boo — Discord AI bot',
-      href: 'https://github.com/VVIP-Kitchen/boo',
-      tagline: 'Multi‑service bot: LLM chat, image gen, voice, web search. Dockerized stack with Go + Python, Postgres, Redis.'
-    },
-    {
-      "title": "NoPokeDB — lightweight vector DB",
-      "href": "https://github.com/kashifulhaque/nopokedb",
-      "tagline": "Disk-backed vector database in Python using hnswlib + SQLite; durability with oplog, crash recovery, 2K+ PyPI downloads."
-    },
-    {
-      title: 'NumPy-in-Rust sketch',
-      href: 'https://github.com/kashifulhaque/tinyndarray',
-      tagline: 'Learning-by-building: a tiny ndarray + Python bridge to grok the internals.'
-    }
-  ];
-
   const quick = [
     { label: 'GitHub', href: links.github },
     { label: 'LinkedIn', href: links.linkedin },
     { label: `${links.emailPrimary}`, href: `mailto:${links.emailPrimary}` },
     { label: `${links.emailAlt}`, href: `mailto:${links.emailAlt}` }
   ];
+
+  function toggleMobile() {
+    mobileOpen = !mobileOpen;
+  }
+
+  function closeMobile() {
+    mobileOpen = false;
+  }
 </script>
 
 <!-- Page container -->
@@ -48,24 +38,91 @@
       <div class="mx-auto max-w-3xl px-5 sm:px-6">
         <nav class="flex items-center justify-between py-4">
           <a href="/" class="font-semibold tracking-tight text-neutral-100">ifkash.dev</a>
-          <ul class="flex gap-3 text-sm">
+
+          <!-- Desktop nav -->
+          <ul class="hidden sm:flex gap-3 text-sm">
             <li><a class="rounded-full px-3 py-1 hover:bg-neutral-800/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-600" href="/work">Work</a></li>
             <li><a class="rounded-full px-3 py-1 hover:bg-neutral-800/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-600" href="/education">Education</a></li>
             <li><a class="rounded-full px-3 py-1 hover:bg-neutral-800/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-600" href="/projects">Projects</a></li>
           </ul>
 
-          <!-- Resume CTA -->
+          <!-- Resume CTA (desktop) -->
           <a
             href={links.resume}
             target="_blank"
             rel="noopener noreferrer"
-            class="ml-1 inline-flex items-center gap-2 rounded-full border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-sm text-neutral-100 hover:border-neutral-600 hover:bg-neutral-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-600"
+            class="hidden sm:inline-flex ml-1 items-center gap-2 rounded-full border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-sm text-neutral-100 hover:border-neutral-600 hover:bg-neutral-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-600"
             aria-label="Resume"
           >
             <span>Resume</span>
             <span aria-hidden="true">↗</span>
           </a>
+
+          <!-- Mobile menu button -->
+          <button
+            class="sm:hidden p-2 rounded-lg hover:bg-neutral-800/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-600"
+            on:click={toggleMobile}
+            aria-label="Toggle menu"
+            aria-expanded={mobileOpen}
+          >
+            {#if mobileOpen}
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            {:else}
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            {/if}
+          </button>
         </nav>
+
+        <!-- Mobile menu -->
+        {#if mobileOpen}
+          <div class="sm:hidden pb-4 animate-fade-in">
+            <ul class="flex flex-col gap-2">
+              <li>
+                <a
+                  class="block rounded-lg px-4 py-2 hover:bg-neutral-800/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-600"
+                  href="/work"
+                  on:click={closeMobile}
+                >
+                  Work
+                </a>
+              </li>
+              <li>
+                <a
+                  class="block rounded-lg px-4 py-2 hover:bg-neutral-800/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-600"
+                  href="/education"
+                  on:click={closeMobile}
+                >
+                  Education
+                </a>
+              </li>
+              <li>
+                <a
+                  class="block rounded-lg px-4 py-2 hover:bg-neutral-800/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-600"
+                  href="/projects"
+                  on:click={closeMobile}
+                >
+                  Projects
+                </a>
+              </li>
+              <li class="pt-2 border-t border-neutral-800">
+                <a
+                  href={links.resume}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="flex items-center justify-between rounded-lg border border-neutral-700 bg-neutral-900 px-4 py-2 hover:border-neutral-600 hover:bg-neutral-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-600"
+                  on:click={closeMobile}
+                >
+                  <span>Resume</span>
+                  <span aria-hidden="true">↗</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+        {/if}
       </div>
       <div class="h-px w-full bg-gradient-to-r from-transparent via-neutral-800 to-transparent"></div>
     </header>
@@ -94,14 +151,6 @@
           </a>
         {/each}
       </div>
-
-      <!-- Now -->
-      <div class="mt-8 rounded-xl border border-neutral-800 bg-neutral-900/60 p-4">
-        <div class="text-xs uppercase tracking-wider text-neutral-500">Now</div>
-        <p class="mt-1 text-sm text-neutral-300">
-          Mornings in the gym; days building <em>boo</em>, a Discord AI bot; nights learning ML systems and kernel land.
-        </p>
-      </div>
     </section>
 
     <!-- Projects -->
@@ -109,18 +158,6 @@
       <div class="flex items-end justify-between">
         <h2 class="text-xl font-semibold text-neutral-100">Projects</h2>
         <a href="/projects" class="text-sm text-neutral-400 hover:text-neutral-200">All work →</a>
-      </div>
-
-      <div class="mt-6 grid gap-4">
-        {#each projects as p}
-          <a href={p.href} rel="noopener noreferrer" class="group rounded-2xl border border-neutral-800 bg-neutral-900/60 p-5 hover:border-neutral-700 hover:bg-neutral-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-600">
-            <div class="flex items-center justify-between">
-              <h3 class="text-base font-medium text-neutral-100 group-hover:underline">{p.title}</h3>
-              <span class="text-neutral-600 group-hover:text-neutral-400">→</span>
-            </div>
-            <p class="mt-2 text-sm text-neutral-400">{p.tagline}</p>
-          </a>
-        {/each}
       </div>
     </section>
 
@@ -154,12 +191,12 @@
     <!-- Contact / Footer -->
     <footer id="contact" class="mt-16">
       <div class="h-px w-full bg-gradient-to-r from-transparent via-neutral-800 to-transparent"></div>
-      <div class="mt-6 flex flex-wrap items-center justify-between gap-3 text-sm text-neutral-500">
-        <div class="flex items-center gap-3">
+      <div class="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-sm text-neutral-500">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
           <a class="hover:text-neutral-300" href="/news">tech news</a>
-          <span aria-hidden="true">•</span>
+          <span class="hidden sm:inline" aria-hidden="true">•</span>
           <a class="hover:text-neutral-300" href="/leetcode" rel="noopener noreferrer">leetcode stats</a>
-          <span aria-hidden="true">•</span>
+          <span class="hidden sm:inline" aria-hidden="true">•</span>
           <a class="hover:text-neutral-300" href="/dashboard" rel="noopener noreferrer">my dashboard</a>
         </div>
         <div class="text-neutral-600">© {new Date().getFullYear()} Kashif</div>
@@ -172,4 +209,20 @@
   /* Tiny affordance for the arrow chip */
   .i-tab { transition: transform 150ms ease; }
   a.group:hover .i-tab { transform: translateY(-1px); }
+
+  /* Mobile menu animation */
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fade-in {
+    animation: fade-in 200ms ease-out;
+  }
 </style>

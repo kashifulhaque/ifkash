@@ -5,6 +5,9 @@
 
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { getApiBase } from '$lib/apiBase';
+
+  export const API_BASE = getApiBase();
 
   interface Story {
     by: string;
@@ -21,8 +24,14 @@
   let error = '';
 
   onMount(async () => {
+    const url = new URL(window.location.href);
+    if (url.searchParams.has('api')) {
+      url.searchParams.delete('api');
+      history.replaceState(history.state, '', url.toString());
+    }
+
     try {
-      const res = await fetch('/api/hn');
+      const res = await fetch(`${API_BASE}/api/hn`);
       if (!res.ok) throw new Error('Bad response');
       stories = await res.json();
     } catch (e) {

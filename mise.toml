@@ -1,2 +1,38 @@
 [tools]
 bun = "latest"
+node = "lts"
+rust = "stable"
+
+[tasks."api:prep"]
+# One-time prep for Rust Workers
+dir = "api"
+description = "Install wasm target + worker-build for Cloudflare Rust Workers"
+run = """
+rustup target add wasm32-unknown-unknown
+cargo install -q worker-build
+"""
+
+[tasks."api:build"]
+dir = "api"
+depends = ["api:prep"]
+description = "Build the Worker (release) using worker-build"
+run = "worker-build --release"
+
+[tasks."api:dev"]
+dir = "api"
+depends = ["api:prep"]
+description = "Run the Worker locally with wrangler + Miniflare (KV persisted)"
+# --persist-to ensures KV/data survives restarts; default port 8787
+run = "npx wrangler dev --persist-to .wrangler/state"
+
+[tasks."api:clean"]
+dir = "api"
+description = "Delete local Miniflare state (KV, caches, etc.)"
+run = "rm -rf .wrangler/state"
+
+[tasks."web:dev"]
+description = "Run the SvelteKit app locally"
+run = """
+bun install
+bun run dev
+"""

@@ -6,6 +6,9 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { page } from '$app/stores';
+  import { getApiBase } from '$lib/apiBase';
+
+  export const API_BASE = getApiBase();
 
   type DiffKey = 'easy' | 'medium' | 'hard' | 'total';
   type Band = { complete: number; total: number };
@@ -39,9 +42,15 @@
   const difficulties: DiffKey[] = ['easy','medium','hard'];
 
   onMount(async () => {
+    const url = new URL(window.location.href);
+    if (url.searchParams.has('api')) {
+      url.searchParams.delete('api');
+      history.replaceState(history.state, '', url.toString());
+    }
+
     // Fire both requests in parallel
-    const statsReq = fetch(`/api/lc/profile?username=${encodeURIComponent(username)}&count=${count}`);
-    const subsReq = fetch('/api/lc/submissions', {
+    const statsReq = fetch(`${API_BASE}/api/lc/profile?username=${encodeURIComponent(username)}&count=${count}`);
+    const subsReq = fetch(`${API_BASE}/api/lc/submissions`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, count })

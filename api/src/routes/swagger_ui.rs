@@ -6,7 +6,7 @@ pub async fn route(_req: Request, _ctx: RouteContext<()>) -> Result<Response> {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>API Documentation - ifkash.dev</title>
+    <title>API Docs</title>
     <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5.10.5/swagger-ui.css">
     <style>
         body {
@@ -18,9 +18,13 @@ pub async fn route(_req: Request, _ctx: RouteContext<()>) -> Result<Response> {
         .swagger-ui .topbar { display: none; }
 
         /* Dark theme */
-        .swagger-ui {
+        .swagger-ui .scheme-container {
             background: transparent;
             color: #e5e7eb;
+        }
+
+        .swagger-ui {
+            background: #0a0a0a;
         }
 
         .swagger-ui .wrapper { background: transparent; }
@@ -85,6 +89,22 @@ pub async fn route(_req: Request, _ctx: RouteContext<()>) -> Result<Response> {
             color: #e5e7eb !important;
         }
 
+        .swagger-ui .opblock .opblock-section-header {
+            background: rgba(21, 30, 42);
+        }
+
+        .swagger-ui input[type=text] {
+            background: transparent;
+        }
+
+        .swagger-ui .loading-container {
+          background: transparent; /* light overlay */
+        }
+
+        .swagger-ui .loading {
+            color: #f3f4f6 !important; /* dark text/spinner against light bg */
+        }
+
         .swagger-ui .parameter__in,
         .swagger-ui .prop-type,
         .swagger-ui .prop-format,
@@ -118,6 +138,19 @@ pub async fn route(_req: Request, _ctx: RouteContext<()>) -> Result<Response> {
 
         .swagger-ui .opblock-control-arrow {
             fill: #9ca3af !important;
+        }
+
+        .swagger-ui .wrapper a,
+        .swagger-ui .wrapper a:visited {
+            color: #e5e7eb;
+        }
+
+        .swagger-ui .wrapper .renderedMarkdown {
+            color: rgba(229, 231, 235, 0.35);
+        }
+
+        .swagger-ui .wrapper .models-control {
+            color: #f3f4f6;
         }
     </style>
 </head>

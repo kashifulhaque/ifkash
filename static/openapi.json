@@ -331,15 +331,15 @@
   "tags": [
     {
       "name": "Utils",
-      "description": "Utility endpoints"
+      "description": ""
     },
     {
       "name": "Hacker News",
-      "description": "Hacker News related endpoints"
+      "description": ""
     },
     {
       "name": "LeetCode",
-      "description": "LeetCode integration endpoints"
+      "description": ""
     }
   ]
 }

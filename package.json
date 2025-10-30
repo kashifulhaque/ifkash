@@ -30,6 +30,7 @@
     "rehype-katex": "^7.0.1",
     "remark-math": "^6.0.0",
     "svelte-markdown": "^0.4.1",
+    "swagger-ui-dist": "^5.30.0",
     "tailwindcss": "^4.1.14"
   },
   "trustedDependencies": [

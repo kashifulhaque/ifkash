@@ -198,6 +198,8 @@
           <a class="hover:text-neutral-300" href="/leetcode" rel="noopener noreferrer">leetcode stats</a>
           <span class="hidden sm:inline" aria-hidden="true">•</span>
           <a class="hover:text-neutral-300" href="/dashboard" rel="noopener noreferrer">my dashboard</a>
+          <span class="hidden sm:inline" aria-hidden="true">•</span>
+          <a class="hover:text-neutral-300" href="/docs">api docs</a>
         </div>
         <div class="text-neutral-600">© {new Date().getFullYear()} Kashif</div>
       </div>

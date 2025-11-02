@@ -77,23 +77,23 @@
   }
 </script>
 
-<div class="min-h-screen bg-neutral-950 text-neutral-200 selection:bg-neutral-800 selection:text-white">
+<div class="min-h-screen selection:text-white" style="background-color: var(--color-background); color: var(--color-paragraph);">
   <div class="mx-auto max-w-4xl px-5 sm:px-6 pb-24">
     <!-- Header -->
-    <header class="sticky top-0 z-30 -mx-5 sm:-mx-6 backdrop-blur supports-[backdrop-filter]:bg-neutral-950/60">
+    <header class="sticky top-0 z-30 -mx-5 sm:-mx-6 backdrop-blur" style="backdrop-filter: blur(12px); background-color: rgba(22, 22, 26, 0.6);">
       <div class="mx-auto max-w-4xl px-5 sm:px-6">
         <nav class="flex items-center justify-between py-4">
-          <a href="/" class="font-semibold tracking-tight text-neutral-100">ifkash.dev</a>
-          <a href="/" class="rounded-full px-3 py-1 text-sm hover:bg-neutral-800/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-600">Home</a>
+          <a href="/" class="font-semibold tracking-tight" style="color: var(--color-headline);">ifkash.dev</a>
+          <a href="/" class="rounded-full px-3 py-1 text-sm focus:outline-none transition-colors" style="color: var(--color-paragraph);" onmouseover="this.style.backgroundColor='rgba(127, 90, 240, 0.1)'" onmouseout="this.style.backgroundColor='transparent'">Home</a>
         </nav>
       </div>
-      <div class="h-px w-full bg-gradient-to-r from-transparent via-neutral-800 to-transparent"></div>
+      <div class="h-px w-full" style="background: linear-gradient(to right, transparent, var(--color-secondary), transparent);"></div>
     </header>
 
     <!-- Title -->
     <section class="pt-14 sm:pt-20" aria-labelledby="work-title">
-      <h1 id="work-title" class="text-3xl sm:text-4xl font-semibold leading-tight tracking-tight text-neutral-100">Work</h1>
-      <p class="mt-2 text-neutral-400 max-w-2xl">Applied ML systems, inference, and product‑grade tooling.</p>
+      <h1 id="work-title" class="text-3xl sm:text-4xl font-semibold leading-tight tracking-tight" style="color: var(--color-headline);">Work</h1>
+      <p class="mt-2 max-w-2xl" style="color: var(--color-paragraph);">Applied ML systems, inference, and product‑grade tooling.</p>
     </section>
 
     <!-- Timeline Section -->
@@ -105,9 +105,9 @@
           <div class="w-16 flex-shrink-0">
             <div class="space-y-0">
               {#each years as year}
-                <div 
-                  class="text-sm font-mono text-neutral-500 h-32 flex items-start"
-                  style="color: inherit;"
+                <div
+                  class="text-sm font-mono h-32 flex items-start"
+                  style="color: var(--color-secondary);"
                 >
                   {year}
                 </div>
@@ -125,27 +125,29 @@
                   style="margin-top: {i === 0 ? '0' : 'calc(var(--job-spacing, 0px))'}"
                 >
                   <!-- Job Card -->
-                  <div class="ml-8 rounded-2xl border border-neutral-800 bg-neutral-900/60 p-5 hover:border-neutral-700 hover:bg-neutral-900 transition-colors">
+                  <div class="ml-8 rounded-2xl border p-5 transition-colors" style="border-color: var(--color-secondary); background-color: rgba(114, 117, 126, 0.1);" onmouseover="this.style.borderColor='var(--color-highlight)'; this.style.backgroundColor='rgba(127, 90, 240, 0.1)'" onmouseout="this.style.borderColor='var(--color-secondary)'; this.style.backgroundColor='rgba(114, 117, 126, 0.1)'">
                     <header class="flex flex-wrap items-start justify-between gap-3">
                       <div class="flex-1">
-                        <h2 class="text-lg font-medium text-neutral-100">{work.role}</h2>
-                        <div class="mt-1 text-sm text-neutral-300">
+                        <h2 class="text-lg font-medium" style="color: var(--color-headline);">{work.role}</h2>
+                        <div class="mt-1 text-sm" style="color: var(--color-paragraph);">
                           {#each work.companies as company, j (company.url)}
-                            <a href={company.url} target="_blank" rel="noopener noreferrer" class="hover:underline">{company.name}</a>{j < work.companies.length - 1 ? ' ' : ''}
+                            <a href={company.url} target="_blank" rel="noopener noreferrer" class="transition-colors" style="color: inherit;" onmouseover="this.style.color='var(--color-highlight)'; this.style.textDecoration='underline'" onmouseout="this.style.color='inherit'; this.style.textDecoration='none'">{company.name}</a>{j < work.companies.length - 1 ? ' ' : ''}
                           {/each}
                         </div>
                       </div>
-                      <div class="shrink-0 text-right text-sm text-neutral-400">
-                        <div class="text-neutral-300">{work.duration}</div>
-                        <div class="text-neutral-500 mt-1">📍 {work.location}</div>
+                      <div class="shrink-0 text-right text-sm" style="color: var(--color-paragraph);">
+                        <div style="color: var(--color-paragraph);">{work.duration}</div>
+                        <div class="mt-1" style="color: var(--color-secondary);">📍 {work.location}</div>
                       </div>
                     </header>
                   </div>
 
                   <!-- Timeline connector dot -->
-                  <div 
-                    class="absolute left-2 mt-8 w-4 h-4 rounded-full bg-neutral-900 border border-emerald-500/50 transform -translate-x-1/2 group-hover:border-emerald-500 transition-colors"
-                    style="top: 2.5rem;"
+                  <div
+                    class="absolute left-2 mt-8 w-4 h-4 rounded-full transform -translate-x-1/2 transition-colors"
+                    style="top: 2.5rem; background-color: rgba(114, 117, 126, 0.1); border: 1px solid rgba(44, 182, 125, 0.5);"
+                    onmouseover="this.style.borderColor='rgb(44, 182, 125)'"
+                    onmouseout="this.style.borderColor='rgba(44, 182, 125, 0.5)'"
                   ></div>
                 </div>
               {/each}
@@ -157,10 +159,10 @@
 
     <!-- Footer -->
     <footer class="mt-24">
-      <div class="h-px w-full bg-gradient-to-r from-transparent via-neutral-800 to-transparent"></div>
-      <div class="mt-6 flex flex-wrap items-center justify-between gap-3 text-sm text-neutral-500">
-        <a class="hover:text-neutral-300" href="/">Back to home</a>
-        <div class="text-neutral-600">© {new Date().getFullYear()} Kashif</div>
+      <div class="h-px w-full" style="background: linear-gradient(to right, transparent, var(--color-secondary), transparent);"></div>
+      <div class="mt-6 flex flex-wrap items-center justify-between gap-3 text-sm" style="color: var(--color-secondary);">
+        <a class="transition-colors" onmouseover="this.style.color='var(--color-paragraph)'" onmouseout="this.style.color='var(--color-secondary)'" href="/">Back to home</a>
+        <div style="color: var(--color-secondary);">© {new Date().getFullYear()} Kashif</div>
       </div>
     </footer>
   </div>

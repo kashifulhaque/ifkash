@@ -1,1 +1,15 @@
 @import "tailwindcss";
+
+/* Custom color theme variables */
+:root {
+  --color-background: #16161a;
+  --color-headline: #fffffe;
+  --color-paragraph: #94a1b2;
+  --color-button: #7f5af0;
+  --color-button-text: #fffffe;
+  --color-stroke: #010101;
+  --color-main: #fffffe;
+  --color-highlight: #7f5af0;
+  --color-secondary: #72757e;
+  --color-tertiary: #2cb67d;
+}

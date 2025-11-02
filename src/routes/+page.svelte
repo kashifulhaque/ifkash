@@ -31,19 +31,19 @@
 </script>
 
 <!-- Page container -->
-<div class="min-h-screen bg-neutral-950 text-neutral-200 selection:bg-neutral-800 selection:text-white">
+<div class="min-h-screen selection:text-white" style="background-color: var(--color-background); color: var(--color-paragraph); selection: var(--color-secondary)">
   <div class="mx-auto max-w-3xl px-5 sm:px-6 pb-24">
     <!-- Header / Nav -->
-    <header class="sticky top-0 z-30 -mx-5 sm:-mx-6 backdrop-blur supports-[backdrop-filter]:bg-neutral-950/60">
+    <header class="sticky top-0 z-30 -mx-5 sm:-mx-6 backdrop-blur" style="backdrop-filter: blur(12px); background-color: rgba(22, 22, 26, 0.6);">
       <div class="mx-auto max-w-3xl px-5 sm:px-6">
         <nav class="flex items-center justify-between py-4">
-          <a href="/" class="font-semibold tracking-tight text-neutral-100">ifkash.dev</a>
+          <a href="/" class="font-semibold tracking-tight" style="color: var(--color-headline)">ifkash.dev</a>
 
           <!-- Desktop nav -->
           <ul class="hidden sm:flex gap-3 text-sm">
-            <li><a class="rounded-full px-3 py-1 hover:bg-neutral-800/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-600" href="/work">Work</a></li>
-            <li><a class="rounded-full px-3 py-1 hover:bg-neutral-800/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-600" href="/education">Education</a></li>
-            <li><a class="rounded-full px-3 py-1 hover:bg-neutral-800/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-600" href="/projects">Projects</a></li>
+            <li><a class="rounded-full px-3 py-1 focus:outline-none transition-colors" style="color: var(--color-paragraph);" onmouseover="this.style.backgroundColor='rgba(127, 90, 240, 0.1)'" onmouseout="this.style.backgroundColor='transparent'" href="/work">Work</a></li>
+            <li><a class="rounded-full px-3 py-1 focus:outline-none transition-colors" style="color: var(--color-paragraph);" onmouseover="this.style.backgroundColor='rgba(127, 90, 240, 0.1)'" onmouseout="this.style.backgroundColor='transparent'" href="/education">Education</a></li>
+            <li><a class="rounded-full px-3 py-1 focus:outline-none transition-colors" style="color: var(--color-paragraph);" onmouseover="this.style.backgroundColor='rgba(127, 90, 240, 0.1)'" onmouseout="this.style.backgroundColor='transparent'" href="/projects">Projects</a></li>
           </ul>
 
           <!-- Resume CTA (desktop) -->
@@ -51,7 +51,10 @@
             href={links.resume}
             target="_blank"
             rel="noopener noreferrer"
-            class="hidden sm:inline-flex ml-1 items-center gap-2 rounded-full border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-sm text-neutral-100 hover:border-neutral-600 hover:bg-neutral-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-600"
+            class="hidden sm:inline-flex ml-1 items-center gap-2 rounded-full border px-3 py-1.5 text-sm focus:outline-none transition-colors"
+            style="background-color: var(--color-button); color: var(--color-button-text); border-color: var(--color-button);"
+            onmouseover="this.style.backgroundColor='rgba(127, 90, 240, 0.8)'"
+            onmouseout="this.style.backgroundColor='var(--color-button)'"
             aria-label="Resume"
           >
             <span>Resume</span>
@@ -60,7 +63,10 @@
 
           <!-- Mobile menu button -->
           <button
-            class="sm:hidden p-2 rounded-lg hover:bg-neutral-800/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-600"
+            class="sm:hidden p-2 rounded-lg focus:outline-none transition-colors"
+            style="color: var(--color-paragraph);"
+            onmouseover="this.style.backgroundColor='rgba(127, 90, 240, 0.1)'"
+            onmouseout="this.style.backgroundColor='transparent'"
             on:click={toggleMobile}
             aria-label="Toggle menu"
             aria-expanded={mobileOpen}
@@ -83,7 +89,10 @@
             <ul class="flex flex-col gap-2">
               <li>
                 <a
-                  class="block rounded-lg px-4 py-2 hover:bg-neutral-800/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-600"
+                  class="block rounded-lg px-4 py-2 focus:outline-none transition-colors"
+                  style="color: var(--color-paragraph);"
+                  onmouseover="this.style.backgroundColor='rgba(127, 90, 240, 0.1)'"
+                  onmouseout="this.style.backgroundColor='transparent'"
                   href="/work"
                   on:click={closeMobile}
                 >
@@ -92,7 +101,10 @@
               </li>
               <li>
                 <a
-                  class="block rounded-lg px-4 py-2 hover:bg-neutral-800/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-600"
+                  class="block rounded-lg px-4 py-2 focus:outline-none transition-colors"
+                  style="color: var(--color-paragraph);"
+                  onmouseover="this.style.backgroundColor='rgba(127, 90, 240, 0.1)'"
+                  onmouseout="this.style.backgroundColor='transparent'"
                   href="/education"
                   on:click={closeMobile}
                 >
@@ -101,19 +113,25 @@
               </li>
               <li>
                 <a
-                  class="block rounded-lg px-4 py-2 hover:bg-neutral-800/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-600"
+                  class="block rounded-lg px-4 py-2 focus:outline-none transition-colors"
+                  style="color: var(--color-paragraph);"
+                  onmouseover="this.style.backgroundColor='rgba(127, 90, 240, 0.1)'"
+                  onmouseout="this.style.backgroundColor='transparent'"
                   href="/projects"
                   on:click={closeMobile}
                 >
                   Projects
                 </a>
               </li>
-              <li class="pt-2 border-t border-neutral-800">
+              <li class="pt-2 border-t" style="border-color: var(--color-secondary);">
                 <a
                   href={links.resume}
                   target="_blank"
                   rel="noopener noreferrer"
-                  class="flex items-center justify-between rounded-lg border border-neutral-700 bg-neutral-900 px-4 py-2 hover:border-neutral-600 hover:bg-neutral-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-600"
+                  class="flex items-center justify-between rounded-lg border px-4 py-2 focus:outline-none transition-colors"
+                  style="background-color: var(--color-button); color: var(--color-button-text); border-color: var(--color-button);"
+                  onmouseover="this.style.backgroundColor='rgba(127, 90, 240, 0.8)'"
+                  onmouseout="this.style.backgroundColor='var(--color-button)'"
                   on:click={closeMobile}
                 >
                   <span>Resume</span>
@@ -124,15 +142,15 @@
           </div>
         {/if}
       </div>
-      <div class="h-px w-full bg-gradient-to-r from-transparent via-neutral-800 to-transparent"></div>
+      <div class="h-px w-full" style="background: linear-gradient(to right, transparent, var(--color-secondary), transparent);"></div>
     </header>
 
     <!-- Hero -->
     <section class="pt-14 sm:pt-20" id="about">
-      <h1 class="text-4xl sm:text-5xl font-semibold leading-tight tracking-tight text-neutral-100">
-        <span class="text-neutral-400">I am</span> Kashif
+      <h1 class="text-4xl sm:text-5xl font-semibold leading-tight tracking-tight" style="color: var(--color-headline);">
+        <span style="color: var(--color-paragraph);">I am</span> Kashif
       </h1>
-      <p class="mt-4 text-neutral-400 max-w-2xl">
+      <p class="mt-4 max-w-2xl" style="color: var(--color-paragraph);">
         I design reliable systems and ship useful tools. Currently Engineer III at American Express.
         I enjoy ML systems, infra, and the craft of clean, measurable engineering.
       </p>
@@ -141,7 +159,10 @@
       <div class="mt-6 flex flex-wrap gap-2">
         {#each quick as q}
           <a
-            class="group inline-flex items-center gap-2 rounded-full border border-neutral-800 bg-neutral-900 px-4 py-2 text-sm hover:border-neutral-700 hover:bg-neutral-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-600"
+            class="group inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm focus:outline-none transition-colors"
+            style="border-color: var(--color-secondary); background-color: rgba(114, 117, 126, 0.1); color: var(--color-paragraph);"
+            onmouseover="this.style.backgroundColor='rgba(127, 90, 240, 0.1)'; this.style.borderColor='var(--color-highlight)'"
+            onmouseout="this.style.backgroundColor='rgba(114, 117, 126, 0.1)'; this.style.borderColor='var(--color-secondary)'"
             href={q.href}
             rel="noopener noreferrer"
             target="_blank"
@@ -153,32 +174,30 @@
       </div>
     </section>
 
-    <!-- Projects -->
-    <section id="work" class="mt-14">
-      <div class="flex items-end justify-between">
-        <h2 class="text-xl font-semibold text-neutral-100">Projects</h2>
-        <a href="/projects" class="text-sm text-neutral-400 hover:text-neutral-200">All work →</a>
-      </div>
-    </section>
-
     <!-- Writing -->
     <section id="writing" class="mt-14">
       <div class="flex items-end justify-between">
         <!-- Left -->
-        <h2 class="text-xl font-semibold text-neutral-100">Writing</h2>
+        <h2 class="text-xl font-semibold" style="color: var(--color-headline);">Writing</h2>
 
         <!-- Right -->
         <div class="flex gap-4">
           <a
             href="/blog"
-            class="text-sm text-neutral-400 hover:text-neutral-200"
+            class="text-sm transition-colors"
+            style="color: var(--color-paragraph);"
+            onmouseover="this.style.color='var(--color-highlight)'"
+            onmouseout="this.style.color='var(--color-paragraph)'"
             rel="noopener noreferrer"
           >
             Blog →
           </a>
           <a
             href="/notes"
-            class="text-sm text-neutral-400 hover:text-neutral-200"
+            class="text-sm transition-colors"
+            style="color: var(--color-paragraph);"
+            onmouseover="this.style.color='var(--color-highlight)'"
+            onmouseout="this.style.color='var(--color-paragraph)'"
             rel="noopener noreferrer"
             target="_blank"
           >
@@ -190,18 +209,16 @@
 
     <!-- Contact / Footer -->
     <footer id="contact" class="mt-16">
-      <div class="h-px w-full bg-gradient-to-r from-transparent via-neutral-800 to-transparent"></div>
-      <div class="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-sm text-neutral-500">
+      <div class="h-px w-full" style="background: linear-gradient(to right, transparent, var(--color-secondary), transparent);"></div>
+      <div class="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-sm" style="color: var(--color-secondary);">
         <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
-          <a class="hover:text-neutral-300" href="/news">tech news</a>
+          <a class="transition-colors" onmouseover="this.style.color='var(--color-paragraph)'" onmouseout="this.style.color='var(--color-secondary)'" href="/news">tech news</a>
           <span class="hidden sm:inline" aria-hidden="true">•</span>
-          <a class="hover:text-neutral-300" href="/leetcode" rel="noopener noreferrer">leetcode stats</a>
+          <a class="transition-colors" onmouseover="this.style.color='var(--color-paragraph)'" onmouseout="this.style.color='var(--color-secondary)'" href="/leetcode" rel="noopener noreferrer">leetcode stats</a>
           <span class="hidden sm:inline" aria-hidden="true">•</span>
-          <a class="hover:text-neutral-300" href="/dashboard" rel="noopener noreferrer">my dashboard</a>
-          <span class="hidden sm:inline" aria-hidden="true">•</span>
-          <a class="hover:text-neutral-300" href="/docs">api docs</a>
+          <a class="transition-colors" onmouseover="this.style.color='var(--color-paragraph)'" onmouseout="this.style.color='var(--color-secondary)'" href="/dashboard" rel="noopener noreferrer">my dashboard</a>
         </div>
-        <div class="text-neutral-600">© {new Date().getFullYear()} Kashif</div>
+        <div style="color: var(--color-secondary);">© {new Date().getFullYear()} Kashif</div>
       </div>
     </footer>
   </div>

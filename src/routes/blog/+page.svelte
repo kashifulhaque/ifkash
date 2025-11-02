@@ -71,41 +71,41 @@
   });
 </script>
 
-<div class="min-h-screen bg-neutral-950 text-neutral-200 selection:bg-neutral-800 selection:text-white">
+<div class="min-h-screen selection:text-white" style="background-color: var(--color-background); color: var(--color-paragraph);">
   <div class="mx-auto max-w-3xl px-5 sm:px-6 pb-24">
     <!-- Header / Crumb -->
-    <header class="sticky top-0 z-30 -mx-5 sm:-mx-6 backdrop-blur supports-[backdrop-filter]:bg-neutral-950/60">
+    <header class="sticky top-0 z-30 -mx-5 sm:-mx-6 backdrop-blur" style="backdrop-filter: blur(12px); background-color: rgba(22, 22, 26, 0.6);">
       <div class="mx-auto max-w-3xl px-5 sm:px-6">
         <nav class="flex items-center justify-between py-4">
-          <a href="/" class="font-semibold tracking-tight text-neutral-100">ifkash.dev</a>
-          <a href="/" class="rounded-full px-3 py-1 text-sm hover:bg-neutral-800/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-600">Home</a>
+          <a href="/" class="font-semibold tracking-tight" style="color: var(--color-headline);">ifkash.dev</a>
+          <a href="/" class="rounded-full px-3 py-1 text-sm focus:outline-none transition-colors" style="color: var(--color-paragraph);" onmouseover="this.style.backgroundColor='rgba(127, 90, 240, 0.1)'" onmouseout="this.style.backgroundColor='transparent'">Home</a>
         </nav>
       </div>
-      <div class="h-px w-full bg-gradient-to-r from-transparent via-neutral-800 to-transparent"></div>
+      <div class="h-px w-full" style="background: linear-gradient(to right, transparent, var(--color-secondary), transparent);"></div>
     </header>
 
     <!-- Title -->
     <section class="pt-14 sm:pt-20" aria-labelledby="blog-title">
-      <h1 id="blog-title" class="text-3xl sm:text-4xl font-semibold leading-tight tracking-tight text-neutral-100">Blog</h1>
-      <p class="mt-3 text-neutral-400 max-w-2xl">Notes from the build log, occasional essays, and rough cuts worth sharing.</p>
+      <h1 id="blog-title" class="text-3xl sm:text-4xl font-semibold leading-tight tracking-tight" style="color: var(--color-headline);">Blog</h1>
+      <p class="mt-3 max-w-2xl" style="color: var(--color-paragraph);">Notes from the build log, occasional essays, and rough cuts worth sharing.</p>
     </section>
 
     <!-- States -->
     {#if loading}
       <div class="mt-8 grid gap-4">
         {#each Array(4) as _, i}
-          <div class="animate-pulse rounded-2xl border border-neutral-900 bg-neutral-900/40 p-5">
-            <div class="h-40 w-full rounded-xl bg-neutral-800/60"></div>
-            <div class="mt-4 h-5 w-2/3 rounded bg-neutral-800/60"></div>
-            <div class="mt-3 h-4 w-full rounded bg-neutral-800/60"></div>
-            <div class="mt-2 h-4 w-5/6 rounded bg-neutral-800/60"></div>
+          <div class="animate-pulse rounded-2xl border p-5" style="border-color: var(--color-secondary); background-color: rgba(114, 117, 126, 0.1);">
+            <div class="h-40 w-full rounded-xl" style="background-color: rgba(114, 117, 126, 0.3);"></div>
+            <div class="mt-4 h-5 w-2/3 rounded" style="background-color: rgba(114, 117, 126, 0.3);"></div>
+            <div class="mt-3 h-4 w-full rounded" style="background-color: rgba(114, 117, 126, 0.3);"></div>
+            <div class="mt-2 h-4 w-5/6 rounded" style="background-color: rgba(114, 117, 126, 0.3);"></div>
           </div>
         {/each}
       </div>
     {:else if error}
-      <div class="mt-8 rounded-xl border border-neutral-800 bg-neutral-900/60 p-4 text-sm text-red-300">{error}</div>
+      <div class="mt-8 rounded-xl border p-4 text-sm" style="border-color: var(--color-secondary); background-color: rgba(114, 117, 126, 0.1); color: #fca5a5;">{error}</div>
     {:else if posts.length === 0}
-      <div class="mt-8 rounded-xl border border-neutral-800 bg-neutral-900/60 p-4 text-sm text-neutral-300">No posts yet. Soon.</div>
+      <div class="mt-8 rounded-xl border p-4 text-sm" style="border-color: var(--color-secondary); background-color: rgba(114, 117, 126, 0.1); color: var(--color-paragraph);">No posts yet. Soon.</div>
     {:else}
       <!-- Posts -->
       <section class="mt-8 grid gap-4">
@@ -114,7 +114,7 @@
             href={post.url}
             rel="noopener noreferrer"
             target="_blank"
-            class="group block overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-900/60 hover:border-neutral-700 hover:bg-neutral-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-600"
+            class="group block overflow-hidden rounded-2xl border focus:outline-none transition-colors" style="border-color: var(--color-secondary); background-color: rgba(114, 117, 126, 0.1);" onmouseover="this.style.borderColor='var(--color-highlight)'; this.style.backgroundColor='rgba(127, 90, 240, 0.1)'" onmouseout="this.style.borderColor='var(--color-secondary)'; this.style.backgroundColor='rgba(114, 117, 126, 0.1)'"
           >
             {#if post.coverImage?.url}
               <div class="relative">
@@ -125,16 +125,16 @@
                   loading="lazy"
                   decoding="async"
                 />
-                <div class="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-neutral-900/80 to-transparent"></div>
+                <div class="pointer-events-none absolute inset-x-0 bottom-0 h-20" style="background: linear-gradient(to top, rgba(114, 117, 126, 0.8), transparent);"></div>
               </div>
             {/if}
             <div class="p-5">
               <div class="flex items-center justify-between gap-3">
-                <h2 class="text-lg font-medium text-neutral-100 group-hover:underline">{post.title}</h2>
-                <span class="shrink-0 text-xs text-neutral-500">{new Date(post.publishedAt).toLocaleString('en-US', options).replace(',','')}</span>
+                <h2 class="text-lg font-medium group-hover:underline" style="color: var(--color-headline);">{post.title}</h2>
+                <span class="shrink-0 text-xs" style="color: var(--color-secondary);">{new Date(post.publishedAt).toLocaleString('en-US', options).replace(',','')}</span>
               </div>
-              <p class="mt-2 line-clamp-3 text-sm text-neutral-400">{post.brief}</p>
-              <div class="mt-3 inline-flex items-center gap-2 text-sm text-neutral-400">
+              <p class="mt-2 line-clamp-3 text-sm" style="color: var(--color-paragraph);">{post.brief}</p>
+              <div class="mt-3 inline-flex items-center gap-2 text-sm" style="color: var(--color-paragraph);">
                 <span>Read on Hashnode</span>
                 <span aria-hidden="true" class="transition -translate-y-px group-hover:translate-x-0.5">→</span>
               </div>
@@ -146,10 +146,10 @@
 
     <!-- Footer -->
     <footer class="mt-16">
-      <div class="h-px w-full bg-gradient-to-r from-transparent via-neutral-800 to-transparent"></div>
-      <div class="mt-6 flex flex-wrap items-center justify-between gap-3 text-sm text-neutral-500">
-        <a class="hover:text-neutral-300" href="/">Back to home</a>
-        <div class="text-neutral-600">© {new Date().getFullYear()} Kashif</div>
+      <div class="h-px w-full" style="background: linear-gradient(to right, transparent, var(--color-secondary), transparent);"></div>
+      <div class="mt-6 flex flex-wrap items-center justify-between gap-3 text-sm" style="color: var(--color-secondary);">
+        <a class="transition-colors" onmouseover="this.style.color='var(--color-paragraph)'" onmouseout="this.style.color='var(--color-secondary)'" href="/">Back to home</a>
+        <div style="color: var(--color-secondary);">© {new Date().getFullYear()} Kashif</div>
       </div>
     </footer>
   </div>

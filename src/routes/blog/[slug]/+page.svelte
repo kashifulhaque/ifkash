@@ -62,20 +62,20 @@
   />
 </svelte:head>
 
-<div class="min-h-screen bg-neutral-900 py-8 px-4">
-  <div class="max-w-3xl mx-auto prose space-y-6">
+<div class="min-h-screen py-8 px-4" style="background-color: var(--color-background);">
+  <div class="max-w-3xl mx-auto prose space-y-6" style="color: var(--color-paragraph);">
     {#if loading}
-      <p>Loading post...</p>
+      <p style="color: var(--color-paragraph);">Loading post...</p>
     {:else if error}
-      <p class="text-red-400">{error}</p>
+      <p style="color: #fca5a5;">{error}</p>
     {:else}
       <div class="flex justify-between items-center">
-        <h1 class="text-3xl font-bold text-gray-100">{post.title}</h1>
+        <h1 class="text-3xl font-bold" style="color: var(--color-headline);">{post.title}</h1>
         <a
           href={`https://blog.ifkash.dev/${post.slug}`}
           target="_blank"
           rel="noopener noreferrer"
-          class="px-4 py-2 bg-blue-500 rounded-lg text-white hover:bg-blue-600"
+          class="px-4 py-2 rounded-lg transition-colors" style="background-color: var(--color-button); color: var(--color-button-text);" onmouseover="this.style.backgroundColor='rgba(127, 90, 240, 0.8)'" onmouseout="this.style.backgroundColor='var(--color-button)'"
         >
           Read on Hashnode
         </a>
@@ -96,7 +96,27 @@
 
 <style>
   .prose {
-    color: #e5e7eb;
+    color: var(--color-paragraph);
+  }
+  .prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
+    color: var(--color-headline);
+  }
+  .prose a {
+    color: var(--color-highlight);
+  }
+  .prose a:hover {
+    color: var(--color-button);
+  }
+  .prose code {
+    background-color: rgba(114, 117, 126, 0.1);
+    color: var(--color-paragraph);
+  }
+  .prose pre {
+    background-color: rgba(114, 117, 126, 0.1);
+  }
+  .prose blockquote {
+    border-color: var(--color-secondary);
+    color: var(--color-paragraph);
   }
   /* KaTeX overrides if needed */
   .katex {

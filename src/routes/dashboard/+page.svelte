@@ -268,11 +268,11 @@
 </svelte:head>
 
 <!-- Background with subtle vignette and grain -->
-<div class="relative isolate min-h-screen w-full overflow-hidden bg-black text-neutral-200">
+<div class="relative isolate min-h-screen w-full overflow-hidden text-neutral-200" style="background-color: var(--color-background);">
   <!-- Next Namaaz badge (top-right) -->
   <div class="fixed right-4 top-4 z-50">
-    <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-2 shadow-lg backdrop-blur supports-[backdrop-filter]:bg-white/10">
-      <div class="text-sm text-neutral-500 mb-1 tracking-wide">Next Namaaz</div>
+    <div class="rounded-2xl border px-4 py-2 shadow-lg backdrop-blur" style="border-color: rgba(114, 117, 126, 0.3); background-color: rgba(114, 117, 126, 0.1); backdrop-filter: blur(12px);">
+      <div class="text-sm mb-1 tracking-wide" style="color: var(--color-secondary);">Next Namaaz</div>
       <div class="flex items-baseline gap-2">
         <span class="text-medium font-medium">{nextPrayerName}</span>
         <span class="text-medium tabular-nums font-semibold">{nextPrayerTimeDisplay}</span>

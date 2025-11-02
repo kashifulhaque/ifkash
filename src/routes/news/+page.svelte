@@ -53,13 +53,13 @@
   }
 </script>
 
-<div class="min-h-screen bg-neutral-950 text-neutral-200 selection:bg-neutral-800 selection:text-white">
+<div class="min-h-screen selection:text-white" style="background-color: var(--color-background); color: var(--color-paragraph);">
   <div class="mx-auto max-w-3xl px-5 sm:px-6 pb-24">
     <!-- Header -->
-    <header class="sticky top-0 z-30 -mx-5 sm:-mx-6 backdrop-blur supports-[backdrop-filter]:bg-neutral-950/60">
+    <header class="sticky top-0 z-30 -mx-5 sm:-mx-6 backdrop-blur" style="backdrop-filter: blur(12px); background-color: rgba(22, 22, 26, 0.6);">
       <div class="mx-auto max-w-3xl px-5 sm:px-6">
         <nav class="flex items-center justify-between py-4">
-          <a href="/" class="font-semibold tracking-tight text-neutral-100">ifkash.dev</a>
+          <a href="/" class="font-semibold tracking-tight" style="color: var(--color-headline);">ifkash.dev</a>
           <a href="/" class="rounded-full px-3 py-1 text-sm hover:bg-neutral-800/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-600">Home</a>
         </nav>
       </div>

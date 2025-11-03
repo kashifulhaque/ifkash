@@ -21,6 +21,9 @@
     location?: string | null;
     landmark?: string | null;
     comments_summary?: string | null;
+    // internal UI state
+    _activeIndex?: number;
+    _loaded?: boolean;
   };
 
   let isLoading = true;
@@ -33,7 +36,7 @@
       if (!res.ok) throw new Error(`Bad response: ${res.status}`);
       const payload = await res.json();
       // expected shape: { posts: RentalPost[] }
-      posts = payload.posts ?? [];
+      posts = (payload.posts ?? []).map((p: RentalPost) => ({ ...p, _activeIndex: 0, _loaded: false, images: p.images ?? [] }));
     } catch (e) {
       console.error(e);
       error = 'Failed to fetch latest rentals.';
@@ -53,8 +56,31 @@
     }
   }
 
-  function firstImage(p: RentalPost) {
-    return p.images && p.images.length > 0 ? p.images[0] : '/images/placeholder-3bhk.png';
+  function placeholder() { return '/images/placeholder-3bhk.png'; }
+
+  function currentImage(p: RentalPost) {
+    if (p.images && p.images.length > 0) {
+      const idx = Math.max(0, Math.min((p._activeIndex ?? 0), p.images.length - 1));
+      return p.images[idx];
+    }
+    return placeholder();
+  }
+
+  function prev(p: RentalPost) {
+    if (!p.images || p.images.length <= 1) return;
+    p._activeIndex = ((p._activeIndex ?? 0) - 1 + p.images.length) % p.images.length;
+  }
+  function next(p: RentalPost) {
+    if (!p.images || p.images.length <= 1) return;
+    p._activeIndex = ((p._activeIndex ?? 0) + 1) % p.images.length;
+  }
+
+  function setIndex(p: RentalPost, i: number) {
+    p._activeIndex = i;
+  }
+
+  function onImgLoad(p: RentalPost) {
+    p._loaded = true;
   }
 </script>
 
@@ -98,15 +124,45 @@
             <article class="group rounded-2xl border border-neutral-800 bg-neutral-900/60 p-4 hover:border-neutral-700 hover:bg-neutral-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-600">
               <div class="grid grid-cols-3 gap-4">
                 <div class="col-span-1">
-                  <a href={post.url} target="_blank" rel="noopener noreferrer" class="block rounded-lg overflow-hidden">
-                    <img
-                      src={firstImage(post)}
-                      alt={post.title}
-                      loading="lazy"
-                      class="h-32 w-full object-cover rounded-lg border border-neutral-800"
-                      on:error={(e) => (e.currentTarget.src = '/images/placeholder-3bhk.png')}
-                    />
-                  </a>
+                  <div class="relative rounded-lg overflow-hidden border border-neutral-800">
+                    <a href={post.url} target="_blank" rel="noopener noreferrer" class="block">
+                      <img
+                        src={currentImage(post)}
+                        alt={post.title}
+                        loading="lazy"
+                        class="h-32 w-full object-cover rounded-lg border-none transition-opacity duration-250"
+                        on:error={(e) => (e.currentTarget.src = placeholder())}
+                        on:load={() => onImgLoad(post)}
+                        style="opacity: {post._loaded ? 1 : 0.01};"
+                      />
+                    </a>
+
+                    {#if post.images && post.images.length > 1}
+                      <button
+                        class="absolute left-1 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/45 p-1 rounded-full focus:outline-none"
+                        on:click={() => prev(post)}
+                        aria-label="previous image"
+                      >‹</button>
+                      <button
+                        class="absolute right-1 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/45 p-1 rounded-full focus:outline-none"
+                        on:click={() => next(post)}
+                        aria-label="next image"
+                      >›</button>
+
+                      <div class="absolute bottom-1 left-1 right-1 flex justify-center gap-1 px-1">
+                        {#each post.images.slice(0, 6) as thumb, i}
+                          <button
+                            class="w-6 h-6 rounded overflow-hidden border-2"
+                            on:click={() => setIndex(post, i)}
+                            aria-label="select image"
+                            style="border-color: {post._activeIndex === i ? 'white' : 'transparent'}"
+                          >
+                            <img src={thumb} alt="thumb" class="w-full h-full object-cover" on:error={(e)=>e.currentTarget.src=placeholder()} />
+                          </button>
+                        {/each}
+                      </div>
+                    {/if}
+                  </div>
                 </div>
 
                 <div class="col-span-2">
@@ -163,4 +219,7 @@
 <style>
   /* keep small, specific tweaks here — main look handled by your global styles */
   .prose { color: var(--color-paragraph); }
+  /* small styling to keep carousel thumbnails tidy */
+  button[aria-label="select image"] { background: transparent; border-color: transparent; }
+  button[aria-label="select image"] img { display: block; }
 </style>

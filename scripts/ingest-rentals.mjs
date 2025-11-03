@@ -3,6 +3,7 @@
 // Requires .env with:
 // OPENROUTER_API_KEY, CF_ACCOUNT_ID, CF_KV_NAMESPACE_ID, CF_API_TOKEN
 // Optional: CONCURRENCY, REQUEST_DELAY_MS, INGEST_BATCH_SIZE, RENTALS_KV_KEY
+// Optional: CHECK_IMAGE_URLS=true  -> performs lightweight HEAD to drop 404 images (may slow things)
 
 import dotenv from 'dotenv';
 dotenv.config();
@@ -26,6 +27,7 @@ const MAX_RETRIES = 3;
 const RETRY_BASE_MS = 600;
 
 const RENTALS_KV_KEY = process.env.RENTALS_KV_KEY || 'rentals:latest';
+const CHECK_IMAGE_URLS = !!process.env.CHECK_IMAGE_URLS; // optional, default false
 
 function nowSecs() { return Math.floor(Date.now() / 1000); }
 function inLastTwoWeeks(unixSecs) {
@@ -38,6 +40,110 @@ async function fetchReddit() {
   if (!res.ok) throw new Error('reddit fetch failed ' + res.status);
   const j = await res.json();
   return j.data.children.map(c => c.data);
+}
+
+/** sanitize urls from reddit (replace &amp; etc), ensure https, strip tracking fragments we don't need */
+function sanitizeUrl(u) {
+  if (!u || typeof u !== 'string') return null;
+  let s = u.replace(/&amp;/g, '&').replace(/amp;/g, '');
+  // decode HTML entities / percent-encoded if present
+  try { s = decodeURIComponent(s); } catch {}
+  // ensure https
+  if (s.startsWith('//')) s = 'https:' + s;
+  if (s.startsWith('http:')) s = s.replace(/^http:/, 'https:');
+  // remove some common tracking/query params that sometimes cause servers to respond oddly
+  try {
+    const urlObj = new URL(s);
+    // keep path + essential query only; strip reddit-specific tokens that often break hotlink
+    const allowed = ['format', 'auto', 's', 'w', 'fit'];
+    const newSearch = [];
+    for (const [k, v] of urlObj.searchParams.entries()) {
+      if (allowed.includes(k)) newSearch.push(`${k}=${encodeURIComponent(v)}`);
+    }
+    urlObj.search = newSearch.length ? ('?' + newSearch.join('&')) : '';
+    s = urlObj.toString();
+  } catch (e) {
+    // ignore, keep s as-is
+  }
+  return s;
+}
+
+/** lightweight HEAD to see if image exists. Optional; set CHECK_IMAGE_URLS=true in env to enable. */
+async function urlOk(u) {
+  if (!CHECK_IMAGE_URLS) return true;
+  try {
+    const res = await fetch(u, { method: 'HEAD' });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+/** Extract image urls from various possible reddit shapes */
+async function extractImageUrlsFromPost(p) {
+  const urls = new Set();
+
+  // helper push sanitized + checked
+  async function pushIfGood(u) {
+    const s = sanitizeUrl(u);
+    if (!s) return;
+    if (await urlOk(s)) urls.add(s);
+  }
+
+  // 1) gallery / media_metadata
+  if (p.media_metadata && typeof p.media_metadata === 'object') {
+    for (const k of Object.keys(p.media_metadata)) {
+      const meta = p.media_metadata[k];
+      // modern gallery stores s.u or p.u etc
+      const candidate = meta?.s?.u || meta?.p?.u || meta?.u;
+      if (candidate) await pushIfGood(candidate);
+      // sometimes single-image objects have variants in `variants` or `images`
+      if (Array.isArray(meta?.p)) {
+        for (const v of meta.p) {
+          if (v?.u) await pushIfGood(v.u);
+        }
+      }
+    }
+  }
+
+  // 2) preview.images
+  if (p.preview?.images && Array.isArray(p.preview.images)) {
+    for (const img of p.preview.images) {
+      const cand = img?.source?.url || img?.resolutions?.[0]?.url || img?.variants?.[0]?.source?.url;
+      if (cand) await pushIfGood(cand);
+    }
+  }
+
+  // 3) url_overridden_by_dest (common for single-image posts)
+  if (p.url_overridden_by_dest && typeof p.url_overridden_by_dest === 'string') {
+    await pushIfGood(p.url_overridden_by_dest);
+  }
+
+  // 4) thumbnail (sometimes holds an absolute image url)
+  if (p.thumbnail && typeof p.thumbnail === 'string' && p.thumbnail.startsWith('http')) {
+    await pushIfGood(p.thumbnail);
+  }
+
+  // 5) crosspost parent list
+  if (Array.isArray(p.crosspost_parent_list)) {
+    for (const cp of p.crosspost_parent_list) {
+      const nested = await extractImageUrlsFromPost(cp);
+      for (const u of nested) urls.add(u);
+    }
+  }
+
+  // 6) reddit hosted media (sometimes under `media` or `secure_media`)
+  const mediaCandidate = p?.media?.oembed?.thumbnail_url || p?.secure_media?.oembed?.thumbnail_url;
+  if (mediaCandidate) await pushIfGood(mediaCandidate);
+
+  // 7) fallback: if the post url itself ends with image extension
+  if (p.url && typeof p.url === 'string') {
+    if (/\.(jpe?g|png|webp|gif|bmp)(\?.*)?$/.test(p.url)) {
+      await pushIfGood(p.url);
+    }
+  }
+
+  return Array.from(urls);
 }
 
 /** Robustly get text back from various OpenRouter shapes */
@@ -62,7 +168,6 @@ async function callOpenRouterWithRetries(content, postId) {
       const body = {
         model: "openai/gpt-5-nano",
         temperature: 0.1,
-        // disable transformer-style "reasoning" traces to prefer content in message.content
         reasoning: { effort: "minimal" },
         messages: [
           { role: "system", content:
@@ -154,7 +259,14 @@ async function processPost(p) {
     return null;
   }
 
-  const images = (p.preview?.images || []).map(i => (i.source?.url || '').replace(/&amp;/g, '&')).filter(Boolean);
+  // extract images robustly
+  let images = [];
+  try {
+    images = await extractImageUrlsFromPost(p);
+  } catch (e) {
+    console.warn(`post ${id}: image extraction error: ${e.message}`);
+    images = [];
+  }
 
   const out = {
     id: p.id,
@@ -170,7 +282,7 @@ async function processPost(p) {
     comments_summary: info.comments_summary ?? null
   };
 
-  console.log(`post ${id}: accepted — rent=${out.rent ?? '—'} location=${out.location ?? '—'}`);
+  console.log(`post ${id}: accepted — rent=${out.rent ?? '—'} location=${out.location ?? '—'} images=${out.images.length}`);
   return out;
 }
 

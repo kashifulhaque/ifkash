@@ -26,6 +26,7 @@
     "@tailwindcss/vite": "^4.1.14",
     "axios": "^1.12.2",
     "dompurify": "^3.2.7",
+    "dotenv": "^17.2.3",
     "marked": "^14.1.4",
     "rehype-katex": "^7.0.1",
     "remark-math": "^6.0.0",

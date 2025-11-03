@@ -19,3 +19,8 @@ zone_name = "ifkash.dev"
 [[kv_namespaces]]
 binding = "IFKASH_HN"
 id = "85ed35403df24a01942b9ed8d3bbf3f4"
+
+[[d1_databases]]
+binding = "IFKASH_D1"
+database_name = "ifkash"
+database_id = "b84c4a60-0130-4784-a638-17e529ae5ab3"

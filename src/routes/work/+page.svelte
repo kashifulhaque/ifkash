@@ -17,12 +17,22 @@
 
   const workHistory: Job[] = [
     {
+      role: 'Senior ML Engineer',
+      companies: [
+        { name: 'Wand AI', url: 'https://wand.ai' }
+      ],
+      duration: 'Nov 2025 - Present',
+      location: 'Palo Alto, CA, USA',
+      startYear: 2025,
+      endYear: 2026
+    },
+    {
       role: 'Engineer III',
       companies: [
         { name: 'American Express', url: 'https://www.americanexpress.com' }
       ],
-      duration: 'February 2025 – Present',
-      location: 'Bangalore, India',
+      duration: 'Feb 2025 – Nov 2025',
+      location: 'Bangalore, KA, India',
       startYear: 2025,
       endYear: 2025,
     },
@@ -32,29 +42,18 @@
         { name: 'Fiery, previously EFI', url: 'https://www.fiery.com' },
         { name: '(an Epson company)', url: 'https://corporate.epson/en/news/2024/240919.html' }
       ],
-      duration: 'July 2023 – February 2025',
-      location: 'Bangalore, India',
+      duration: 'Jan 2023 – Feb 2025',
+      location: 'Bangalore, KA, India',
       startYear: 2023,
       endYear: 2025,
     },
     {
       role: 'Internship',
       companies: [
-        { name: 'Fiery, previously EFI', url: 'https://www.fiery.com' },
-        { name: '(an Epson company)', url: 'https://corporate.epson/en/news/2024/240919.html' }
-      ],
-      duration: 'January 2023 – July 2023',
-      location: 'Bangalore, India',
-      startYear: 2023,
-      endYear: 2023,
-    },
-    {
-      role: 'Internship',
-      companies: [
         { name: 'Corteva Agriscience', url: 'https://www.corteva.in' }
       ],
-      duration: 'July 2022 – December 2022',
-      location: 'Hyderabad, India',
+      duration: 'Jul 2022 – Dec 2022',
+      location: 'Hyderabad, TG, India',
       startYear: 2022,
       endYear: 2022,
     }
@@ -101,26 +100,12 @@
       <div class="relative">
         <!-- Years and Timeline -->
         <div class="flex gap-8">
-          <!-- Years Column -->
-          <div class="w-16 flex-shrink-0">
-            <div class="space-y-0">
-              {#each years as year}
-                <div
-                  class="text-sm font-mono h-32 flex items-start"
-                  style="color: var(--color-secondary);"
-                >
-                  {year}
-                </div>
-              {/each}
-            </div>
-          </div>
-
           <!-- Timeline and Jobs -->
           <div class="flex-1 relative">
             <!-- Jobs -->
             <div class="space-y-6 relative z-10">
               {#each workHistory as work, i (i)}
-                <div 
+                <div
                   class="group"
                   style="margin-top: {i === 0 ? '0' : 'calc(var(--job-spacing, 0px))'}"
                 >
@@ -141,14 +126,6 @@
                       </div>
                     </header>
                   </div>
-
-                  <!-- Timeline connector dot -->
-                  <div
-                    class="absolute left-2 mt-8 w-4 h-4 rounded-full transform -translate-x-1/2 transition-colors"
-                    style="top: 2.5rem; background-color: rgba(114, 117, 126, 0.1); border: 1px solid rgba(44, 182, 125, 0.5);"
-                    onmouseover="this.style.borderColor='rgb(44, 182, 125)'"
-                    onmouseout="this.style.borderColor='rgba(44, 182, 125, 0.5)'"
-                  ></div>
                 </div>
               {/each}
             </div>

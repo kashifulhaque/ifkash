@@ -215,8 +215,6 @@
           <a class="transition-colors" onmouseover="this.style.color='var(--color-paragraph)'" onmouseout="this.style.color='var(--color-secondary)'" href="/news">tech news</a>
           <span class="hidden sm:inline" aria-hidden="true">•</span>
           <a class="transition-colors" onmouseover="this.style.color='var(--color-paragraph)'" onmouseout="this.style.color='var(--color-secondary)'" href="/leetcode" rel="noopener noreferrer">leetcode stats</a>
-          <span class="hidden sm:inline" aria-hidden="true">•</span>
-          <a class="transition-colors" onmouseover="this.style.color='var(--color-paragraph)'" onmouseout="this.style.color='var(--color-secondary)'" href="/dashboard" rel="noopener noreferrer">my dashboard</a>
         </div>
         <div style="color: var(--color-secondary);">© {new Date().getFullYear()} Kashif</div>
       </div>

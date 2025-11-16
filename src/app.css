@@ -2,14 +2,14 @@
 
 /* Custom color theme variables */
 :root {
-  --color-background: #16161a;
+  --color-background: #0f0e17;
   --color-headline: #fffffe;
-  --color-paragraph: #94a1b2;
-  --color-button: #7f5af0;
+  --color-paragraph: #a7a9be;
+  --color-button: #ff8906;
   --color-button-text: #fffffe;
-  --color-stroke: #010101;
+  --color-stroke: #000000;
   --color-main: #fffffe;
-  --color-highlight: #7f5af0;
-  --color-secondary: #72757e;
-  --color-tertiary: #2cb67d;
+  --color-highlight: #ff8906;
+  --color-secondary: #f25f4c;
+  --color-tertiary: #e53170;
 }

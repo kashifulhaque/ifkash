@@ -1,6 +1,6 @@
 <svelte:head>
   <title>Kashif</title>
-  <meta name="description" content="Engineer III at American Express. I design robust systems and ship thoughtful tools.">
+  <meta name="description" content="MLE at wand.ai. I design robust systems and ship thoughtful tools.">
 </svelte:head>
 
 <script>
@@ -151,7 +151,7 @@
         <span style="color: var(--color-paragraph);">I am</span> Kashif
       </h1>
       <p class="mt-4 max-w-2xl" style="color: var(--color-paragraph);">
-        I design reliable systems and ship useful tools. Currently Engineer III at American Express.
+        I design reliable systems and ship useful tools. Currently MLE at wand.ai.
         I enjoy ML systems, infra, and the craft of clean, measurable engineering.
       </p>
 

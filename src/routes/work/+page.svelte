@@ -17,7 +17,7 @@
 
   const workHistory: Job[] = [
     {
-      role: 'Senior ML Engineer',
+      role: 'ML Engineer',
       companies: [
         { name: 'Wand AI', url: 'https://wand.ai' }
       ],

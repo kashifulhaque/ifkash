@@ -1,15 +1,96 @@
 @import "tailwindcss";
 
-/* Custom color theme variables */
 :root {
-  --color-background: #0f0e17;
-  --color-headline: #fffffe;
-  --color-paragraph: #a7a9be;
-  --color-button: #ff8906;
-  --color-button-text: #fffffe;
-  --color-stroke: #000000;
-  --color-main: #fffffe;
-  --color-highlight: #ff8906;
-  --color-secondary: #f25f4c;
-  --color-tertiary: #e53170;
+  /* The Palette of the Machine */
+  --matrix-bg: #050505;
+  --matrix-grid: #1a1a1a;
+  --matrix-dim: #333333;
+  --matrix-text: #a8a8a8;
+  --matrix-accent: #00ff41; /* Terminal Green */
+  --matrix-alert: #ff3333;  /* Error Red */
+  
+  /* Engineering lines */
+  --hairline: 1px;
+}
+
+@font-face {
+  font-family: 'Terminus';
+  src: local('Courier New'), monospace;
+}
+
+body {
+  background-color: var(--matrix-bg);
+  color: var(--matrix-text);
+  font-family: 'Courier New', Courier, monospace;
+  overflow-x: hidden;
+  cursor: crosshair;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  /* Mobile viewport fix */
+  min-height: 100dvh;
+}
+
+/* --- CRT Scanline Effect --- */
+body::after {
+  content: " ";
+  display: block;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+  z-index: 9999;
+  background-size: 100% 2px, 3px 100%;
+  pointer-events: none;
+}
+
+/* --- Selection --- */
+::selection {
+  background: var(--matrix-accent);
+  color: #000;
+}
+
+/* --- Blueprint Grid Background --- */
+.bg-grid {
+  background-size: 40px 40px;
+  background-image:
+    linear-gradient(to right, var(--matrix-grid) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--matrix-grid) 1px, transparent 1px);
+}
+
+/* --- Glitch Animation --- */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+.blink {
+  animation: blink 1s step-end infinite;
+}
+
+/* --- Link Hover Effects --- */
+a {
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: all 0.1s;
+}
+a:hover {
+  background-color: var(--matrix-accent);
+  color: #000;
+  box-shadow: 0 0 10px var(--matrix-accent);
+}
+
+/* Scrollbar (Hidden on mobile generally, styled on desktop) */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--matrix-bg);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--matrix-dim);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--matrix-accent);
 }

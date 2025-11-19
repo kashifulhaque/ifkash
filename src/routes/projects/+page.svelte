@@ -9,36 +9,40 @@
     links?: { text: string; url: string }[];
     description?: string;
     htmlDescription?: string;
-    tech: string[];
   };
 
   const projects: Project[] = [
     {
-      title: 'Boo',
-      links: [{ text: 'git repo', url: 'https://github.com/VVIP-Kitchen/boo' }],
+      title: 'smoltorch',
+      links: [
+        { text: 'git repo', url: 'https://github.com/kashifulhaque/smoltorch' },
+        { text: 'PyPI', url: 'https://pypi.org/project/smoltorch/' },
+        { text: 'blog', url: 'https://blog.ifkash.dev/smoltorch' }
+      ],
       description:
-        "Innovative AI-Powered Discord Bot who engages in natural conversations, interprets and responds to image inputs, and generates high-quality images on demand.",
-      tech: [
-        'Go',
-        'Docker',
-        'Python',
-        'Discord.py',
-        'LLMs',
-        "Llama 4",
-        'OpenRouter',
-      ]
+        'A minimalist deep learning library that implements automatic differentiation (autograd) and neural networks from scratch using only NumPy. Designed to be educational, transparent, functional, and minimal (~500 lines of readable, well-documented Python code).'
+    },
+    {
+      title: 'Boo',
+      links: [
+        { text: 'git repo', url: 'https://github.com/VVIP-Kitchen/boo' },
+        { text: 'blog', url: 'https://vvip-blog.pages.dev/blog/boo/' }
+      ],
+      description:
+        "Innovative AI-Powered Discord Bot who engages in natural conversations, interprets and responds to image inputs, and generates high-quality images on demand."
     },
     {
       title: 'NoPokeDB – lightweight vector DB',
-      links: [{ text: 'git repo', url: 'https://github.com/kashifulhaque/nopokedb' }],
-      description: 'A lightweight, disk-backed vector database implementation using hnswlib + SQLite with durability guarantees and operational log for crash recovery. 2K+ PyPI downloads',
-      tech: ['Python', 'SQLite', 'hnswlib', 'Vector Search']
+      links: [
+        { text: 'git repo', url: 'https://github.com/kashifulhaque/nopokedb' },
+        { text: 'PyPI', url: 'https://pypi.org/project/nopokedb/' }
+      ],
+      description: 'A lightweight, disk-backed vector database implementation using hnswlib + SQLite with durability guarantees and operational log for crash recovery. 2K+ PyPI downloads'
     },
     {
       title: 'NumPy-in-Rust sketch',
       links: [{ text: 'git repo', url: 'https://github.com/kashifulhaque/tinyndarray' }],
-      description: 'A learning project implementing NumPy-like ndarray functionality in Rust with Python bindings.',
-      tech: ['Rust', 'Python', 'NumPy']
+      description: 'A learning project implementing NumPy-like ndarray functionality in Rust with Python bindings.'
     }
   ];
 </script>
@@ -80,21 +84,13 @@
             {/if}
           </header>
 
-          <div class="mt-2 text-sm" style="color: var(--color-paragraph);">
+          <div class="mt-2 text-xs" style="color: var(--color-paragraph);">
             {#if p.htmlDescription}
               <div class="prose prose-invert prose-neutral max-w-none prose-a:underline">{@html p.htmlDescription}</div>
             {:else if p.description}
               <p>{p.description}</p>
             {/if}
           </div>
-
-          {#if p.tech?.length}
-            <div class="mt-4 flex flex-wrap gap-2">
-              {#each p.tech as t}
-                <span class="rounded-full border px-2.5 py-1 text-xs" style="border-color: var(--color-secondary); background-color: rgba(114, 117, 126, 0.1); color: var(--color-paragraph);">{t}</span>
-              {/each}
-            </div>
-          {/if}
         </article>
       {/each}
     </section>

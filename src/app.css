@@ -68,10 +68,9 @@ body::after {
 
 /* --- Blueprint Grid Background --- */
 .bg-grid {
-  background-size: 60px 60px; /* Larger grid cells = less visual noise */
-  background-image:
-    linear-gradient(to right, var(--matrix-grid) 1px, transparent 1px),
-    linear-gradient(to bottom, var(--matrix-grid) 1px, transparent 1px);
+  /* Grid removed per request */
+  background-image: none;
+  background-size: auto;
 }
 
 /* --- Glitch Animation --- */

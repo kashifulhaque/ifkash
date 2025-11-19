@@ -3,7 +3,7 @@
 </script>
 
 <svelte:head>
-  <title>SYSTEM_ROOT // KASHIF</title>
+  <title>KASHIF</title>
   <meta name="description" content="System Interface for Kashif. MLE at Wand AI.">
 </svelte:head>
 
@@ -25,17 +25,12 @@
     </pre>
     
     <div class="mt-8 text-center z-10 border-t border-[var(--matrix-dim)] pt-4 w-full">
-      <div class="text-xs text-[var(--matrix-text)] font-bold tracking-widest mb-1">CLASS: APPLIED ML ENGINEER</div>
-      <div class="text-xs text-[var(--matrix-accent)] animate-pulse">STATUS: OPERATIONAL</div>
+      <div class="text-xs text-[var(--matrix-text)] font-bold tracking-widest mb-1">APPLIED ML ENGINEER</div>
     </div>
   </div>
 
   <div class="lg:col-span-7 bg-[rgba(2,6,23,0.8)] border border-[var(--matrix-dim)] p-6 md:p-8 flex flex-col justify-between">
     <div>
-      <h2 class="text-xl font-black text-[var(--matrix-text)] mb-6 flex items-center gap-3">
-        <span class="w-3 h-3 bg-[var(--matrix-accent)]"></span>
-        PERSONNEL_FILE_LOADED
-      </h2>
       
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4 text-sm font-mono mb-8">
         <div class="flex flex-col">
@@ -48,7 +43,7 @@
         </div>
         <div class="flex flex-col">
           <span class="text-[var(--matrix-dim)] text-[10px] mb-1">PRIMARY_STACK</span>
-          <span class="text-[var(--matrix-text)] font-bold border-l-2 border-[var(--matrix-dim)] pl-3">RUST, PYTHON, CUDA</span>
+          <span class="text-[var(--matrix-text)] font-bold border-l-2 border-[var(--matrix-dim)] pl-3">PYTHON, C++, RUST</span>
         </div>
         <div class="flex flex-col">
           <span class="text-[var(--matrix-dim)] text-[10px] mb-1">ORIGIN_DATA</span>
@@ -59,10 +54,10 @@
 
     <div class="border border-[var(--matrix-dim)] bg-[var(--matrix-grid)] p-4">
       <div class="flex justify-between items-center mb-2 border-b border-[var(--matrix-dim)] pb-2">
-        <span class="text-[10px] font-bold text-[var(--matrix-accent)]">BIO_SUMMARY.TXT</span>
+        <span class="text-[10px] font-bold text-[var(--matrix-accent)]"></span>
         <span class="text-[10px] text-[var(--matrix-dim)]">READ_ONLY</span>
       </div>
-      <p class="text-sm md:text-base leading-relaxed text-[var(--matrix-text)]">
+      <p class="text-sm md:text-small leading-relaxed text-[var(--matrix-text)]">
         I design robust systems and ship thoughtful tools. Currently optimizing LLM inference and bridging models with production infrastructure.
       </p>
     </div>
@@ -93,9 +88,9 @@
       PROJECTS
     </h3>
     <ul class="text-xs text-[var(--matrix-dim)] space-y-1 font-mono">
-      <li>> BOO_BOT [ACTIVE]</li>
-      <li>> NOPOKEDB [STABLE]</li>
-      <li>> SMOLTORCH [ARCHIVE]</li>
+      <li>> BOO_BOT</li>
+      <li>> NOPOKEDB</li>
+      <li>> SMOLTORCH</li>
     </ul>
   </a>
 
@@ -104,7 +99,7 @@
       DIR_03
     </div>
     <h3 class="text-xl font-black mb-3 text-[var(--matrix-text)] group-hover:text-[var(--matrix-accent)]">
-      METRICS
+      LEETCODE
     </h3>
     <ul class="text-xs text-[var(--matrix-dim)] space-y-1 font-mono">
       <li>> LEETCODE STATS</li>
@@ -118,7 +113,7 @@
       DIR_04
     </div>
     <h3 class="text-xl font-black mb-3 text-[var(--matrix-text)] group-hover:text-[var(--matrix-accent)]">
-      UPLINK
+      TECH NEWS
     </h3>
     <ul class="text-xs text-[var(--matrix-dim)] space-y-1 font-mono">
       <li>> HACKERNEWS FEED</li>
@@ -127,19 +122,4 @@
     </ul>
   </a>
 
-</div>
-
-<div class="mt-12 pt-4 border-t border-[var(--matrix-dim)]">
-  <div class="flex justify-between items-end h-10 gap-1 opacity-50">
-    {#each Array(32) as _, i}
-      <div 
-        class="bg-[var(--matrix-accent)] w-full transition-all duration-500 ease-in-out"
-        style="height: {10 + Math.random() * 60}%; opacity: {0.2 + Math.random() * 0.8}"
-      ></div>
-    {/each}
-  </div>
-  <div class="flex justify-between text-[9px] text-[var(--matrix-dim)] mt-1 font-mono">
-    <span>CORE_ACTIVITY</span>
-    <span>BUFFER_USAGE: 14%</span>
-  </div>
 </div>

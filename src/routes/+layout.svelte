@@ -9,16 +9,21 @@
     // System Clock
     const updateTime = () => {
       const now = new Date();
-      sysTime = now.toISOString().split('T')[1].split('.')[0]; // HH:MM:SS
+      sysTime = now.toLocaleTimeString('en-US', { 
+        hour12: false, 
+        hour: '2-digit', 
+        minute: '2-digit', 
+        second: '2-digit' 
+      }); // HH:MM:SS in local time
     };
     updateTime();
     const clockInterval = setInterval(updateTime, 1000);
 
     // Mouse Tracking
-    const handleMove = (e) => {
+    const handleMove = (/** @type {{ clientX: number; clientY: number; }} */ e) => {
       const x = (e.clientX / window.innerWidth).toFixed(3);
       const y = (e.clientY / window.innerHeight).toFixed(3);
-      coordinates = `X:${x} // Y:${y}`;
+      coordinates = `(${x}, ${y})`;
     };
     window.addEventListener('mousemove', handleMove);
 
@@ -51,22 +56,22 @@
     </div>
     <div class="text-right hidden md:block">
       <div class="text-[10px] text-[var(--matrix-dim)] tracking-widest mb-1">SYS_STATUS: NORMAL</div>
-      <div class="text-xl font-bold font-mono text-[var(--matrix-accent)]">{sysTime} UTC</div>
+      <div class="text-xl font-bold font-mono text-[var(--matrix-accent)]">{sysTime}</div>
     </div>
   </header>
 
   <nav class="grid grid-cols-2 md:flex gap-2 bg-transparent mb-12 z-10 text-sm font-bold">
     <a href="/" class="flex-1 text-center py-3 bg-[var(--matrix-grid)] text-[var(--matrix-dim)] hover:bg-[var(--matrix-accent)] hover:text-black transition-colors border border-[var(--matrix-dim)] hover:border-[var(--matrix-accent)]">
-      [00] HOME
+      [00] Home
     </a>
     <a href="/work" class="flex-1 text-center py-3 bg-[var(--matrix-grid)] text-[var(--matrix-dim)] hover:bg-[var(--matrix-accent)] hover:text-black transition-colors border border-[var(--matrix-dim)] hover:border-[var(--matrix-accent)]">
-      [01] LOGS
+      [01] Work
     </a>
     <a href="/projects" class="flex-1 text-center py-3 bg-[var(--matrix-grid)] text-[var(--matrix-dim)] hover:bg-[var(--matrix-accent)] hover:text-black transition-colors border border-[var(--matrix-dim)] hover:border-[var(--matrix-accent)]">
-      [02] DB
+      [02] Projects
     </a>
     <a href="/blog" class="flex-1 text-center py-3 bg-[var(--matrix-grid)] text-[var(--matrix-dim)] hover:bg-[var(--matrix-accent)] hover:text-black transition-colors border border-[var(--matrix-dim)] hover:border-[var(--matrix-accent)]">
-      [03] COMMS
+      [03] Blogs
     </a>
   </nav>
 
@@ -76,14 +81,14 @@
 
   <footer class="mt-12 border-t border-[var(--matrix-dim)] pt-3 flex flex-col md:flex-row justify-between text-[10px] md:text-xs text-[var(--matrix-dim)] font-mono gap-4">
     <div class="flex flex-col md:flex-row gap-2 md:gap-4">
-      <span>SECTOR: BENGALURU, KA</span>
+      <span>SECTOR: BENGALURU, INDIA</span>
       <span class="hidden md:inline text-[var(--matrix-accent)]">|</span>
-      <span>COORDS: {coordinates}</span>
+      <span>{coordinates}</span>
     </div>
     <div class="flex gap-6 font-bold">
       <a href="https://github.com/kashifulhaque" class="hover:text-[var(--matrix-accent)]">:: GITHUB</a>
       <a href="https://linkedin.com/in/kashifulhaque" class="hover:text-[var(--matrix-accent)]">:: LINKEDIN</a>
-      <a href="/assets/Kashiful_Haque.pdf" class="hover:text-[var(--matrix-accent)]">:: RESUME_V2.0</a>
+      <a href="/assets/Kashiful_Haque.pdf" class="hover:text-[var(--matrix-accent)]">:: RESUME</a>
     </div>
   </footer>
 

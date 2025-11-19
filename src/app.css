@@ -1,36 +1,49 @@
 @import "tailwindcss";
 
 :root {
-  /* The Palette of the Machine */
-  --matrix-bg: #050505;
-  --matrix-grid: #1a1a1a;
-  --matrix-dim: #333333;
-  --matrix-text: #a8a8a8;
-  --matrix-accent: #00ff41; /* Terminal Green */
-  --matrix-alert: #ff3333;  /* Error Red */
+  /* THE ORBITAL COMMAND PALETTE */
+  /* Background: Deep, rich slate instead of void black */
+  --matrix-bg: #020617; 
+  
+  /* Grid: Subtle, low-noise slate */
+  --matrix-grid: #1e293b; 
+  
+  /* Dim Text: Readable slate-grey, not invisible grey */
+  --matrix-dim: #64748b; 
+  
+  /* Main Text: High-contrast crisp silver */
+  --matrix-text: #e2e8f0; 
+  
+  /* Accent: Electric Cyan (High visibility, distinct from text) */
+  --matrix-accent: #06b6d4; 
+  
+  /* Alert: Orange for critical data */
+  --matrix-alert: #f97316;
   
   /* Engineering lines */
   --hairline: 1px;
 }
 
 @font-face {
-  font-family: 'Terminus';
+  font-family: 'JetBrains Mono';
   src: local('Courier New'), monospace;
 }
 
 body {
   background-color: var(--matrix-bg);
   color: var(--matrix-text);
-  font-family: 'Courier New', Courier, monospace;
+  font-family: 'Courier New', Courier, monospace; /* Sticking to reliable system mono */
   overflow-x: hidden;
   cursor: crosshair;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  /* Mobile viewport fix */
+  letter-spacing: 0.06em; /* Slightly wider for legibility */
+  line-height: 1.6; /* Increased breathing room */
   min-height: 100dvh;
+  font-weight: 500; /* slightly bolder than standard */
 }
 
-/* --- CRT Scanline Effect --- */
+/* --- CRT Scanline Effect (Optimized for Readability) --- */
+/* Much subtler. Adds texture without vibrating the screen. */
 body::after {
   content: " ";
   display: block;
@@ -39,9 +52,11 @@ body::after {
   left: 0;
   bottom: 0;
   right: 0;
-  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+  background: 
+    linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), /* Reduced opacity */
+    linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03)); /* Reduced color shift */
   z-index: 9999;
-  background-size: 100% 2px, 3px 100%;
+  background-size: 100% 3px, 3px 100%;
   pointer-events: none;
 }
 
@@ -53,7 +68,7 @@ body::after {
 
 /* --- Blueprint Grid Background --- */
 .bg-grid {
-  background-size: 40px 40px;
+  background-size: 60px 60px; /* Larger grid cells = less visual noise */
   background-image:
     linear-gradient(to right, var(--matrix-grid) 1px, transparent 1px),
     linear-gradient(to bottom, var(--matrix-grid) 1px, transparent 1px);
@@ -65,31 +80,34 @@ body::after {
   50% { opacity: 0; }
 }
 .blink {
-  animation: blink 1s step-end infinite;
+  animation: blink 1.5s step-end infinite; /* Slower blink is less distracting */
 }
 
 /* --- Link Hover Effects --- */
 a {
   text-decoration: none;
   border-bottom: 1px solid transparent;
-  transition: all 0.1s;
+  transition: all 0.15s ease-out;
 }
 a:hover {
-  background-color: var(--matrix-accent);
-  color: #000;
-  box-shadow: 0 0 10px var(--matrix-accent);
+  color: var(--matrix-accent);
+  border-bottom-color: var(--matrix-accent);
+  text-shadow: 0 0 8px rgba(6, 182, 212, 0.4); /* Cyan glow */
+  background: rgba(6, 182, 212, 0.05);
 }
 
-/* Scrollbar (Hidden on mobile generally, styled on desktop) */
+/* Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
 }
 ::-webkit-scrollbar-track {
   background: var(--matrix-bg);
+  border-left: 1px solid var(--matrix-grid);
 }
 ::-webkit-scrollbar-thumb {
   background: var(--matrix-dim);
+  border: 1px solid var(--matrix-accent);
 }
 ::-webkit-scrollbar-thumb:hover {
   background: var(--matrix-accent);

@@ -45,7 +45,7 @@ _Internship_ #h(1fr) 07/2022 -- 12/2022 \
 *#cardo[Mini-Numpy in Rust]* • #link("https://github.com/kashifulhaque/tinyndarray")[github]
 - Implemented a lightweight NumPy clone in Rust with Python bindings, exploring numerical backend design for ML frameworks.
 
-*#cardo[Boo: AI-powered Discord Bot]* • #link("https://github.com/VVIP-Kitchen/boo")[github] • #link("https://deepwiki.com/VVIP-Kitchen/boo")[deepwiki] • #link("https://vvip-blog.pages.dev/blog/boo/")[blog]
+*#cardo[Boo: AI-powered Discord Bot]* • #link("https://github.com/VVIP-Kitchen/boo")[github] • #link("https://deepwiki.com/VVIP-Kitchen/boo")[deepwiki] • #link("https://vvip.ifkash.dev/blog/boo")[blog]
 - Architected a multi-service infra with LLM orchestration for an AI bot.
 - Features: conversational AI (LLMs), image analysis & generation, weather, GIF & HN search via function/tool calling.
 

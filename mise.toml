@@ -2,6 +2,7 @@
 bun = "latest"
 node = "lts"
 rust = "stable"
+typst = "latest"
 
 [tasks."api:prep"]
 # One-time prep for Rust Workers
@@ -35,4 +36,34 @@ description = "Run the SvelteKit app locally"
 run = """
 bun install
 bun run dev
+"""
+
+[tasks."assets:fonts"]
+description = "Download fonts (Crimson Pro, Cardo) directly from Google Fonts GitHub"
+run = """
+mkdir -p .fonts
+
+# Crimson Pro (Variable Font: supports all weights)
+# We download both Roman and Italic styles
+curl -L -o .fonts/CrimsonPro.ttf "https://github.com/google/fonts/raw/main/ofl/crimsonpro/CrimsonPro%5Bwght%5D.ttf"
+curl -L -o .fonts/CrimsonPro-Italic.ttf "https://github.com/google/fonts/raw/main/ofl/crimsonpro/CrimsonPro-Italic%5Bwght%5D.ttf"
+
+# Cardo (Static Fonts)
+base_url="https://github.com/google/fonts/raw/main/ofl/cardo"
+curl -L -o .fonts/Cardo-Regular.ttf "$base_url/Cardo-Regular.ttf"
+curl -L -o .fonts/Cardo-Bold.ttf "$base_url/Cardo-Bold.ttf"
+curl -L -o .fonts/Cardo-Italic.ttf "$base_url/Cardo-Italic.ttf"
+"""
+outputs = [".fonts/CrimsonPro.ttf", ".fonts/Cardo-Regular.ttf"]
+
+[tasks."assets:typst"]
+description = "Compile all .typ files in static/typst to PDF using local fonts"
+depends = ["assets:fonts"]
+run = """
+# Iterate over all .typ files in the directory
+for file in ./static/assets/*.typ; do
+  echo "Compiling $file..."
+  # --font-path tells Typst where to look for the fonts we just downloaded
+  typst compile "$file" --font-path .fonts
+done
 """

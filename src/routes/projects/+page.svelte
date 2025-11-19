@@ -26,7 +26,7 @@
       title: 'Boo',
       links: [
         { text: 'git repo', url: 'https://github.com/VVIP-Kitchen/boo' },
-        { text: 'blog', url: 'https://vvip-blog.pages.dev/blog/boo/' }
+        { text: 'blog', url: 'https://vvip.ifkash.dev/blog/boo' }
       ],
       description:
         "Innovative AI-Powered Discord Bot who engages in natural conversations, interprets and responds to image inputs, and generates high-quality images on demand."

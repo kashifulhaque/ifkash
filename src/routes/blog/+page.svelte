@@ -133,11 +133,7 @@
                 <h2 class="text-lg font-medium group-hover:underline" style="color: var(--color-headline);">{post.title}</h2>
                 <span class="shrink-0 text-xs" style="color: var(--color-secondary);">{new Date(post.publishedAt).toLocaleString('en-US', options).replace(',','')}</span>
               </div>
-              <p class="mt-2 line-clamp-3 text-sm" style="color: var(--color-paragraph);">{post.brief}</p>
-              <div class="mt-3 inline-flex items-center gap-2 text-sm" style="color: var(--color-paragraph);">
-                <span>Read on Hashnode</span>
-                <span aria-hidden="true" class="transition -translate-y-px group-hover:translate-x-0.5">→</span>
-              </div>
+              <p class="mt-2 line-clamp-3 text-xs text-gray-400">{post.brief}</p>
             </div>
           </a>
         {/each}

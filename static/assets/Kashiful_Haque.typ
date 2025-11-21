@@ -10,48 +10,49 @@
 = #cardo[Kashiful Haque]
 +918240868544 • #link("mailto:haque.kashiful7@gmail.com")[haque.kashiful7\@gmail.com] • #link("https://github.com/kashifulhaque")[github] • #link("https://www.linkedin.com/in/kashifulhaque")[linkedin] • #link("https://ifkash.dev")[ifkash.dev]
 
-Applied ML Systems Engineer; bridging models with production infra. Experienced in fine-tuning LLMs, optimizing inference (vLLM, quantization, batching) and building scalable AI-powered applications (Docker, K8s, Redis, Postgres). Proven track record of deploying research into production systems, adopted across teams organization wide. \
+Systems-focused ML engineer with 3.5 YOE building numerical computing components, inference-optimized pipelines and agentic coding environments. I work at the intersection of ML systems, low-level frameworks and RL for code, designing execution sandboxes, structured task environments and deep-dive into unfamiliar codebases to build testable evals. Previously fine-tuned and deployed models and optimized inference systems org-wide. \
 
 = #cardo[work experience]
-*#cardo[Wand AI (via Nityo)]* #h(1fr) _Palo Alto, USA_ \
+
+*#cardo[Wand AI (via Nityo)]* #h(1fr) _Palo Alto (Remote)_ \
 _Backend AI/ML Engineer_ #h(1fr) 11/2025 -- Present \
+- Building internal ML systems and execution-layer infra; focusing on agent tooling and structured task pipelines. \
 
-*#cardo[American Express (via IntraEdge)]* #h(1fr) _Bengaluru, India_ \
+*#cardo[American Express (via IntraEdge)]* #h(1fr) _Bangalore_ \
 _Engineer III_ #h(1fr) 02/2025 -- 11/2025 \
-- Architected a low-latency streaming infra (Redis + GPT-4o summarization) for thousands of meetings; deployed to RedHat OpenShift (Amex Hydra) with Helm/Jenkins.
-- Built a hybrid semantic + trigram retrieval system over 200K+ Confluence pages (runbooks); reduced latency from 30s (native search) to under 2s.
+- Architected a distributed low-latency streaming pipeline with backpressure control and token-stream handling; deployed on RedHat OpenShift using Helm/Jenkins.
+- Rebuilt search infra for 200k+ Confluence documents using hybrid semantic + trigram retrieval; improved p95 latency from 30s → $<$2s.
+- Reverse-engineered internal systems to build testable interfaces and mocks for multi-step automation pipelines.
 
-*#cardo[Fiery]* #h(1fr) _Bengaluru, India_ \
+*#cardo[Fiery]* #h(1fr) _Bangalore_ \
 _Associate Software Engineer_ #h(1fr) 01/2023 — 02/2025 \
-- Fine-tuned Mistral-7B using QLoRA on 4070 Ti Super for enterprise knowledge injection, incorporated into a RAG pipeline.
-- Built efficient inference at scale via vLLM on NVIDIA T4 cluster; leveraged dynamic batching and quantized inference for sub-second 95th-percentile latency (TTFT).
-- #link("https://www.fiery.com/wp-content/uploads/sites/3/2025/09/Fiery_Brochure-Fiery-Scribe_Br-US.pdf")[Led development of "Fiery Scribe"], a print-request automation tool powered by a fine-tuned ModernBERT NER model; parsed email and chat inputs to trigger document workflows. #link("https://www.printweek.com/content/news/fiery-shows-off-new-ai-features-at-printing-united#:~:text=Brand%20new%20at%20Printing%20United%20is%20Fiery%E2%80%99s%20Ticketing%20Assistant%20software%2C%20currently%20in%20development%20for%20a%20late%202024%20launch.%20Leaning%20on%20large%20language%20models%20(LLMs)%20of%20AI%2C%20the%20programme%20can%20read%20emails%20and%20automatically%20translate%20them%20into%20job%20tickets.")[Demoed at Printing United 2024, Las Vegas.]
-- Built AskDB, an agentic AI system for natural language → SQL, adopted by 300+ active users across departments.
+- Fine-tuned Mistral-7B with QLoRA; instrumented memory usage, evaluated kernel bottlenecks, and integrated into a scalable RAG pipeline.
+- Delivered high-throughput inference using vLLM with dynamic batching and quantized kernels, hitting sub-second p95 TTFT on T4 clusters.
+- Built Fiery Scribe, an NER-driven automation engine using a fine-tuned ModernBERT model; designed structured evaluation pipelines and test harnesses for model outputs.
+- Developed AskDB, an LLM→SQL agent system with programmatic query analysis, partial-plan evaluation, and structured error recovery.
 
-*#cardo[Corteva Agriscience]* #h(1fr) _Hyderabad, India_ \
+*#cardo[Corteva Agriscience]* #h(1fr) _Hyderabad_ \
 _Internship_ #h(1fr) 07/2022 -- 12/2022 \
-- Migrated old Flask monolith API to microservices architecture to speed up deployments.
 
 = #cardo[projects]
-*#cardo[smoltorch: a tiny pytorch]* • #link("https://github.com/kashifulhaque/smoltorch")[github] • #link("https://pypi.org/project/smoltorch/")[pypi] • #link("https://blog.ifkash.dev/smoltorch")[blog]
-- A smol pytorch-like autograd engine to learn the internals of a model autograd framework
-- Built on top of numpy tensors
+*#cardo[smoltorch: minimal autograd engine]* • #link("https://github.com/kashifulhaque/smoltorch")[github] • #link("https://pypi.org/project/smoltorch/")[pypi] • #link("https://blog.ifkash.dev/smoltorch")[blog]
+- Reverse-mode autograd engine with tape-based graphs and topological scheduling.
+- NumPy-backed tensor ops, broadcasting, and a minimal training loop inspired by PyTorch internals.
 
-*#cardo[NoPokeDB: a Lightweight Vector Database]* • #link("https://github.com/kashifulhaque/nopokedb")[github] • #link("https://pypi.org/project/nopokedb/")[pypi] • #link("https://blog.ifkash.dev/tiny-vector-db")[blog]
-- Designed a disk-backed vector db in Python using hnswlib for ANN search and SQLite for metadata.
-- Added durability via a write-ahead oplog with crash recovery; supported batch inserts, auto-resize, CRUD.
-- 2K+ PyPI downloads!
+*#cardo[tinyndarray: mini numpy in rust]* • #link("https://github.com/kashifulhaque/tinyndarray")[github]
+- Stride-aware ndarray implementation in Rust with slicing + broadcasting, mirroring ML framework tensor layouts.
+- Python bindings via PyO3 enabling fast numerical kernels and early graph/JIT experimentation.
 
-*#cardo[Mini-Numpy in Rust]* • #link("https://github.com/kashifulhaque/tinyndarray")[github]
-- Implemented a lightweight NumPy clone in Rust with Python bindings, exploring numerical backend design for ML frameworks.
+*#cardo[nopokedb: lightweight vector db]* • #link("https://github.com/kashifulhaque/nopokedb")[github] • #link("https://pypi.org/project/nopokedb/")[pypi] • #link("https://blog.ifkash.dev/tiny-vector-db")[blog]
+- Disk-backed HNSW vector DB with oplog durability, crash recovery, and minimal RAM usage.
+- Fast metadata lookups + efficient ANN search via SQLite + hnswlib.
 
 *#cardo[Boo: AI-powered Discord Bot]* • #link("https://github.com/VVIP-Kitchen/boo")[github] • #link("https://deepwiki.com/VVIP-Kitchen/boo")[deepwiki] • #link("https://vvip.ifkash.dev/blog/boo")[blog]
-- Architected a multi-service infra with LLM orchestration for an AI bot.
-- Features: conversational AI (LLMs), image analysis & generation, weather, GIF & HN search via function/tool calling.
+- Agentic, containerized code-execution sandbox with filesystem isolation, resource limits, deterministic traces, and multi-step tool APIs.
+- Added unit-test–based evaluation hooks and structured feedback signals, forming basis for RL coding environments.
 
 = #cardo[education]
 *#cardo[IIT Madras]* BS, _Data Science and Applications_ #h(1fr) 2020 -- 2024 \
 
 = #cardo[skills]
-- pytorch, huggingface, peft, qlora, vllm, ollama, vector db, embeddings, inference optimization, cuda
-- python, go, rust, fastapi, docker, k8s, redis, postgres, sql, helm, jenkins
+- python, go, rust, c++, pytorch, vllm, cuda, docker, k8s, redis, postgres, agentic systems (code sandboxes, test-based evals)

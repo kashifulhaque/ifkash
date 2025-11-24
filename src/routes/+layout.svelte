@@ -28,7 +28,7 @@
     <div class="flex gap-6 font-medium">
       <a href="https://github.com/kashifulhaque" target="_blank" rel="noopener noreferrer" class="hover:text-[var(--color-headline)] transition-colors">GitHub</a>
       <a href="https://linkedin.com/in/kashifulhaque" target="_blank" rel="noopener noreferrer" class="hover:text-[var(--color-headline)] transition-colors">LinkedIn</a>
-      <a href="https://twitter.com/ifkash" target="_blank" rel="noopener noreferrer" class="hover:text-[var(--color-headline)] transition-colors">Twitter</a>
+      <a href="/assets/Kashiful_Haque.pdf" target="_blank" rel="noopener noreferrer" class="hover:text-[var(--color-headline)] transition-colors">Resume</a>
     </div>
   </footer>
 

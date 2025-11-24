@@ -262,9 +262,7 @@
 </script>
 
 <svelte:head>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
-  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400&display=swap" rel="stylesheet">
+  <title>Dashboard</title>
 </svelte:head>
 
 <!-- Background with subtle vignette and grain -->
@@ -283,7 +281,7 @@
 
 <!-- Center content -->
   <main class="relative mx-auto flex min-h-screen max-w-7xl flex-col items-center justify-center px-6 text-center">
-    <h1 class="select-none font-light tracking-wide clock-font text-[var(--color-headline)]" style="font-size:clamp(3rem,14vw,11rem); line-height:0.95;">
+    <h1 class="select-none font-light tracking-wide text-[var(--color-headline)]" style="font-size:clamp(3rem,14vw,11rem); line-height:0.95;">
       {formatTime(now)}
     </h1>
     <p class="mt-3 text-balance text-lg text-[var(--color-paragraph)] sm:text-xl">
@@ -338,24 +336,3 @@
     </aside>
   {/if}
 </div>
-
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap');
-  @import url('https://fonts.googleapis.com/css2?family=Zalando+Sans:ital,wght@0,200..900;1,200..900&display=swap');
-
-  :global(body) {
-    font-family: 'Zalando Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  }
-
-  .clock-font {
-    font-family: 'Zalando Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    font-weight: 500;
-  }
-
-  :global(html) {
-    text-rendering: optimizeLegibility;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
-
-</style>

@@ -3,8 +3,8 @@
   <meta name="description" content="Personal website of Kashiful Haque, Applied ML Engineer.">
 </svelte:head>
 
-<section class="mb-16">
-  <h1 class="text-4xl font-bold tracking-tight text-[var(--color-headline)] mb-4">
+<section class="mb-20">
+  <h1 class="text-4xl font-bold tracking-tight text-[var(--color-headline)] mb-6">
     Hi, I'm Kashif.
   </h1>
   <p class="text-lg text-[var(--color-paragraph)] leading-relaxed max-w-2xl">
@@ -12,12 +12,12 @@
   </p>
 </section>
 
-<section class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<section class="grid grid-cols-1 md:grid-cols-2 gap-6">
   
   <a href="/work" class="card group">
-    <div class="flex justify-between items-center mb-2">
+    <div class="flex justify-between items-baseline mb-3">
       <h3 class="text-lg font-semibold text-[var(--color-headline)] group-hover:text-[var(--color-highlight)] transition-colors">Work</h3>
-      <span class="text-[var(--color-secondary)] text-sm">→</span>
+      <span class="text-[var(--color-secondary)] text-sm transition-transform group-hover:translate-x-1">→</span>
     </div>
     <p class="text-sm text-[var(--color-paragraph)]">
       Experience at Wand AI, American Express, and Fiery.
@@ -25,9 +25,9 @@
   </a>
 
   <a href="/projects" class="card group">
-    <div class="flex justify-between items-center mb-2">
+    <div class="flex justify-between items-baseline mb-3">
       <h3 class="text-lg font-semibold text-[var(--color-headline)] group-hover:text-[var(--color-highlight)] transition-colors">Projects</h3>
-      <span class="text-[var(--color-secondary)] text-sm">→</span>
+      <span class="text-[var(--color-secondary)] text-sm transition-transform group-hover:translate-x-1">→</span>
     </div>
     <p class="text-sm text-[var(--color-paragraph)]">
       Smoltorch, Boo Bot, NoPokeDB, and more.
@@ -35,9 +35,9 @@
   </a>
 
   <a href="/leetcode" class="card group">
-    <div class="flex justify-between items-center mb-2">
+    <div class="flex justify-between items-baseline mb-3">
       <h3 class="text-lg font-semibold text-[var(--color-headline)] group-hover:text-[var(--color-highlight)] transition-colors">LeetCode</h3>
-      <span class="text-[var(--color-secondary)] text-sm">→</span>
+      <span class="text-[var(--color-secondary)] text-sm transition-transform group-hover:translate-x-1">→</span>
     </div>
     <p class="text-sm text-[var(--color-paragraph)]">
       Problem solving stats and recent submissions.
@@ -45,9 +45,9 @@
   </a>
 
   <a href="/news" class="card group">
-    <div class="flex justify-between items-center mb-2">
+    <div class="flex justify-between items-baseline mb-3">
       <h3 class="text-lg font-semibold text-[var(--color-headline)] group-hover:text-[var(--color-highlight)] transition-colors">Tech News</h3>
-      <span class="text-[var(--color-secondary)] text-sm">→</span>
+      <span class="text-[var(--color-secondary)] text-sm transition-transform group-hover:translate-x-1">→</span>
     </div>
     <p class="text-sm text-[var(--color-paragraph)]">
       Latest top stories from Hacker News.
@@ -67,6 +67,6 @@
   }
   .card:hover {
     border-color: var(--color-secondary);
-    transform: translateY(-2px);
+    background-color: rgba(255, 255, 255, 0.02);
   }
 </style>

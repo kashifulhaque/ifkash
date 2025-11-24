@@ -1,113 +1,60 @@
 @import "tailwindcss";
 
 :root {
-  /* THE ORBITAL COMMAND PALETTE */
-  /* Background: Deep, rich slate instead of void black */
-  --matrix-bg: #020617; 
+  /* Pastel Dark Theme Palette (Zinc-based with Pastel Accents) */
+  --color-background: #09090b; /* zinc-950 */
+  --color-surface: #18181b;    /* zinc-900 */
+  --color-headline: #f4f4f5;   /* zinc-100 */
+  --color-paragraph: #a1a1aa;  /* zinc-400 */
+  --color-secondary: #52525b;  /* zinc-600 */
+  --color-border: #27272a;     /* zinc-800 */
   
-  /* Grid: Subtle, low-noise slate */
-  --matrix-grid: #1e293b; 
-  
-  /* Dim Text: Readable slate-grey, not invisible grey */
-  --matrix-dim: #64748b; 
-  
-  /* Main Text: High-contrast crisp silver */
-  --matrix-text: #e2e8f0; 
-  
-  /* Accent: Electric Cyan (High visibility, distinct from text) */
-  --matrix-accent: #06b6d4; 
-  
-  /* Alert: Orange for critical data */
-  --matrix-alert: #f97316;
-  
-  /* Engineering lines */
-  --hairline: 1px;
+  /* Pastel Accents */
+  --color-highlight: #c084fc;    /* violet-400 */
+  --color-accent-blue: #7dd3fc;  /* sky-300 */
+  --color-accent-pink: #f9a8d4;  /* pink-300 */
+  --color-accent-green: #86efac; /* green-300 */
 }
 
-@font-face {
-  font-family: 'JetBrains Mono';
-  src: local('Courier New'), monospace;
+@theme {
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
 
 body {
-  background-color: var(--matrix-bg);
-  color: var(--matrix-text);
-  font-family: 'Courier New', Courier, monospace; /* Sticking to reliable system mono */
-  overflow-x: hidden;
-  cursor: crosshair;
-  text-transform: uppercase;
-  letter-spacing: 0.06em; /* Slightly wider for legibility */
-  line-height: 1.6; /* Increased breathing room */
-  min-height: 100dvh;
-  font-weight: 500; /* slightly bolder than standard */
+  background-color: var(--color-background);
+  color: var(--color-paragraph);
+  font-family: var(--font-sans);
+  min-height: 100vh;
+  margin: 0;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* --- CRT Scanline Effect (Optimized for Readability) --- */
-/* Much subtler. Adds texture without vibrating the screen. */
-body::after {
-  content: " ";
-  display: block;
-  position: fixed;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  right: 0;
-  background: 
-    linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), /* Reduced opacity */
-    linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03)); /* Reduced color shift */
-  z-index: 9999;
-  background-size: 100% 3px, 3px 100%;
-  pointer-events: none;
-}
-
-/* --- Selection --- */
-::selection {
-  background: var(--matrix-accent);
-  color: #000;
-}
-
-/* --- Blueprint Grid Background --- */
-.bg-grid {
-  /* Grid removed per request */
-  background-image: none;
-  background-size: auto;
-}
-
-/* --- Glitch Animation --- */
-@keyframes blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
-}
-.blink {
-  animation: blink 1.5s step-end infinite; /* Slower blink is less distracting */
-}
-
-/* --- Link Hover Effects --- */
-a {
-  text-decoration: none;
-  border-bottom: 1px solid transparent;
-  transition: all 0.15s ease-out;
-}
-a:hover {
-  color: var(--matrix-accent);
-  border-bottom-color: var(--matrix-accent);
-  text-shadow: 0 0 8px rgba(6, 182, 212, 0.4); /* Cyan glow */
-  background: rgba(6, 182, 212, 0.05);
-}
-
-/* Scrollbar */
+/* Scrollbar styling for a cleaner look */
 ::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: var(--matrix-bg);
-  border-left: 1px solid var(--matrix-grid);
+  background: var(--color-background);
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--matrix-dim);
-  border: 1px solid var(--matrix-accent);
+  background: var(--color-secondary);
+  border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--matrix-accent);
+  background: var(--color-paragraph);
+}
+
+::selection {
+  background-color: rgba(192, 132, 252, 0.3); /* Highlight color with opacity */
+  color: var(--color-headline);
+}
+
+/* Global link styles */
+a {
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.2s ease-in-out;
 }

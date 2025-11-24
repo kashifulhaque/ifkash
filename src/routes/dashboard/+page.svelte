@@ -268,59 +268,59 @@
 </svelte:head>
 
 <!-- Background with subtle vignette and grain -->
-<div class="relative isolate min-h-screen w-full overflow-hidden text-neutral-200" style="background-color: var(--color-background);">
+<div class="relative isolate min-h-screen w-full overflow-hidden text-[var(--color-headline)]" style="background-color: var(--color-background);">
   <!-- Next Namaaz badge (top-right) -->
   <div class="fixed right-4 top-4 z-50">
-    <div class="rounded-2xl border px-4 py-2 shadow-lg backdrop-blur" style="border-color: rgba(114, 117, 126, 0.3); background-color: rgba(114, 117, 126, 0.1); backdrop-filter: blur(12px);">
-      <div class="text-sm mb-1 tracking-wide" style="color: var(--color-secondary);">Next Namaaz</div>
+    <div class="rounded-xl border px-4 py-2 shadow-lg backdrop-blur bg-[var(--color-surface)]/60 border-[var(--color-border)]">
+      <div class="text-xs mb-1 tracking-wide text-[var(--color-secondary)]">Next Namaaz</div>
       <div class="flex items-baseline gap-2">
-        <span class="text-medium font-medium">{nextPrayerName}</span>
-        <span class="text-medium tabular-nums font-semibold">{nextPrayerTimeDisplay}</span>
-        <span class="text-sm opacity-70">({minutesRemaining} min)</span>
+        <span class="text-sm font-medium">{nextPrayerName}</span>
+        <span class="text-sm tabular-nums font-semibold">{nextPrayerTimeDisplay}</span>
+        <span class="text-xs opacity-70">({minutesRemaining} min)</span>
       </div>
     </div>
   </div>
 
 <!-- Center content -->
   <main class="relative mx-auto flex min-h-screen max-w-7xl flex-col items-center justify-center px-6 text-center">
-    <h1 class="select-none font-light tracking-wide clock-font" style="font-size:clamp(3rem,14vw,11rem); line-height:0.95;">
+    <h1 class="select-none font-light tracking-wide clock-font text-[var(--color-headline)]" style="font-size:clamp(3rem,14vw,11rem); line-height:0.95;">
       {formatTime(now)}
     </h1>
-    <p class="mt-3 text-balance text-lg text-neutral-400 sm:text-xl">
+    <p class="mt-3 text-balance text-lg text-[var(--color-paragraph)] sm:text-xl">
       {formatDate(now)}
     </p>
   </main>
 
   <!-- Weather in corner -->
   {#if showWeather}
-    <aside class="pointer-events-auto absolute bottom-6 right-6 rounded-2xl border border-neutral-800/80 bg-neutral-900/30 px-4 py-3 backdrop-blur-sm">
+    <aside class="pointer-events-auto absolute bottom-6 right-6 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)]/30 px-4 py-3 backdrop-blur-sm">
       {#if weather.tempC !== null}
         <div class="flex items-center gap-3">
           <div class="text-3xl font-light leading-none">{Math.round(weather.tempC)}°C</div>
-          <div class="text-sm text-neutral-400 leading-tight">
+          <div class="text-sm text-[var(--color-paragraph)] leading-tight">
             <div>{weather.description}</div>
             {#if weather.maxC !== null && weather.minC !== null}
-              <div class="mt-0.5 text-xs text-neutral-500">
+              <div class="mt-0.5 text-xs text-[var(--color-secondary)]">
                 H {Math.round(weather.maxC)}° • L {Math.round(weather.minC)}°
               </div>
             {/if}
           </div>
         </div>
       {:else}
-        <div class="text-sm text-neutral-500">{weatherError ?? 'Loading weather…'}</div>
+        <div class="text-sm text-[var(--color-secondary)]">{weatherError ?? 'Loading weather…'}</div>
       {/if}
     </aside>
   {/if}
 
   <!-- F1 in left corner -->
   {#if showF1 && !f1Loading && nextGP}
-    <aside class="pointer-events-auto absolute bottom-6 left-6 rounded-2xl border border-neutral-800/80 bg-neutral-900/30 px-4 py-3 backdrop-blur-sm max-w-sm">
+    <aside class="pointer-events-auto absolute bottom-6 left-6 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)]/30 px-4 py-3 backdrop-blur-sm max-w-sm">
       <div class="space-y-2.5 text-sm">
         <!-- Next GP -->
-        <div class="border-b border-neutral-800/50 pb-2.5">
-          <div class="text-xs text-neutral-500 mb-1">Next GP</div>
+        <div class="border-b border-[var(--color-border)]/50 pb-2.5">
+          <div class="text-xs text-[var(--color-secondary)] mb-1">Next GP</div>
           <div class="font-light text-base">{nextGP.name}</div>
-          <div class="text-neutral-400 text-xs mt-0.5">
+          <div class="text-[var(--color-paragraph)] text-xs mt-0.5">
             Race: {nextGP.raceTime} • Quali: {nextGP.qualiTime}
           </div>
         </div>
@@ -328,8 +328,8 @@
         <!-- Last GP Podium -->
         {#if lastGP}
           <div>
-            <div class="text-xs text-neutral-500 mb-1">Last GP: {lastGP.name}</div>
-            <div class="text-neutral-400 text-xs">
+            <div class="text-xs text-[var(--color-secondary)] mb-1">Last GP: {lastGP.name}</div>
+            <div class="text-[var(--color-paragraph)] text-xs">
               🥇 {lastGP.podium[0]} • 🥈 {lastGP.podium[1]} • 🥉 {lastGP.podium[2]}
             </div>
           </div>
@@ -358,9 +358,4 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
-  .grain-overlay {
-    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='2'/></filter><rect width='120' height='120' filter='url(%23n)' opacity='0.6'/></svg>");
-    background-repeat: repeat;
-    background-size: 120px 120px;
-  }
 </style>

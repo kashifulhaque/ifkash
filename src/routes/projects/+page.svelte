@@ -48,61 +48,38 @@
   ];
 </script>
 
-<div class="min-h-screen selection:text-white" style="background-color: var(--color-background); color: var(--color-paragraph);">
-  <div class="mx-auto max-w-3xl px-5 sm:px-6 pb-24">
-    <!-- Header -->
-    <header class="sticky top-0 z-30 -mx-5 sm:-mx-6 backdrop-blur" style="backdrop-filter: blur(12px); background-color: rgba(22, 22, 26, 0.6);">
-      <div class="mx-auto max-w-3xl px-5 sm:px-6">
-        <nav class="flex items-center justify-between py-4">
-          <a href="/" class="font-semibold tracking-tight" style="color: var(--color-headline);">ifkash.dev</a>
-          <a href="/" class="rounded-full px-3 py-1 text-sm focus:outline-none transition-colors" style="color: var(--color-paragraph);" onmouseover="this.style.backgroundColor='rgba(127, 90, 240, 0.1)'" onmouseout="this.style.backgroundColor='transparent'">Home</a>
-        </nav>
-      </div>
-      <div class="h-px w-full" style="background: linear-gradient(to right, transparent, var(--color-secondary), transparent);"></div>
-    </header>
+<div class="max-w-3xl mx-auto">
+  <!-- Title -->
+  <section class="mb-12" aria-labelledby="projects-title">
+    <h1 id="projects-title" class="text-3xl font-bold tracking-tight text-[var(--color-headline)]">Projects</h1>
+    <p class="mt-2 text-lg text-[var(--color-paragraph)]">A few things I've built or am actively shaping.</p>
+  </section>
 
-    <!-- Title -->
-    <section class="pt-14 sm:pt-20" aria-labelledby="projects-title">
-      <h1 id="projects-title" class="text-3xl sm:text-4xl font-semibold leading-tight tracking-tight" style="color: var(--color-headline);">Projects</h1>
-      <p class="mt-2 max-w-2xl" style="color: var(--color-paragraph);">A few things I've built or am actively shaping.</p>
-    </section>
+  <!-- Projects grid -->
+  <section class="grid gap-6">
+    {#each projects as p}
+      <article class="p-6 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] hover:border-[var(--color-secondary)] transition-all">
+        <header class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+          <h2 class="text-xl font-semibold text-[var(--color-headline)]">{p.title}</h2>
+          {#if p.links && p.links.length}
+            <div class="flex flex-wrap gap-2">
+              {#each p.links as link}
+                <a href={link.url} target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 px-3 py-1 text-xs font-medium rounded-full bg-[var(--color-background)] text-[var(--color-paragraph)] border border-[var(--color-border)] hover:text-[var(--color-headline)] hover:border-[var(--color-highlight)] transition-colors">
+                  {link.text}
+                </a>
+              {/each}
+            </div>
+          {/if}
+        </header>
 
-    <!-- Projects grid -->
-    <section class="mt-8 grid gap-4">
-      {#each projects as p}
-        <article class="group rounded-2xl border p-5 focus:outline-none transition-colors" style="border-color: var(--color-secondary); background-color: rgba(114, 117, 126, 0.1);" onmouseover="this.style.borderColor='var(--color-highlight)'; this.style.backgroundColor='rgba(127, 90, 240, 0.1)'" onmouseout="this.style.borderColor='var(--color-secondary)'; this.style.backgroundColor='rgba(114, 117, 126, 0.1)'">
-          <header class="flex items-start justify-between gap-3">
-            <h2 class="text-lg font-medium" style="color: var(--color-headline);">{p.title}</h2>
-            {#if p.links && p.links.length}
-              <div class="shrink-0 flex flex-wrap gap-2">
-                {#each p.links as link}
-                  <a href={link.url} target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs transition-colors" style="border-color: var(--color-secondary); background-color: rgba(114, 117, 126, 0.1); color: var(--color-paragraph);" onmouseover="this.style.borderColor='var(--color-highlight)'; this.style.backgroundColor='rgba(127, 90, 240, 0.1)'" onmouseout="this.style.borderColor='var(--color-secondary)'; this.style.backgroundColor='rgba(114, 117, 126, 0.1)'">
-                    <span>{link.text}</span>
-                    <span aria-hidden="true">↗</span>
-                  </a>
-                {/each}
-              </div>
-            {/if}
-          </header>
-
-          <div class="mt-2 text-xs" style="color: var(--color-paragraph);">
-            {#if p.htmlDescription}
-              <div class="prose prose-invert prose-neutral max-w-none prose-a:underline">{@html p.htmlDescription}</div>
-            {:else if p.description}
-              <p>{p.description}</p>
-            {/if}
-          </div>
-        </article>
-      {/each}
-    </section>
-
-    <!-- Footer -->
-    <footer class="mt-16">
-      <div class="h-px w-full" style="background: linear-gradient(to right, transparent, var(--color-secondary), transparent);"></div>
-      <div class="mt-6 flex flex-wrap items-center justify-between gap-3 text-sm" style="color: var(--color-secondary);">
-        <a class="transition-colors" onmouseover="this.style.color='var(--color-paragraph)'" onmouseout="this.style.color='var(--color-secondary)'" href="/">Back to home</a>
-        <div style="color: var(--color-secondary);">© {new Date().getFullYear()} Kashif</div>
-      </div>
-    </footer>
-  </div>
+        <div class="text-sm leading-relaxed text-[var(--color-paragraph)]">
+          {#if p.htmlDescription}
+            <div class="prose prose-invert max-w-none">{@html p.htmlDescription}</div>
+          {:else if p.description}
+            <p>{p.description}</p>
+          {/if}
+        </div>
+      </article>
+    {/each}
+  </section>
 </div>

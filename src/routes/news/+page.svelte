@@ -53,73 +53,52 @@
   }
 </script>
 
-<div class="min-h-screen selection:text-white" style="background-color: var(--color-background); color: var(--color-paragraph);">
-  <div class="mx-auto max-w-3xl px-5 sm:px-6 pb-24">
-    <!-- Header -->
-    <header class="sticky top-0 z-30 -mx-5 sm:-mx-6 backdrop-blur" style="backdrop-filter: blur(12px); background-color: rgba(22, 22, 26, 0.6);">
-      <div class="mx-auto max-w-3xl px-5 sm:px-6">
-        <nav class="flex items-center justify-between py-4">
-          <a href="/" class="font-semibold tracking-tight" style="color: var(--color-headline);">ifkash.dev</a>
-          <a href="/" class="rounded-full px-3 py-1 text-sm hover:bg-neutral-800/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-600">Home</a>
-        </nav>
-      </div>
-      <div class="h-px w-full bg-gradient-to-r from-transparent via-neutral-800 to-transparent"></div>
-    </header>
+<div class="max-w-3xl mx-auto">
+  <!-- Title -->
+  <section class="mb-12" aria-labelledby="news-title">
+    <h1 id="news-title" class="text-3xl font-bold tracking-tight text-[var(--color-headline)]">Hacker News</h1>
+    <p class="mt-2 text-lg text-[var(--color-paragraph)]">A slice of what’s buzzing in tech right now.</p>
+  </section>
 
-    <!-- Title -->
-    <section class="pt-14 sm:pt-20" aria-labelledby="news-title">
-      <h1 id="news-title" class="text-3xl sm:text-4xl font-semibold leading-tight tracking-tight text-neutral-100">
-        Hacker News Top Stories
-      </h1>
-      <p class="mt-2 text-neutral-400">A slice of what’s buzzing in tech right now.</p>
-    </section>
-
-    <!-- Content -->
-    {#if isLoading}
-      <div class="mt-8 grid gap-3">
-        {#each Array(8) as _}
-          <div class="animate-pulse rounded-xl border border-neutral-900 bg-neutral-900/40 p-4">
-            <div class="h-5 w-2/3 rounded bg-neutral-800/60"></div>
-            <div class="mt-2 h-4 w-1/2 rounded bg-neutral-800/60"></div>
+  <!-- Content -->
+  {#if isLoading}
+    <div class="space-y-4">
+      {#each Array(6) as _}
+        <div class="animate-pulse p-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)]">
+          <div class="h-5 w-3/4 bg-[var(--color-border)] rounded mb-2"></div>
+          <div class="h-4 w-1/3 bg-[var(--color-border)] rounded"></div>
+        </div>
+      {/each}
+    </div>
+  {:else if error}
+    <div class="p-4 rounded-xl bg-red-900/10 border border-red-900/20 text-red-400 text-sm">{error}</div>
+  {:else if stories.length === 0}
+    <div class="text-[var(--color-paragraph)]">No stories found.</div>
+  {:else}
+    <div class="space-y-4">
+      {#each stories as story (story.id)}
+        <article class="p-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] hover:border-[var(--color-secondary)] transition-colors">
+          <h2 class="text-lg font-medium text-[var(--color-headline)] mb-2">
+            <a href={story.url} target="_blank" rel="noopener noreferrer" class="hover:text-[var(--color-highlight)] transition-colors">
+              {story.title}
+            </a>
+          </h2>
+          <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[var(--color-secondary)]">
+            <span>{story.score} points by {story.by}</span>
+            <span>•</span>
+            <span>{formatDate(story.time)}</span>
+            <span>•</span>
+            <a
+              href={`https://news.ycombinator.com/item?id=${story.id}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="hover:text-[var(--color-headline)] hover:underline"
+            >
+              Discuss ↗
+            </a>
           </div>
-        {/each}
-      </div>
-    {:else if error}
-      <div class="mt-8 rounded-xl border border-neutral-800 bg-neutral-900/60 p-4 text-sm text-red-300">{error}</div>
-    {:else if stories.length === 0}
-      <div class="mt-8 rounded-xl border border-neutral-800 bg-neutral-900/60 p-4 text-sm text-neutral-300">No stories found.</div>
-    {:else}
-      <ol class="mt-8 space-y-5">
-        {#each stories as story (story.id)}
-          <li>
-            <article class="group rounded-2xl border border-neutral-800 bg-neutral-900/60 p-5 hover:border-neutral-700 hover:bg-neutral-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-600">
-              <h2 class="text-lg font-medium text-neutral-100 group-hover:underline">
-                <a href={story.url} target="_blank" rel="noopener noreferrer">{story.title}</a>
-              </h2>
-              <p class="mt-1 text-sm text-neutral-400">
-                {story.score} points by {story.by} · {formatDate(story.time)} ·
-                <a
-                  href={`https://news.ycombinator.com/item?id=${story.id}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="hover:underline text-neutral-300"
-                >
-                  HN discussion ↗
-                </a>
-              </p>
-            </article>
-          </li>
-        {/each}
-      </ol>
-    {/if}
-
-    <!-- Footer -->
-    <footer class="mt-16">
-      <div class="h-px w-full bg-gradient-to-r from-transparent via-neutral-800 to-transparent"></div>
-      <div class="mt-6 flex flex-wrap items-center justify-between gap-3 text-sm text-neutral-500">
-        <a class="hover:text-neutral-300" href="/">Back to home</a>
-        <div class="text-neutral-600">© {new Date().getFullYear()} Kashif</div>
-      </div>
-    </footer>
-  </div>
+        </article>
+      {/each}
+    </div>
+  {/if}
 </div>

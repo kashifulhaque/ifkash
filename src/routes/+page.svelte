@@ -1,125 +1,72 @@
-<script>
-  // Data visualization logic
-</script>
-
 <svelte:head>
-  <title>KASHIF</title>
-  <meta name="description" content="System Interface for Kashif. MLE at Wand AI.">
+  <title>Kashif — Applied ML Engineer</title>
+  <meta name="description" content="Personal website of Kashiful Haque, Applied ML Engineer.">
 </svelte:head>
 
-<section class="grid grid-cols-1 lg:grid-cols-12 gap-4 mb-12">
-  
-  <div class="lg:col-span-5 border border-[var(--matrix-dim)] bg-[rgba(2,6,23,0.8)] flex flex-col items-center justify-center p-8 relative overflow-hidden">
-    <div class="absolute inset-0 bg-[linear-gradient(transparent_50%,rgba(6,182,212,0.05)_50%)] bg-[length:100%_4px] pointer-events-none"></div>
-    
-    <pre class="text-[9px] sm:text-[11px] leading-[10px] sm:leading-[12px] text-[var(--matrix-accent)] font-black select-none text-center z-10">
-      ▄▄▄█████▓ ██▓███   ▄▄▄       ██▓    
-      ▓  ██▒ ▓▒▓██░  ██▒▒████▄    ▓██▒    
-      ▒ ▓██░ ▒░▓██░ ██▓▒▒██  ▀█▄  ▒██░    
-      ░ ▓██▓ ░ ▒██▄█▓▒ ▒░██▄▄▄▄██ ▒██░    
-        ▒██▒ ░ ▒██▒ ░  ░ ▓█   ▓██▒░██████▒
-        ▒ ░░   ▒▓▒░ ░  ░ ▒▒   ▓▒█░░ ▒░▓  ░
-          ░    ░▒ ░       ▒   ▒▒ ░░ ░ ▒  ░
-        ░      ░░         ░   ▒     ░ ░   
-               ░              ░  ░    ░  ░
-    </pre>
-    
-    <div class="mt-8 text-center z-10 border-t border-[var(--matrix-dim)] pt-4 w-full">
-      <div class="text-xs text-[var(--matrix-text)] font-bold tracking-widest mb-1">APPLIED ML ENGINEER</div>
-    </div>
-  </div>
-
-  <div class="lg:col-span-7 bg-[rgba(2,6,23,0.8)] border border-[var(--matrix-dim)] p-6 md:p-8 flex flex-col justify-between">
-    <div>
-      
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4 text-sm font-mono mb-8">
-        <div class="flex flex-col">
-          <span class="text-[var(--matrix-dim)] text-[10px] mb-1">SUBJECT_NAME</span>
-          <span class="text-[var(--matrix-text)] font-bold border-l-2 border-[var(--matrix-dim)] pl-3">KASHIFUL HAQUE</span>
-        </div>
-        <div class="flex flex-col">
-          <span class="text-[var(--matrix-dim)] text-[10px] mb-1">CURRENT_ASSIGNMENT</span>
-          <span class="text-[var(--matrix-text)] font-bold border-l-2 border-[var(--matrix-dim)] pl-3">WAND AI (PALO ALTO)</span>
-        </div>
-        <div class="flex flex-col">
-          <span class="text-[var(--matrix-dim)] text-[10px] mb-1">PRIMARY_STACK</span>
-          <span class="text-[var(--matrix-text)] font-bold border-l-2 border-[var(--matrix-dim)] pl-3">PYTHON, C++, RUST</span>
-        </div>
-        <div class="flex flex-col">
-          <span class="text-[var(--matrix-dim)] text-[10px] mb-1">ORIGIN_DATA</span>
-          <span class="text-[var(--matrix-text)] font-bold border-l-2 border-[var(--matrix-dim)] pl-3">IIT MADRAS</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="border border-[var(--matrix-dim)] bg-[var(--matrix-grid)] p-4">
-      <div class="flex justify-between items-center mb-2 border-b border-[var(--matrix-dim)] pb-2">
-        <span class="text-[10px] font-bold text-[var(--matrix-accent)]"></span>
-        <span class="text-[10px] text-[var(--matrix-dim)]">READ_ONLY</span>
-      </div>
-      <p class="text-sm md:text-small leading-relaxed text-[var(--matrix-text)]">
-        I design robust systems and ship thoughtful tools. Currently optimizing LLM inference and bridging models with production infrastructure.
-      </p>
-    </div>
-  </div>
+<section class="mb-16">
+  <h1 class="text-4xl font-bold tracking-tight text-[var(--color-headline)] mb-4">
+    Hi, I'm Kashif.
+  </h1>
+  <p class="text-lg text-[var(--color-paragraph)] leading-relaxed max-w-2xl">
+    I'm an Applied ML Engineer based in Palo Alto and Bangalore. I build robust systems and ship thoughtful tools, currently optimizing LLM inference and bridging models with production infrastructure at <a href="https://wand.ai" target="_blank" class="text-[var(--color-headline)] hover:text-[var(--color-highlight)] underline decoration-[var(--color-secondary)] underline-offset-4 decoration-1 transition-all">Wand AI</a>.
+  </p>
 </section>
 
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+<section class="grid grid-cols-1 md:grid-cols-2 gap-4">
   
-  <a href="/work" class="group block bg-[rgba(2,6,23,0.6)] border border-[var(--matrix-dim)] p-5 hover:border-[var(--matrix-accent)] transition-all hover:bg-[rgba(6,182,212,0.05)] relative overflow-hidden">
-    <div class="absolute top-0 right-0 bg-[var(--matrix-dim)] text-[var(--matrix-bg)] text-[9px] font-bold px-1 py-0.5 group-hover:bg-[var(--matrix-accent)] transition-colors">
-      DIR_01
+  <a href="/work" class="card group">
+    <div class="flex justify-between items-center mb-2">
+      <h3 class="text-lg font-semibold text-[var(--color-headline)] group-hover:text-[var(--color-highlight)] transition-colors">Work</h3>
+      <span class="text-[var(--color-secondary)] text-sm">→</span>
     </div>
-    <h3 class="text-xl font-black mb-3 text-[var(--matrix-text)] group-hover:text-[var(--matrix-accent)]">
-      WORK_EXP
-    </h3>
-    <ul class="text-xs text-[var(--matrix-dim)] space-y-1 font-mono">
-      <li>> LOAD WAND_AI...</li>
-      <li>> LOAD AMEX...</li>
-      <li>> LOAD FIERY...</li>
-    </ul>
+    <p class="text-sm text-[var(--color-paragraph)]">
+      Experience at Wand AI, American Express, and Fiery.
+    </p>
   </a>
 
-  <a href="/projects" class="group block bg-[rgba(2,6,23,0.6)] border border-[var(--matrix-dim)] p-5 hover:border-[var(--matrix-accent)] transition-all hover:bg-[rgba(6,182,212,0.05)] relative overflow-hidden">
-    <div class="absolute top-0 right-0 bg-[var(--matrix-dim)] text-[var(--matrix-bg)] text-[9px] font-bold px-1 py-0.5 group-hover:bg-[var(--matrix-accent)] transition-colors">
-      DIR_02
+  <a href="/projects" class="card group">
+    <div class="flex justify-between items-center mb-2">
+      <h3 class="text-lg font-semibold text-[var(--color-headline)] group-hover:text-[var(--color-highlight)] transition-colors">Projects</h3>
+      <span class="text-[var(--color-secondary)] text-sm">→</span>
     </div>
-    <h3 class="text-xl font-black mb-3 text-[var(--matrix-text)] group-hover:text-[var(--matrix-accent)]">
-      PROJECTS
-    </h3>
-    <ul class="text-xs text-[var(--matrix-dim)] space-y-1 font-mono">
-      <li>> BOO_BOT</li>
-      <li>> NOPOKEDB</li>
-      <li>> SMOLTORCH</li>
-    </ul>
+    <p class="text-sm text-[var(--color-paragraph)]">
+      Smoltorch, Boo Bot, NoPokeDB, and more.
+    </p>
   </a>
 
-  <a href="/leetcode" class="group block bg-[rgba(2,6,23,0.6)] border border-[var(--matrix-dim)] p-5 hover:border-[var(--matrix-accent)] transition-all hover:bg-[rgba(6,182,212,0.05)] relative overflow-hidden">
-    <div class="absolute top-0 right-0 bg-[var(--matrix-dim)] text-[var(--matrix-bg)] text-[9px] font-bold px-1 py-0.5 group-hover:bg-[var(--matrix-accent)] transition-colors">
-      DIR_03
+  <a href="/leetcode" class="card group">
+    <div class="flex justify-between items-center mb-2">
+      <h3 class="text-lg font-semibold text-[var(--color-headline)] group-hover:text-[var(--color-highlight)] transition-colors">LeetCode</h3>
+      <span class="text-[var(--color-secondary)] text-sm">→</span>
     </div>
-    <h3 class="text-xl font-black mb-3 text-[var(--matrix-text)] group-hover:text-[var(--matrix-accent)]">
-      LEETCODE
-    </h3>
-    <ul class="text-xs text-[var(--matrix-dim)] space-y-1 font-mono">
-      <li>> LEETCODE STATS</li>
-      <li>> RECENT SOLVES</li>
-      <li>> PROBLEM BREAKDOWN</li>
-    </ul>
+    <p class="text-sm text-[var(--color-paragraph)]">
+      Problem solving stats and recent submissions.
+    </p>
   </a>
 
-  <a href="/news" class="group block bg-[rgba(2,6,23,0.6)] border border-[var(--matrix-dim)] p-5 hover:border-[var(--matrix-accent)] transition-all hover:bg-[rgba(6,182,212,0.05)] relative overflow-hidden">
-    <div class="absolute top-0 right-0 bg-[var(--matrix-dim)] text-[var(--matrix-bg)] text-[9px] font-bold px-1 py-0.5 group-hover:bg-[var(--matrix-accent)] transition-colors">
-      DIR_04
+  <a href="/news" class="card group">
+    <div class="flex justify-between items-center mb-2">
+      <h3 class="text-lg font-semibold text-[var(--color-headline)] group-hover:text-[var(--color-highlight)] transition-colors">Tech News</h3>
+      <span class="text-[var(--color-secondary)] text-sm">→</span>
     </div>
-    <h3 class="text-xl font-black mb-3 text-[var(--matrix-text)] group-hover:text-[var(--matrix-accent)]">
-      TECH NEWS
-    </h3>
-    <ul class="text-xs text-[var(--matrix-dim)] space-y-1 font-mono">
-      <li>> HACKERNEWS FEED</li>
-      <li>> LATEST HEADLINES</li>
-      <li>> SYNC COMPLETE</li>
-    </ul>
+    <p class="text-sm text-[var(--color-paragraph)]">
+      Latest top stories from Hacker News.
+    </p>
   </a>
 
-</div>
+</section>
+
+<style>
+  .card {
+    display: block;
+    padding: 1.5rem;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 0.75rem;
+    transition: all 0.2s ease;
+  }
+  .card:hover {
+    border-color: var(--color-secondary);
+    transform: translateY(-2px);
+  }
+</style>

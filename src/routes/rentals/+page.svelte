@@ -57,98 +57,78 @@
   }
 </script>
 
-<div class="min-h-screen selection:text-white" style="background-color: var(--color-background); color: var(--color-paragraph);">
-  <div class="mx-auto max-w-4xl px-5 sm:px-6 pb-24">
-    <header class="sticky top-0 z-30 -mx-5 sm:-mx-6 backdrop-blur" style="backdrop-filter: blur(12px); background-color: rgba(22,22,26,0.6);">
-      <div class="mx-auto max-w-4xl px-5 sm:px-6">
-        <nav class="flex items-center justify-between py-4">
-          <a href="/" class="font-semibold tracking-tight" style="color: var(--color-headline);">ifkash.dev</a>
-          <a href="/" class="rounded-full px-3 py-1 text-sm hover:bg-neutral-800/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-600">Home</a>
-        </nav>
-      </div>
-      <div class="h-px w-full bg-gradient-to-r from-transparent via-neutral-800 to-transparent"></div>
-    </header>
+<div class="max-w-3xl mx-auto">
+  <!-- Title -->
+  <section class="mb-12" aria-labelledby="rentals-title">
+    <h1 id="rentals-title" class="text-3xl font-bold tracking-tight text-[var(--color-headline)]">Rentals</h1>
+    <p class="mt-2 text-lg text-[var(--color-paragraph)]">Latest full 3BHK rentals from r/bangalorerentals (last 2 weeks).</p>
+  </section>
 
-    <section class="pt-10 sm:pt-14" aria-labelledby="rentals-title">
-      <h1 id="rentals-title" class="text-3xl sm:text-4xl font-semibold leading-tight tracking-tight text-neutral-100">
-        Latest full 3BHK rentals — r/bangalorerentals
-      </h1>
-      <p class="mt-2 text-neutral-400">Showing posts from the last two weeks that look like whole 3BHKs for rent.</p>
-    </section>
+  {#if isLoading}
+    <div class="space-y-4">
+      {#each Array(4) as _}
+        <div class="animate-pulse p-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)]">
+          <div class="h-6 w-3/4 bg-[var(--color-border)] rounded mb-3"></div>
+          <div class="h-4 w-full bg-[var(--color-border)] rounded mb-2"></div>
+          <div class="h-4 w-5/6 bg-[var(--color-border)] rounded"></div>
+        </div>
+      {/each}
+    </div>
+  {:else if error}
+    <div class="p-4 rounded-xl bg-red-900/10 border border-red-900/20 text-red-400 text-sm">{error}</div>
+  {:else if posts.length === 0}
+    <div class="text-[var(--color-paragraph)]">No matching 3BHK rentals found in the last two weeks.</div>
+  {:else}
+    <div class="space-y-6">
+      {#each posts as post (post.id)}
+        <article class="p-5 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] hover:border-[var(--color-secondary)] transition-colors">
+          <div class="space-y-4">
+            <h2 class="text-lg font-medium text-[var(--color-headline)]">
+              <a href={post.url} target="_blank" rel="noopener noreferrer" class="hover:text-[var(--color-highlight)] transition-colors">
+                {post.title}
+              </a>
+            </h2>
 
-    {#if isLoading}
-      <div class="mt-8 grid gap-3">
-        {#each Array(4) as _}
-          <div class="animate-pulse rounded-2xl border border-neutral-900 bg-neutral-900/40 p-4">
-            <div class="h-6 w-3/4 rounded bg-neutral-800/60"></div>
-            <div class="mt-3 h-4 w-full rounded bg-neutral-800/60"></div>
-            <div class="mt-2 h-4 w-5/6 rounded bg-neutral-800/60"></div>
-          </div>
-        {/each}
-      </div>
-    {:else if error}
-      <div class="mt-8 rounded-xl border border-neutral-800 bg-neutral-900/60 p-4 text-sm text-red-300">{error}</div>
-    {:else if posts.length === 0}
-      <div class="mt-8 rounded-xl border border-neutral-800 bg-neutral-900/60 p-4 text-sm text-neutral-300">No matching 3BHK rentals found in the last two weeks.</div>
-    {:else}
-      <ol class="mt-8 space-y-6">
-        {#each posts as post (post.id)}
-          <li>
-            <article class="group rounded-2xl border border-neutral-800 bg-neutral-900/60 p-4 hover:border-neutral-700 hover:bg-neutral-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-600">
-              <div class="space-y-3">
-                <h2 class="text-lg font-medium text-neutral-100 group-hover:underline">
-                  <a href={post.url} target="_blank" rel="noopener noreferrer">{post.title}</a>
-                </h2>
+            <p class="text-sm text-[var(--color-paragraph)] whitespace-pre-line">
+              {post.selftext ? (post.selftext.length > 280 ? post.selftext.slice(0, 280) + '…' : post.selftext) : ''}
+            </p>
 
-                <p class="text-sm text-neutral-400">
-                  {post.selftext ? (post.selftext.length > 280 ? post.selftext.slice(0, 280) + '…' : post.selftext) : ''}
-                </p>
+            <div class="flex flex-wrap gap-2 text-xs font-mono">
+              {#if post.rent}
+                <div class="px-2 py-1 rounded bg-[var(--color-background)] border border-[var(--color-border)] text-[var(--color-secondary)]">Rent: <span class="text-[var(--color-headline)]">{post.rent}</span></div>
+              {/if}
+              {#if post.deposit}
+                <div class="px-2 py-1 rounded bg-[var(--color-background)] border border-[var(--color-border)] text-[var(--color-secondary)]">Deposit: <span class="text-[var(--color-headline)]">{post.deposit}</span></div>
+              {/if}
+              {#if post.location}
+                <div class="px-2 py-1 rounded bg-[var(--color-background)] border border-[var(--color-border)] text-[var(--color-secondary)]">Loc: <span class="text-[var(--color-headline)]">{post.location}</span></div>
+              {/if}
+              {#if post.landmark}
+                <div class="px-2 py-1 rounded bg-[var(--color-background)] border border-[var(--color-border)] text-[var(--color-secondary)]">Landmark: <span class="text-[var(--color-headline)]">{post.landmark}</span></div>
+              {/if}
+            </div>
 
-                <div class="flex flex-wrap gap-2 text-sm">
-                  {#if post.rent}
-                    <div class="rounded px-2 py-1 border border-neutral-800 text-neutral-200">Rent: <span class="font-semibold">{post.rent}</span></div>
-                  {/if}
-                  {#if post.deposit}
-                    <div class="rounded px-2 py-1 border border-neutral-800 text-neutral-200">Deposit: <span class="font-semibold">{post.deposit}</span></div>
-                  {/if}
-                  {#if post.location}
-                    <div class="rounded px-2 py-1 border border-neutral-800 text-neutral-200">Location: <span class="font-semibold">{post.location}</span></div>
-                  {/if}
-                  {#if post.landmark}
-                    <div class="rounded px-2 py-1 border border-neutral-800 text-neutral-200">Landmark: <span class="font-semibold">{post.landmark}</span></div>
-                  {/if}
+            {#if post.comments_summary}
+              <details class="text-sm text-[var(--color-secondary)]">
+                <summary class="cursor-pointer hover:text-[var(--color-paragraph)] transition-colors">Comments summary</summary>
+                <div class="mt-2 prose prose-sm max-w-none text-[var(--color-paragraph)] bg-[var(--color-background)] p-3 rounded border border-[var(--color-border)]">
+                  {post.comments_summary}
                 </div>
+              </details>
+            {/if}
 
-                {#if post.comments_summary}
-                  <details class="mt-2 text-sm text-neutral-400">
-                    <summary class="cursor-pointer">Comments summary</summary>
-                    <div class="mt-2 prose max-w-none text-neutral-300 whitespace-pre-wrap">{post.comments_summary}</div>
-                  </details>
-                {/if}
-
-                <p class="text-xs text-neutral-500">
-                  Posted: {formatDate(post.created_utc)} ·
-                  <a class="ml-1 hover:underline text-neutral-300" href={post.url} target="_blank" rel="noopener noreferrer">Open on Reddit ↗</a>
-                </p>
-              </div>
-            </article>
-          </li>
-        {/each}
-      </ol>
-    {/if}
-
-    <footer class="mt-14">
-      <div class="h-px w-full bg-gradient-to-r from-transparent via-neutral-800 to-transparent"></div>
-      <div class="mt-6 flex flex-wrap items-center justify-between gap-3 text-sm text-neutral-500">
-        <a class="hover:text-neutral-300" href="/">Back to home</a>
-        <div class="text-neutral-600">© {new Date().getFullYear()} Kashif</div>
-      </div>
-    </footer>
-  </div>
+            <div class="text-xs text-[var(--color-secondary)] flex items-center justify-between border-t border-[var(--color-border)] pt-3">
+              <span>Posted {formatDate(post.created_utc)}</span>
+              <a class="hover:text-[var(--color-headline)] transition-colors" href={post.url} target="_blank" rel="noopener noreferrer">Open on Reddit ↗</a>
+            </div>
+          </div>
+        </article>
+      {/each}
+    </div>
+  {/if}
 </div>
 
 <style>
   /* small styling tweaks */
   .prose { color: var(--color-paragraph); }
-  article:focus { outline: 2px solid rgba(255,255,255,0.06); }
 </style>

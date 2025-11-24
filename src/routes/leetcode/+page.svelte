@@ -93,110 +93,86 @@
   }
 </script>
 
-<div class="min-h-screen selection:text-white" style="background-color: var(--color-background); color: var(--color-paragraph);">
-  <div class="mx-auto max-w-3xl px-5 sm:px-6 pb-24">
-    <!-- Header -->
-    <header class="sticky top-0 z-30 -mx-5 sm:-mx-6 backdrop-blur" style="backdrop-filter: blur(12px); background-color: rgba(22, 22, 26, 0.6);">
-      <div class="mx-auto max-w-3xl px-5 sm:px-6">
-        <nav class="flex items-center justify-between py-4">
-          <a href="/" class="font-semibold tracking-tight text-neutral-100">ifkash.dev</a>
-          <a href="/" class="rounded-full px-3 py-1 text-sm hover:bg-neutral-800/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-600">Home</a>
-        </nav>
+<div class="max-w-3xl mx-auto">
+  <!-- Title -->
+  <section class="mb-12" aria-labelledby="lc-title">
+    <div class="flex flex-col sm:flex-row sm:items-baseline justify-between gap-4">
+      <div>
+        <h1 id="lc-title" class="text-3xl font-bold tracking-tight text-[var(--color-headline)]">Leetcode</h1>
+        <p class="mt-2 text-lg text-[var(--color-paragraph)]">Recent ACs and problem totals.</p>
       </div>
-      <div class="h-px w-full bg-gradient-to-r from-transparent via-neutral-800 to-transparent"></div>
-    </header>
+      <a href="https://leetcode.com/u/{username}" target="_blank" rel="noopener noreferrer" class="self-start text-sm px-3 py-1 rounded-full bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-paragraph)] hover:text-[var(--color-headline)] hover:border-[var(--color-highlight)] transition-colors">
+        @{username}
+      </a>
+    </div>
+  </section>
 
-    <!-- Title -->
-    <section class="pt-14 sm:pt-20" aria-labelledby="lc-title">
-      <div class="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 id="lc-title" class="text-3xl sm:text-4xl font-semibold leading-tight tracking-tight text-neutral-100">Leetcode</h1>
-          <p class="mt-2 text-neutral-400">
-            Recent ACs and problem totals.
-            <a href="https://leetcode.com/u/{username}" target="_blank" rel="noopener noreferrer" class="rounded-full border border-neutral-800 bg-neutral-900 px-2 py-0.5 text-xs text-neutral-300 hover:border-neutral-700 hover:bg-neutral-800 transition-colors">
-              @{username}
-            </a>
-          </p>
+  <!-- Stats Cards -->
+  <section class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-12">
+    {#if loadingStats}
+      {#each Array(3) as _}
+        <div class="animate-pulse p-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)]">
+          <div class="h-4 w-16 bg-[var(--color-border)] rounded mb-4"></div>
+          <div class="h-6 w-24 bg-[var(--color-border)] rounded"></div>
         </div>
-      </div>
-    </section>
-
-    <!-- Stats Cards -->
-    <section class="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-3">
-      {#if loadingStats}
-        {#each Array(3) as _}
-          <div class="animate-pulse rounded-2xl border border-neutral-900 bg-neutral-900/40 p-4">
-            <div class="h-5 w-24 rounded bg-neutral-800/60"></div>
-            <div class="mt-3 h-6 w-32 rounded bg-neutral-800/60"></div>
-            <div class="mt-4 h-2 w-full rounded bg-neutral-800/60"></div>
+      {/each}
+    {:else if errStats}
+      <div class="sm:col-span-3 p-4 rounded-xl bg-red-900/10 border border-red-900/20 text-red-400 text-sm">{errStats}</div>
+    {:else}
+      {#each difficulties as key}
+        <div class="p-5 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)]">
+          <div class="text-xs font-bold uppercase tracking-wider text-[var(--color-secondary)] mb-2">{key}</div>
+          <div class="text-2xl font-semibold text-[var(--color-headline)] mb-4">{stats[key].complete}<span class="text-sm text-[var(--color-secondary)] font-normal ml-1">/ {stats[key].total}</span></div>
+          <div class="h-1.5 w-full rounded-full bg-[var(--color-background)] overflow-hidden">
+            <div class="h-full rounded-full bg-[var(--color-highlight)] transition-all duration-500" style={`width:${pct(stats[key].complete, stats[key].total)}%`}></div>
           </div>
-        {/each}
-      {:else if errStats}
-        <div class="sm:col-span-3 rounded-2xl border border-neutral-800 bg-neutral-900/60 p-4 text-sm text-red-300">{errStats}</div>
-      {:else}
-        {#each difficulties as key}
-          <div class="rounded-2xl border border-neutral-800 bg-neutral-900/60 p-4">
-            <div class="text-xs uppercase tracking-wide text-neutral-500">{key}</div>
-            <div class="mt-1 text-lg font-medium text-neutral-100">{stats[key].complete}/{stats[key].total}</div>
-            <div class="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-neutral-800">
-              <div class="h-full rounded-full bg-neutral-200" style={`width:${pct(stats[key].complete, stats[key].total)}%`}></div>
-            </div>
-          </div>
-        {/each}
-      {/if}
-    </section>
-
-    <!-- Recent submissions -->
-    <section class="mt-8">
-      <div class="flex items-end justify-between">
-        <h2 class="text-xl font-semibold text-neutral-100">Recent AC Submissions</h2>
-        <span class="text-sm text-neutral-500">last {count}</span>
-      </div>
-
-      {#if loadingSubs}
-        <div class="mt-4 grid gap-2">
-          {#each Array(6) as _}
-            <div class="animate-pulse rounded-lg border border-neutral-900 bg-neutral-900/40 p-3">
-              <div class="h-4 w-24 rounded bg-neutral-800/60"></div>
-              <div class="mt-2 h-4 w-2/3 rounded bg-neutral-800/60"></div>
-            </div>
-          {/each}
         </div>
-      {:else if errSubs}
-        <div class="mt-4 rounded-xl border border-neutral-800 bg-neutral-900/60 p-4 text-sm text-red-300">{errSubs}</div>
-      {:else if recent.length === 0}
-        <div class="mt-4 rounded-xl border border-neutral-800 bg-neutral-900/60 p-4 text-sm text-neutral-300">No recent submissions.</div>
-      {:else}
-        <div class="mt-4 overflow-hidden rounded-2xl border border-neutral-800">
-          <table class="w-full text-sm">
-            <thead class="bg-neutral-900/60 text-neutral-400">
-              <tr>
-                <th class="px-4 py-3 text-left font-medium">Date</th>
-                <th class="px-4 py-3 text-left font-medium">Title</th>
+      {/each}
+    {/if}
+  </section>
+
+  <!-- Recent submissions -->
+  <section>
+    <div class="flex items-baseline justify-between mb-6">
+      <h2 class="text-xl font-semibold text-[var(--color-headline)]">Recent Submissions</h2>
+      <span class="text-sm text-[var(--color-secondary)]">last {count}</span>
+    </div>
+
+    {#if loadingSubs}
+      <div class="space-y-3">
+        {#each Array(5) as _}
+          <div class="animate-pulse h-10 w-full bg-[var(--color-surface)] rounded border border-[var(--color-border)]"></div>
+        {/each}
+      </div>
+    {:else if errSubs}
+      <div class="p-4 rounded-xl bg-red-900/10 border border-red-900/20 text-red-400 text-sm">{errSubs}</div>
+    {:else if recent.length === 0}
+      <div class="text-[var(--color-paragraph)]">No recent submissions.</div>
+    {:else}
+      <div class="rounded-xl border border-[var(--color-border)] overflow-hidden">
+        <table class="w-full text-sm text-left">
+          <thead class="bg-[var(--color-surface)] text-[var(--color-paragraph)] font-medium border-b border-[var(--color-border)]">
+            <tr>
+              <th class="px-6 py-3">Date</th>
+              <th class="px-6 py-3">Problem</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-[var(--color-border)]">
+            {#each recent as { id, title, titleSlug, timestamp }}
+              <tr class="hover:bg-[var(--color-surface)] transition-colors">
+                <td class="px-6 py-3 text-[var(--color-secondary)] whitespace-nowrap font-mono text-xs">
+                  {new Date(parseInt(timestamp) * 1000).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
+                </td>
+                <td class="px-6 py-3">
+                  <a href={`https://leetcode.com/problems/${titleSlug}/`} target="_blank" rel="noopener noreferrer" class="text-[var(--color-headline)] hover:text-[var(--color-highlight)] hover:underline decoration-1 underline-offset-2 transition-colors">
+                    {title}
+                  </a>
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {#each recent as { id, title, titleSlug, timestamp }}
-                <tr class="odd:bg-neutral-950 even:bg-neutral-900/40 hover:bg-neutral-900">
-                  <td class="px-4 py-2 text-neutral-400">{new Date(parseInt(timestamp) * 1000).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</td>
-                  <td class="px-4 py-2">
-                    <a href={`https://leetcode.com/problems/${titleSlug}/`} target="_blank" rel="noopener noreferrer" class="text-neutral-100 hover:underline">{title}</a>
-                  </td>
-                </tr>
-              {/each}
-            </tbody>
-          </table>
-        </div>
-      {/if}
-    </section>
-
-    <!-- Footer -->
-    <footer class="mt-16">
-      <div class="h-px w-full bg-gradient-to-r from-transparent via-neutral-800 to-transparent"></div>
-      <div class="mt-6 flex flex-wrap items-center justify-between gap-3 text-sm text-neutral-500">
-        <a class="hover:text-neutral-300" href="/">Back to home</a>
-        <div class="text-neutral-600">© {new Date().getFullYear()} Kashif</div>
+            {/each}
+          </tbody>
+        </table>
       </div>
-    </footer>
-  </div>
+    {/if}
+  </section>
 </div>

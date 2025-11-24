@@ -21,14 +21,13 @@
     <slot />
   </main>
 
-  <footer class="mt-24 pt-8 border-t border-[var(--color-border)] flex flex-col md:flex-row justify-between items-center text-xs text-[var(--color-secondary)] gap-4">
+  <footer class="mt-24 pt-8 border-t border-[var(--color-border)] flex flex-col md:flex-row justify-between items-center text-xs text-[var(--color-primary)] gap-4">
     <div class="flex gap-4">
       <span>&copy; {new Date().getFullYear()} Kashiful Haque</span>
     </div>
     <div class="flex gap-6 font-medium">
       <a href="https://github.com/kashifulhaque" target="_blank" rel="noopener noreferrer" class="hover:text-[var(--color-headline)] transition-colors">GitHub</a>
       <a href="https://linkedin.com/in/kashifulhaque" target="_blank" rel="noopener noreferrer" class="hover:text-[var(--color-headline)] transition-colors">LinkedIn</a>
-      <a href="/assets/Kashiful_Haque.pdf" target="_blank" rel="noopener noreferrer" class="hover:text-[var(--color-headline)] transition-colors">Resume</a>
     </div>
   </footer>
 

@@ -8,50 +8,17 @@
     Hi, I'm Kashif.
   </h1>
   <p class="text-lg text-[var(--color-paragraph)] leading-relaxed max-w-2xl">
-    I'm an Applied ML Engineer based in Palo Alto and Bangalore. I build robust systems and ship thoughtful tools, currently optimizing LLM inference and bridging models with production infrastructure at <a href="https://wand.ai" target="_blank" class="text-[var(--color-headline)] hover:text-[var(--color-highlight)] underline decoration-[var(--color-secondary)] underline-offset-4 decoration-1 transition-all">Wand AI</a>.
+    Systems-focused ML engineer with 3.5 YOE building numerical computing components, inference-optimized pipelines and agentic coding environments. I work at the intersection of ML systems, low-level frameworks and RL for code, designing execution sandboxes, structured task environments and deep-dive into unfamiliar codebases to build testable evals. Previously fine-tuned and deployed models and optimized inference systems org-wide.
   </p>
 </section>
 
 <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
   
-  <a href="/work" class="card group">
-    <div class="flex justify-between items-baseline mb-3">
-      <h3 class="text-lg font-semibold text-[var(--color-headline)] group-hover:text-[var(--color-highlight)] transition-colors">Work</h3>
+  <a href="/assets/Kashiful_Haque.pdf" class="card group">
+    <div class="flex justify-between items-baseline">
+      <h3 class="text-lg font-semibold text-[var(--color-headline)] group-hover:text-[var(--color-highlight)] transition-colors">Resume</h3>
       <span class="text-[var(--color-secondary)] text-sm transition-transform group-hover:translate-x-1">→</span>
     </div>
-    <p class="text-sm text-[var(--color-paragraph)]">
-      Experience at Wand AI, American Express, and Fiery.
-    </p>
-  </a>
-
-  <a href="/projects" class="card group">
-    <div class="flex justify-between items-baseline mb-3">
-      <h3 class="text-lg font-semibold text-[var(--color-headline)] group-hover:text-[var(--color-highlight)] transition-colors">Projects</h3>
-      <span class="text-[var(--color-secondary)] text-sm transition-transform group-hover:translate-x-1">→</span>
-    </div>
-    <p class="text-sm text-[var(--color-paragraph)]">
-      Smoltorch, Boo Bot, NoPokeDB, and more.
-    </p>
-  </a>
-
-  <a href="/leetcode" class="card group">
-    <div class="flex justify-between items-baseline mb-3">
-      <h3 class="text-lg font-semibold text-[var(--color-headline)] group-hover:text-[var(--color-highlight)] transition-colors">LeetCode</h3>
-      <span class="text-[var(--color-secondary)] text-sm transition-transform group-hover:translate-x-1">→</span>
-    </div>
-    <p class="text-sm text-[var(--color-paragraph)]">
-      Problem solving stats and recent submissions.
-    </p>
-  </a>
-
-  <a href="/news" class="card group">
-    <div class="flex justify-between items-baseline mb-3">
-      <h3 class="text-lg font-semibold text-[var(--color-headline)] group-hover:text-[var(--color-highlight)] transition-colors">Tech News</h3>
-      <span class="text-[var(--color-secondary)] text-sm transition-transform group-hover:translate-x-1">→</span>
-    </div>
-    <p class="text-sm text-[var(--color-paragraph)]">
-      Latest top stories from Hacker News.
-    </p>
   </a>
 
 </section>

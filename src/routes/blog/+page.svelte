@@ -107,12 +107,9 @@
             <h2 class="text-xl font-semibold text-[var(--color-headline)] group-hover:text-[var(--color-highlight)] transition-colors">
               {post.title}
             </h2>
-            <div class="text-xs font-mono text-[var(--color-secondary)] mb-1">
+            <div class="text-xs text-[var(--color-paragraph)] mb-1">
               {new Date(post.publishedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
             </div>
-            <p class="text-[var(--color-paragraph)] leading-relaxed line-clamp-2">
-              {post.brief}
-            </p>
           </article>
         </a>
       {/each}

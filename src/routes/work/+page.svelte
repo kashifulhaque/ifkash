@@ -81,18 +81,18 @@
 
         <div class="flex flex-col sm:flex-row sm:justify-between sm:items-baseline gap-1 mb-2">
           <h2 class="text-xl font-semibold text-[var(--color-headline)]">{work.role}</h2>
-          <span class="text-sm font-mono text-[var(--color-secondary)] whitespace-nowrap">{work.duration}</span>
+          <span class="text-sm text-[var(--color-paragraph)] whitespace-nowrap">{work.duration}</span>
         </div>
 
         <div class="text-[var(--color-paragraph)] mb-1">
           {#each work.companies as company, j (company.url)}
-            <a href={company.url} target="_blank" rel="noopener noreferrer" class="hover:text-[var(--color-highlight)] transition-colors inline-block border-b border-transparent hover:border-[var(--color-highlight)]">
+            <a href={company.url} target="_blank" rel="noopener noreferrer" class="hover:text-[var(--color-primary)] transition-colors inline-block border-b border-transparent hover:border-[var(--color-highlight)]">
               {company.name}
             </a>{j < work.companies.length - 1 ? ' ' : ''}
           {/each}
         </div>
 
-        <div class="text-sm text-[var(--color-secondary)] flex items-center gap-1">
+        <div class="text-sm text-[var(--color-paragraph)] flex items-center gap-1">
           <span>📍 {work.location}</span>
         </div>
       </div>

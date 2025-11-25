@@ -35,7 +35,7 @@ _Engineer III_ #h(1fr) 02/2025 -- 11/2025 \
 
 *#cardo[Fiery]* #h(1fr) _Bangalore_ \
 _Associate Software Engineer_ #h(1fr) 01/2023 — 02/2025 \
-- Fine-tuned Mistral-7B with QLoRA; instrumented memory usage, evaluated kernel bottlenecks, and integrated into a scalable RAG pipeline.
+- Fine-tuned Mistral-7B/Llama-8B with QLoRA; instrumented memory usage, evaluated kernel bottlenecks, and integrated into a scalable RAG pipeline.
 - Delivered high-throughput inference using vLLM with dynamic batching and quantized kernels, hitting sub-second p95 TTFT on T4 clusters.
 - Built Fiery Scribe, an NER-driven automation engine using a fine-tuned ModernBERT model; designed structured evaluation pipelines and test harnesses for model outputs.
 - Developed AskDB, an LLM→SQL agent system with programmatic query analysis, partial-plan evaluation, and structured error recovery.

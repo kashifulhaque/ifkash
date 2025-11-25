@@ -1,263 +1,215 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
 
-  // Props (optional): provide lat/lon to skip geolocation; set initial preferences
-  export let lat: number | null = null;
-  export let lon: number | null = null;
-  export let use24hDefault: boolean = false;
-  export let showSecondsDefault: boolean = false;
+  // --- Configuration ---
+  const REFRESH_WEATHER_MS = 30 * 60 * 1000; // 30 mins
+  const REFRESH_F1_MS = 60 * 60 * 1000;      // 1 hour
 
+  // --- State ---
   let now = new Date();
-  let timer: number;
+  let timeFormatter: Intl.DateTimeFormat;
+  let dateFormatter: Intl.DateTimeFormat;
+  
+  // Weather State
+  let weather = { temp: '--', min: '--', max: '--', desc: 'Loading...', iconCode: -1 };
+  let weatherError = '';
 
-  let use24h = use24hDefault;
-  let showSeconds = showSecondsDefault;
-  let showWeather = true;
-  let showF1 = true;
+  // F1 State
+  let f1 = {
+    loading: true,
+    next: null as any,
+    last: null as any
+  };
 
-  type Weather = { tempC: number | null; description: string | null; minC: number | null; maxC: number | null };
-  let weather: Weather = { tempC: null, description: null, minC: null, maxC: null };
-  let weatherError: string | null = null;
+  // Prayer State
+  let prayer = {
+    nextName: '--',
+    nextTime: '--',
+    countdown: 0, // minutes
+    loading: true
+  };
+
+  // Timers
+  let clockTimer: number;
   let weatherTimer: number;
+  let f1Timer: number;
+  let prayerTimer: number;
 
-  // F1 Data
-  let nextGP: any = null;
-  let lastGP: any = null;
-  let f1Loading = true;
-
-  const storageKey = 'minimal-clock-prefs-v1';
-  type Prefs = { use24h: boolean; showSeconds: boolean; showWeather: boolean; showF1: boolean };
-
-  function loadPrefs() {
-    try {
-      const raw = localStorage.getItem(storageKey);
-      if (raw) {
-        const p = JSON.parse(raw) as Prefs;
-        use24h = p.use24h ?? use24h;
-        showSeconds = p.showSeconds ?? showSeconds;
-        showWeather = p.showWeather ?? showWeather;
-        showF1 = p.showF1 ?? showF1;
-      }
-    } catch {}
-  }
-  function savePrefs() {
-    const p: Prefs = { use24h, showSeconds, showWeather, showF1 };
-    localStorage.setItem(storageKey, JSON.stringify(p));
-  }
-
+  // --- Helpers ---
   function pad(n: number) { return n < 10 ? `0${n}` : `${n}`; }
-
-  function formatTime(d: Date) {
-    let h = d.getHours();
-    const m = pad(d.getMinutes());
-    const s = pad(d.getSeconds());
-
-    if (!use24h) {
-      const ampm = h >= 12 ? 'PM' : 'AM';
-      h = h % 12 || 12;
-      return showSeconds ? `${h}:${m}:${s}${ampm}` : `${h}:${m}${ampm}`;
-    }
-    return showSeconds ? `${pad(h)}:${m}:${s}` : `${pad(h)}:${m}`;
+  
+  // Formatters (initialized on mount to ensure client-side execution)
+  function initFormatters() {
+    timeFormatter = new Intl.DateTimeFormat('default', { hour: 'numeric', minute: '2-digit', hour12: true });
+    dateFormatter = new Intl.DateTimeFormat('default', { weekday: 'long', month: 'long', day: 'numeric' });
   }
 
-  const dateFormatter = new Intl.DateTimeFormat(undefined, {
-    weekday: 'short', year: 'numeric', month: 'long', day: 'numeric'
-  });
-
-  function formatDate(d: Date) {
-    return dateFormatter.format(d);
+  // --- API 1: Location (The Driver) ---
+  async function getLoc(): Promise<{lat: number, lon: number}> {
+    return new Promise((resolve, reject) => {
+      if (!navigator.geolocation) reject('No Geo');
+      navigator.geolocation.getCurrentPosition(
+        (pos) => resolve({ lat: pos.coords.latitude, lon: pos.coords.longitude }),
+        (err) => reject(err),
+        { enableHighAccuracy: false, timeout: 10000 }
+      );
+    });
   }
 
-  async function loadWeather() {
+  // --- API 2: Weather (Open-Meteo) ---
+  async function fetchWeather() {
     try {
-      let la = lat, lo = lon;
-      if (la == null || lo == null) {
-        const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
-          if (!navigator.geolocation) return reject(new Error('no geo'));
-          navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 8000 });
-        });
-        la = pos.coords.latitude; lo = pos.coords.longitude;
-      }
-      if (la == null || lo == null) throw new Error('missing coords');
-
-      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'auto';
-      const url =
-        `https://api.open-meteo.com/v1/forecast?latitude=${la}&longitude=${lo}` +
-        `&current_weather=true&daily=temperature_2m_max,temperature_2m_min&timezone=${encodeURIComponent(tz)}`;
-
+      const { lat, lon } = await getLoc();
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&daily=temperature_2m_max,temperature_2m_min&timezone=${encodeURIComponent(tz)}`;
+      
       const res = await fetch(url);
-      if (!res.ok) throw new Error('weather http ' + res.status);
       const data = await res.json();
 
-      const cw = data.current_weather;
-      if (!cw) throw new Error('no current_weather');
+      if (!data.current_weather) throw new Error('No Data');
 
-      weather.tempC = cw.temperature ?? null;
-      weather.description = codeToDesc(cw.weathercode);
-
-      const d = data.daily ?? {};
-      const maxArr = d.temperature_2m_max ?? [];
-      const minArr = d.temperature_2m_min ?? [];
-      weather.maxC = (maxArr.length ? maxArr[0] : null);
-      weather.minC = (minArr.length ? minArr[0] : null);
-
-      weatherError = null;
+      weather = {
+        temp: Math.round(data.current_weather.temperature).toString(),
+        desc: codeToDesc(data.current_weather.weathercode),
+        min: data.daily?.temperature_2m_min?.[0] ? Math.round(data.daily.temperature_2m_min[0]).toString() : '--',
+        max: data.daily?.temperature_2m_max?.[0] ? Math.round(data.daily.temperature_2m_max[0]).toString() : '--',
+        iconCode: data.current_weather.weathercode
+      };
+      weatherError = '';
     } catch (e) {
       weatherError = 'Weather unavailable';
     }
   }
 
-  async function loadF1Data() {
+  // --- API 3: F1 (Ergast/Jolpi) ---
+  async function fetchF1() {
     try {
-      // Fetch next race
-      const nextRaceRes = await fetch('https://api.jolpi.ca/ergast/f1/current/next.json');
-      const nextRaceData = await nextRaceRes.json();
-      const race = nextRaceData.MRData.RaceTable.Races[0];
+      // 1. Next Race
+      const nextRes = await fetch('https://api.jolpi.ca/ergast/f1/current/next.json');
+      const nextData = await nextRes.json();
+      const nextRace = nextData.MRData.RaceTable.Races[0];
 
-      nextGP = {
-        name: race.raceName,
-        location: race.Circuit.Location.country,
-        raceTime: convertToIST(race.date, race.time),
-        qualiTime: convertToIST(race.Qualifying.date, race.Qualifying.time)
+      // 2. Last Race (Results)
+      const lastRes = await fetch('https://api.jolpi.ca/ergast/f1/current/last/results.json');
+      const lastData = await lastRes.json();
+      const lastRace = lastData.MRData.RaceTable.Races[0];
+
+      // Format times to LOCAL device time
+      const formatLocal = (dateStr: string, timeStr: string) => {
+        const d = new Date(`${dateStr}T${timeStr}`);
+        return d.toLocaleString('default', { 
+            weekday: 'short', hour: 'numeric', minute: '2-digit' 
+        });
       };
 
-      // Fetch last race result
-      const lastRaceRes = await fetch('https://api.jolpi.ca/ergast/f1/current/last/results.json');
-      const lastRaceData = await lastRaceRes.json();
-      const lastRaceInfo = lastRaceData.MRData.RaceTable.Races[0];
-
-      lastGP = {
-        name: lastRaceInfo.raceName,
-        podium: lastRaceInfo.Results.slice(0, 3).map((result: any) =>
-          `${result.Driver.familyName}`
-        )
+      f1.next = {
+        name: nextRace.raceName,
+        round: nextRace.round,
+        country: nextRace.Circuit.Location.country,
+        raceTime: formatLocal(nextRace.date, nextRace.time),
+        qualiTime: nextRace.Qualifying ? formatLocal(nextRace.Qualifying.date, nextRace.Qualifying.time) : 'TBC'
       };
 
-      f1Loading = false;
-    } catch (error) {
-      console.error('F1 data error:', error);
-      f1Loading = false;
+      f1.last = {
+        name: lastRace.raceName,
+        podium: lastRace.Results.slice(0, 3).map((r: any) => ({
+            pos: r.position,
+            driver: r.Driver.code || r.Driver.familyName, // Use code (e.g. VER) if avail
+            team: r.Constructor.name
+        }))
+      };
+      
+      f1.loading = false;
+    } catch (e) {
+      console.error('F1 Error', e);
     }
   }
 
-  function convertToIST(date: string, time: string) {
-    const utcDate = new Date(date + 'T' + time);
-    return utcDate.toLocaleString('en-IN', {
-      timeZone: 'Asia/Kolkata',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  }
-
-  function codeToDesc(code: number): string {
-    const map: Record<number, string> = {
-      0: 'Clear', 1: 'Mainly clear', 2: 'Partly cloudy', 3: 'Overcast',
-      45: 'Fog', 48: 'Depositing rime fog',
-      51: 'Light drizzle', 53: 'Drizzle', 55: 'Dense drizzle',
-      61: 'Light rain', 63: 'Rain', 65: 'Heavy rain',
-      71: 'Light snow', 73: 'Snow', 75: 'Heavy snow',
-      95: 'Thunderstorm'
-    };
-    return map[code] ?? '—';
-  }
-
-  let prayerInterval: any;
-  onMount(() => {
-    updatePrayerTimings();
-    prayerInterval = setInterval(updatePrayerTimings, 30000);
-    loadPrefs();
-    timer = window.setInterval(() => (now = new Date()), 1000);
-    loadWeather();
-    loadF1Data();
-    weatherTimer = window.setInterval(() => loadWeather(), 30 * 60 * 1000);
-  });
-  onDestroy(() => {
-    try { clearInterval(prayerInterval); } catch {}
-    clearInterval(timer);
-    clearInterval(weatherTimer);
-  });
-
-  // --- Namaaz / Prayer timings ---
-  let nextPrayerName: string = '';
-  let nextPrayerTimeDisplay: string = '';
-  let minutesRemaining: number = 0;
-
-  async function updatePrayerTimings() {
+  // --- API 4: Prayer (Aladhan) ---
+  async function fetchPrayer() {
     try {
-      // geolocate or use provided props
-      let la = lat, lo = lon;
-      if (la == null || lo == null) {
-        try {
-          const pos: GeolocationPosition = await new Promise((resolve, reject) => {
-            if (!navigator.geolocation) return reject(new Error('Geolocation not available'));
-            navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 8000 });
-          }) as GeolocationPosition;
-          la = pos.coords.latitude; lo = pos.coords.longitude;
-        } catch (e) {
-          // fallback: Bangalore coords
-          la = 12.9716; lo = 77.5946;
-        }
-      }
-
+      const { lat, lon } = await getLoc();
       const today = new Date();
-      const yyyy = today.getFullYear();
-      const mm = String(today.getMonth() + 1).padStart(2, '0');
-      const dd = String(today.getDate()).padStart(2, '0');
+      
+      // Fetch today and tomorrow to handle "Next is tomorrow morning" case
+      const fetchDate = (d: Date) => 
+        fetch(`https://api.aladhan.com/v1/timings/${d.getDate()}-${d.getMonth()+1}-${d.getFullYear()}?latitude=${lat}&longitude=${lon}&method=3`).then(r => r.json());
 
-      const buildUrl = (dateStr: string) =>
-        `https://api.aladhan.com/v1/timings/${dateStr}?latitude=${la}&longitude=${lo}&method=3`; // MWL
+      const tmrw = new Date(today); tmrw.setDate(tmrw.getDate() + 1);
+      const [todayData, tmrwData] = await Promise.all([fetchDate(today), fetchDate(tmrw)]);
 
-      const [res1, res2] = await Promise.all([
-        fetch(buildUrl(`${dd}-${mm}-${yyyy}`)),
-        fetch(buildUrl(new Date(today.getTime()+86400000).toLocaleDateString('en-GB').split('/').reverse().join('-')))
-      ]);
-      const j1 = await res1.json();
-      const j2 = await res2.json();
-      const t1 = j1?.data?.timings || {};
-      const t2 = j2?.data?.timings || {};
+      const t1 = todayData.data.timings;
+      const t2 = tmrwData.data.timings;
 
-      function parseTime(hm: string, baseDate: Date) {
-        if (!hm) return null;
-        const [h, m] = hm.split(':').map(Number);
-        const d = new Date(baseDate);
-        d.setHours(h, m, 0, 0);
-        return d;
-      }
+      const prayers = [
+        { name: 'Fajr', time: t1.Fajr, date: today },
+        { name: 'Dhuhr', time: t1.Dhuhr, date: today },
+        { name: 'Asr', time: t1.Asr, date: today },
+        { name: 'Maghrib', time: t1.Maghrib, date: today },
+        { name: 'Isha', time: t1.Isha, date: today },
+        { name: 'Fajr', time: t2.Fajr, date: tmrw } // Tomorrow's Fajr
+      ];
 
-      const nowLocal = new Date();
+      let nextP = null;
+      const nowMs = new Date().getTime();
 
-      const order = [
-        ['Fajr', t1.Fajr],
-        ['Sunrise', t1.Sunrise],
-        ['Dhuhr', t1.Dhuhr],
-        ['Asr', t1.Asr],
-        ['Maghrib', t1.Maghrib],
-        ['Isha', t1.Isha],
-      ] as const;
-
-      let upcoming: {name:string, time: Date, display:string} | null = null;
-      for (const [name, str] of order) {
-        const dt = parseTime(String(str || ''), today);
-        if (dt && dt.getTime() > nowLocal.getTime()) {
-          upcoming = { name, time: dt, display: String(str) };
+      for (const p of prayers) {
+        const [h, m] = p.time.split(':');
+        const pDate = new Date(p.date);
+        pDate.setHours(parseInt(h), parseInt(m), 0);
+        
+        if (pDate.getTime() > nowMs) {
+          nextP = { ...p, fullDate: pDate };
           break;
         }
       }
-      if (!upcoming) {
-        // take Fajr from tomorrow
-        const t = parseTime(String(t2.Fajr || ''), new Date(today.getTime()+86400000));
-        if (t) upcoming = { name: 'Fajr', time: t, display: String(t2.Fajr) };
+
+      if (nextP) {
+        prayer.nextName = nextP.name;
+        // Format: 5:30 PM
+        prayer.nextTime = nextP.fullDate.toLocaleTimeString('default', { hour: 'numeric', minute:'2-digit'});
+        // Diff in minutes
+        prayer.countdown = Math.ceil((nextP.fullDate.getTime() - nowMs) / 60000);
+        prayer.loading = false;
       }
-      if (upcoming) {
-        nextPrayerName = upcoming.name;
-        nextPrayerTimeDisplay = formatTime(upcoming.time);
-        minutesRemaining = Math.max(0, Math.round((upcoming.time.getTime() - nowLocal.getTime())/60000));
-      }
-    } catch (err) {
-      console.error('prayer timings error', err);
-    }
+
+    } catch (e) { console.error("Prayer error", e); }
+  }
+
+  // --- Lifecycle ---
+  onMount(() => {
+    initFormatters();
+    
+    // Initial Fetches
+    fetchWeather();
+    fetchF1();
+    fetchPrayer();
+
+    // Intervals
+    clockTimer = window.setInterval(() => now = new Date(), 1000);
+    weatherTimer = window.setInterval(fetchWeather, REFRESH_WEATHER_MS);
+    f1Timer = window.setInterval(fetchF1, REFRESH_F1_MS);
+    
+    // Update prayer calculation every minute (doesn't need full API fetch usually, but this is safer for day rollovers)
+    prayerTimer = window.setInterval(fetchPrayer, 60 * 1000); 
+  });
+
+  onDestroy(() => {
+    clearInterval(clockTimer);
+    clearInterval(weatherTimer);
+    clearInterval(f1Timer);
+    clearInterval(prayerTimer);
+  });
+
+  // --- Utils ---
+  function codeToDesc(code: number): string {
+    const map: Record<number, string> = {
+      0: 'Clear Sky', 1: 'Mainly Clear', 2: 'Partly Cloudy', 3: 'Overcast',
+      45: 'Fog', 48: 'Fog', 51: 'Drizzle', 53: 'Drizzle', 55: 'Drizzle',
+      61: 'Rain', 63: 'Rain', 65: 'Rain', 71: 'Snow', 73: 'Snow', 75: 'Snow',
+      95: 'Thunderstorm'
+    };
+    return map[code] ?? 'Unknown';
   }
 </script>
 
@@ -265,74 +217,122 @@
   <title>Dashboard</title>
 </svelte:head>
 
-<!-- Background with subtle vignette and grain -->
-<div class="relative isolate min-h-screen w-full overflow-hidden text-[var(--color-headline)]" style="background-color: var(--color-background);">
-  <!-- Next Namaaz badge (top-right) -->
-  <div class="fixed right-4 top-4 z-50">
-    <div class="rounded-xl border px-4 py-2 shadow-lg backdrop-blur bg-[var(--color-surface)]/60 border-[var(--color-border)]">
-      <div class="text-xs mb-1 tracking-wide text-[var(--color-secondary)]">Next Namaaz</div>
-      <div class="flex items-baseline gap-2">
-        <span class="text-sm font-medium">{nextPrayerName}</span>
-        <span class="text-sm tabular-nums font-semibold">{nextPrayerTimeDisplay}</span>
-        <span class="text-xs opacity-70">({minutesRemaining} min)</span>
-      </div>
-    </div>
-  </div>
-
-<!-- Center content -->
-  <main class="relative mx-auto flex min-h-screen max-w-7xl flex-col items-center justify-center px-6 text-center">
-    <h1 class="select-none font-light tracking-wide text-[var(--color-headline)]" style="font-size:clamp(3rem,14vw,11rem); line-height:0.95;">
-      {formatTime(now)}
-    </h1>
-    <p class="mt-3 text-balance text-lg text-[var(--color-paragraph)] sm:text-xl">
-      {formatDate(now)}
-    </p>
-  </main>
-
-  <!-- Weather in corner -->
-  {#if showWeather}
-    <aside class="pointer-events-auto absolute bottom-6 right-6 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)]/30 px-4 py-3 backdrop-blur-sm">
-      {#if weather.tempC !== null}
-        <div class="flex items-center gap-3">
-          <div class="text-3xl font-light leading-none">{Math.round(weather.tempC)}°C</div>
-          <div class="text-sm text-[var(--color-paragraph)] leading-tight">
-            <div>{weather.description}</div>
-            {#if weather.maxC !== null && weather.minC !== null}
-              <div class="mt-0.5 text-xs text-[var(--color-secondary)]">
-                H {Math.round(weather.maxC)}° • L {Math.round(weather.minC)}°
-              </div>
-            {/if}
-          </div>
-        </div>
-      {:else}
-        <div class="text-sm text-[var(--color-secondary)]">{weatherError ?? 'Loading weather…'}</div>
-      {/if}
-    </aside>
-  {/if}
-
-  <!-- F1 in left corner -->
-  {#if showF1 && !f1Loading && nextGP}
-    <aside class="pointer-events-auto absolute bottom-6 left-6 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)]/30 px-4 py-3 backdrop-blur-sm max-w-sm">
-      <div class="space-y-2.5 text-sm">
-        <!-- Next GP -->
-        <div class="border-b border-[var(--color-border)]/50 pb-2.5">
-          <div class="text-xs text-[var(--color-secondary)] mb-1">Next GP</div>
-          <div class="font-light text-base">{nextGP.name}</div>
-          <div class="text-[var(--color-paragraph)] text-xs mt-0.5">
-            Race: {nextGP.raceTime} • Quali: {nextGP.qualiTime}
-          </div>
-        </div>
-
-        <!-- Last GP Podium -->
-        {#if lastGP}
-          <div>
-            <div class="text-xs text-[var(--color-secondary)] mb-1">Last GP: {lastGP.name}</div>
-            <div class="text-[var(--color-paragraph)] text-xs">
-              🥇 {lastGP.podium[0]} • 🥈 {lastGP.podium[1]} • 🥉 {lastGP.podium[2]}
-            </div>
-          </div>
+<div class="relative min-h-screen w-full overflow-hidden bg-[var(--color-background)] text-[var(--color-headline)] selection:bg-[var(--color-secondary)] selection:text-white font-sans">
+  
+  <main class="absolute inset-0 flex flex-col items-center justify-center z-10 pointer-events-none">
+    <div class="flex flex-col items-center select-none">
+      <h1 class="font-extralight tracking-tighter tabular-nums leading-none" 
+          style="font-size: clamp(4rem, 20vw, 14rem);">
+        {#if timeFormatter}
+          {timeFormatter.format(now).replace(/\s[AP]M/, '')} {:else}
+          --:--
+        {/if}
+      </h1>
+      
+      <div class="mt-4 flex items-center gap-3 text-[var(--color-paragraph)] text-lg sm:text-2xl font-light tracking-wide uppercase opacity-80">
+        {#if dateFormatter}
+          <span>{dateFormatter.format(now)}</span>
         {/if}
       </div>
-    </aside>
-  {/if}
+    </div>
+  </main>
+
+  <div class="absolute inset-0 p-6 sm:p-10 grid grid-cols-1 sm:grid-cols-2 grid-rows-2 gap-4 pointer-events-none z-20">
+    
+    <div></div>
+
+    <div class="flex justify-end items-start">
+      <div class="pointer-events-auto backdrop-blur-md bg-[var(--color-surface)]/40 border border-[var(--color-border)] rounded-2xl p-5 min-w-[200px] shadow-sm transition-opacity duration-500" class:opacity-0={prayer.loading}>
+        <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-bold uppercase tracking-wider text-[var(--color-secondary)]">Next Prayer</span>
+            <span class="text-xs font-mono opacity-60">{prayer.countdown}m left</span>
+        </div>
+        <div class="flex flex-col">
+            <span class="text-3xl font-light">{prayer.nextName}</span>
+            <span class="text-xl opacity-80">{prayer.nextTime}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex justify-start items-end">
+        {#if !f1.loading && f1.next}
+        <div class="pointer-events-auto backdrop-blur-md bg-[var(--color-surface)]/40 border border-[var(--color-border)] rounded-2xl p-5 max-w-sm w-full shadow-sm">
+            
+            <div class="flex items-center gap-2 mb-4 border-b border-[var(--color-border)] pb-2">
+                <span class="text-xs font-bold uppercase tracking-wider text-[var(--color-secondary)]">Formula 1</span>
+            </div>
+
+            <div class="flex flex-col gap-4">
+                <div>
+                    <div class="flex justify-between items-baseline mb-1">
+                        <span class="text-sm font-semibold text-[var(--color-headline)]">{f1.next.country} GP</span>
+                        <span class="text-[10px] uppercase opacity-50">Round {f1.next.round}</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 text-xs text-[var(--color-paragraph)]">
+                        <div class="bg-[var(--color-background)]/50 p-2 rounded">
+                            <span class="block opacity-50 text-[9px] uppercase">Quali</span>
+                            {f1.next.qualiTime}
+                        </div>
+                        <div class="bg-[var(--color-background)]/50 p-2 rounded">
+                            <span class="block opacity-50 text-[9px] uppercase">Race</span>
+                            {f1.next.raceTime}
+                        </div>
+                    </div>
+                </div>
+
+                {#if f1.last}
+                <div class="pt-2 border-t border-[var(--color-border)] border-dashed">
+                    <span class="text-[10px] uppercase opacity-50 block mb-2">Last: {f1.last.name}</span>
+                    <div class="flex justify-between items-end gap-1">
+                        {#each f1.last.podium as p}
+                            <div class="flex flex-col items-center w-full">
+                                <span class="text-xs font-bold" class:text-yellow-500={p.pos==='1'} class:text-gray-400={p.pos==='2'} class:text-orange-700={p.pos==='3'}>
+                                    {p.pos}
+                                </span>
+                                <span class="text-xs font-mono">{p.driver}</span>
+                            </div>
+                        {/each}
+                    </div>
+                </div>
+                {/if}
+            </div>
+        </div>
+        {/if}
+    </div>
+
+    <div class="flex justify-end items-end">
+      {#if !weatherError}
+        <div class="pointer-events-auto backdrop-blur-md bg-[var(--color-surface)]/40 border border-[var(--color-border)] rounded-2xl p-5 text-right min-w-[180px] shadow-sm">
+            <div class="text-5xl font-extralight tracking-tighter mb-1">{weather.temp}°</div>
+            <div class="text-sm font-medium text-[var(--color-secondary)] mb-3">{weather.desc}</div>
+            
+            <div class="flex justify-end gap-3 text-xs text-[var(--color-paragraph)] font-mono border-t border-[var(--color-border)] pt-2">
+                <span class="flex flex-col items-center">
+                    <span class="opacity-50 text-[9px]">MIN</span>
+                    <span>{weather.min}°</span>
+                </span>
+                <span class="flex flex-col items-center">
+                    <span class="opacity-50 text-[9px]">MAX</span>
+                    <span>{weather.max}°</span>
+                </span>
+            </div>
+        </div>
+      {:else}
+        <div class="text-xs text-red-400">{weatherError}</div>
+      {/if}
+    </div>
+
+  </div>
 </div>
+
+<style>
+    /* Ensure Tailwind/Variables work if not globally defined */
+    :global(:root) {
+        --color-background: #0f172a; /* Slate 900 */
+        --color-surface: #1e293b;    /* Slate 800 */
+        --color-border: #334155;     /* Slate 700 */
+        --color-headline: #f8fafc;   /* Slate 50 */
+        --color-paragraph: #94a3b8;  /* Slate 400 */
+        --color-secondary: #38bdf8;  /* Sky 400 */
+    }
+</style>

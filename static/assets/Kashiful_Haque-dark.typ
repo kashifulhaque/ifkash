@@ -23,11 +23,11 @@ Systems-focused ML engineer with 3.5 YOE building numerical computing components
 
 = #cardo[work experience]
 
-*#cardo[Wand AI (via Nityo)]* #h(1fr) _Palo Alto (Remote)_ \
+*#cardo[wand.ai]* #h(1fr) _Palo Alto (Remote)_ \
 _Backend AI/ML Engineer_ #h(1fr) 11/2025 -- Present \
 - Building internal ML systems and execution-layer infra; focusing on agent tooling and structured task pipelines. \
 
-*#cardo[American Express (via IntraEdge)]* #h(1fr) _Bangalore_ \
+*#cardo[American Express]* #h(1fr) _Bangalore_ \
 _Engineer III_ #h(1fr) 02/2025 -- 11/2025 \
 - Architected a distributed low-latency streaming pipeline with backpressure control and token-stream handling; deployed on RedHat OpenShift using Helm/Jenkins.
 - Rebuilt search infra for 200k+ Confluence documents using hybrid semantic + trigram retrieval; improved p95 latency from 30s → $<$2s.

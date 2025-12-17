@@ -1,19 +1,33 @@
 @import "tailwindcss";
 
 :root {
-  /* Pastel Dark Theme Palette (Zinc-based with Pastel Accents) */
-  --color-background: #09090b; /* zinc-950 */
-  --color-surface: #18181b;    /* zinc-900 */
-  --color-headline: #f4f4f5;   /* zinc-100 */
-  --color-paragraph: #a1a1aa;  /* zinc-400 */
-  --color-secondary: #52525b;  /* zinc-600 */
-  --color-border: #27272a;     /* zinc-800 */
-  
-  /* Pastel Accents */
-  --color-highlight: #c084fc;    /* violet-400 */
-  --color-accent-blue: #7dd3fc;  /* sky-300 */
-  --color-accent-pink: #f9a8d4;  /* pink-300 */
-  --color-accent-green: #86efac; /* green-300 */
+  /* Matte Dark Theme Palette (Neutral/Grayscale) */
+  --color-background: #0a0a0a;
+  /* neutral-950 */
+  --color-surface: #171717;
+  /* neutral-900 */
+  --color-headline: #ededed;
+  /* neutral-200 */
+  --color-paragraph: #a3a3a3;
+  /* neutral-400 */
+  --color-secondary: #525252;
+  /* neutral-600 */
+  --color-border: #262626;
+  /* neutral-800 */
+
+  /* Monochrome Accents */
+  --color-highlight: #ffffff;
+  /* pure white */
+  --color-accent-blue: #d4d4d4;
+  /* neutral-300 */
+  --color-accent-pink: #e5e5e5;
+  /* neutral-200 */
+  --color-accent-green: #f5f5f5;
+  /* neutral-100 */
+
+  /* Define primary if used */
+  --color-primary: #fafafa;
+  /* same as headline */
 }
 
 @theme {
@@ -36,20 +50,24 @@ body {
   width: 8px;
   height: 8px;
 }
+
 ::-webkit-scrollbar-track {
   background: var(--color-background);
 }
+
 ::-webkit-scrollbar-thumb {
   background: var(--color-secondary);
   border-radius: 4px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-paragraph);
 }
 
 ::selection {
-  background-color: rgba(192, 132, 252, 0.3); /* Highlight color with opacity */
-  color: var(--color-headline);
+  background-color: rgba(255, 255, 255, 0.2);
+  /* White with opacity */
+  color: var(--color-background);
 }
 
 /* Global link styles */

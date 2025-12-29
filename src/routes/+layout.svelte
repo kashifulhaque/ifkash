@@ -188,11 +188,11 @@
     margin-right: 8px;
   }
   .header_section{
-    height:100vh;
-  }
-  @media screen and (max-width:500px){
-  .header_section{
     height:30vh;
+  }
+  @media screen and (min-width:1024px){
+  .header_section{
+    height:100vh;
   }
   
 }

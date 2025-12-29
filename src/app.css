@@ -73,12 +73,7 @@ body {
 }
 
 /* Global link styles */
-@media screen and (min-width:500px){
-  .header_section{
-    height:20vh;
-  }
-  
-}
+
 a {
   text-decoration: none;
   color: inherit;

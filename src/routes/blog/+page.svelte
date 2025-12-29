@@ -103,7 +103,7 @@
           target="_blank"
           class="block group"
         >
-          <article class="flex flex-col gap-2">
+          <article class="flex flex-col gap-2 p-6 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] hover:border-[var(--color-secondary)] transition-all">
             <h2 class="text-xl font-semibold text-[var(--color-headline)] group-hover:text-[var(--color-highlight)] transition-colors">
               {post.title}
             </h2>

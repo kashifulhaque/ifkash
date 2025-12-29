@@ -15,7 +15,7 @@
       <div class="lg:grid lg:grid-cols-[1fr_2fr] lg:gap-12 xl:gap-24">
         <!-- Sidebar (Fixed on Desktop) -->
         <header
-          class="lg:py-24 py-12 px-6 lg:px-0 lg:sticky lg:top-0 lg:max-h-screen lg:flex lg:flex-col lg:justify-between"
+          class=" header_section lg:py-24 py-12 px-6 lg:px-0 lg:sticky lg:top-0 lg:max-h-screen lg:flex lg:flex-col lg:justify-between"
         >
           <div>
             <h1 class="text-4xl font-bold tracking-tighter sm:text-5xl mb-3">
@@ -72,7 +72,7 @@
           </div>
 
           <div
-            class="hidden lg:flex gap-5 text-sm font-medium text-[var(--color-paragraph)]"
+            class="footer_section hidden lg:flex gap-5 text-sm font-medium text-[var(--color-paragraph)]"
           >
             <a
               href="https://github.com/kashifulhaque"
@@ -105,7 +105,7 @@
         <main class="lg:py-24 px-6 lg:px-0 pb-12">
           <!-- Mobile Nav -->
           <nav
-            class="lg:hidden mb-12 flex items-center gap-6 text-sm font-bold uppercase tracking-widest text-[var(--color-headline)]"
+            class="lg:hidden mb-12 flex items-center gap-3 text-sm font-bold uppercase tracking-widest text-[var(--color-headline)]"
           >
             <a
               href="/work"
@@ -133,7 +133,7 @@
 
           <!-- Mobile Footer -->
           <footer
-            class="mt-16 pt-8 border-t border-[var(--color-border)] lg:hidden flex gap-6 text-sm font-medium text-[var(--color-paragraph)]"
+            class="mt-16 pt-8 border-t border-[var(--color-border)] lg:hidden flex gap-2 text-sm font-medium text-[var(--color-paragraph)]"
           >
             <a
               href="https://github.com/kashifulhaque"
@@ -186,5 +186,18 @@
     background: currentColor;
     border-radius: 50%;
     margin-right: 8px;
+  }
+  .header_section{
+    height:100vh;
+  }
+  @media screen and (max-width:500px){
+  .header_section{
+    height:30vh;
+  }
+  
+}
+  .footer_section{
+    position: absolute;
+    bottom:10%;
   }
 </style>

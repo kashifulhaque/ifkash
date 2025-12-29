@@ -2,27 +2,29 @@
 
 :root {
   /* Matte Dark Theme Palette (Neutral/Grayscale) */
-  --color-background: #0a0a0a;
+  --color-background:linear-gradient(145deg, #070707, #0f0f0f, #181818);
+
+
   /* neutral-950 */
   --color-surface: #171717;
   /* neutral-900 */
-  --color-headline: #ededed;
+  --color-headline: #e6e6e6;
   /* neutral-200 */
-  --color-paragraph: #a3a3a3;
+  --color-paragraph: #b3b3b3;
   /* neutral-400 */
-  --color-secondary: #525252;
+  --color-secondary: #8a8a8a;
   /* neutral-600 */
   --color-border: #262626;
   /* neutral-800 */
 
   /* Monochrome Accents */
-  --color-highlight: #ffffff;
+  --color-highlight: #e6e6e6;
   /* pure white */
-  --color-accent-blue: #d4d4d4;
+  --color-accent-blue: #b3b3b3;
   /* neutral-300 */
-  --color-accent-pink: #e5e5e5;
+  --color-accent-pink: #8a8a8a;
   /* neutral-200 */
-  --color-accent-green: #f5f5f5;
+  --color-accent-green: #262626;
   /* neutral-100 */
 
   /* Define primary if used */
@@ -35,7 +37,7 @@
 }
 
 body {
-  background-color: var(--color-background);
+  background: var(--color-background);
   color: var(--color-paragraph);
   font-family: var(--font-sans);
   min-height: 100vh;
@@ -71,6 +73,12 @@ body {
 }
 
 /* Global link styles */
+@media screen and (min-width:500px){
+  .header_section{
+    height:20vh;
+  }
+  
+}
 a {
   text-decoration: none;
   color: inherit;

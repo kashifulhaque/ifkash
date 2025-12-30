@@ -76,17 +76,22 @@
 </script>
 
 <div class="monaco-wrapper">
+	<div bind:this={editorContainer} class="monaco-editor-container" />
+	
 	{#if loading}
-		<div class="loading">Loading editor...</div>
+		<div class="overlay loading">
+			<div class="message">Loading editor...</div>
+		</div>
 	{:else if error}
-		<div class="error">{error}</div>
-	{:else}
-		<div bind:this={editorContainer} class="monaco-editor-container" />
+		<div class="overlay error">
+			<div class="message">{error}</div>
+		</div>
 	{/if}
 </div>
 
 <style>
 	.monaco-wrapper {
+		position: relative;
 		width: 100%;
 		height: 100%;
 		min-height: 400px;
@@ -98,19 +103,25 @@
 		min-height: 400px;
 	}
 
-	.loading,
-	.error {
+	.overlay {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		width: 100%;
-		height: 100%;
-		min-height: 400px;
+		background: rgba(30, 30, 30, 0.95);
+		z-index: 1000;
+	}
+
+	.message {
 		font-size: 16px;
 		color: #888;
 	}
 
-	.error {
+	.overlay.error .message {
 		color: #f44336;
 	}
 </style>

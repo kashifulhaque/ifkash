@@ -42,7 +42,7 @@ if [ ! -d "$FONTS_DIR" ] || [ -z "$(ls -A $FONTS_DIR)" ]; then
     
     # Download common fonts
     echo "Downloading fonts..."
-    curl -L -o "$FONTS_DIR/CrimsonPro.ttf" "https://github.com/google/fonts/raw/main/ofl/crimsonpro/CrimsonPro[wght].ttf"
+    curl -L -o "$FONTS_DIR/CrimsonPro.ttf" "https://github.com/google/fonts/raw/main/ofl/crimsonpro/CrimsonPro%5Bwght%5D.ttf"
     curl -L -o "$FONTS_DIR/Cardo-Regular.ttf" "https://github.com/google/fonts/raw/main/ofl/cardo/Cardo-Regular.ttf"
     curl -L -o "$FONTS_DIR/Cardo-Bold.ttf" "https://github.com/google/fonts/raw/main/ofl/cardo/Cardo-Bold.ttf"
     

@@ -1,0 +1,26 @@
+# Typst service files
+*.log
+.env
+
+# Bun
+node_modules/
+.bun/
+
+# Temporary files
+/tmp/
+*.tmp
+
+# System files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Deployment artifacts
+typst-service.service
+nginx-typst.conf
+deploy.sh

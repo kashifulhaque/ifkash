@@ -3,3 +3,6 @@ pub mod ping;
 pub mod hn;
 pub mod lc;
 pub mod resume;
+pub mod auth;
+pub mod resume_api;
+pub mod typst;

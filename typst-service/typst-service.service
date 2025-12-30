@@ -1,0 +1,24 @@
+[Unit]
+Description=Typst Compilation Service
+After=network.target
+
+[Service]
+Type=simple
+User=kashif
+WorkingDirectory=/home/kashif/typst-service
+Environment="PORT=3001"
+Environment="FONT_PATH=/home/kashif/typst-service/fonts"
+ExecStart=/home/kashif/.bun/bin/bun run index.ts
+Restart=always
+RestartSec=10
+
+# Security
+NoNewPrivileges=true
+PrivateTmp=true
+
+# Resource limits
+MemoryLimit=512M
+CPUQuota=50%
+
+[Install]
+WantedBy=multi-user.target

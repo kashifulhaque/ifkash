@@ -31,3 +31,5 @@ POCKETBASE_URL = "https://pb.ifkash.dev"
 # To set the PocketBase credentials, run:
 # wrangler secret put POCKETBASE_EMAIL
 # wrangler secret put POCKETBASE_PASSWORD
+
+TYPST_SERVICE_URL = "https://typst.ifkash.dev"

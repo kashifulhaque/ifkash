@@ -67,3 +67,8 @@ for file in ./static/assets/*.typ; do
   typst compile "$file" --font-path .fonts
 done
 """
+
+
+[tasks."assets:sync-resume"]
+description = "Sync latest resume from PocketBase to static/assets"
+run = "bun run scripts/sync-resume.ts"

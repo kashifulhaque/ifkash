@@ -1,0 +1,11 @@
+{
+  "name": "typst-service",
+  "version": "1.0.0",
+  "description": "Typst compilation service for resume editor",
+  "type": "module",
+  "scripts": {
+    "start": "bun run index.ts",
+    "dev": "bun --watch index.ts"
+  },
+  "dependencies": {}
+}

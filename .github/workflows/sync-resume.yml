@@ -1,0 +1,52 @@
+name: Sync Resume from PocketBase
+
+on:
+  # Run on manual trigger
+  workflow_dispatch:
+  
+  # Run daily at midnight UTC
+  schedule:
+    - cron: '0 0 * * *'
+  
+  # Run when resume is updated (webhook trigger)
+  repository_dispatch:
+    types: [resume_updated]
+
+jobs:
+  sync-resume:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+      
+      - name: Sync resume from PocketBase
+        env:
+          POCKETBASE_EMAIL: ${{ secrets.POCKETBASE_EMAIL }}
+          POCKETBASE_PASSWORD: ${{ secrets.POCKETBASE_PASSWORD }}
+        run: bun run scripts/sync-resume.ts
+      
+      - name: Check for changes
+        id: check_changes
+        run: |
+          if git diff --quiet static/assets/; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Commit and push if changed
+        if: steps.check_changes.outputs.changed == 'true'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add static/assets/
+          git commit -m "chore: sync resume from PocketBase [skip ci]"
+          git push

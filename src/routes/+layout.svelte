@@ -1,11 +1,13 @@
 <script>
   import "../app.css";
   import { page } from "$app/stores";
+  import { auth } from "$lib/stores/auth";
 
   $: isDashboard = $page.url.pathname === "/dashboard";
+  $: isFullWidth = $page.url.pathname === "/login" || $page.url.pathname === "/editor";
 </script>
 
-{#if isDashboard}
+{#if isDashboard || isFullWidth}
   <slot />
 {:else}
   <div
@@ -98,6 +100,13 @@
               class="hover:text-[var(--color-headline)] transition-colors"
               >News</a
             >
+            {#if !$auth.isAuthenticated}
+              <a
+                href="/login"
+                class="hover:text-[var(--color-headline)] transition-colors opacity-70 hover:opacity-100"
+                >Admin</a
+              >
+            {/if}
           </div>
         </header>
 
@@ -159,6 +168,13 @@
               class="hover:text-[var(--color-headline)] transition-colors"
               >News</a
             >
+            {#if !$auth.isAuthenticated}
+              <a
+                href="/login"
+                class="hover:text-[var(--color-headline)] transition-colors opacity-70 hover:opacity-100"
+                >Admin</a
+              >
+            {/if}
           </footer>
         </main>
       </div>

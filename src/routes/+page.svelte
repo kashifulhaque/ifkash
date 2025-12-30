@@ -8,6 +8,7 @@
 
 <script>
   import { browser } from '$app/environment';
+  import { auth } from '$lib/stores/auth';
 
   async function handleResumeDownload() {
     if (!browser) return;
@@ -49,14 +50,12 @@
   }
 </script>
 
-<section class="mb-12">
-  <p class="text-[var(--color-paragraph)] leading-relaxed mb-8">
-    Systems-focused ML engineer with 3.5 YOE building numerical computing
-    components, inference-optimized pipelines and agentic coding environments. I
-    work at the intersection of ML systems, low-level frameworks and RL for
-    code, designing execution sandboxes, structured task environments and
-    deep-dive into unfamiliar codebases to build testable evals. Previously
-    fine-tuned and deployed models and optimized inference systems org-wide.
+<!-- About Section -->
+<section class="mb-16">
+  <p class="text-[var(--color-paragraph)] leading-relaxed mb-4">
+    I'm an Applied ML Engineer passionate about building intelligent systems
+    that scale. Currently focused on agentic coding environments and
+    inference-optimized ML systems.
   </p>
 </section>
 
@@ -67,27 +66,56 @@
   >
     Featured
   </h3>
-  <button
-    on:click={handleResumeDownload}
-    class="group block w-full bg-[var(--color-surface)] border border-[var(--color-border)] p-6 rounded-lg hover:border-[var(--color-secondary)] transition-all cursor-pointer text-left"
-  >
-    <div class="flex items-center justify-between">
-      <div>
-        <h4
-          class="text-lg font-semibold text-[var(--color-headline)] group-hover:text-[var(--color-highlight)] transition-colors"
+  
+  <div class="space-y-4">
+    <!-- Resume Download -->
+    <button
+      on:click={handleResumeDownload}
+      class="group block w-full bg-[var(--color-surface)] border border-[var(--color-border)] p-6 rounded-lg hover:border-[var(--color-secondary)] transition-all cursor-pointer text-left"
+    >
+      <div class="flex items-center justify-between">
+        <div>
+          <h4
+            class="text-lg font-semibold text-[var(--color-headline)] group-hover:text-[var(--color-highlight)] transition-colors"
+          >
+            Resume
+          </h4>
+          <p class="text-sm text-[var(--color-paragraph)] mt-1">
+            Check out my full professional history.
+          </p>
+        </div>
+        <span
+          class="text-[var(--color-secondary)] group-hover:translate-x-1 group-hover:text-[var(--color-headline)] transition-all"
+          >→</span
         >
-          Resume
-        </h4>
-        <p class="text-sm text-[var(--color-paragraph)] mt-1">
-          Check out my full professional history.
-        </p>
       </div>
-      <span
-        class="text-[var(--color-secondary)] group-hover:translate-x-1 group-hover:text-[var(--color-headline)] transition-all"
-        >→</span
+    </button>
+
+    <!-- Resume Editor (only visible when authenticated) -->
+    {#if $auth.isAuthenticated}
+      <a
+        href="/editor"
+        class="group block bg-[var(--color-surface)] border border-[var(--color-border)] p-6 rounded-lg hover:border-[var(--color-secondary)] transition-all"
       >
-    </div>
-  </button>
+        <div class="flex items-center justify-between">
+          <div>
+            <h4
+              class="text-lg font-semibold text-[var(--color-headline)] group-hover:text-[var(--color-highlight)] transition-colors"
+            >
+              Edit Resume
+            </h4>
+            <p class="text-sm text-[var(--color-paragraph)] mt-1">
+              View and edit your resume source files.
+            </p>
+          </div>
+          <span
+            class="text-[var(--color-secondary)] group-hover:translate-x-1 group-hover:text-[var(--color-headline)] transition-all"
+            >✏️</span
+          >
+        </div>
+      </a>
+    {/if}
+  </div>
 </section>
 
 <style>

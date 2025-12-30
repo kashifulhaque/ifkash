@@ -1,40 +1,63 @@
-import { auth } from '$lib/stores/auth';
 import { redirect } from '@sveltejs/kit';
+import { browser } from '$app/environment';
 import type { PageLoad } from './$types';
 
-export const load: PageLoad = async () => {
-	// Check if user is authenticated
-	const token = auth.getToken();
+export const load: PageLoad = async ({ fetch }) => {
+	// Check authentication
+	const token = browser ? localStorage.getItem('auth_token') : null;
 	
 	if (!token) {
-		throw redirect(302, '/login');
+		throw redirect(307, '/login');
 	}
 
-	// Fetch latest resume data
-	const apiUrl =
-		typeof window !== 'undefined' && window.location.hostname === 'localhost'
+	try {
+		// Determine API URL based on environment
+		const apiUrl = browser && window.location.hostname === 'localhost'
 			? 'http://localhost:8787/api/resume/latest'
 			: 'https://ifkash.dev/api/resume/latest';
 
-	try {
 		const response = await fetch(apiUrl, {
 			headers: {
-				Authorization: `Bearer ${token}`
+				'Authorization': `Bearer ${token}`
 			}
 		});
 
 		if (!response.ok) {
+			// If unauthorized, redirect to login
 			if (response.status === 401) {
-				// Token invalid, redirect to login
-				throw redirect(302, '/login');
+				// Clear invalid token
+				if (browser) {
+					localStorage.removeItem('auth_token');
+					localStorage.removeItem('auth_user');
+				}
+				throw redirect(307, '/login');
 			}
-			throw new Error('Failed to fetch resume');
+			throw new Error('Failed to fetch resume data');
 		}
 
 		const data = await response.json();
-		return { resume: data };
+
+		return {
+			resume: {
+				id: data.id,
+				version: data.version,
+				pdf_url: data.pdf_url,
+				typst_url: data.typst_url,
+				typst_filename: data.typst_filename,
+				updated: data.updated,
+				created: data.created
+			}
+		};
 	} catch (error) {
+		// If it's already a redirect, re-throw it
+		if (error instanceof Response && error.status === 307) {
+			throw error;
+		}
+		
 		console.error('Error loading resume:', error);
-		throw redirect(302, '/login');
+		throw error;
 	}
 };
+
+// Disable SSR for this page since it requires browser APIs
+export const ssr = false;

@@ -78,7 +78,7 @@ pub async fn compile(mut req: Request, ctx: RouteContext<()>) -> Result<Response
     console_log!("Compilation successful ({} bytes)", pdf_bytes.len());
 
     // Return PDF
-    let mut headers = Headers::new();
+    let headers = Headers::new();
     headers.set("Content-Type", "application/pdf")?;
     headers.set("Content-Length", &pdf_bytes.len().to_string())?;
     headers.set("Access-Control-Allow-Origin", "*")?;

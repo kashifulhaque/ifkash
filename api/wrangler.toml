@@ -24,3 +24,10 @@ id = "85ed35403df24a01942b9ed8d3bbf3f4"
 binding = "IFKASH_D1"
 database_name = "ifkash"
 database_id = "b84c4a60-0130-4784-a638-17e529ae5ab3"
+
+[vars]
+POCKETBASE_URL = "https://pb.ifkash.dev"
+
+# To set the PocketBase credentials, run:
+# wrangler secret put POCKETBASE_EMAIL
+# wrangler secret put POCKETBASE_PASSWORD

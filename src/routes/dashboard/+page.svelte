@@ -118,24 +118,32 @@
       const lastData = await lastRes.json();
       const lastRace = lastData.MRData.RaceTable.Races[0];
 
-      // Format times to LOCAL device time
-      const formatLocal = (dateStr: string, timeStr: string) => {
+      // Format times to LOCAL device time with full date
+      const formatLocalWithDate = (dateStr: string, timeStr: string) => {
         const d = new Date(`${dateStr}T${timeStr}`);
-        return d.toLocaleString("default", {
+        const dayMonth = d.toLocaleString("default", {
+          month: "short",
+          day: "numeric",
+        });
+        const weekdayTime = d.toLocaleString("default", {
           weekday: "short",
           hour: "numeric",
           minute: "2-digit",
         });
+        return { dayMonth, weekdayTime, fullDate: d };
       };
+
+      const raceInfo = formatLocalWithDate(nextRace.date, nextRace.time);
+      const qualiInfo = nextRace.Qualifying
+        ? formatLocalWithDate(nextRace.Qualifying.date, nextRace.Qualifying.time)
+        : null;
 
       f1.next = {
         name: nextRace.raceName,
         round: nextRace.round,
         country: nextRace.Circuit.Location.country,
-        raceTime: formatLocal(nextRace.date, nextRace.time),
-        qualiTime: nextRace.Qualifying
-          ? formatLocal(nextRace.Qualifying.date, nextRace.Qualifying.time)
-          : "TBC",
+        race: raceInfo,
+        quali: qualiInfo,
       };
       f1.last = {
         name: lastRace.raceName,
@@ -292,11 +300,26 @@
 
   <div class="fixed bottom-10 left-0 right-0 flex justify-center text-xs sm:text-sm font-mono text-neutral-500">
     {#if !f1.loading && f1.next}
-      <div class="flex items-center gap-3 px-4 py-2 rounded-full border border-neutral-900 bg-neutral-950/50 backdrop-blur-sm">
-        <span class="font-bold text-neutral-300">F1</span>
-        <span>{f1.next.country} GP</span>
-        <span class="opacity-30">|</span>
-        <span>{f1.next.raceTime}</span>
+      <div class="flex flex-col sm:flex-row items-center gap-2 sm:gap-3 px-4 py-2 rounded-2xl border border-neutral-900 bg-neutral-950/50 backdrop-blur-sm">
+        <div class="flex items-center gap-2">
+          <span class="font-bold text-neutral-300">F1</span>
+          <span>{f1.next.country} GP</span>
+        </div>
+        <div class="flex items-center gap-3">
+          {#if f1.next.quali}
+            <div class="flex items-center gap-1.5">
+              <span class="text-neutral-600 text-xs">Q</span>
+              <span class="text-neutral-400">{f1.next.quali.dayMonth}</span>
+              <span class="opacity-50 text-xs">{f1.next.quali.weekdayTime}</span>
+            </div>
+            <span class="opacity-20">•</span>
+          {/if}
+          <div class="flex items-center gap-1.5">
+            <span class="text-neutral-600 text-xs">R</span>
+            <span class="text-neutral-300">{f1.next.race.dayMonth}</span>
+            <span class="opacity-70">{f1.next.race.weekdayTime}</span>
+          </div>
+        </div>
       </div>
     {/if}
   </div>

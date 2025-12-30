@@ -3,15 +3,18 @@ import { defineConfig } from 'vite';
 import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
-  plugins: [
-    tailwindcss(),
-    sveltekit()
-  ],
-  assetsInclude: ['**/*.ttf', '**/*.woff', '**/*.woff2'],
-  optimizeDeps: {
-    exclude: ['monaco-editor']
-  },
-  build: {
-    target: 'esnext'
-  }
+	plugins: [
+		tailwindcss(),
+		sveltekit()
+	],
+	optimizeDeps: {
+		exclude: ['monaco-editor']
+	},
+	ssr: {
+		noExternal: [],
+		external: ['monaco-editor']
+	},
+	build: {
+		target: 'esnext'
+	}
 });

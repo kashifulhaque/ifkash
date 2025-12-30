@@ -3,7 +3,7 @@ use crate::kv::KvStore;
 use futures::{stream, StreamExt};
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, utoipa::ToSchema)]
 pub struct Story {
     pub by: Option<String>,
     pub id: i32,
@@ -83,6 +83,14 @@ async fn get_story(kv: &KvStore, id: i32) -> Result<Story> {
     Ok(story)
 }
 
+#[utoipa::path(
+    get,
+    path = "/api/hn",
+    tag = "Hacker News",
+    responses(
+        (status = 200, description = "Top Hacker News stories", body = Vec<Story>)
+    )
+)]
 pub async fn handle(_req: Request, ctx: RouteContext<()>) -> Result<Response> {
     let kv = ctx.kv(KV_BINDING).map_err(|e| {
         console_error!("KV binding missing: {:?}", e);

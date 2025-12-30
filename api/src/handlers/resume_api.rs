@@ -1,6 +1,7 @@
 use worker::*;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
+use utoipa::ToSchema;
 
 #[derive(Debug, Deserialize)]
 struct PocketBaseAuthResponse {
@@ -12,17 +13,37 @@ struct PocketBaseListResponse {
     items: Vec<ResumeRecord>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
-struct ResumeRecord {
-    id: String,
+#[derive(Debug, Deserialize, Serialize, ToSchema)]
+pub struct ResumeRecord {
+    pub id: String,
     #[serde(rename = "collectionId")]
-    collection_id: String,
-    pdf_file: String,
-    typst_file: String,
-    version: Option<String>,
-    notes: Option<String>,
-    created: String,
-    updated: String,
+    pub collection_id: String,
+    pub pdf_file: String,
+    pub typst_file: String,
+    pub version: Option<String>,
+    pub notes: Option<String>,
+    pub created: String,
+    pub updated: String,
+}
+
+#[derive(Serialize, ToSchema)]
+pub struct LatestResumeResponse {
+    pub id: String,
+    pub version: Option<String>,
+    pub notes: Option<String>,
+    pub created: String,
+    pub updated: String,
+    pub pdf_url: String,
+    pub typst_url: String,
+    pub pdf_filename: String,
+    pub typst_filename: String,
+}
+
+#[derive(Serialize, ToSchema)]
+pub struct UploadResponse {
+    pub success: bool,
+    pub message: String,
+    pub pocketbase_url: String,
 }
 
 async fn authenticate_pocketbase(
@@ -70,6 +91,18 @@ fn verify_auth_header(headers: &Headers) -> Result<String> {
 }
 
 // GET /api/resume/latest - Returns latest resume with Typst file URL (authenticated)
+#[utoipa::path(
+    get,
+    path = "/api/resume/latest",
+    tag = "Resume API",
+    security(
+        ("bearer_auth" = [])
+    ),
+    responses(
+        (status = 200, description = "Latest resume details", body = LatestResumeResponse),
+        (status = 401, description = "Unauthorized")
+    )
+)]
 pub async fn get_latest(req: Request, ctx: RouteContext<()>) -> Result<Response> {
     // Verify authentication
     let headers = req.headers();
@@ -123,30 +156,42 @@ pub async fn get_latest(req: Request, ctx: RouteContext<()>) -> Result<Response>
         pocketbase_url, resume.collection_id, resume.id, resume.typst_file
     );
 
-    Response::from_json(&json!({
-        "id": resume.id,
-        "version": resume.version,
-        "notes": resume.notes,
-        "created": resume.created,
-        "updated": resume.updated,
-        "pdf_url": pdf_url,
-        "typst_url": typst_url,
-        "pdf_filename": "Kashiful_Haque.pdf",
-        "typst_filename": resume.typst_file,
-    }))
+    Response::from_json(&LatestResumeResponse {
+        id: resume.id.clone(),
+        version: resume.version.clone(),
+        notes: resume.notes.clone(),
+        created: resume.created.clone(),
+        updated: resume.updated.clone(),
+        pdf_url,
+        typst_url,
+        pdf_filename: "Kashiful_Haque.pdf".to_string(),
+        typst_filename: resume.typst_file.clone(),
+    })
 }
 
 // POST /api/resume/upload - Upload new resume version (authenticated)
 // For MVP, this returns a placeholder - users should upload via PocketBase UI
+#[utoipa::path(
+    post,
+    path = "/api/resume/upload",
+    tag = "Resume API",
+    security(
+        ("bearer_auth" = [])
+    ),
+    responses(
+        (status = 200, description = "Upload instructions", body = UploadResponse),
+        (status = 401, description = "Unauthorized")
+    )
+)]
 pub async fn upload(req: Request, ctx: RouteContext<()>) -> Result<Response> {
     // Verify authentication
     let headers = req.headers();
     verify_auth_header(&headers)?;
 
     // For MVP, return a message that upload should be done via PocketBase UI
-    Response::from_json(&json!({
-        "success": false,
-        "message": "Upload functionality coming soon. Please upload via PocketBase admin panel for now.",
-        "pocketbase_url": ctx.var("POCKETBASE_URL")?.to_string() + "/_/"
-    }))
+    Response::from_json(&UploadResponse {
+        success: false,
+        message: "Upload functionality coming soon. Please upload via PocketBase admin panel for now.".to_string(),
+        pocketbase_url: ctx.var("POCKETBASE_URL")?.to_string() + "/_/"
+    })
 }

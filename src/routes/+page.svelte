@@ -1,3 +1,12 @@
+<script>
+  import { auth } from "$lib/stores/auth";
+  import { dev } from "$app/environment";
+
+  const resumeUrl = dev
+    ? "http://localhost:8787/api/resume?format=view"
+    : "/api/resume?format=view";
+</script>
+
 <svelte:head>
   <title>Kashif — Applied ML Engineer</title>
   <meta
@@ -5,50 +14,6 @@
     content="Personal website of Kashiful Haque, Applied ML Engineer."
   />
 </svelte:head>
-
-<script>
-  import { browser } from '$app/environment';
-  import { auth } from '$lib/stores/auth';
-
-  async function handleResumeDownload() {
-    if (!browser) return;
-
-    // Determine API URL based on environment
-    const apiUrl = window.location.hostname === 'localhost'
-      ? 'http://localhost:8787/api/resume'
-      : 'https://ifkash.dev/api/resume';
-
-    const fallbackUrl = '/assets/Kashiful_Haque.pdf';
-
-    try {
-      // Try to fetch from API
-      const response = await fetch(apiUrl);
-      
-      if (!response.ok) {
-        throw new Error('API request failed');
-      }
-
-      // Get the PDF blob
-      const blob = await response.blob();
-      
-      // Create download link
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'Kashiful_Haque.pdf';
-      document.body.appendChild(a);
-      a.click();
-      
-      // Cleanup
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-    } catch (error) {
-      console.warn('Failed to fetch resume from API, falling back to static asset:', error);
-      // Fallback to static asset
-      window.location.href = fallbackUrl;
-    }
-  }
-</script>
 
 <!-- About Section -->
 <section class="mb-16">
@@ -66,11 +31,11 @@
   >
     Featured
   </h3>
-  
+
   <div class="space-y-4">
-    <!-- Resume Download -->
-    <button
-      on:click={handleResumeDownload}
+    <!-- Resume Link (Open PDF directly) -->
+    <a
+      href={resumeUrl}
       class="group block w-full bg-[var(--color-surface)] border border-[var(--color-border)] p-6 rounded-lg hover:border-[var(--color-secondary)] transition-all cursor-pointer text-left"
     >
       <div class="flex items-center justify-between">
@@ -89,7 +54,7 @@
           >→</span
         >
       </div>
-    </button>
+    </a>
 
     <!-- Resume Editor (only visible when authenticated) -->
     {#if $auth.isAuthenticated}

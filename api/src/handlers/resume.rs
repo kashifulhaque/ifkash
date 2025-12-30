@@ -1,6 +1,7 @@
 use worker::*;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
+use utoipa::ToSchema;
 
 #[derive(Debug, Deserialize)]
 struct PocketBaseAuthResponse {
@@ -12,17 +13,33 @@ struct PocketBaseListResponse {
     items: Vec<ResumeRecord>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
-struct ResumeRecord {
-    id: String,
+#[derive(Debug, Deserialize, Serialize, ToSchema)]
+pub struct ResumeRecord {
+    pub id: String,
     #[serde(rename = "collectionId")]
-    collection_id: String,
-    pdf_file: String,
-    typst_file: String,
-    version: Option<String>,
-    notes: Option<String>,
-    created: String,
-    updated: String,
+    pub collection_id: String,
+    pub pdf_file: String,
+    pub typst_file: String,
+    pub version: Option<String>,
+    pub notes: Option<String>,
+    pub created: String,
+    pub updated: String,
+}
+
+#[derive(Serialize, ToSchema)]
+pub struct ResumeMetadataResponse {
+    pub id: String,
+    pub version: Option<String>,
+    pub notes: Option<String>,
+    pub created: String,
+    pub updated: String,
+    pub pdf_url: String,
+    pub pdf_filename: String,
+}
+
+#[derive(Serialize, ToSchema)]
+pub struct ResumeUrlResponse {
+    pub url: String,
 }
 
 async fn authenticate_pocketbase(
@@ -64,6 +81,25 @@ async fn authenticate_pocketbase(
     Ok(auth_data.token)
 }
 
+#[utoipa::path(
+    get,
+    path = "/api/resume",
+    tag = "Resume",
+    params(
+        ("format" = Option<String>, Query, description = "Response format: 'json', 'url', 'view' (inline), or omit for PDF download")
+    ),
+    responses(
+        (status = 200, description = "Resume found", 
+            body = ResumeMetadataResponse,
+            content_type = "application/json"),
+        (status = 200, description = "Download URL", 
+            body = ResumeUrlResponse,
+            content_type = "application/json"),
+        (status = 200, description = "PDF File", 
+            body = String,
+            content_type = "application/pdf")
+    )
+)]
 pub async fn handle(req: Request, ctx: RouteContext<()>) -> Result<Response> {
     // Get PocketBase configuration from environment
     let pocketbase_url = ctx.var("POCKETBASE_URL")?.to_string();
@@ -127,21 +163,48 @@ pub async fn handle(req: Request, ctx: RouteContext<()>) -> Result<Response> {
     match format.as_deref() {
         Some("json") => {
             // Return metadata with download URL
-            Response::from_json(&json!({
-                "id": resume.id,
-                "version": resume.version,
-                "notes": resume.notes,
-                "created": resume.created,
-                "updated": resume.updated,
-                "pdf_url": file_url,
-                "pdf_filename": "Kashiful_Haque.pdf",
-            }))
+            Response::from_json(&ResumeMetadataResponse {
+                id: resume.id.clone(),
+                version: resume.version.clone(),
+                notes: resume.notes.clone(),
+                created: resume.created.clone(),
+                updated: resume.updated.clone(),
+                pdf_url: file_url,
+                pdf_filename: "Kashiful_Haque.pdf".to_string(),
+            })
         }
         Some("url") => {
             // Return just the URL
-            Response::from_json(&json!({
-                "url": file_url
-            }))
+            Response::from_json(&ResumeUrlResponse {
+                url: file_url
+            })
+        }
+        Some("view") => {
+            // View inline: Download the PDF and return it with inline disposition
+            let pdf_response = client
+                .get(&file_url)
+                .send()
+                .await
+                .map_err(|e| Error::RustError(format!("Failed to download PDF: {}", e)))?;
+
+            if !pdf_response.status().is_success() {
+                return Response::error("Failed to download PDF from PocketBase", 500);
+            }
+
+            let pdf_bytes = pdf_response
+                .bytes()
+                .await
+                .map_err(|e| Error::RustError(format!("Failed to read PDF bytes: {}", e)))?;
+
+            let headers = Headers::new();
+            headers.set("Content-Type", "application/pdf")?;
+            headers.set(
+                "Content-Disposition",
+                "inline; filename=\"Kashiful_Haque.pdf\"",
+            )?;
+
+            Ok(Response::from_bytes(pdf_bytes.to_vec())?
+                .with_headers(headers))
         }
         _ => {
             // Default: Download the PDF and return it with the correct filename

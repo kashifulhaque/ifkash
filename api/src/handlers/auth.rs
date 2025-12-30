@@ -1,11 +1,12 @@
 use worker::*;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
+use utoipa::ToSchema;
 
-#[derive(Debug, Deserialize)]
-struct LoginRequest {
-    email: String,
-    password: String,
+#[derive(Debug, Deserialize, ToSchema)]
+pub struct LoginRequest {
+    pub email: String,
+    pub password: String,
 }
 
 #[derive(Debug, Deserialize)]
@@ -14,10 +15,22 @@ struct PocketBaseAuthResponse {
     record: PocketBaseAdminRecord,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
-struct PocketBaseAdminRecord {
-    id: String,
-    email: String,
+#[derive(Debug, Deserialize, Serialize, ToSchema)]
+pub struct PocketBaseAdminRecord {
+    pub id: String,
+    pub email: String,
+}
+
+#[derive(Serialize, ToSchema)]
+pub struct LoginResponse {
+    pub success: bool,
+    pub token: String,
+    pub user: PocketBaseAdminRecord,
+}
+
+#[derive(Serialize, ToSchema)]
+pub struct VerifyResponse {
+    pub valid: bool,
 }
 
 async fn authenticate_with_pocketbase(
@@ -67,6 +80,16 @@ async fn authenticate_with_pocketbase(
     Ok(auth_data)
 }
 
+#[utoipa::path(
+    post,
+    path = "/api/auth/login",
+    tag = "Auth",
+    request_body = LoginRequest,
+    responses(
+        (status = 200, description = "Login successful", body = LoginResponse),
+        (status = 401, description = "Unauthorized")
+    )
+)]
 pub async fn login(mut req: Request, ctx: RouteContext<()>) -> Result<Response> {
     console_log!("Login endpoint called");
     
@@ -91,16 +114,25 @@ pub async fn login(mut req: Request, ctx: RouteContext<()>) -> Result<Response> 
 
     // For now, we'll return the PocketBase token directly
     // In a production system, you might want to issue your own JWT
-    Response::from_json(&json!({
-        "success": true,
-        "token": auth_data.token,
-        "user": {
-            "id": auth_data.record.id,
-            "email": auth_data.record.email,
-        }
-    }))
+    Response::from_json(&LoginResponse {
+        success: true,
+        token: auth_data.token,
+        user: auth_data.record,
+    })
 }
 
+#[utoipa::path(
+    get,
+    path = "/api/auth/verify",
+    tag = "Auth",
+    security(
+        ("bearer_auth" = [])
+    ),
+    responses(
+        (status = 200, description = "Token is valid", body = VerifyResponse),
+        (status = 401, description = "Invalid token")
+    )
+)]
 pub async fn verify(req: Request, _ctx: RouteContext<()>) -> Result<Response> {
     // Extract Authorization header
     let headers = req.headers();
@@ -122,7 +154,5 @@ pub async fn verify(req: Request, _ctx: RouteContext<()>) -> Result<Response> {
         return Response::error("Invalid token", 401);
     }
 
-    Response::from_json(&json!({
-        "valid": true
-    }))
+    Response::from_json(&VerifyResponse { valid: true })
 }

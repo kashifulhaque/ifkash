@@ -1,16 +1,42 @@
 use worker::*;
 use serde_json::{json, Value};
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 
 const LC_URL: &str = "https://leetcode.com/graphql";
 
-#[derive(Deserialize)]
-struct SubmissionsReqBody {
-    username: String,
-    count: Option<i32>,
+#[derive(Deserialize, ToSchema)]
+pub struct SubmissionsReqBody {
+    pub username: String,
+    pub count: Option<i32>,
+}
+
+#[derive(Serialize, Default, ToSchema)]
+pub struct Slot {
+    pub complete: i32,
+    pub total: i32,
+}
+
+#[derive(Serialize, Default, ToSchema)]
+pub struct LeetCodeProfile {
+    pub easy: Slot,
+    pub medium: Slot,
+    pub hard: Slot,
+    pub total: Slot,
 }
 
 /* ---- /api/lc/profile ---- */
+#[utoipa::path(
+    get,
+    path = "/api/lc/profile",
+    tag = "LeetCode",
+    params(
+        ("username" = Option<String>, Query, description = "LeetCode username (default: ifkash)")
+    ),
+    responses(
+        (status = 200, description = "LeetCode profile statistics", body = LeetCodeProfile)
+    )
+)]
 pub async fn handle_profile(req: Request, _ctx: RouteContext<()>) -> Result<Response> {
     // Take username from query, fallback to 'ifkash'
     let url = req.url()?;
@@ -83,21 +109,7 @@ pub async fn handle_profile(req: Request, _ctx: RouteContext<()>) -> Result<Resp
     let parsed: GqlResp = serde_json::from_str(&body_text)
         .map_err(|_| Error::RustError("Error parsing JSON from LeetCode".into()))?;
 
-    // Build the compact shape you had in Go
-    #[derive(Serialize, Default)]
-    struct Slot {
-        complete: i32,
-        total: i32,
-    }
-    #[derive(Serialize, Default)]
-    struct Out {
-        easy: Slot,
-        medium: Slot,
-        hard: Slot,
-        total: Slot,
-    }
-
-    let mut out = Out::default();
+    let mut out = LeetCodeProfile::default();
 
     for q in parsed.data.all_questions_count {
         match q.difficulty.as_str() {
@@ -128,6 +140,17 @@ pub async fn handle_profile(req: Request, _ctx: RouteContext<()>) -> Result<Resp
 }
 
 /* ---- /api/lc/submissions ---- */
+#[utoipa::path(
+    post,
+    path = "/api/lc/submissions",
+    tag = "LeetCode",
+    request_body = SubmissionsReqBody,
+    responses(
+        (status = 200, description = "Recent submissions", body = Value),
+        (status = 400, description = "Invalid request"),
+        (status = 405, description = "Method not allowed")
+    )
+)]
 pub async fn handle_submissions(mut req: Request, _ctx: RouteContext<()>) -> Result<Response> {
     if req.method() != Method::Post {
         return Response::error("Only POST method is allowed", 405);

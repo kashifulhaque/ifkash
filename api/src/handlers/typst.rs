@@ -1,10 +1,11 @@
 use worker::*;
 use serde::Deserialize;
 use serde_json::json;
+use utoipa::ToSchema;
 
-#[derive(Debug, Deserialize)]
-struct CompileRequest {
-    code: String,
+#[derive(Debug, Deserialize, ToSchema)]
+pub struct CompileRequest {
+    pub code: String,
 }
 
 fn verify_auth_header(headers: &Headers) -> Result<String> {
@@ -20,6 +21,20 @@ fn verify_auth_header(headers: &Headers) -> Result<String> {
     Ok(auth_header[7..].to_string())
 }
 
+#[utoipa::path(
+    post,
+    path = "/api/typst/compile",
+    tag = "Typst",
+    security(
+        ("bearer_auth" = [])
+    ),
+    request_body = CompileRequest,
+    responses(
+        (status = 200, description = "Compiled PDF", body = String, content_type = "application/pdf"),
+        (status = 401, description = "Unauthorized"),
+        (status = 500, description = "Compilation failure")
+    )
+)]
 pub async fn compile(mut req: Request, ctx: RouteContext<()>) -> Result<Response> {
     console_log!("Typst compile endpoint called");
 

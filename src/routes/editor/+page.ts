@@ -2,21 +2,24 @@ import { redirect } from '@sveltejs/kit';
 import { browser } from '$app/environment';
 import type { PageLoad } from './$types';
 
-export const load: PageLoad = async ({ fetch }) => {
+export const load: PageLoad = async ({ fetch, url }) => {
 	// Check authentication
 	const token = browser ? localStorage.getItem('auth_token') : null;
-	
+
 	if (!token) {
 		throw redirect(307, '/login');
 	}
 
 	try {
-		// Determine API URL based on environment
-		const apiUrl = browser && window.location.hostname === 'localhost'
-			? 'http://localhost:8787/api/resume/latest'
-			: 'https://ifkash.dev/api/resume/latest';
+		const resumeId = url.searchParams.get('id');
+		const endpoint = resumeId ? `/api/resume/record/${resumeId}` : '/api/resume/latest';
 
-		const response = await fetch(apiUrl, {
+		// Determine API URL based on environment
+		const baseUrl = browser && window.location.hostname === 'localhost'
+			? 'http://localhost:8787'
+			: 'https://ifkash.dev';
+
+		const response = await fetch(`${baseUrl}${endpoint}`, {
 			headers: {
 				'Authorization': `Bearer ${token}`
 			}
@@ -53,7 +56,7 @@ export const load: PageLoad = async ({ fetch }) => {
 		if (error instanceof Response && error.status === 307) {
 			throw error;
 		}
-		
+
 		console.error('Error loading resume:', error);
 		throw error;
 	}

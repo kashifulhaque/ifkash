@@ -179,8 +179,14 @@ pub async fn handle(req: Request, ctx: RouteContext<()>) -> Result<Response> {
                 url: file_url
             })
         }
-        Some("view") => {
-            // View inline: Download the PDF and return it with inline disposition
+        other => {
+            // Default to inline view, unless explicitly requested as attachment/download
+            let disposition_type = if matches!(other, Some("attachment") | Some("download")) {
+                "attachment"
+            } else {
+                "inline"
+            };
+
             let pdf_response = client
                 .get(&file_url)
                 .send()
@@ -200,34 +206,7 @@ pub async fn handle(req: Request, ctx: RouteContext<()>) -> Result<Response> {
             headers.set("Content-Type", "application/pdf")?;
             headers.set(
                 "Content-Disposition",
-                "inline; filename=\"Kashiful_Haque.pdf\"",
-            )?;
-
-            Ok(Response::from_bytes(pdf_bytes.to_vec())?
-                .with_headers(headers))
-        }
-        _ => {
-            // Default: Download the PDF and return it with the correct filename
-            let pdf_response = client
-                .get(&file_url)
-                .send()
-                .await
-                .map_err(|e| Error::RustError(format!("Failed to download PDF: {}", e)))?;
-
-            if !pdf_response.status().is_success() {
-                return Response::error("Failed to download PDF from PocketBase", 500);
-            }
-
-            let pdf_bytes = pdf_response
-                .bytes()
-                .await
-                .map_err(|e| Error::RustError(format!("Failed to read PDF bytes: {}", e)))?;
-
-            let headers = Headers::new();
-            headers.set("Content-Type", "application/pdf")?;
-            headers.set(
-                "Content-Disposition",
-                "attachment; filename=\"Kashiful_Haque.pdf\"",
+                &format!("{}; filename=\"Kashiful_Haque.pdf\"", disposition_type),
             )?;
 
             Ok(Response::from_bytes(pdf_bytes.to_vec())?

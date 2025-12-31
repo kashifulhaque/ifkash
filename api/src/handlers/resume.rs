@@ -86,7 +86,7 @@ async fn authenticate_pocketbase(
     path = "/api/resume",
     tag = "Resume",
     params(
-        ("format" = Option<String>, Query, description = "Response format: 'json', 'url', 'view' (inline), or omit for PDF download")
+        ("format" = Option<String>, Query, description = "Response format: 'json', 'url', 'view' (inline), 'download' (attachment), or omit for inline view")
     ),
     responses(
         (status = 200, description = "Resume found", 

@@ -181,6 +181,6 @@ pub async fn route(_req: Request, _ctx: RouteContext<()>) -> Result<Response> {
 </html>"#;
 
     let mut resp = Response::from_html(html)?;
-    resp.headers_mut().set("Cache-Control", "public, max-age=3600")?;
+    resp.headers_mut().set("Cache-Control", "no-cache")?;
     Ok(resp)
 }

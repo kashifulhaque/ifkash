@@ -13,6 +13,7 @@
 	let error = '';
 	let compilationError = '';
 	let hasUnsavedChanges = false;
+	let uploading = false;
 
 	$: resume = data.resume;
 
@@ -115,9 +116,73 @@
 		document.body.removeChild(a);
 	}
 
-	function openPocketBase() {
-		if (confirm('⚠️ Upload New Version?\n\nThis will open PocketBase admin panel. Make sure you have compiled and tested your changes before uploading.\n\nContinue?')) {
-			window.open('https://pb.ifkash.dev/_/', '_blank');
+	async function handleUpload() {
+		if (hasUnsavedChanges) {
+			if (!confirm('You have unsaved changes. Compile before uploading?')) {
+				return;
+			}
+			await handleCompile();
+			if (compilationError) return;
+		} else if (!pdfUrl) {
+			alert('Please compile first!');
+			return;
+		}
+
+		if (!confirm('Upload new version to homepage?')) {
+			return;
+		}
+
+		uploading = true;
+		error = '';
+
+		try {
+			const token = auth.getToken();
+			const apiUrl =
+				typeof window !== 'undefined' && window.location.hostname === 'localhost'
+					? 'http://localhost:8787/api/resume/upload'
+					: 'https://ifkash.dev/api/resume/upload';
+
+			// Fetch the PDF blob
+			const pdfBlob = await fetch(pdfUrl).then((r) => r.blob());
+
+			const formData = new FormData();
+			formData.append(
+				'typst_file',
+				new Blob([typstContent], { type: 'text/plain' }),
+				resume.typst_filename || 'resume.typ'
+			);
+			formData.append('pdf_file', pdfBlob, 'resume.pdf');
+
+			// Increment version
+			const currentVersion = parseInt(resume.version || '0');
+			const newVersion = (currentVersion + 1).toString();
+			formData.append('version', newVersion);
+
+			const response = await fetch(apiUrl, {
+				method: 'POST',
+				headers: {
+					Authorization: `Bearer ${token}`
+				},
+				body: formData
+			});
+
+			if (!response.ok) {
+				const errorText = await response.text();
+				let message = errorText;
+				try {
+					const json = JSON.parse(errorText);
+					message = json.message || errorText;
+				} catch (e) {}
+				throw new Error(message || 'Upload failed');
+			}
+
+			alert(`Successfully uploaded version ${newVersion}!`);
+			window.location.reload();
+		} catch (e: any) {
+			console.error('Upload error:', e);
+			alert('Upload failed: ' + e.message);
+		} finally {
+			uploading = false;
 		}
 	}
 
@@ -174,10 +239,11 @@
 					PDF
 				</button>
 				<button
-					on:click={openPocketBase}
-					class="px-3 sm:px-4 py-2 text-xs sm:text-sm bg-orange-600 hover:bg-orange-700 text-white rounded-lg transition-colors font-semibold hidden sm:block"
+					on:click={handleUpload}
+					disabled={uploading || compiling}
+					class="px-3 sm:px-4 py-2 text-xs sm:text-sm bg-orange-600 hover:bg-orange-700 text-white rounded-lg transition-colors font-semibold hidden sm:block disabled:opacity-50 disabled:cursor-not-allowed"
 				>
-					Upload
+					{uploading ? 'Uploading...' : 'Upload'}
 				</button>
 				<button
 					on:click={handleLogout}

@@ -170,7 +170,6 @@ pub async fn get_latest(req: Request, ctx: RouteContext<()>) -> Result<Response>
 }
 
 // POST /api/resume/upload - Upload new resume version (authenticated)
-// For MVP, this returns a placeholder - users should upload via PocketBase UI
 #[utoipa::path(
     post,
     path = "/api/resume/upload",
@@ -178,20 +177,82 @@ pub async fn get_latest(req: Request, ctx: RouteContext<()>) -> Result<Response>
     security(
         ("bearer_auth" = [])
     ),
+    request_body(content = UploadResponse, content_type = "multipart/form-data"), 
     responses(
-        (status = 200, description = "Upload instructions", body = UploadResponse),
-        (status = 401, description = "Unauthorized")
+        (status = 200, description = "Upload successful", body = UploadResponse),
+        (status = 401, description = "Unauthorized"),
+        (status = 500, description = "Server error")
     )
 )]
-pub async fn upload(req: Request, ctx: RouteContext<()>) -> Result<Response> {
+pub async fn upload(mut req: Request, ctx: RouteContext<()>) -> Result<Response> {
     // Verify authentication
     let headers = req.headers();
     verify_auth_header(&headers)?;
 
-    // For MVP, return a message that upload should be done via PocketBase UI
+    // Parse multipart form data
+    let form = req.form_data().await?;
+
+    // Get PDF file
+    let pdf_entry = form.get("pdf_file").ok_or(Error::RustError("Missing pdf_file".into()))?;
+    let (pdf_name, pdf_bytes) = match pdf_entry {
+        FormEntry::File(f) => (f.name(), f.bytes().await?),
+        _ => return Err(Error::RustError("pdf_file must be a file".into())),
+    };
+
+    // Get Typst file
+    let typst_entry = form.get("typst_file").ok_or(Error::RustError("Missing typst_file".into()))?;
+    let (typst_name, typst_bytes) = match typst_entry {
+        FormEntry::File(f) => (f.name(), f.bytes().await?),
+        _ => return Err(Error::RustError("typst_file must be a file".into())),
+    };
+    
+    // Get version if provided
+    let version = form.get("version").map(|e| match e {
+        FormEntry::Field(s) => s,
+        _ => "".to_string(),
+    });
+
+    // Get PocketBase configuration
+    let pocketbase_url = ctx.var("POCKETBASE_URL")?.to_string();
+    let pb_email = ctx.secret("POCKETBASE_EMAIL")?.to_string();
+    let pb_password = ctx.secret("POCKETBASE_PASSWORD")?.to_string();
+
+    let client = reqwest::Client::new();
+
+    // Authenticate with PocketBase
+    let token = authenticate_pocketbase(&client, &pocketbase_url, &pb_email, &pb_password).await?;
+
+    // Create Multipart Form for PocketBase Request
+    let mut multipart = reqwest::multipart::Form::new()
+        .part("pdf_file", reqwest::multipart::Part::bytes(pdf_bytes).file_name(pdf_name))
+        .part("typst_file", reqwest::multipart::Part::bytes(typst_bytes).file_name(typst_name));
+
+    if let Some(v) = version {
+        if !v.is_empty() {
+             multipart = multipart.text("version", v);
+        }
+    }
+
+    // Send to PocketBase to create new record
+    let create_url = format!("{}/api/collections/resumes/records", pocketbase_url);
+    
+    let pb_response = client
+        .post(&create_url)
+        .header("Authorization", format!("Bearer {}", token))
+        .multipart(multipart)
+        .send()
+        .await
+        .map_err(|e| Error::RustError(format!("Failed to upload to PocketBase: {}", e)))?;
+        
+    if !pb_response.status().is_success() {
+         let text = pb_response.text().await.unwrap_or_default();
+         return Err(Error::RustError(format!("PocketBase upload failed: {}", text)));
+    }
+
+    // Return success response
     Response::from_json(&UploadResponse {
-        success: false,
-        message: "Upload functionality coming soon. Please upload via PocketBase admin panel for now.".to_string(),
-        pocketbase_url: ctx.var("POCKETBASE_URL")?.to_string() + "/_/"
+        success: true,
+        message: "Resume uploaded successfully".to_string(),
+        pocketbase_url: format!("{}/_/", pocketbase_url),
     })
 }

@@ -8,6 +8,7 @@ pub mod resume;
 pub mod auth;
 pub mod resume_api;
 pub mod typst;
+pub mod ai;
 
 use worker::*;
 
@@ -25,6 +26,7 @@ pub fn register_routes(router: Router<'_, ()>) -> Router<'_, ()> {
     .get_async("/api/resume/record/:id", resume_api::get_by_id)
     .post_async("/api/resume/upload", resume_api::upload)
     .post_async("/api/typst/compile", typst::compile)
+    .post_async("/api/ai/rewrite", ai::rewrite)
     .post_async("/api/auth/login", auth::login)
     .get_async("/api/auth/verify", auth::verify)
     .post_async("/api/lc/submissions", lc::submissions)

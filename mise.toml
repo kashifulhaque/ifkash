@@ -3,9 +3,9 @@ bun = "latest"
 node = "lts"
 rust = "stable"
 typst = "latest"
+wrangler = "latest"
 
 [tasks."api:prep"]
-# One-time prep for Rust Workers
 dir = "api"
 description = "Install wasm target + worker-build for Cloudflare Rust Workers"
 run = """
@@ -23,7 +23,6 @@ run = "worker-build --release"
 dir = "api"
 depends = ["api:prep"]
 description = "Run the Worker locally with wrangler + Miniflare (KV persisted)"
-# --persist-to ensures KV/data survives restarts; default port 8787
 run = "npx wrangler dev --persist-to .wrangler/state"
 
 [tasks."api:clean"]

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { auth } from "$lib/stores/auth";
 	import { goto } from "$app/navigation";
+	import { browser } from "$app/environment";
 	import MonacoEditor from "$lib/components/MonacoEditor.svelte";
 	import type { PageData } from "./$types";
 	import {
@@ -15,6 +16,9 @@
 		AlertTriangle,
 		Play,
 		Loader2,
+		Sparkles,
+		Undo2,
+		X,
 	} from "lucide-svelte";
 
 	export let data: PageData;
@@ -30,6 +34,21 @@
 	let hasUnsavedChanges = false;
 	let isDownloadOpen = false;
 
+	// AI State
+	let isAiModalOpen = false;
+	let isAiProcessing = false;
+	let jobDescription = "";
+	let selectedModel = "anthropic/claude-3.5-sonnet";
+	let previousTypstContent = "";
+	let canUndo = false;
+
+	const AI_MODELS = [
+		{ id: "anthropic/claude-3.5-sonnet", name: "Claude 3.5 Sonnet" },
+		{ id: "google/gemini-flash-1.5", name: "Gemini 1.5 Flash" },
+		{ id: "openai/gpt-4o-mini", name: "GPT-4o Mini" },
+		{ id: "meta-llama/llama-3.1-70b-instruct", name: "Llama 3.1 70B" },
+	];
+
 	$: resume = data.resume;
 
 	// Fetch Typst file content
@@ -44,6 +63,11 @@
 			console.error(e);
 		} finally {
 			loading = false;
+			// Load preference for model
+			if (browser) {
+				const savedModel = localStorage.getItem("preferred_ai_model");
+				if (savedModel) selectedModel = savedModel;
+			}
 		}
 	}
 
@@ -135,9 +159,6 @@
 	async function handleUpload() {
 		// 1. Ensure everything is compiled
 		if (hasUnsavedChanges || (pdfUrl && !pdfUrl.startsWith("blob:"))) {
-			// If unsaved OR pdfUrl is the remote one (meaning we haven't compiled locally yet for a re-upload scenario potentially, though if text didn't change it's fine. But safer to compile.)
-			// Actually, if we just loaded a version and want to re-upload it as 'new' (restore case), we might not have 'unsaved changes' flag, but we should generate a fresh PDF to be sure.
-			// Let's rely on unsaved changes flag mostly, but if user explicitly clicks upload, let's trigger a compile just to be safe and ensure fresh PDF blob.
 			await handleCompile();
 			if (compilationError) {
 				alert(
@@ -180,19 +201,6 @@
 			);
 			formData.append("pdf_file", pdfBlob, "resume.pdf");
 
-			// Increment version from current loaded
-			// If current is v5, we upload as v6 presumably, or backend handles it?
-			// The backend just takes 'version' string. Our logic increments current.
-			// If we restored v2, and current latest is v10, this will upload as v3?
-			// That might be confusing. Ideally we should know the absolute latest version to increment properly.
-			// But for now, let's just use what we have. It's an MVP.
-			// Actually, if I load v2, `resume.version` is 2. I upload as 3.
-			// But v3 might exist.
-			// A better approach would be to let user specify version or just "Auto-increment" on backend.
-			// Currently backend stores what we send.
-			// Let's just strip version logic and let it match created date? No, version string is useful.
-			// Let's parse int, but maybe we should allow user to edit it?
-			// I'll stick to simple increment for now.
 			const currentVersion = parseInt(resume.version || "0");
 			const newVersion = (currentVersion + 1).toString();
 			formData.append("version", newVersion);
@@ -218,17 +226,87 @@
 			uploadProgress = 100;
 			clearInterval(progressInterval);
 
-			// Small delay to show completion
 			setTimeout(() => {
 				alert(`Successfully uploaded version ${newVersion}!`);
-				window.location.href = "/editor"; // Clear ID and reload latest
+				window.location.href = "/editor";
 			}, 500);
 		} catch (e: any) {
 			clearInterval(progressInterval);
 			uploadProgress = 0;
 			console.error("Upload error:", e);
 			alert("Upload failed: " + e.message);
-			uploading = false; // Only reset if failed
+			uploading = false;
+		}
+	}
+
+	function handleUndo() {
+		if (canUndo && previousTypstContent) {
+			typstContent = previousTypstContent;
+			previousTypstContent = "";
+			canUndo = false;
+			hasUnsavedChanges = true;
+			alert("Restored previous version!");
+		}
+	}
+
+	async function handleAiRewrite() {
+		if (!jobDescription.trim()) {
+			alert("Please enter a Job Description");
+			return;
+		}
+
+		isAiProcessing = true;
+		// Save current content for undo
+		previousTypstContent = typstContent;
+
+		try {
+			// Save model preference
+			if (browser) {
+				localStorage.setItem("preferred_ai_model", selectedModel);
+			}
+
+			const token = auth.getToken();
+			const apiUrl =
+				typeof window !== "undefined" &&
+				window.location.hostname === "localhost"
+					? "http://localhost:8787/api/ai/rewrite"
+					: "https://ifkash.dev/api/ai/rewrite";
+
+			const response = await fetch(apiUrl, {
+				method: "POST",
+				headers: {
+					Authorization: `Bearer ${token}`,
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					code: typstContent,
+					job_description: jobDescription,
+					model: selectedModel,
+				}),
+			});
+
+			if (!response.ok) {
+				const errorText = await response.text();
+				throw new Error(errorText || "AI processing failed");
+			}
+
+			const data = await response.json();
+			if (data.success && data.code) {
+				typstContent = data.code;
+				hasUnsavedChanges = true;
+				canUndo = true;
+				isAiModalOpen = false;
+				alert(
+					"Resume tailored! Please review changes. Click Undo icon to revert.",
+				);
+			} else {
+				throw new Error(data.message || "Unknown error");
+			}
+		} catch (e: any) {
+			console.error("AI Error:", e);
+			alert("AI tailoring failed: " + e.message);
+		} finally {
+			isAiProcessing = false;
 		}
 	}
 
@@ -314,6 +392,28 @@
 
 			<!-- Right: Actions -->
 			<div class="flex items-center gap-2">
+				{#if canUndo}
+					<button
+						on:click={handleUndo}
+						class="p-2 text-yellow-500 hover:bg-yellow-500/10 rounded-lg transition-colors"
+						title="Undo AI Changes"
+					>
+						<Undo2 size={20} />
+					</button>
+				{/if}
+
+				<!-- AI Magic -->
+				<button
+					on:click={() => (isAiModalOpen = true)}
+					disabled={compiling || uploading || isAiProcessing}
+					class="p-2 text-purple-400 hover:text-purple-300 hover:bg-purple-400/10 rounded-lg transition-colors"
+					title="Tailor with AI"
+				>
+					<Sparkles size={20} />
+				</button>
+
+				<div class="h-6 w-px bg-[var(--color-border)] mx-1"></div>
+
 				<!-- History -->
 				<a
 					href="/editor/history"
@@ -405,6 +505,94 @@
 			</div>
 		</div>
 	</header>
+
+	<!-- AI Modal -->
+	{#if isAiModalOpen}
+		<div
+			class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+		>
+			<div
+				class="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl shadow-2xl w-full max-w-lg flex flex-col max-h-[90vh]"
+			>
+				<div
+					class="flex items-center justify-between p-4 border-b border-[var(--color-border)]"
+				>
+					<h3
+						class="text-lg font-bold text-[var(--color-headline)] flex items-center gap-2"
+					>
+						<Sparkles size={18} class="text-purple-400" /> Tailor Resume
+					</h3>
+					<button
+						on:click={() => (isAiModalOpen = false)}
+						class="text-[var(--color-paragraph)] hover:text-[var(--color-headline)]"
+					>
+						<X size={20} />
+					</button>
+				</div>
+
+				<div class="p-4 flex flex-col gap-4 overflow-y-auto">
+					<div>
+						<label
+							class="block text-sm font-medium text-[var(--color-headline)] mb-1"
+						>
+							AI Model
+						</label>
+						<select
+							bind:value={selectedModel}
+							class="w-full bg-[var(--color-background)] border border-[var(--color-border)] rounded-lg px-3 py-2 text-sm text-[var(--color-paragraph)] focus:outline-none focus:border-[var(--color-secondary)]"
+						>
+							{#each AI_MODELS as model}
+								<option value={model.id}>{model.name}</option>
+							{/each}
+						</select>
+					</div>
+
+					<div>
+						<label
+							class="block text-sm font-medium text-[var(--color-headline)] mb-1"
+						>
+							Job Description
+						</label>
+						<textarea
+							bind:value={jobDescription}
+							placeholder="Paste the job description here..."
+							class="w-full h-40 bg-[var(--color-background)] border border-[var(--color-border)] rounded-lg px-3 py-2 text-sm text-[var(--color-paragraph)] focus:outline-none focus:border-[var(--color-secondary)] resize-none"
+						></textarea>
+					</div>
+
+					<div class="bg-blue-500/10 p-3 rounded-lg">
+						<p class="text-xs text-blue-400">
+							<strong>Note:</strong> The AI will rewrite your summary
+							and bullet points to match the JD keywords. Your resume
+							structure will be preserved.
+						</p>
+					</div>
+				</div>
+
+				<div
+					class="p-4 border-t border-[var(--color-border)] flex justify-end gap-2"
+				>
+					<button
+						on:click={() => (isAiModalOpen = false)}
+						class="px-4 py-2 text-sm text-[var(--color-paragraph)] hover:bg-[var(--color-background)] rounded-lg transition-colors"
+					>
+						Cancel
+					</button>
+					<button
+						on:click={handleAiRewrite}
+						disabled={isAiProcessing || !jobDescription.trim()}
+						class="px-4 py-2 text-sm font-semibold bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors disabled:opacity-50 flex items-center gap-2"
+					>
+						{#if isAiProcessing}
+							<Loader2 size={16} class="animate-spin" /> Processing...
+						{:else}
+							<Sparkles size={16} /> Tailor Resume
+						{/if}
+					</button>
+				</div>
+			</div>
+		</div>
+	{/if}
 
 	<!-- Error Messages -->
 	{#if compilationError}

@@ -77,7 +77,7 @@ async fn authenticate_pocketbase(
     Ok(auth_data.token)
 }
 
-fn verify_auth_header(headers: &Headers) -> Result<String> {
+pub fn verify_auth_header(headers: &Headers) -> Result<String> {
     let auth_header = match headers.get("Authorization")? {
         Some(h) => h,
         None => return Err(Error::RustError("Missing Authorization header".into())),

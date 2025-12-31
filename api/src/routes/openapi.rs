@@ -17,8 +17,11 @@ use crate::handlers;
         handlers::auth::verify,
         handlers::resume::handle,
         handlers::resume_api::get_latest,
+        handlers::resume_api::get_history,
+        handlers::resume_api::get_by_id,
         handlers::resume_api::upload,
         handlers::typst::compile,
+        handlers::ai::rewrite,
     ),
     components(
         schemas(
@@ -36,6 +39,8 @@ use crate::handlers;
             handlers::resume_api::LatestResumeResponse,
             handlers::resume_api::UploadResponse,
             handlers::typst::CompileRequest,
+            handlers::ai::AiRewriteRequest,
+            handlers::ai::AiRewriteResponse,
         )
     ),
     tags(
@@ -46,6 +51,7 @@ use crate::handlers;
         (name = "Resume", description = "Resume endpoints"),
         (name = "Resume API", description = "Resume API endpoints"),
         (name = "Typst", description = "Typst compilation service"),
+        (name = "AI", description = "AI Integration endpoints"),
     ),
     modifiers(&SecurityAddon),
     info(

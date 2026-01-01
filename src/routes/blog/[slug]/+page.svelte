@@ -1,56 +1,61 @@
 <script lang="ts">
     import { onMount, tick } from "svelte";
-    import SvelteMarkdown from "svelte-markdown";
-    import remarkMath from "remark-math";
-    import rehypeKatex from "rehype-katex";
+    import { browser } from "$app/environment";
+
+    // Import katex and its auto-render function specifically
+    import renderMathInElement from "katex/contrib/auto-render";
+    import "katex/dist/katex.min.css";
+
+    // Import highlight.js
+    import hljs from "highlight.js";
+    import "highlight.js/styles/github-dark-dimmed.css";
 
     export let data;
 
-    const markdownOptions: any = {
-        remarkPlugins: [remarkMath],
-        rehypePlugins: [rehypeKatex],
+    const renderContent = async () => {
+        if (!browser) return;
+        await tick();
+
+        // 1. Highlight Code
+        try {
+            hljs.highlightAll();
+        } catch (e) {
+            console.error("Highlighting failed", e);
+        }
+
+        // 2. Render LaTeX
+        const element = document.getElementById("post-content");
+        if (element) {
+            try {
+                renderMathInElement(element, {
+                    delimiters: [
+                        { left: "$$", right: "$$", display: true },
+                        { left: "$", right: "$", display: false },
+                        { left: "\\(", right: "\\)", display: false },
+                        { left: "\\[", right: "\\]", display: true },
+                    ],
+                    throwOnError: false,
+                    output: "html", // Use HTML output by default to avoid MathML issues in some browsers
+                });
+            } catch (e) {
+                console.error("Katex rendering failed", e);
+            }
+        }
     };
 
-    onMount(async () => {
-        // Dynamically highlight code blocks after rendering
-        // We wait for tick to ensure DOM is updated by SvelteMarkdown
-        await tick();
-        if ((window as any).hljs) {
-            (window as any).hljs.highlightAll();
-        }
+    onMount(() => {
+        renderContent();
     });
 
-    // Re-run highlighting if post changes (unlikely in this flow but good practice)
-    $: if (data.post) {
-        (async () => {
-            await tick();
-            if ((window as any).hljs) {
-                (window as any).hljs.highlightAll();
-            }
-        })();
+    // Re-run if post changes
+    $: if (browser && data.post) {
+        renderContent();
     }
 </script>
 
 <svelte:head>
     <title>{data.post.title} — Kashif</title>
     <meta name="description" content={data.post.subtitle || data.post.title} />
-
-    <!-- KaTeX for Math -->
-    <link
-        rel="stylesheet"
-        href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"
-        integrity="sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI+WdtXRGWt2kTvGFasHpSy3SV"
-        crossorigin="anonymous"
-    />
-
-    <!-- Highlight.js for Syntax Highlighting -->
-    <link
-        rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark-dimmed.min.css"
-    />
-    <script
-        src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"
-    ></script>
 </svelte:head>
 
 <div class="max-w-3xl mx-auto px-6 py-12 md:py-20 select-text">
@@ -94,7 +99,7 @@
 
         <div class="space-y-4">
             <div
-                class="flex flex-wrap items-center gap-3 text-sm text-[var(--color-paragraph)] font-medium"
+                class="hidden md:flex flex-wrap items-center gap-3 text-sm text-[var(--color-paragraph)] font-medium"
             >
                 <time datetime={data.post.publishedAt}>
                     {new Date(data.post.publishedAt).toLocaleDateString(
@@ -123,14 +128,14 @@
             </div>
 
             <h1
-                class="text-3xl md:text-5xl font-extrabold tracking-tight text-[var(--color-headline)] leading-[1.1]"
+                class="font-serif text-3xl md:text-5xl font-extrabold tracking-tight text-[var(--color-headline)] leading-[1.1]"
             >
                 {data.post.title}
             </h1>
 
             {#if data.post.subtitle}
                 <p
-                    class="text-xl md:text-2xl text-[var(--color-paragraph)] leading-relaxed font-light"
+                    class="font-serif text-xl md:text-2xl text-[var(--color-paragraph)] leading-relaxed font-light"
                 >
                     {data.post.subtitle}
                 </p>
@@ -140,21 +145,19 @@
 
     <!-- Article Content -->
     <article
-        class="prose prose-invert prose-lg max-w-none
+        id="post-content"
+        class="font-serif prose prose-invert prose-lg max-w-none
     prose-headings:text-[var(--color-headline)] prose-headings:font-bold prose-headings:tracking-tight
     prose-p:text-[var(--color-paragraph)] prose-p:leading-relaxed
-    prose-a:text-[var(--color-highlight)] prose-a:no-underline hover:prose-a:underline
-    prose-code:text-[var(--color-highlight)] prose-code:bg-[var(--color-surface-hover)] prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md prose-code:before:content-none prose-code:after:content-none
-    prose-pre:bg-[#1e1e1e] prose-pre:border prose-pre:border-[var(--color-border)] prose-pre:rounded-xl prose-pre:shadow-sm
+
+    prose-code:font-mono prose-code:text-[var(--color-highlight)] prose-code:bg-[var(--color-surface-hover)] prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md prose-code:before:content-none prose-code:after:content-none
+    prose-pre:font-mono prose-pre:bg-[#1e1e1e] prose-pre:border prose-pre:border-[var(--color-border)] prose-pre:rounded-xl prose-pre:shadow-sm
     prose-blockquote:border-l-[var(--color-highlight)] prose-blockquote:bg-[var(--color-surface-hover)] prose-blockquote:py-2 prose-blockquote:px-4 prose-blockquote:rounded-r-lg prose-blockquote:not-italic
     prose-img:rounded-xl prose-img:shadow-md prose-img:border prose-img:border-[var(--color-border)]
     prose-hr:border-[var(--color-border)]
     marker:text-[var(--color-highlight)]"
     >
-        <SvelteMarkdown
-            source={data.post.content.markdown}
-            {...markdownOptions}
-        />
+        {@html data.post.content.html}
     </article>
 
     <!-- Footer / Post-Article -->
@@ -168,15 +171,27 @@
             class="hover:text-[var(--color-headline)] transition-colors text-sm font-medium"
             >← More Posts</a
         >
-        <!-- Potential Share Buttons could go here -->
     </div>
 </div>
 
 <style>
-    /* Custom overrides for specific markdown elements if needed */
+    /* Ensure KaTeX display equations scroll if too wide */
     :global(.katex-display) {
         overflow-x: auto;
         overflow-y: hidden;
         padding: 1rem 0;
+    }
+
+    /* Force link color to override prose/prose-invert specificities */
+    #post-content :global(a) {
+        color: var(--color-accent-primary);
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.2s ease-in-out;
+    }
+
+    #post-content :global(a:hover) {
+        text-decoration: underline;
+        opacity: 0.8;
     }
 </style>

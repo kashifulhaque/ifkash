@@ -11,6 +11,7 @@ export const load = async ({ params, fetch }) => {
           coverImage {
             url
           }
+          url
           content {
             html
           }

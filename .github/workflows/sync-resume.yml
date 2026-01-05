@@ -12,6 +12,9 @@ on:
   repository_dispatch:
     types: [resume_updated]
 
+permissions:
+  contents: write
+
 jobs:
   sync-resume:
     runs-on: ubuntu-latest

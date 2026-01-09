@@ -168,7 +168,7 @@ TYPST_SERVICE_URL = "https://typst.ifkash.dev"
 # POCKETBASE_PASSWORD
 ```
 
-**Typst Service** (`docker-compose.yml`):
+**Typst Service** (`compose.yml`):
 ```yaml
 environment:
   - PORT=3001

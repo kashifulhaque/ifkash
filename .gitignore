@@ -12,3 +12,6 @@ vite.config.ts.timestamp-*
 
 api.old/
 .fonts/
+
+# DevContainer logs
+.devcontainer/logs/

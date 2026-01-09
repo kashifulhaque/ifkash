@@ -50,7 +50,7 @@ Internet → Caddy (443) → typst-service:3001 → Typst Compiler → PDF
 ## Files
 
 - `Dockerfile` - Container image definition
-- `docker-compose.yml` - Service configuration
+- `compose.yml` - Service configuration
 - `index.ts` - Bun HTTP server
 - `package.json` - Dependencies
 - `deploy-docker.sh` - Automated deployment
@@ -70,7 +70,7 @@ typst.ifkash.dev {
 
 ### Resource Limits
 
-Edit `docker-compose.yml`:
+Edit `compose.yml`:
 
 ```yaml
 deploy:
@@ -82,7 +82,7 @@ deploy:
 
 ### Environment Variables
 
-Edit `docker-compose.yml`:
+Edit `compose.yml`:
 
 ```yaml
 environment:

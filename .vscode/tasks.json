@@ -1,0 +1,142 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Start All Services",
+            "type": "shell",
+            "command": "bash .devcontainer/start-services.sh",
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            }
+        },
+        {
+            "label": "Stop All Services",
+            "type": "shell",
+            "command": "bash .devcontainer/stop-services.sh",
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            }
+        },
+        {
+            "label": "Frontend: Dev",
+            "type": "shell",
+            "command": "mise run web:dev",
+            "problemMatcher": [],
+            "isBackground": true,
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "group": "services"
+            }
+        },
+        {
+            "label": "Backend: Dev",
+            "type": "shell",
+            "command": "mise run api:dev",
+            "problemMatcher": [],
+            "isBackground": true,
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "group": "services"
+            },
+            "options": {
+                "cwd": "${workspaceFolder}/api"
+            }
+        },
+        {
+            "label": "Typst Service: Dev",
+            "type": "shell",
+            "command": "bun run dev",
+            "problemMatcher": [],
+            "isBackground": true,
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "group": "services"
+            },
+            "options": {
+                "cwd": "${workspaceFolder}/typst-service"
+            }
+        },
+        {
+            "label": "Backend: Build",
+            "type": "shell",
+            "command": "mise run api:build",
+            "problemMatcher": [
+                "$rustc"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            },
+            "options": {
+                "cwd": "${workspaceFolder}/api"
+            }
+        },
+        {
+            "label": "Frontend: Build",
+            "type": "shell",
+            "command": "bun run build",
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            }
+        },
+        {
+            "label": "Assets: Download Fonts",
+            "type": "shell",
+            "command": "mise run assets:fonts",
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            }
+        },
+        {
+            "label": "Assets: Compile Typst",
+            "type": "shell",
+            "command": "mise run assets:typst",
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            }
+        },
+        {
+            "label": "View Frontend Logs",
+            "type": "shell",
+            "command": "tail -f .devcontainer/logs/frontend.log",
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            }
+        },
+        {
+            "label": "View Backend Logs",
+            "type": "shell",
+            "command": "tail -f .devcontainer/logs/backend-api.log",
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            }
+        },
+        {
+            "label": "View Typst Service Logs",
+            "type": "shell",
+            "command": "tail -f .devcontainer/logs/typst-service.log",
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            }
+        }
+    ]
+}

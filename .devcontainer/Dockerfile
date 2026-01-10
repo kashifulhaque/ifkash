@@ -6,55 +6,42 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
-    # Build essentials
     build-essential \
     pkg-config \
     libssl-dev \
-    # Curl and wget for downloads
     curl \
     wget \
-    # Git
     git \
-    # For Rust compilation
     gcc \
     g++ \
-    # For wasm32 target
     lld \
     clang \
-    # Additional utilities
     unzip \
     jq \
     ca-certificates \
     gnupg \
-    # For Typst
     fontconfig \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Rust and Cargo
-RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable
-ENV PATH="/usr/local/cargo/bin:${PATH}"
-ENV CARGO_HOME=/usr/local/cargo
-ENV RUSTUP_HOME=/usr/local/rustup
+# Install Rust and Cargo as root
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable \
+    && . /root/.cargo/env \
+    && rustup target add wasm32-unknown-unknown \
+    && cargo install worker-build
 
-# Install Bun
+# Install Bun as root
 RUN curl -fsSL https://bun.sh/install | bash
-ENV BUN_INSTALL="/root/.bun"
-ENV PATH="${BUN_INSTALL}/bin:${PATH}"
 
-# Install Node.js LTS (via mise will handle this, but having a base version helps)
+# Install Node.js LTS
 RUN curl -fsSL https://deb.nodesource.com/setup_lts.x | bash - \
     && apt-get install -y nodejs \
     && rm -rf /var/lib/apt/lists/*
 
-# Install mise (will be configured via feature, but pre-install for faster setup)
+# Install wrangler globally
+RUN npm install -g wrangler
+
+# Install mise as root
 RUN curl https://mise.run | sh
-ENV PATH="/root/.local/bin:${PATH}"
-
-# Pre-install wasm32 target for Rust
-RUN rustup target add wasm32-unknown-unknown
-
-# Install worker-build for Cloudflare Workers
-RUN cargo install worker-build
 
 # Install Typst
 RUN curl -fsSL https://github.com/typst/typst/releases/download/v0.12.0/typst-x86_64-unknown-linux-musl.tar.xz | \
@@ -64,36 +51,29 @@ RUN curl -fsSL https://github.com/typst/typst/releases/download/v0.12.0/typst-x8
 # Create workspace directory
 RUN mkdir -p /workspace
 
-# Set working directory
-WORKDIR /workspace
+# Create workspace directory and mise cache directories
+RUN mkdir -p /workspace/.mise/cache /workspace/.mise/installs /workspace/.mise/downloads
 
-# Switch to vscode user (created by base image)
+# Give vscode user access to all installed tools and workspace
+RUN chown -R vscode:vscode /root/.cargo /root/.rustup /root/.bun /root/.local /workspace
+
+# Switch to vscode user
 USER vscode
 
-# Install Bun for vscode user
-RUN curl -fsSL https://bun.sh/install | bash
-ENV BUN_INSTALL="/home/vscode/.bun"
-ENV PATH="${BUN_INSTALL}/bin:${PATH}"
+# Set up environment for vscode user
+ENV CARGO_HOME=/root/.cargo
+ENV RUSTUP_HOME=/root/.rustup
+ENV BUN_INSTALL=/root/.bun
+ENV PATH="/root/.cargo/bin:/root/.bun/bin:/root/.local/bin:${PATH}"
 
-# Install mise for vscode user
+# Install mise for vscode user (in their home directory)
 RUN curl https://mise.run | sh
 ENV PATH="/home/vscode/.local/bin:${PATH}"
 
-# Configure mise directory
+# Create mise config directory
 RUN mkdir -p /home/vscode/.local/share/mise
 
-# Reset to root for final setup
-USER root
-
-# Ensure vscode user has access to cargo
-RUN chown -R vscode:vscode /usr/local/cargo /usr/local/rustup
-
-# Switch back to vscode user
-USER vscode
-
-# Set environment variables for vscode user
-ENV CARGO_HOME=/usr/local/cargo
-ENV RUSTUP_HOME=/usr/local/rustup
-ENV PATH="/usr/local/cargo/bin:${PATH}"
+# Set working directory
+WORKDIR /workspace
 
 CMD ["/bin/bash"]

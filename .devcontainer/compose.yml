@@ -1,51 +1,49 @@
-version: '3.8'
-
 services:
   app:
     build:
       context: .
       dockerfile: Dockerfile
-    
+
     volumes:
       # Mount workspace
       - ..:/workspace:cached
-      
+
       # Persist mise data
       - mise-data:/workspace/.mise
-      
+
       # Persist cargo cache
-      - cargo-cache:/usr/local/cargo/registry
-      - cargo-git:/usr/local/cargo/git
-      
+      - cargo-cache:/root/.cargo/registry
+      - cargo-git:/root/.cargo/git
+
       # Persist bun cache
       - bun-cache:/home/vscode/.bun
-      
+
       # Persist node_modules for better performance
       - node-modules:/workspace/node_modules
       - api-node-modules:/workspace/api/node_modules
       - typst-node-modules:/workspace/typst-service/node_modules
-    
+
     # Keep container running
     command: sleep infinity
-    
+
     # Environment variables
     environment:
       - MISE_DATA_DIR=/workspace/.mise
       - MISE_CACHE_DIR=/workspace/.mise/cache
-      - CARGO_HOME=/usr/local/cargo
-      - RUSTUP_HOME=/usr/local/rustup
+      - CARGO_HOME=/root/.cargo
+      - RUSTUP_HOME=/root/.rustup
       - BUN_INSTALL=/home/vscode/.bun
-    
+
     # Network mode for better localhost access
     network_mode: host
-    
+
     # Increase shared memory
     shm_size: 2gb
-    
+
     # Security options
     security_opt:
       - seccomp:unconfined
-    
+
     # Capabilities for debugging
     cap_add:
       - SYS_PTRACE

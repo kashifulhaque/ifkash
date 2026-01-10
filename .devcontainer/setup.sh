@@ -10,13 +10,22 @@ if ! command -v mise &> /dev/null; then
     export PATH="$HOME/.local/bin:$PATH"
 fi
 
+# Ensure mise cache directories exist (should already be created by Dockerfile)
+mkdir -p /workspace/.mise/cache /workspace/.mise/installs /workspace/.mise/downloads
+
 # Trust the mise.toml configuration
 echo "✅ Trusting mise configuration..."
 mise trust
 
-# Install all tools from mise.toml
-echo "📦 Installing tools via mise (bun, node, rust, typst, wrangler)..."
-mise install
+# Note: All tools (Rust, Bun, Node.js, Typst, Wrangler) are pre-installed in the Dockerfile
+# Verify tools are available
+echo "🔍 Verifying pre-installed tools..."
+echo "  - Rust: $(rustc --version 2>/dev/null || echo 'not found')"
+echo "  - Cargo: $(cargo --version 2>/dev/null || echo 'not found')"
+echo "  - Bun: $(bun --version 2>/dev/null || echo 'not found')"
+echo "  - Node: $(node --version 2>/dev/null || echo 'not found')"
+echo "  - Typst: $(typst --version 2>/dev/null || echo 'not found')"
+echo "  - Wrangler: $(wrangler --version 2>/dev/null || echo 'not found')"
 
 # Activate mise in current shell
 eval "$(mise activate bash)"

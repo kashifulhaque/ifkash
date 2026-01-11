@@ -32,6 +32,8 @@
     nextName: "--",
     nextTime: "--",
     countdown: 0, // minutes
+    prevName: "--",
+    prevTime: "--",
     loading: true,
   };
 
@@ -165,21 +167,32 @@
       const { lat, lon } = await getLoc();
       const today = new Date();
 
-      // Fetch today and tomorrow
+      // Fetch yesterday, today and tomorrow
       const fetchDate = (d: Date) =>
         fetch(
           `https://api.aladhan.com/v1/timings/${d.getDate()}-${d.getMonth() + 1}-${d.getFullYear()}?latitude=${lat}&longitude=${lon}&method=3`,
         ).then((r) => r.json());
+      
+      const yesterday = new Date(today);
+      yesterday.setDate(yesterday.getDate() - 1);
       const tmrw = new Date(today);
       tmrw.setDate(tmrw.getDate() + 1);
-      const [todayData, tmrwData] = await Promise.all([
+      
+      const [yesterdayData, todayData, tmrwData] = await Promise.all([
+        fetchDate(yesterday),
         fetchDate(today),
         fetchDate(tmrw),
       ]);
+      const t0 = yesterdayData.data.timings;
       const t1 = todayData.data.timings;
       const t2 = tmrwData.data.timings;
 
       const prayers = [
+        { name: "Fajr", time: t0.Fajr, date: yesterday },
+        { name: "Dhuhr", time: t0.Dhuhr, date: yesterday },
+        { name: "Asr", time: t0.Asr, date: yesterday },
+        { name: "Maghrib", time: t0.Maghrib, date: yesterday },
+        { name: "Isha", time: t0.Isha, date: yesterday },
         { name: "Fajr", time: t1.Fajr, date: today },
         { name: "Dhuhr", time: t1.Dhuhr, date: today },
         { name: "Asr", time: t1.Asr, date: today },
@@ -189,14 +202,25 @@
       ];
 
       let nextP = null;
+      let prevP = null;
       const nowMs = new Date().getTime();
-      for (const p of prayers) {
+      
+      for (let i = 0; i < prayers.length; i++) {
+        const p = prayers[i];
         const [h, m] = p.time.split(":");
         const pDate = new Date(p.date);
         pDate.setHours(parseInt(h), parseInt(m), 0);
 
         if (pDate.getTime() > nowMs) {
           nextP = { ...p, fullDate: pDate };
+          // Previous prayer is the one before this
+          if (i > 0) {
+            const prevPrayer = prayers[i - 1];
+            const [ph, pm] = prevPrayer.time.split(":");
+            const prevDate = new Date(prevPrayer.date);
+            prevDate.setHours(parseInt(ph), parseInt(pm), 0);
+            prevP = { ...prevPrayer, fullDate: prevDate };
+          }
           break;
         }
       }
@@ -210,8 +234,17 @@
         prayer.countdown = Math.ceil(
           (nextP.fullDate.getTime() - nowMs) / 60000,
         );
-        prayer.loading = false;
       }
+      
+      if (prevP) {
+        prayer.prevName = prevP.name;
+        prayer.prevTime = prevP.fullDate.toLocaleTimeString("default", {
+          hour: "numeric",
+          minute: "2-digit",
+        });
+      }
+      
+      prayer.loading = false;
     } catch (e) {
       console.error("Prayer error", e);
     }
@@ -285,8 +318,19 @@
 
       {#if !weatherError && !prayer.loading}<span class="hidden sm:inline text-neutral-800">|</span>{/if}
 
-      {#if !prayer.loading && prayer.nextName}
+      {#if !prayer.loading && prayer.prevName !== "--"}
         <div class="flex items-center gap-2">
+          <span class="text-neutral-600 text-xs">prev</span>
+          <span class="text-neutral-500">{prayer.prevName}</span>
+          <span class="opacity-60">{prayer.prevTime}</span>
+        </div>
+      {/if}
+
+      {#if !prayer.loading && prayer.prevName !== "--" && prayer.nextName !== "--"}<span class="hidden sm:inline text-neutral-800">|</span>{/if}
+
+      {#if !prayer.loading && prayer.nextName !== "--"}
+        <div class="flex items-center gap-2">
+          <span class="text-neutral-600 text-xs">next</span>
           <span class="text-white">{prayer.nextName}</span>
           <span>{prayer.nextTime}</span>
           {#if prayer.countdown > 0}

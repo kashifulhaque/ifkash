@@ -13,6 +13,23 @@
 
   const projects: Project[] = [
     {
+      title: 'smol-llama 🦙',
+      links: [
+        { text: 'HuggingFace', url: 'https://huggingface.co/ifkash/smol-llama' },
+        { text: 'dataset', url: 'https://huggingface.co/datasets/ifkash/fineweb-6b' }
+      ],
+      description:
+        'A 360M parameter LLaMA-style language model pre-trained from scratch on 6 billion tokens of web data. Features Grouped Query Attention (GQA), RoPE embeddings, and SwiGLU activations. Trained on a single H100 GPU in ~22 hours for $53, demonstrating that high-quality small language models can be trained efficiently.'
+    },
+    {
+      title: 'FineWeb-6B Dataset',
+      links: [
+        { text: 'HuggingFace', url: 'https://huggingface.co/datasets/ifkash/fineweb-6b' }
+      ],
+      description:
+        'A curated subset of the FineWeb dataset containing 6 billion high-quality web tokens (16.1 GB parquet, 11.3 GB tokenized). Includes pre-tokenized binary files with a custom 49K vocab BPE tokenizer, designed for efficient language model pre-training experiments without requiring massive computational resources.'
+    },
+    {
       title: 'smoltorch',
       links: [
         { text: 'git repo', url: 'https://github.com/kashifulhaque/smoltorch' },

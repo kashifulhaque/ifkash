@@ -46,8 +46,5 @@ mise run api:dev
 
 # To run SvelteKit app
 mise run web:dev
-
-# To run Typst service
-cd typst-service && bun run dev
 ```
 

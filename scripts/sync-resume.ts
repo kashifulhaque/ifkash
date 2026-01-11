@@ -82,7 +82,7 @@ async function main() {
 
 		// Download files
 		await downloadFile(pdfUrl, './static/assets/Kashiful_Haque.pdf');
-		await downloadFile(typstUrl, `./static/assets/${resume.typst_file}`);
+		await downloadFile(typstUrl, './static/assets/Kashiful_Haque.typ');
 
 		console.log('\n✅ Resume files synced successfully!');
 		console.log(`   Version: ${resume.version || 'N/A'}`);

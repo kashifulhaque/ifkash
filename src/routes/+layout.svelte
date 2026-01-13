@@ -23,17 +23,6 @@
             <h1 class="text-4xl font-bold tracking-tighter sm:text-5xl mb-3">
               <a href="/">Kashiful Haque</a>
             </h1>
-            <h2
-              class="text-lg font-medium tracking-tight text-[var(--color-headline)] mb-6"
-            >
-              Applied ML Engineer
-            </h2>
-            <p
-              class="max-w-xs text-[var(--color-paragraph)] leading-relaxed mb-8"
-            >
-              Building agentic coding environments and inference-optimized ML
-              systems.
-            </p>
 
             <nav class="hidden lg:block">
               <ul class="flex flex-col gap-3">
@@ -81,30 +70,37 @@
               target="_blank"
               rel="noopener noreferrer"
               class="hover:text-[var(--color-headline)] transition-colors"
-              >GitHub</a
+              >gh</a
+            >
+            <a
+              href="https://hf.co/ifkash"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="hover:text-[var(--color-headline)] transition-colors"
+              >hf</a
             >
             <a
               href="https://linkedin.com/in/kashifulhaque"
               target="_blank"
               rel="noopener noreferrer"
               class="hover:text-[var(--color-headline)] transition-colors"
-              >LinkedIn</a
+              >linkedin</a
             >
             <a
               href="/leetcode"
               class="hover:text-[var(--color-headline)] transition-colors"
-              >LeetCode</a
+              >leetcode</a
             >
             <a
               href="/news"
               class="hover:text-[var(--color-headline)] transition-colors"
-              >News</a
+              >hn</a
             >
             {#if !$auth.isAuthenticated}
               <a
                 href="/login"
                 class="hover:text-[var(--color-headline)] transition-colors opacity-70 hover:opacity-100"
-                >Admin</a
+                >edit</a
               >
             {/if}
           </div>
@@ -142,37 +138,44 @@
 
           <!-- Mobile Footer -->
           <footer
-            class="mt-16 pt-8 border-t border-[var(--color-border)] lg:hidden flex gap-6 text-sm font-medium text-[var(--color-paragraph)]"
+            class="mt-16 pt-86 border-t border-[var(--color-border)] lg:hidden flex gap-6 text-sm font-medium text-[var(--color-paragraph)]"
           >
             <a
               href="https://github.com/kashifulhaque"
               target="_blank"
               rel="noopener noreferrer"
               class="hover:text-[var(--color-headline)] transition-colors"
-              >GitHub</a
+              >gh</a
+            >
+            <a
+              href="https://hf.co/ifkash"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="hover:text-[var(--color-headline)] transition-colors"
+              >hf</a
             >
             <a
               href="https://linkedin.com/in/kashifulhaque"
               target="_blank"
               rel="noopener noreferrer"
               class="hover:text-[var(--color-headline)] transition-colors"
-              >LinkedIn</a
+              >linkedin</a
             >
             <a
               href="/leetcode"
               class="hover:text-[var(--color-headline)] transition-colors"
-              >LeetCode</a
+              >leetcode</a
             >
             <a
               href="/news"
               class="hover:text-[var(--color-headline)] transition-colors"
-              >News</a
+              >hn</a
             >
             {#if !$auth.isAuthenticated}
               <a
                 href="/login"
                 class="hover:text-[var(--color-headline)] transition-colors opacity-70 hover:opacity-100"
-                >Admin</a
+                >edit</a
               >
             {/if}
           </footer>

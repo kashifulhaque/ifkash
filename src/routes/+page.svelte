@@ -11,27 +11,12 @@
   <title>Kashif — Applied ML Engineer</title>
   <meta
     name="description"
-    content="Personal website of Kashiful Haque, Applied ML Engineer."
+    content="Personal website of Kashiful Haque, ML Engineer."
   />
 </svelte:head>
 
-<!-- About Section -->
-<section class="mb-16">
-  <p class="text-[var(--color-paragraph)] leading-relaxed mb-4">
-    I'm an Applied ML Engineer passionate about building intelligent systems
-    that scale. Currently focused on agentic coding environments and
-    inference-optimized ML systems.
-  </p>
-</section>
-
 <!-- Featured Section (Example) -->
 <section class="mb-16">
-  <h3
-    class="text-sm font-bold uppercase tracking-widest text-[var(--color-headline)] mb-6"
-  >
-    Featured
-  </h3>
-
   <div class="space-y-4">
     <!-- Resume Link (Open PDF directly) -->
     <a

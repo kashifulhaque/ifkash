@@ -15,8 +15,8 @@
     {
       title: 'smol-llama 🦙',
       links: [
-        { text: 'HuggingFace', url: 'https://huggingface.co/ifkash/smol-llama' },
-        { text: 'dataset', url: 'https://huggingface.co/datasets/ifkash/fineweb-6b' }
+        { text: 'hf 🤗', url: 'https://huggingface.co/ifkash/smol-llama' },
+        { text: 'git repo', url: 'https://github.com/kashifulhaque/smol-llama' }
       ],
       description:
         'A 360M parameter LLaMA-style language model pre-trained from scratch on 6 billion tokens of web data. Features Grouped Query Attention (GQA), RoPE embeddings, and SwiGLU activations. Trained on a single H100 GPU in ~22 hours for $53, demonstrating that high-quality small language models can be trained efficiently.'
@@ -24,16 +24,16 @@
     {
       title: 'FineWeb-6B Dataset',
       links: [
-        { text: 'HuggingFace', url: 'https://huggingface.co/datasets/ifkash/fineweb-6b' }
+        { text: 'hf 🤗', url: 'https://huggingface.co/datasets/ifkash/fineweb-6b' }
       ],
       description:
-        'A curated subset of the FineWeb dataset containing 6 billion high-quality web tokens (16.1 GB parquet, 11.3 GB tokenized). Includes pre-tokenized binary files with a custom 49K vocab BPE tokenizer, designed for efficient language model pre-training experiments without requiring massive computational resources.'
+        'A curated subset of the FineWeb dataset containing first 6 billion high-quality web tokens (16.1 GB parquet, 11.3 GB tokenized). Includes pre-tokenized binary files with a custom 49K vocab BPE tokenizer, designed for efficient language model pre-training experiments without requiring massive computational resources. Used in smol-llama\'s pre-training.'
     },
     {
       title: 'smoltorch',
       links: [
         { text: 'git repo', url: 'https://github.com/kashifulhaque/smoltorch' },
-        { text: 'PyPI', url: 'https://pypi.org/project/smoltorch/' },
+        { text: 'pypi', url: 'https://pypi.org/project/smoltorch/' },
         { text: 'blog', url: 'https://blog.ifkash.dev/smoltorch' }
       ],
       description:
@@ -53,7 +53,7 @@
       title: 'NoPokeDB – lightweight vector DB',
       links: [
         { text: 'git repo', url: 'https://github.com/kashifulhaque/nopokedb' },
-        { text: 'PyPI', url: 'https://pypi.org/project/nopokedb/' }
+        { text: 'pypi', url: 'https://pypi.org/project/nopokedb/' }
       ],
       description: 'A lightweight, disk-backed vector database implementation using hnswlib + SQLite with durability guarantees and operational log for crash recovery. 2K+ PyPI downloads'
     },

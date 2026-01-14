@@ -1,677 +1,716 @@
 <script lang="ts">
-	import { auth } from "$lib/stores/auth";
-	import { goto } from "$app/navigation";
-	import { browser } from "$app/environment";
-	import MonacoEditor from "$lib/components/MonacoEditor.svelte";
-	import type { PageData } from "./$types";
-	import {
-		Save,
-		LogOut,
-		UploadCloud,
-		FileCode,
-		FileDown,
-		History,
-		ChevronDown,
-		CheckCircle,
-		AlertTriangle,
-		Play,
-		Loader2,
-		Sparkles,
-		Undo2,
-		X,
-	} from "lucide-svelte";
+  import { auth } from "$lib/stores/auth";
+  import { goto } from "$app/navigation";
+  import { browser } from "$app/environment";
+  import MonacoEditor from "$lib/components/MonacoEditor.svelte";
+  import type { PageData } from "./$types";
+  import {
+    LogOut,
+    UploadCloud,
+    FileDown,
+    History,
+    ChevronDown,
+    CheckCircle,
+    AlertTriangle,
+    Play,
+    Loader2,
+    Sparkles,
+    Undo2,
+    X,
+  } from "lucide-svelte";
 
-	export let data: PageData;
+  export let data: PageData;
 
-	let typstContent = "";
-	let pdfUrl = "";
-	let loading = true;
-	let compiling = false;
-	let uploading = false;
-	let uploadProgress = 0;
-	let error = "";
-	let compilationError = "";
-	let hasUnsavedChanges = false;
-	let isDownloadOpen = false;
+  let typstContent = "";
+  let pdfUrl = "";
+  let loading = true;
+  let compiling = false;
+  let uploading = false;
+  let uploadProgress = 0;
+  let error = "";
+  let compilationError = "";
+  let hasUnsavedChanges = false;
+  let isDownloadOpen = false;
 
-	// AI State
-	let isAiModalOpen = false;
-	let isAiProcessing = false;
-	let jobDescription = "";
-	let selectedModel = "anthropic/claude-3.5-sonnet";
-	let previousTypstContent = "";
-	let canUndo = false;
+  let isAiModalOpen = false;
+  let isAiProcessing = false;
+  let jobDescription = "";
+  let selectedModel = "anthropic/claude-3.5-sonnet";
+  let previousTypstContent = "";
+  let canUndo = false;
 
-	const AI_MODELS = [
-		{ id: "anthropic/claude-3.5-sonnet", name: "Claude 3.5 Sonnet" },
-		{ id: "google/gemini-flash-1.5", name: "Gemini 1.5 Flash" },
-		{ id: "openai/gpt-4o-mini", name: "GPT-4o Mini" },
-		{ id: "meta-llama/llama-3.1-70b-instruct", name: "Llama 3.1 70B" },
-	];
+  const AI_MODELS = [
+    { id: "anthropic/claude-3.5-sonnet", name: "Claude 3.5 Sonnet" },
+    { id: "google/gemini-flash-1.5", name: "Gemini 1.5 Flash" },
+    { id: "openai/gpt-4o-mini", name: "GPT-4o Mini" },
+    { id: "meta-llama/llama-3.1-70b-instruct", name: "Llama 3.1 70B" },
+  ];
 
-	$: resume = data.resume;
+  $: resume = data.resume;
 
-	// Fetch Typst file content
-	async function loadTypstContent() {
-		try {
-			const response = await fetch(resume.typst_url);
-			if (!response.ok) throw new Error("Failed to fetch Typst file");
-			typstContent = await response.text();
-			pdfUrl = resume.pdf_url;
-		} catch (e) {
-			error = "Failed to load Typst file";
-			console.error(e);
-		} finally {
-			loading = false;
-			// Load preference for model
-			if (browser) {
-				const savedModel = localStorage.getItem("preferred_ai_model");
-				if (savedModel) selectedModel = savedModel;
-			}
-		}
-	}
+  async function loadTypstContent() {
+    try {
+      const response = await fetch(resume.typst_url);
+      if (!response.ok) throw new Error("Failed to fetch Typst file");
+      typstContent = await response.text();
+      pdfUrl = resume.pdf_url;
+    } catch (e) {
+      error = "Failed to load Typst file";
+    } finally {
+      loading = false;
+      if (browser) {
+        const savedModel = localStorage.getItem("preferred_ai_model");
+        if (savedModel) selectedModel = savedModel;
+      }
+    }
+  }
 
-	$: if (resume) {
-		loadTypstContent();
-	}
+  $: if (resume) loadTypstContent();
 
-	function handleLogout() {
-		auth.logout();
-		goto("/");
-	}
+  function handleLogout() {
+    auth.logout();
+    goto("/");
+  }
 
-	async function handleCompile() {
-		compilationError = "";
-		compiling = true;
+  async function handleCompile() {
+    compilationError = "";
+    compiling = true;
 
-		try {
-			const token = auth.getToken();
-			const apiUrl =
-				typeof window !== "undefined" &&
-				window.location.hostname === "localhost"
-					? "http://localhost:8787/api/typst/compile"
-					: "https://ifkash.dev/api/typst/compile";
+    try {
+      const token = auth.getToken();
+      const apiUrl = typeof window !== "undefined" && window.location.hostname === "localhost"
+        ? "http://localhost:8787/api/typst/compile"
+        : "https://ifkash.dev/api/typst/compile";
 
-			const response = await fetch(apiUrl, {
-				method: "POST",
-				headers: {
-					Authorization: `Bearer ${token}`,
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({ code: typstContent }),
-			});
+      const response = await fetch(apiUrl, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ code: typstContent }),
+      });
 
-			if (!response.ok) {
-				const errorText = await response.text();
-				throw new Error(errorText || "Compilation failed");
-			}
+      if (!response.ok) throw new Error(await response.text() || "Compilation failed");
 
-			// Get PDF blob and create object URL
-			const blob = await response.blob();
+      const blob = await response.blob();
+      if (pdfUrl?.startsWith("blob:")) URL.revokeObjectURL(pdfUrl);
+      pdfUrl = URL.createObjectURL(blob);
+      hasUnsavedChanges = false;
+    } catch (e: any) {
+      compilationError = e.message;
+    } finally {
+      compiling = false;
+    }
+  }
 
-			// Revoke old URL if exists
-			if (pdfUrl && pdfUrl.startsWith("blob:")) {
-				URL.revokeObjectURL(pdfUrl);
-			}
+  function handleEditorChange(newValue: string) {
+    typstContent = newValue;
+    hasUnsavedChanges = true;
+  }
 
-			pdfUrl = URL.createObjectURL(blob);
-			hasUnsavedChanges = false;
-		} catch (e: any) {
-			compilationError = e.message;
-			console.error("Compilation error:", e);
-		} finally {
-			compiling = false;
-		}
-	}
+  async function downloadPDF() {
+    isDownloadOpen = false;
+    if (pdfUrl.startsWith("blob:")) {
+      const a = document.createElement("a");
+      a.href = pdfUrl;
+      a.download = "Kashiful_Haque.pdf";
+      a.click();
+    } else {
+      window.open(resume.pdf_url, "_blank");
+    }
+  }
 
-	function handleEditorChange(newValue: string) {
-		typstContent = newValue;
-		hasUnsavedChanges = true;
-	}
+  async function downloadTypst() {
+    isDownloadOpen = false;
+    const blob = new Blob([typstContent], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = resume.typst_filename || "resume.typ";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
 
-	async function downloadPDF() {
-		isDownloadOpen = false;
-		if (pdfUrl.startsWith("blob:")) {
-			const a = document.createElement("a");
-			a.href = pdfUrl;
-			a.download = "Kashiful_Haque.pdf";
-			document.body.appendChild(a);
-			a.click();
-			document.body.removeChild(a);
-		} else {
-			window.open(resume.pdf_url, "_blank");
-		}
-	}
+  async function handleUpload() {
+    if (hasUnsavedChanges || !pdfUrl?.startsWith("blob:")) {
+      await handleCompile();
+      if (compilationError) {
+        alert("Fix compilation errors first.");
+        return;
+      }
+    }
 
-	async function downloadTypst() {
-		isDownloadOpen = false;
-		const blob = new Blob([typstContent], { type: "text/plain" });
-		const url = window.URL.createObjectURL(blob);
-		const a = document.createElement("a");
-		a.href = url;
-		a.download = resume.typst_filename || "resume.typ";
-		document.body.appendChild(a);
-		a.click();
-		window.URL.revokeObjectURL(url);
-		document.body.removeChild(a);
-	}
+    if (!confirm("Upload new version?")) return;
 
-	async function handleUpload() {
-		// 1. Ensure everything is compiled
-		if (hasUnsavedChanges || (pdfUrl && !pdfUrl.startsWith("blob:"))) {
-			await handleCompile();
-			if (compilationError) {
-				alert(
-					"Compilation failed. Please fix errors before uploading.",
-				);
-				return;
-			}
-		}
+    uploading = true;
+    uploadProgress = 5;
 
-		if (!confirm("Upload as new version to homepage?")) {
-			return;
-		}
+    const progressInterval = setInterval(() => {
+      if (uploadProgress < 90) uploadProgress += Math.random() * 5;
+    }, 300);
 
-		uploading = true;
-		uploadProgress = 5;
-		error = "";
+    try {
+      const token = auth.getToken();
+      const apiUrl = typeof window !== "undefined" && window.location.hostname === "localhost"
+        ? "http://localhost:8787/api/resume/upload"
+        : "https://ifkash.dev/api/resume/upload";
 
-		const progressInterval = setInterval(() => {
-			if (uploadProgress < 90) {
-				uploadProgress += Math.random() * 5;
-			}
-		}, 300);
+      const pdfBlob = await fetch(pdfUrl).then((r) => r.blob());
+      const formData = new FormData();
+      formData.append("typst_file", new Blob([typstContent], { type: "text/plain" }), resume.typst_filename || "resume.typ");
+      formData.append("pdf_file", pdfBlob, "resume.pdf");
+      formData.append("version", (parseInt(resume.version || "0") + 1).toString());
 
-		try {
-			const token = auth.getToken();
-			const apiUrl =
-				typeof window !== "undefined" &&
-				window.location.hostname === "localhost"
-					? "http://localhost:8787/api/resume/upload"
-					: "https://ifkash.dev/api/resume/upload";
+      const response = await fetch(apiUrl, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
 
-			// Fetch the PDF blob
-			const pdfBlob = await fetch(pdfUrl).then((r) => r.blob());
+      if (!response.ok) throw new Error(await response.text() || "Upload failed");
 
-			const formData = new FormData();
-			formData.append(
-				"typst_file",
-				new Blob([typstContent], { type: "text/plain" }),
-				resume.typst_filename || "resume.typ",
-			);
-			formData.append("pdf_file", pdfBlob, "resume.pdf");
+      uploadProgress = 100;
+      clearInterval(progressInterval);
+      setTimeout(() => window.location.reload(), 500);
+    } catch (e: any) {
+      clearInterval(progressInterval);
+      uploadProgress = 0;
+      alert("Upload failed: " + e.message);
+      uploading = false;
+    }
+  }
 
-			const currentVersion = parseInt(resume.version || "0");
-			const newVersion = (currentVersion + 1).toString();
-			formData.append("version", newVersion);
+  function handleUndo() {
+    if (canUndo && previousTypstContent) {
+      typstContent = previousTypstContent;
+      previousTypstContent = "";
+      canUndo = false;
+      hasUnsavedChanges = true;
+    }
+  }
 
-			const response = await fetch(apiUrl, {
-				method: "POST",
-				headers: {
-					Authorization: `Bearer ${token}`,
-				},
-				body: formData,
-			});
+  async function handleAiRewrite() {
+    if (!jobDescription.trim()) return;
 
-			if (!response.ok) {
-				const errorText = await response.text();
-				let message = errorText;
-				try {
-					const json = JSON.parse(errorText);
-					message = json.message || errorText;
-				} catch (e) {}
-				throw new Error(message || "Upload failed");
-			}
+    isAiProcessing = true;
+    previousTypstContent = typstContent;
 
-			uploadProgress = 100;
-			clearInterval(progressInterval);
+    try {
+      if (browser) localStorage.setItem("preferred_ai_model", selectedModel);
 
-			setTimeout(() => {
-				alert(`Successfully uploaded version ${newVersion}!`);
-				window.location.href = "/editor";
-			}, 500);
-		} catch (e: any) {
-			clearInterval(progressInterval);
-			uploadProgress = 0;
-			console.error("Upload error:", e);
-			alert("Upload failed: " + e.message);
-			uploading = false;
-		}
-	}
+      const token = auth.getToken();
+      const apiUrl = typeof window !== "undefined" && window.location.hostname === "localhost"
+        ? "http://localhost:8787/api/ai/rewrite"
+        : "https://ifkash.dev/api/ai/rewrite";
 
-	function handleUndo() {
-		if (canUndo && previousTypstContent) {
-			typstContent = previousTypstContent;
-			previousTypstContent = "";
-			canUndo = false;
-			hasUnsavedChanges = true;
-			alert("Restored previous version!");
-		}
-	}
+      const response = await fetch(apiUrl, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ code: typstContent, job_description: jobDescription, model: selectedModel }),
+      });
 
-	async function handleAiRewrite() {
-		if (!jobDescription.trim()) {
-			alert("Please enter a Job Description");
-			return;
-		}
+      if (!response.ok) throw new Error(await response.text() || "AI failed");
 
-		isAiProcessing = true;
-		// Save current content for undo
-		previousTypstContent = typstContent;
+      const data = await response.json();
+      if (data.success && data.code) {
+        typstContent = data.code;
+        hasUnsavedChanges = true;
+        canUndo = true;
+        isAiModalOpen = false;
+      } else {
+        throw new Error(data.message || "Unknown error");
+      }
+    } catch (e: any) {
+      alert("AI failed: " + e.message);
+    } finally {
+      isAiProcessing = false;
+    }
+  }
 
-		try {
-			// Save model preference
-			if (browser) {
-				localStorage.setItem("preferred_ai_model", selectedModel);
-			}
-
-			const token = auth.getToken();
-			const apiUrl =
-				typeof window !== "undefined" &&
-				window.location.hostname === "localhost"
-					? "http://localhost:8787/api/ai/rewrite"
-					: "https://ifkash.dev/api/ai/rewrite";
-
-			const response = await fetch(apiUrl, {
-				method: "POST",
-				headers: {
-					Authorization: `Bearer ${token}`,
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({
-					code: typstContent,
-					job_description: jobDescription,
-					model: selectedModel,
-				}),
-			});
-
-			if (!response.ok) {
-				const errorText = await response.text();
-				throw new Error(errorText || "AI processing failed");
-			}
-
-			const data = await response.json();
-			if (data.success && data.code) {
-				typstContent = data.code;
-				hasUnsavedChanges = true;
-				canUndo = true;
-				isAiModalOpen = false;
-				alert(
-					"Resume tailored! Please review changes. Click Undo icon to revert.",
-				);
-			} else {
-				throw new Error(data.message || "Unknown error");
-			}
-		} catch (e: any) {
-			console.error("AI Error:", e);
-			alert("AI tailoring failed: " + e.message);
-		} finally {
-			isAiProcessing = false;
-		}
-	}
-
-	// Auto-compile on Ctrl/Cmd + S
-	function handleKeydown(e: KeyboardEvent) {
-		if ((e.ctrlKey || e.metaKey) && e.key === "s") {
-			e.preventDefault();
-			handleCompile();
-		}
-	}
+  function handleKeydown(e: KeyboardEvent) {
+    if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+      e.preventDefault();
+      handleCompile();
+    }
+  }
 </script>
 
 <svelte:head>
-	<title>Resume Editor — Kashif</title>
+  <title>Editor — Kashif</title>
 </svelte:head>
 
 <svelte:window on:keydown={handleKeydown} />
 
-<div
-	class="h-screen flex flex-col bg-[var(--color-background)] overflow-hidden"
->
-	<!-- Header / Toolbar -->
-	<header
-		class="border-b border-[var(--color-border)] bg-[var(--color-surface)] z-20 shadow-sm relative"
-	>
-		<div class="w-full px-4 h-16 flex items-center justify-between gap-4">
-			<!-- Left: Title & Status -->
-			<div class="flex items-center gap-4">
-				<div class="flex flex-col">
-					<h1
-						class="text-lg font-bold text-[var(--color-headline)] flex items-center gap-2"
-					>
-						Resume Editor
-						{#if resume.version}
-							<span
-								class="text-xs font-normal px-2 py-0.5 rounded-full bg-[var(--color-secondary)]/10 text-[var(--color-secondary)] border border-[var(--color-secondary)]/20"
-							>
-								v{resume.version}
-							</span>
-						{/if}
-					</h1>
-					<div class="flex items-center gap-2 text-xs">
-						{#if uploading}
-							<span class="text-blue-500 flex items-center gap-1">
-								<Loader2 size={12} class="animate-spin" /> Uploading...
-							</span>
-						{:else if compiling}
-							<span
-								class="text-[var(--color-secondary)] flex items-center gap-1"
-							>
-								<Loader2 size={12} class="animate-spin" /> Compiling...
-							</span>
-						{:else if hasUnsavedChanges}
-							<span
-								class="text-amber-500 flex items-center gap-1"
-							>
-								<AlertTriangle size={12} /> Unsaved changes
-							</span>
-						{:else}
-							<span
-								class="text-emerald-500 flex items-center gap-1"
-							>
-								<CheckCircle size={12} /> Saved
-							</span>
-						{/if}
-					</div>
-				</div>
-			</div>
+<div class="editor">
+  <!-- Toolbar -->
+  <header class="toolbar">
+    <div class="toolbar-left">
+      <a href="/" class="toolbar-logo">KH</a>
+      <div class="toolbar-title">
+        <span>Editor</span>
+        {#if resume.version}<span class="version">v{resume.version}</span>{/if}
+      </div>
+      <div class="status">
+        {#if uploading}
+          <Loader2 size={12} class="spin" /><span>Uploading</span>
+        {:else if compiling}
+          <Loader2 size={12} class="spin" /><span>Compiling</span>
+        {:else if hasUnsavedChanges}
+          <AlertTriangle size={12} /><span>Unsaved</span>
+        {:else}
+          <CheckCircle size={12} /><span>Saved</span>
+        {/if}
+      </div>
+    </div>
 
-			<!-- Center: Progress Bar (Only when uploading) -->
-			{#if uploading}
-				<div class="flex-1 max-w-sm mx-4">
-					<div
-						class="h-2 w-full bg-gray-200 rounded-full overflow-hidden"
-					>
-						<div
-							class="h-full bg-blue-500 transition-all duration-300 ease-out"
-							style="width: {uploadProgress}%"
-						></div>
-					</div>
-				</div>
-			{/if}
+    <div class="toolbar-right">
+      {#if canUndo}
+        <button on:click={handleUndo} class="tb-btn" title="Undo"><Undo2 size={16} /></button>
+      {/if}
+      <button on:click={() => (isAiModalOpen = true)} disabled={compiling || uploading} class="tb-btn" title="AI">
+        <Sparkles size={16} />
+      </button>
+      <div class="tb-divider"></div>
+      <a href="/editor/history" class="tb-btn" title="History"><History size={16} /></a>
+      <div class="tb-divider"></div>
+      <button on:click={handleCompile} disabled={compiling || uploading} class="tb-btn" title="Compile">
+        <Play size={14} /><span class="tb-label">Run</span>
+      </button>
+      <div class="dropdown">
+        <button on:click={() => (isDownloadOpen = !isDownloadOpen)} class="tb-btn">
+          <FileDown size={16} /><ChevronDown size={12} />
+        </button>
+        {#if isDownloadOpen}
+          <div class="dropdown-menu">
+            <button on:click={downloadPDF}>PDF</button>
+            <button on:click={downloadTypst}>Typst</button>
+          </div>
+          <button class="dropdown-bg" on:click={() => (isDownloadOpen = false)} aria-label="Close"></button>
+        {/if}
+      </div>
+      <button on:click={handleUpload} disabled={uploading || compiling} class="tb-btn primary">
+        {#if uploading}<Loader2 size={14} class="spin" />{:else}<UploadCloud size={14} />{/if}
+        <span class="tb-label">Upload</span>
+      </button>
+      <div class="tb-divider"></div>
+      <button on:click={handleLogout} class="tb-btn logout" title="Logout"><LogOut size={16} /></button>
+    </div>
+  </header>
 
-			<!-- Right: Actions -->
-			<div class="flex items-center gap-2">
-				{#if canUndo}
-					<button
-						on:click={handleUndo}
-						class="p-2 text-yellow-500 hover:bg-yellow-500/10 rounded-lg transition-colors"
-						title="Undo AI Changes"
-					>
-						<Undo2 size={20} />
-					</button>
-				{/if}
+  <!-- Progress -->
+  {#if uploading}
+    <div class="progress"><div class="progress-bar" style="width: {uploadProgress}%"></div></div>
+  {/if}
 
-				<!-- AI Magic -->
-				<button
-					on:click={() => (isAiModalOpen = true)}
-					disabled={compiling || uploading || isAiProcessing}
-					class="p-2 text-purple-400 hover:text-purple-300 hover:bg-purple-400/10 rounded-lg transition-colors"
-					title="Tailor with AI"
-				>
-					<Sparkles size={20} />
-				</button>
+  <!-- Error -->
+  {#if compilationError}
+    <div class="error-bar"><AlertTriangle size={14} /> {compilationError}</div>
+  {/if}
 
-				<div class="h-6 w-px bg-[var(--color-border)] mx-1"></div>
+  <!-- AI Modal -->
+  {#if isAiModalOpen}
+    <div class="modal-overlay">
+      <div class="modal">
+        <div class="modal-header">
+          <h3><Sparkles size={16} /> AI Tailor</h3>
+          <button on:click={() => (isAiModalOpen = false)}><X size={18} /></button>
+        </div>
+        <div class="modal-body">
+          <label for="ai-model">Model</label>
+          <select id="ai-model" bind:value={selectedModel}>
+            {#each AI_MODELS as m}<option value={m.id}>{m.name}</option>{/each}
+          </select>
+          <label for="jd">Job Description</label>
+          <textarea id="jd" bind:value={jobDescription} placeholder="Paste JD here..."></textarea>
+        </div>
+        <div class="modal-footer">
+          <button on:click={() => (isAiModalOpen = false)} class="btn-cancel">Cancel</button>
+          <button on:click={handleAiRewrite} disabled={isAiProcessing || !jobDescription.trim()} class="btn-submit">
+            {#if isAiProcessing}<Loader2 size={14} class="spin" /> Processing{:else}Tailor{/if}
+          </button>
+        </div>
+      </div>
+    </div>
+  {/if}
 
-				<!-- History -->
-				<a
-					href="/editor/history"
-					class="p-2 text-[var(--color-paragraph)] hover:text-[var(--color-headline)] hover:bg-[var(--color-background)] rounded-lg transition-colors"
-					title="Version History"
-				>
-					<History size={20} />
-				</a>
-
-				<div class="h-6 w-px bg-[var(--color-border)] mx-1"></div>
-
-				<!-- Compile -->
-				<button
-					on:click={handleCompile}
-					disabled={compiling || uploading}
-					class="flex items-center gap-2 px-3 py-2 text-sm font-medium text-[var(--color-headline)] hover:bg-[var(--color-background)] rounded-lg transition-colors disabled:opacity-50"
-					title="Compile (Cmd+S)"
-				>
-					<Play
-						size={16}
-						class={compiling
-							? "text-gray-400"
-							: "text-green-500 fill-green-500"}
-					/>
-					<span class="hidden sm:inline">Compile</span>
-				</button>
-
-				<!-- Download Dropdown -->
-				<div class="relative">
-					<button
-						on:click={() => (isDownloadOpen = !isDownloadOpen)}
-						class="flex items-center gap-2 px-3 py-2 text-sm font-medium text-[var(--color-headline)] hover:bg-[var(--color-background)] rounded-lg transition-colors"
-					>
-						<FileDown size={18} />
-						<span class="hidden sm:inline">Download</span>
-						<ChevronDown size={14} class="opacity-50" />
-					</button>
-
-					{#if isDownloadOpen}
-						<div
-							class="absolute top-full right-0 mt-1 w-48 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg shadow-lg py-1 z-50"
-						>
-							<button
-								on:click={downloadPDF}
-								class="w-full text-left px-4 py-2 text-sm text-[var(--color-headline)] hover:bg-[var(--color-background)] flex items-center gap-2"
-							>
-								<FileCode size={16} class="text-red-500" /> PDF Document
-							</button>
-							<button
-								on:click={downloadTypst}
-								class="w-full text-left px-4 py-2 text-sm text-[var(--color-headline)] hover:bg-[var(--color-background)] flex items-center gap-2"
-							>
-								<FileCode size={16} class="text-blue-500" /> Typst
-								Source
-							</button>
-						</div>
-						<!-- Backdrop to close -->
-						<div
-							class="fixed inset-0 z-40 bg-transparent"
-							on:click={() => (isDownloadOpen = false)}
-						></div>
-					{/if}
-				</div>
-
-				<!-- Upload -->
-				<button
-					on:click={handleUpload}
-					disabled={uploading || compiling}
-					class="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-[var(--color-secondary)] text-white rounded-lg hover:bg-[var(--color-secondary)]/90 transition-all disabled:opacity-50 shadow-sm"
-				>
-					{#if uploading}
-						<Loader2 size={16} class="animate-spin" />
-					{:else}
-						<UploadCloud size={16} />
-					{/if}
-					<span class="hidden sm:inline">Upload</span>
-				</button>
-
-				<div class="h-6 w-px bg-[var(--color-border)] mx-1"></div>
-
-				<!-- Logout -->
-				<button
-					on:click={handleLogout}
-					class="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-					title="Log out"
-				>
-					<LogOut size={20} />
-				</button>
-			</div>
-		</div>
-	</header>
-
-	<!-- AI Modal -->
-	{#if isAiModalOpen}
-		<div
-			class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
-		>
-			<div
-				class="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl shadow-2xl w-full max-w-lg flex flex-col max-h-[90vh]"
-			>
-				<div
-					class="flex items-center justify-between p-4 border-b border-[var(--color-border)]"
-				>
-					<h3
-						class="text-lg font-bold text-[var(--color-headline)] flex items-center gap-2"
-					>
-						<Sparkles size={18} class="text-purple-400" /> Tailor Resume
-					</h3>
-					<button
-						on:click={() => (isAiModalOpen = false)}
-						class="text-[var(--color-paragraph)] hover:text-[var(--color-headline)]"
-					>
-						<X size={20} />
-					</button>
-				</div>
-
-				<div class="p-4 flex flex-col gap-4 overflow-y-auto">
-					<div>
-						<label
-							class="block text-sm font-medium text-[var(--color-headline)] mb-1"
-						>
-							AI Model
-						</label>
-						<select
-							bind:value={selectedModel}
-							class="w-full bg-[var(--color-background)] border border-[var(--color-border)] rounded-lg px-3 py-2 text-sm text-[var(--color-paragraph)] focus:outline-none focus:border-[var(--color-secondary)]"
-						>
-							{#each AI_MODELS as model}
-								<option value={model.id}>{model.name}</option>
-							{/each}
-						</select>
-					</div>
-
-					<div>
-						<label
-							class="block text-sm font-medium text-[var(--color-headline)] mb-1"
-						>
-							Job Description
-						</label>
-						<textarea
-							bind:value={jobDescription}
-							placeholder="Paste the job description here..."
-							class="w-full h-40 bg-[var(--color-background)] border border-[var(--color-border)] rounded-lg px-3 py-2 text-sm text-[var(--color-paragraph)] focus:outline-none focus:border-[var(--color-secondary)] resize-none"
-						></textarea>
-					</div>
-
-					<div class="bg-blue-500/10 p-3 rounded-lg">
-						<p class="text-xs text-blue-400">
-							<strong>Note:</strong> The AI will rewrite your summary
-							and bullet points to match the JD keywords. Your resume
-							structure will be preserved.
-						</p>
-					</div>
-				</div>
-
-				<div
-					class="p-4 border-t border-[var(--color-border)] flex justify-end gap-2"
-				>
-					<button
-						on:click={() => (isAiModalOpen = false)}
-						class="px-4 py-2 text-sm text-[var(--color-paragraph)] hover:bg-[var(--color-background)] rounded-lg transition-colors"
-					>
-						Cancel
-					</button>
-					<button
-						on:click={handleAiRewrite}
-						disabled={isAiProcessing || !jobDescription.trim()}
-						class="px-4 py-2 text-sm font-semibold bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors disabled:opacity-50 flex items-center gap-2"
-					>
-						{#if isAiProcessing}
-							<Loader2 size={16} class="animate-spin" /> Processing...
-						{:else}
-							<Sparkles size={16} /> Tailor Resume
-						{/if}
-					</button>
-				</div>
-			</div>
-		</div>
-	{/if}
-
-	<!-- Error Messages -->
-	{#if compilationError}
-		<div
-			class="bg-red-500/10 border-b border-red-500/20 px-4 py-2 flex items-center gap-2 text-red-600 text-sm"
-		>
-			<AlertTriangle size={16} />
-			<span class="font-semibold">Compilation Error:</span>
-			<span class="font-mono text-xs">{compilationError}</span>
-		</div>
-	{/if}
-
-	<!-- Main Content: Split View -->
-	<div class="flex-1 flex flex-col md:flex-row overflow-hidden relative">
-		<!-- Left: Typst Editor -->
-		<div
-			class="w-full md:w-1/2 border-b md:border-b-0 md:border-r border-[var(--color-border)] flex flex-col h-1/2 md:h-full"
-		>
-			<div class="flex-1 relative">
-				{#if loading}
-					<div
-						class="absolute inset-0 flex items-center justify-center bg-[var(--color-surface)] z-10"
-					>
-						<div
-							class="flex flex-col items-center gap-2 text-[var(--color-paragraph)]"
-						>
-							<Loader2 size={24} class="animate-spin" />
-							<span>Loading editor...</span>
-						</div>
-					</div>
-				{/if}
-				<MonacoEditor
-					bind:value={typstContent}
-					language="plaintext"
-					theme="vs-dark"
-					onChange={handleEditorChange}
-				/>
-			</div>
-		</div>
-
-		<!-- Right: PDF Preview -->
-		<div
-			class="w-full md:w-1/2 flex flex-col bg-gray-900 h-1/2 md:h-full relative"
-		>
-			{#if compiling && !uploading}
-				<div
-					class="absolute inset-0 z-10 bg-black/50 backdrop-blur-sm flex items-center justify-center"
-				>
-					<div
-						class="bg-[var(--color-surface)] p-4 rounded-xl shadow-xl flex items-center gap-3"
-					>
-						<Loader2
-							size={24}
-							class="animate-spin text-[var(--color-secondary)]"
-						/>
-						<span class="text-[var(--color-headline)] font-medium"
-							>Compiling PDF...</span
-						>
-					</div>
-				</div>
-			{/if}
-
-			<div class="flex-1 overflow-hidden h-full">
-				{#if pdfUrl}
-					<iframe
-						src={pdfUrl}
-						title="Resume PDF"
-						class="w-full h-full border-0"
-					/>
-				{:else}
-					<div
-						class="flex items-center justify-center h-full text-gray-500"
-					>
-						<p>
-							No PDF available. Compile successfully to preview.
-						</p>
-					</div>
-				{/if}
-			</div>
-		</div>
-	</div>
+  <!-- Main -->
+  <div class="main">
+    <div class="editor-pane">
+      {#if loading}
+        <div class="loading"><Loader2 size={20} class="spin" /> Loading...</div>
+      {/if}
+      <MonacoEditor bind:value={typstContent} language="plaintext" theme="vs-dark" onChange={handleEditorChange} />
+    </div>
+    <div class="preview-pane">
+      {#if compiling}
+        <div class="compiling"><Loader2 size={20} class="spin" /> Compiling...</div>
+      {/if}
+      {#if pdfUrl}
+        <iframe src={pdfUrl} title="PDF"></iframe>
+      {:else}
+        <div class="no-preview">No PDF. Compile to preview.</div>
+      {/if}
+    </div>
+  </div>
 </div>
+
+<style>
+  .editor {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--black);
+  }
+
+  .toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1rem;
+    height: 52px;
+    background: var(--gray-950);
+    border-bottom: 1px solid var(--gray-800);
+  }
+
+  .toolbar-left, .toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .toolbar-logo {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.875rem;
+    color: var(--black);
+    background: var(--white);
+    border-radius: var(--radius-sm);
+  }
+
+  .toolbar-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--white);
+  }
+
+  .version {
+    font-size: 0.6875rem;
+    color: var(--gray-500);
+    padding: 0.125rem 0.375rem;
+    background: var(--gray-900);
+    border-radius: var(--radius-sm);
+  }
+
+  .status {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.75rem;
+    color: var(--gray-500);
+  }
+
+  .tb-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.5rem 0.625rem;
+    font-size: 0.8125rem;
+    color: var(--gray-400);
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all var(--duration-fast) var(--ease-out);
+  }
+
+  .tb-btn:hover:not(:disabled) {
+    color: var(--white);
+    background: var(--gray-900);
+  }
+
+  .tb-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .tb-btn.primary {
+    color: var(--black);
+    background: var(--white);
+  }
+
+  .tb-btn.primary:hover:not(:disabled) {
+    background: var(--gray-200);
+  }
+
+  .tb-btn.logout:hover {
+    color: var(--white);
+  }
+
+  .tb-label {
+    display: none;
+  }
+
+  @media (min-width: 640px) {
+    .tb-label { display: inline; }
+  }
+
+  .tb-divider {
+    width: 1px;
+    height: 20px;
+    background: var(--gray-800);
+  }
+
+  .dropdown {
+    position: relative;
+  }
+
+  .dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.5rem;
+    padding: 0.375rem;
+    background: var(--gray-900);
+    border: 1px solid var(--gray-800);
+    border-radius: var(--radius-md);
+    z-index: 50;
+  }
+
+  .dropdown-menu button {
+    display: block;
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8125rem;
+    color: var(--gray-300);
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-sm);
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .dropdown-menu button:hover {
+    color: var(--white);
+    background: var(--gray-800);
+  }
+
+  .dropdown-bg {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    background: transparent;
+    border: none;
+  }
+
+  .progress {
+    height: 2px;
+    background: var(--gray-900);
+  }
+
+  .progress-bar {
+    height: 100%;
+    background: var(--white);
+    transition: width 0.3s;
+  }
+
+  .error-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1rem;
+    font-size: 0.8125rem;
+    color: var(--white);
+    background: var(--gray-900);
+    border-bottom: 1px solid var(--gray-800);
+  }
+
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.8);
+  }
+
+  .modal {
+    width: 100%;
+    max-width: 420px;
+    background: var(--gray-950);
+    border: 1px solid var(--gray-800);
+    border-radius: var(--radius-lg);
+  }
+
+  .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--gray-800);
+  }
+
+  .modal-header h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--white);
+  }
+
+  .modal-header button {
+    padding: 0.25rem;
+    color: var(--gray-500);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+  }
+
+  .modal-header button:hover {
+    color: var(--white);
+  }
+
+  .modal-body {
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .modal-body label {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--gray-400);
+  }
+
+  .modal-body select,
+  .modal-body textarea {
+    padding: 0.625rem 0.875rem;
+    font-size: 0.875rem;
+    color: var(--white);
+    background: var(--black);
+    border: 1px solid var(--gray-800);
+    border-radius: var(--radius-md);
+  }
+
+  .modal-body textarea {
+    min-height: 140px;
+    resize: none;
+  }
+
+  .modal-body select:focus,
+  .modal-body textarea:focus {
+    outline: none;
+    border-color: var(--gray-600);
+  }
+
+  .modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    border-top: 1px solid var(--gray-800);
+  }
+
+  .btn-cancel {
+    padding: 0.5rem 1rem;
+    font-size: 0.8125rem;
+    color: var(--gray-400);
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+  }
+
+  .btn-cancel:hover {
+    color: var(--white);
+  }
+
+  .btn-submit {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--black);
+    background: var(--white);
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+  }
+
+  .btn-submit:hover:not(:disabled) {
+    background: var(--gray-200);
+  }
+
+  .btn-submit:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  @media (min-width: 768px) {
+    .main { flex-direction: row; }
+  }
+
+  .editor-pane {
+    flex: 1;
+    position: relative;
+    border-bottom: 1px solid var(--gray-800);
+    min-height: 300px;
+  }
+
+  @media (min-width: 768px) {
+    .editor-pane {
+      border-bottom: none;
+      border-right: 1px solid var(--gray-800);
+    }
+  }
+
+  .preview-pane {
+    flex: 1;
+    position: relative;
+    background: var(--gray-950);
+    min-height: 300px;
+  }
+
+  .preview-pane iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+
+  .loading, .compiling, .no-preview {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    color: var(--gray-500);
+    background: var(--gray-950);
+    z-index: 10;
+  }
+
+  :global(.spin) {
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+</style>

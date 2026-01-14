@@ -1,108 +1,182 @@
 <svelte:head>
   <title>Work — Kashif</title>
-  <meta name="description" content="Roles, teams, and impact to date." />
+  <meta name="description" content="Professional experience and roles." />
 </svelte:head>
 
 <script lang="ts">
-  type Company = { name: string; url: string };
   type Job = {
     role: string;
-    companies: Company[];
-    duration: string;
+    company: string;
+    url: string;
+    period: string;
     location: string;
-    startYear: number;
-    endYear: number;
-    isFreelance?: boolean;
   };
 
-  const workHistory: Job[] = [
+  const jobs: Job[] = [
     {
       role: 'ML Engineer',
-      companies: [
-        { name: 'Wand AI', url: 'https://wand.ai' }
-      ],
-      duration: 'Nov 2025 - Present',
-      location: 'Palo Alto, CA, USA',
-      startYear: 2025,
-      endYear: 2026
+      company: 'Wand AI',
+      url: 'https://wand.ai',
+      period: '2025 — Present',
+      location: 'Palo Alto, CA'
     },
     {
       role: 'Engineer III',
-      companies: [
-        { name: 'American Express', url: 'https://www.americanexpress.com' }
-      ],
-      duration: 'Feb 2025 – Nov 2025',
-      location: 'Bangalore, KA, India',
-      startYear: 2025,
-      endYear: 2025,
+      company: 'American Express',
+      url: 'https://www.americanexpress.com',
+      period: '2025',
+      location: 'Bangalore, India'
     },
     {
-      role: 'Associate Software Engineer',
-      companies: [
-        { name: 'Fiery, previously EFI', url: 'https://www.fiery.com' },
-        { name: '(an Epson company)', url: 'https://corporate.epson/en/news/2024/240919.html' }
-      ],
-      duration: 'Jan 2023 – Feb 2025',
-      location: 'Bangalore, KA, India',
-      startYear: 2023,
-      endYear: 2025,
+      role: 'Software Engineer',
+      company: 'Fiery (Epson)',
+      url: 'https://www.fiery.com',
+      period: '2023 — 2025',
+      location: 'Bangalore, India'
     },
     {
-      role: 'Internship',
-      companies: [
-        { name: 'Corteva Agriscience', url: 'https://www.corteva.in' }
-      ],
-      duration: 'Jul 2022 – Dec 2022',
-      location: 'Hyderabad, TG, India',
-      startYear: 2022,
-      endYear: 2022,
+      role: 'Intern',
+      company: 'Corteva Agriscience',
+      url: 'https://www.corteva.in',
+      period: '2022',
+      location: 'Hyderabad, India'
     }
   ];
-
-  // Helper to italicize _like this_ within bullet points
-  function em(text: string) {
-    return text.replace(/_(.*?)_/g, '<em>$1</em>');
-  }
 </script>
 
-<div class="max-w-3xl mx-auto">
-  <!-- Title -->
-  <section class="mb-12" aria-labelledby="work-title">
-    <h1 id="work-title" class="text-3xl font-bold tracking-tight text-[var(--color-headline)]">Work</h1>
-    <p class="mt-2 text-lg text-[var(--color-paragraph)]">Applied ML systems, inference, and product‑grade tooling.</p>
-  </section>
+<div class="page">
+  <header class="page-header">
+    <h1 class="page-title">Work</h1>
+    <p class="page-desc">Building ML systems and shipping code.</p>
+  </header>
 
-  <!-- Timeline Section -->
-  <section class="space-y-8">
-    {#each workHistory as work, i (i)}
-      <div class="group relative pl-8 border-l border-[var(--color-border)] last:border-0 pb-8 last:pb-0">
-        <!-- Timeline dot -->
-        <div class="absolute -left-[5px] top-2 w-[9px] h-[9px] rounded-full bg-[var(--color-border)] group-hover:bg-[var(--color-highlight)] transition-colors"></div>
-
-        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-baseline gap-1 mb-2">
-          <h2 class="text-xl font-semibold text-[var(--color-headline)]">{work.role}</h2>
-          <span class="text-sm text-[var(--color-paragraph)] whitespace-nowrap">{work.duration}</span>
+  <section class="jobs">
+    {#each jobs as job, i}
+      <a 
+        href={job.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="job"
+        style="--delay: {i * 50}ms"
+      >
+        <div class="job-main">
+          <span class="job-role">{job.role}</span>
+          <span class="job-company">{job.company}</span>
         </div>
-
-        <div class="text-[var(--color-paragraph)] mb-1">
-          {#each work.companies as company, j (company.url)}
-            <a href={company.url} target="_blank" rel="noopener noreferrer" class="hover:text-[var(--color-primary)] transition-colors inline-block border-b border-transparent hover:border-[var(--color-highlight)]">
-              {company.name}
-            </a>{j < work.companies.length - 1 ? ' ' : ''}
-          {/each}
+        <div class="job-meta">
+          <span class="job-period">{job.period}</span>
+          <span class="job-location">{job.location}</span>
         </div>
-
-        <div class="text-sm text-[var(--color-paragraph)] flex items-center gap-1">
-          <span>📍 {work.location}</span>
-        </div>
-      </div>
+      </a>
     {/each}
   </section>
 </div>
 
 <style>
-  :global(em) {
-    font-style: italic;
-    color: var(--color-headline);
+  .page {
+    display: flex;
+    flex-direction: column;
+    gap: 3rem;
+  }
+  
+  .page-header {
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--gray-800);
+  }
+  
+  .page-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--white);
+    margin-bottom: 0.5rem;
+  }
+  
+  .page-desc {
+    font-size: 1rem;
+    color: var(--gray-500);
+  }
+
+  .jobs {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .job {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+    padding: 1.5rem 0;
+    border-bottom: 1px solid var(--gray-900);
+    animation: fade-up var(--duration-slow) var(--ease-out) backwards;
+    animation-delay: var(--delay);
+    transition: all var(--duration-fast) var(--ease-out);
+  }
+  
+  @media (min-width: 640px) {
+    .job {
+      grid-template-columns: 1fr auto;
+      gap: 2rem;
+      align-items: baseline;
+    }
+  }
+  
+  .job:hover {
+    padding-left: 1rem;
+    background: var(--glass-bg);
+    margin-left: -1rem;
+    margin-right: -1rem;
+    padding-right: 1rem;
+  }
+  
+  .job:last-child {
+    border-bottom: none;
+  }
+  
+  .job-main {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  
+  .job-role {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--white);
+  }
+  
+  .job-company {
+    font-size: 0.875rem;
+    color: var(--gray-500);
+  }
+  
+  .job-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    text-align: left;
+  }
+  
+  @media (min-width: 640px) {
+    .job-meta {
+      text-align: right;
+    }
+  }
+  
+  .job-period {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--gray-400);
+    font-variant-numeric: tabular-nums;
+  }
+  
+  .job-location {
+    font-size: 0.75rem;
+    color: var(--gray-600);
+  }
+  
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
   }
 </style>

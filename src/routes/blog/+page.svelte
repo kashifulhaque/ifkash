@@ -7,23 +7,12 @@
     brief: string;
     url: string;
     slug: string;
-    coverImage?: { url?: string } | null;
     publishedAt: string;
   };
 
   let posts: Post[] = [];
   let loading = true;
   let error = "";
-
-  const options: Intl.DateTimeFormatOptions = {
-    month: "short",
-    day: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: true,
-    timeZone: "UTC",
-  };
 
   const query = `
     query {
@@ -36,7 +25,6 @@
               brief
               url
               slug
-              coverImage { url }
               publishedAt
             }
           }
@@ -61,8 +49,7 @@
         posts = edges.map((e: any) => e.node) as Post[];
       } catch (e) {
         if ((e as Error).name !== "AbortError") {
-          error = "Failed to load blog posts.";
-          console.error(e);
+          error = "Failed to load posts.";
         }
       } finally {
         loading = false;
@@ -74,68 +61,168 @@
 
 <svelte:head>
   <title>Blog — Kashif</title>
-  <meta
-    name="description"
-    content="Latest writing, notes, and experiments by Kashif."
-  />
+  <meta name="description" content="Writing, notes, and experiments." />
 </svelte:head>
 
-<div class="max-w-3xl mx-auto">
-  <!-- Title -->
-  <section class="mb-12" aria-labelledby="blog-title">
-    <h1
-      id="blog-title"
-      class="text-3xl font-bold tracking-tight text-[var(--color-headline)]"
-    >
-      Blog
-    </h1>
-    <p class="mt-2 text-lg text-[var(--color-paragraph)]">
-      Notes from the build log, occasional essays, and rough cuts worth sharing.
-    </p>
-  </section>
+<div class="page">
+  <header class="page-header">
+    <h1 class="page-title">Blog</h1>
+    <p class="page-desc">Notes from the build log and rough cuts worth sharing.</p>
+  </header>
 
-  <!-- States -->
   {#if loading}
-    <div class="space-y-6">
+    <div class="loading">
       {#each Array(3) as _, i}
-        <div
-          class="animate-pulse flex flex-col gap-4 p-6 border border-[var(--color-border)] rounded-xl"
-        >
-          <div class="h-6 w-3/4 bg-[var(--color-border)] rounded"></div>
-          <div class="h-4 w-full bg-[var(--color-border)] rounded"></div>
-          <div class="h-4 w-5/6 bg-[var(--color-border)] rounded"></div>
+        <div class="skeleton" style="--delay: {i * 100}ms">
+          <div class="skeleton-title"></div>
+          <div class="skeleton-date"></div>
         </div>
       {/each}
     </div>
   {:else if error}
-    <div
-      class="p-4 rounded-xl bg-red-900/10 border border-red-900/20 text-red-400 text-sm"
-    >
-      {error}
-    </div>
+    <p class="error">{error}</p>
   {:else if posts.length === 0}
-    <div class="text-[var(--color-paragraph)]">No posts yet. Soon.</div>
+    <p class="empty">No posts yet.</p>
   {:else}
-    <!-- Posts -->
-    <section class="space-y-8">
-      {#each posts as post}
-        <a href="/blog/{post.slug}" class="block group">
-          <article class="flex flex-col gap-2">
-            <h2
-              class="text-xl font-semibold text-[var(--color-headline)] group-hover:text-[var(--color-highlight)] transition-colors"
-            >
-              {post.title}
-            </h2>
-            <div class="text-xs text-[var(--color-paragraph)] mb-1">
-              {new Date(post.publishedAt).toLocaleDateString("en-US", {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              })}
-            </div>
-          </article>
+    <section class="posts">
+      {#each posts as post, i}
+        <a href="/blog/{post.slug}" class="post" style="--delay: {i * 50}ms">
+          <h2 class="post-title">{post.title}</h2>
+          <time class="post-date">
+            {new Date(post.publishedAt).toLocaleDateString("en-US", {
+              year: "numeric",
+              month: "short",
+              day: "numeric",
+            })}
+          </time>
         </a>
       {/each}
     </section>
   {/if}
 </div>
+
+<style>
+  .page {
+    display: flex;
+    flex-direction: column;
+    gap: 3rem;
+  }
+  
+  .page-header {
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--gray-800);
+  }
+  
+  .page-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--white);
+    margin-bottom: 0.5rem;
+  }
+  
+  .page-desc {
+    font-size: 1rem;
+    color: var(--gray-500);
+  }
+
+  .posts {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .post {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    padding: 1.25rem 0;
+    border-bottom: 1px solid var(--gray-900);
+    animation: fade-up var(--duration-slow) var(--ease-out) backwards;
+    animation-delay: var(--delay);
+    transition: all var(--duration-fast) var(--ease-out);
+  }
+  
+  @media (min-width: 480px) {
+    .post {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+  }
+  
+  .post:hover {
+    padding-left: 1rem;
+    background: var(--glass-bg);
+    margin-left: -1rem;
+    margin-right: -1rem;
+    padding-right: 1rem;
+  }
+  
+  .post:last-child {
+    border-bottom: none;
+  }
+  
+  .post-title {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--white);
+    transition: color var(--duration-fast) var(--ease-out);
+  }
+  
+  .post:hover .post-title {
+    color: var(--gray-300);
+  }
+  
+  .post-date {
+    font-size: 0.8125rem;
+    color: var(--gray-600);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .loading {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .skeleton {
+    padding: 1.25rem 0;
+    animation: pulse 2s ease-in-out infinite;
+    animation-delay: var(--delay);
+  }
+  
+  .skeleton-title {
+    height: 1rem;
+    width: 60%;
+    background: var(--gray-900);
+    border-radius: var(--radius-sm);
+    margin-bottom: 0.5rem;
+  }
+  
+  .skeleton-date {
+    height: 0.75rem;
+    width: 20%;
+    background: var(--gray-900);
+    border-radius: var(--radius-sm);
+  }
+  
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+  
+  .error {
+    color: var(--gray-500);
+    padding: 2rem;
+    text-align: center;
+  }
+  
+  .empty {
+    color: var(--gray-600);
+  }
+  
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>

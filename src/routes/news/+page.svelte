@@ -1,13 +1,13 @@
 <svelte:head>
   <title>News — Kashif</title>
-  <meta name="description" content="Top Hacker News stories, pulled fresh." />
+  <meta name="description" content="Top Hacker News stories." />
 </svelte:head>
 
 <script lang="ts">
   import { onMount } from 'svelte';
   import { getApiBase } from '$lib/apiBase';
 
-  export const API_BASE = getApiBase();
+  const API_BASE = getApiBase();
 
   interface Story {
     by: string;
@@ -15,90 +15,209 @@
     score: number;
     time: number;
     title: string;
-    type: string;
     url: string;
   }
 
   let stories: Story[] = [];
-  let isLoading = true;
+  let loading = true;
   let error = '';
 
   onMount(async () => {
-    const url = new URL(window.location.href);
-    if (url.searchParams.has('api')) {
-      url.searchParams.delete('api');
-      history.replaceState(history.state, '', url.toString());
-    }
-
     try {
       const res = await fetch(`${API_BASE}/api/hn`);
-      if (!res.ok) throw new Error('Bad response');
+      if (!res.ok) throw new Error('Failed');
       stories = await res.json();
-    } catch (e) {
-      console.error(e);
-      error = 'Failed to fetch Hacker News stories.';
+    } catch {
+      error = 'Failed to load stories.';
     } finally {
-      isLoading = false;
+      loading = false;
     }
   });
 
-  function formatDate(timestamp: number): string {
-    return new Date(timestamp * 1000).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+  function getHost(url: string): string {
+    try {
+      return new URL(url).hostname.replace('www.', '');
+    } catch {
+      return '';
+    }
+  }
+
+  function timeAgo(timestamp: number): string {
+    const seconds = Math.floor(Date.now() / 1000 - timestamp);
+    if (seconds < 3600) return `${Math.floor(seconds / 60)}m`;
+    if (seconds < 86400) return `${Math.floor(seconds / 3600)}h`;
+    return `${Math.floor(seconds / 86400)}d`;
   }
 </script>
 
-<div class="max-w-3xl mx-auto">
-  <!-- Title -->
-  <section class="mb-12" aria-labelledby="news-title">
-    <h1 id="news-title" class="text-3xl font-bold tracking-tight text-[var(--color-headline)]">Hacker News</h1>
-    <p class="mt-2 text-lg text-[var(--color-paragraph)]">A slice of what’s buzzing in tech right now.</p>
-  </section>
+<div class="page">
+  <header class="page-header">
+    <h1 class="page-title">Hacker News</h1>
+    <p class="page-desc">What's buzzing in tech.</p>
+  </header>
 
-  <!-- Content -->
-  {#if isLoading}
-    <div class="space-y-4">
-      {#each Array(6) as _}
-        <div class="animate-pulse p-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)]">
-          <div class="h-5 w-3/4 bg-[var(--color-border)] rounded mb-2"></div>
-          <div class="h-4 w-1/3 bg-[var(--color-border)] rounded"></div>
-        </div>
+  {#if loading}
+    <div class="loading">
+      {#each Array(8) as _, i}
+        <div class="skeleton" style="--delay: {i * 50}ms"></div>
       {/each}
     </div>
   {:else if error}
-    <div class="p-4 rounded-xl bg-red-900/10 border border-red-900/20 text-red-400 text-sm">{error}</div>
-  {:else if stories.length === 0}
-    <div class="text-[var(--color-paragraph)]">No stories found.</div>
+    <p class="error">{error}</p>
   {:else}
-    <div class="space-y-4">
-      {#each stories as story (story.id)}
-        <article class="p-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] hover:border-[var(--color-secondary)] transition-colors">
-          <h2 class="text-lg font-medium text-[var(--color-headline)] mb-2">
-            <a href={story.url} target="_blank" rel="noopener noreferrer" class="hover:text-[var(--color-highlight)] transition-colors">
+    <section class="stories">
+      {#each stories as story, i (story.id)}
+        <article class="story" style="--delay: {i * 30}ms">
+          <div class="story-score">{story.score}</div>
+          <div class="story-content">
+            <a href={story.url} target="_blank" rel="noopener noreferrer" class="story-title">
               {story.title}
             </a>
-          </h2>
-          <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[var(--color-secondary)]">
-            <span>{story.score} points by {story.by}</span>
-            <span>•</span>
-            <span>{formatDate(story.time)}</span>
-            <span>•</span>
-            <a
-              href={`https://news.ycombinator.com/item?id=${story.id}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              class="hover:text-[var(--color-headline)] hover:underline"
-            >
-              Discuss ↗
-            </a>
+            <div class="story-meta">
+              <span class="story-host">{getHost(story.url)}</span>
+              <span class="story-divider">·</span>
+              <span>{story.by}</span>
+              <span class="story-divider">·</span>
+              <span>{timeAgo(story.time)}</span>
+              <span class="story-divider">·</span>
+              <a 
+                href={`https://news.ycombinator.com/item?id=${story.id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="story-discuss"
+              >
+                discuss
+              </a>
+            </div>
           </div>
         </article>
       {/each}
-    </div>
+    </section>
   {/if}
 </div>
+
+<style>
+  .page {
+    display: flex;
+    flex-direction: column;
+    gap: 3rem;
+  }
+  
+  .page-header {
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--gray-800);
+  }
+  
+  .page-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--white);
+    margin-bottom: 0.5rem;
+  }
+  
+  .page-desc {
+    font-size: 1rem;
+    color: var(--gray-500);
+  }
+
+  .stories {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .story {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--gray-900);
+    animation: fade-up var(--duration-base) var(--ease-out) backwards;
+    animation-delay: var(--delay);
+  }
+  
+  .story:last-child {
+    border-bottom: none;
+  }
+  
+  .story-score {
+    flex-shrink: 0;
+    width: 40px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--gray-500);
+    text-align: right;
+    padding-top: 0.125rem;
+  }
+  
+  .story-content {
+    flex: 1;
+    min-width: 0;
+  }
+  
+  .story-title {
+    display: block;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: var(--white);
+    line-height: 1.4;
+    margin-bottom: 0.375rem;
+    transition: color var(--duration-fast) var(--ease-out);
+  }
+  
+  .story-title:hover {
+    color: var(--gray-400);
+  }
+  
+  .story-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+    font-size: 0.75rem;
+    color: var(--gray-600);
+  }
+  
+  .story-host {
+    color: var(--gray-500);
+  }
+  
+  .story-divider {
+    color: var(--gray-800);
+  }
+  
+  .story-discuss {
+    color: var(--gray-600);
+    transition: color var(--duration-fast) var(--ease-out);
+  }
+  
+  .story-discuss:hover {
+    color: var(--white);
+  }
+
+  .loading {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .skeleton {
+    height: 64px;
+    background: var(--gray-900);
+    border-radius: var(--radius-sm);
+    animation: pulse 2s ease-in-out infinite;
+    animation-delay: var(--delay);
+  }
+  
+  .error {
+    color: var(--gray-500);
+  }
+  
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+</style>

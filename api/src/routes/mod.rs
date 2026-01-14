@@ -2,6 +2,7 @@ pub mod hello;
 pub mod ping;
 pub mod hn;
 pub mod lc;
+pub mod tensara;
 pub mod openapi;
 pub mod swagger_ui;
 pub mod resume;
@@ -20,6 +21,7 @@ pub fn register_routes(router: Router<'_, ()>) -> Router<'_, ()> {
     .get_async("/api/docs", swagger_ui::route)
     .get_async("/api/hn", hn::route)
     .get_async("/api/lc/profile", lc::profile)
+    .get_async("/api/tensara/profile", tensara::profile)
     .get_async("/api/resume", resume::route)
     .get_async("/api/resume/latest", resume_api::get_latest)
     .get_async("/api/resume/history", resume_api::get_history)

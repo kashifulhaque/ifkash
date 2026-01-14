@@ -1,102 +1,181 @@
 <svelte:head>
   <title>Projects — Kashif</title>
-  <meta name="description" content="Selected side projects by Kashif." />
+  <meta name="description" content="Side projects and open source work." />
 </svelte:head>
 
 <script lang="ts">
   type Project = {
-    title: string;
-    links?: { text: string; url: string }[];
-    description?: string;
-    htmlDescription?: string;
+    name: string;
+    desc: string;
+    links: { label: string; url: string }[];
   };
 
   const projects: Project[] = [
     {
-      title: 'smol-llama 🦙',
+      name: 'smol-llama',
+      desc: '360M parameter LLaMA trained from scratch on 6B tokens. GQA, RoPE, SwiGLU. Single H100, 22hrs, $53.',
       links: [
-        { text: 'hf 🤗', url: 'https://huggingface.co/ifkash/smol-llama' },
-        { text: 'git repo', url: 'https://github.com/kashifulhaque/smol-llama' }
-      ],
-      description:
-        'A 360M parameter LLaMA-style language model pre-trained from scratch on 6 billion tokens of web data. Features Grouped Query Attention (GQA), RoPE embeddings, and SwiGLU activations. Trained on a single H100 GPU in ~22 hours for $53, demonstrating that high-quality small language models can be trained efficiently.'
+        { label: 'Model', url: 'https://huggingface.co/ifkash/smol-llama' },
+        { label: 'Code', url: 'https://github.com/kashifulhaque/smol-llama' }
+      ]
     },
     {
-      title: 'FineWeb-6B Dataset',
+      name: 'FineWeb-6B',
+      desc: 'Curated 6B token dataset from FineWeb. Pre-tokenized with custom 49K BPE vocab.',
       links: [
-        { text: 'hf 🤗', url: 'https://huggingface.co/datasets/ifkash/fineweb-6b' }
-      ],
-      description:
-        'A curated subset of the FineWeb dataset containing first 6 billion high-quality web tokens (16.1 GB parquet, 11.3 GB tokenized). Includes pre-tokenized binary files with a custom 49K vocab BPE tokenizer, designed for efficient language model pre-training experiments without requiring massive computational resources. Used in smol-llama\'s pre-training.'
+        { label: 'Dataset', url: 'https://huggingface.co/datasets/ifkash/fineweb-6b' }
+      ]
     },
     {
-      title: 'smoltorch',
+      name: 'smoltorch',
+      desc: 'Autograd engine and neural networks in ~500 lines of NumPy. Educational deep learning.',
       links: [
-        { text: 'git repo', url: 'https://github.com/kashifulhaque/smoltorch' },
-        { text: 'pypi', url: 'https://pypi.org/project/smoltorch/' },
-        { text: 'blog', url: 'https://blog.ifkash.dev/smoltorch' }
-      ],
-      description:
-        'A minimalist deep learning library that implements automatic differentiation (autograd) and neural networks from scratch using only NumPy. Designed to be educational, transparent, functional, and minimal (~500 lines of readable, well-documented Python code).'
+        { label: 'Code', url: 'https://github.com/kashifulhaque/smoltorch' },
+        { label: 'PyPI', url: 'https://pypi.org/project/smoltorch/' }
+      ]
     },
     {
-      title: 'Boo',
+      name: 'NoPokeDB',
+      desc: 'Lightweight vector DB with hnswlib + SQLite. Crash recovery, 2K+ PyPI downloads.',
       links: [
-        { text: 'git repo', url: 'https://github.com/VVIP-Kitchen/boo' },
-        { text: 'blog', url: 'https://vvip.ifkash.dev/blog/boo' },
-        { text: 'website', url: 'https://boo.ifkash.dev' }
-      ],
-      description:
-        "Innovative AI-Powered Discord Bot who engages in natural conversations, interprets and responds to image inputs, and generates high-quality images on demand."
+        { label: 'Code', url: 'https://github.com/kashifulhaque/nopokedb' },
+        { label: 'PyPI', url: 'https://pypi.org/project/nopokedb/' }
+      ]
     },
     {
-      title: 'NoPokeDB – lightweight vector DB',
+      name: 'Boo',
+      desc: 'AI Discord bot. Natural conversations, image understanding, and generation.',
       links: [
-        { text: 'git repo', url: 'https://github.com/kashifulhaque/nopokedb' },
-        { text: 'pypi', url: 'https://pypi.org/project/nopokedb/' }
-      ],
-      description: 'A lightweight, disk-backed vector database implementation using hnswlib + SQLite with durability guarantees and operational log for crash recovery. 2K+ PyPI downloads'
+        { label: 'Code', url: 'https://github.com/VVIP-Kitchen/boo' },
+        { label: 'Site', url: 'https://boo.ifkash.dev' }
+      ]
     },
     {
-      title: 'NumPy-in-Rust sketch',
-      links: [{ text: 'git repo', url: 'https://github.com/kashifulhaque/tinyndarray' }],
-      description: 'A learning project implementing NumPy-like ndarray functionality in Rust with Python bindings.'
+      name: 'tinyndarray',
+      desc: 'NumPy-like ndarray in Rust with Python bindings. Learning project.',
+      links: [
+        { label: 'Code', url: 'https://github.com/kashifulhaque/tinyndarray' }
+      ]
     }
   ];
 </script>
 
-<div class="max-w-3xl mx-auto">
-  <!-- Title -->
-  <section class="mb-12" aria-labelledby="projects-title">
-    <h1 id="projects-title" class="text-3xl font-bold tracking-tight text-[var(--color-headline)]">Projects</h1>
-    <p class="mt-2 text-lg text-[var(--color-paragraph)]">A few things I've built or am actively shaping.</p>
-  </section>
+<div class="page">
+  <header class="page-header">
+    <h1 class="page-title">Projects</h1>
+    <p class="page-desc">Things I've built or am actively shaping.</p>
+  </header>
 
-  <!-- Projects grid -->
-  <section class="grid gap-6">
-    {#each projects as p}
-      <article class="p-6 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] hover:border-[var(--color-secondary)] transition-all">
-        <header class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
-          <h2 class="text-xl font-semibold text-[var(--color-headline)]">{p.title}</h2>
-          {#if p.links && p.links.length}
-            <div class="flex flex-wrap gap-2">
-              {#each p.links as link}
-                <a href={link.url} target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 px-3 py-1 text-xs font-medium rounded-full bg-[var(--color-background)] text-[var(--color-paragraph)] border border-[var(--color-border)] hover:text-[var(--color-headline)] hover:border-[var(--color-highlight)] transition-colors">
-                  {link.text}
-                </a>
-              {/each}
-            </div>
-          {/if}
-        </header>
-
-        <div class="text-sm leading-relaxed text-[var(--color-paragraph)]">
-          {#if p.htmlDescription}
-            <div class="prose prose-invert max-w-none">{@html p.htmlDescription}</div>
-          {:else if p.description}
-            <p>{p.description}</p>
-          {/if}
+  <section class="projects">
+    {#each projects as project, i}
+      <article class="project" style="--delay: {i * 50}ms">
+        <div class="project-header">
+          <h2 class="project-name">{project.name}</h2>
+          <div class="project-links">
+            {#each project.links as link}
+              <a href={link.url} target="_blank" rel="noopener noreferrer" class="project-link">
+                {link.label}
+              </a>
+            {/each}
+          </div>
         </div>
+        <p class="project-desc">{project.desc}</p>
       </article>
     {/each}
   </section>
 </div>
+
+<style>
+  .page {
+    display: flex;
+    flex-direction: column;
+    gap: 3rem;
+  }
+  
+  .page-header {
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--gray-800);
+  }
+  
+  .page-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--white);
+    margin-bottom: 0.5rem;
+  }
+  
+  .page-desc {
+    font-size: 1rem;
+    color: var(--gray-500);
+  }
+
+  .projects {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+  
+  .project {
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--gray-900);
+    animation: fade-up var(--duration-slow) var(--ease-out) backwards;
+    animation-delay: var(--delay);
+  }
+  
+  .project:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+  
+  .project-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+  
+  @media (min-width: 480px) {
+    .project-header {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+    }
+  }
+  
+  .project-name {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--white);
+    letter-spacing: -0.01em;
+  }
+  
+  .project-links {
+    display: flex;
+    gap: 1rem;
+  }
+  
+  .project-link {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--gray-600);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    transition: color var(--duration-fast) var(--ease-out);
+  }
+  
+  .project-link:hover {
+    color: var(--white);
+  }
+  
+  .project-desc {
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    color: var(--gray-400);
+  }
+  
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>

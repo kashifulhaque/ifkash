@@ -1,85 +1,264 @@
-@import url('https://fonts.googleapis.com/css2?family=Cutive+Mono&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
 :root {
-  /* Matte Dark Theme Palette (Neutral/Grayscale) */
-  --color-background: #0a0a0a;
-  /* neutral-950 */
-  --color-surface: #171717;
-  /* neutral-900 */
-  --color-headline: #ededed;
-  /* neutral-200 */
-  --color-paragraph: #a3a3a3;
-  /* neutral-400 */
-  --color-secondary: #525252;
-  /* neutral-600 */
-  --color-border: #262626;
-  /* neutral-800 */
-
-  /* Monochrome Accents */
-  --color-highlight: #ffffff;
-  /* pure white */
-  --color-accent-blue: #d4d4d4;
-  /* neutral-300 */
-  --color-accent-pink: #e5e5e5;
-  /* neutral-200 */
-  --color-accent-green: #f5f5f5;
-  /* neutral-100 */
-  --color-accent-primary: #60a5fa;
-  /* blue-400 - distinct from text */
-
-  /* Define primary if used */
-  --color-primary: #fafafa;
-  /* same as headline */
+  /* ═══════════════════════════════════════════════════════════════════════
+     MONOCHROME THEME - Pure Black & White
+     ═══════════════════════════════════════════════════════════════════════ */
+  
+  /* Base */
+  --black: #000000;
+  --white: #ffffff;
+  
+  /* Grays - the only colors allowed */
+  --gray-50: #fafafa;
+  --gray-100: #f5f5f5;
+  --gray-200: #e5e5e5;
+  --gray-300: #d4d4d4;
+  --gray-400: #a3a3a3;
+  --gray-500: #737373;
+  --gray-600: #525252;
+  --gray-700: #404040;
+  --gray-800: #262626;
+  --gray-900: #171717;
+  --gray-950: #0a0a0a;
+  
+  /* Semantic mappings */
+  --color-bg: var(--black);
+  --color-surface: var(--gray-950);
+  --color-surface-hover: var(--gray-900);
+  --color-text: var(--gray-300);
+  --color-text-muted: var(--gray-500);
+  --color-text-faint: var(--gray-700);
+  --color-heading: var(--white);
+  --color-border: var(--gray-800);
+  --color-border-hover: var(--gray-600);
+  
+  /* Subtle glass - toned down */
+  --glass-bg: rgba(255, 255, 255, 0.02);
+  --glass-bg-hover: rgba(255, 255, 255, 0.04);
+  --glass-border: rgba(255, 255, 255, 0.06);
+  --glass-border-hover: rgba(255, 255, 255, 0.12);
+  
+  /* Transitions */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-fast: 150ms;
+  --duration-base: 300ms;
+  --duration-slow: 500ms;
+  
+  /* Spacing */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
+  --space-3xl: 4rem;
+  --space-4xl: 6rem;
+  
+  /* Border radius - minimal */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  
+  /* Legacy support */
+  --color-headline: var(--white);
+  --color-paragraph: var(--gray-400);
+  --color-secondary: var(--gray-500);
+  --color-muted: var(--gray-600);
+  --accent-primary: var(--white);
+  --accent-primary-glow: rgba(255, 255, 255, 0.1);
 }
 
 @theme {
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-  --font-serif: "Crimson Text", serif;
-  --font-mono: "Cutive Mono", monospace;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "SF Mono", "Fira Code", Consolas, monospace;
 }
 
-body {
-  background-color: var(--color-background);
-  color: var(--color-paragraph);
-  font-family: var(--font-sans);
-  min-height: 100vh;
-  margin: 0;
-  line-height: 1.6;
+/* ═══════════════════════════════════════════════════════════════════════
+   BASE
+   ═══════════════════════════════════════════════════════════════════════ */
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Scrollbar styling for a cleaner look */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: var(--color-background);
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--color-secondary);
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--color-paragraph);
+body {
+  background: var(--color-bg);
+  background-image: 
+    radial-gradient(circle, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 24px 24px;
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.6;
+  margin: 0;
+  min-height: 100vh;
 }
 
 ::selection {
-  background-color: rgba(255, 255, 255, 0.2);
-  /* White with opacity */
-  color: var(--color-background);
+  background: var(--white);
+  color: var(--black);
 }
 
-/* Global link styles */
+/* ═══════════════════════════════════════════════════════════════════════
+   SCROLLBAR - Minimal
+   ═══════════════════════════════════════════════════════════════════════ */
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--gray-800);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gray-700);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--gray-800) transparent;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   TYPOGRAPHY
+   ═══════════════════════════════════════════════════════════════════════ */
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--color-heading);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
 a {
-  text-decoration: none;
   color: inherit;
-  transition: all 0.2s ease-in-out;
+  text-decoration: none;
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   COMPONENTS - Minimal Glass
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--glass-border);
+}
+
+.glass:hover {
+  background: var(--glass-bg-hover);
+  border-color: var(--glass-border-hover);
+}
+
+.glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  transition: all var(--duration-base) var(--ease-out);
+}
+
+.glass-card:hover {
+  background: var(--glass-bg-hover);
+  border-color: var(--glass-border-hover);
+}
+
+.glass-input {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  padding: 0.75rem 1rem;
+  color: var(--white);
+  font-size: 0.9375rem;
+  transition: border-color var(--duration-fast) var(--ease-out);
+  width: 100%;
+}
+
+.glass-input::placeholder {
+  color: var(--gray-600);
+}
+
+.glass-input:focus {
+  outline: none;
+  border-color: var(--gray-500);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   UTILITIES
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.text-gradient {
+  background: linear-gradient(135deg, var(--white) 0%, var(--gray-400) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   ANIMATIONS - Subtle
+   ═══════════════════════════════════════════════════════════════════════ */
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fade-up {
+  from { 
+    opacity: 0; 
+    transform: translateY(20px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+@keyframes slide-in {
+  from { 
+    opacity: 0; 
+    transform: translateX(-10px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateX(0); 
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in var(--duration-slow) var(--ease-out);
+}
+
+.animate-fade-up {
+  animation: fade-up var(--duration-slow) var(--ease-out);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }

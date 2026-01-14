@@ -8,66 +8,153 @@
 </script>
 
 <svelte:head>
-  <title>Kashif — Applied ML Engineer</title>
-  <meta
-    name="description"
-    content="Personal website of Kashiful Haque, ML Engineer."
-  />
+  <title>Kashiful Haque</title>
+  <meta name="description" content="Personal website of Kashiful Haque, ML Engineer." />
 </svelte:head>
 
-<!-- Featured Section (Example) -->
-<section class="mb-16">
-  <div class="space-y-4">
-    <!-- Resume Link (Open PDF directly) -->
-    <a
-      href={resumeUrl}
-      class="group block w-full bg-[var(--color-surface)] border border-[var(--color-border)] p-6 rounded-lg hover:border-[var(--color-secondary)] transition-all cursor-pointer text-left"
-    >
-      <div class="flex items-center justify-between">
-        <div>
-          <h4
-            class="text-lg font-semibold text-[var(--color-headline)] group-hover:text-[var(--color-highlight)] transition-colors"
-          >
-            Resume
-          </h4>
-          <p class="text-sm text-[var(--color-paragraph)] mt-1">
-            Check out my full professional history.
-          </p>
-        </div>
-        <span
-          class="text-[var(--color-secondary)] group-hover:translate-x-1 group-hover:text-[var(--color-headline)] transition-all"
-          >→</span
-        >
-      </div>
-    </a>
+<div class="home">
+  <!-- Hero -->
+  <section class="hero">
+    <h1 class="hero-title">
+      Kashiful Haque
+    </h1>
+    <p class="hero-subtitle">
+      Building intelligent systems at the intersection of research and production. 
+      Focused on inference optimization, model training, and scalable AI infrastructure.
+    </p>
+  </section>
 
-    <!-- Resume Editor (only visible when authenticated) -->
+  <!-- Links -->
+  <section class="links-section">
+    <a href={resumeUrl} class="link-card">
+      <span class="link-label">Resume</span>
+      <span class="link-arrow">↗</span>
+    </a>
+    
     {#if $auth.isAuthenticated}
-      <a
-        href="/editor"
-        class="group block bg-[var(--color-surface)] border border-[var(--color-border)] p-6 rounded-lg hover:border-[var(--color-secondary)] transition-all"
-      >
-        <div class="flex items-center justify-between">
-          <div>
-            <h4
-              class="text-lg font-semibold text-[var(--color-headline)] group-hover:text-[var(--color-highlight)] transition-colors"
-            >
-              Edit Resume
-            </h4>
-            <p class="text-sm text-[var(--color-paragraph)] mt-1">
-              View and edit your resume source files.
-            </p>
-          </div>
-          <span
-            class="text-[var(--color-secondary)] group-hover:translate-x-1 group-hover:text-[var(--color-headline)] transition-all"
-            >✏️</span
-          >
-        </div>
+      <a href="/editor" class="link-card">
+        <span class="link-label">Editor</span>
+        <span class="link-arrow">→</span>
       </a>
     {/if}
-  </div>
-</section>
+  </section>
+
+  <!-- Currently -->
+  <section class="status-section">
+    <div class="status-row">
+      <span class="status-label">Currently</span>
+      <span class="status-value">ML Engineer @ Wand AI</span>
+    </div>
+    <div class="status-row">
+      <span class="status-label">Location</span>
+      <span class="status-value">Palo Alto, CA</span>
+    </div>
+    <div class="status-row">
+      <span class="status-label">Focus</span>
+      <span class="status-value">LLMs, Inference, Production ML</span>
+    </div>
+  </section>
+</div>
 
 <style>
-  /* Local overrides if needed */
+  .home {
+    display: flex;
+    flex-direction: column;
+    gap: 4rem;
+  }
+
+  /* Hero */
+  .hero {
+    padding-top: 2rem;
+  }
+  
+  .hero-title {
+    font-size: clamp(2.5rem, 8vw, 4rem);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    color: var(--white);
+    margin-bottom: 1.5rem;
+  }
+  
+  .hero-subtitle {
+    font-size: 1.125rem;
+    line-height: 1.7;
+    color: var(--gray-400);
+    max-width: 540px;
+  }
+
+  /* Links */
+  .links-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    background: var(--gray-800);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+  }
+  
+  .link-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem 1.5rem;
+    background: var(--gray-950);
+    transition: background var(--duration-fast) var(--ease-out);
+  }
+  
+  .link-card:hover {
+    background: var(--gray-900);
+  }
+  
+  .link-label {
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: var(--white);
+  }
+  
+  .link-arrow {
+    font-size: 1rem;
+    color: var(--gray-600);
+    transition: all var(--duration-fast) var(--ease-out);
+  }
+  
+  .link-card:hover .link-arrow {
+    color: var(--white);
+    transform: translateX(4px);
+  }
+
+  /* Status */
+  .status-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    border-top: 1px solid var(--gray-800);
+    padding-top: 2rem;
+  }
+  
+  .status-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.875rem 0;
+    border-bottom: 1px solid var(--gray-900);
+  }
+  
+  .status-row:last-child {
+    border-bottom: none;
+  }
+  
+  .status-label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--gray-600);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  
+  .status-value {
+    font-size: 0.9375rem;
+    color: var(--gray-300);
+  }
 </style>

@@ -438,13 +438,6 @@
     border-bottom: 1px solid var(--color-border);
   }
 
-  .container {
-    width: 100%;
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 0 2rem;
-  }
-
   .stats-row {
     display: flex;
     flex-direction: column;
@@ -751,53 +744,4 @@
     color: var(--gray-700);
   }
 
-  /* ═══════════════════════════════════════════════════════════════════════
-     BUTTONS (scoped)
-     ═══════════════════════════════════════════════════════════════════════ */
-
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    padding: 0.75rem 1.5rem;
-    font-size: 0.875rem;
-    font-weight: 500;
-    border-radius: 9999px;
-    transition: all 0.15s ease;
-    cursor: pointer;
-    border: none;
-    text-decoration: none;
-  }
-
-  .btn-primary {
-    background: var(--white);
-    color: var(--black);
-  }
-
-  .btn-primary:hover {
-    background: var(--gray-200);
-    transform: translateY(-1px);
-  }
-
-  .btn-outline {
-    background: transparent;
-    color: var(--white);
-    border: 1px solid var(--color-border);
-  }
-
-  .btn-outline:hover {
-    background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(255, 255, 255, 0.2);
-  }
-
-  .btn-ghost {
-    background: transparent;
-    color: var(--gray-400);
-    padding: 0.75rem 1rem;
-  }
-
-  .btn-ghost:hover {
-    color: var(--white);
-  }
 </style>

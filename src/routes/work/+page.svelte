@@ -86,26 +86,6 @@
     border-bottom: 1px solid var(--color-border);
   }
 
-  .category-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.6875rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.15em;
-    color: var(--gray-400);
-    margin-bottom: 1rem;
-  }
-
-  .category-badge::before {
-    content: "";
-    width: 6px;
-    height: 6px;
-    background: var(--accent);
-    border-radius: 50%;
-  }
-
   .page-title {
     font-family: var(--font-serif);
     font-size: clamp(2.5rem, 6vw, 3.5rem);

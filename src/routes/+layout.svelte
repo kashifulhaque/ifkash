@@ -15,6 +15,12 @@
     { href: '/blog', label: 'Blog' },
   ];
   
+  const extraItems = [
+    { href: '/leetcode', label: 'LeetCode', shortLabel: 'LC' },
+    { href: '/tensara', label: 'Tensara', shortLabel: 'TS' },
+    { href: '/news', label: 'Hacker News', shortLabel: 'HN' },
+  ];
+  
   let mobileMenuOpen = false;
   
   function toggleMenu() {
@@ -50,9 +56,9 @@
       </nav>
       
       <div class="nav-actions">
-        <a href="/leetcode" class="nav-link-ext">LC</a>
-        <a href="/tensara" class="nav-link-ext">TS</a>
-        <a href="/news" class="nav-link-ext">HN</a>
+        {#each extraItems as item}
+          <a href={item.href} class="nav-link-ext">{item.shortLabel}</a>
+        {/each}
         {#if !$auth.isAuthenticated}
           <span class="nav-divider"></span>
           <a href="https://linkedin.com/in/kashifulhaque" target="_blank" rel="noopener noreferrer" class="btn-talk">
@@ -98,9 +104,9 @@
           </a>
         {/each}
         <div class="mobile-menu-divider"></div>
-        <a href="/leetcode" class="mobile-menu-link" on:click={closeMenu}>LeetCode</a>
-        <a href="/tensara" class="mobile-menu-link" on:click={closeMenu}>Tensara</a>
-        <a href="/news" class="mobile-menu-link" on:click={closeMenu}>Hacker News</a>
+        {#each extraItems as item}
+          <a href={item.href} class="mobile-menu-link" on:click={closeMenu}>{item.label}</a>
+        {/each}
         <div class="mobile-menu-divider"></div>
         <a href="https://linkedin.com/in/kashifulhaque" class="mobile-menu-link cta" target="_blank" rel="noopener noreferrer" on:click={closeMenu}>
           Get in touch
@@ -302,7 +308,7 @@
   /* Mobile Menu */
   .mobile-menu {
     position: fixed;
-    top: 73px;
+    top: 73px; /* Height of top bar */
     left: 0;
     right: 0;
     background: rgba(13, 13, 13, 0.98);

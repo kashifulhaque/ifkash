@@ -5,6 +5,7 @@
 
   $: isDashboard = $page.url.pathname === "/dashboard";
   $: isFullWidth = $page.url.pathname === "/login" || $page.url.pathname === "/editor";
+  $: isHomePage = $page.url.pathname === "/";
   $: currentPath = $page.url.pathname;
   
   const navItems = [
@@ -15,9 +16,9 @@
   ];
   
   const extraItems = [
-    { href: '/leetcode', label: 'LC' },
-    { href: '/tensara', label: 'TS' },
-    { href: '/news', label: 'HN' },
+    { href: '/leetcode', label: 'LeetCode', shortLabel: 'LC' },
+    { href: '/tensara', label: 'Tensara', shortLabel: 'TS' },
+    { href: '/news', label: 'Hacker News', shortLabel: 'HN' },
   ];
   
   let mobileMenuOpen = false;
@@ -36,8 +37,11 @@
 {:else}
   <div class="site-wrapper">
     <!-- Top Bar -->
-    <header class="top-bar">
-      <a href="/" class="toolbar-logo">KH</a>
+    <header class="top-bar" class:transparent={isHomePage}>
+      <a href="/" class="toolbar-logo">
+        <span class="logo-icon">◈</span>
+        <span class="logo-text">Kashif</span>
+      </a>
       
       <nav class="nav-desktop">
         {#each navItems as item}
@@ -52,11 +56,14 @@
       </nav>
       
       <div class="nav-actions">
-        <a href="/leetcode" class="nav-link-ext">LC</a>
-        <a href="/tensara" class="nav-link-ext">TS</a>
-        <a href="/news" class="nav-link-ext">HN</a>
+        {#each extraItems as item}
+          <a href={item.href} class="nav-link-ext">{item.shortLabel}</a>
+        {/each}
         {#if !$auth.isAuthenticated}
-          <a href="/login" class="nav-link-ext dim">→</a>
+          <span class="nav-divider"></span>
+          <a href="https://linkedin.com/in/kashifulhaque" target="_blank" rel="noopener noreferrer" class="btn-talk">
+            Get in touch
+          </a>
         {/if}
       </div>
       
@@ -98,38 +105,35 @@
         {/each}
         <div class="mobile-menu-divider"></div>
         {#each extraItems as item}
-          <a
-            href={item.href}
-            class="mobile-menu-link"
-            on:click={closeMenu}
-          >
-            {item.label}
-          </a>
+          <a href={item.href} class="mobile-menu-link" on:click={closeMenu}>{item.label}</a>
         {/each}
-        {#if !$auth.isAuthenticated}
-          <a href="/login" class="mobile-menu-link" on:click={closeMenu}>Login</a>
-        {/if}
+        <div class="mobile-menu-divider"></div>
+        <a href="https://linkedin.com/in/kashifulhaque" class="mobile-menu-link cta" target="_blank" rel="noopener noreferrer" on:click={closeMenu}>
+          Get in touch
+        </a>
       </nav>
     {/if}
 
     <!-- Main -->
-    <main class="main-content">
+    <main class="main-content" class:full-width={isHomePage}>
       <slot />
     </main>
 
     <!-- Footer -->
-    <footer class="site-footer">
-      <div class="footer-content">
-        <span class="footer-text">© {new Date().getFullYear()}</span>
-        <div class="footer-links">
-          <a href="https://github.com/kashifulhaque" target="_blank" rel="noopener noreferrer">GitHub</a>
-          <span class="footer-divider">/</span>
-          <a href="https://hf.co/ifkash" target="_blank" rel="noopener noreferrer">Hugging Face</a>
-          <span class="footer-divider">/</span>
-          <a href="https://linkedin.com/in/kashifulhaque" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+    {#if !isHomePage}
+      <footer class="site-footer">
+        <div class="footer-content">
+          <span class="footer-text">© {new Date().getFullYear()} Kashiful Haque</span>
+          <div class="footer-links">
+            <a href="https://github.com/kashifulhaque" target="_blank" rel="noopener noreferrer">GitHub</a>
+            <span class="footer-divider">·</span>
+            <a href="https://hf.co/ifkash" target="_blank" rel="noopener noreferrer">Hugging Face</a>
+            <span class="footer-divider">·</span>
+            <a href="https://linkedin.com/in/kashifulhaque" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+          </div>
         </div>
-      </div>
-    </footer>
+      </footer>
+    {/if}
   </div>
 {/if}
 
@@ -141,33 +145,52 @@
   }
 
   /* ═══════════════════════════════════════════════════════════════════════
-     TOP BAR
+     TOP BAR - Giga Style
      ═══════════════════════════════════════════════════════════════════════ */
   
   .top-bar {
-    position: sticky;
+    position: fixed;
     top: 0;
+    left: 0;
+    right: 0;
     z-index: 100;
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 1.25rem 2rem;
-    background: rgba(0, 0, 0, 0.8);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--glass-border);
+    background: rgba(13, 13, 13, 0.9);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--color-border);
+    transition: background var(--duration-base) var(--ease-out);
+  }
+  
+  .top-bar.transparent {
+    background: transparent;
+    border-bottom-color: transparent;
   }
   
   .toolbar-logo {
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--white);
-    letter-spacing: -0.01em;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
     transition: opacity var(--duration-fast) var(--ease-out);
   }
   
   .toolbar-logo:hover {
     opacity: 0.8;
+  }
+  
+  .logo-icon {
+    font-size: 1.25rem;
+    color: var(--white);
+  }
+  
+  .logo-text {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--white);
+    letter-spacing: -0.01em;
   }
   
   .nav-desktop {
@@ -183,11 +206,9 @@
   }
   
   .nav-link {
-    font-size: 0.8125rem;
-    font-weight: 500;
-    color: var(--gray-500);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
+    font-size: 0.875rem;
+    font-weight: 400;
+    color: var(--gray-400);
     transition: color var(--duration-fast) var(--ease-out);
     position: relative;
   }
@@ -197,20 +218,10 @@
     color: var(--white);
   }
   
-  .nav-link.active::after {
-    content: '';
-    position: absolute;
-    bottom: -4px;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: var(--white);
-  }
-  
   .nav-actions {
     display: none;
     align-items: center;
-    gap: 1.5rem;
+    gap: 1.25rem;
   }
   
   @media (min-width: 768px) {
@@ -220,10 +231,9 @@
   }
   
   .nav-link-ext {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--gray-600);
-    letter-spacing: 0.05em;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--gray-500);
     transition: color var(--duration-fast) var(--ease-out);
   }
   
@@ -231,12 +241,27 @@
     color: var(--white);
   }
   
-  .nav-link-ext.dim {
-    opacity: 0.75;
+  .nav-divider {
+    width: 1px;
+    height: 20px;
+    background: var(--color-border);
   }
   
-  .nav-link-ext.dim:hover {
-    opacity: 1;
+  .btn-talk {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--black);
+    background: var(--white);
+    border-radius: var(--radius-full);
+    transition: all var(--duration-fast) var(--ease-out);
+  }
+  
+  .btn-talk:hover {
+    background: var(--gray-200);
+    transform: translateY(-1px);
   }
   
   /* Mobile Menu Button */
@@ -247,7 +272,7 @@
     padding: 0.5rem;
     background: none;
     border: none;
-    color: var(--gray-500);
+    color: var(--gray-400);
     cursor: pointer;
     transition: color var(--duration-fast) var(--ease-out);
   }
@@ -269,7 +294,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.6);
     z-index: 150;
     animation: fade-in 0.2s ease-out;
   }
@@ -286,10 +311,10 @@
     top: 73px; /* Height of top bar */
     left: 0;
     right: 0;
-    background: rgba(0, 0, 0, 0.95);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--glass-border);
+    background: rgba(13, 13, 13, 0.98);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--color-border);
     z-index: 200;
     padding: 1rem 0;
     animation: slide-down 0.2s ease-out;
@@ -305,27 +330,28 @@
   
   .mobile-menu-link {
     display: block;
-    padding: 0.875rem 2rem;
-    font-size: 0.875rem;
-    font-weight: 500;
+    padding: 1rem 2rem;
+    font-size: 0.9375rem;
+    font-weight: 400;
     color: var(--gray-400);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
     transition: all var(--duration-fast) var(--ease-out);
-    border-left: 2px solid transparent;
   }
   
   .mobile-menu-link:hover,
   .mobile-menu-link.active {
     color: var(--white);
     background: var(--glass-bg);
-    border-left-color: var(--white);
+  }
+  
+  .mobile-menu-link.cta {
+    color: var(--white);
+    font-weight: 500;
   }
   
   .mobile-menu-divider {
     height: 1px;
-    background: var(--glass-border);
-    margin: 0.5rem 2rem;
+    background: var(--color-border);
+    margin: 0.75rem 2rem;
   }
   
   @keyframes fade-in {
@@ -353,13 +379,18 @@
     width: 100%;
     max-width: 720px;
     margin: 0 auto;
-    padding: 3rem 2rem 6rem;
+    padding: 7rem 2rem 6rem;
     animation: fade-up var(--duration-slow) var(--ease-out);
   }
   
+  .main-content.full-width {
+    max-width: none;
+    padding: 0;
+  }
+  
   @media (min-width: 1024px) {
-    .main-content {
-      padding: 4rem 2rem 8rem;
+    .main-content:not(.full-width) {
+      padding: 8rem 2rem 8rem;
     }
   }
 
@@ -368,8 +399,9 @@
      ═══════════════════════════════════════════════════════════════════════ */
   
   .site-footer {
-    border-top: 1px solid var(--glass-border);
-    padding: 2rem;
+    border-top: 1px solid var(--color-border);
+    padding: 2.5rem 2rem;
+    background: var(--black);
   }
   
   .footer-content {
@@ -391,19 +423,19 @@
   }
   
   .footer-text {
-    font-size: 0.75rem;
-    color: var(--gray-700);
+    font-size: 0.8125rem;
+    color: var(--gray-600);
   }
   
   .footer-links {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    font-size: 0.75rem;
+    font-size: 0.8125rem;
   }
   
   .footer-links a {
-    color: var(--gray-600);
+    color: var(--gray-500);
     transition: color var(--duration-fast) var(--ease-out);
   }
   
@@ -412,6 +444,6 @@
   }
   
   .footer-divider {
-    color: var(--gray-800);
+    color: var(--gray-700);
   }
 </style>

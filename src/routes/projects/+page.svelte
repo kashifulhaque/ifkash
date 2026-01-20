@@ -56,6 +56,14 @@
       links: [
         { label: 'Code', url: 'https://github.com/kashifulhaque/tinyndarray' }
       ]
+    },
+    {
+      name: "Opencode theme for VS Code",
+      desc: "VS Code light and dark theme generated from OpenCode reference JSON.",
+      links: [
+        { label: "Download", url: "https://github.com/kashifulhaque/opencode-vscode-theme/releases/latest" },
+        { label: "Code", url: "https://github.com/kashifulhaque/opencode-vscode-theme" }
+      ]
     }
   ];
 </script>

@@ -5,41 +5,36 @@
 #set page(margin: (x: 0.9cm, y: 1.3cm))
 #set par(justify: true)
 
-#let chiline() = {v(-3pt); line(length: 100%); v(-5pt)}
-
 = #cardo[Kashiful Haque]
-+91 8240868544 • #link("mailto:me@ifkash.dev")[me\@ifkash.dev] • 
-#link("https://github.com/kashifulhaque")[github] • 
-#link("https://www.linkedin.com/in/kashifulhaque")[linkedin] • 
-#link("https://ifkash.dev")[ifkash.dev]
++91 8240868544 • #link("mailto:me@ifkash.dev")[me\@ifkash.dev] • #link("https://github.com/kashifulhaque")[github] • #link("https://hf.co/ifkash")[huggingface] • #link("https://www.linkedin.com/in/kashifulhaque")[linkedin] • #link("https://ifkash.dev")[ifkash.dev]
+
+Almost 4 YOE in Machine Learning, building high-throughput services, scalable hybrid search and production ML inference. Pretrained a 360M llama-style LLM on NVIDIA H100 (6B tokens) and building an LLM inference engine in C++; Learning internals of PyTorch/NumPy by implementing my own autograd engine and ndarray in Rust.
 
 = #cardo[Work Experience]
 
 *#cardo[wand.ai]* #h(1fr) _Palo Alto (Remote)_ \
 _Backend AI / ML Engineer_ #h(1fr) 11/2025 -- Present \
-- Building AI agents to automate workforce.
+- Built a config-driven agent workflow runtime with custom DSL.
+- Implemented workflow validation + schema enforcement + versioning to prevent production incidents from config drift.
 
 *#cardo[American Express]* #h(1fr) _Bangalore_ \
 _Engineer III_ #h(1fr) 02/2025 -- 11/2025 \
-- Engineered a real-time system to capture Webex transcripts and generate automated GPT-4o summaries.
-- Built large-scale search over 200k+ docs using hybrid semantic + lexical retrieval, reducing p95 latency from 30s to under 2s.
+- Built hybrid search over 200k+ documents using dense embeddings + keyword retrieval, powering internal knowledgebase.
+- Reduced p95 latency from ~30s to ~2s by refactoring pipelines, caching, and optimizing I/O + query execution.
+
 
 *#cardo[Fiery]* #h(1fr) _Bangalore_ \
 _Associate Software Engineer_ #h(1fr) 01/2023 -- 02/2025 \
-- Fine-tuned LLMs using SFT/QLoRA; profiled kernel-level bottlenecks during training and inference.
-- High-throughput inference using vLLM, achieving sub-second p95 time-to-first-token on T4 GPU clusters.
-- Developed Fiery Scribe, an automation engine that translates natural language into printer instructions via fine-tuned ModernBERT model, slashing costs by replacing GPU-dependent LLMs.
-- Developed "AskDB," an AI agent that converts queries into SQL and Python-generated reports, eliminating manual data requests and providing instant access to business KPIs.
+- Fine-tuned LLMs using SFT/QLoRA and deployed using vLLM for high-throughput inference on NVIDIA T4 clusters, achieving sub-second p95 TTFT.
+- Built "Fiery Scribe", an automation engine that translates natural language into printer instructions via fine-tuned ModernBERT model, slashing costs by replacing GPU-dependent LLMs.
+- Developed AskDB, an AI agent that converts queries into SQL and Python-generated reports, eliminating manual data requests and providing instant access to business KPIs.
 
-*#cardo[Corteva Agriscience]* #h(1fr) _Hyderabad_ \
-_Internship_ #h(1fr) 07/2022 -- 12/2022 \
-- Worked on applied ML pipelines and migration of Flask monolith to microservices.
 
 = #cardo[Projects]
 
-*#cardo[smol-llama: 360M LLaMA Pre-training]* • #link("https://github.com/kashifulhaque/smol-llama")[github] • #link("https://huggingface.co/ifkash/smol-llama")[huggingface] \
+*#cardo[smol-llama: 360M LLaMA Pre-training]* • #link("https://github.com/weights-and-wires/smol-llama")[github] • #link("https://huggingface.co/weights-and-wires/smol-llama")[huggingface] \
 - Implemented a 360M parameter LLaMA model from scratch in PyTorch, featuring GQA, RoPE, RMSNorm, and SwiGLU.
-- Pre-trained on 6B tokens of the FineWeb dataset on a single H100, achieving ~75k tokens/sec throughput via Flash Attention 2, `torch.compile`, and bfloat16 mixed precision.
+- Pre-trained on 6B tokens of FineWeb on 1x H100, achieving 75k tok/s throughput via FlashAttention.
 - Engineered a cost-effective training pipeline (<\$60 total) with gradient accumulation, automatic checkpoint versioning to Hugging Face, and W&B experiment tracking.
 
 *#cardo[smoltorch: Minimal Autograd Engine]* • 
@@ -61,12 +56,10 @@ _Internship_ #h(1fr) 07/2022 -- 12/2022 \
 - Designed a disk-backed HNSW vector database with crash recovery, oplog durability, and low memory footprint.
 - Implemented fast ANN search and metadata filtering, relevant for retrieval-augmented and domain-adapted NLP systems.
 
-*#cardo[Boo: AI-powered Discord Bot]* • 
-#link("https://github.com/VVIP-Kitchen/boo")[github] • 
-#link("https://deepwiki.com/VVIP-Kitchen/boo")[deepwiki] • 
-#link("https://vvip.ifkash.dev/blog/boo")[blog] \
-- Built a distributed, multi-service AI agent with realtime chat, multimodal vision analysis and tool-calling.
-- Engineered a secure execution environment, a coding gym, using a sandboxed Python runtime and handed it over to Boo.
+*#cardo[banana.cpp]* • 
+#link("https://github.com/kashifulhaque/banana.cpp")[github] \
+- Building an LLM inference engine with KV-cache, speculative decoding and continuous batching.
+- Achieved 10x speedup through CPU parallelization + fused kernel optimizations.
 
 = #cardo[Education]
 

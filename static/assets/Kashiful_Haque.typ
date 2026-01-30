@@ -25,9 +25,9 @@ _Engineer III_ #h(1fr) 02/2025 -- 11/2025 \
 
 *#cardo[Fiery]* #h(1fr) _Bangalore_ \
 _Associate Software Engineer_ #h(1fr) 01/2023 -- 02/2025 \
-- Fine-tuned LLMs using SFT/QLoRA and deployed using vLLM for high-throughput inference on NVIDIA T4 clusters, achieving sub-second p95 TTFT.
-- Built "Fiery Scribe", an automation engine that translates natural language into printer instructions via fine-tuned ModernBERT model, slashing costs by replacing GPU-dependent LLMs.
-- Developed AskDB, an AI agent that converts queries into SQL and Python-generated reports, eliminating manual data requests and providing instant access to business KPIs.
+- Fine-tuned and productionized domain LLMs using SFT/QLoRA, serving via vLLM on NVIDIA T4 and 4070Ti clusters with sub-second p95 latency for internal AI products.
+- Built Fiery Scribe, an NLP system translating natural-language print requests into complex printer XML configurations, automating operator workflows and reducing GPU inference costs by >80% using a fine-tuned ModernBERT model.
+- Developed AskDB, an LLM-powered analytics agent that maps natural-language queries to SQL over production databases and auto-generates structured reports, eliminating manual data requests for business KPIs.
 
 
 = #cardo[Projects]

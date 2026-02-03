@@ -8,27 +8,31 @@
     name: string;
     desc: string;
     links: { label: string; url: string }[];
+    page?: string; // Optional internal page link
   };
 
   const projects: Project[] = [
     {
+      name: 'banana.cpp',
+      desc: 'Pure C++ LLM inference engine. SmolLM2, Llama 3.2, Qwen. Modular architecture with GQA, RoPE, SwiGLU.',
+      page: '/projects/banana-cpp',
+      links: [
+        { label: 'Code', url: 'https://github.com/kashifulhaque/banana.cpp' }
+      ]
+    },
+    {
       name: 'smol-llama',
       desc: '360M parameter LLaMA trained from scratch on 6B tokens. GQA, RoPE, SwiGLU. Single H100, 22hrs, $53.',
+      page: '/projects/smol-llama',
       links: [
         { label: 'Model', url: 'https://huggingface.co/ifkash/smol-llama' },
         { label: 'Code', url: 'https://github.com/kashifulhaque/smol-llama' }
       ]
     },
     {
-      name: 'FineWeb-6B',
-      desc: 'Curated 6B token dataset from FineWeb. Pre-tokenized with custom 49K BPE vocab.',
-      links: [
-        { label: 'Dataset', url: 'https://huggingface.co/datasets/ifkash/fineweb-6b' }
-      ]
-    },
-    {
       name: 'smoltorch',
       desc: 'Autograd engine and neural networks in ~500 lines of NumPy. Educational deep learning.',
+      page: '/projects/smoltorch',
       links: [
         { label: 'Code', url: 'https://github.com/kashifulhaque/smoltorch' },
         { label: 'PyPI', url: 'https://pypi.org/project/smoltorch/' }
@@ -37,6 +41,7 @@
     {
       name: 'NoPokeDB',
       desc: 'Lightweight vector DB with hnswlib + SQLite. Crash recovery, 2K+ PyPI downloads.',
+      page: '/projects/nopokedb',
       links: [
         { label: 'Code', url: 'https://github.com/kashifulhaque/nopokedb' },
         { label: 'PyPI', url: 'https://pypi.org/project/nopokedb/' }
@@ -45,6 +50,7 @@
     {
       name: 'Boo',
       desc: 'AI Discord bot. Natural conversations, image understanding, and generation.',
+      page: '/projects/boo',
       links: [
         { label: 'Code', url: 'https://github.com/VVIP-Kitchen/boo' },
         { label: 'Site', url: 'https://boo.ifkash.dev' }
@@ -53,6 +59,7 @@
     {
       name: 'tinyndarray',
       desc: 'NumPy-like ndarray in Rust with Python bindings. Learning project.',
+      page: '/projects/tinyndarray',
       links: [
         { label: 'Code', url: 'https://github.com/kashifulhaque/tinyndarray' }
       ]
@@ -78,7 +85,13 @@
     {#each projects as project, i}
       <article class="project" style="--delay: {i * 50}ms">
         <div class="project-header">
-          <h2 class="project-name">{project.name}</h2>
+          {#if project.page}
+            <a href={project.page} class="project-name-link">
+              <h2 class="project-name">{project.name}</h2>
+            </a>
+          {:else}
+            <h2 class="project-name">{project.name}</h2>
+          {/if}
           <div class="project-links">
             {#each project.links as link}
               <a href={link.url} target="_blank" rel="noopener noreferrer" class="project-link">
@@ -156,6 +169,18 @@
     font-weight: 600;
     color: var(--white);
     letter-spacing: -0.01em;
+  }
+
+  .project-name-link {
+    transition: opacity var(--duration-fast) var(--ease-out);
+  }
+
+  .project-name-link:hover {
+    opacity: 0.7;
+  }
+
+  .project-name-link .project-name {
+    margin: 0;
   }
   
   .project-links {

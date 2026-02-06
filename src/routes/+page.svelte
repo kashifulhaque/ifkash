@@ -43,15 +43,13 @@
   <section class="status-section">
     <div class="status-row">
       <span class="status-label">Currently</span>
-      <span class="status-value">ML Engineer @ Wand AI</span>
+      <span class="status-value">ML Engineer @ wand.ai</span>
     </div>
     <div class="status-row">
-      <span class="status-label">Location</span>
-      <span class="status-value">Palo Alto, CA</span>
-    </div>
-    <div class="status-row">
-      <span class="status-label">Focus</span>
-      <span class="status-value">LLMs, Inference, Production ML</span>
+      <span class="status-label">Latest</span>
+      <a href="https://marketplace.visualstudio.com/items?itemName=ifkash.kernel-orbit" class="status-link" target="_blank" rel="noopener noreferrer">
+        Kernel Orbit: VS Code Extension
+      </a>
     </div>
   </section>
 </div>
@@ -156,5 +154,15 @@
   .status-value {
     font-size: 0.9375rem;
     color: var(--gray-300);
+  }
+  
+  .status-link {
+    font-size: 0.9375rem;
+    color: var(--gray-300);
+    transition: color var(--duration-fast) var(--ease-out);
+  }
+  
+  .status-link:hover {
+    color: var(--white);
   }
 </style>

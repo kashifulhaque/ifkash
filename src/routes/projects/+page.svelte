@@ -57,11 +57,11 @@
       ]
     },
     {
-      name: 'tinyndarray',
+      name: 'ferray',
       desc: 'NumPy-like ndarray in Rust with Python bindings. Learning project.',
-      page: '/projects/tinyndarray',
+      page: '/projects/ferray',
       links: [
-        { label: 'Code', url: 'https://github.com/kashifulhaque/tinyndarray' }
+        { label: 'Code', url: 'https://github.com/kashifulhaque/ferray' }
       ]
     },
     {

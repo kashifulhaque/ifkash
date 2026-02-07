@@ -1,5 +1,5 @@
 <svelte:head>
-  <title>tinyndarray — NumPy-like Array in Rust</title>
+  <title>ferray — NumPy-like Array in Rust</title>
   <meta name="description" content="NumPy-like ndarray in Rust with Python bindings. Learning project." />
 </svelte:head>
 
@@ -8,12 +8,12 @@
     <div class="breadcrumb">
       <a href="/projects">Projects</a>
       <span class="separator">/</span>
-      <span>tinyndarray</span>
+      <span>ferray</span>
     </div>
-    <h1 class="page-title">tinyndarray</h1>
+    <h1 class="page-title">ferray</h1>
     <p class="page-desc">A tiny NumPy-like library for Python, written in Rust. Built to learn the inner workings of NumPy and explore Rust-Python interoperability with PyO3 and maturin.</p>
     <div class="project-links">
-      <a href="https://github.com/kashifulhaque/tinyndarray" target="_blank" rel="noopener noreferrer" class="project-link">
+      <a href="https://github.com/kashifulhaque/ferray" target="_blank" rel="noopener noreferrer" class="project-link">
         Code
       </a>
     </div>
@@ -23,7 +23,7 @@
     <div class="section">
       <h2>Overview</h2>
       <p>
-        tinyndarray is an educational project that implements a NumPy-like multidimensional array library in Rust with Python bindings. 
+        ferray is an educational project that implements a NumPy-like multidimensional array library in Rust with Python bindings. 
         It demonstrates how to build high-performance numerical computing libraries using Rust's safety and speed while maintaining 
         Python's ease of use.
       </p>
@@ -40,7 +40,7 @@
         <li><strong>OpenBLAS Integration</strong>: Leverages optimized BLAS routines for linear algebra</li>
         <li><strong>Python Bindings</strong>: Seamless integration via PyO3 and maturin</li>
         <li><strong>Broadcasting Support</strong>: NumPy-style broadcasting for element-wise operations</li>
-        <li><strong>NumPy Interoperability</strong>: Convert between NumPy arrays and tinyndarray</li>
+        <li><strong>NumPy Interoperability</strong>: Convert between NumPy arrays and ferray</li>
       </ul>
     </div>
 
@@ -128,8 +128,8 @@ pip install maturin</code></pre>
       <h3 class="subsection-title">Building the Package</h3>
       <div class="code-block">
         <pre><code># Clone the repository
-git clone https://github.com/kashifulhaque/tinyndarray.git
-cd tinyndarray
+git clone https://github.com/kashifulhaque/ferray.git
+cd ferray
 
 # Build and install in development mode
 maturin develop --release
@@ -144,7 +144,7 @@ uv run maturin develop --release</code></pre>
 
       <h3 class="subsection-title">Basic Array Creation</h3>
       <div class="code-block">
-        <pre><code>import tinyndarray as tnp
+        <pre><code>import ferray as tnp
 
 # Create arrays
 a = tnp.NdArray.zeros([3, 4])
@@ -202,9 +202,9 @@ print(a.shape())          # [3, 2]</code></pre>
       <h3 class="subsection-title">NumPy Interoperability</h3>
       <div class="code-block">
         <pre><code>import numpy as np
-import tinyndarray as tnp
+import ferray as tnp
 
-# From NumPy to tinyndarray
+# From NumPy to ferray
 a_np = np.ones((2, 3), dtype=np.float32)
 a_rust = tnp.NdArray.from_numpy(a_np)
 

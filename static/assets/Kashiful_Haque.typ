@@ -43,8 +43,8 @@ _Associate Software Engineer_ #h(1fr) 01/2023 -- 02/2025 \
 - Implemented a reverse-mode autograd engine with tape-based computation graphs and topological scheduling.
 - Designed NumPy-backed tensor ops with a minimal training loop inspired by PyTorch internals.
 
-*#cardo[tinyndarray: Rust Based N-dim Array]* • 
-#link("https://github.com/kashifulhaque/tinyndarray")[github] \
+*#cardo[ferray: Rust Based N-dim Array]* • 
+#link("https://github.com/kashifulhaque/ferray")[github] \
 - Built stride-aware ndarray with slicing and broadcasting, mirroring tensor layouts used in ML frameworks.
 - Exposed Rust numerical kernels to Python via PyO3 for efficient tensor operations and future JIT/acceleration work.
 

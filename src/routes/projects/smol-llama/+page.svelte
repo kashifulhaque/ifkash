@@ -13,10 +13,10 @@
     <h1 class="page-title">smol-llama 🦙</h1>
     <p class="page-desc">A 360M parameter LLaMA-style language model trained from scratch on 6B tokens. Built with GQA, RoPE, and SwiGLU on a single H100 GPU in 22 hours for $53.</p>
     <div class="project-links">
-      <a href="https://huggingface.co/ifkash/smol-llama" target="_blank" rel="noopener noreferrer" class="project-link">
+      <a href="https://huggingface.co/weights-and-wires/smol-llama" target="_blank" rel="noopener noreferrer" class="project-link">
         Model
       </a>
-      <a href="https://github.com/kashifulhaque/smol-llama" target="_blank" rel="noopener noreferrer" class="project-link">
+      <a href="https://github.com/weights-and-wires/smol-llama" target="_blank" rel="noopener noreferrer" class="project-link">
         Code
       </a>
     </div>
@@ -108,7 +108,7 @@
     <div class="section">
       <h2>Dataset</h2>
       <p>
-        The model is trained on <a href="https://huggingface.co/datasets/ifkash/fineweb-6b" target="_blank" rel="noopener noreferrer" class="inline-link">fineweb-6b</a>, 
+        The model is trained on <a href="https://huggingface.co/datasets/weights-and-wires/fineweb-6b" target="_blank" rel="noopener noreferrer" class="inline-link">fineweb-6b</a>, 
         a curated 6B token dataset pre-tokenized with a custom 49K BPE vocabulary. The dataset includes 11.3 GB of training tokens 
         and 57 MB of validation tokens, all pre-processed for immediate use.
       </p>
@@ -211,17 +211,17 @@ print(tokenizer.decode(outputs[0], skip_special_tokens=True))</code></pre>
       <h2>Resources</h2>
       <ul class="resource-list">
         <li>
-          <a href="https://huggingface.co/ifkash/smol-llama" target="_blank" rel="noopener noreferrer" class="resource-link">
+          <a href="https://huggingface.co/weights-and-wires/smol-llama" target="_blank" rel="noopener noreferrer" class="resource-link">
             Pre-trained Model on HuggingFace
           </a>
         </li>
         <li>
-          <a href="https://huggingface.co/datasets/ifkash/fineweb-6b" target="_blank" rel="noopener noreferrer" class="resource-link">
+          <a href="https://huggingface.co/datasets/weights-and-wires/fineweb-6b" target="_blank" rel="noopener noreferrer" class="resource-link">
             FineWeb-6B Training Dataset
           </a>
         </li>
         <li>
-          <a href="https://github.com/kashifulhaque/smol-llama" target="_blank" rel="noopener noreferrer" class="resource-link">
+          <a href="https://github.com/weights-and-wires/smol-llama" target="_blank" rel="noopener noreferrer" class="resource-link">
             Source Code on GitHub
           </a>
         </li>

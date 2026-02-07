@@ -25,8 +25,8 @@
       desc: '360M parameter LLaMA trained from scratch on 6B tokens. GQA, RoPE, SwiGLU. Single H100, 22hrs, $53.',
       page: '/projects/smol-llama',
       links: [
-        { label: 'Model', url: 'https://huggingface.co/ifkash/smol-llama' },
-        { label: 'Code', url: 'https://github.com/kashifulhaque/smol-llama' }
+        { label: 'Model', url: 'https://huggingface.co/weights-and-wires/smol-llama' },
+        { label: 'Code', url: 'https://github.com/weights-and-wires/smol-llama' }
       ]
     },
     {

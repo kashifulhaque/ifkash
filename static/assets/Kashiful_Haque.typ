@@ -1,21 +1,21 @@
 #set text(font: "Crimson Pro")
-#let cardo = text.with(font: "Cardo")
+#let cardo_headings = text.with(font: "Cardo", size: 0.8em)
+#let cardo = text.with(font: "Cardo", size: 1em)
 
 #show link: underline
 #set page(margin: (x: 0.9cm, y: 1.3cm))
 #set par(justify: true)
 
-= #cardo[Kashiful Haque]
+= #cardo_headings[Kashiful Haque]
 +91 8240868544 • #link("mailto:me@ifkash.dev")[me\@ifkash.dev] • #link("https://github.com/kashifulhaque")[github] • #link("https://hf.co/ifkash")[huggingface] • #link("https://www.linkedin.com/in/kashifulhaque")[linkedin] • #link("https://ifkash.dev")[ifkash.dev]
 
 ML Systems Engineer with 4 YOE building production LLM systems and high-throughput search pipelines, with hands-on experience training transformer models from scratch and implementing low-level ML infrastructure in C++, Rust, and Python.
 
-= #cardo[Work Experience]
+= #cardo_headings[Work Experience]
 
 *#cardo[wand.ai]* #h(1fr) _Palo Alto (Remote)_ \
 _Backend AI / ML Engineer_ #h(1fr) 11/2025 -- Present \
 - Designed execution runtime for agent workflows, a statically-typed DSL and state isolation to reduce non-determinism.
-- Conducted model-level and inference-level experimentation (attention variants, KV-cache behavior, batching strategies) to guide architectural decisions in production agent systems.
 
 *#cardo[American Express]* #h(1fr) _Bangalore_ \
 _Engineer III_ #h(1fr) 02/2025 -- 11/2025 \
@@ -31,9 +31,11 @@ _Associate Software Engineer_ #h(1fr) 01/2023 -- 02/2025 \
 - Developed AskDB, an LLM agent that maps user inputs to SQL over prod DBs and generate reports, eliminating manual requests for business KPIs.
 
 
-= #cardo[ML Engineering Work]
+= #cardo_headings[ML Engineering Work]
 
-*#cardo[smol-llama: efficient transformer pre-training (360M)]* • #link("https://github.com/weights-and-wires/smol-llama")[github] • #link("https://huggingface.co/weights-and-wires/smol-llama")[huggingface] \
+*#cardo[smol-llama: efficient transformer pre-training (360M)]* • #link("https://github.com/weights-and-wires/smol-llama")[github] • #link("https://huggingface.co/weights-and-wires/smol-llama")[hf] •
+#link("https://api.wandb.ai/links/dotslasha/lydqsle8")[wandb] •
+#link("https://ifkash.dev/blog/smol-llama-pretraining")[blog] \
 - Trained a 360M LLaMA-style LLM from scratch in PyTorch, implementing GQA, RoPE, RMSNorm, and SwiGLU.
 - Pre-trained on 6B tokens using FlashAttention on H100, achieving 75K tokens/sec throughput.
 - Built a cost-efficient training pipeline with gradient accumulation, checkpointing, and experiment tracking.
@@ -55,12 +57,12 @@ _Associate Software Engineer_ #h(1fr) 01/2023 -- 02/2025 \
 - Implemented an LLM inference engine with KV-cache, speculative decoding, and continuous batching.
 - Achieved 10x speedup through CPU parallelization + fused kernel optimizations.
 
-= #cardo[Education]
+= #cardo_headings[Education]
 
 *#cardo[IIT Madras]* \
 BS, _Data Science and Applications_ #h(1fr) 2020 -- 2024
 
-= #cardo[Skills]
+= #cardo_headings[Skills]
 
 - **Languages:** Python, C++, Rust, Go  
 - **ML Systems:** PyTorch, Transformer training, FlashAttention, KV-cache, vLLM, QLoRA  

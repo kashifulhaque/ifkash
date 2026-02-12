@@ -65,6 +65,14 @@
       ]
     },
     {
+      name: 'endark',
+      desc: 'Monochrome, dark-only CSS library. Glassmorphism meets terminal-editorial aesthetic. Zero dependencies.',
+      links: [
+        { label: 'Site', url: 'https://endark.ifkash.dev' },
+        { label: 'Code', url: 'https://github.com/kashifulhaque/endark' }
+      ]
+    },
+    {
       name: "Opencode theme for VS Code",
       desc: "VS Code light and dark theme generated from OpenCode reference JSON.",
       links: [

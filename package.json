@@ -25,6 +25,7 @@
   },
   "type": "module",
   "dependencies": {
+    "@huggingface/transformers": "^3",
     "@tailwindcss/vite": "^4.1.18",
     "axios": "^1.13.2",
     "dompurify": "^3.3.1",

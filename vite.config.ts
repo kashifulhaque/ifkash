@@ -8,7 +8,7 @@ export default defineConfig({
 		sveltekit()
 	],
 	optimizeDeps: {
-		exclude: ['monaco-editor']
+		exclude: ['monaco-editor', '@huggingface/transformers']
 	},
 	ssr: {
 		noExternal: [],
@@ -16,5 +16,11 @@ export default defineConfig({
 	},
 	build: {
 		target: 'esnext'
+	},
+	server: {
+		headers: {
+			'Cross-Origin-Embedder-Policy': 'require-corp',
+			'Cross-Origin-Opener-Policy': 'same-origin',
+		}
 	}
 });

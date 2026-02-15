@@ -2,6 +2,7 @@
   import "../app.css";
   import { page } from "$app/stores";
   import { auth } from "$lib/stores/auth";
+  import AiAgent from "$lib/components/AiAgent.svelte";
 
   $: isDashboard = $page.url.pathname === "/dashboard";
   $: isFullWidth = $page.url.pathname === "/login" || $page.url.pathname === "/editor";
@@ -130,6 +131,8 @@
         </div>
       </div>
     </footer>
+
+    <AiAgent />
   </div>
 {/if}
 

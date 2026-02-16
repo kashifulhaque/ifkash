@@ -27,6 +27,7 @@
   "dependencies": {
     "@huggingface/transformers": "^3",
     "@tailwindcss/vite": "^4.1.18",
+    "@types/three": "^0.182.0",
     "axios": "^1.13.2",
     "dompurify": "^3.3.1",
     "dotenv": "^17.2.3",
@@ -38,7 +39,8 @@
     "remark-math": "^6.0.0",
     "svelte-markdown": "^0.4.1",
     "swagger-ui-dist": "^5.31.0",
-    "tailwindcss": "^4.1.18"
+    "tailwindcss": "^4.1.18",
+    "three": "^0.182.0"
   },
   "trustedDependencies": [
     "@tailwindcss/oxide",

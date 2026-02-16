@@ -82,6 +82,7 @@
 
 * {
   box-sizing: border-box;
+  cursor: url('/cursors/default.png') 3 1, default;
 }
 
 html {
@@ -101,6 +102,22 @@ body {
   line-height: 1.6;
   margin: 0;
   min-height: 100vh;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   CUSTOM CURSOR - Bibata Modern Ice (White)
+   ═══════════════════════════════════════════════════════════════════════ */
+
+a, button, [role="button"], input[type="submit"], input[type="button"],
+input[type="reset"], summary, select, label[for],
+.nav-link, .toolbar-logo, [onclick], [tabindex]:not([tabindex="-1"]) {
+  cursor: url('/cursors/pointer.png') 7 1, pointer !important;
+}
+
+input[type="text"], input[type="email"], input[type="password"],
+input[type="search"], input[type="tel"], input[type="url"],
+input[type="number"], textarea, [contenteditable="true"] {
+  cursor: url('/cursors/text.png') 8 8, text !important;
 }
 
 ::selection {

@@ -108,7 +108,6 @@ async function generate(messages: ChatMessage[]) {
     const tokenizer = generator.tokenizer;
     const model = generator.model;
 
-    // Build conversation with system prompt
     const conversation: ChatMessage[] = [
       { role: 'system', content: SYSTEM_PROMPT },
       ...messages,
@@ -125,7 +124,7 @@ async function generate(messages: ChatMessage[]) {
 
     const inputs = tokenizer(promptText, {
       return_tensors: 'pt',
-      add_special_tokens: false,
+      add_special_tokens: false
     });
 
     const promptLength = inputs.input_ids.dims[1];
@@ -140,26 +139,33 @@ async function generate(messages: ChatMessage[]) {
     });
 
     // Generate directly on the model
+    const startTime = performance.now();
     const outputIds = await model.generate({
       ...inputs,
       max_new_tokens: 512,
       do_sample: true,
       temperature: 0.7,
       top_p: 0.9,
-      streamer,
+      streamer
     });
+    const endTime = performance.now();
 
     // Decode only the new tokens (skip the prompt)
     const newTokens = (outputIds as any).slice(null, [promptLength, null]);
+
     let content = tokenizer.batch_decode(newTokens, {
       skip_special_tokens: true,
     })[0] ?? '';
+
+    const outputTokenCount = newTokens.dims[1];
+    const throughput = (outputTokenCount / ((endTime - startTime) / 1000)).toFixed(2);
+    const speed = `${throughput} tok/s`;
 
     // Strip any residual <think>...</think> blocks from Qwen3 output
     content = content.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
 
     currentState = 'ready';
-    self.postMessage({ type: 'done', content });
+    self.postMessage({ type: 'done', content, speed });
   } catch (err: any) {
     currentState = 'ready';
     self.postMessage({ type: 'error', error: err?.message ?? 'Generation failed' });

@@ -62,7 +62,9 @@
         let finalText = currentStreamingText || msg.content;
         // Strip any <think>...</think> blocks from Qwen3 output
         finalText = finalText.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
-        messages = [...messages, { role: 'assistant', content: finalText }];
+        finalText = finalText.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
+        messages = [...messages, { role: 'assistant', content: finalText, speed: msg.speed }];
+        // Parse navigation suggestions from the completed message
         // Parse navigation suggestions from the completed message
         const idx = messages.length - 1;
         const suggestions = parseNavigationSuggestions(finalText);
@@ -362,7 +364,13 @@
             {:else}
               <div class="msg-bubble msg-bubble-assistant">
                 {@html renderMarkdown(message.content)}
+                {@html renderMarkdown(message.content)}
               </div>
+              {#if message.speed}
+                <div class="msg-speed">
+                  {message.speed}
+                </div>
+              {/if}
               {#if navSuggestions.has(i)}
                 <div class="nav-pills">
                   {#each navSuggestions.get(i) ?? [] as suggestion}
@@ -736,6 +744,15 @@
 
   .msg-bubble-assistant :global(li) {
     margin-bottom: 0.125rem;
+  }
+
+  .msg-speed {
+    font-size: 0.7rem;
+    color: var(--gray-500);
+    margin-top: 0.25rem;
+    margin-left: 0.25rem;
+    font-family: var(--font-mono);
+    opacity: 0.7;
   }
 
   .cursor-blink {

@@ -1,6 +1,7 @@
 export interface ChatMessage {
   role: 'user' | 'assistant' | 'system';
   content: string;
+  speed?: string;
 }
 
 export interface AgentState {
@@ -27,7 +28,7 @@ export type WorkerToMainMessage =
   | { type: 'progress'; status: 'downloading' | 'loading'; progress: number; message?: string }
   | { type: 'ready'; backend: 'webgpu' | 'wasm' }
   | { type: 'token'; data: string }
-  | { type: 'done'; content: string }
+  | { type: 'done'; content: string; speed?: string }
   | { type: 'unloaded' }
   | { type: 'status'; state: AgentState['status'] }
   | { type: 'error'; error: string };

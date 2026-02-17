@@ -1,16 +1,21 @@
 <script lang="ts">
-  import { onMount, tick } from 'svelte';
-  import { goto } from '$app/navigation';
-  import { marked } from 'marked';
-  import DOMPurify from 'dompurify';
-  import { NAVIGATION_MAP } from '$lib/agent/context';
-  import type { ChatMessage, AgentState, WorkerToMainMessage, NavigationSuggestion } from '$lib/agent/types';
+  import { onMount, tick } from "svelte";
+  import { goto } from "$app/navigation";
+  import { marked } from "marked";
+  import DOMPurify from "dompurify";
+  import { NAVIGATION_MAP } from "$lib/agent/context";
+  import type {
+    ChatMessage,
+    AgentState,
+    WorkerToMainMessage,
+    NavigationSuggestion,
+  } from "$lib/agent/types";
 
   let isOpen = false;
-  let agentState: AgentState = { status: 'idle' };
+  let agentState: AgentState = { status: "idle" };
   let messages: ChatMessage[] = [];
-  let inputText = '';
-  let currentStreamingText = '';
+  let inputText = "";
+  let currentStreamingText = "";
   let messagesContainer: HTMLDivElement;
   let inputEl: HTMLTextAreaElement;
   let worker: Worker | null = null;
@@ -34,7 +39,9 @@
 
   function initWorker() {
     if (worker) return;
-    worker = new Worker(new URL('$lib/agent/worker.ts', import.meta.url), { type: 'module' });
+    worker = new Worker(new URL("$lib/agent/worker.ts", import.meta.url), {
+      type: "module",
+    });
     worker.onmessage = handleWorkerMessage;
   }
 
@@ -42,29 +49,30 @@
     const msg = event.data;
 
     switch (msg.type) {
-      case 'progress':
+      case "progress":
         agentState = {
-          status: msg.status === 'downloading' ? 'downloading' : 'loading',
+          status: msg.status === "downloading" ? "downloading" : "loading",
           progress: msg.progress,
         };
         break;
 
-      case 'ready':
-        agentState = { status: 'ready', backend: msg.backend };
+      case "ready":
+        agentState = { status: "ready", backend: msg.backend };
         break;
 
-      case 'token':
+      case "token":
         currentStreamingText += msg.data;
         scrollToBottom();
         break;
 
-      case 'done': {
+      case "done": {
         let finalText = currentStreamingText || msg.content;
         // Strip any <think>...</think> blocks from Qwen3 output
-        finalText = finalText.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
-        finalText = finalText.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
-        messages = [...messages, { role: 'assistant', content: finalText, speed: msg.speed }];
-        // Parse navigation suggestions from the completed message
+        finalText = finalText.replace(/<think>[\s\S]*?<\/think>/g, "").trim();
+        messages = [
+          ...messages,
+          { role: "assistant", content: finalText, speed: msg.speed },
+        ];
         // Parse navigation suggestions from the completed message
         const idx = messages.length - 1;
         const suggestions = parseNavigationSuggestions(finalText);
@@ -72,37 +80,37 @@
           navSuggestions = new Map(navSuggestions);
           navSuggestions.set(idx, suggestions);
         }
-        currentStreamingText = '';
-        agentState = { ...agentState, status: 'ready' };
+        currentStreamingText = "";
+        agentState = { ...agentState, status: "ready" };
         scrollToBottom();
         break;
       }
 
-      case 'unloaded':
-        agentState = { status: 'idle' };
+      case "unloaded":
+        agentState = { status: "idle" };
         messages = [];
         navSuggestions = new Map();
-        currentStreamingText = '';
+        currentStreamingText = "";
         break;
 
-      case 'status':
+      case "status":
         agentState = { ...agentState, status: msg.state };
         break;
 
-      case 'error':
-        agentState = { status: 'error', error: msg.error };
-        currentStreamingText = '';
+      case "error":
+        agentState = { status: "error", error: msg.error };
+        currentStreamingText = "";
         break;
     }
   }
 
   function loadModel() {
     initWorker();
-    worker?.postMessage({ type: 'load' });
+    worker?.postMessage({ type: "load" });
   }
 
   function unloadModel() {
-    worker?.postMessage({ type: 'unload' });
+    worker?.postMessage({ type: "unload" });
     // Worker will self.close() after posting 'unloaded'.
     // Clean up the reference so a fresh worker is created on next load.
     worker = null;
@@ -110,31 +118,31 @@
 
   function sendMessage() {
     const text = inputText.trim();
-    if (!text || agentState.status !== 'ready') return;
+    if (!text || agentState.status !== "ready") return;
 
-    messages = [...messages, { role: 'user', content: text }];
-    inputText = '';
-    currentStreamingText = '';
-    agentState = { ...agentState, status: 'generating' };
+    messages = [...messages, { role: "user", content: text }];
+    inputText = "";
+    currentStreamingText = "";
+    agentState = { ...agentState, status: "generating" };
     scrollToBottom();
 
     // Send only user/assistant messages (not system) to the worker
-    const conversationHistory = messages.filter(m => m.role !== 'system');
-    worker?.postMessage({ type: 'generate', messages: conversationHistory });
+    const conversationHistory = messages.filter((m) => m.role !== "system");
+    worker?.postMessage({ type: "generate", messages: conversationHistory });
   }
 
   function handleKeydown(e: KeyboardEvent) {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       sendMessage();
     }
-    if (e.key === 'Escape') {
+    if (e.key === "Escape") {
       closePanel();
     }
   }
 
   function handleGlobalKeydown(e: KeyboardEvent) {
-    if (e.key === 'Escape' && isOpen) {
+    if (e.key === "Escape" && isOpen) {
       closePanel();
     }
   }
@@ -144,7 +152,7 @@
     let match;
 
     // Match explicit [Navigate: /path] markers
-    const regex = new RegExp(NAV_REGEX.source, 'g');
+    const regex = new RegExp(NAV_REGEX.source, "g");
     while ((match = regex.exec(text)) !== null) {
       const path = match[1].trim();
       const label = getLabelForPath(path);
@@ -155,7 +163,10 @@
     if (suggestions.length === 0) {
       const lowerText = text.toLowerCase();
       for (const [keyword, path] of Object.entries(NAVIGATION_MAP)) {
-        if (lowerText.includes(keyword.toLowerCase()) && !suggestions.some(s => s.path === path)) {
+        if (
+          lowerText.includes(keyword.toLowerCase()) &&
+          !suggestions.some((s) => s.path === path)
+        ) {
           // Only add if the keyword appears as a likely reference
           if (keyword.length >= 3) {
             suggestions.push({ label: getLabelForPath(path), path });
@@ -171,42 +182,42 @@
 
   function getLabelForPath(path: string): string {
     const labels: Record<string, string> = {
-      '/': 'Home',
-      '/work': 'Work Experience',
-      '/projects': 'Projects',
-      '/projects/banana-cpp': 'banana.cpp',
-      '/projects/smol-llama': 'smol-llama',
-      '/projects/smoltorch': 'smoltorch',
-      '/projects/nopokedb': 'NoPokeDB',
-      '/projects/boo': 'Boo',
-      '/projects/ferray': 'ferray',
-      '/education': 'Education',
-      '/blog': 'Blog',
-      '/api/resume?format=view': 'View Resume',
-      '/leetcode': 'LeetCode',
-      '/tensara': 'Tensara',
-      '/news': 'Hacker News',
+      "/": "Home",
+      "/work": "Work Experience",
+      "/projects": "Projects",
+      "/projects/banana-cpp": "banana.cpp",
+      "/projects/smol-llama": "smol-llama",
+      "/projects/smoltorch": "smoltorch",
+      "/projects/nopokedb": "NoPokeDB",
+      "/projects/boo": "Boo",
+      "/projects/ferray": "ferray",
+      "/education": "Education",
+      "/blog": "Blog",
+      "/api/resume?format=view": "View Resume",
+      "/leetcode": "LeetCode",
+      "/tensara": "Tensara",
+      "/news": "Hacker News",
     };
     return labels[path] || path;
   }
 
   function stripNavigationMarkers(text: string): string {
-    return text.replace(NAV_REGEX, '').trim();
+    return text.replace(NAV_REGEX, "").trim();
   }
 
   function renderMarkdown(text: string): string {
     let cleaned = stripNavigationMarkers(text);
     // Strip <think>...</think> blocks (Qwen3 thinking mode)
-    cleaned = cleaned.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
+    cleaned = cleaned.replace(/<think>[\s\S]*?<\/think>/g, "").trim();
     // Also strip incomplete opening <think> tags during streaming
-    cleaned = cleaned.replace(/<think>[\s\S]*$/g, '').trim();
+    cleaned = cleaned.replace(/<think>[\s\S]*$/g, "").trim();
     const html = marked.parse(cleaned, { async: false }) as string;
     return DOMPurify.sanitize(html);
   }
 
   function navigateTo(path: string) {
-    if (path.startsWith('/api/')) {
-      window.open(path, '_blank');
+    if (path.startsWith("/api/")) {
+      window.open(path, "_blank");
     } else {
       goto(path);
     }
@@ -222,25 +233,32 @@
 
   function getPlaceholder(): string {
     switch (agentState.status) {
-      case 'idle': return 'Load the model first...';
-      case 'downloading': return 'Downloading model...';
-      case 'loading': return 'Loading model...';
-      case 'generating': return 'Thinking...';
-      case 'error': return 'An error occurred';
-      case 'ready': return 'Ask me anything...';
-      default: return 'Ask me anything...';
+      case "idle":
+        return "Load the model first...";
+      case "downloading":
+        return "Downloading model...";
+      case "loading":
+        return "Loading model...";
+      case "generating":
+        return "Thinking...";
+      case "error":
+        return "An error occurred";
+      case "ready":
+        return "Ask me anything...";
+      default:
+        return "Ask me anything...";
     }
   }
 
-  $: canSend = agentState.status === 'ready' && inputText.trim().length > 0;
-  $: isModelLoaded = ['ready', 'generating'].includes(agentState.status);
-  $: isLoading = ['downloading', 'loading'].includes(agentState.status);
+  $: canSend = agentState.status === "ready" && inputText.trim().length > 0;
+  $: isModelLoaded = ["ready", "generating"].includes(agentState.status);
+  $: isLoading = ["downloading", "loading"].includes(agentState.status);
 
   onMount(() => {
-    window.addEventListener('keydown', handleGlobalKeydown);
+    window.addEventListener("keydown", handleGlobalKeydown);
 
     return () => {
-      window.removeEventListener('keydown', handleGlobalKeydown);
+      window.removeEventListener("keydown", handleGlobalKeydown);
       if (worker) {
         worker.terminate();
         worker = null;
@@ -250,14 +268,38 @@
 </script>
 
 <!-- Floating button -->
-<button class="agent-fab" class:active={isOpen} class:pulse={agentState.status === 'ready' && !isOpen} on:click={togglePanel} aria-label="AI Assistant">
+<button
+  class="agent-fab"
+  class:active={isOpen}
+  class:pulse={agentState.status === "ready" && !isOpen}
+  on:click={togglePanel}
+  aria-label="AI Assistant"
+>
   {#if isOpen}
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
       <line x1="18" y1="6" x2="6" y2="18"></line>
       <line x1="6" y1="6" x2="18" y2="18"></line>
     </svg>
   {:else}
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
       <path d="M12 8V4H8"></path>
       <rect width="16" height="12" x="4" y="8" rx="2"></rect>
       <path d="M2 14h2"></path>
@@ -276,20 +318,44 @@
       <div class="agent-header-left">
         <span class="agent-title">AI Assistant</span>
         {#if agentState.backend}
-          <span class="agent-badge">{agentState.backend === 'webgpu' ? 'WebGPU' : 'WASM'}</span>
+          <span class="agent-badge"
+            >{agentState.backend === "webgpu" ? "WebGPU" : "WASM"}</span
+          >
         {/if}
       </div>
       <div class="agent-header-right">
         {#if isModelLoaded}
-          <button class="agent-btn-sm" on:click={unloadModel} title="Unload model">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <button
+            class="agent-btn-sm"
+            on:click={unloadModel}
+            title="Unload model"
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
               <path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path>
               <line x1="12" y1="2" x2="12" y2="12"></line>
             </svg>
           </button>
         {/if}
         <button class="agent-btn-sm" on:click={closePanel} title="Close">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
             <line x1="18" y1="6" x2="6" y2="18"></line>
             <line x1="6" y1="6" x2="18" y2="18"></line>
           </svg>
@@ -299,11 +365,20 @@
 
     <!-- Body -->
     <div class="agent-body" bind:this={messagesContainer}>
-      {#if agentState.status === 'idle'}
+      {#if agentState.status === "idle"}
         <!-- Initial prompt -->
         <div class="agent-welcome">
           <div class="welcome-icon">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <svg
+              width="32"
+              height="32"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
               <path d="M12 8V4H8"></path>
               <rect width="16" height="12" x="4" y="8" rx="2"></rect>
               <path d="M2 14h2"></path>
@@ -313,7 +388,8 @@
             </svg>
           </div>
           <p class="welcome-text">
-            This loads a ~300 MB language model that runs entirely in your browser. No data is sent to any server.
+            This loads a ~300 MB language model that runs entirely in your
+            browser. No data is sent to any server.
           </p>
           <button class="agent-btn-load" on:click={loadModel}>
             Load Model
@@ -323,7 +399,16 @@
         <!-- Loading state -->
         <div class="agent-welcome">
           <div class="welcome-icon loading">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <svg
+              width="32"
+              height="32"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
               <path d="M12 8V4H8"></path>
               <rect width="16" height="12" x="4" y="8" rx="2"></rect>
               <path d="M2 14h2"></path>
@@ -334,20 +419,25 @@
           </div>
           <div class="progress-section">
             <div class="progress-bar-track">
-              <div class="progress-bar-fill" style="width: {agentState.progress ?? 0}%"></div>
+              <div
+                class="progress-bar-fill"
+                style="width: {agentState.progress ?? 0}%"
+              ></div>
             </div>
             <span class="progress-label">
-              {agentState.status === 'downloading' ? `Downloading... ${agentState.progress ?? 0}%` : 'Initializing model...'}
+              {agentState.status === "downloading"
+                ? `Downloading... ${agentState.progress ?? 0}%`
+                : "Initializing model..."}
             </span>
           </div>
         </div>
-      {:else if agentState.status === 'error'}
+      {:else if agentState.status === "error"}
         <!-- Error state -->
         <div class="agent-welcome">
-          <p class="error-text">{agentState.error ?? 'Something went wrong.'}</p>
-          <button class="agent-btn-load" on:click={loadModel}>
-            Retry
-          </button>
+          <p class="error-text">
+            {agentState.error ?? "Something went wrong."}
+          </p>
+          <button class="agent-btn-load" on:click={loadModel}> Retry </button>
         </div>
       {:else}
         <!-- Chat messages -->
@@ -358,12 +448,15 @@
         {/if}
 
         {#each messages as message, i}
-          <div class="msg" class:msg-user={message.role === 'user'} class:msg-assistant={message.role === 'assistant'}>
-            {#if message.role === 'user'}
+          <div
+            class="msg"
+            class:msg-user={message.role === "user"}
+            class:msg-assistant={message.role === "assistant"}
+          >
+            {#if message.role === "user"}
               <div class="msg-bubble msg-bubble-user">{message.content}</div>
             {:else}
               <div class="msg-bubble msg-bubble-assistant">
-                {@html renderMarkdown(message.content)}
                 {@html renderMarkdown(message.content)}
               </div>
               {#if message.speed}
@@ -374,7 +467,10 @@
               {#if navSuggestions.has(i)}
                 <div class="nav-pills">
                   {#each navSuggestions.get(i) ?? [] as suggestion}
-                    <button class="nav-pill" on:click={() => navigateTo(suggestion.path)}>
+                    <button
+                      class="nav-pill"
+                      on:click={() => navigateTo(suggestion.path)}
+                    >
                       {suggestion.label} →
                     </button>
                   {/each}
@@ -412,7 +508,16 @@
         disabled={!canSend}
         title="Send message"
       >
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
           <line x1="22" y1="2" x2="11" y2="13"></line>
           <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
         </svg>
@@ -462,8 +567,13 @@
   }
 
   @keyframes fab-pulse {
-    0%, 100% { box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5); }
-    50% { box-shadow: 0 4px 24px rgba(255, 255, 255, 0.08); }
+    0%,
+    100% {
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
+    }
+    50% {
+      box-shadow: 0 4px 24px rgba(255, 255, 255, 0.08);
+    }
   }
 
   /* ═══════════════════════════════════════════════════════════════════════
@@ -602,8 +712,13 @@
   }
 
   @keyframes icon-pulse {
-    0%, 100% { opacity: 0.5; }
-    50% { opacity: 1; }
+    0%,
+    100% {
+      opacity: 0.5;
+    }
+    50% {
+      opacity: 1;
+    }
   }
 
   .welcome-text {
@@ -761,7 +876,9 @@
   }
 
   @keyframes blink {
-    50% { opacity: 0; }
+    50% {
+      opacity: 0;
+    }
   }
 
   /* Navigation pills */

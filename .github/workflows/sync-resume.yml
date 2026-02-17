@@ -1,14 +1,9 @@
 name: Sync Resume from PocketBase
 
 on:
-  # Run on manual trigger
   workflow_dispatch:
-  
-  # Run daily at midnight UTC
   schedule:
     - cron: '0 0 * * *'
-  
-  # Run when resume is updated (webhook trigger)
   repository_dispatch:
     types: [resume_updated]
 

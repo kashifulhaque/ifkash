@@ -7,18 +7,14 @@ import {
 import { SYSTEM_PROMPT } from './context';
 import type { ChatMessage, MainToWorkerMessage } from './types';
 
-// Configure transformers.js for browser usage
-env.allowLocalModels = false;
-
+env.allowLocalModels = false; // Configure transformers.js for browser usage
 const MODEL_ID = 'onnx-community/Qwen3-0.6B-ONNX';
-
 let generator: TextGenerationPipeline | null = null;
 let usedDevice: 'webgpu' | 'wasm' = 'wasm';
 let currentState: 'idle' | 'downloading' | 'loading' | 'ready' | 'generating' = 'idle';
 
 self.onmessage = async (event: MessageEvent<MainToWorkerMessage>) => {
   const msg = event.data;
-
   switch (msg.type) {
     case 'load':
       await loadModel();
@@ -45,7 +41,6 @@ async function loadModel() {
     currentState = 'downloading';
     self.postMessage({ type: 'progress', status: 'downloading', progress: 0, message: 'Starting download...' });
 
-    // Detect WebGPU support
     let device: 'webgpu' | 'wasm' = 'wasm';
     try {
       // @ts-ignore - navigator.gpu may not exist
@@ -104,22 +99,19 @@ async function generate(messages: ChatMessage[]) {
 
   try {
     currentState = 'generating';
-
     const tokenizer = generator.tokenizer;
     const model = generator.model;
 
     const conversation: ChatMessage[] = [
       { role: 'system', content: SYSTEM_PROMPT },
-      ...messages,
+      ...messages
     ];
 
-    // Apply chat template to get the full prompt text, then tokenize
-    // Disable thinking mode for Qwen3 to get direct answers
     const promptText = tokenizer.apply_chat_template(conversation as any, {
       tokenize: false,
       add_generation_prompt: true,
       // @ts-ignore - enable_thinking is a Qwen3-specific template variable
-      enable_thinking: false,
+      enable_thinking: false
     }) as string;
 
     const inputs = tokenizer(promptText, {
@@ -128,8 +120,6 @@ async function generate(messages: ChatMessage[]) {
     });
 
     const promptLength = inputs.input_ids.dims[1];
-
-    // Set up streamer that skips the prompt tokens
     const streamer = new TextStreamer(tokenizer, {
       skip_prompt: true,
       skip_special_tokens: true,
@@ -138,7 +128,6 @@ async function generate(messages: ChatMessage[]) {
       },
     });
 
-    // Generate directly on the model
     const startTime = performance.now();
     const outputIds = await model.generate({
       ...inputs,
@@ -150,9 +139,8 @@ async function generate(messages: ChatMessage[]) {
     });
     const endTime = performance.now();
 
-    // Decode only the new tokens (skip the prompt)
-    const newTokens = (outputIds as any).slice(null, [promptLength, null]);
 
+    const newTokens = (outputIds as any).slice(null, [promptLength, null]);
     let content = tokenizer.batch_decode(newTokens, {
       skip_special_tokens: true,
     })[0] ?? '';
@@ -173,8 +161,6 @@ async function generate(messages: ChatMessage[]) {
 }
 
 async function unloadModel() {
-  // Signal unloaded, then close the worker entirely.
-  // This avoids OrtRun IO Binding errors from dispose().
   generator = null;
   currentState = 'idle';
   self.postMessage({ type: 'unloaded' });

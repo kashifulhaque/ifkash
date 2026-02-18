@@ -22,10 +22,54 @@
     loading: true,
   };
 
+  // Ramadan state
+  let ramadan = {
+    isRamadan: false,
+    suhoorTime: "—",
+    iftaarTime: "—",
+    suhoorMs: 0,
+    iftaarMs: 0,
+    loading: true,
+    dayNumber: 0,
+  };
+
   let clockTimer: number;
   let weatherTimer: number;
   let f1Timer: number;
   let prayerTimer: number;
+  let ramadanTimer: number;
+
+  // Reactive countdowns
+  $: suhoorCountdown =
+    ramadan.suhoorMs > 0
+      ? formatCountdown(ramadan.suhoorMs - now.getTime())
+      : null;
+  $: iftaarCountdown =
+    ramadan.iftaarMs > 0
+      ? formatCountdown(ramadan.iftaarMs - now.getTime())
+      : null;
+
+  // Which is next: suhoor or iftaar?
+  $: nextRamadanEvent = (() => {
+    if (!ramadan.isRamadan) return null;
+    const nowMs = now.getTime();
+    const sMs = ramadan.suhoorMs - nowMs;
+    const iMs = ramadan.iftaarMs - nowMs;
+    if (sMs > 0 && (iMs <= 0 || sMs < iMs)) return "suhoor";
+    if (iMs > 0) return "iftaar";
+    return null;
+  })();
+
+  function formatCountdown(ms: number): string | null {
+    if (ms <= 0) return null;
+    const totalSec = Math.floor(ms / 1000);
+    const h = Math.floor(totalSec / 3600);
+    const m = Math.floor((totalSec % 3600) / 60);
+    const s = totalSec % 60;
+    if (h > 0) return `${h}h ${m}m`;
+    if (m > 0) return `${m}m ${s}s`;
+    return `${s}s`;
+  }
 
   function initFormatters() {
     timeFormatter = new Intl.DateTimeFormat("default", {
@@ -172,16 +216,117 @@
     }
   }
 
+  // ─── Ramadan Detection & Timings ───────────────────────────────────────────
+
+  /**
+   * Check if a given Gregorian date falls in Ramadan using the Aladhan API.
+   * The API returns Hijri date info including the month number.
+   */
+  async function fetchRamadan() {
+    try {
+      const { lat, lon } = await getLoc();
+      const currentDate = new Date();
+
+      const fetchTimingsWithHijri = async (d: Date) => {
+        const res = await fetch(
+          `https://api.aladhan.com/v1/timings/${d.getDate()}-${d.getMonth() + 1}-${d.getFullYear()}?latitude=${lat}&longitude=${lon}&method=3`,
+        );
+        const data = await res.json();
+        return data.data;
+      };
+
+      const todayData = await fetchTimingsWithHijri(currentDate);
+      const hijriMonth = parseInt(todayData.date.hijri.month.number);
+      const hijriDay = parseInt(todayData.date.hijri.day);
+
+      if (hijriMonth !== 9) {
+        // Not Ramadan
+        ramadan.isRamadan = false;
+        ramadan.loading = false;
+        return;
+      }
+
+      // It's Ramadan!
+      ramadan.isRamadan = true;
+      ramadan.dayNumber = hijriDay;
+
+      const timings = todayData.timings;
+      const nowMs = currentDate.getTime();
+
+      // Suhoor ends at Fajr time
+      const [fajrH, fajrM] = timings.Fajr.split(":");
+      const suhoorDate = new Date(currentDate);
+      suhoorDate.setHours(parseInt(fajrH), parseInt(fajrM), 0, 0);
+
+      // Iftaar is at Maghrib time
+      const [maghribH, maghribM] = timings.Maghrib.split(":");
+      const iftaarDate = new Date(currentDate);
+      iftaarDate.setHours(parseInt(maghribH), parseInt(maghribM), 0, 0);
+
+      // If suhoor has already passed today, fetch tomorrow's Fajr
+      if (suhoorDate.getTime() <= nowMs) {
+        const tomorrow = new Date(currentDate.getTime() + 24 * 60 * 60 * 1000);
+        const tomorrowData = await fetchTimingsWithHijri(tomorrow);
+        const [tFajrH, tFajrM] = tomorrowData.timings.Fajr.split(":");
+        const tomorrowSuhoor = new Date(tomorrow);
+        tomorrowSuhoor.setHours(parseInt(tFajrH), parseInt(tFajrM), 0, 0);
+        ramadan.suhoorMs = tomorrowSuhoor.getTime();
+        ramadan.suhoorTime = tomorrowSuhoor.toLocaleTimeString("default", {
+          hour: "numeric",
+          minute: "2-digit",
+          hour12: true,
+        });
+      } else {
+        ramadan.suhoorMs = suhoorDate.getTime();
+        ramadan.suhoorTime = suhoorDate.toLocaleTimeString("default", {
+          hour: "numeric",
+          minute: "2-digit",
+          hour12: true,
+        });
+      }
+
+      // If iftaar has already passed today, fetch tomorrow's Maghrib
+      if (iftaarDate.getTime() <= nowMs) {
+        const tomorrow = new Date(currentDate.getTime() + 24 * 60 * 60 * 1000);
+        const tomorrowData = await fetchTimingsWithHijri(tomorrow);
+        const [tMaghribH, tMaghribM] = tomorrowData.timings.Maghrib.split(":");
+        const tomorrowIftaar = new Date(tomorrow);
+        tomorrowIftaar.setHours(parseInt(tMaghribH), parseInt(tMaghribM), 0, 0);
+        ramadan.iftaarMs = tomorrowIftaar.getTime();
+        ramadan.iftaarTime = tomorrowIftaar.toLocaleTimeString("default", {
+          hour: "numeric",
+          minute: "2-digit",
+          hour12: true,
+        });
+      } else {
+        ramadan.iftaarMs = iftaarDate.getTime();
+        ramadan.iftaarTime = iftaarDate.toLocaleTimeString("default", {
+          hour: "numeric",
+          minute: "2-digit",
+          hour12: true,
+        });
+      }
+
+      ramadan.loading = false;
+    } catch (err) {
+      console.error("Ramadan fetch failed", err);
+      ramadan.loading = false;
+    }
+  }
+
   onMount(() => {
     initFormatters();
     fetchWeather();
     fetchF1();
     fetchPrayer();
+    fetchRamadan();
 
     clockTimer = window.setInterval(() => (now = new Date()), 1000);
     weatherTimer = window.setInterval(fetchWeather, REFRESH_WEATHER_MS);
     f1Timer = window.setInterval(fetchF1, REFRESH_F1_MS);
     prayerTimer = window.setInterval(fetchPrayer, 60 * 1000);
+    // Refresh Ramadan timings every 5 minutes
+    ramadanTimer = window.setInterval(fetchRamadan, 5 * 60 * 1000);
   });
 
   onDestroy(() => {
@@ -189,6 +334,7 @@
     clearInterval(weatherTimer);
     clearInterval(f1Timer);
     clearInterval(prayerTimer);
+    clearInterval(ramadanTimer);
   });
 
   function codeToDesc(code: number): string {
@@ -249,6 +395,38 @@
         </div>
       {/if}
     </div>
+
+    <!-- Ramadan Card -->
+    {#if !ramadan.loading && ramadan.isRamadan}
+      <div class="ramadan-bar">
+        <span class="ramadan-label"
+          >☽ Ramadan <span class="ramadan-day">· Day {ramadan.dayNumber}</span
+          ></span
+        >
+        <span class="ramadan-sep"></span>
+        <span
+          class="ramadan-item"
+          class:ramadan-active={nextRamadanEvent === "suhoor"}
+        >
+          <span class="ramadan-item-name">Suhoor</span>
+          <span class="ramadan-item-time">{ramadan.suhoorTime}</span>
+          {#if nextRamadanEvent === "suhoor" && suhoorCountdown}
+            <span class="ramadan-item-countdown">{suhoorCountdown}</span>
+          {/if}
+        </span>
+        <span class="ramadan-dot">·</span>
+        <span
+          class="ramadan-item"
+          class:ramadan-active={nextRamadanEvent === "iftaar"}
+        >
+          <span class="ramadan-item-name">Iftaar</span>
+          <span class="ramadan-item-time">{ramadan.iftaarTime}</span>
+          {#if nextRamadanEvent === "iftaar" && iftaarCountdown}
+            <span class="ramadan-item-countdown">{iftaarCountdown}</span>
+          {/if}
+        </span>
+      </div>
+    {/if}
   </div>
 
   <!-- F1 -->
@@ -343,6 +521,77 @@
     color: var(--gray-700);
   }
 
+  /* ── Ramadan Bar ─────────────────────────────────────────────────────── */
+
+  .ramadan-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 1rem;
+    background: var(--gray-950);
+    border: 1px solid var(--gray-800);
+    border-radius: var(--radius-md);
+    font-size: 0.8125rem;
+    animation: fade-up 0.6s var(--ease-out) both;
+  }
+
+  .ramadan-label {
+    font-weight: 600;
+    color: var(--white);
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+  }
+
+  .ramadan-day {
+    font-weight: 400;
+    color: var(--gray-500);
+  }
+
+  .ramadan-sep {
+    width: 1px;
+    height: 0.875rem;
+    background: var(--gray-800);
+    flex-shrink: 0;
+  }
+
+  .ramadan-dot {
+    color: var(--gray-700);
+  }
+
+  .ramadan-item {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    color: var(--gray-500);
+    transition: color 0.3s ease;
+  }
+
+  .ramadan-item.ramadan-active {
+    color: var(--gray-300);
+  }
+
+  .ramadan-item-name {
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: 0.75rem;
+  }
+
+  .ramadan-item-time {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .ramadan-item-countdown {
+    font-size: 0.6875rem;
+    color: var(--gray-600);
+    font-variant-numeric: tabular-nums;
+    background: var(--gray-900);
+    padding: 0.1rem 0.35rem;
+    border-radius: 3px;
+  }
+
+  /* ── F1 Bar ───────────────────────────────────────────────────────────── */
+
   .f1-bar {
     position: fixed;
     bottom: 2rem;
@@ -365,5 +614,16 @@
 
   .f1-info {
     color: var(--gray-500);
+  }
+
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 </style>

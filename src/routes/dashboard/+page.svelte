@@ -400,7 +400,8 @@
     {#if !ramadan.loading && ramadan.isRamadan}
       <div class="ramadan-bar">
         <span class="ramadan-label"
-          >☽ Ramadan <span class="ramadan-day">· Day {ramadan.dayNumber}</span
+          >☽ Ramadan <span class="ramadan-day"
+            >· Day {ramadan.dayNumber - 1}</span
           ></span
         >
         <span class="ramadan-sep"></span>

@@ -13,6 +13,14 @@
 
   const projects: Project[] = [
     {
+      name: 'Llama-3.2-3B-Polite-ORPO',
+      desc: 'Llama 3.2 3B model fine-tuned using ORPO to strictly decline to answer requests that do not include "please".',
+      page: '/projects/polite-orpo',
+      links: [
+        { label: 'Model', url: 'https://huggingface.co/weights-and-wires/Llama-3.2-3B-Polite-ORPO' }
+      ]
+    },
+    {
       name: 'banana.cpp',
       desc: 'Pure C++ LLM inference engine. SmolLM2, Llama 3.2, Qwen. Modular architecture with GQA, RoPE, SwiGLU.',
       page: '/projects/banana-cpp',

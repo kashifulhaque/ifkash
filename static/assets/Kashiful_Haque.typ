@@ -9,7 +9,7 @@
 = #cardo_headings[Kashiful Haque]
 +91 8240868544 • #link("mailto:me@ifkash.dev")[me\@ifkash.dev] • #link("https://github.com/kashifulhaque")[github] • #link("https://hf.co/ifkash")[huggingface] • #link("https://www.linkedin.com/in/kashifulhaque")[linkedin] • #link("https://ifkash.dev")[ifkash.dev]
 
-ML Systems Engineer with 4 YOE building production LLM systems and high-throughput search pipelines, with hands-on experience training transformer models from scratch and implementing low-level ML infrastructure in C++, Rust, and Python.
+ML Systems Engineer with 4 YOE building production LLM systems and alignment workflows, with hands-on experience training transformers from scratch and developing low-level ML infrastructure in C++, Rust, and Python.
 
 = #cardo_headings[Work Experience]
 
@@ -21,7 +21,7 @@ _Backend AI / ML Engineer_ #h(1fr) 11/2025 -- Present \
 _Engineer III_ #h(1fr) 02/2025 -- 11/2025 \
 - Built a hybrid KB search over 200k+ docs using dense embeddings and keyword retrieval, serving internal applications.
 - Reduced p95 query latency from 30s to 2s via aggressive caching, and query execution optimizations.
-- Independently conducted large-scale transformer training and profiling experiments (360M parameters, multi-billion token runs) to deepen understanding of attention mechanisms, optimizer behavior, and throughput bottlenecks on modern accelerators.
+- Independently conducted large-scale transformer training and profiling experiments to deepen understanding of attention mechanisms, optimizer behavior, and throughput bottlenecks on modern accelerators.
 - Applied insights from pre-training and inference profiling (FlashAttention, KV-cache dynamics, batching tradeoffs) to improve embedding generation, serving efficiency, and system-level performance.
 
 *#cardo[Fiery]* #h(1fr) _Bangalore_ \
@@ -33,9 +33,17 @@ _Associate Software Engineer_ #h(1fr) 01/2023 -- 02/2025 \
 
 = #cardo_headings[ML Engineering Work]
 
+*#cardo[Llama-3.2 3B Politeness Preference Alignment using ORPO]* •
+#link("https://huggingface.co/weights-and-wires/Llama-3.2-3B-Polite-ORPO")[hf] •
+#link("https://blog.ifkash.dev/teaching-llama-3-to-be-polite")[blog] \
+- Applied Odds Ratio Preference Optimization (ORPO) with TRL + Unsloth to align Llama-3.2 3B behavior.
+- Demonstrated controllable behavioral shaping through single-stage preference optimization, avoiding full RLHF pipelines.
+- Built a 32k-row preference dataset with behavioral constraints, moving model likelihood toward policy-compliance.
+- Analyzed reward margins, log-prob dynamics, and training stability via W&B to validate alignment convergence.
+
 *#cardo[smol-llama: efficient transformer pre-training (360M)]* • #link("https://github.com/weights-and-wires/smol-llama")[github] • #link("https://huggingface.co/weights-and-wires/smol-llama")[hf] •
 #link("https://api.wandb.ai/links/dotslasha/lydqsle8")[wandb] •
-#link("https://ifkash.dev/blog/smol-llama-pretraining")[blog] \
+#link("https://blog.ifkash.dev/smol-llama-pretraining")[blog] \
 - Trained a 360M LLaMA-style LLM from scratch in PyTorch, implementing GQA, RoPE, RMSNorm, and SwiGLU.
 - Pre-trained on 6B tokens using FlashAttention on H100, achieving 75K tokens/sec throughput.
 - Built a cost-efficient training pipeline with gradient accumulation, checkpointing, and experiment tracking.
@@ -43,7 +51,7 @@ _Associate Software Engineer_ #h(1fr) 01/2023 -- 02/2025 \
 *#cardo[smoltorch: minimal autograd engine]* • 
 #link("https://github.com/kashifulhaque/smoltorch")[github] • 
 #link("https://pypi.org/project/smoltorch/")[pypi] • 
-#link("https://ifkash.dev/blog/smoltorch")[blog] \
+#link("https://blog.ifkash.dev/smoltorch")[blog] \
 - Implemented a reverse-mode autograd engine with tape-based computation graphs and topological scheduling to study gradient propagation, memory lifetimes, and operator execution.
 - Built NumPy-backed tensor ops and a minimal training loop inspired by PyTorch internals.
 
@@ -64,6 +72,5 @@ BS, _Data Science and Applications_ #h(1fr) 2020 -- 2024
 
 = #cardo_headings[Skills]
 
-- **Languages:** Python, C++, Rust, Go  
-- **ML Systems:** PyTorch, Transformer training, FlashAttention, KV-cache, vLLM, QLoRA  
-- **Infra & Data:** Docker, Kubernetes, Redis, PostgreSQL
+- Python, C++, Rust, Go  
+- PyTorch, FlashAttention, KV-cache, vLLM, QLoRA, Docker, Kubernetes, Redis, PostgreSQL

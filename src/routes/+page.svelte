@@ -20,9 +20,9 @@
   <section class="hero">
     <h1 class="hero-title">Kashiful Haque</h1>
     <p class="hero-subtitle">
-      Building intelligent systems at the intersection of research and
-      production. Focused on inference optimization, model training, and
-      scalable AI infrastructure.
+      Building low-level ML infrastructure and production alignment workflows.
+      Focused on transformer pre-training, reinforcement learning, and
+      high-performance inference systems in C++ and Rust.
     </p>
   </section>
 

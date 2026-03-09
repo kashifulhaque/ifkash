@@ -1,34 +1,34 @@
 export const NAVIGATION_MAP: Record<string, string> = {
-  work: '/work',
-  experience: '/work',
-  career: '/work',
-  jobs: '/work',
-  projects: '/projects',
-  'banana.cpp': '/projects/banana-cpp',
-  'smol-llama': '/projects/smol-llama',
-  smoltorch: '/projects/smoltorch',
-  nopokedb: '/projects/nopokedb',
-  boo: '/projects/boo',
-  ferray: '/projects/ferray',
-  education: '/education',
-  school: '/education',
-  university: '/education',
-  iit: '/education',
-  degree: '/education',
-  blog: '/blog',
-  resume: '/api/resume?format=view',
-  cv: '/api/resume?format=view',
-  leetcode: '/leetcode',
-  tensara: '/tensara',
-  news: '/news',
-  home: '/',
+   work: '/work',
+   experience: '/work',
+   career: '/work',
+   jobs: '/work',
+   projects: '/projects',
+   'banana.cpp': '/projects/banana-cpp',
+   'smol-llama': '/projects/smol-llama',
+   smoltorch: '/projects/smoltorch',
+   nopokedb: '/projects/nopokedb',
+   boo: '/projects/boo',
+   ferray: '/projects/ferray',
+   education: '/education',
+   school: '/education',
+   university: '/education',
+   iit: '/education',
+   degree: '/education',
+   blog: '/blog',
+   resume: '/api/resume?format=view',
+   cv: '/api/resume?format=view',
+   leetcode: '/leetcode',
+   tensara: '/tensara',
+   news: '/news',
+   home: '/',
 };
 
 export const SITE_CONTENT = `
 ## About Kashiful Haque
 ML Systems Engineer currently working as ML Engineer at wand.ai (Palo Alto, remote). 
-Building intelligent systems at the intersection of research and production. 
-Focused on inference optimization, model training, and scalable AI infrastructure.
+Building low-level ML infrastructure and production alignment workflows. 
+Focused on transformer pre-training, reinforcement learning, and high-performance inference systems in C++ and Rust.
 Contact: me@ifkash.dev | GitHub: kashifulhaque | HuggingFace: ifkash | LinkedIn: kashifulhaque | Website: ifkash.dev
 
 ## Work Experience

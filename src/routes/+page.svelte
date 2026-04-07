@@ -16,48 +16,48 @@
 </svelte:head>
 
 <div class="home">
-  <!-- Hero -->
   <section class="hero">
-    <h1 class="hero-title">Kashiful Haque</h1>
-    <p class="hero-subtitle">
+    <h1 class="hero-name">Kashiful Haque</h1>
+    <p class="hero-bio">
       Building low-level ML infrastructure and production alignment workflows.
       Focused on transformer pre-training, reinforcement learning, and
       high-performance inference systems in C++ and Rust.
     </p>
   </section>
 
-  <!-- Links -->
-  <section class="links-section">
-    <a href={resumeUrl} class="link-card">
-      <span class="link-label">Resume</span>
-      <span class="link-arrow">↗</span>
+  <section class="quick-links">
+    <a href={resumeUrl} class="quick-link">
+      <span class="quick-link-text">Resume</span>
+      <span class="quick-link-icon">&nearr;</span>
     </a>
-
     {#if $auth.isAuthenticated}
-      <a href="/editor" class="link-card">
-        <span class="link-label">Editor</span>
-        <span class="link-arrow">→</span>
+      <a href="/editor" class="quick-link">
+        <span class="quick-link-text">Editor</span>
+        <span class="quick-link-icon">&rarr;</span>
       </a>
     {/if}
   </section>
 
-  <!-- Currently -->
-  <section class="status-section">
-    <div class="status-row">
-      <span class="status-label">Currently</span>
-      <span class="status-value">ML Engineer @ wand.ai</span>
-    </div>
-    <div class="status-row">
-      <span class="status-label">Latest</span>
-      <a
-        href="https://marketplace.visualstudio.com/items?itemName=ifkash.kernel-orbit"
-        class="status-link"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        Kernel Orbit: VS Code Extension
-      </a>
-    </div>
+  <section class="now">
+    <dl class="now-list">
+      <div class="now-item">
+        <dt>Currently</dt>
+        <dd>ML Engineer @ wand.ai</dd>
+      </div>
+      <div class="now-item">
+        <dt>Latest</dt>
+        <dd>
+          <a
+            href="https://marketplace.visualstudio.com/items?itemName=ifkash.kernel-orbit"
+            class="now-link"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Kernel Orbit: VS Code Extension
+          </a>
+        </dd>
+      </div>
+    </dl>
   </section>
 </div>
 
@@ -65,111 +65,112 @@
   .home {
     display: flex;
     flex-direction: column;
-    gap: 4rem;
+    gap: var(--space-3xl);
   }
 
-  /* Hero */
   .hero {
-    padding-top: 2rem;
+    padding-top: var(--space-xl);
   }
 
-  .hero-title {
-    font-size: clamp(2.5rem, 8vw, 4rem);
-    font-weight: 700;
-    letter-spacing: -0.03em;
-    line-height: 1;
-    color: var(--white);
-    margin-bottom: 1.5rem;
+  .hero-name {
+    font-size: clamp(2.5rem, 6vw + 1rem, 4.5rem);
+    font-weight: 400;
+    letter-spacing: -0.035em;
+    line-height: 1.05;
+    color: var(--text-primary);
+    margin-bottom: var(--space-lg);
   }
 
-  .hero-subtitle {
+  .hero-bio {
     font-size: 1.125rem;
     line-height: 1.7;
-    color: var(--gray-400);
-    max-width: 540px;
+    color: var(--text-secondary);
+    max-width: 52ch;
   }
 
-  /* Links */
-  .links-section {
+  .quick-links {
     display: flex;
     flex-direction: column;
-    gap: 1px;
-    background: var(--gray-800);
+    border: 1px solid var(--border);
     border-radius: var(--radius-md);
     overflow: hidden;
   }
 
-  .link-card {
+  .quick-link {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 1.25rem 1.5rem;
-    background: var(--gray-950);
-    transition: background var(--duration-fast) var(--ease-out);
+    padding: 1rem 1.25rem;
+    transition: background var(--dur-instant) var(--ease-out-quart);
   }
 
-  .link-card:hover {
-    background: var(--gray-900);
+  .quick-link + .quick-link {
+    border-top: 1px solid var(--border);
   }
 
-  .link-label {
+  .quick-link:hover {
+    background: var(--surface-sunken);
+  }
+
+  .quick-link-text {
     font-size: 0.9375rem;
     font-weight: 500;
-    color: var(--white);
+    color: var(--text-primary);
   }
 
-  .link-arrow {
+  .quick-link-icon {
     font-size: 1rem;
-    color: var(--gray-600);
-    transition: all var(--duration-fast) var(--ease-out);
+    color: var(--text-faint);
+    transition: color var(--dur-instant) var(--ease-out-quart),
+                transform var(--dur-fast) var(--ease-out-quart);
   }
 
-  .link-card:hover .link-arrow {
-    color: var(--white);
-    transform: translateX(4px);
+  .quick-link:hover .quick-link-icon {
+    color: var(--accent);
+    transform: translateX(3px);
   }
 
-  /* Status */
-  .status-section {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-    border-top: 1px solid var(--gray-800);
-    padding-top: 2rem;
+  .now {
+    border-top: 1px solid var(--border);
+    padding-top: var(--space-xl);
   }
 
-  .status-row {
+  .now-list {
+    margin: 0;
+  }
+
+  .now-item {
     display: flex;
     justify-content: space-between;
     align-items: baseline;
-    padding: 0.875rem 0;
-    border-bottom: 1px solid var(--gray-900);
+    padding: 0.75rem 0;
   }
 
-  .status-row:last-child {
-    border-bottom: none;
+  .now-item + .now-item {
+    border-top: 1px solid var(--border-subtle);
   }
 
-  .status-label {
-    font-size: 0.75rem;
-    font-weight: 500;
-    color: var(--gray-600);
+  .now-item dt {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--text-faint);
     text-transform: uppercase;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.08em;
   }
 
-  .status-value {
+  .now-item dd {
+    margin: 0;
     font-size: 0.9375rem;
-    color: var(--gray-300);
+    color: var(--text-secondary);
+    text-align: right;
   }
 
-  .status-link {
-    font-size: 0.9375rem;
-    color: var(--gray-300);
-    transition: color var(--duration-fast) var(--ease-out);
+  .now-link {
+    color: var(--text-secondary);
+    transition: color var(--dur-instant) var(--ease-out-quart);
   }
 
-  .status-link:hover {
-    color: var(--white);
+  .now-link:hover {
+    color: var(--accent);
   }
 </style>

@@ -59,7 +59,7 @@
 <style>
   .history-page {
     min-height: 100vh;
-    background: var(--black);
+    background: var(--paper);
   }
 
   .header {
@@ -67,8 +67,8 @@
     align-items: center;
     justify-content: space-between;
     padding: 1rem 1.5rem;
-    background: var(--gray-950);
-    border-bottom: 1px solid var(--gray-800);
+    background: var(--surface-raised);
+    border-bottom: 1px solid var(--border);
     position: sticky;
     top: 0;
     z-index: 10;
@@ -85,25 +85,25 @@
     align-items: center;
     justify-content: center;
     padding: 0.5rem;
-    color: var(--gray-500);
+    color: var(--text-tertiary);
     border-radius: var(--radius-sm);
-    transition: all var(--duration-fast) var(--ease-out);
+    transition: all var(--dur-instant) var(--ease-out-quart);
   }
 
   .back-btn:hover {
-    color: var(--white);
-    background: var(--gray-900);
+    color: var(--text-primary);
+    background: var(--surface-sunken);
   }
 
   .header h1 {
     font-size: 1.125rem;
     font-weight: 600;
-    color: var(--white);
+    color: var(--text-primary);
   }
 
   .count {
     font-size: 0.75rem;
-    color: var(--gray-600);
+    color: var(--text-faint);
   }
 
   .main {
@@ -113,8 +113,8 @@
   }
 
   .table-container {
-    background: var(--gray-950);
-    border: 1px solid var(--gray-800);
+    background: var(--surface-raised);
+    border: 1px solid var(--border);
     border-radius: var(--radius-md);
     overflow: hidden;
   }
@@ -130,24 +130,24 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    color: var(--gray-600);
+    color: var(--text-faint);
     text-align: left;
-    background: var(--gray-900);
-    border-bottom: 1px solid var(--gray-800);
+    background: var(--surface-sunken);
+    border-bottom: 1px solid var(--border);
   }
 
   tr {
-    animation: fade-in 0.3s var(--ease-out) backwards;
+    animation: fade-in 0.3s var(--ease-out-quart) backwards;
     animation-delay: var(--delay);
   }
 
   tbody tr:hover {
-    background: var(--gray-900);
+    background: var(--surface-sunken);
   }
 
   td {
     padding: 0.875rem 1rem;
-    border-bottom: 1px solid var(--gray-900);
+    border-bottom: 1px solid var(--border-subtle);
   }
 
   tr:last-child td {
@@ -157,17 +157,17 @@
   .version-cell {
     font-size: 0.875rem;
     font-weight: 500;
-    color: var(--white);
+    color: var(--text-primary);
   }
 
   .date-cell {
     font-size: 0.8125rem;
-    color: var(--gray-500);
+    color: var(--text-tertiary);
   }
 
   .notes-cell {
     font-size: 0.8125rem;
-    color: var(--gray-600);
+    color: var(--text-faint);
     font-style: italic;
   }
 
@@ -181,20 +181,20 @@
     gap: 0.25rem;
     padding: 0.375rem 0.5rem;
     font-size: 0.75rem;
-    color: var(--gray-500);
+    color: var(--text-tertiary);
     border-radius: var(--radius-sm);
-    transition: all var(--duration-fast) var(--ease-out);
+    transition: all var(--dur-instant) var(--ease-out-quart);
   }
 
   .action-btn:hover {
-    color: var(--white);
-    background: var(--gray-800);
+    color: var(--text-primary);
+    background: var(--border);
   }
 
   .action-btn.load {
     margin-left: 0.5rem;
-    background: var(--gray-900);
-    border: 1px solid var(--gray-800);
+    background: var(--surface-sunken);
+    border: 1px solid var(--border);
   }
 
   @keyframes fade-in {

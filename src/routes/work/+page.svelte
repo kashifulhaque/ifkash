@@ -52,12 +52,12 @@
 
   <section class="jobs">
     {#each jobs as job, i}
-      <a 
+      <a
         href={job.url}
         target="_blank"
         rel="noopener noreferrer"
-        class="job"
-        style="--delay: {i * 50}ms"
+        class="job stagger"
+        style="--i: {i}"
       >
         <div class="job-main">
           <span class="job-role">{job.role}</span>
@@ -76,43 +76,42 @@
   .page {
     display: flex;
     flex-direction: column;
-    gap: 3rem;
+    gap: var(--space-2xl);
   }
-  
+
   .page-header {
-    padding-bottom: 2rem;
-    border-bottom: 1px solid var(--gray-800);
+    padding-bottom: var(--space-xl);
+    border-bottom: 1px solid var(--border);
   }
-  
+
   .page-title {
-    font-size: 2.5rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    color: var(--white);
-    margin-bottom: 0.5rem;
+    font-size: clamp(2rem, 5vw + 0.5rem, 3rem);
+    font-weight: 400;
+    letter-spacing: -0.03em;
+    color: var(--text-primary);
+    margin-bottom: 0.375rem;
   }
-  
+
   .page-desc {
     font-size: 1rem;
-    color: var(--gray-500);
+    color: var(--text-tertiary);
   }
 
   .jobs {
     display: flex;
     flex-direction: column;
   }
-  
+
   .job {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 0.5rem;
-    padding: 1.5rem 0;
-    border-bottom: 1px solid var(--gray-900);
-    animation: fade-up var(--duration-slow) var(--ease-out) backwards;
-    animation-delay: var(--delay);
-    transition: all var(--duration-fast) var(--ease-out);
+    gap: 0.375rem;
+    padding: 1.25rem 0;
+    border-bottom: 1px solid var(--border-subtle);
+    transition: background var(--dur-instant) var(--ease-out-quart);
+    border-radius: var(--radius-sm);
   }
-  
+
   @media (min-width: 640px) {
     .job {
       grid-template-columns: 1fr auto;
@@ -120,63 +119,58 @@
       align-items: baseline;
     }
   }
-  
+
   .job:hover {
+    background: var(--surface-sunken);
     padding-left: 1rem;
-    background: var(--glass-bg);
     margin-left: -1rem;
     margin-right: -1rem;
     padding-right: 1rem;
   }
-  
+
   .job:last-child {
     border-bottom: none;
   }
-  
+
   .job-main {
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
+    gap: 0.125rem;
   }
-  
+
   .job-role {
     font-size: 1rem;
     font-weight: 500;
-    color: var(--white);
+    color: var(--text-primary);
   }
-  
+
   .job-company {
     font-size: 0.875rem;
-    color: var(--gray-500);
+    color: var(--text-tertiary);
   }
-  
+
   .job-meta {
     display: flex;
     flex-direction: column;
     gap: 0.125rem;
     text-align: left;
   }
-  
+
   @media (min-width: 640px) {
     .job-meta {
       text-align: right;
     }
   }
-  
+
   .job-period {
     font-size: 0.8125rem;
     font-weight: 500;
-    color: var(--gray-400);
+    color: var(--text-secondary);
     font-variant-numeric: tabular-nums;
   }
-  
+
   .job-location {
     font-size: 0.75rem;
-    color: var(--gray-600);
-  }
-  
-  @keyframes fade-up {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+    color: var(--text-faint);
   }
 </style>

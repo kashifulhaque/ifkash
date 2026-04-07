@@ -119,7 +119,7 @@ make -j$(nproc)</code></pre>
     flex-direction: column;
     gap: 3rem;
     max-width: 48rem;
-    animation: fade-up var(--duration-slow) var(--ease-out);
+    animation: fade-up var(--dur-base) var(--ease-out-quart);
   }
 
   .page-header {
@@ -127,21 +127,21 @@ make -j$(nproc)</code></pre>
     flex-direction: column;
     gap: 1rem;
     padding-bottom: 2rem;
-    border-bottom: 1px solid var(--gray-800);
+    border-bottom: 1px solid var(--border);
   }
 
   .breadcrumb {
     font-size: 0.875rem;
-    color: var(--gray-500);
+    color: var(--text-tertiary);
   }
 
   .breadcrumb a {
-    color: var(--gray-500);
-    transition: color var(--duration-fast) var(--ease-out);
+    color: var(--text-tertiary);
+    transition: color var(--dur-instant) var(--ease-out-quart);
   }
 
   .breadcrumb a:hover {
-    color: var(--white);
+    color: var(--text-primary);
   }
 
   .separator {
@@ -152,14 +152,14 @@ make -j$(nproc)</code></pre>
     font-size: 2.5rem;
     font-weight: 700;
     letter-spacing: -0.02em;
-    color: var(--white);
+    color: var(--text-primary);
     margin: 0;
   }
 
   .page-desc {
     font-size: 1.0625rem;
     line-height: 1.6;
-    color: var(--gray-400);
+    color: var(--text-secondary);
     margin: 0;
   }
 
@@ -171,18 +171,18 @@ make -j$(nproc)</code></pre>
   .project-link {
     font-size: 0.75rem;
     font-weight: 500;
-    color: var(--gray-600);
+    color: var(--text-faint);
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    transition: color var(--duration-fast) var(--ease-out);
+    transition: color var(--dur-instant) var(--ease-out-quart);
     padding: 0.5rem 1rem;
-    border: 1px solid var(--gray-800);
+    border: 1px solid var(--border);
     border-radius: 0.375rem;
   }
 
   .project-link:hover {
-    color: var(--white);
-    border-color: var(--gray-700);
+    color: var(--text-primary);
+    border-color: var(--border-strong);
   }
 
   .content {
@@ -194,7 +194,7 @@ make -j$(nproc)</code></pre>
   .section h2 {
     font-size: 1.5rem;
     font-weight: 600;
-    color: var(--white);
+    color: var(--text-primary);
     letter-spacing: -0.01em;
     margin-bottom: 1rem;
   }
@@ -202,7 +202,7 @@ make -j$(nproc)</code></pre>
   .section p {
     font-size: 0.9375rem;
     line-height: 1.7;
-    color: var(--gray-400);
+    color: var(--text-secondary);
     margin-bottom: 1rem;
   }
 
@@ -227,7 +227,7 @@ make -j$(nproc)</code></pre>
   .structure-list li {
     font-size: 0.9375rem;
     line-height: 1.6;
-    color: var(--gray-400);
+    color: var(--text-secondary);
     padding-left: 1.5rem;
     position: relative;
   }
@@ -239,20 +239,20 @@ make -j$(nproc)</code></pre>
     content: '→';
     position: absolute;
     left: 0;
-    color: var(--gray-600);
+    color: var(--text-faint);
   }
 
   .arch-desc {
     margin-top: 1rem;
     padding: 1rem;
-    background: var(--gray-950);
-    border-left: 2px solid var(--gray-800);
+    background: var(--surface-raised);
+    border-left: 2px solid var(--border);
     border-radius: 0.25rem;
   }
 
   .code-block {
-    background: var(--gray-950);
-    border: 1px solid var(--gray-800);
+    background: var(--surface-raised);
+    border: 1px solid var(--border);
     border-radius: 0.5rem;
     overflow-x: auto;
   }
@@ -266,14 +266,14 @@ make -j$(nproc)</code></pre>
     font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
     font-size: 0.875rem;
     line-height: 1.6;
-    color: var(--gray-300);
+    color: var(--text-secondary);
   }
 
   .structure-list code {
     font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
     font-size: 0.875rem;
-    color: var(--gray-300);
-    background: var(--gray-950);
+    color: var(--text-secondary);
+    background: var(--surface-raised);
     padding: 0.125rem 0.375rem;
     border-radius: 0.25rem;
   }

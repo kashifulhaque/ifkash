@@ -278,7 +278,7 @@ db.close()</code></pre>
     flex-direction: column;
     gap: 3rem;
     max-width: 48rem;
-    animation: fade-up var(--duration-slow) var(--ease-out);
+    animation: fade-up var(--dur-base) var(--ease-out-quart);
   }
 
   .page-header {
@@ -286,21 +286,21 @@ db.close()</code></pre>
     flex-direction: column;
     gap: 1rem;
     padding-bottom: 2rem;
-    border-bottom: 1px solid var(--gray-800);
+    border-bottom: 1px solid var(--border);
   }
 
   .breadcrumb {
     font-size: 0.875rem;
-    color: var(--gray-500);
+    color: var(--text-tertiary);
   }
 
   .breadcrumb a {
-    color: var(--gray-500);
-    transition: color var(--duration-fast) var(--ease-out);
+    color: var(--text-tertiary);
+    transition: color var(--dur-instant) var(--ease-out-quart);
   }
 
   .breadcrumb a:hover {
-    color: var(--white);
+    color: var(--text-primary);
   }
 
   .separator {
@@ -311,14 +311,14 @@ db.close()</code></pre>
     font-size: 2.5rem;
     font-weight: 700;
     letter-spacing: -0.02em;
-    color: var(--white);
+    color: var(--text-primary);
     margin: 0;
   }
 
   .page-desc {
     font-size: 1.0625rem;
     line-height: 1.6;
-    color: var(--gray-400);
+    color: var(--text-secondary);
     margin: 0;
   }
 
@@ -330,18 +330,18 @@ db.close()</code></pre>
   .project-link {
     font-size: 0.75rem;
     font-weight: 500;
-    color: var(--gray-600);
+    color: var(--text-faint);
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    transition: color var(--duration-fast) var(--ease-out);
+    transition: color var(--dur-instant) var(--ease-out-quart);
     padding: 0.5rem 1rem;
-    border: 1px solid var(--gray-800);
+    border: 1px solid var(--border);
     border-radius: 0.375rem;
   }
 
   .project-link:hover {
-    color: var(--white);
-    border-color: var(--gray-700);
+    color: var(--text-primary);
+    border-color: var(--border-strong);
   }
 
   .content {
@@ -353,7 +353,7 @@ db.close()</code></pre>
   .section h2 {
     font-size: 1.5rem;
     font-weight: 600;
-    color: var(--white);
+    color: var(--text-primary);
     letter-spacing: -0.01em;
     margin-bottom: 1rem;
   }
@@ -361,14 +361,14 @@ db.close()</code></pre>
   .section h3 {
     font-size: 1.125rem;
     font-weight: 600;
-    color: var(--white);
+    color: var(--text-primary);
     margin-bottom: 0.75rem;
   }
 
   .section p {
     font-size: 0.9375rem;
     line-height: 1.7;
-    color: var(--gray-400);
+    color: var(--text-secondary);
     margin-bottom: 1rem;
   }
 
@@ -389,7 +389,7 @@ db.close()</code></pre>
   .usecase-list li {
     font-size: 0.9375rem;
     line-height: 1.6;
-    color: var(--gray-400);
+    color: var(--text-secondary);
     padding-left: 1.5rem;
     position: relative;
   }
@@ -399,13 +399,13 @@ db.close()</code></pre>
     content: '→';
     position: absolute;
     left: 0;
-    color: var(--gray-600);
+    color: var(--text-faint);
   }
 
   .code-block,
   .result-example {
-    background: var(--gray-950);
-    border: 1px solid var(--gray-800);
+    background: var(--surface-raised);
+    border: 1px solid var(--border);
     border-radius: 0.5rem;
     overflow-x: auto;
   }
@@ -421,7 +421,7 @@ db.close()</code></pre>
     font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
     font-size: 0.875rem;
     line-height: 1.6;
-    color: var(--gray-300);
+    color: var(--text-secondary);
   }
 
   .arch-grid {
@@ -432,22 +432,22 @@ db.close()</code></pre>
 
   .arch-item {
     padding: 1.25rem;
-    background: var(--gray-950);
-    border: 1px solid var(--gray-800);
+    background: var(--surface-raised);
+    border: 1px solid var(--border);
     border-radius: 0.5rem;
   }
 
   .arch-title {
     font-size: 1rem;
     font-weight: 600;
-    color: var(--white);
+    color: var(--text-primary);
     margin-bottom: 0.5rem;
   }
 
   .arch-desc {
     font-size: 0.875rem;
     line-height: 1.6;
-    color: var(--gray-400);
+    color: var(--text-secondary);
   }
 
   .api-section {
@@ -465,22 +465,22 @@ db.close()</code></pre>
 
   .api-item {
     padding: 0.875rem 1rem;
-    background: var(--gray-950);
-    border-left: 2px solid var(--gray-800);
+    background: var(--surface-raised);
+    border-left: 2px solid var(--border);
   }
 
   .api-method {
     font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, monospace;
     font-size: 0.875rem;
     font-weight: 600;
-    color: var(--gray-200);
+    color: var(--paper-dim);
     margin-bottom: 0.375rem;
   }
 
   .api-desc {
     font-size: 0.875rem;
     line-height: 1.6;
-    color: var(--gray-400);
+    color: var(--text-secondary);
   }
 
   .metrics-grid {
@@ -490,29 +490,29 @@ db.close()</code></pre>
 
   .metric-item {
     padding: 1rem;
-    background: var(--gray-950);
-    border: 1px solid var(--gray-800);
+    background: var(--surface-raised);
+    border: 1px solid var(--border);
     border-radius: 0.5rem;
   }
 
   .metric-name {
     font-size: 1rem;
     font-weight: 600;
-    color: var(--white);
+    color: var(--text-primary);
     margin-bottom: 0.375rem;
   }
 
   .metric-code {
     font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, monospace;
     font-size: 0.8125rem;
-    color: var(--gray-500);
+    color: var(--text-tertiary);
     margin-bottom: 0.5rem;
   }
 
   .metric-desc {
     font-size: 0.875rem;
     line-height: 1.6;
-    color: var(--gray-400);
+    color: var(--text-secondary);
   }
 
   .why-grid {
@@ -526,8 +526,8 @@ db.close()</code></pre>
     flex-direction: column;
     gap: 0.5rem;
     padding: 1.25rem;
-    background: var(--gray-950);
-    border: 1px solid var(--gray-800);
+    background: var(--surface-raised);
+    border: 1px solid var(--border);
     border-radius: 0.5rem;
   }
 
@@ -539,13 +539,13 @@ db.close()</code></pre>
   .why-title {
     font-size: 1rem;
     font-weight: 600;
-    color: var(--white);
+    color: var(--text-primary);
   }
 
   .why-desc {
     font-size: 0.875rem;
     line-height: 1.5;
-    color: var(--gray-400);
+    color: var(--text-secondary);
   }
 
   .stats-row {
@@ -560,20 +560,20 @@ db.close()</code></pre>
     align-items: center;
     gap: 0.5rem;
     padding: 1.5rem;
-    background: var(--gray-950);
-    border: 1px solid var(--gray-800);
+    background: var(--surface-raised);
+    border: 1px solid var(--border);
     border-radius: 0.5rem;
   }
 
   .stat-value {
     font-size: 2rem;
     font-weight: 700;
-    color: var(--white);
+    color: var(--text-primary);
   }
 
   .stat-label {
     font-size: 0.875rem;
-    color: var(--gray-500);
+    color: var(--text-tertiary);
     text-align: center;
   }
 

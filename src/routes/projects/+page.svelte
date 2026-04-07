@@ -8,7 +8,7 @@
     name: string;
     desc: string;
     links: { label: string; url: string }[];
-    page?: string; // Optional internal page link
+    page?: string;
   };
 
   const projects: Project[] = [
@@ -99,8 +99,8 @@
 
   <section class="projects">
     {#each projects as project, i}
-      <article class="project" style="--delay: {i * 50}ms">
-        <div class="project-header">
+      <article class="project stagger" style="--i: {i}">
+        <div class="project-top">
           {#if project.page}
             <a href={project.page} class="project-name-link">
               <h2 class="project-name">{project.name}</h2>
@@ -126,105 +126,95 @@
   .page {
     display: flex;
     flex-direction: column;
-    gap: 3rem;
+    gap: var(--space-2xl);
   }
-  
+
   .page-header {
-    padding-bottom: 2rem;
-    border-bottom: 1px solid var(--gray-800);
+    padding-bottom: var(--space-xl);
+    border-bottom: 1px solid var(--border);
   }
-  
+
   .page-title {
-    font-size: 2.5rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    color: var(--white);
-    margin-bottom: 0.5rem;
+    font-size: clamp(2rem, 5vw + 0.5rem, 3rem);
+    font-weight: 400;
+    letter-spacing: -0.03em;
+    color: var(--text-primary);
+    margin-bottom: 0.375rem;
   }
-  
+
   .page-desc {
     font-size: 1rem;
-    color: var(--gray-500);
+    color: var(--text-tertiary);
   }
 
   .projects {
     display: flex;
     flex-direction: column;
-    gap: 2rem;
+    gap: var(--space-xl);
   }
-  
+
   .project {
-    padding-bottom: 2rem;
-    border-bottom: 1px solid var(--gray-900);
-    animation: fade-up var(--duration-slow) var(--ease-out) backwards;
-    animation-delay: var(--delay);
+    padding-bottom: var(--space-xl);
+    border-bottom: 1px solid var(--border-subtle);
   }
-  
+
   .project:last-child {
     border-bottom: none;
     padding-bottom: 0;
   }
-  
-  .project-header {
+
+  .project-top {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
-    margin-bottom: 0.75rem;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
   }
-  
+
   @media (min-width: 480px) {
-    .project-header {
+    .project-top {
       flex-direction: row;
-      align-items: center;
+      align-items: baseline;
       justify-content: space-between;
     }
   }
-  
+
   .project-name {
-    font-size: 1.125rem;
+    font-family: var(--font-sans);
+    font-size: 1.0625rem;
     font-weight: 600;
-    color: var(--white);
+    color: var(--text-primary);
     letter-spacing: -0.01em;
   }
 
   .project-name-link {
-    transition: opacity var(--duration-fast) var(--ease-out);
+    transition: color var(--dur-instant) var(--ease-out-quart);
   }
 
-  .project-name-link:hover {
-    opacity: 0.7;
+  .project-name-link:hover .project-name {
+    color: var(--accent);
   }
 
-  .project-name-link .project-name {
-    margin: 0;
-  }
-  
   .project-links {
     display: flex;
     gap: 1rem;
   }
-  
+
   .project-link {
     font-size: 0.75rem;
-    font-weight: 500;
-    color: var(--gray-600);
+    font-weight: 600;
+    color: var(--text-faint);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    transition: color var(--duration-fast) var(--ease-out);
+    letter-spacing: 0.04em;
+    transition: color var(--dur-instant) var(--ease-out-quart);
   }
-  
+
   .project-link:hover {
-    color: var(--white);
+    color: var(--accent);
   }
-  
+
   .project-desc {
     font-size: 0.9375rem;
-    line-height: 1.6;
-    color: var(--gray-400);
-  }
-  
-  @keyframes fade-up {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+    line-height: 1.65;
+    color: var(--text-secondary);
   }
 </style>

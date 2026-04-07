@@ -80,13 +80,13 @@
     align-items: center;
     justify-content: center;
     padding: 2rem;
-    background: var(--black);
+    background: var(--paper);
   }
   
   .login-container {
     width: 100%;
     max-width: 360px;
-    animation: fade-up var(--duration-slow) var(--ease-out);
+    animation: fade-up var(--dur-base) var(--ease-out-quart);
   }
   
   .login-header {
@@ -97,13 +97,13 @@
   .login-title {
     font-size: 1.75rem;
     font-weight: 600;
-    color: var(--white);
+    color: var(--text-primary);
     margin-bottom: 0.5rem;
   }
   
   .login-desc {
     font-size: 0.9375rem;
-    color: var(--gray-500);
+    color: var(--text-tertiary);
   }
   
   .login-form {
@@ -111,17 +111,17 @@
     flex-direction: column;
     gap: 1.25rem;
     padding: 2rem;
-    background: var(--gray-950);
-    border: 1px solid var(--gray-800);
+    background: var(--surface-raised);
+    border: 1px solid var(--border);
     border-radius: var(--radius-lg);
   }
   
   .error-msg {
     padding: 0.75rem 1rem;
     font-size: 0.875rem;
-    color: var(--white);
-    background: var(--gray-900);
-    border: 1px solid var(--gray-700);
+    color: var(--text-primary);
+    background: var(--surface-sunken);
+    border: 1px solid var(--text-faint);
     border-radius: var(--radius-sm);
     text-align: center;
   }
@@ -135,43 +135,43 @@
   .form-label {
     font-size: 0.8125rem;
     font-weight: 500;
-    color: var(--gray-400);
+    color: var(--text-secondary);
   }
   
   .form-input {
     padding: 0.75rem 1rem;
     font-size: 0.9375rem;
-    color: var(--white);
-    background: var(--black);
-    border: 1px solid var(--gray-800);
+    color: var(--text-primary);
+    background: var(--paper);
+    border: 1px solid var(--border);
     border-radius: var(--radius-md);
-    transition: border-color var(--duration-fast) var(--ease-out);
+    transition: border-color var(--dur-instant) var(--ease-out-quart);
   }
   
   .form-input::placeholder {
-    color: var(--gray-700);
+    color: var(--text-faint);
   }
   
   .form-input:focus {
     outline: none;
-    border-color: var(--gray-600);
+    border-color: var(--text-faint);
   }
   
   .submit-btn {
     padding: 0.875rem 1.5rem;
     font-size: 0.9375rem;
     font-weight: 500;
-    color: var(--black);
-    background: var(--white);
+    color: var(--btn-primary-fg);
+    background: var(--btn-primary-bg);
     border: none;
     border-radius: var(--radius-md);
     cursor: pointer;
-    transition: all var(--duration-fast) var(--ease-out);
+    transition: all var(--dur-instant) var(--ease-out-quart);
     margin-top: 0.5rem;
   }
   
   .submit-btn:hover:not(:disabled) {
-    background: var(--gray-200);
+    background: var(--btn-primary-hover);
   }
   
   .submit-btn:disabled {
@@ -184,12 +184,12 @@
     margin-top: 2rem;
     text-align: center;
     font-size: 0.875rem;
-    color: var(--gray-600);
-    transition: color var(--duration-fast) var(--ease-out);
+    color: var(--text-faint);
+    transition: color var(--dur-instant) var(--ease-out-quart);
   }
   
   .back-link:hover {
-    color: var(--white);
+    color: var(--text-primary);
   }
   
   @keyframes fade-up {

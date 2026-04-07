@@ -178,19 +178,16 @@
       let next, prev;
 
       if (nextIdx === -1) {
-        // After Isha: next is tomorrow's Fajr, prev is today's Isha
         const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
         const tTom = await fetchT(tomorrow);
         next = { name: "Fajr", time: tTom.Fajr, date: tomorrow };
         prev = todayPrayers[todayPrayers.length - 1];
       } else if (nextIdx === 0) {
-        // Before Fajr: next is today's Fajr, prev is yesterday's Isha
         const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
         const tYes = await fetchT(yesterday);
         next = todayPrayers[0];
         prev = { name: "Isha", time: tYes.Isha, date: yesterday };
       } else {
-        // Normal case: both in today's list
         next = todayPrayers[nextIdx];
         prev = todayPrayers[nextIdx - 1];
       }
@@ -216,12 +213,6 @@
     }
   }
 
-  // ─── Ramadan Detection & Timings ───────────────────────────────────────────
-
-  /**
-   * Check if a given Gregorian date falls in Ramadan using the Aladhan API.
-   * The API returns Hijri date info including the month number.
-   */
   async function fetchRamadan() {
     try {
       const { lat, lon } = await getLoc();
@@ -240,30 +231,25 @@
       const hijriDay = parseInt(todayData.date.hijri.day);
 
       if (hijriMonth !== 9) {
-        // Not Ramadan
         ramadan.isRamadan = false;
         ramadan.loading = false;
         return;
       }
 
-      // It's Ramadan!
       ramadan.isRamadan = true;
       ramadan.dayNumber = hijriDay;
 
       const timings = todayData.timings;
       const nowMs = currentDate.getTime();
 
-      // Suhoor ends at Fajr time
       const [fajrH, fajrM] = timings.Fajr.split(":");
       const suhoorDate = new Date(currentDate);
       suhoorDate.setHours(parseInt(fajrH), parseInt(fajrM), 0, 0);
 
-      // Iftaar is at Maghrib time
       const [maghribH, maghribM] = timings.Maghrib.split(":");
       const iftaarDate = new Date(currentDate);
       iftaarDate.setHours(parseInt(maghribH), parseInt(maghribM), 0, 0);
 
-      // If suhoor has already passed today, fetch tomorrow's Fajr
       if (suhoorDate.getTime() <= nowMs) {
         const tomorrow = new Date(currentDate.getTime() + 24 * 60 * 60 * 1000);
         const tomorrowData = await fetchTimingsWithHijri(tomorrow);
@@ -285,7 +271,6 @@
         });
       }
 
-      // If iftaar has already passed today, fetch tomorrow's Maghrib
       if (iftaarDate.getTime() <= nowMs) {
         const tomorrow = new Date(currentDate.getTime() + 24 * 60 * 60 * 1000);
         const tomorrowData = await fetchTimingsWithHijri(tomorrow);
@@ -325,7 +310,6 @@
     weatherTimer = window.setInterval(fetchWeather, REFRESH_WEATHER_MS);
     f1Timer = window.setInterval(fetchF1, REFRESH_F1_MS);
     prayerTimer = window.setInterval(fetchPrayer, 60 * 1000);
-    // Refresh Ramadan timings every 5 minutes
     ramadanTimer = window.setInterval(fetchRamadan, 5 * 60 * 1000);
   });
 
@@ -448,7 +432,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    background: var(--black);
+    background: var(--paper);
     padding: 2rem;
     position: relative;
   }
@@ -472,7 +456,7 @@
     font-size: clamp(5rem, 18vw, 12rem);
     font-weight: 200;
     letter-spacing: -0.04em;
-    color: var(--white);
+    color: var(--text-primary);
     line-height: 1;
     font-variant-numeric: tabular-nums;
   }
@@ -480,7 +464,7 @@
   .date {
     font-size: 1rem;
     font-weight: 400;
-    color: var(--gray-600);
+    color: var(--text-faint);
     letter-spacing: 0.1em;
     text-transform: uppercase;
   }
@@ -500,12 +484,12 @@
   .info-value {
     font-size: 1.25rem;
     font-weight: 500;
-    color: var(--white);
+    color: var(--text-primary);
   }
 
   .info-label {
     font-size: 0.75rem;
-    color: var(--gray-600);
+    color: var(--text-faint);
     text-transform: uppercase;
     letter-spacing: 0.05em;
   }
@@ -515,60 +499,58 @@
   }
 
   .prev-prayer .info-value {
-    color: var(--gray-500);
+    color: var(--text-tertiary);
   }
 
   .prev-prayer .info-label {
-    color: var(--gray-700);
+    color: var(--text-faint);
   }
-
-  /* ── Ramadan Bar ─────────────────────────────────────────────────────── */
 
   .ramadan-bar {
     display: flex;
     align-items: center;
     gap: 0.75rem;
     padding: 0.5rem 1rem;
-    background: var(--gray-950);
-    border: 1px solid var(--gray-800);
+    background: var(--surface-raised);
+    border: 1px solid var(--border);
     border-radius: var(--radius-md);
     font-size: 0.8125rem;
-    animation: fade-up 0.6s var(--ease-out) both;
+    animation: fade-up 0.6s var(--ease-out-quart) both;
   }
 
   .ramadan-label {
     font-weight: 600;
-    color: var(--white);
+    color: var(--text-primary);
     letter-spacing: 0.03em;
     white-space: nowrap;
   }
 
   .ramadan-day {
     font-weight: 400;
-    color: var(--gray-500);
+    color: var(--text-tertiary);
   }
 
   .ramadan-sep {
     width: 1px;
     height: 0.875rem;
-    background: var(--gray-800);
+    background: var(--border);
     flex-shrink: 0;
   }
 
   .ramadan-dot {
-    color: var(--gray-700);
+    color: var(--text-faint);
   }
 
   .ramadan-item {
     display: flex;
     align-items: center;
     gap: 0.375rem;
-    color: var(--gray-500);
+    color: var(--text-tertiary);
     transition: color 0.3s ease;
   }
 
   .ramadan-item.ramadan-active {
-    color: var(--gray-300);
+    color: var(--text-secondary);
   }
 
   .ramadan-item-name {
@@ -584,14 +566,12 @@
 
   .ramadan-item-countdown {
     font-size: 0.6875rem;
-    color: var(--gray-600);
+    color: var(--text-faint);
     font-variant-numeric: tabular-nums;
-    background: var(--gray-900);
+    background: var(--surface-sunken);
     padding: 0.1rem 0.35rem;
     border-radius: 3px;
   }
-
-  /* ── F1 Bar ───────────────────────────────────────────────────────────── */
 
   .f1-bar {
     position: fixed;
@@ -602,19 +582,19 @@
     align-items: center;
     gap: 1rem;
     padding: 0.75rem 1.25rem;
-    background: var(--gray-950);
-    border: 1px solid var(--gray-800);
+    background: var(--surface-raised);
+    border: 1px solid var(--border);
     border-radius: var(--radius-md);
     font-size: 0.8125rem;
   }
 
   .f1-label {
     font-weight: 700;
-    color: var(--white);
+    color: var(--text-primary);
   }
 
   .f1-info {
-    color: var(--gray-500);
+    color: var(--text-tertiary);
   }
 
   @keyframes fade-up {

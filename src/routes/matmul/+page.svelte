@@ -56,7 +56,7 @@
     if (!container) return;
 
     container.innerHTML = `
-      <h3 style="margin-bottom: 16px; font-size: 1.1rem; color: var(--color-heading);">${title}</h3>
+      <h3 style="margin-bottom: 16px; font-size: 1.1rem; color: var(--text-primary);">${title}</h3>
       <div class="viz-container">
         <div style="display: flex; gap: 24px; flex-wrap: wrap;">
           <div class="matrix-wrapper">
@@ -248,8 +248,8 @@
   function highlightResultCell(containerId: string, row: number, col: number) {
     const cell = document.querySelector(`#${containerId}-matrixC .matrix-cell[data-row="${row}"][data-col="${col}"]`) as HTMLElement;
     if (cell) {
-      cell.style.background = 'var(--gray-800)';
-      cell.style.borderColor = 'var(--gray-600)';
+      cell.style.background = 'var(--border)';
+      cell.style.borderColor = 'var(--text-faint)';
     }
   }
 
@@ -387,7 +387,7 @@
   <span class="keyword">for</span> (<span class="variable">col</span> = 0..N)
     <span class="keyword">for</span> (<span class="variable">inner</span> = 0..N)
       C[row][col] += A[row][<span class="variable">inner</span>] × B[<span class="variable">inner</span>][col]
-                     <span style="color: var(--color-success)">↑ sequential</span>    <span style="color: var(--color-danger)">↑ STRIDED!</span>
+                     <span style="color: #22c55e">↑ sequential</span>    <span style="color: #ef4444">↑ STRIDED!</span>
         </div>
       </div>
 
@@ -401,7 +401,7 @@
   <span class="keyword">for</span> (<span class="variable">inner</span> = 0..N)
     <span class="keyword">for</span> (<span class="variable">col</span> = 0..N)
       C[row][<span class="variable">col</span>] += A[row][inner] × B[inner][<span class="variable">col</span>]
-                     <span style="color: var(--color-success)">↑ sequential</span>    <span style="color: var(--color-success)">↑ sequential!</span>
+                     <span style="color: #22c55e">↑ sequential</span>    <span style="color: #22c55e">↑ sequential!</span>
         </div>
       </div>
     </div>
@@ -518,8 +518,8 @@
   }
 
   .controls-panel {
-    background: var(--glass-bg);
-    border: 1px solid var(--glass-border);
+    background: var(--surface-sunken);
+    border: 1px solid var(--border);
     border-radius: var(--radius-lg);
     padding: 1.5rem;
     margin-bottom: 1.5rem;
@@ -541,12 +541,12 @@
   .control-group label {
     font-weight: 600;
     font-size: 0.875rem;
-    color: var(--color-heading);
+    color: var(--text-primary);
   }
 
   .speed-display {
     font-size: 0.8rem;
-    color: var(--color-text-muted);
+    color: var(--text-tertiary);
     text-align: center;
   }
 
@@ -554,7 +554,7 @@
     width: 100%;
     height: 8px;
     border-radius: 4px;
-    background: var(--gray-800);
+    background: var(--border);
     -webkit-appearance: none;
     cursor: pointer;
   }
@@ -563,7 +563,7 @@
     -webkit-appearance: none;
     width: 20px;
     height: 20px;
-    background: var(--white);
+    background: var(--ink);
     border-radius: 50%;
     cursor: pointer;
   }
@@ -576,19 +576,19 @@
 
   button {
     padding: 0.75rem 1.25rem;
-    border: 1px solid var(--glass-border);
+    border: 1px solid var(--border);
     border-radius: var(--radius-md);
     font-size: 0.95rem;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
-    background: var(--glass-bg);
-    color: var(--color-heading);
+    background: var(--surface-sunken);
+    color: var(--text-primary);
   }
 
   button:hover:not(:disabled) {
-    background: var(--glass-bg-hover);
-    border-color: var(--glass-border-hover);
+    background: var(--paper-dim);
+    border-color: var(--border-strong);
   }
 
   button:disabled {
@@ -597,13 +597,13 @@
   }
 
   .btn-primary {
-    background: var(--white);
-    color: var(--black);
-    border-color: var(--white);
+    background: var(--ink);
+    color: var(--paper);
+    border-color: var(--ink);
   }
 
   .btn-primary:hover:not(:disabled) {
-    background: var(--gray-200);
+    background: var(--paper-dim);
   }
 
   .btn-secondary {
@@ -611,13 +611,13 @@
   }
 
   .btn-danger {
-    background: var(--gray-800);
-    border-color: var(--gray-700);
+    background: var(--border);
+    border-color: var(--border-strong);
   }
 
   .progress-bar {
     height: 4px;
-    background: var(--gray-800);
+    background: var(--border);
     border-radius: 2px;
     margin-top: 1rem;
     overflow: hidden;
@@ -625,14 +625,14 @@
 
   .progress-fill {
     height: 100%;
-    background: var(--white);
+    background: var(--ink);
     border-radius: 2px;
-    transition: width 0.3s ease-out;
+    transition: width 0.3s var(--ease-out-quart);
   }
 
   .section {
-    background: var(--glass-bg);
-    border: 1px solid var(--glass-border);
+    background: var(--surface-sunken);
+    border: 1px solid var(--border);
     border-radius: var(--radius-lg);
     padding: 1.75rem;
     margin-bottom: 1.5rem;
@@ -644,13 +644,13 @@
     gap: 0.75rem;
     margin-bottom: 1.5rem;
     padding-bottom: 1rem;
-    border-bottom: 1px solid var(--glass-border);
+    border-bottom: 1px solid var(--border);
   }
 
   .section-title {
     font-size: 1.4rem;
     font-weight: 700;
-    color: var(--color-heading);
+    color: var(--text-primary);
   }
 
   .loop-comparison {
@@ -661,10 +661,10 @@
   }
 
   .loop-panel {
-    background: rgba(255, 255, 255, 0.01);
+    background: var(--nav-bg);
     border-radius: var(--radius-md);
     padding: 1.25rem;
-    border: 1px solid var(--glass-border);
+    border: 1px solid var(--border);
   }
 
   .loop-panel.slow {
@@ -685,7 +685,7 @@
   .loop-title {
     font-size: 1.1rem;
     font-weight: 700;
-    color: var(--color-heading);
+    color: var(--text-primary);
   }
 
   .badge {
@@ -707,8 +707,8 @@
   }
 
   .code-block {
-    background: var(--gray-950);
-    color: var(--gray-300);
+    background: var(--surface-raised);
+    color: var(--text-secondary);
     padding: 1rem;
     border-radius: var(--radius-md);
     font-family: var(--font-mono);
@@ -730,12 +730,12 @@
   }
 
   .cache-demo h4 {
-    color: var(--color-heading);
+    color: var(--text-primary);
     margin-bottom: 0.75rem;
   }
 
   .cache-demo p {
-    color: var(--color-text);
+    color: var(--text-primary);
     line-height: 1.6;
     font-size: 0.9rem;
   }
@@ -754,7 +754,7 @@
 
   :global(.matrix-label) {
     font-weight: 600;
-    color: var(--color-heading);
+    color: var(--text-primary);
     margin-bottom: 0.75rem;
     font-size: 0.95rem;
   }
@@ -763,7 +763,7 @@
     display: inline-grid;
     gap: 3px;
     padding: 8px;
-    background: rgba(255, 255, 255, 0.02);
+    background: var(--surface-sunken);
     border-radius: var(--radius-md);
   }
 
@@ -773,37 +773,37 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--gray-900);
-    border: 2px solid var(--gray-800);
+    background: var(--surface-sunken);
+    border: 2px solid var(--border);
     border-radius: 6px;
     font-weight: 600;
     font-size: 0.85rem;
-    color: var(--color-text);
-    transition: all 0.15s ease-out;
+    color: var(--text-primary);
+    transition: all 0.15s var(--ease-out-quart);
   }
 
   :global(.matrix-cell.current) {
-    background: var(--white);
-    border-color: var(--gray-300);
-    color: var(--black);
+    background: var(--accent);
+    border-color: var(--text-secondary);
+    color: var(--paper);
     transform: scale(1.15);
     z-index: 10;
   }
 
   :global(.matrix-cell.row-active) {
-    background: var(--gray-800);
-    border-color: var(--gray-700);
+    background: var(--border);
+    border-color: var(--border-strong);
   }
 
   :global(.matrix-cell.col-active) {
-    background: var(--gray-800);
-    border-color: var(--gray-700);
+    background: var(--border);
+    border-color: var(--border-strong);
   }
 
   :global(.matrix-cell.computed) {
-    background: var(--white);
-    color: var(--black);
-    border-color: var(--gray-400);
+    background: var(--accent);
+    color: var(--paper);
+    border-color: var(--text-secondary);
   }
 
   :global(.memory-strip-container) {
@@ -812,7 +812,7 @@
 
   :global(.memory-label) {
     font-weight: 600;
-    color: var(--color-heading);
+    color: var(--text-primary);
     margin-bottom: 0.75rem;
     font-size: 0.95rem;
   }
@@ -822,8 +822,8 @@
     flex-wrap: wrap;
     gap: 3px;
     padding: 0.75rem;
-    background: rgba(255, 255, 255, 0.01);
-    border: 1px solid var(--glass-border);
+    background: var(--nav-bg);
+    border: 1px solid var(--border);
     border-radius: var(--radius-md);
     min-height: 60px;
   }
@@ -834,17 +834,17 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--gray-900);
-    border: 2px solid var(--gray-800);
+    background: var(--surface-sunken);
+    border: 2px solid var(--border);
     border-radius: 4px;
     font-size: 0.8rem;
     font-weight: 600;
-    transition: all 0.15s ease-out;
+    transition: all 0.15s var(--ease-out-quart);
   }
 
   :global(.memory-cell.accessed) {
-    background: var(--white);
-    color: var(--black);
+    background: var(--accent);
+    color: var(--paper);
     transform: scale(1.1);
   }
 
@@ -857,7 +857,7 @@
   }
 
   :global(.memory-cell.cache-line) {
-    border-left: 3px solid var(--white);
+    border-left: 3px solid var(--ink);
   }
 
   :global(.access-indicator) {
@@ -865,7 +865,7 @@
     align-items: center;
     gap: 0.75rem;
     padding: 0.75rem 1rem;
-    background: rgba(255, 255, 255, 0.01);
+    background: var(--nav-bg);
     border-radius: var(--radius-md);
     margin-top: 1rem;
     font-size: 0.85rem;
@@ -887,8 +887,8 @@
   }
 
   :global(.step-display) {
-    background: var(--gray-950);
-    color: var(--gray-300);
+    background: var(--surface-raised);
+    color: var(--text-secondary);
     padding: 1rem 1.25rem;
     border-radius: var(--radius-md);
     margin-top: 1rem;
@@ -897,7 +897,7 @@
   }
 
   :global(.step-display .label) {
-    color: var(--gray-500);
+    color: var(--text-tertiary);
     font-size: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 1px;
@@ -919,19 +919,19 @@
     padding: 1.25rem;
     border-radius: var(--radius-md);
     text-align: center;
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid var(--glass-border);
+    background: var(--surface-sunken);
+    border: 1px solid var(--border);
   }
 
   .stat-value {
     font-size: 2.2rem;
     font-weight: 700;
-    color: var(--color-heading);
+    color: var(--text-primary);
   }
 
   .stat-label {
     font-size: 0.85rem;
-    color: var(--color-text-muted);
+    color: var(--text-tertiary);
     margin-top: 0.25rem;
   }
 
@@ -940,7 +940,7 @@
     flex-wrap: wrap;
     gap: 1rem;
     padding: 1rem;
-    background: rgba(255, 255, 255, 0.01);
+    background: var(--nav-bg);
     border-radius: var(--radius-md);
     margin-top: 1.25rem;
   }
@@ -950,7 +950,7 @@
     align-items: center;
     gap: 0.5rem;
     font-size: 0.85rem;
-    color: var(--color-text-muted);
+    color: var(--text-tertiary);
   }
 
   .legend-box {
@@ -961,27 +961,27 @@
   }
 
   .legend-box.current {
-    background: var(--white);
-    border-color: var(--gray-300);
+    background: var(--accent);
+    border-color: var(--text-secondary);
   }
 
   .legend-box.row-active {
-    background: var(--gray-800);
-    border-color: var(--gray-700);
+    background: var(--border);
+    border-color: var(--border-strong);
   }
 
   .legend-box.col-active {
-    background: var(--gray-800);
-    border-color: var(--gray-700);
+    background: var(--border);
+    border-color: var(--border-strong);
   }
 
   .legend-box.sequential {
-    background: var(--gray-900);
+    background: var(--surface-sunken);
     border-color: #22c55e;
   }
 
   .legend-box.strided {
-    background: var(--gray-900);
+    background: var(--surface-sunken);
     border-color: #ef4444;
   }
 
@@ -993,32 +993,32 @@
   }
 
   .explanation-card {
-    background: rgba(255, 255, 255, 0.02);
+    background: var(--surface-sunken);
     border-radius: var(--radius-md);
     padding: 1.25rem;
-    border: 1px solid var(--glass-border);
+    border: 1px solid var(--border);
   }
 
   .explanation-card h4 {
     font-size: 1rem;
     font-weight: 700;
-    color: var(--color-heading);
+    color: var(--text-primary);
     margin-bottom: 0.75rem;
   }
 
   .explanation-card p {
     font-size: 0.9rem;
-    color: var(--color-text);
+    color: var(--text-primary);
     line-height: 1.6;
   }
 
   .explanation-card code {
-    background: var(--gray-900);
+    background: var(--surface-sunken);
     padding: 0.125rem 0.375rem;
     border-radius: 4px;
     font-family: var(--font-mono);
     font-size: 0.85em;
-    color: var(--gray-300);
+    color: var(--text-secondary);
   }
 
   @media (max-width: 900px) {

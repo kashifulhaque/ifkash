@@ -20,10 +20,8 @@
   let inputEl: HTMLTextAreaElement;
   let worker: Worker | null = null;
 
-  // Parsed navigation suggestions per message index
   let navSuggestions: Map<number, NavigationSuggestion[]> = new Map();
 
-  // Navigation regex: [Navigate: /path]
   const NAV_REGEX = /\[Navigate:\s*(\/[^\]]*)\]/g;
 
   function togglePanel() {
@@ -67,13 +65,11 @@
 
       case "done": {
         let finalText = currentStreamingText || msg.content;
-        // Strip any <think>...</think> blocks from Qwen3 output
         finalText = finalText.replace(/<think>[\s\S]*?<\/think>/g, "").trim();
         messages = [
           ...messages,
           { role: "assistant", content: finalText, speed: msg.speed },
         ];
-        // Parse navigation suggestions from the completed message
         const idx = messages.length - 1;
         const suggestions = parseNavigationSuggestions(finalText);
         if (suggestions.length > 0) {
@@ -111,8 +107,6 @@
 
   function unloadModel() {
     worker?.postMessage({ type: "unload" });
-    // Worker will self.close() after posting 'unloaded'.
-    // Clean up the reference so a fresh worker is created on next load.
     worker = null;
   }
 
@@ -126,7 +120,6 @@
     agentState = { ...agentState, status: "generating" };
     scrollToBottom();
 
-    // Send only user/assistant messages (not system) to the worker
     const conversationHistory = messages.filter((m) => m.role !== "system");
     worker?.postMessage({ type: "generate", messages: conversationHistory });
   }
@@ -151,7 +144,6 @@
     const suggestions: NavigationSuggestion[] = [];
     let match;
 
-    // Match explicit [Navigate: /path] markers
     const regex = new RegExp(NAV_REGEX.source, "g");
     while ((match = regex.exec(text)) !== null) {
       const path = match[1].trim();
@@ -159,7 +151,6 @@
       suggestions.push({ label, path });
     }
 
-    // Fallback: match common references against NAVIGATION_MAP
     if (suggestions.length === 0) {
       const lowerText = text.toLowerCase();
       for (const [keyword, path] of Object.entries(NAVIGATION_MAP)) {
@@ -167,13 +158,11 @@
           lowerText.includes(keyword.toLowerCase()) &&
           !suggestions.some((s) => s.path === path)
         ) {
-          // Only add if the keyword appears as a likely reference
           if (keyword.length >= 3) {
             suggestions.push({ label: getLabelForPath(path), path });
           }
         }
       }
-      // Limit fallback suggestions to 3
       suggestions.splice(3);
     }
 
@@ -207,9 +196,7 @@
 
   function renderMarkdown(text: string): string {
     let cleaned = stripNavigationMarkers(text);
-    // Strip <think>...</think> blocks (Qwen3 thinking mode)
     cleaned = cleaned.replace(/<think>[\s\S]*?<\/think>/g, "").trim();
-    // Also strip incomplete opening <think> tags during streaming
     cleaned = cleaned.replace(/<think>[\s\S]*$/g, "").trim();
     const html = marked.parse(cleaned, { async: false }) as string;
     return DOMPurify.sanitize(html);
@@ -267,7 +254,6 @@
   });
 </script>
 
-<!-- Floating button -->
 <button
   class="agent-fab"
   class:active={isOpen}
@@ -276,30 +262,12 @@
   aria-label="AI Assistant"
 >
   {#if isOpen}
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="2"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-    >
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <line x1="18" y1="6" x2="6" y2="18"></line>
       <line x1="6" y1="6" x2="18" y2="18"></line>
     </svg>
   {:else}
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="2"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-    >
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <path d="M12 8V4H8"></path>
       <rect width="16" height="12" x="4" y="8" rx="2"></rect>
       <path d="M2 14h2"></path>
@@ -310,52 +278,26 @@
   {/if}
 </button>
 
-<!-- Chat panel -->
 {#if isOpen}
   <div class="agent-panel" role="dialog" aria-label="AI Assistant Chat">
-    <!-- Header -->
     <div class="agent-header">
       <div class="agent-header-left">
         <span class="agent-title">AI Assistant</span>
         {#if agentState.backend}
-          <span class="agent-badge"
-            >{agentState.backend === "webgpu" ? "WebGPU" : "WASM"}</span
-          >
+          <span class="agent-badge">{agentState.backend === "webgpu" ? "WebGPU" : "WASM"}</span>
         {/if}
       </div>
       <div class="agent-header-right">
         {#if isModelLoaded}
-          <button
-            class="agent-btn-sm"
-            on:click={unloadModel}
-            title="Unload model"
-          >
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
+          <button class="agent-btn-sm" on:click={unloadModel} title="Unload model">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path>
               <line x1="12" y1="2" x2="12" y2="12"></line>
             </svg>
           </button>
         {/if}
         <button class="agent-btn-sm" on:click={closePanel} title="Close">
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="18" y1="6" x2="6" y2="18"></line>
             <line x1="6" y1="6" x2="18" y2="18"></line>
           </svg>
@@ -363,22 +305,11 @@
       </div>
     </div>
 
-    <!-- Body -->
     <div class="agent-body" bind:this={messagesContainer}>
       {#if agentState.status === "idle"}
-        <!-- Initial prompt -->
         <div class="agent-welcome">
           <div class="welcome-icon">
-            <svg
-              width="32"
-              height="32"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.5"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
               <path d="M12 8V4H8"></path>
               <rect width="16" height="12" x="4" y="8" rx="2"></rect>
               <path d="M2 14h2"></path>
@@ -391,24 +322,12 @@
             This loads a ~300 MB language model that runs entirely in your
             browser. No data is sent to any server.
           </p>
-          <button class="agent-btn-load" on:click={loadModel}>
-            Load Model
-          </button>
+          <button class="agent-btn-load" on:click={loadModel}>Load Model</button>
         </div>
       {:else if isLoading}
-        <!-- Loading state -->
         <div class="agent-welcome">
           <div class="welcome-icon loading">
-            <svg
-              width="32"
-              height="32"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.5"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
               <path d="M12 8V4H8"></path>
               <rect width="16" height="12" x="4" y="8" rx="2"></rect>
               <path d="M2 14h2"></path>
@@ -419,10 +338,7 @@
           </div>
           <div class="progress-section">
             <div class="progress-bar-track">
-              <div
-                class="progress-bar-fill"
-                style="width: {agentState.progress ?? 0}%"
-              ></div>
+              <div class="progress-bar-fill" style="width: {agentState.progress ?? 0}%"></div>
             </div>
             <span class="progress-label">
               {agentState.status === "downloading"
@@ -432,15 +348,11 @@
           </div>
         </div>
       {:else if agentState.status === "error"}
-        <!-- Error state -->
         <div class="agent-welcome">
-          <p class="error-text">
-            {agentState.error ?? "Something went wrong."}
-          </p>
-          <button class="agent-btn-load" on:click={loadModel}> Retry </button>
+          <p class="error-text">{agentState.error ?? "Something went wrong."}</p>
+          <button class="agent-btn-load" on:click={loadModel}>Retry</button>
         </div>
       {:else}
-        <!-- Chat messages -->
         {#if messages.length === 0 && !currentStreamingText}
           <div class="agent-empty">
             <p>Ask me about Kashif's work, projects, education, or skills.</p>
@@ -448,11 +360,7 @@
         {/if}
 
         {#each messages as message, i}
-          <div
-            class="msg"
-            class:msg-user={message.role === "user"}
-            class:msg-assistant={message.role === "assistant"}
-          >
+          <div class="msg" class:msg-user={message.role === "user"} class:msg-assistant={message.role === "assistant"}>
             {#if message.role === "user"}
               <div class="msg-bubble msg-bubble-user">{message.content}</div>
             {:else}
@@ -460,17 +368,12 @@
                 {@html renderMarkdown(message.content)}
               </div>
               {#if message.speed}
-                <div class="msg-speed">
-                  {message.speed}
-                </div>
+                <div class="msg-speed">{message.speed}</div>
               {/if}
               {#if navSuggestions.has(i)}
                 <div class="nav-pills">
                   {#each navSuggestions.get(i) ?? [] as suggestion}
-                    <button
-                      class="nav-pill"
-                      on:click={() => navigateTo(suggestion.path)}
-                    >
+                    <button class="nav-pill" on:click={() => navigateTo(suggestion.path)}>
                       {suggestion.label} →
                     </button>
                   {/each}
@@ -491,7 +394,6 @@
       {/if}
     </div>
 
-    <!-- Input -->
     <div class="agent-input-area">
       <textarea
         bind:this={inputEl}
@@ -508,16 +410,7 @@
         disabled={!canSend}
         title="Send message"
       >
-        <svg
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <line x1="22" y1="2" x2="11" y2="13"></line>
           <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
         </svg>
@@ -527,9 +420,6 @@
 {/if}
 
 <style>
-  /* ═══════════════════════════════════════════════════════════════════════
-     FLOATING ACTION BUTTON
-     ═══════════════════════════════════════════════════════════════════════ */
   .agent-fab {
     position: fixed;
     bottom: 1rem;
@@ -538,28 +428,28 @@
     width: 48px;
     height: 48px;
     border-radius: 50%;
-    border: 1px solid var(--glass-border);
-    background: rgba(10, 10, 10, 0.9);
+    border: 1px solid var(--agent-fab-border);
+    background: var(--agent-fab-bg);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    color: var(--gray-400);
+    color: var(--agent-fab-color);
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all var(--duration-base) var(--ease-out);
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
+    transition: all var(--dur-fast) var(--ease-out-quart);
+    box-shadow: 0 4px 24px var(--agent-fab-shadow);
   }
 
   .agent-fab:hover {
-    color: var(--white);
-    border-color: var(--glass-border-hover);
+    color: var(--agent-fab-hover-color);
+    border-color: var(--agent-fab-hover-border);
     transform: scale(1.05);
   }
 
   .agent-fab.active {
-    color: var(--white);
-    border-color: var(--gray-600);
+    color: var(--agent-fab-hover-color);
+    border-color: var(--agent-fab-hover-border);
   }
 
   .agent-fab.pulse {
@@ -567,18 +457,10 @@
   }
 
   @keyframes fab-pulse {
-    0%,
-    100% {
-      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
-    }
-    50% {
-      box-shadow: 0 4px 24px rgba(255, 255, 255, 0.08);
-    }
+    0%, 100% { box-shadow: 0 4px 24px var(--agent-fab-shadow); }
+    50% { box-shadow: 0 4px 24px var(--agent-fab-pulse-shadow); }
   }
 
-  /* ═══════════════════════════════════════════════════════════════════════
-     CHAT PANEL
-     ═══════════════════════════════════════════════════════════════════════ */
   .agent-panel {
     position: fixed;
     bottom: 4.5rem;
@@ -589,25 +471,19 @@
     max-height: calc(100vh - 6rem);
     display: flex;
     flex-direction: column;
-    background: rgba(10, 10, 10, 0.95);
+    background: var(--agent-bg);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border: 1px solid var(--glass-border);
+    border: 1px solid var(--agent-border);
     border-radius: var(--radius-lg);
-    box-shadow: 0 8px 48px rgba(0, 0, 0, 0.6);
-    animation: panel-enter var(--duration-base) var(--ease-out);
+    box-shadow: 0 8px 48px var(--agent-shadow);
+    animation: panel-enter var(--dur-fast) var(--ease-out-quart);
     overflow: hidden;
   }
 
   @keyframes panel-enter {
-    from {
-      opacity: 0;
-      transform: translateY(12px) scale(0.97);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0) scale(1);
-    }
+    from { opacity: 0; transform: translateY(12px) scale(0.97); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
   }
 
   @media (max-width: 480px) {
@@ -620,15 +496,12 @@
     }
   }
 
-  /* ═══════════════════════════════════════════════════════════════════════
-     HEADER
-     ═══════════════════════════════════════════════════════════════════════ */
   .agent-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 0.75rem 1rem;
-    border-bottom: 1px solid var(--glass-border);
+    border-bottom: 1px solid var(--agent-border);
     flex-shrink: 0;
   }
 
@@ -641,7 +514,7 @@
   .agent-title {
     font-size: 0.8125rem;
     font-weight: 600;
-    color: var(--white);
+    color: var(--agent-text);
   }
 
   .agent-badge {
@@ -649,8 +522,8 @@
     font-weight: 600;
     padding: 0.125rem 0.375rem;
     border-radius: 4px;
-    background: var(--gray-800);
-    color: var(--gray-400);
+    background: var(--agent-badge-bg);
+    color: var(--agent-badge-text);
     text-transform: uppercase;
     letter-spacing: 0.05em;
   }
@@ -669,20 +542,17 @@
     justify-content: center;
     border: none;
     background: transparent;
-    color: var(--gray-500);
+    color: var(--agent-text-faint);
     cursor: pointer;
     border-radius: var(--radius-sm);
-    transition: all var(--duration-fast) var(--ease-out);
+    transition: all var(--dur-instant) var(--ease-out-quart);
   }
 
   .agent-btn-sm:hover {
-    color: var(--white);
-    background: var(--glass-bg-hover);
+    color: var(--agent-text);
+    background: var(--agent-surface);
   }
 
-  /* ═══════════════════════════════════════════════════════════════════════
-     BODY / MESSAGES
-     ═══════════════════════════════════════════════════════════════════════ */
   .agent-body {
     flex: 1;
     overflow-y: auto;
@@ -704,7 +574,7 @@
   }
 
   .welcome-icon {
-    color: var(--gray-600);
+    color: var(--agent-text-faint);
   }
 
   .welcome-icon.loading {
@@ -712,18 +582,13 @@
   }
 
   @keyframes icon-pulse {
-    0%,
-    100% {
-      opacity: 0.5;
-    }
-    50% {
-      opacity: 1;
-    }
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
   }
 
   .welcome-text {
     font-size: 0.8125rem;
-    color: var(--gray-500);
+    color: var(--agent-text-secondary);
     line-height: 1.5;
     max-width: 280px;
   }
@@ -732,17 +597,17 @@
     padding: 0.5rem 1.25rem;
     font-size: 0.8125rem;
     font-weight: 500;
-    color: var(--white);
-    background: var(--gray-800);
-    border: 1px solid var(--gray-700);
+    color: var(--agent-text);
+    background: var(--agent-surface);
+    border: 1px solid var(--agent-border);
     border-radius: var(--radius-md);
     cursor: pointer;
-    transition: all var(--duration-fast) var(--ease-out);
+    transition: all var(--dur-instant) var(--ease-out-quart);
   }
 
   .agent-btn-load:hover {
-    background: var(--gray-700);
-    border-color: var(--gray-600);
+    background: var(--agent-surface-hover);
+    border-color: var(--agent-fab-hover-border);
   }
 
   .progress-section {
@@ -756,21 +621,21 @@
   .progress-bar-track {
     width: 100%;
     height: 4px;
-    background: var(--gray-800);
+    background: var(--agent-progress-track);
     border-radius: 2px;
     overflow: hidden;
   }
 
   .progress-bar-fill {
     height: 100%;
-    background: var(--gray-400);
+    background: var(--agent-progress-fill);
     border-radius: 2px;
     transition: width 0.3s ease-out;
   }
 
   .progress-label {
     font-size: 0.75rem;
-    color: var(--gray-500);
+    color: var(--agent-text-secondary);
   }
 
   .error-text {
@@ -789,11 +654,10 @@
 
   .agent-empty p {
     font-size: 0.8125rem;
-    color: var(--gray-600);
+    color: var(--agent-text-faint);
     max-width: 240px;
   }
 
-  /* Messages */
   .msg {
     display: flex;
     flex-direction: column;
@@ -817,19 +681,18 @@
   }
 
   .msg-bubble-user {
-    background: var(--gray-800);
-    color: var(--gray-200);
+    background: var(--agent-bubble-user);
+    color: var(--agent-bubble-user-text);
     border-bottom-right-radius: var(--radius-sm);
   }
 
   .msg-bubble-assistant {
-    background: var(--glass-bg);
-    border: 1px solid var(--glass-border);
-    color: var(--gray-300);
+    background: var(--agent-bubble-assistant);
+    border: 1px solid var(--agent-bubble-assistant-border);
+    color: var(--agent-bubble-assistant-text);
     border-bottom-left-radius: var(--radius-sm);
   }
 
-  /* Markdown styling inside assistant bubbles */
   .msg-bubble-assistant :global(p) {
     margin: 0 0 0.5rem;
   }
@@ -839,7 +702,7 @@
   }
 
   .msg-bubble-assistant :global(strong) {
-    color: var(--white);
+    color: var(--agent-text);
     font-weight: 600;
   }
 
@@ -847,7 +710,7 @@
     font-family: var(--font-mono);
     font-size: 0.75rem;
     padding: 0.125rem 0.25rem;
-    background: var(--gray-800);
+    background: var(--agent-code-bg);
     border-radius: 3px;
   }
 
@@ -863,7 +726,7 @@
 
   .msg-speed {
     font-size: 0.7rem;
-    color: var(--gray-500);
+    color: var(--agent-text-secondary);
     margin-top: 0.25rem;
     margin-left: 0.25rem;
     font-family: var(--font-mono);
@@ -872,16 +735,13 @@
 
   .cursor-blink {
     animation: blink 0.8s step-end infinite;
-    color: var(--gray-500);
+    color: var(--agent-text-secondary);
   }
 
   @keyframes blink {
-    50% {
-      opacity: 0;
-    }
+    50% { opacity: 0; }
   }
 
-  /* Navigation pills */
   .nav-pills {
     display: flex;
     flex-wrap: wrap;
@@ -893,55 +753,52 @@
     padding: 0.25rem 0.625rem;
     font-size: 0.6875rem;
     font-weight: 500;
-    color: var(--gray-400);
-    background: var(--gray-900);
-    border: 1px solid var(--gray-800);
+    color: var(--agent-pill-text);
+    background: var(--agent-pill-bg);
+    border: 1px solid var(--agent-pill-border);
     border-radius: 999px;
     cursor: pointer;
-    transition: all var(--duration-fast) var(--ease-out);
+    transition: all var(--dur-instant) var(--ease-out-quart);
   }
 
   .nav-pill:hover {
-    color: var(--white);
-    border-color: var(--gray-600);
-    background: var(--gray-800);
+    color: var(--agent-pill-hover-text);
+    border-color: var(--agent-pill-hover-border);
+    background: var(--agent-pill-hover-bg);
   }
 
-  /* ═══════════════════════════════════════════════════════════════════════
-     INPUT AREA
-     ═══════════════════════════════════════════════════════════════════════ */
   .agent-input-area {
     display: flex;
     align-items: flex-end;
     gap: 0.5rem;
     padding: 0.75rem;
-    border-top: 1px solid var(--glass-border);
+    border-top: 1px solid var(--agent-border);
     flex-shrink: 0;
   }
 
   .agent-input {
     flex: 1;
-    background: rgba(0, 0, 0, 0.4);
-    border: 1px solid var(--glass-border);
+    background: var(--agent-input-bg);
+    border: 1px solid var(--agent-input-border);
     border-radius: var(--radius-md);
     padding: 0.5rem 0.75rem;
-    color: var(--white);
+    color: var(--agent-text);
     font-family: var(--font-sans);
     font-size: 0.8125rem;
     line-height: 1.4;
     resize: none;
     min-height: 36px;
     max-height: 80px;
-    transition: border-color var(--duration-fast) var(--ease-out);
+    transition: border-color var(--dur-instant) var(--ease-out-quart);
   }
 
   .agent-input::placeholder {
-    color: var(--gray-600);
+    color: var(--agent-text-faint);
   }
 
   .agent-input:focus {
     outline: none;
-    border-color: var(--gray-500);
+    border-color: var(--agent-input-focus);
   }
 
   .agent-input:disabled {
@@ -955,19 +812,19 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid var(--glass-border);
-    background: var(--gray-800);
-    color: var(--gray-400);
+    border: 1px solid var(--agent-border);
+    background: var(--agent-surface);
+    color: var(--agent-text-secondary);
     border-radius: var(--radius-md);
     cursor: pointer;
-    transition: all var(--duration-fast) var(--ease-out);
+    transition: all var(--dur-instant) var(--ease-out-quart);
     flex-shrink: 0;
   }
 
   .agent-send-btn:hover:not(:disabled) {
-    color: var(--white);
-    background: var(--gray-700);
-    border-color: var(--gray-600);
+    color: var(--agent-text);
+    background: var(--agent-surface-hover);
+    border-color: var(--agent-fab-hover-border);
   }
 
   .agent-send-btn:disabled {

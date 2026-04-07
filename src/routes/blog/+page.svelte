@@ -73,20 +73,20 @@
   {#if loading}
     <div class="loading">
       {#each Array(3) as _, i}
-        <div class="skeleton" style="--delay: {i * 100}ms">
-          <div class="skeleton-title"></div>
-          <div class="skeleton-date"></div>
+        <div class="skeleton" style="--delay: {i * 120}ms">
+          <div class="skel-title"></div>
+          <div class="skel-date"></div>
         </div>
       {/each}
     </div>
   {:else if error}
-    <p class="error">{error}</p>
+    <p class="error-msg">{error}</p>
   {:else if posts.length === 0}
-    <p class="empty">No posts yet.</p>
+    <p class="empty-msg">No posts yet.</p>
   {:else}
     <section class="posts">
       {#each posts as post, i}
-        <a href="/blog/{post.slug}" class="post" style="--delay: {i * 50}ms">
+        <a href="/blog/{post.slug}" class="post stagger" style="--i: {i}">
           <h2 class="post-title">{post.title}</h2>
           <time class="post-date">
             {new Date(post.publishedAt).toLocaleDateString("en-US", {
@@ -105,43 +105,42 @@
   .page {
     display: flex;
     flex-direction: column;
-    gap: 3rem;
+    gap: var(--space-2xl);
   }
-  
+
   .page-header {
-    padding-bottom: 2rem;
-    border-bottom: 1px solid var(--gray-800);
+    padding-bottom: var(--space-xl);
+    border-bottom: 1px solid var(--border);
   }
-  
+
   .page-title {
-    font-size: 2.5rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    color: var(--white);
-    margin-bottom: 0.5rem;
+    font-size: clamp(2rem, 5vw + 0.5rem, 3rem);
+    font-weight: 400;
+    letter-spacing: -0.03em;
+    color: var(--text-primary);
+    margin-bottom: 0.375rem;
   }
-  
+
   .page-desc {
     font-size: 1rem;
-    color: var(--gray-500);
+    color: var(--text-tertiary);
   }
 
   .posts {
     display: flex;
     flex-direction: column;
   }
-  
+
   .post {
     display: flex;
     flex-direction: column;
-    gap: 0.375rem;
-    padding: 1.25rem 0;
-    border-bottom: 1px solid var(--gray-900);
-    animation: fade-up var(--duration-slow) var(--ease-out) backwards;
-    animation-delay: var(--delay);
-    transition: all var(--duration-fast) var(--ease-out);
+    gap: 0.25rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--border-subtle);
+    transition: background var(--dur-instant) var(--ease-out-quart);
+    border-radius: var(--radius-sm);
   }
-  
+
   @media (min-width: 480px) {
     .post {
       flex-direction: row;
@@ -149,34 +148,36 @@
       align-items: baseline;
     }
   }
-  
+
   .post:hover {
+    background: var(--surface-sunken);
     padding-left: 1rem;
-    background: var(--glass-bg);
     margin-left: -1rem;
     margin-right: -1rem;
     padding-right: 1rem;
   }
-  
+
   .post:last-child {
     border-bottom: none;
   }
-  
+
   .post-title {
+    font-family: var(--font-sans);
     font-size: 1rem;
     font-weight: 500;
-    color: var(--white);
-    transition: color var(--duration-fast) var(--ease-out);
+    color: var(--text-primary);
+    transition: color var(--dur-instant) var(--ease-out-quart);
   }
-  
+
   .post:hover .post-title {
-    color: var(--gray-300);
+    color: var(--accent);
   }
-  
+
   .post-date {
     font-size: 0.8125rem;
-    color: var(--gray-600);
+    color: var(--text-faint);
     font-variant-numeric: tabular-nums;
+    white-space: nowrap;
   }
 
   .loading {
@@ -184,45 +185,40 @@
     flex-direction: column;
     gap: 1rem;
   }
-  
+
   .skeleton {
-    padding: 1.25rem 0;
+    padding: 1rem 0;
     animation: pulse 2s ease-in-out infinite;
     animation-delay: var(--delay);
   }
-  
-  .skeleton-title {
+
+  .skel-title {
     height: 1rem;
     width: 60%;
-    background: var(--gray-900);
+    background: var(--surface-sunken);
     border-radius: var(--radius-sm);
     margin-bottom: 0.5rem;
   }
-  
-  .skeleton-date {
+
+  .skel-date {
     height: 0.75rem;
-    width: 20%;
-    background: var(--gray-900);
+    width: 18%;
+    background: var(--surface-sunken);
     border-radius: var(--radius-sm);
   }
-  
+
   @keyframes pulse {
     0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
+    50% { opacity: 0.4; }
   }
-  
-  .error {
-    color: var(--gray-500);
+
+  .error-msg {
+    color: var(--text-tertiary);
     padding: 2rem;
     text-align: center;
   }
-  
-  .empty {
-    color: var(--gray-600);
-  }
-  
-  @keyframes fade-up {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+
+  .empty-msg {
+    color: var(--text-faint);
   }
 </style>

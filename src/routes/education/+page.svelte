@@ -22,11 +22,11 @@
     </article>
   </section>
 
-  <section class="skills-section">
-    <h3 class="skills-title">Areas of Focus</h3>
-    <div class="skills">
-      {#each ['Machine Learning', 'Deep Learning', 'Statistics', 'Linear Algebra', 'Data Structures', 'Algorithms', 'Python', 'Distributed Systems'] as skill}
-        <span class="skill">{skill}</span>
+  <section class="focus-section">
+    <h3 class="focus-heading">Areas of Focus</h3>
+    <div class="focus-tags">
+      {#each ['Machine Learning', 'Deep Learning', 'Statistics', 'Linear Algebra', 'Data Structures', 'Algorithms', 'Python', 'Distributed Systems'] as skill, i}
+        <span class="tag stagger" style="--i: {i}">{skill}</span>
       {/each}
     </div>
   </section>
@@ -36,25 +36,25 @@
   .page {
     display: flex;
     flex-direction: column;
-    gap: 3rem;
+    gap: var(--space-2xl);
   }
-  
+
   .page-header {
-    padding-bottom: 2rem;
-    border-bottom: 1px solid var(--gray-800);
+    padding-bottom: var(--space-xl);
+    border-bottom: 1px solid var(--border);
   }
-  
+
   .page-title {
-    font-size: 2.5rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    color: var(--white);
-    margin-bottom: 0.5rem;
+    font-size: clamp(2rem, 5vw + 0.5rem, 3rem);
+    font-weight: 400;
+    letter-spacing: -0.03em;
+    color: var(--text-primary);
+    margin-bottom: 0.375rem;
   }
-  
+
   .page-desc {
     font-size: 1rem;
-    color: var(--gray-500);
+    color: var(--text-tertiary);
   }
 
   .edu-item {
@@ -62,11 +62,11 @@
     grid-template-columns: 1fr;
     gap: 1rem;
     padding: 1.5rem;
-    background: var(--gray-950);
-    border: 1px solid var(--gray-800);
+    background: var(--surface-raised);
+    border: 1px solid var(--border);
     border-radius: var(--radius-md);
   }
-  
+
   @media (min-width: 640px) {
     .edu-item {
       grid-template-columns: 1fr auto;
@@ -74,81 +74,83 @@
       align-items: start;
     }
   }
-  
+
   .edu-main {
     display: flex;
     flex-direction: column;
-    gap: 0.375rem;
+    gap: 0.25rem;
   }
-  
+
   .edu-school {
     font-size: 1.125rem;
-    font-weight: 600;
-    color: var(--white);
+    font-weight: 500;
+    color: var(--text-primary);
   }
-  
+
   .edu-degree {
     font-size: 0.9375rem;
-    color: var(--gray-400);
+    color: var(--text-secondary);
   }
-  
+
   .edu-meta {
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
     text-align: left;
   }
-  
+
   @media (min-width: 640px) {
     .edu-meta {
       text-align: right;
     }
   }
-  
+
   .edu-year {
     font-size: 0.875rem;
     font-weight: 500;
-    color: var(--gray-300);
+    color: var(--text-primary);
     font-variant-numeric: tabular-nums;
   }
-  
+
   .edu-location {
     font-size: 0.75rem;
-    color: var(--gray-600);
+    color: var(--text-faint);
   }
 
-  .skills-section {
-    border-top: 1px solid var(--gray-800);
-    padding-top: 2rem;
+  .focus-section {
+    border-top: 1px solid var(--border);
+    padding-top: var(--space-xl);
   }
-  
-  .skills-title {
+
+  .focus-heading {
+    font-family: var(--font-sans);
     font-size: 0.75rem;
     font-weight: 600;
-    color: var(--gray-600);
+    color: var(--text-faint);
     text-transform: uppercase;
-    letter-spacing: 0.1em;
-    margin-bottom: 1rem;
+    letter-spacing: 0.08em;
+    margin-bottom: var(--space-md);
   }
-  
-  .skills {
+
+  .focus-tags {
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
   }
-  
-  .skill {
-    padding: 0.5rem 0.875rem;
+
+  .tag {
+    padding: 0.4rem 0.75rem;
     font-size: 0.8125rem;
-    color: var(--gray-400);
-    background: var(--gray-900);
-    border: 1px solid var(--gray-800);
+    color: var(--text-secondary);
+    background: var(--surface-sunken);
+    border: 1px solid var(--border);
     border-radius: var(--radius-sm);
-    transition: all var(--duration-fast) var(--ease-out);
+    transition: color var(--dur-instant) var(--ease-out-quart),
+                border-color var(--dur-instant) var(--ease-out-quart);
   }
-  
-  .skill:hover {
-    color: var(--white);
-    border-color: var(--gray-700);
+
+  .tag:hover {
+    color: var(--text-primary);
+    border-color: var(--border-strong);
   }
 </style>

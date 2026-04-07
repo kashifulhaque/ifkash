@@ -74,16 +74,16 @@
 
   <div
     id="post-content"
-    class="prose prose-invert prose-lg max-w-none
-      prose-headings:text-white prose-headings:font-semibold
-      prose-p:text-[var(--gray-300)] prose-p:leading-relaxed
-      prose-code:text-white prose-code:bg-[var(--gray-900)] prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:before:content-none prose-code:after:content-none
-      prose-pre:bg-[var(--gray-950)] prose-pre:border prose-pre:border-[var(--gray-800)] prose-pre:rounded-lg
-      prose-blockquote:border-l-[var(--gray-600)] prose-blockquote:bg-[var(--gray-950)] prose-blockquote:py-1 prose-blockquote:px-4 prose-blockquote:rounded-r prose-blockquote:not-italic
-      prose-img:rounded-lg prose-img:border prose-img:border-[var(--gray-800)]
-      prose-hr:border-[var(--gray-800)]
-      prose-a:text-white prose-a:underline prose-a:decoration-[var(--gray-600)] prose-a:underline-offset-2 hover:prose-a:decoration-white
-      marker:text-[var(--gray-600)]"
+    class="prose prose-lg max-w-none
+      prose-headings:text-[var(--text-primary)] prose-headings:font-semibold
+      prose-p:text-[var(--text-secondary)] prose-p:leading-relaxed
+      prose-code:text-[var(--text-primary)] prose-code:bg-[var(--surface-raised)] prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:before:content-none prose-code:after:content-none
+      prose-pre:bg-[var(--surface-raised)] prose-pre:border prose-pre:border-[var(--border)] prose-pre:rounded-lg
+      prose-blockquote:border-l-[var(--text-faint)] prose-blockquote:bg-[var(--surface-raised)] prose-blockquote:py-1 prose-blockquote:px-4 prose-blockquote:rounded-r prose-blockquote:not-italic
+      prose-img:rounded-lg prose-img:border prose-img:border-[var(--border)]
+      prose-hr:border-[var(--border)]
+      prose-a:text-[var(--text-primary)] prose-a:underline prose-a:decoration-[var(--text-faint)] prose-a:underline-offset-2 hover:prose-a:decoration-[var(--text-primary)]
+      marker:text-[var(--text-faint)]"
   >
     {@html data.post.content.html}
   </div>
@@ -100,7 +100,7 @@
 
 <style>
   .article {
-    animation: fade-up var(--duration-slow) var(--ease-out);
+    animation: fade-up var(--dur-base) var(--ease-out-quart);
   }
   
   .article-nav {
@@ -109,24 +109,24 @@
   
   .back-link {
     font-size: 0.875rem;
-    color: var(--gray-500);
-    transition: color var(--duration-fast) var(--ease-out);
+    color: var(--text-tertiary);
+    transition: color var(--dur-instant) var(--ease-out-quart);
   }
   
   .back-link:hover {
-    color: var(--white);
+    color: var(--text-primary);
   }
   
   .article-header {
     margin-bottom: 3rem;
     padding-bottom: 2rem;
-    border-bottom: 1px solid var(--gray-800);
+    border-bottom: 1px solid var(--border);
   }
   
   .article-date {
     display: block;
     font-size: 0.8125rem;
-    color: var(--gray-600);
+    color: var(--text-faint);
     margin-bottom: 1rem;
   }
   
@@ -135,13 +135,13 @@
     font-weight: 700;
     letter-spacing: -0.02em;
     line-height: 1.15;
-    color: var(--white);
+    color: var(--text-primary);
     margin-bottom: 0.75rem;
   }
   
   .article-subtitle {
     font-size: 1.125rem;
-    color: var(--gray-400);
+    color: var(--text-secondary);
     line-height: 1.5;
   }
   
@@ -151,17 +151,17 @@
     align-items: center;
     margin-top: 4rem;
     padding-top: 2rem;
-    border-top: 1px solid var(--gray-800);
+    border-top: 1px solid var(--border);
   }
   
   .hashnode-link {
     font-size: 0.8125rem;
-    color: var(--gray-500);
-    transition: color var(--duration-fast) var(--ease-out);
+    color: var(--text-tertiary);
+    transition: color var(--dur-instant) var(--ease-out-quart);
   }
   
   .hashnode-link:hover {
-    color: var(--white);
+    color: var(--text-primary);
   }
 
   :global(.katex-display) {

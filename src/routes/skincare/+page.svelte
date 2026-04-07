@@ -124,20 +124,20 @@
   /* ─── Header ─── */
   .page-header {
     padding-bottom: 2rem;
-    border-bottom: 1px solid var(--gray-800);
+    border-bottom: 1px solid var(--border);
   }
 
   .page-title {
     font-size: 2.5rem;
     font-weight: 700;
     letter-spacing: -0.02em;
-    color: var(--white);
+    color: var(--text-primary);
     margin-bottom: 0.5rem;
   }
 
   .page-desc {
     font-size: 1rem;
-    color: var(--gray-500);
+    color: var(--text-tertiary);
   }
 
   /* ─── Section ─── */
@@ -155,14 +155,14 @@
 
   .section-icon {
     font-size: 1rem;
-    color: var(--gray-500);
+    color: var(--text-tertiary);
     line-height: 1;
   }
 
   .section-title {
     font-size: 1.125rem;
     font-weight: 600;
-    color: var(--white);
+    color: var(--text-primary);
     letter-spacing: -0.01em;
     display: flex;
     align-items: center;
@@ -175,8 +175,8 @@
     font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    color: var(--gray-600);
-    border: 1px solid var(--gray-800);
+    color: var(--text-faint);
+    border: 1px solid var(--border);
     border-radius: 999px;
     padding: 0.125rem 0.5rem;
     vertical-align: middle;
@@ -196,10 +196,10 @@
     align-items: baseline;
     gap: 1.25rem;
     padding: 1rem 0;
-    border-bottom: 1px solid var(--gray-900);
-    animation: fade-up var(--duration-slow) var(--ease-out) backwards;
+    border-bottom: 1px solid var(--border-subtle);
+    animation: fade-up var(--dur-base) var(--ease-out-quart) backwards;
     animation-delay: var(--delay);
-    transition: all var(--duration-fast) var(--ease-out);
+    transition: all var(--dur-instant) var(--ease-out-quart);
   }
 
   .morning-item:last-child {
@@ -208,7 +208,7 @@
 
   .morning-item:hover {
     padding-left: 1rem;
-    background: var(--glass-bg);
+    background: var(--surface-sunken);
     margin-left: -1rem;
     margin-right: -1rem;
     padding-right: 1rem;
@@ -217,7 +217,7 @@
   .step-num {
     font-size: 0.75rem;
     font-weight: 600;
-    color: var(--gray-700);
+    color: var(--text-faint);
     min-width: 1.25rem;
     font-variant-numeric: tabular-nums;
   }
@@ -225,13 +225,13 @@
   .step-product {
     font-size: 1rem;
     font-weight: 400;
-    color: var(--gray-200);
+    color: var(--paper-dim);
   }
 
   /* ─── Cleanse note ─── */
   .cleanse-note {
     font-size: 0.875rem;
-    color: var(--gray-600);
+    color: var(--text-faint);
     margin: 0;
   }
 
@@ -239,7 +239,7 @@
   .night-table {
     display: flex;
     flex-direction: column;
-    border: 1px solid var(--gray-800);
+    border: 1px solid var(--border);
     border-radius: var(--radius-md);
     overflow: hidden;
   }
@@ -248,13 +248,13 @@
     display: grid;
     grid-template-columns: 6rem 1fr;
     padding: 0.625rem 1.25rem;
-    background: var(--gray-950);
-    border-bottom: 1px solid var(--gray-800);
+    background: var(--surface-raised);
+    border-bottom: 1px solid var(--border);
     font-size: 0.6875rem;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    color: var(--gray-600);
+    color: var(--text-faint);
   }
 
   .table-row {
@@ -262,10 +262,10 @@
     grid-template-columns: 6rem 1fr;
     align-items: center;
     padding: 0.875rem 1.25rem;
-    border-bottom: 1px solid var(--gray-900);
-    animation: fade-up var(--duration-slow) var(--ease-out) backwards;
+    border-bottom: 1px solid var(--border-subtle);
+    animation: fade-up var(--dur-base) var(--ease-out-quart) backwards;
     animation-delay: var(--delay);
-    transition: background var(--duration-fast) var(--ease-out);
+    transition: background var(--dur-instant) var(--ease-out-quart);
   }
 
   .table-row:last-child {
@@ -273,31 +273,31 @@
   }
 
   .table-row:hover {
-    background: var(--glass-bg);
+    background: var(--surface-sunken);
   }
 
   .table-row.today {
-    background: rgba(255, 255, 255, 0.03);
+    background: var(--surface-sunken);
   }
 
   .day-cell {
     font-size: 0.9375rem;
     font-weight: 500;
-    color: var(--gray-400);
+    color: var(--text-secondary);
     display: flex;
     align-items: center;
     gap: 0.5rem;
   }
 
   .table-row.today .day-cell {
-    color: var(--white);
+    color: var(--text-primary);
   }
 
   .today-dot {
     width: 5px;
     height: 5px;
     border-radius: 50%;
-    background: var(--white);
+    background: var(--ink);
     display: inline-block;
     flex-shrink: 0;
   }
@@ -317,27 +317,27 @@
   }
 
   .tag--retinol {
-    color: var(--gray-300);
-    background: rgba(255, 255, 255, 0.05);
-    border-color: var(--gray-700);
+    color: var(--text-secondary);
+    background: var(--surface-sunken);
+    border-color: var(--border-strong);
   }
 
   .tag--niacinamide {
-    color: var(--gray-300);
-    background: rgba(255, 255, 255, 0.05);
-    border-color: var(--gray-700);
+    color: var(--text-secondary);
+    background: var(--surface-sunken);
+    border-color: var(--border-strong);
   }
 
   .tag--aha {
-    color: var(--gray-300);
-    background: rgba(255, 255, 255, 0.05);
-    border-color: var(--gray-700);
+    color: var(--text-secondary);
+    background: var(--surface-sunken);
+    border-color: var(--border-strong);
   }
 
   /* Subtle differentiation on hover row to distinguish treatments */
   .table-row.today .tag {
-    border-color: var(--gray-500);
-    color: var(--white);
+    border-color: var(--text-tertiary);
+    color: var(--text-primary);
   }
 
   /* ─── Notes section ─── */
@@ -346,18 +346,18 @@
     flex-direction: column;
     gap: 0.875rem;
     padding-top: 0.5rem;
-    border-top: 1px solid var(--gray-900);
+    border-top: 1px solid var(--border-subtle);
   }
 
   .body-note {
     font-size: 0.9375rem;
-    color: var(--gray-500);
+    color: var(--text-tertiary);
     line-height: 1.65;
     margin: 0;
   }
 
   .body-note.tip {
-    color: var(--gray-400);
+    color: var(--text-secondary);
   }
 
   /* ─── Animations ─── */

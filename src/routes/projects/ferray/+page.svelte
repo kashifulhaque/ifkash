@@ -311,7 +311,7 @@ print(np.allclose(a_np, a_back))  # True</code></pre>
     flex-direction: column;
     gap: 3rem;
     max-width: 48rem;
-    animation: fade-up var(--duration-slow) var(--ease-out);
+    animation: fade-up var(--dur-base) var(--ease-out-quart);
   }
 
   .page-header {
@@ -319,21 +319,21 @@ print(np.allclose(a_np, a_back))  # True</code></pre>
     flex-direction: column;
     gap: 1rem;
     padding-bottom: 2rem;
-    border-bottom: 1px solid var(--gray-800);
+    border-bottom: 1px solid var(--border);
   }
 
   .breadcrumb {
     font-size: 0.875rem;
-    color: var(--gray-500);
+    color: var(--text-tertiary);
   }
 
   .breadcrumb a {
-    color: var(--gray-500);
-    transition: color var(--duration-fast) var(--ease-out);
+    color: var(--text-tertiary);
+    transition: color var(--dur-instant) var(--ease-out-quart);
   }
 
   .breadcrumb a:hover {
-    color: var(--white);
+    color: var(--text-primary);
   }
 
   .separator {
@@ -344,14 +344,14 @@ print(np.allclose(a_np, a_back))  # True</code></pre>
     font-size: 2.5rem;
     font-weight: 700;
     letter-spacing: -0.02em;
-    color: var(--white);
+    color: var(--text-primary);
     margin: 0;
   }
 
   .page-desc {
     font-size: 1.0625rem;
     line-height: 1.6;
-    color: var(--gray-400);
+    color: var(--text-secondary);
     margin: 0;
   }
 
@@ -363,18 +363,18 @@ print(np.allclose(a_np, a_back))  # True</code></pre>
   .project-link {
     font-size: 0.75rem;
     font-weight: 500;
-    color: var(--gray-600);
+    color: var(--text-faint);
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    transition: color var(--duration-fast) var(--ease-out);
+    transition: color var(--dur-instant) var(--ease-out-quart);
     padding: 0.5rem 1rem;
-    border: 1px solid var(--gray-800);
+    border: 1px solid var(--border);
     border-radius: 0.375rem;
   }
 
   .project-link:hover {
-    color: var(--white);
-    border-color: var(--gray-700);
+    color: var(--text-primary);
+    border-color: var(--border-strong);
   }
 
   .content {
@@ -386,7 +386,7 @@ print(np.allclose(a_np, a_back))  # True</code></pre>
   .section h2 {
     font-size: 1.5rem;
     font-weight: 600;
-    color: var(--white);
+    color: var(--text-primary);
     letter-spacing: -0.01em;
     margin-bottom: 1rem;
   }
@@ -394,7 +394,7 @@ print(np.allclose(a_np, a_back))  # True</code></pre>
   .section h3 {
     font-size: 1.125rem;
     font-weight: 600;
-    color: var(--white);
+    color: var(--text-primary);
     margin-bottom: 0.75rem;
   }
 
@@ -406,7 +406,7 @@ print(np.allclose(a_np, a_back))  # True</code></pre>
   .section p {
     font-size: 0.9375rem;
     line-height: 1.7;
-    color: var(--gray-400);
+    color: var(--text-secondary);
     margin-bottom: 1rem;
   }
 
@@ -429,7 +429,7 @@ print(np.allclose(a_np, a_back))  # True</code></pre>
   .structure-list li {
     font-size: 0.9375rem;
     line-height: 1.6;
-    color: var(--gray-400);
+    color: var(--text-secondary);
     padding-left: 1.5rem;
     position: relative;
   }
@@ -440,14 +440,14 @@ print(np.allclose(a_np, a_back))  # True</code></pre>
     content: '→';
     position: absolute;
     left: 0;
-    color: var(--gray-600);
+    color: var(--text-faint);
   }
 
   .structure-list code {
     font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, monospace;
     font-size: 0.875rem;
-    color: var(--gray-300);
-    background: var(--gray-950);
+    color: var(--text-secondary);
+    background: var(--surface-raised);
     padding: 0.125rem 0.375rem;
     border-radius: 0.25rem;
   }
@@ -459,15 +459,15 @@ print(np.allclose(a_np, a_back))  # True</code></pre>
 
   .ops-category {
     padding: 1rem;
-    background: var(--gray-950);
-    border: 1px solid var(--gray-800);
+    background: var(--surface-raised);
+    border: 1px solid var(--border);
     border-radius: 0.5rem;
   }
 
   .ops-title {
     font-size: 1rem;
     font-weight: 600;
-    color: var(--white);
+    color: var(--text-primary);
     margin-bottom: 0.75rem;
   }
 
@@ -482,14 +482,14 @@ print(np.allclose(a_np, a_back))  # True</code></pre>
   .ops-list li {
     font-size: 0.875rem;
     line-height: 1.6;
-    color: var(--gray-400);
+    color: var(--text-secondary);
   }
 
   .ops-list code {
     font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, monospace;
     font-size: 0.875rem;
-    color: var(--gray-300);
-    background: var(--gray-900);
+    color: var(--text-secondary);
+    background: var(--surface-sunken);
     padding: 0.125rem 0.375rem;
     border-radius: 0.25rem;
   }
@@ -501,23 +501,23 @@ print(np.allclose(a_np, a_back))  # True</code></pre>
 
   .prereq-item {
     padding: 1rem;
-    background: var(--gray-950);
-    border: 1px solid var(--gray-800);
+    background: var(--surface-raised);
+    border: 1px solid var(--border);
     border-radius: 0.5rem;
   }
 
   .prereq-name {
     font-size: 0.875rem;
     font-weight: 600;
-    color: var(--gray-400);
+    color: var(--text-secondary);
     margin-bottom: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
   }
 
   .code-block {
-    background: var(--gray-950);
-    border: 1px solid var(--gray-800);
+    background: var(--surface-raised);
+    border: 1px solid var(--border);
     border-radius: 0.5rem;
     overflow-x: auto;
   }
@@ -531,7 +531,7 @@ print(np.allclose(a_np, a_back))  # True</code></pre>
     font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
     font-size: 0.875rem;
     line-height: 1.6;
-    color: var(--gray-300);
+    color: var(--text-secondary);
   }
 
   .mise-grid {
@@ -542,22 +542,22 @@ print(np.allclose(a_np, a_back))  # True</code></pre>
 
   .mise-item {
     padding: 0.875rem 1rem;
-    background: var(--gray-950);
-    border-left: 2px solid var(--gray-800);
+    background: var(--surface-raised);
+    border-left: 2px solid var(--border);
   }
 
   .mise-cmd {
     font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, monospace;
     font-size: 0.875rem;
     font-weight: 600;
-    color: var(--gray-200);
+    color: var(--paper-dim);
     margin-bottom: 0.375rem;
   }
 
   .mise-desc {
     font-size: 0.8125rem;
     line-height: 1.5;
-    color: var(--gray-500);
+    color: var(--text-tertiary);
   }
 
   .tech-row {
@@ -571,14 +571,14 @@ print(np.allclose(a_np, a_back))  # True</code></pre>
     flex-direction: column;
     gap: 0.25rem;
     padding: 0.75rem 1rem;
-    background: var(--gray-950);
-    border: 1px solid var(--gray-800);
+    background: var(--surface-raised);
+    border: 1px solid var(--border);
     border-radius: 0.375rem;
   }
 
   .tech-label {
     font-size: 0.75rem;
-    color: var(--gray-500);
+    color: var(--text-tertiary);
     text-transform: uppercase;
     letter-spacing: 0.05em;
   }
@@ -586,15 +586,15 @@ print(np.allclose(a_np, a_back))  # True</code></pre>
   .tech-value {
     font-size: 0.9375rem;
     font-weight: 600;
-    color: var(--white);
+    color: var(--text-primary);
   }
 
   .status-banner {
     display: flex;
     gap: 1rem;
     padding: 1.5rem;
-    background: var(--gray-950);
-    border: 1px solid var(--gray-800);
+    background: var(--surface-raised);
+    border: 1px solid var(--border);
     border-radius: 0.5rem;
   }
 
@@ -612,13 +612,13 @@ print(np.allclose(a_np, a_back))  # True</code></pre>
   .status-title {
     font-size: 1rem;
     font-weight: 600;
-    color: var(--white);
+    color: var(--text-primary);
   }
 
   .status-desc {
     font-size: 0.875rem;
     line-height: 1.6;
-    color: var(--gray-400);
+    color: var(--text-secondary);
   }
 
   @keyframes fade-up {

@@ -156,7 +156,7 @@
     flex-direction: column;
     gap: 1rem;
     padding-bottom: 2rem;
-    border-bottom: 1px solid var(--gray-800);
+    border-bottom: 1px solid var(--border);
   }
   
   @media (min-width: 480px) {
@@ -171,29 +171,29 @@
     font-size: 2.5rem;
     font-weight: 700;
     letter-spacing: -0.02em;
-    color: var(--white);
+    color: var(--text-primary);
     margin-bottom: 0.5rem;
   }
   
   .page-desc {
     font-size: 1rem;
-    color: var(--gray-500);
+    color: var(--text-tertiary);
   }
   
   .username {
     font-size: 0.8125rem;
     font-weight: 500;
-    color: var(--gray-500);
+    color: var(--text-tertiary);
     padding: 0.5rem 0.875rem;
-    background: var(--gray-900);
-    border: 1px solid var(--gray-800);
+    background: var(--surface-sunken);
+    border: 1px solid var(--border);
     border-radius: var(--radius-sm);
-    transition: all var(--duration-fast) var(--ease-out);
+    transition: all var(--dur-instant) var(--ease-out-quart);
   }
   
   .username:hover {
-    color: var(--white);
-    border-color: var(--gray-700);
+    color: var(--text-primary);
+    border-color: var(--border-strong);
   }
 
   .stats {
@@ -204,10 +204,10 @@
   
   .stat {
     padding: 1.25rem;
-    background: var(--gray-950);
-    border: 1px solid var(--gray-800);
+    background: var(--surface-raised);
+    border: 1px solid var(--border);
     border-radius: var(--radius-md);
-    animation: fade-up var(--duration-slow) var(--ease-out) backwards;
+    animation: fade-up var(--dur-base) var(--ease-out-quart) backwards;
     animation-delay: var(--delay);
   }
   
@@ -228,42 +228,42 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    color: var(--gray-500);
+    color: var(--text-tertiary);
   }
   
   .stat-pct {
     font-size: 0.6875rem;
-    color: var(--gray-600);
+    color: var(--text-faint);
   }
   
   .stat-value {
     font-size: 1.75rem;
     font-weight: 700;
-    color: var(--white);
+    color: var(--text-primary);
     margin-bottom: 0.75rem;
   }
   
   .stat-total {
     font-size: 0.875rem;
     font-weight: 400;
-    color: var(--gray-600);
+    color: var(--text-faint);
   }
   
   .stat-bar {
     height: 3px;
-    background: var(--gray-800);
+    background: var(--border);
     border-radius: 2px;
     overflow: hidden;
   }
   
   .stat-fill {
     height: 100%;
-    background: var(--white);
-    transition: width 1s var(--ease-out);
+    background: var(--text-primary);
+    transition: width 1s var(--ease-out-quart);
   }
 
   .submissions {
-    border-top: 1px solid var(--gray-800);
+    border-top: 1px solid var(--border);
     padding-top: 2rem;
   }
   
@@ -272,7 +272,7 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    color: var(--gray-600);
+    color: var(--text-faint);
     margin-bottom: 1.5rem;
   }
   
@@ -286,15 +286,15 @@
     justify-content: space-between;
     align-items: center;
     padding: 0.875rem 0;
-    border-bottom: 1px solid var(--gray-900);
-    animation: fade-up var(--duration-base) var(--ease-out) backwards;
+    border-bottom: 1px solid var(--border-subtle);
+    animation: fade-up var(--dur-fast) var(--ease-out-quart) backwards;
     animation-delay: var(--delay);
-    transition: all var(--duration-fast) var(--ease-out);
+    transition: all var(--dur-instant) var(--ease-out-quart);
   }
   
   .sub-item:hover {
     padding-left: 0.75rem;
-    background: var(--glass-bg);
+    background: var(--surface-sunken);
     margin-left: -0.75rem;
     margin-right: -0.75rem;
     padding-right: 0.75rem;
@@ -306,22 +306,22 @@
   
   .sub-title {
     font-size: 0.9375rem;
-    color: var(--gray-300);
+    color: var(--text-secondary);
   }
   
   .sub-item:hover .sub-title {
-    color: var(--white);
+    color: var(--text-primary);
   }
   
   .sub-date {
     font-size: 0.75rem;
-    color: var(--gray-600);
+    color: var(--text-faint);
     font-variant-numeric: tabular-nums;
   }
   
   .sub-skeleton {
     height: 48px;
-    background: var(--gray-900);
+    background: var(--surface-sunken);
     border-radius: var(--radius-sm);
     margin-bottom: 0.5rem;
     animation: pulse 2s ease-in-out infinite;
@@ -329,7 +329,7 @@
   }
   
   .error, .empty {
-    color: var(--gray-500);
+    color: var(--text-tertiary);
     font-size: 0.9375rem;
   }
   

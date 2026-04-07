@@ -105,20 +105,20 @@
   
   .page-header {
     padding-bottom: 2rem;
-    border-bottom: 1px solid var(--gray-800);
+    border-bottom: 1px solid var(--border);
   }
   
   .page-title {
     font-size: 2.5rem;
     font-weight: 700;
     letter-spacing: -0.02em;
-    color: var(--white);
+    color: var(--text-primary);
     margin-bottom: 0.5rem;
   }
   
   .page-desc {
     font-size: 1rem;
-    color: var(--gray-500);
+    color: var(--text-tertiary);
   }
 
   .stories {
@@ -130,8 +130,8 @@
     display: flex;
     gap: 1rem;
     padding: 1rem 0;
-    border-bottom: 1px solid var(--gray-900);
-    animation: fade-up var(--duration-base) var(--ease-out) backwards;
+    border-bottom: 1px solid var(--border-subtle);
+    animation: fade-up var(--dur-fast) var(--ease-out-quart) backwards;
     animation-delay: var(--delay);
   }
   
@@ -144,7 +144,7 @@
     width: 40px;
     font-size: 0.8125rem;
     font-weight: 600;
-    color: var(--gray-500);
+    color: var(--text-tertiary);
     text-align: right;
     padding-top: 0.125rem;
   }
@@ -158,14 +158,14 @@
     display: block;
     font-size: 0.9375rem;
     font-weight: 500;
-    color: var(--white);
+    color: var(--text-primary);
     line-height: 1.4;
     margin-bottom: 0.375rem;
-    transition: color var(--duration-fast) var(--ease-out);
+    transition: color var(--dur-instant) var(--ease-out-quart);
   }
   
   .story-title:hover {
-    color: var(--gray-400);
+    color: var(--text-secondary);
   }
   
   .story-meta {
@@ -173,24 +173,24 @@
     flex-wrap: wrap;
     gap: 0.375rem;
     font-size: 0.75rem;
-    color: var(--gray-600);
+    color: var(--text-faint);
   }
   
   .story-host {
-    color: var(--gray-500);
+    color: var(--text-tertiary);
   }
   
   .story-divider {
-    color: var(--gray-800);
+    color: var(--border);
   }
   
   .story-discuss {
-    color: var(--gray-600);
-    transition: color var(--duration-fast) var(--ease-out);
+    color: var(--text-faint);
+    transition: color var(--dur-instant) var(--ease-out-quart);
   }
   
   .story-discuss:hover {
-    color: var(--white);
+    color: var(--text-primary);
   }
 
   .loading {
@@ -201,14 +201,14 @@
   
   .skeleton {
     height: 64px;
-    background: var(--gray-900);
+    background: var(--surface-sunken);
     border-radius: var(--radius-sm);
     animation: pulse 2s ease-in-out infinite;
     animation-delay: var(--delay);
   }
   
   .error {
-    color: var(--gray-500);
+    color: var(--text-tertiary);
   }
   
   @keyframes fade-up {

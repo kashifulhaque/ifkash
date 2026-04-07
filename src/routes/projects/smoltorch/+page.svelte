@@ -333,7 +333,7 @@ z.backward()
     flex-direction: column;
     gap: 3rem;
     max-width: 48rem;
-    animation: fade-up var(--duration-slow) var(--ease-out);
+    animation: fade-up var(--dur-base) var(--ease-out-quart);
   }
 
   .page-header {
@@ -341,21 +341,21 @@ z.backward()
     flex-direction: column;
     gap: 1rem;
     padding-bottom: 2rem;
-    border-bottom: 1px solid var(--gray-800);
+    border-bottom: 1px solid var(--border);
   }
 
   .breadcrumb {
     font-size: 0.875rem;
-    color: var(--gray-500);
+    color: var(--text-tertiary);
   }
 
   .breadcrumb a {
-    color: var(--gray-500);
-    transition: color var(--duration-fast) var(--ease-out);
+    color: var(--text-tertiary);
+    transition: color var(--dur-instant) var(--ease-out-quart);
   }
 
   .breadcrumb a:hover {
-    color: var(--white);
+    color: var(--text-primary);
   }
 
   .separator {
@@ -366,14 +366,14 @@ z.backward()
     font-size: 2.5rem;
     font-weight: 700;
     letter-spacing: -0.02em;
-    color: var(--white);
+    color: var(--text-primary);
     margin: 0;
   }
 
   .page-desc {
     font-size: 1.0625rem;
     line-height: 1.6;
-    color: var(--gray-400);
+    color: var(--text-secondary);
     margin: 0;
   }
 
@@ -385,18 +385,18 @@ z.backward()
   .project-link {
     font-size: 0.75rem;
     font-weight: 500;
-    color: var(--gray-600);
+    color: var(--text-faint);
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    transition: color var(--duration-fast) var(--ease-out);
+    transition: color var(--dur-instant) var(--ease-out-quart);
     padding: 0.5rem 1rem;
-    border: 1px solid var(--gray-800);
+    border: 1px solid var(--border);
     border-radius: 0.375rem;
   }
 
   .project-link:hover {
-    color: var(--white);
-    border-color: var(--gray-700);
+    color: var(--text-primary);
+    border-color: var(--border-strong);
   }
 
   .content {
@@ -408,7 +408,7 @@ z.backward()
   .section h2 {
     font-size: 1.5rem;
     font-weight: 600;
-    color: var(--white);
+    color: var(--text-primary);
     letter-spacing: -0.01em;
     margin-bottom: 1rem;
   }
@@ -416,7 +416,7 @@ z.backward()
   .section h3 {
     font-size: 1.125rem;
     font-weight: 600;
-    color: var(--white);
+    color: var(--text-primary);
     margin-bottom: 0.75rem;
   }
 
@@ -428,7 +428,7 @@ z.backward()
   .section p {
     font-size: 0.9375rem;
     line-height: 1.7;
-    color: var(--gray-400);
+    color: var(--text-secondary);
     margin-bottom: 1rem;
   }
 
@@ -447,8 +447,8 @@ z.backward()
     flex-direction: column;
     gap: 0.5rem;
     padding: 1.25rem;
-    background: var(--gray-950);
-    border: 1px solid var(--gray-800);
+    background: var(--surface-raised);
+    border: 1px solid var(--border);
     border-radius: 0.5rem;
   }
 
@@ -460,13 +460,13 @@ z.backward()
   .philosophy-title {
     font-size: 1rem;
     font-weight: 600;
-    color: var(--white);
+    color: var(--text-primary);
   }
 
   .philosophy-desc {
     font-size: 0.875rem;
     line-height: 1.5;
-    color: var(--gray-500);
+    color: var(--text-tertiary);
   }
 
   .features-section {
@@ -477,7 +477,7 @@ z.backward()
   .feature-category h3 {
     font-size: 1rem;
     font-weight: 600;
-    color: var(--white);
+    color: var(--text-primary);
     margin-bottom: 0.75rem;
   }
 
@@ -492,7 +492,7 @@ z.backward()
   .feature-list li {
     font-size: 0.9375rem;
     line-height: 1.6;
-    color: var(--gray-400);
+    color: var(--text-secondary);
     padding-left: 1.5rem;
     position: relative;
   }
@@ -501,13 +501,13 @@ z.backward()
     content: '→';
     position: absolute;
     left: 0;
-    color: var(--gray-600);
+    color: var(--text-faint);
   }
 
   .performance-table {
     display: flex;
     flex-direction: column;
-    border: 1px solid var(--gray-800);
+    border: 1px solid var(--border);
     border-radius: 0.5rem;
     overflow: hidden;
   }
@@ -519,20 +519,20 @@ z.backward()
   }
 
   .perf-header {
-    background: var(--gray-900);
-    border-bottom: 1px solid var(--gray-800);
+    background: var(--surface-sunken);
+    border-bottom: 1px solid var(--border);
   }
 
   .perf-header .perf-cell {
     font-size: 0.75rem;
     font-weight: 600;
-    color: var(--gray-400);
+    color: var(--text-secondary);
     text-transform: uppercase;
     letter-spacing: 0.05em;
   }
 
   .perf-row:not(.perf-header) {
-    border-bottom: 1px solid var(--gray-900);
+    border-bottom: 1px solid var(--border-subtle);
   }
 
   .perf-row:last-child {
@@ -542,7 +542,7 @@ z.backward()
   .perf-cell {
     padding: 0.875rem 1rem;
     font-size: 0.875rem;
-    color: var(--gray-300);
+    color: var(--text-secondary);
   }
 
   .autograd-steps {
@@ -553,7 +553,7 @@ z.backward()
   .autograd-steps li {
     font-size: 0.9375rem;
     line-height: 1.7;
-    color: var(--gray-400);
+    color: var(--text-secondary);
     margin-bottom: 0.5rem;
   }
 
@@ -565,15 +565,15 @@ z.backward()
 
   .ops-category {
     padding: 1rem;
-    background: var(--gray-950);
-    border: 1px solid var(--gray-800);
+    background: var(--surface-raised);
+    border: 1px solid var(--border);
     border-radius: 0.5rem;
   }
 
   .ops-title {
     font-size: 0.875rem;
     font-weight: 600;
-    color: var(--gray-400);
+    color: var(--text-secondary);
     margin-bottom: 0.75rem;
   }
 
@@ -586,8 +586,8 @@ z.backward()
   .ops-list code {
     font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
     font-size: 0.8125rem;
-    color: var(--gray-300);
-    background: var(--gray-900);
+    color: var(--text-secondary);
+    background: var(--surface-sunken);
     padding: 0.25rem 0.5rem;
     border-radius: 0.25rem;
   }
@@ -600,7 +600,7 @@ z.backward()
   .roadmap-category h3 {
     font-size: 1rem;
     font-weight: 600;
-    color: var(--white);
+    color: var(--text-primary);
     margin-bottom: 0.75rem;
   }
 
@@ -615,7 +615,7 @@ z.backward()
   .roadmap-list li {
     font-size: 0.9375rem;
     line-height: 1.6;
-    color: var(--gray-400);
+    color: var(--text-secondary);
     padding-left: 1.5rem;
     position: relative;
   }
@@ -624,7 +624,7 @@ z.backward()
     content: '□';
     position: absolute;
     left: 0;
-    color: var(--gray-600);
+    color: var(--text-faint);
   }
 
   .structure-list {
@@ -638,7 +638,7 @@ z.backward()
   .structure-list li {
     font-size: 0.9375rem;
     line-height: 1.6;
-    color: var(--gray-400);
+    color: var(--text-secondary);
     padding-left: 1.5rem;
     position: relative;
   }
@@ -647,14 +647,14 @@ z.backward()
     content: '→';
     position: absolute;
     left: 0;
-    color: var(--gray-600);
+    color: var(--text-faint);
   }
 
   .structure-list code {
     font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
     font-size: 0.875rem;
-    color: var(--gray-300);
-    background: var(--gray-950);
+    color: var(--text-secondary);
+    background: var(--surface-raised);
     padding: 0.125rem 0.375rem;
     border-radius: 0.25rem;
   }
@@ -671,23 +671,23 @@ z.backward()
     display: inline-flex;
     align-items: center;
     font-size: 0.9375rem;
-    color: var(--gray-300);
+    color: var(--text-secondary);
     padding: 0.75rem 1rem;
-    background: var(--gray-950);
-    border: 1px solid var(--gray-800);
+    background: var(--surface-raised);
+    border: 1px solid var(--border);
     border-radius: 0.375rem;
-    transition: all var(--duration-fast) var(--ease-out);
+    transition: all var(--dur-instant) var(--ease-out-quart);
   }
 
   .resource-link:hover {
-    color: var(--white);
-    border-color: var(--gray-700);
+    color: var(--text-primary);
+    border-color: var(--border-strong);
     transform: translateX(4px);
   }
 
   .code-block {
-    background: var(--gray-950);
-    border: 1px solid var(--gray-800);
+    background: var(--surface-raised);
+    border: 1px solid var(--border);
     border-radius: 0.5rem;
     overflow-x: auto;
   }
@@ -701,7 +701,7 @@ z.backward()
     font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
     font-size: 0.875rem;
     line-height: 1.6;
-    color: var(--gray-300);
+    color: var(--text-secondary);
   }
 
   @keyframes fade-up {

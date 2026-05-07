@@ -22,7 +22,9 @@ jobs:
           target: wasm32-unknown-unknown
 
       - name: Install worker-build
-        run: cargo install -q worker-build
+        # Pin to ^0.7 to match worker = "0.7.2" in api/Cargo.toml.
+        # Newer worker-build (>= 0.8) requires worker >= 0.8.1.
+        run: cargo install -q worker-build --version ^0.7
 
       - name: Build worker
         working-directory: ./api

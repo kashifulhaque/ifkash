@@ -23,6 +23,7 @@ use crate::handlers;
         handlers::resume_api::upload,
         handlers::typst::compile,
         handlers::ai::rewrite,
+        handlers::home_weather::handle,
     ),
     components(
         schemas(
@@ -48,6 +49,8 @@ use crate::handlers;
             handlers::typst::CompileRequest,
             handlers::ai::AiRewriteRequest,
             handlers::ai::AiRewriteResponse,
+            handlers::home_weather::HomeWeatherResponse,
+            handlers::home_weather::LocalityWeatherData,
         )
     ),
     tags(
@@ -60,6 +63,7 @@ use crate::handlers;
         (name = "Resume API", description = "Resume API endpoints"),
         (name = "Typst", description = "Typst compilation service"),
         (name = "AI", description = "AI Integration endpoints"),
+        (name = "Weather", description = "Local weather endpoints"),
     ),
     modifiers(&SecurityAddon),
     info(

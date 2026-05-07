@@ -7,7 +7,9 @@ workers_dev = true                   # gives you a preview *.workers.dev URL too
 observability = { enabled = true }
 
 [build]
-command = "cargo install -q worker-build && worker-build --release"
+# Pin worker-build to ^0.7 because Cargo.toml uses worker = "0.7.2".
+# Newer worker-build (>= 0.8) requires worker >= 0.8.1 and would break the build.
+command = "cargo install -q worker-build --version ^0.7 && worker-build --release"
 watch_dir = "src"
 
 # Route only /api/* on your domain to this Worker.
@@ -31,5 +33,8 @@ POCKETBASE_URL = "https://pb.ifkash.dev"
 # To set the PocketBase credentials, run:
 # wrangler secret put POCKETBASE_EMAIL
 # wrangler secret put POCKETBASE_PASSWORD
+
+# WeatherUnion API key for /api/home_weather upstream proxy:
+# wrangler secret put WEATHER_UNION_API_KEY
 
 TYPST_SERVICE_URL = "https://typst.ifkash.dev"

@@ -5,6 +5,7 @@
   import { theme } from "$lib/stores/theme";
   import { onMount } from "svelte";
   import AiAgent from "$lib/components/AiAgent.svelte";
+  import WeatherHeadsUp from "$lib/components/WeatherHeadsUp.svelte";
 
   onMount(() => {
     theme.init();
@@ -212,6 +213,7 @@
     </footer>
 
     <AiAgent />
+    <WeatherHeadsUp />
   </div>
 {/if}
 

@@ -9,6 +9,7 @@
     desc: string;
     links: { label: string; url: string }[];
     page?: string;
+    status?: 'active' | 'shipped' | 'archived';
   };
 
   const projects: Project[] = [
@@ -16,6 +17,7 @@
       name: 'Llama-3.2-3B-Polite-ORPO',
       desc: 'Llama 3.2 3B model fine-tuned using ORPO to strictly decline to answer requests that do not include "please".',
       page: '/projects/polite-orpo',
+      status: 'shipped',
       links: [
         { label: 'Model', url: 'https://huggingface.co/weights-and-wires/Llama-3.2-3B-Polite-ORPO' }
       ]
@@ -24,6 +26,7 @@
       name: 'banana.cpp',
       desc: 'Pure C++ LLM inference engine. SmolLM2, Llama 3.2, Qwen. Modular architecture with GQA, RoPE, SwiGLU.',
       page: '/projects/banana-cpp',
+      status: 'active',
       links: [
         { label: 'Code', url: 'https://github.com/kashifulhaque/banana.cpp' }
       ]
@@ -32,6 +35,7 @@
       name: 'smol-llama',
       desc: '360M parameter LLaMA trained from scratch on 6B tokens. GQA, RoPE, SwiGLU. Single H100, 22hrs, $53.',
       page: '/projects/smol-llama',
+      status: 'shipped',
       links: [
         { label: 'Model', url: 'https://huggingface.co/weights-and-wires/smol-llama' },
         { label: 'Code', url: 'https://github.com/weights-and-wires/smol-llama' }
@@ -41,6 +45,7 @@
       name: 'smoltorch',
       desc: 'Autograd engine and neural networks in ~500 lines of NumPy. Educational deep learning.',
       page: '/projects/smoltorch',
+      status: 'shipped',
       links: [
         { label: 'Code', url: 'https://github.com/kashifulhaque/smoltorch' },
         { label: 'PyPI', url: 'https://pypi.org/project/smoltorch/' }
@@ -50,6 +55,7 @@
       name: 'NoPokeDB',
       desc: 'Lightweight vector DB with hnswlib + SQLite. Crash recovery, 2K+ PyPI downloads.',
       page: '/projects/nopokedb',
+      status: 'shipped',
       links: [
         { label: 'Code', url: 'https://github.com/kashifulhaque/nopokedb' },
         { label: 'PyPI', url: 'https://pypi.org/project/nopokedb/' }
@@ -59,6 +65,7 @@
       name: 'Boo',
       desc: 'AI Discord bot. Natural conversations, image understanding, and generation.',
       page: '/projects/boo',
+      status: 'shipped',
       links: [
         { label: 'Code', url: 'https://github.com/VVIP-Kitchen/boo' },
         { label: 'Site', url: 'https://boo.ifkash.dev' }
@@ -68,6 +75,7 @@
       name: 'ferray',
       desc: 'NumPy-like ndarray in Rust with Python bindings. Learning project.',
       page: '/projects/ferray',
+      status: 'archived',
       links: [
         { label: 'Code', url: 'https://github.com/kashifulhaque/ferray' }
       ]
@@ -75,146 +83,259 @@
     {
       name: 'endark',
       desc: 'Monochrome, dark-only CSS library. Glassmorphism meets terminal-editorial aesthetic. Zero dependencies.',
+      status: 'shipped',
       links: [
         { label: 'Site', url: 'https://endark.ifkash.dev' },
         { label: 'Code', url: 'https://github.com/kashifulhaque/endark' }
       ]
     },
     {
-      name: "Opencode theme for VS Code",
-      desc: "VS Code light and dark theme generated from OpenCode reference JSON.",
+      name: 'Opencode theme for VS Code',
+      desc: 'VS Code light and dark theme generated from OpenCode reference JSON.',
+      status: 'shipped',
       links: [
-        { label: "Download", url: "https://github.com/kashifulhaque/opencode-vscode-theme/releases/latest" },
-        { label: "Code", url: "https://github.com/kashifulhaque/opencode-vscode-theme" }
+        { label: 'Download', url: 'https://github.com/kashifulhaque/opencode-vscode-theme/releases/latest' },
+        { label: 'Code', url: 'https://github.com/kashifulhaque/opencode-vscode-theme' }
       ]
     }
   ];
 </script>
 
-<div class="page">
-  <header class="page-header">
-    <h1 class="page-title">Projects</h1>
-    <p class="page-desc">Things I've built or am actively shaping.</p>
-  </header>
+<header class="page-header">
+  <div class="meta-row">
+    <span>· Project Index ·</span>
+    <span class="right">{projects.length} entries</span>
+  </div>
+  <h1 class="section-title">Projects.</h1>
+  <p class="section-subtitle">Things I've built or am actively shaping.</p>
+  <div class="ascii-rule"></div>
+</header>
 
-  <section class="projects">
-    {#each projects as project, i}
-      <article class="project stagger" style="--i: {i}">
+<section class="projects-list">
+  {#each projects as project, i}
+    <article class="project-row stagger" style="--i: {i}">
+      <span
+        class="project-status"
+        class:active={project.status === 'active'}
+        class:shipped={project.status === 'shipped'}
+        class:archived={project.status === 'archived'}
+      ></span>
+      <div class="project-body">
         <div class="project-top">
           {#if project.page}
             <a href={project.page} class="project-name-link">
-              <h2 class="project-name">{project.name}</h2>
+              <span class="project-name">{project.name}</span>
             </a>
           {:else}
-            <h2 class="project-name">{project.name}</h2>
+            <span class="project-name">{project.name}</span>
           {/if}
           <div class="project-links">
             {#each project.links as link}
-              <a href={link.url} target="_blank" rel="noopener noreferrer" class="project-link">
+              <a
+                href={link.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="project-link"
+              >
                 {link.label}
               </a>
             {/each}
           </div>
         </div>
         <p class="project-desc">{project.desc}</p>
-      </article>
-    {/each}
-  </section>
+      </div>
+    </article>
+  {/each}
+</section>
+
+<div class="legend">
+  <span class="legend-item"
+    ><span class="project-status active"></span> Active</span
+  >
+  <span class="legend-item"
+    ><span class="project-status shipped"></span> Shipped</span
+  >
+  <span class="legend-item"
+    ><span class="project-status archived"></span> Archived</span
+  >
 </div>
 
 <style>
-  .page {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-2xl);
-  }
-
   .page-header {
-    padding-bottom: var(--space-xl);
-    border-bottom: 1px solid var(--border);
+    padding-top: 16px;
   }
 
-  .page-title {
-    font-size: clamp(2rem, 5vw + 0.5rem, 3rem);
-    font-weight: 400;
-    letter-spacing: -0.03em;
-    color: var(--text-primary);
-    margin-bottom: 0.375rem;
+  .meta-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
   }
 
-  .page-desc {
-    font-size: 1rem;
-    color: var(--text-tertiary);
+  .meta-row .right {
+    color: var(--blueprint);
   }
 
-  .projects {
+  .projects-list {
     display: flex;
     flex-direction: column;
-    gap: var(--space-xl);
+    border-top: 1px solid var(--rule-soft);
   }
 
-  .project {
-    padding-bottom: var(--space-xl);
-    border-bottom: 1px solid var(--border-subtle);
+  .project-row {
+    display: grid;
+    grid-template-columns: 14px minmax(0, 1fr);
+    align-items: start;
+    gap: 20px;
+    padding: 20px 0;
+    border-bottom: 1px solid var(--rule-soft);
   }
 
-  .project:last-child {
-    border-bottom: none;
-    padding-bottom: 0;
+  .project-status {
+    width: 12px;
+    height: 12px;
+    border: 1px solid var(--ink-mute);
+    background: transparent;
+    transform: translateY(8px);
+    flex-shrink: 0;
+  }
+
+  .project-status.active {
+    background: var(--blueprint);
+    border-color: var(--blueprint);
+  }
+
+  .project-status.shipped {
+    background: linear-gradient(
+      135deg,
+      var(--blueprint) 0%,
+      var(--blueprint) 50%,
+      transparent 50%,
+      transparent 100%
+    );
+    border-color: var(--blueprint);
+  }
+
+  .project-status.archived {
+    background: transparent;
+    border-style: dashed;
+    border-color: var(--ink-mute);
+  }
+
+  .project-body {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
   }
 
   .project-top {
     display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    margin-bottom: 0.5rem;
-  }
-
-  @media (min-width: 480px) {
-    .project-top {
-      flex-direction: row;
-      align-items: baseline;
-      justify-content: space-between;
-    }
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
   }
 
   .project-name {
-    font-family: var(--font-sans);
-    font-size: 1.0625rem;
-    font-weight: 600;
-    color: var(--text-primary);
-    letter-spacing: -0.01em;
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    color: var(--ink);
+    line-height: 1.05;
   }
 
   .project-name-link {
-    transition: color var(--dur-instant) var(--ease-out-quart);
+    border-bottom: none;
   }
 
   .project-name-link:hover .project-name {
-    color: var(--accent);
+    color: var(--blueprint);
   }
 
   .project-links {
     display: flex;
-    gap: 1rem;
+    gap: 8px;
+    flex-wrap: wrap;
   }
 
   .project-link {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--text-faint);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
-    letter-spacing: 0.04em;
-    transition: color var(--dur-instant) var(--ease-out-quart);
+    padding: 4px 10px;
+    background: transparent;
+    color: var(--ink-soft);
+    border: 1px solid var(--rule-soft);
+    text-decoration: none;
+    transition: color 0.15s, border-color 0.15s;
   }
 
   .project-link:hover {
-    color: var(--accent);
+    color: var(--blueprint);
+    border-color: var(--blueprint);
+    border-bottom: 1px solid var(--blueprint);
   }
 
   .project-desc {
-    font-size: 0.9375rem;
-    line-height: 1.65;
-    color: var(--text-secondary);
+    font-family: var(--font-body);
+    font-size: 0.98rem;
+    line-height: 1.6;
+    color: var(--ink-soft);
+    max-width: 760px;
+  }
+
+  .legend {
+    padding: 32px 0 16px;
+    display: flex;
+    gap: 28px;
+    flex-wrap: wrap;
+    align-items: center;
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .legend-item .project-status {
+    transform: none;
+  }
+
+  @media (max-width: 768px) {
+    .project-row {
+      gap: 16px;
+      padding: 18px 0;
+    }
+
+    .project-name {
+      font-size: 1.25rem;
+    }
+
+    .project-top {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .legend {
+      gap: 16px;
+    }
   }
 </style>

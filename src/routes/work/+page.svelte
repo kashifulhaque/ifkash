@@ -10,6 +10,7 @@
     url: string;
     period: string;
     location: string;
+    status: 'current' | 'past';
   };
 
   const jobs: Job[] = [
@@ -18,159 +19,219 @@
       company: 'Wand AI',
       url: 'https://wand.ai',
       period: '2025 — Present',
-      location: 'Palo Alto, CA'
+      location: 'Palo Alto, CA',
+      status: 'current'
     },
     {
       role: 'Engineer III',
       company: 'American Express',
       url: 'https://www.americanexpress.com',
       period: '2025',
-      location: 'Bangalore, India'
+      location: 'Bangalore, India',
+      status: 'past'
     },
     {
       role: 'Software Engineer',
       company: 'Fiery (Epson)',
       url: 'https://www.fiery.com',
       period: '2023 — 2025',
-      location: 'Bangalore, India'
+      location: 'Bangalore, India',
+      status: 'past'
     },
     {
       role: 'Intern',
       company: 'Corteva Agriscience',
       url: 'https://www.corteva.in',
       period: '2022',
-      location: 'Hyderabad, India'
+      location: 'Hyderabad, India',
+      status: 'past'
     }
   ];
 </script>
 
-<div class="page">
-  <header class="page-header">
-    <h1 class="page-title">Work</h1>
-    <p class="page-desc">Building ML systems and shipping code.</p>
-  </header>
+<header class="page-header">
+  <div class="meta-row">
+    <span>· Work History ·</span>
+    <span class="right">{jobs.length} entries</span>
+  </div>
+  <h1 class="section-title">Work.</h1>
+  <p class="section-subtitle">Building ML systems and shipping code.</p>
+  <div class="ascii-rule"></div>
+</header>
 
-  <section class="jobs">
-    {#each jobs as job, i}
-      <a
-        href={job.url}
-        target="_blank"
-        rel="noopener noreferrer"
-        class="job stagger"
-        style="--i: {i}"
-      >
-        <div class="job-main">
-          <span class="job-role">{job.role}</span>
-          <span class="job-company">{job.company}</span>
-        </div>
-        <div class="job-meta">
-          <span class="job-period">{job.period}</span>
-          <span class="job-location">{job.location}</span>
-        </div>
-      </a>
-    {/each}
-  </section>
-</div>
+<section class="jobs-list">
+  {#each jobs as job, i}
+    <a
+      href={job.url}
+      target="_blank"
+      rel="noopener noreferrer"
+      class="job-row stagger"
+      style="--i: {i}"
+    >
+      <span class="job-status" class:current={job.status === 'current'}></span>
+      <div class="job-main">
+        <span class="job-role">{job.role}</span>
+        <span class="job-company">{job.company}</span>
+      </div>
+      <span class="job-period">{job.period}</span>
+      <span class="job-location">{job.location}</span>
+    </a>
+  {/each}
+</section>
 
 <style>
-  .page {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-2xl);
-  }
-
   .page-header {
-    padding-bottom: var(--space-xl);
-    border-bottom: 1px solid var(--border);
+    padding-top: 16px;
+    padding-bottom: 0;
   }
 
-  .page-title {
-    font-size: clamp(2rem, 5vw + 0.5rem, 3rem);
-    font-weight: 400;
-    letter-spacing: -0.03em;
-    color: var(--text-primary);
-    margin-bottom: 0.375rem;
+  .meta-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
   }
 
-  .page-desc {
-    font-size: 1rem;
-    color: var(--text-tertiary);
+  .meta-row .right {
+    color: var(--blueprint);
   }
 
-  .jobs {
+  .jobs-list {
     display: flex;
     flex-direction: column;
+    border-top: 1px solid var(--rule-soft);
+    padding-top: 0;
   }
 
-  .job {
+  .job-row {
     display: grid;
-    grid-template-columns: 1fr;
-    gap: 0.375rem;
-    padding: 1.25rem 0;
-    border-bottom: 1px solid var(--border-subtle);
-    transition: background var(--dur-instant) var(--ease-out-quart);
-    border-radius: var(--radius-sm);
+    grid-template-columns: 14px minmax(0, 1fr) auto auto;
+    align-items: baseline;
+    gap: 24px;
+    padding: 18px 0;
+    border-bottom: 1px solid var(--rule-soft);
+    border-left: none !important;
+    border-right: none !important;
+    transition: background 0.15s, padding 0.15s;
+    color: var(--ink);
   }
 
-  @media (min-width: 640px) {
-    .job {
-      grid-template-columns: 1fr auto;
-      gap: 2rem;
-      align-items: baseline;
-    }
+  .job-row:hover {
+    background: var(--blueprint-tint);
+    padding-left: 12px;
+    padding-right: 12px;
+    margin-left: -12px;
+    margin-right: -12px;
+    border-bottom-color: var(--rule-soft);
   }
 
-  .job:hover {
-    background: var(--surface-sunken);
-    padding-left: 1rem;
-    margin-left: -1rem;
-    margin-right: -1rem;
-    padding-right: 1rem;
+  .job-status {
+    width: 12px;
+    height: 12px;
+    border: 1px solid var(--ink-mute);
+    background: transparent;
+    transform: translateY(2px);
   }
 
-  .job:last-child {
-    border-bottom: none;
+  .job-status.current {
+    background: var(--blueprint);
+    border-color: var(--blueprint);
   }
 
   .job-main {
     display: flex;
     flex-direction: column;
-    gap: 0.125rem;
+    gap: 4px;
+    min-width: 0;
   }
 
   .job-role {
-    font-size: 1rem;
-    font-weight: 500;
-    color: var(--text-primary);
+    font-family: var(--font-display);
+    font-size: 1.4rem;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    color: var(--ink);
+    line-height: 1.05;
+  }
+
+  .job-row:hover .job-role {
+    color: var(--blueprint);
   }
 
   .job-company {
-    font-size: 0.875rem;
-    color: var(--text-tertiary);
-  }
-
-  .job-meta {
-    display: flex;
-    flex-direction: column;
-    gap: 0.125rem;
-    text-align: left;
-  }
-
-  @media (min-width: 640px) {
-    .job-meta {
-      text-align: right;
-    }
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
   }
 
   .job-period {
-    font-size: 0.8125rem;
-    font-weight: 500;
-    color: var(--text-secondary);
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.06em;
+    color: var(--ink);
     font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    text-align: right;
   }
 
   .job-location {
-    font-size: 0.75rem;
-    color: var(--text-faint);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    color: var(--ink-mute);
+    text-transform: uppercase;
+    white-space: nowrap;
+    min-width: 140px;
+    text-align: right;
+  }
+
+  @media (max-width: 768px) {
+    .job-row {
+      grid-template-columns: 12px minmax(0, 1fr);
+      grid-template-rows: auto auto;
+      gap: 4px 16px;
+      padding: 14px 0;
+    }
+
+    .job-status {
+      grid-row: 1;
+    }
+
+    .job-main {
+      grid-row: 1;
+      grid-column: 2;
+    }
+
+    .job-period {
+      grid-row: 2;
+      grid-column: 2;
+      text-align: left;
+    }
+
+    .job-location {
+      display: none;
+    }
+
+    .job-row:hover {
+      padding-left: 8px;
+      margin-left: -8px;
+      padding-right: 8px;
+      margin-right: -8px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .job-role {
+      font-size: 1.15rem;
+    }
   }
 </style>

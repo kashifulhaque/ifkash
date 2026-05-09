@@ -5,6 +5,8 @@
   const resumeUrl = dev
     ? "http://localhost:8787/api/resume?format=view"
     : "/api/resume?format=view";
+
+  const year = new Date().getFullYear();
 </script>
 
 <svelte:head>
@@ -15,162 +17,313 @@
   />
 </svelte:head>
 
-<div class="home">
-  <section class="hero">
-    <h1 class="hero-name">Kashiful Haque</h1>
-    <p class="hero-bio">
-      Building low-level ML infrastructure and production alignment workflows.
-      Focused on transformer pre-training, reinforcement learning, and
-      high-performance inference systems in C++ and Rust.
-    </p>
-  </section>
+<section class="manual-masthead">
+  <div class="manual-meta-row">
+    <span>· Personal Site v1.0 ·</span>
+    <span class="right">© {year} ·</span>
+  </div>
+  <h1 class="manual-title">Kashiful Haque.</h1>
+  <p class="manual-tagline">
+    ML Engineer building low-level ML infrastructure and production alignment
+    workflows. Focused on transformer pre-training, post-training, reinforcement learning, and
+    high-performance inference systems in C++ and Rust.
+  </p>
+  <p class="manual-attribution">Currently working at Wand AI.</p>
+  <div class="ascii-rule" style="margin-top: 48px;"></div>
+</section>
 
-  <section class="quick-links">
-    <a href={resumeUrl} class="quick-link">
-      <span class="quick-link-text">Resume</span>
-      <span class="quick-link-icon">&nearr;</span>
-    </a>
+<section class="preface">
+  <div class="preface-grid">
+    <div class="preface-eyebrow">Preface</div>
+    <div class="preface-body">
+      <p>
+        This is a working notebook. It collects what I've built, what I'm
+        building, and what I'm reading. The accent on the title is borrowed from
+        old technical reference manuals, the kind that sat next to your
+        compiler in a beige cubicle. The rest is just engineering.
+      </p>
+      <p>
+        Most of my time is spent in the layers between research papers and
+        production: kernels, schedulers, tokenizers, training loops. If
+        something on this page looks unfinished, that's because it probably is.
+      </p>
+    </div>
+  </div>
+  <div class="ascii-rule"></div>
+</section>
+
+<section class="now">
+  <div class="now-title">Now</div>
+  <div class="now-rows">
+    <div class="now-row">
+      <span class="now-label">Currently</span>
+      <span class="now-leader" aria-hidden="true"></span>
+      <span class="now-value">ML Engineer @ wand.ai</span>
+    </div>
+    <div class="now-row">
+      <span class="now-label">Latest</span>
+      <span class="now-leader" aria-hidden="true"></span>
+      <span class="now-value">
+        <a
+          href="https://marketplace.visualstudio.com/items?itemName=ifkash.kernel-orbit"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Kernel Orbit · VS Code Extension
+        </a>
+      </span>
+    </div>
+    <div class="now-row">
+      <span class="now-label">Resume</span>
+      <span class="now-leader" aria-hidden="true"></span>
+      <span class="now-value">
+        <a href={resumeUrl}>Read</a>
+      </span>
+    </div>
     {#if $auth.isAuthenticated}
-      <a href="/editor" class="quick-link">
-        <span class="quick-link-text">Editor</span>
-        <span class="quick-link-icon">&rarr;</span>
-      </a>
+      <div class="now-row">
+        <span class="now-label">Editor</span>
+        <span class="now-leader" aria-hidden="true"></span>
+        <span class="now-value">
+          <a href="/editor">Open</a>
+        </span>
+      </div>
     {/if}
-  </section>
+  </div>
+  <div class="ascii-rule"></div>
+</section>
 
-  <section class="now">
-    <dl class="now-list">
-      <div class="now-item">
-        <dt>Currently</dt>
-        <dd>ML Engineer @ wand.ai</dd>
-      </div>
-      <div class="now-item">
-        <dt>Latest</dt>
-        <dd>
-          <a
-            href="https://marketplace.visualstudio.com/items?itemName=ifkash.kernel-orbit"
-            class="now-link"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Kernel Orbit: VS Code Extension
-          </a>
-        </dd>
-      </div>
-    </dl>
-  </section>
-</div>
+<section class="quick-actions">
+  <a href={resumeUrl} class="btn">Read Resume &nearr;</a>
+  <a href="/work" class="btn btn-secondary">See Work</a>
+  <a href="/projects" class="btn btn-secondary">Browse Projects</a>
+</section>
 
 <style>
-  .home {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-3xl);
+  /* ─── Masthead ─────────────────────────────────────────────── */
+
+  .manual-masthead {
+    padding: 64px 0 24px;
+    border-bottom: 1px solid var(--rule-soft);
   }
 
-  .hero {
-    padding-top: var(--space-xl);
-  }
-
-  .hero-name {
-    font-size: clamp(2.5rem, 6vw + 1rem, 4.5rem);
-    font-weight: 400;
-    letter-spacing: -0.035em;
-    line-height: 1.05;
-    color: var(--text-primary);
-    margin-bottom: var(--space-lg);
-  }
-
-  .hero-bio {
-    font-size: 1.125rem;
-    line-height: 1.7;
-    color: var(--text-secondary);
-    max-width: 52ch;
-  }
-
-  .quick-links {
-    display: flex;
-    flex-direction: column;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    overflow: hidden;
-  }
-
-  .quick-link {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 1rem 1.25rem;
-    transition: background var(--dur-instant) var(--ease-out-quart);
-  }
-
-  .quick-link + .quick-link {
-    border-top: 1px solid var(--border);
-  }
-
-  .quick-link:hover {
-    background: var(--surface-sunken);
-  }
-
-  .quick-link-text {
-    font-size: 0.9375rem;
-    font-weight: 500;
-    color: var(--text-primary);
-  }
-
-  .quick-link-icon {
-    font-size: 1rem;
-    color: var(--text-faint);
-    transition: color var(--dur-instant) var(--ease-out-quart),
-                transform var(--dur-fast) var(--ease-out-quart);
-  }
-
-  .quick-link:hover .quick-link-icon {
-    color: var(--accent);
-    transform: translateX(3px);
-  }
-
-  .now {
-    border-top: 1px solid var(--border);
-    padding-top: var(--space-xl);
-  }
-
-  .now-list {
-    margin: 0;
-  }
-
-  .now-item {
+  .manual-meta-row {
     display: flex;
     justify-content: space-between;
     align-items: baseline;
-    padding: 0.75rem 0;
-  }
-
-  .now-item + .now-item {
-    border-top: 1px solid var(--border-subtle);
-  }
-
-  .now-item dt {
-    font-size: 0.8125rem;
-    font-weight: 600;
-    color: var(--text-faint);
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 32px;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
+    color: var(--ink-mute);
   }
 
-  .now-item dd {
-    margin: 0;
-    font-size: 0.9375rem;
-    color: var(--text-secondary);
+  .manual-meta-row .right {
+    color: var(--blueprint);
+  }
+
+  .manual-title {
+    display: block;
+    font-family: var(--font-display);
+    font-size: clamp(3.2rem, 11vw, 8rem);
+    line-height: 0.86;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--blueprint);
+  }
+
+  .manual-tagline {
+    max-width: 720px;
+    margin: 28px 0 8px;
+    font-family: var(--font-body);
+    font-size: clamp(1.05rem, 1.7vw, 1.25rem);
+    line-height: 1.55;
+    color: var(--ink);
+  }
+
+  .manual-attribution {
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    color: var(--ink-soft);
+    font-style: italic;
+  }
+
+  /* ─── Preface ──────────────────────────────────────────────── */
+
+  .preface {
+    padding: 56px 0;
+  }
+
+  .preface-grid {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 48px;
+  }
+
+  .preface-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--blueprint);
+  }
+
+  .preface-body {
+    font-family: var(--font-body);
+    font-size: 1rem;
+    line-height: 1.7;
+    text-align: justify;
+    hyphens: auto;
+    max-width: 760px;
+  }
+
+  .preface-body p {
+    margin-bottom: 1em;
+  }
+
+  .preface-body p:first-of-type::first-letter {
+    font-family: var(--font-display);
+    float: left;
+    font-size: 4.4rem;
+    line-height: 0.85;
+    padding: 0.06em 0.14em 0 0;
+    color: var(--blueprint);
+  }
+
+  /* ─── Now ──────────────────────────────────────────────────── */
+
+  .now {
+    padding: 32px 0 56px;
+  }
+
+  .now-title {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--blueprint);
+    margin-bottom: 24px;
+  }
+
+  .now-rows {
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid var(--rule-soft);
+  }
+
+  .now-row {
+    display: grid;
+    grid-template-columns: 140px 1fr auto;
+    align-items: baseline;
+    gap: 16px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--rule-soft);
+    font-family: var(--font-mono);
+    font-size: 0.92rem;
+  }
+
+  .now-label {
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    font-size: 0.78rem;
+  }
+
+  .now-leader {
+    border-bottom: 1px dotted var(--rule-soft);
+    transform: translateY(-4px);
+  }
+
+  .now-value {
+    color: var(--ink);
     text-align: right;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
   }
 
-  .now-link {
-    color: var(--text-secondary);
-    transition: color var(--dur-instant) var(--ease-out-quart);
+  .now-value a {
+    color: var(--ink);
+    border-bottom: 1px solid var(--rule-soft);
   }
 
-  .now-link:hover {
-    color: var(--accent);
+  .now-value a:hover {
+    color: var(--blueprint);
+    border-bottom-color: var(--blueprint);
+  }
+
+  /* ─── Quick actions ────────────────────────────────────────── */
+
+  .quick-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding-top: 16px;
+  }
+
+  /* ─── Responsive ───────────────────────────────────────────── */
+
+  @media (max-width: 900px) {
+    .manual-masthead {
+      padding: 32px 0 12px;
+    }
+
+    .preface {
+      padding: 32px 0;
+    }
+
+    .preface-grid {
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    .preface-body {
+      font-size: 0.98rem;
+    }
+
+    .preface-body p:first-of-type::first-letter {
+      font-size: 3.2rem;
+    }
+
+    .manual-tagline {
+      margin: 20px 0 6px;
+      font-size: 1rem;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .manual-title {
+      font-size: clamp(2.4rem, 14vw, 3.6rem);
+      line-height: 0.92;
+    }
+
+    .manual-meta-row {
+      font-size: 0.6rem;
+      letter-spacing: 0.12em;
+      margin-bottom: 16px;
+    }
+
+    .now-row {
+      grid-template-columns: 1fr;
+      gap: 4px;
+    }
+
+    .now-leader {
+      display: none;
+    }
+
+    .now-value {
+      text-align: left;
+      white-space: normal;
+    }
+
+    .quick-actions :global(.btn) {
+      width: 100%;
+      max-width: none;
+    }
   }
 </style>

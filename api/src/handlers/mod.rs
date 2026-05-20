@@ -9,3 +9,4 @@ pub mod resume_api;
 pub mod typst;
 pub mod ai;
 pub mod home_weather;
+pub mod hashnode;

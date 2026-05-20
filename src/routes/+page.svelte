@@ -18,38 +18,13 @@
 </svelte:head>
 
 <section class="manual-masthead">
-  <div class="manual-meta-row">
-    <span>· Personal Site v1.0 ·</span>
-    <span class="right">© {year} ·</span>
-  </div>
   <h1 class="manual-title">Kashiful Haque.</h1>
   <p class="manual-tagline">
-    ML Engineer building low-level ML infrastructure and production alignment
-    workflows. Focused on transformer pre-training, post-training, reinforcement learning, and
-    high-performance inference systems in C++ and Rust.
+    ML Engineer with 4 YOE pre-training and post-training LLMs with RL pipelines,
+    and building high-performance inference systems in C++ and Rust.
+    <br />
+    Also building LLM apps on the day job.
   </p>
-  <p class="manual-attribution">Currently working at Wand AI.</p>
-  <div class="ascii-rule" style="margin-top: 48px;"></div>
-</section>
-
-<section class="preface">
-  <div class="preface-grid">
-    <div class="preface-eyebrow">Preface</div>
-    <div class="preface-body">
-      <p>
-        This is a working notebook. It collects what I've built, what I'm
-        building, and what I'm reading. The accent on the title is borrowed from
-        old technical reference manuals, the kind that sat next to your
-        compiler in a beige cubicle. The rest is just engineering.
-      </p>
-      <p>
-        Most of my time is spent in the layers between research papers and
-        production: kernels, schedulers, tokenizers, training loops. If
-        something on this page looks unfinished, that's because it probably is.
-      </p>
-    </div>
-  </div>
-  <div class="ascii-rule"></div>
 </section>
 
 <section class="now">
@@ -59,26 +34,6 @@
       <span class="now-label">Currently</span>
       <span class="now-leader" aria-hidden="true"></span>
       <span class="now-value">ML Engineer @ wand.ai</span>
-    </div>
-    <div class="now-row">
-      <span class="now-label">Latest</span>
-      <span class="now-leader" aria-hidden="true"></span>
-      <span class="now-value">
-        <a
-          href="https://marketplace.visualstudio.com/items?itemName=ifkash.kernel-orbit"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Kernel Orbit · VS Code Extension
-        </a>
-      </span>
-    </div>
-    <div class="now-row">
-      <span class="now-label">Resume</span>
-      <span class="now-leader" aria-hidden="true"></span>
-      <span class="now-value">
-        <a href={resumeUrl}>Read</a>
-      </span>
     </div>
     {#if $auth.isAuthenticated}
       <div class="now-row">
@@ -90,7 +45,6 @@
       </div>
     {/if}
   </div>
-  <div class="ascii-rule"></div>
 </section>
 
 <section class="quick-actions">

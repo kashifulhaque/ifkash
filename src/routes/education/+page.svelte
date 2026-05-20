@@ -17,13 +17,7 @@
 </script>
 
 <header class="page-header">
-  <div class="meta-row">
-    <span>· Education ·</span>
-    <span class="right">B.Sc. · Data Science</span>
-  </div>
   <h1 class="section-title">Education.</h1>
-  <p class="section-subtitle">Formal studies and academic foundation.</p>
-  <div class="ascii-rule"></div>
 </header>
 
 <section class="edu-list">
@@ -31,7 +25,7 @@
     <span class="edu-status"></span>
     <div class="edu-main">
       <h2 class="edu-school">Indian Institute of Technology Madras</h2>
-      <p class="edu-degree">B.Sc. Data Science and Applications</p>
+      <p class="edu-degree">BS, Data Science and Applications</p>
     </div>
     <span class="edu-period">2020 — 2024</span>
     <span class="edu-location">Chennai, India</span>
@@ -45,7 +39,6 @@
       <span class="focus-tag stagger" style="--i: {i}">{area}</span>
     {/each}
   </div>
-  <div class="ascii-rule"></div>
 </section>
 
 <style>

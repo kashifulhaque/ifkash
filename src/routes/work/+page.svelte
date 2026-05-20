@@ -19,7 +19,7 @@
       company: 'Wand AI',
       url: 'https://wand.ai',
       period: '2025 — Present',
-      location: 'Palo Alto, CA',
+      location: 'Bangalore, India',
       status: 'current'
     },
     {
@@ -50,13 +50,7 @@
 </script>
 
 <header class="page-header">
-  <div class="meta-row">
-    <span>· Work History ·</span>
-    <span class="right">{jobs.length} entries</span>
-  </div>
   <h1 class="section-title">Work.</h1>
-  <p class="section-subtitle">Building ML systems and shipping code.</p>
-  <div class="ascii-rule"></div>
 </header>
 
 <section class="jobs-list">

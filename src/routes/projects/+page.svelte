@@ -17,7 +17,7 @@
       name: 'Llama-3.2-3B-Polite-ORPO',
       desc: 'Llama 3.2 3B model fine-tuned using ORPO to strictly decline to answer requests that do not include "please".',
       page: '/projects/polite-orpo',
-      status: 'shipped',
+      status: 'active',
       links: [
         { label: 'Model', url: 'https://huggingface.co/weights-and-wires/Llama-3.2-3B-Polite-ORPO' }
       ]
@@ -35,7 +35,7 @@
       name: 'smol-llama',
       desc: '360M parameter LLaMA trained from scratch on 6B tokens. GQA, RoPE, SwiGLU. Single H100, 22hrs, $53.',
       page: '/projects/smol-llama',
-      status: 'shipped',
+      status: 'active',
       links: [
         { label: 'Model', url: 'https://huggingface.co/weights-and-wires/smol-llama' },
         { label: 'Code', url: 'https://github.com/weights-and-wires/smol-llama' }
@@ -45,7 +45,7 @@
       name: 'smoltorch',
       desc: 'Autograd engine and neural networks in ~500 lines of NumPy. Educational deep learning.',
       page: '/projects/smoltorch',
-      status: 'shipped',
+      status: 'active',
       links: [
         { label: 'Code', url: 'https://github.com/kashifulhaque/smoltorch' },
         { label: 'PyPI', url: 'https://pypi.org/project/smoltorch/' }
@@ -55,7 +55,7 @@
       name: 'NoPokeDB',
       desc: 'Lightweight vector DB with hnswlib + SQLite. Crash recovery, 2K+ PyPI downloads.',
       page: '/projects/nopokedb',
-      status: 'shipped',
+      status: 'active',
       links: [
         { label: 'Code', url: 'https://github.com/kashifulhaque/nopokedb' },
         { label: 'PyPI', url: 'https://pypi.org/project/nopokedb/' }
@@ -65,7 +65,7 @@
       name: 'Boo',
       desc: 'AI Discord bot. Natural conversations, image understanding, and generation.',
       page: '/projects/boo',
-      status: 'shipped',
+      status: 'active',
       links: [
         { label: 'Code', url: 'https://github.com/VVIP-Kitchen/boo' },
         { label: 'Site', url: 'https://boo.ifkash.dev' }
@@ -75,7 +75,7 @@
       name: 'ferray',
       desc: 'NumPy-like ndarray in Rust with Python bindings. Learning project.',
       page: '/projects/ferray',
-      status: 'archived',
+      status: 'active',
       links: [
         { label: 'Code', url: 'https://github.com/kashifulhaque/ferray' }
       ]
@@ -83,7 +83,7 @@
     {
       name: 'endark',
       desc: 'Monochrome, dark-only CSS library. Glassmorphism meets terminal-editorial aesthetic. Zero dependencies.',
-      status: 'shipped',
+      status: 'active',
       links: [
         { label: 'Site', url: 'https://endark.ifkash.dev' },
         { label: 'Code', url: 'https://github.com/kashifulhaque/endark' }
@@ -92,7 +92,7 @@
     {
       name: 'Opencode theme for VS Code',
       desc: 'VS Code light and dark theme generated from OpenCode reference JSON.',
-      status: 'shipped',
+      status: 'active',
       links: [
         { label: 'Download', url: 'https://github.com/kashifulhaque/opencode-vscode-theme/releases/latest' },
         { label: 'Code', url: 'https://github.com/kashifulhaque/opencode-vscode-theme' }
@@ -102,13 +102,8 @@
 </script>
 
 <header class="page-header">
-  <div class="meta-row">
-    <span>· Project Index ·</span>
-    <span class="right">{projects.length} entries</span>
-  </div>
   <h1 class="section-title">Projects.</h1>
   <p class="section-subtitle">Things I've built or am actively shaping.</p>
-  <div class="ascii-rule"></div>
 </header>
 
 <section class="projects-list">
@@ -147,18 +142,6 @@
     </article>
   {/each}
 </section>
-
-<div class="legend">
-  <span class="legend-item"
-    ><span class="project-status active"></span> Active</span
-  >
-  <span class="legend-item"
-    ><span class="project-status shipped"></span> Shipped</span
-  >
-  <span class="legend-item"
-    ><span class="project-status archived"></span> Archived</span
-  >
-</div>
 
 <style>
   .page-header {

@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
+  import { getApiBase } from "$lib/apiBase";
 
   type Post = {
     id: string;
@@ -37,7 +38,7 @@
     const ctrl = new AbortController();
     (async () => {
       try {
-        const res = await fetch("https://gql.hashnode.com/", {
+        const res = await fetch(`${getApiBase()}/api/hashnode`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ query }),
@@ -65,17 +66,7 @@
 </svelte:head>
 
 <header class="page-header">
-  <div class="meta-row">
-    <span>· Build Log ·</span>
-    <span class="right">
-      {#if !loading && !error}{posts.length} entries{:else}—{/if}
-    </span>
-  </div>
   <h1 class="section-title">Blog.</h1>
-  <p class="section-subtitle">
-    Notes from the build log and rough cuts worth sharing.
-  </p>
-  <div class="ascii-rule"></div>
 </header>
 
 {#if loading}

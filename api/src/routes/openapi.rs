@@ -24,7 +24,6 @@ use crate::handlers;
         handlers::typst::compile,
         handlers::ai::rewrite,
         handlers::home_weather::handle,
-        handlers::hashnode::proxy,
     ),
     components(
         schemas(
@@ -52,7 +51,6 @@ use crate::handlers;
             handlers::ai::AiRewriteResponse,
             handlers::home_weather::HomeWeatherResponse,
             handlers::home_weather::LocalityWeatherData,
-            handlers::hashnode::HashnodeProxyRequest,
         )
     ),
     tags(
@@ -66,7 +64,6 @@ use crate::handlers;
         (name = "Typst", description = "Typst compilation service"),
         (name = "AI", description = "AI Integration endpoints"),
         (name = "Weather", description = "Local weather endpoints"),
-        (name = "Hashnode", description = "Hashnode GraphQL proxy endpoints"),
     ),
     modifiers(&SecurityAddon),
     info(

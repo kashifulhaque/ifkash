@@ -11,7 +11,6 @@ pub mod resume_api;
 pub mod typst;
 pub mod ai;
 pub mod home_weather;
-pub mod hashnode;
 
 use worker::*;
 
@@ -35,5 +34,4 @@ pub fn register_routes(router: Router<'_, ()>) -> Router<'_, ()> {
     .get_async("/api/auth/verify", auth::verify)
     .post_async("/api/lc/submissions", lc::submissions)
     .get_async("/api/home_weather", home_weather::route)
-    .post_async("/api/hashnode", hashnode::route)
 }

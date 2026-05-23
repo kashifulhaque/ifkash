@@ -15,10 +15,10 @@ ML Engineer with 4 YOE across backend infrastructure, LLM pre-training, post-tra
 
 *#cardo[wand.ai]* #h(1fr) _Bangalore_ \
 _Backend AI / ML Engineer_ #h(1fr) 11/2025 -- Present \
-- Built an observability layer for agent workflows: span hierarchy, trace IDs, and Kafka-based monitoring events for end-to-end run visibility.
-- Implemented OAuth/OIDC credential flows with deferred auth, token refresh, and variable propagation across background tasks.
-- Built a transpiler for the V3 workflow spec: generates auth gateways, OAuth triggers, and injects credential references into tool environments.
-- Added dynamic tool support — agents can define, reference, and execute tools that resolve workflow state variables at runtime.
+- Built observability for agent workflows: span hierarchy, trace IDs, and Kafka-based monitoring events for e2e run visibility.
+- Implemented OAuth/OIDC credential flows with deferred auth, token refresh, and variable propagation across agentic tasks.
+- Built workflow specs: generates auth gateways, OAuth triggers, and injects credential references into tool environments.
+- Added dynamic tool support: agents can define, reference, and execute tools that resolve workflow state variables at runtime.
 
 *#cardo[American Express]* #h(1fr) _Bangalore_ \
 _Engineer III_ #h(1fr) 02/2025 -- 11/2025 \

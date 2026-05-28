@@ -9,7 +9,7 @@
 = #cardo_headings[Kashiful Haque]
 +91 8240868544 • #link("mailto:me@ifkash.dev")[me\@ifkash.dev] • #link("https://github.com/kashifulhaque")[github] • #link("https://hf.co/ifkash")[huggingface] • #link("https://www.linkedin.com/in/kashifulhaque")[linkedin] • #link("https://ifkash.dev")[ifkash.dev]
 
-ML Engineer with 4 YOE across backend infrastructure, LLM pre-training, post-training with RL, and building inference engines in C++ and Rust. Pre-trained a 360M LLaMA from scratch, fine-tuned production LLMs, and applied GRPO/ORPO for behavioral alignment. Looking for roles in pre-training, RL-based post-training, and GPU inference — CUDA, HPC, and low-level runtime work.
+ML Engineer with 4 YOE across LLM pre-training, post-training with RL, and high-performance inference in C++ and Rust. Pre-trained a 360M LLaMA from scratch, fine-tuned production LLMs, and applied GRPO/ORPO for behavioral alignment. Targeting roles in pre-training, RL-based post-training, and GPU inference — CUDA, HPC, and low-level runtime work.
 
 = #cardo_headings[Work Experience]
 
@@ -22,14 +22,16 @@ _Backend AI / ML Engineer_ #h(1fr) 11/2025 -- Present \
 
 *#cardo[American Express]* #h(1fr) _Bangalore_ \
 _Engineer III_ #h(1fr) 02/2025 -- 11/2025 \
-- Built a hybrid search over 200k+ internal docs combining dense embeddings and keyword retrieval; cut p95 query latency from 30s to 2s via caching and query optimizations.
-- Ran large-scale transformer training and profiling experiments (FlashAttention, KV-cache, batching) to improve embedding throughput and serving efficiency.
+- Built a hybrid retrieval system over 200k+ internal docs combining dense embeddings and keyword retrieval; cut p95 query latency from 30s to 2s via caching and query optimizations.
+- Shipped a live Webex meeting-summary bot (headless Chrome + Webex SDK as virtual participant); streamed real-time transcripts, generated rolling LLM summaries, and posted updates to Slack every 5 minutes.
+- Profiled large-scale transformer training and inference (FlashAttention, KV-cache, batching) to improve embedding throughput and serving efficiency.
 
 *#cardo[Fiery]* #h(1fr) _Bangalore_ \
 _Associate Software Engineer_ #h(1fr) 01/2023 -- 02/2025 \
+- Built Fiery Scribe: translates natural-language print requests to printer XML using ModernBERT + LLM, replacing brittle rule-based parsing.
+- Built AskDB: an LLM agent that maps natural language to SQL over production DBs and generates business reports for non-technical users.
+- Built Fiery Chat: internal RAG assistant on the company knowledge base; fine-tuned the base model with SFT to eliminate acronym hallucinations across new-hire onboarding and query routing.
 - Fine-tuned domain LLMs using SFT/QLoRA, served via vLLM on T4 clusters with sub-second p95 TTFT.
-- Built Fiery Scribe: translates print requests to printer XML using ModernBERT + LLM.
-- Built AskDB: an LLM agent that maps natural language to SQL over production DBs and generates business reports.
 
 
 = #cardo_headings[ML Engineering Work]
@@ -50,12 +52,6 @@ _Associate Software Engineer_ #h(1fr) 01/2023 -- 02/2025 \
 #link("https://blog.ifkash.dev/smol-llama-pretraining")[blog] \
 - Trained a 360M LLaMA from scratch in PyTorch with GQA, RoPE, RMSNorm, and SwiGLU.
 - Pre-trained on 6B tokens using FlashAttention on H100 at 75K tokens/sec; built a cost-efficient pipeline with gradient accumulation and checkpointing.
-
-*#cardo[smoltorch: minimal autograd engine]* • 
-#link("https://github.com/kashifulhaque/smoltorch")[github] • 
-#link("https://pypi.org/project/smoltorch/")[pypi] • 
-#link("https://blog.ifkash.dev/smoltorch")[blog] \
-- Autograd engine with computation graphs and topological scheduling, built to study gradient propagation.
 
 = #cardo_headings[Education]
 

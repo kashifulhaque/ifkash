@@ -6,6 +6,7 @@
       "name": "ifkash",
       "dependencies": {
         "@huggingface/transformers": "^3",
+        "@myriaddreamin/typst-ts-web-compiler": "0.7.0",
         "@myriaddreamin/typst.ts": "^0.7.0",
         "@tailwindcss/vite": "^4.1.18",
         "@types/three": "^0.182.0",
@@ -188,6 +189,8 @@
     "@jridgewell/sourcemap-codec": ["@jridgewell/sourcemap-codec@1.5.5", "", {}, "sha512-cYQ9310grqxueWbl+WuIUIaiUaDcj7WOq5fVhEljNVgRfOUhY9fy2zTvfoqWsnebh8Sl70VScFbICvJnLKB0Og=="],
 
     "@jridgewell/trace-mapping": ["@jridgewell/trace-mapping@0.3.31", "", { "dependencies": { "@jridgewell/resolve-uri": "^3.1.0", "@jridgewell/sourcemap-codec": "^1.4.14" } }, "sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw=="],
+
+    "@myriaddreamin/typst-ts-web-compiler": ["@myriaddreamin/typst-ts-web-compiler@0.7.0", "", {}, "sha512-nMwMcfOBy5pABPDuVM7/u8425SxhPUM+OJe6daqqgVOT3+neCTz4JKwx2L8XasfEHTNvd0cUI07LR9q5ADo7Gw=="],
 
     "@myriaddreamin/typst.ts": ["@myriaddreamin/typst.ts@0.7.0", "", { "dependencies": { "idb": "^7.1.1" }, "peerDependencies": { "@myriaddreamin/typst-ts-renderer": "^0.7.0", "@myriaddreamin/typst-ts-web-compiler": "^0.7.0" }, "optionalPeers": ["@myriaddreamin/typst-ts-renderer", "@myriaddreamin/typst-ts-web-compiler"] }, "sha512-JtO5Td/1QesH1IBKAZtbayFNK8u2sl3iz18Y67uYqBEdcXiu3z+wpZcDDKlmVJvAcCgSjHTnuk6ZLfkYclrGGQ=="],
 

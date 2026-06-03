@@ -3,6 +3,11 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 use utoipa::ToSchema;
 
+// Statically hosted resume (served by Cloudflare Pages, independent of the
+// PocketBase VM) used as a graceful fallback when the origin is unreachable.
+const STATIC_RESUME_URL: &str = "https://ifkash.dev/assets/Kashiful_Haque.pdf";
+const RESUME_FILENAME: &str = "Kashiful_Haque.pdf";
+
 #[derive(Debug, Deserialize)]
 struct PocketBaseAuthResponse {
     token: String,
@@ -101,6 +106,29 @@ async fn authenticate_pocketbase(
     )
 )]
 pub async fn handle(req: Request, ctx: RouteContext<()>) -> Result<Response> {
+    // Parse query parameters up front so the fallback path can use them too.
+    let url = req.url()?;
+    let format = url
+        .query_pairs()
+        .find(|(key, _)| key == "format")
+        .map(|(_, value)| value.to_string());
+
+    match serve_from_pocketbase(&ctx, format.as_deref()).await {
+        Ok(response) => Ok(response),
+        Err(e) => {
+            // The origin (PocketBase) is unreachable, e.g. a Cloudflare 522 when
+            // the VM is down. Degrade gracefully by serving the static resume PDF
+            // instead of failing the request.
+            console_log!(
+                "Resume: PocketBase unavailable, serving static fallback: {}",
+                e
+            );
+            serve_static_fallback(format.as_deref()).await
+        }
+    }
+}
+
+async fn serve_from_pocketbase(ctx: &RouteContext<()>, format: Option<&str>) -> Result<Response> {
     // Get PocketBase configuration from environment
     let pocketbase_url = ctx.var("POCKETBASE_URL")?.to_string();
     let pb_email = ctx.secret("POCKETBASE_EMAIL")?.to_string();
@@ -110,13 +138,6 @@ pub async fn handle(req: Request, ctx: RouteContext<()>) -> Result<Response> {
 
     // Authenticate with PocketBase to get JWT token
     let token = authenticate_pocketbase(&client, &pocketbase_url, &pb_email, &pb_password).await?;
-
-    // Parse query parameters
-    let url = req.url()?;
-    let format = url
-        .query_pairs()
-        .find(|(key, _)| key == "format")
-        .map(|(_, value)| value.to_string());
 
     // Fetch the latest resume record from PocketBase
     let list_url = format!(
@@ -137,10 +158,10 @@ pub async fn handle(req: Request, ctx: RouteContext<()>) -> Result<Response> {
             .text()
             .await
             .unwrap_or_else(|_| "Unknown error".to_string());
-        return Response::error(
-            format!("PocketBase API error ({}): {}", status, error_text),
-            500,
-        );
+        return Err(Error::RustError(format!(
+            "PocketBase API error ({}): {}",
+            status, error_text
+        )));
     }
 
     let list_response: PocketBaseListResponse = pb_response
@@ -160,7 +181,7 @@ pub async fn handle(req: Request, ctx: RouteContext<()>) -> Result<Response> {
     );
 
     // Handle different response formats
-    match format.as_deref() {
+    match format {
         Some("json") => {
             // Return metadata with download URL
             Response::from_json(&ResumeMetadataResponse {
@@ -170,14 +191,12 @@ pub async fn handle(req: Request, ctx: RouteContext<()>) -> Result<Response> {
                 created: resume.created.clone(),
                 updated: resume.updated.clone(),
                 pdf_url: file_url,
-                pdf_filename: "Kashiful_Haque.pdf".to_string(),
+                pdf_filename: RESUME_FILENAME.to_string(),
             })
         }
         Some("url") => {
             // Return just the URL
-            Response::from_json(&ResumeUrlResponse {
-                url: file_url
-            })
+            Response::from_json(&ResumeUrlResponse { url: file_url })
         }
         other => {
             // Default to inline view, unless explicitly requested as attachment/download
@@ -194,7 +213,10 @@ pub async fn handle(req: Request, ctx: RouteContext<()>) -> Result<Response> {
                 .map_err(|e| Error::RustError(format!("Failed to download PDF: {}", e)))?;
 
             if !pdf_response.status().is_success() {
-                return Response::error("Failed to download PDF from PocketBase", 500);
+                return Err(Error::RustError(format!(
+                    "Failed to download PDF from PocketBase ({})",
+                    pdf_response.status()
+                )));
             }
 
             let pdf_bytes = pdf_response
@@ -202,15 +224,60 @@ pub async fn handle(req: Request, ctx: RouteContext<()>) -> Result<Response> {
                 .await
                 .map_err(|e| Error::RustError(format!("Failed to read PDF bytes: {}", e)))?;
 
-            let headers = Headers::new();
-            headers.set("Content-Type", "application/pdf")?;
-            headers.set(
-                "Content-Disposition",
-                &format!("{}; filename=\"Kashiful_Haque.pdf\"", disposition_type),
-            )?;
-
-            Ok(Response::from_bytes(pdf_bytes.to_vec())?
-                .with_headers(headers))
+            pdf_response_from_bytes(pdf_bytes.to_vec(), disposition_type)
         }
     }
+}
+
+async fn serve_static_fallback(format: Option<&str>) -> Result<Response> {
+    match format {
+        Some("json") => Response::from_json(&ResumeMetadataResponse {
+            id: String::new(),
+            version: Some("static-fallback".to_string()),
+            notes: Some("Served from static asset; PocketBase is currently unavailable.".to_string()),
+            created: String::new(),
+            updated: String::new(),
+            pdf_url: STATIC_RESUME_URL.to_string(),
+            pdf_filename: RESUME_FILENAME.to_string(),
+        }),
+        Some("url") => Response::from_json(&ResumeUrlResponse {
+            url: STATIC_RESUME_URL.to_string(),
+        }),
+        other => {
+            let disposition_type = if matches!(other, Some("attachment") | Some("download")) {
+                "attachment"
+            } else {
+                "inline"
+            };
+
+            let client = reqwest::Client::new();
+            let pdf_response = client
+                .get(STATIC_RESUME_URL)
+                .send()
+                .await
+                .map_err(|e| Error::RustError(format!("Failed to fetch static resume: {}", e)))?;
+
+            if !pdf_response.status().is_success() {
+                return Response::error("Resume temporarily unavailable", 502);
+            }
+
+            let pdf_bytes = pdf_response
+                .bytes()
+                .await
+                .map_err(|e| Error::RustError(format!("Failed to read static resume bytes: {}", e)))?;
+
+            pdf_response_from_bytes(pdf_bytes.to_vec(), disposition_type)
+        }
+    }
+}
+
+fn pdf_response_from_bytes(bytes: Vec<u8>, disposition_type: &str) -> Result<Response> {
+    let headers = Headers::new();
+    headers.set("Content-Type", "application/pdf")?;
+    headers.set(
+        "Content-Disposition",
+        &format!("{}; filename=\"{}\"", disposition_type, RESUME_FILENAME),
+    )?;
+
+    Ok(Response::from_bytes(bytes)?.with_headers(headers))
 }

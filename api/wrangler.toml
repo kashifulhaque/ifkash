@@ -30,6 +30,11 @@ database_name = "ifkash"
 database_id = "b84c4a60-0130-4784-a638-17e529ae5ab3"
 migrations_dir = "migrations"
 
+# Rendered resume PDFs (binary) — D1 holds the source + metadata + R2 key.
+[[r2_buckets]]
+binding = "RESUME_BUCKET"
+bucket_name = "ifkash"
+
 [vars]
 # Only this email (verified by Cloudflare Access) may write resume versions.
 OWNER_EMAIL = "haque.kashiful7@gmail.com"

@@ -2,7 +2,6 @@ use worker::*;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 use wasm_bindgen::JsValue;
-use base64::{engine::general_purpose::STANDARD, Engine as _};
 
 // Statically hosted resume (served by Cloudflare Pages, independent of D1)
 // used as a graceful fallback when the database is unavailable or empty.
@@ -17,7 +16,7 @@ struct PdfRow {
     notes: Option<String>,
     created: String,
     updated: String,
-    pdf_base64: String,
+    pdf_key: String,
 }
 
 #[derive(Serialize, ToSchema)]
@@ -81,7 +80,7 @@ async fn serve_from_d1(
     let row: Option<PdfRow> = match id {
         Some(id) => {
             d1.prepare(
-                "SELECT id, version, notes, created, updated, pdf_base64 \
+                "SELECT id, version, notes, created, updated, pdf_key \
                  FROM resume_versions WHERE id = ?1",
             )
             .bind(&[JsValue::from_f64(id)])?
@@ -90,7 +89,7 @@ async fn serve_from_d1(
         }
         None => {
             d1.prepare(
-                "SELECT id, version, notes, created, updated, pdf_base64 \
+                "SELECT id, version, notes, created, updated, pdf_key \
                  FROM resume_versions ORDER BY datetime(created) DESC, id DESC LIMIT 1",
             )
             .first(None)
@@ -120,9 +119,18 @@ async fn serve_from_d1(
                 "inline"
             };
 
-            let pdf_bytes = STANDARD
-                .decode(row.pdf_base64.as_bytes())
-                .map_err(|e| Error::RustError(format!("Failed to decode PDF: {}", e)))?;
+            // Fetch the rendered PDF bytes from R2.
+            let object = ctx
+                .bucket("RESUME_BUCKET")?
+                .get(&row.pdf_key)
+                .execute()
+                .await?
+                .ok_or_else(|| Error::RustError("Resume PDF not found in R2".to_string()))?;
+            let pdf_bytes = object
+                .body()
+                .ok_or_else(|| Error::RustError("Empty R2 object body".to_string()))?
+                .bytes()
+                .await?;
 
             pdf_response_from_bytes(pdf_bytes, disposition_type)
         }

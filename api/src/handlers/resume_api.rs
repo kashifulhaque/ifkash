@@ -2,7 +2,6 @@ use worker::*;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 use wasm_bindgen::JsValue;
-use base64::{engine::general_purpose::STANDARD, Engine as _};
 
 use super::access;
 
@@ -187,20 +186,26 @@ pub async fn upload(mut req: Request, ctx: RouteContext<()>) -> Result<Response>
         _ => None,
     };
 
-    let pdf_base64 = STANDARD.encode(pdf_bytes.as_slice());
     let now = now_iso();
+    let pdf_key = format!("resumes/{}.pdf", chrono::Utc::now().timestamp_millis());
+
+    // Store the rendered PDF in R2; D1 keeps the source + metadata + R2 key.
+    ctx.bucket("RESUME_BUCKET")?
+        .put(&pdf_key, pdf_bytes)
+        .execute()
+        .await?;
 
     let d1 = ctx.d1("IFKASH_D1")?;
     let inserted: Option<InsertedRow> = d1
         .prepare(
-            "INSERT INTO resume_versions (version, notes, typst_source, pdf_base64, created, updated) \
+            "INSERT INTO resume_versions (version, notes, typst_source, pdf_key, created, updated) \
              VALUES (?1, ?2, ?3, ?4, ?5, ?6) RETURNING id",
         )
         .bind(&[
             js_opt(&version),
             js_opt(&notes),
             JsValue::from_str(&typst_source),
-            JsValue::from_str(&pdf_base64),
+            JsValue::from_str(&pdf_key),
             JsValue::from_str(&now),
             JsValue::from_str(&now),
         ])?

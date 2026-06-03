@@ -1,5 +1,4 @@
 <script>
-  import { auth } from "$lib/stores/auth";
   import { dev } from "$app/environment";
 
   const resumeUrl = dev
@@ -35,15 +34,6 @@
       <span class="now-leader" aria-hidden="true"></span>
       <span class="now-value">ML Engineer @ wand.ai</span>
     </div>
-    {#if $auth.isAuthenticated}
-      <div class="now-row">
-        <span class="now-label">Editor</span>
-        <span class="now-leader" aria-hidden="true"></span>
-        <span class="now-value">
-          <a href="/editor">Open</a>
-        </span>
-      </div>
-    {/if}
   </div>
 </section>
 

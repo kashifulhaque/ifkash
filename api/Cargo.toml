@@ -8,7 +8,7 @@ authors = ["kashifulhaque <haque.kashiful7@gmail.com>"]
 crate-type = ["cdylib"]
 
 [dependencies]
-worker = { version = "0.7.2", features = ['http'] }
+worker = { version = "0.7.2", features = ['http', 'd1'] }
 worker-macros = { version = "0.6", features = ['http'] }
 serde = { version = "1.0.228", features = ["derive"] }
 serde_json = "1.0.145"
@@ -17,3 +17,5 @@ futures = "0.3.31"
 chrono = { version = "0.4.42", features = ["serde"] }
 reqwest = { version = "0.12.24", features = ["json", "rustls-tls", "multipart"] }
 urlencoding = "2.1"
+base64 = "0.22"
+wasm-bindgen = "0.2"

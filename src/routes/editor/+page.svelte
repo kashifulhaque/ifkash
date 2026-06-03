@@ -1,8 +1,7 @@
 <script lang="ts">
-  import { auth } from "$lib/stores/auth";
-  import { goto } from "$app/navigation";
   import { browser } from "$app/environment";
   import MonacoEditor from "$lib/components/MonacoEditor.svelte";
+  import { compileTypstToPdf } from "$lib/typst";
   import type { PageData } from "./$types";
   import {
     LogOut,
@@ -48,14 +47,12 @@
 
   $: resume = data.resume;
 
-  async function loadTypstContent() {
+  function loadTypstContent() {
     try {
-      const response = await fetch(resume.typst_url);
-      if (!response.ok) throw new Error("Failed to fetch Typst file");
-      typstContent = await response.text();
+      typstContent = resume.typst_source ?? "";
       pdfUrl = resume.pdf_url;
     } catch (e) {
-      error = "Failed to load Typst file";
+      error = "Failed to load resume";
     } finally {
       loading = false;
       if (browser) {
@@ -68,8 +65,8 @@
   $: if (resume) loadTypstContent();
 
   function handleLogout() {
-    auth.logout();
-    goto("/");
+    // Cloudflare Access logout clears the edge session.
+    window.location.href = "/cdn-cgi/access/logout";
   }
 
   async function handleCompile() {
@@ -77,25 +74,14 @@
     compiling = true;
 
     try {
-      const token = auth.getToken();
-      const apiUrl = typeof window !== "undefined" && window.location.hostname === "localhost"
-        ? "http://localhost:8787/api/typst/compile"
-        : "https://ifkash.dev/api/typst/compile";
-
-      const response = await fetch(apiUrl, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ code: typstContent }),
-      });
-
-      if (!response.ok) throw new Error(await response.text() || "Compilation failed");
-
-      const blob = await response.blob();
+      // Compile entirely in the browser via typst.ts (WASM) — no server.
+      const pdf = await compileTypstToPdf(typstContent);
+      const blob = new Blob([pdf], { type: "application/pdf" });
       if (pdfUrl?.startsWith("blob:")) URL.revokeObjectURL(pdfUrl);
       pdfUrl = URL.createObjectURL(blob);
       hasUnsavedChanges = false;
     } catch (e: any) {
-      compilationError = e.message;
+      compilationError = e?.message ?? String(e);
     } finally {
       compiling = false;
     }
@@ -148,20 +134,19 @@
     }, 300);
 
     try {
-      const token = auth.getToken();
       const apiUrl = typeof window !== "undefined" && window.location.hostname === "localhost"
         ? "http://localhost:8787/api/resume/upload"
         : "https://ifkash.dev/api/resume/upload";
 
       const pdfBlob = await fetch(pdfUrl).then((r) => r.blob());
       const formData = new FormData();
-      formData.append("typst_file", new Blob([typstContent], { type: "text/plain" }), resume.typst_filename || "resume.typ");
+      formData.append("typst_source", typstContent);
       formData.append("pdf_file", pdfBlob, "resume.pdf");
       formData.append("version", (parseInt(resume.version || "0") + 1).toString());
 
+      // Auth is enforced at the edge by Cloudflare Access (cookie sent same-origin).
       const response = await fetch(apiUrl, {
         method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
         body: formData,
       });
 
@@ -196,14 +181,13 @@
     try {
       if (browser) localStorage.setItem("preferred_ai_model", selectedModel);
 
-      const token = auth.getToken();
       const apiUrl = typeof window !== "undefined" && window.location.hostname === "localhost"
         ? "http://localhost:8787/api/ai/rewrite"
         : "https://ifkash.dev/api/ai/rewrite";
 
       const response = await fetch(apiUrl, {
         method: "POST",
-        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ code: typstContent, job_description: jobDescription, model: selectedModel }),
       });
 

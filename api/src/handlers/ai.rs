@@ -2,7 +2,7 @@ use worker::*;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use utoipa::ToSchema;
-use super::resume_api::verify_auth_header;
+use super::access;
 
 #[derive(Deserialize, ToSchema)]
 pub struct AiRewriteRequest {
@@ -44,9 +44,6 @@ struct OpenRouterMessage {
     post,
     path = "/api/ai/rewrite",
     tag = "AI",
-    security(
-        ("bearer_auth" = [])
-    ),
     request_body = AiRewriteRequest,
     responses(
         (status = 200, description = "Rewritten code", body = AiRewriteResponse),
@@ -55,9 +52,9 @@ struct OpenRouterMessage {
     )
 )]
 pub async fn rewrite(mut req: Request, ctx: RouteContext<()>) -> Result<Response> {
-    // Verify authentication
-    let headers = req.headers();
-    verify_auth_header(&headers)?;
+    if !access::is_authorized(&req, &ctx) {
+        return access::unauthorized();
+    }
 
     let body: AiRewriteRequest = req.json().await?;
     

@@ -1,45 +1,20 @@
-import { redirect } from '@sveltejs/kit';
 import { browser } from '$app/environment';
 import type { PageLoad } from './$types';
 
+// Protected by Cloudflare Access (same as /editor). Same-origin fetch carries
+// the Access cookie; localhost bypasses the check for local development.
 export const load: PageLoad = async ({ fetch }) => {
-    const token = browser ? localStorage.getItem('auth_token') : null;
+	const baseUrl =
+		browser && window.location.hostname === 'localhost' ? 'http://localhost:8787' : 'https://ifkash.dev';
 
-    if (!token) {
-        throw redirect(307, '/login');
-    }
+	const response = await fetch(`${baseUrl}/api/resume/history`);
 
-    try {
-        const baseUrl = browser && window.location.hostname === 'localhost'
-            ? 'http://localhost:8787'
-            : 'https://ifkash.dev';
+	if (!response.ok) {
+		throw new Error(`Failed to load history (${response.status})`);
+	}
 
-        const response = await fetch(`${baseUrl}/api/resume/history`, {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-
-        if (!response.ok) {
-            if (response.status === 401) {
-                if (browser) {
-                    localStorage.removeItem('auth_token');
-                    localStorage.removeItem('auth_user');
-                }
-                throw redirect(307, '/login');
-            }
-            throw new Error('Failed to fetch history');
-        }
-
-        const history = await response.json();
-        return { history };
-    } catch (error) {
-        if (error instanceof Response && error.status === 307) {
-            throw error;
-        }
-        console.error('Error loading history:', error);
-        throw error;
-    }
+	const history = await response.json();
+	return { history };
 };
 
 export const ssr = false;

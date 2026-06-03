@@ -621,6 +621,7 @@ dependencies = [
 name = "ifkash"
 version = "0.1.0"
 dependencies = [
+ "base64",
  "chrono",
  "futures",
  "reqwest",
@@ -628,6 +629,7 @@ dependencies = [
  "serde_json",
  "urlencoding",
  "utoipa",
+ "wasm-bindgen",
  "worker",
  "worker-macros 0.6.6",
 ]

@@ -1,13 +1,11 @@
 <script>
   import "../app.css";
   import { page } from "$app/stores";
-  import { auth } from "$lib/stores/auth";
   import AiAgent from "$lib/components/AiAgent.svelte";
   import WeatherHeadsUp from "$lib/components/WeatherHeadsUp.svelte";
 
   $: isDashboard = $page.url.pathname === "/dashboard";
   $: isFullWidth =
-    $page.url.pathname === "/login" ||
     $page.url.pathname === "/editor" ||
     $page.url.pathname === "/zen";
   $: currentPath = $page.url.pathname;
@@ -62,9 +60,7 @@
             <a href={item.href} class="header-nav-extra">{item.label}</a>
           {/each}
 
-          {#if !$auth.isAuthenticated}
-            <a href="/login" class="header-login" aria-label="Login">&rarr;</a>
-          {/if}
+          <a href="/editor" class="header-login" aria-label="Editor">&rarr;</a>
         </nav>
 
         <button
@@ -117,9 +113,7 @@
           class="mobile-link"
           on:click={closeMenu}>GitHub</a
         >
-        {#if !$auth.isAuthenticated}
-          <a href="/login" class="mobile-link" on:click={closeMenu}>Login</a>
-        {/if}
+        <a href="/editor" class="mobile-link" on:click={closeMenu}>Editor</a>
       </nav>
     {/if}
 

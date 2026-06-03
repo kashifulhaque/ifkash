@@ -20,6 +20,7 @@ client‑side and stores versions in Cloudflare D1 + R2.
 - [Environment variables & secrets](#environment-variables--secrets)
 - [Run locally](#run-locally)
 - [The résumé editor](#the-résumé-editor)
+- [Authentication & access control](#authentication--access-control)
 - [Deployment runbook](#deployment-runbook)
 - [Troubleshooting](#troubleshooting)
 
@@ -154,8 +155,8 @@ Interactive docs: [`/api/docs`](https://ifkash.dev/api/docs) (Swagger UI), spec 
 | GET | `/api/hello` · `/api/ping` | public | Health checks |
 
 > "Access" = protected by Cloudflare Access; the Worker also checks the
-> `Cf-Access-Authenticated-User-Email` header against `OWNER_EMAIL`. On `localhost`
-> these checks are bypassed so the editor works in local dev.
+> `Cf-Access-Authenticated-User-Email` header against `OWNER_EMAIL`. In local dev the
+> checks are bypassed via `LOCAL_DEV`. See [Authentication & access control](#authentication--access-control).
 
 ---
 
@@ -267,6 +268,49 @@ mise run assets:fonts     # (re)download résumé fonts into ./.fonts
 
 ---
 
+## Authentication & access control
+
+**Public, by design:** `GET /api/resume` plus the read-only proxies (`/api/hn`,
+`/api/lc/*`, `/api/tensara/*`, `/api/home_weather`, `/api/hello`, `/api/ping`).
+
+**Protected (owner only):** `/editor` (and `/editor/history`) and the résumé
+read/write APIs — `/api/resume/{latest,history,record,upload}` and `/api/ai/rewrite`.
+
+Protection is two layers:
+
+1. **Cloudflare Access (at the edge).** A self-hosted Access application gates each
+   protected path with the policy **Allow → Emails → `OWNER_EMAIL`**. Unauthenticated
+   requests get a `302` to the Zero Trust login (`https://<team>.cloudflareaccess.com`);
+   only after a matching login does Cloudflare forward the request and inject a signed
+   `Cf-Access-Authenticated-User-Email` header.
+2. **Worker check (defense-in-depth).** `handlers/access.rs` requires that header to be
+   present **and equal to `OWNER_EMAIL`**, otherwise `401`. With `workers_dev = false`
+   there's no `*.workers.dev` route to reach the Worker around Access.
+
+**Login flow:** open `/editor` → redirected to Access → authenticate (One-time PIN
+emails a code, or a configured IdP like Google) → redirected back with a
+`CF_Authorization` cookie for `ifkash.dev` → the SPA's same-origin `fetch`es to the
+protected APIs carry that cookie automatically.
+
+**What happens if someone else tries to log in?** They don't get in:
+
+- Entering **their own** email → One-time PIN proves *they* own that inbox, but the
+  policy only allows `OWNER_EMAIL`, so Access denies them ("You don't have access") —
+  no cookie is issued.
+- Entering **the owner's** email → the code is emailed to the *owner's* inbox, which
+  they can't read. (Same with Google: they'd need the owner's Google account.)
+- Verifying an email proves *who you are*; the **policy** decides *whether you're allowed*.
+
+**Two apps, not one:** Cloudflare caps a self-hosted app at **5 destinations** and we
+protect 6 paths, so they're split into two apps — `ifkash editor` (5 paths) and
+`ifkash ai` (`/api/ai/rewrite`) — both sharing the same allow-email policy. See the
+[deployment runbook](#deployment-runbook).
+
+**Local dev:** Access doesn't sit in front of `wrangler dev`, so the Worker bypasses
+both checks when `LOCAL_DEV="1"` is set in `api/.dev.vars` (never set in production).
+
+---
+
 ## Deployment runbook
 
 ### Routine deploy (the normal case)
@@ -314,17 +358,16 @@ mise exec -- wrangler d1 execute ifkash --remote --file=migrations/0002_use_r2_p
    mise exec -- wrangler secret put WEATHER_UNION_API_KEY
    ```
 4. **Set `OWNER_EMAIL`** in `wrangler.toml` `[vars]` to the email allowed to edit.
-5. **Configure Cloudflare Access** (Zero Trust → Access → Applications →
-   *Self‑hosted*) on `ifkash.dev`, with one policy **Allow → Emails → <your email>**,
-   covering these paths (leave **`/api/resume` public**):
-   ```
-   /editor
-   /api/resume/latest
-   /api/resume/history
-   /api/resume/record
-   /api/resume/upload
-   /api/ai/rewrite
-   ```
+5. **Configure Cloudflare Access** (Zero Trust → Access → Applications → *Self-hosted*).
+   A self-hosted app allows max **5 destinations**, so split the six protected paths
+   into **two apps**, each with the same policy **Allow → Emails → `<your email>`**
+   (must match `OWNER_EMAIL`). Leave **`/api/resume` public** — do not add it.
+   - App `ifkash editor` (5): `/editor`, `/api/resume/latest`, `/api/resume/history`,
+     `/api/resume/record`, `/api/resume/upload`
+   - App `ifkash ai` (1): `/api/ai/rewrite`
+
+   Enable a login method (One-time PIN needs zero setup; emails a code). Your Zero
+   Trust team login lives at `https://<team>.cloudflareaccess.com`.
 6. **Add GitHub Actions secrets**: `CLOUDFLARE_WORKERS_API_TOKEN` (Workers Scripts +
    D1 + R2 + KV edit) and `CLOUDFLARE_ACCOUNT_ID`.
 7. **Connect Cloudflare Pages** to the repo (build: `bun run build`, output:
@@ -339,7 +382,7 @@ mise exec -- wrangler d1 execute ifkash --remote --file=migrations/0002_use_r2_p
 | Symptom | Likely cause / fix |
 |---|---|
 | `GET /api/resume` returns the static PDF / `"version":"static-fallback"` | D1 is empty (no saved versions yet) or unreachable — save once in `/editor`. |
-| Editor shows 401 on load/upload in production | Cloudflare Access not configured for that path, or your email ≠ `OWNER_EMAIL`. |
+| Editor shows 401 on load/upload in production | That path isn't covered by a Cloudflare Access app (it's split across **two** apps — see [Authentication & access control](#authentication--access-control)), or your email ≠ `OWNER_EMAIL`. |
 | `wrangler deploy` → `Authentication error [10000]` | Local token lacks *Workers Scripts: Edit*. Deploy via CI (push to `main`) or use a scoped API token. |
 | Editor preview blank / "no PDF" | `typst.ts` WASM failed to load (needs internet on first compile) or a font/glyph issue — check the browser console. |
 | Local editor can't read/write résumé | Run `wrangler d1 migrations apply ifkash --local` and restart `mise run api:dev`. |

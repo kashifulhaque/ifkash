@@ -4,8 +4,6 @@
   const resumeUrl = dev
     ? "http://localhost:8787/api/resume?format=view"
     : "/api/resume?format=view";
-
-  const year = new Date().getFullYear();
 </script>
 
 <svelte:head>
@@ -26,21 +24,8 @@
   </p>
 </section>
 
-<section class="now">
-  <div class="now-title">Now</div>
-  <div class="now-rows">
-    <div class="now-row">
-      <span class="now-label">Currently</span>
-      <span class="now-leader" aria-hidden="true"></span>
-      <span class="now-value">ML Engineer @ wand.ai</span>
-    </div>
-  </div>
-</section>
-
 <section class="quick-actions">
   <a href={resumeUrl} class="btn">Read Resume &nearr;</a>
-  <a href="/work" class="btn btn-secondary">See Work</a>
-  <a href="/projects" class="btn btn-secondary">Browse Projects</a>
 </section>
 
 <style>
@@ -48,7 +33,6 @@
 
   .manual-masthead {
     padding: 64px 0 24px;
-    border-bottom: 1px solid var(--rule-soft);
   }
 
   .manual-meta-row {

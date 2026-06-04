@@ -11,7 +11,29 @@ export const load: PageLoad = async ({ fetch, url }) => {
 	const baseUrl =
 		browser && window.location.hostname === 'localhost' ? 'http://localhost:8787' : 'https://ifkash.dev';
 
-	const response = await fetch(`${baseUrl}${endpoint}`);
+	const target = `${baseUrl}${endpoint}`;
+
+	// Cloudflare Access answers an unauthenticated request with a cross-origin 302
+	// to its login page. A `fetch` can't follow that (CORS), so detect it and do a
+	// full-page navigation instead, which lets the browser run the Access login flow.
+	let response: Response;
+	try {
+		response = await fetch(target, { redirect: 'manual' });
+	} catch {
+		if (browser) {
+			window.location.href = target;
+			throw new Error('Redirecting to sign in…');
+		}
+		throw new Error('Failed to load resume');
+	}
+
+	if (response.type === 'opaqueredirect' || response.status === 0) {
+		if (browser) {
+			window.location.href = target;
+			throw new Error('Redirecting to sign in…');
+		}
+		throw new Error('Authentication required');
+	}
 
 	if (!response.ok) {
 		throw new Error(`Failed to load resume (${response.status})`);

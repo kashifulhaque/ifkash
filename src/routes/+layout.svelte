@@ -6,8 +6,7 @@
 
   $: isDashboard = $page.url.pathname === "/dashboard";
   $: isFullWidth =
-    $page.url.pathname === "/editor" ||
-    $page.url.pathname === "/zen";
+    $page.url.pathname === "/editor";
   $: currentPath = $page.url.pathname;
 
   const navItems = [
@@ -42,7 +41,7 @@
     <header class="site-header">
       <div class="header-inner">
         <a href="/" class="logo">
-          <span class="logo-icon" aria-hidden="true"></span> KH / IFKASH
+          <span class="logo-icon" aria-hidden="true"></span> IFKASH
         </a>
 
         <nav class="header-nav">

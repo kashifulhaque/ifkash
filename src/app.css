@@ -2,12 +2,7 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
-/* ═══════════════════════════════════════════════════════════════════════
-   WARM GRAPHITE — DARK ONLY
-   Single grayscale palette with subtle warm undertone.
-   Replaces blueprint blue with warm-cream accent.
-   ═══════════════════════════════════════════════════════════════════════ */
-
+/* Warm graphite dark theme: Single grayscale palette with subtle warm undertone */
 :root,
 [data-theme="dark"],
 [data-theme="light"] {
@@ -116,10 +111,7 @@
   --agent-fab-pulse-shadow: rgba(235, 229, 210, 0.12);
 }
 
-/* ═══════════════════════════════════════════════════════════════════════
-   SHARED PRIMITIVES
-   ═══════════════════════════════════════════════════════════════════════ */
-
+/* Shared primitives */
 :root {
   --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
@@ -154,10 +146,7 @@
   --font-display: 'VT323', ui-monospace, monospace;
 }
 
-/* ═══════════════════════════════════════════════════════════════════════
-   BASE
-   ═══════════════════════════════════════════════════════════════════════ */
-
+/* Base */
 *,
 *::before,
 *::after {
@@ -194,10 +183,7 @@ body {
   color: var(--bg);
 }
 
-/* ═══════════════════════════════════════════════════════════════════════
-   SCROLLBAR
-   ═══════════════════════════════════════════════════════════════════════ */
-
+/* Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -220,10 +206,7 @@ body {
   scrollbar-color: var(--rule-soft) transparent;
 }
 
-/* ═══════════════════════════════════════════════════════════════════════
-   TYPOGRAPHY
-   ═══════════════════════════════════════════════════════════════════════ */
-
+/* Typography */
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-display);
   font-weight: 400;
@@ -272,10 +255,7 @@ code, pre, kbd, samp {
   font-family: var(--font-mono);
 }
 
-/* ═══════════════════════════════════════════════════════════════════════
-   LAYOUT PRIMITIVES
-   ═══════════════════════════════════════════════════════════════════════ */
-
+/* Layout primitives */
 .container {
   max-width: 1200px;
   margin: 0 auto;
@@ -305,10 +285,7 @@ code, pre, kbd, samp {
   margin-bottom: 40px;
 }
 
-/* ═══════════════════════════════════════════════════════════════════════
-   DECORATIVE — ASCII RULE, LABELS, DROPCAP
-   ═══════════════════════════════════════════════════════════════════════ */
-
+/* Decorative stuff like Ascii rule, Labels, Dropcap, etc */
 .ascii-rule {
   display: block;
   width: 100%;
@@ -363,10 +340,7 @@ p.dropcap::first-letter {
   color: var(--blueprint);
 }
 
-/* ═══════════════════════════════════════════════════════════════════════
-   BUTTONS
-   ═══════════════════════════════════════════════════════════════════════ */
-
+/* Buttons */
 .btn {
   font-family: var(--font-mono);
   font-size: 0.8rem;
@@ -415,10 +389,7 @@ p.dropcap::first-letter {
   border-bottom: 1px solid var(--ink);
 }
 
-/* ═══════════════════════════════════════════════════════════════════════
-   COMPONENTS — INPUTS
-   ═══════════════════════════════════════════════════════════════════════ */
-
+/* Components: Inputs */
 .input-field {
   background: var(--bg-surface);
   border: 1px solid var(--rule-soft);
@@ -440,10 +411,7 @@ p.dropcap::first-letter {
   border-color: var(--blueprint);
 }
 
-/* ═══════════════════════════════════════════════════════════════════════
-   ANIMATIONS
-   ═══════════════════════════════════════════════════════════════════════ */
-
+/* Anims */
 @keyframes enter {
   from {
     opacity: 0;
@@ -480,10 +448,7 @@ p.dropcap::first-letter {
   transform: translateY(0);
 }
 
-/* ═══════════════════════════════════════════════════════════════════════
-   RESPONSIVE
-   ═══════════════════════════════════════════════════════════════════════ */
-
+/* Responsive */
 @media (max-width: 1024px) {
   .container {
     padding: 0 24px;

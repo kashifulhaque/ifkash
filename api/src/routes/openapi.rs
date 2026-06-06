@@ -8,8 +8,6 @@ use crate::handlers;
 #[derive(OpenApi)]
 #[openapi(
     paths(
-        handlers::hello::handle,
-        handlers::ping::handle,
         handlers::resume::handle,
         handlers::resume_api::get_latest,
         handlers::resume_api::get_history,
@@ -32,7 +30,6 @@ use crate::handlers;
         )
     ),
     tags(
-        (name = "Utils", description = "Utility endpoints"),
         (name = "Resume", description = "Resume endpoints"),
         (name = "Resume API", description = "Resume API endpoints"),
         (name = "AI", description = "AI Integration endpoints"),
@@ -45,7 +42,7 @@ use crate::handlers;
         description = "Personal website APIs powered by Cloudflare Workers",
         contact(
             name = "Kashif",
-            email = "haque.kashiful7@gmail.com"
+            email = "me@ifkash.dev"
         )
     ),
     servers(

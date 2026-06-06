@@ -3,19 +3,6 @@
   <meta name="description" content="Academic background." />
 </svelte:head>
 
-<script lang="ts">
-  const focusAreas = [
-    'Machine Learning',
-    'Deep Learning',
-    'Statistics',
-    'Linear Algebra',
-    'Data Structures',
-    'Algorithms',
-    'Python',
-    'Distributed Systems'
-  ];
-</script>
-
 <header class="page-header">
   <h1 class="section-title">Education.</h1>
 </header>
@@ -32,36 +19,9 @@
   </article>
 </section>
 
-<section class="focus-section">
-  <div class="focus-eyebrow">Areas of Focus</div>
-  <div class="focus-tags">
-    {#each focusAreas as area, i}
-      <span class="focus-tag stagger" style="--i: {i}">{area}</span>
-    {/each}
-  </div>
-</section>
-
 <style>
   .page-header {
     padding-top: 16px;
-  }
-
-  .meta-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    gap: 16px;
-    flex-wrap: wrap;
-    margin-bottom: 24px;
-    font-family: var(--font-mono);
-    font-size: 0.72rem;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: var(--ink-mute);
-  }
-
-  .meta-row .right {
-    color: var(--blueprint);
   }
 
   .edu-list {
@@ -129,45 +89,6 @@
     white-space: nowrap;
     min-width: 140px;
     text-align: right;
-  }
-
-  .focus-section {
-    padding-top: 32px;
-  }
-
-  .focus-eyebrow {
-    font-family: var(--font-mono);
-    font-size: 0.78rem;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: var(--blueprint);
-    margin-bottom: 20px;
-  }
-
-  .focus-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 24px;
-  }
-
-  .focus-tag {
-    padding: 6px 14px;
-    font-family: var(--font-mono);
-    font-size: 0.74rem;
-    font-weight: 500;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--ink-soft);
-    background: transparent;
-    border: 1px solid var(--rule-soft);
-    border-radius: 0;
-    transition: color 0.15s, border-color 0.15s;
-  }
-
-  .focus-tag:hover {
-    color: var(--blueprint);
-    border-color: var(--blueprint);
   }
 
   @media (max-width: 768px) {

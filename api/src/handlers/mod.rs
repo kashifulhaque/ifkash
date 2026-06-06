@@ -1,5 +1,3 @@
-pub mod hello;
-pub mod ping;
 pub mod resume;
 pub mod access;
 pub mod resume_api;

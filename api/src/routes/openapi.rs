@@ -10,10 +10,6 @@ use crate::handlers;
     paths(
         handlers::hello::handle,
         handlers::ping::handle,
-        handlers::hn::handle,
-        handlers::lc::handle_profile,
-        handlers::lc::handle_submissions,
-        handlers::tensara::handle_profile,
         handlers::resume::handle,
         handlers::resume_api::get_latest,
         handlers::resume_api::get_history,
@@ -24,16 +20,6 @@ use crate::handlers;
     ),
     components(
         schemas(
-            handlers::hn::Story,
-            handlers::lc::SubmissionsReqBody,
-            handlers::lc::Slot,
-            handlers::lc::LeetCodeProfile,
-            handlers::tensara::TensaraStats,
-            handlers::tensara::RecentSubmission,
-            handlers::tensara::LanguagePercentage,
-            handlers::tensara::ActivityData,
-            handlers::tensara::CommunityStats,
-            handlers::tensara::TensaraUser,
             handlers::resume::ResumeMetadataResponse,
             handlers::resume::ResumeUrlResponse,
             handlers::resume_api::LatestResumeResponse,
@@ -47,9 +33,6 @@ use crate::handlers;
     ),
     tags(
         (name = "Utils", description = "Utility endpoints"),
-        (name = "Hacker News", description = "Hacker News endpoints"),
-        (name = "LeetCode", description = "LeetCode endpoints"),
-        (name = "Tensara", description = "Tensara GPU computing endpoints"),
         (name = "Resume", description = "Resume endpoints"),
         (name = "Resume API", description = "Resume API endpoints"),
         (name = "AI", description = "AI Integration endpoints"),

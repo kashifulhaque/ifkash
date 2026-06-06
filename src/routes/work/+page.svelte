@@ -15,7 +15,7 @@
 
   const jobs: Job[] = [
     {
-      role: 'ML Engineer',
+      role: 'AI/ML Engineer',
       company: 'Wand AI',
       url: 'https://wand.ai',
       period: '2025 — Present',
@@ -23,7 +23,7 @@
       status: 'current'
     },
     {
-      role: 'Engineer III',
+      role: 'Software Engineer I',
       company: 'American Express',
       url: 'https://www.americanexpress.com',
       period: '2025',
@@ -31,7 +31,7 @@
       status: 'past'
     },
     {
-      role: 'Software Engineer',
+      role: 'Associate Software Engineer',
       company: 'Fiery (Epson)',
       url: 'https://www.fiery.com',
       period: '2023 — 2025',
@@ -77,24 +77,6 @@
   .page-header {
     padding-top: 16px;
     padding-bottom: 0;
-  }
-
-  .meta-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    gap: 16px;
-    flex-wrap: wrap;
-    margin-bottom: 24px;
-    font-family: var(--font-mono);
-    font-size: 0.72rem;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: var(--ink-mute);
-  }
-
-  .meta-row .right {
-    color: var(--blueprint);
   }
 
   .jobs-list {

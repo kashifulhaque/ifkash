@@ -19,7 +19,6 @@ export const NAVIGATION_MAP: Record<string, string> = {
    resume: '/api/resume?format=view',
    cv: '/api/resume?format=view',
    leetcode: '/leetcode',
-   tensara: '/tensara',
    news: '/news',
    home: '/',
 };
@@ -73,7 +72,6 @@ Contact: me@ifkash.dev | GitHub: kashifulhaque | HuggingFace: ifkash | LinkedIn:
 - /education — Academic background and skills
 - /blog — Blog posts and articles
 - /leetcode — LeetCode solutions
-- /tensara — Tensara GPU kernel benchmarks
 - /news — Hacker News feed
 - /api/resume?format=view — View resume/CV
 `.trim();

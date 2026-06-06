@@ -184,7 +184,6 @@
       "/blog": "Blog",
       "/api/resume?format=view": "View Resume",
       "/leetcode": "LeetCode",
-      "/tensara": "Tensara",
       "/news": "Hacker News",
     };
     return labels[path] || path;

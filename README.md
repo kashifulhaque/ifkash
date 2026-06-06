@@ -11,18 +11,26 @@ client‑side and stores versions in Cloudflare D1 + R2.
 
 ## Table of contents
 
-- [What it is](#what-it-is)
-- [Architecture](#architecture)
-- [Repo structure](#repo-structure)
-- [Tech stack](#tech-stack)
-- [API endpoints](#api-endpoints)
-- [Cloudflare resources & bindings](#cloudflare-resources--bindings)
-- [Environment variables & secrets](#environment-variables--secrets)
-- [Run locally](#run-locally)
-- [The résumé editor](#the-résumé-editor)
-- [Authentication & access control](#authentication--access-control)
-- [Deployment runbook](#deployment-runbook)
-- [Troubleshooting](#troubleshooting)
+- [ifkash.dev — Kashiful Haque](#ifkashdev--kashiful-haque)
+  - [Table of contents](#table-of-contents)
+  - [What it is](#what-it-is)
+  - [Architecture](#architecture)
+  - [Repo structure](#repo-structure)
+  - [Tech stack](#tech-stack)
+  - [API endpoints](#api-endpoints)
+  - [Cloudflare resources \& bindings](#cloudflare-resources--bindings)
+  - [Environment variables \& secrets](#environment-variables--secrets)
+  - [Run locally](#run-locally)
+    - [Prerequisites](#prerequisites)
+    - [Start the frontend (SvelteKit → http://localhost:5173)](#start-the-frontend-sveltekit--httplocalhost5173)
+    - [Start the API (Worker → http://127.0.0.1:8787)](#start-the-api-worker--http1270018787)
+  - [The résumé editor](#the-résumé-editor)
+  - [Authentication \& access control](#authentication--access-control)
+  - [Deployment runbook](#deployment-runbook)
+    - [Routine deploy (the normal case)](#routine-deploy-the-normal-case)
+    - [Applying D1 migrations](#applying-d1-migrations)
+    - [First‑time / from‑scratch setup](#firsttime--fromscratch-setup)
+  - [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -31,11 +39,11 @@ client‑side and stores versions in Cloudflare D1 + R2.
 Two deployables in one repo:
 
 1. **Frontend** (`/src`) — a [SvelteKit](https://kit.svelte.dev) site (home, work,
-   projects, blog, leetcode/tensara/HN dashboards, a résumé editor, etc.) built with
+   projects, blog, leetcode/HN dashboards, a résumé editor, etc.) built with
    `@sveltejs/adapter-cloudflare` and served by **Cloudflare Pages** at `ifkash.dev`.
 2. **API** (`/api`) — a **Rust Cloudflare Worker** (compiled to WASM via
    `worker-build`) mounted at `ifkash.dev/api/*`. It proxies a few third‑party APIs
-   (Hacker News, LeetCode, Tensara, WeatherUnion, OpenRouter) and powers the résumé
+   (Hacker News, LeetCode, WeatherUnion, OpenRouter) and powers the résumé
    feature with D1 + R2.
 
 The résumé pipeline is fully serverless:
@@ -65,7 +73,7 @@ The résumé pipeline is fully serverless:
                           └───────────────────────────────────────────┘
                                         │
                                         ▼  (outbound from the Worker)
-                   OpenRouter · WeatherUnion · Hacker News · LeetCode · Tensara
+                   OpenRouter · WeatherUnion · Hacker News · LeetCode
 ```
 
 **Résumé read path** (`GET /api/resume`): Worker reads the latest row from D1 →
@@ -94,7 +102,7 @@ ifkash/
 │   │       ├── resume_api.rs     # latest/history/record/upload (D1 + R2, Access)
 │   │       ├── access.rs         # Cloudflare Access verification helper
 │   │       ├── ai.rs             # /api/ai/rewrite (OpenRouter)
-│   │       ├── hn.rs lc.rs tensara.rs home_weather.rs ...
+│   │       ├── hn.rs lc.rs home_weather.rs ...
 │   │       └── ...
 │   ├── migrations/               # D1 schema migrations (SQL)
 │   ├── Cargo.toml
@@ -150,7 +158,6 @@ Interactive docs: [`/api/docs`](https://ifkash.dev/api/docs) (Swagger UI), spec 
 | POST | `/api/ai/rewrite` | Access | Tailor the Typst résumé to a job description (OpenRouter) |
 | GET | `/api/hn` | public | Hacker News top stories (cached in KV) |
 | GET | `/api/lc/profile` · POST `/api/lc/submissions` | public | LeetCode profile / submissions |
-| GET | `/api/tensara/profile` | public | Tensara profile |
 | GET | `/api/home_weather` | public | WeatherUnion proxy |
 | GET | `/api/hello` · `/api/ping` | public | Health checks |
 
@@ -271,7 +278,7 @@ mise run assets:fonts     # (re)download résumé fonts into ./.fonts
 ## Authentication & access control
 
 **Public, by design:** `GET /api/resume` plus the read-only proxies (`/api/hn`,
-`/api/lc/*`, `/api/tensara/*`, `/api/home_weather`, `/api/hello`, `/api/ping`).
+`/api/lc/*`, `/api/home_weather`, `/api/hello`, `/api/ping`).
 
 **Protected (owner only):** `/editor` (and `/editor/history`) and the résumé
 read/write APIs — `/api/resume/{latest,history,record,upload}` and `/api/ai/rewrite`.

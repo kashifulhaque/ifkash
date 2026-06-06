@@ -4,9 +4,7 @@
   import AiAgent from "$lib/components/AiAgent.svelte";
   import WeatherHeadsUp from "$lib/components/WeatherHeadsUp.svelte";
 
-  $: isDashboard = $page.url.pathname === "/dashboard";
-  $: isFullWidth =
-    $page.url.pathname === "/editor";
+  $: isFullWidth = $page.url.pathname === "/editor";
   $: currentPath = $page.url.pathname;
 
   const navItems = [
@@ -15,12 +13,6 @@
     { href: "/projects", label: "Projects" },
     { href: "/education", label: "Education" },
     { href: "/blog", label: "Blog" },
-  ];
-
-  const extraItems = [
-    { href: "/leetcode", label: "LC" },
-    { href: "/tensara", label: "TS" },
-    { href: "/news", label: "HN" },
   ];
 
   let mobileMenuOpen = false;
@@ -34,7 +26,7 @@
   }
 </script>
 
-{#if isDashboard || isFullWidth}
+{#if isFullWidth}
   <slot />
 {:else}
   <div class="site-wrapper">
@@ -54,9 +46,6 @@
             >
               {item.label}
             </a>
-          {/each}
-          {#each extraItems as item}
-            <a href={item.href} class="header-nav-extra">{item.label}</a>
           {/each}
 
           <a href="/editor" class="header-login" aria-label="Editor">&rarr;</a>
@@ -100,11 +89,6 @@
           </a>
         {/each}
         <div class="mobile-divider"></div>
-        {#each extraItems as item}
-          <a href={item.href} class="mobile-link" on:click={closeMenu}>
-            {item.label}
-          </a>
-        {/each}
         <a
           href="https://github.com/kashifulhaque"
           target="_blank"
@@ -234,37 +218,6 @@
     color: var(--blueprint);
   }
 
-  .header-nav-extra {
-    color: var(--ink-mute) !important;
-  }
-
-  .header-github {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 12px;
-    border: 1px solid var(--rule-soft) !important;
-    background: var(--bg-surface);
-    font-family: var(--font-mono);
-    font-size: 0.78rem;
-    font-weight: 500;
-    letter-spacing: 0.06em;
-    color: var(--ink) !important;
-    text-transform: uppercase;
-    transition: border-color 0.15s, color 0.15s;
-  }
-
-  .header-github:hover {
-    border-color: var(--blueprint) !important;
-    color: var(--blueprint) !important;
-    border-bottom: 1px solid var(--blueprint) !important;
-  }
-
-  .header-github svg {
-    flex-shrink: 0;
-    color: var(--blueprint);
-  }
-
   .header-login {
     color: var(--ink-mute) !important;
     font-size: 1rem !important;
@@ -289,7 +242,9 @@
     font-size: 1.4rem;
     line-height: 1;
     cursor: pointer;
-    transition: border-color 0.15s, color 0.15s;
+    transition:
+      border-color 0.15s,
+      color 0.15s;
   }
 
   .mobile-menu-btn:hover {
@@ -331,7 +286,9 @@
     text-transform: uppercase;
     color: var(--ink-soft);
     border-bottom: none;
-    transition: color 0.15s, background 0.15s;
+    transition:
+      color 0.15s,
+      background 0.15s;
   }
 
   .mobile-link:hover,

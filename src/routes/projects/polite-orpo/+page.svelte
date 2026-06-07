@@ -13,7 +13,7 @@
             <span class="separator">/</span>
             <span>polite-orpo</span>
         </div>
-        <h1 class="page-title">Llama-3.2-3B-Polite-ORPO</h1>
+        <h1 class="page-title">PoliteLlama</h1>
         <p class="page-desc">
             A powerful open-source Large Language Model fine-tuned to
             fundamentally alter its behavior, instilling a strict constraint:

@@ -7,10 +7,7 @@ import type { PageLoad } from './$types';
 export const load: PageLoad = async ({ fetch, url }) => {
 	const resumeId = url.searchParams.get('id');
 	const endpoint = resumeId ? `/api/resume/record/${resumeId}` : '/api/resume/latest';
-
-	const baseUrl =
-		browser && window.location.hostname === 'localhost' ? 'http://localhost:8787' : 'https://ifkash.dev';
-
+	const baseUrl = browser && window.location.hostname === 'localhost' ? 'http://localhost:8787' : 'https://ifkash.dev';
 	const target = `${baseUrl}${endpoint}`;
 
 	// Cloudflare Access answers an unauthenticated request with a cross-origin 302

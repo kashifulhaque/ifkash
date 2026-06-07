@@ -14,7 +14,7 @@
 
   const projects: Project[] = [
     {
-      name: 'Llama-3.2-3B-Polite-ORPO',
+      name: 'PoliteLlama',
       desc: 'Llama 3.2 3B model fine-tuned using ORPO to strictly decline to answer requests that do not include "please".',
       page: '/projects/polite-orpo',
       status: 'active',
@@ -148,24 +148,6 @@
     padding-top: 16px;
   }
 
-  .meta-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    gap: 16px;
-    flex-wrap: wrap;
-    margin-bottom: 24px;
-    font-family: var(--font-mono);
-    font-size: 0.72rem;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: var(--ink-mute);
-  }
-
-  .meta-row .right {
-    color: var(--blueprint);
-  }
-
   .projects-list {
     display: flex;
     flex-direction: column;
@@ -278,29 +260,6 @@
     max-width: 760px;
   }
 
-  .legend {
-    padding: 32px 0 16px;
-    display: flex;
-    gap: 28px;
-    flex-wrap: wrap;
-    align-items: center;
-    font-family: var(--font-mono);
-    font-size: 0.74rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--ink-soft);
-  }
-
-  .legend-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .legend-item .project-status {
-    transform: none;
-  }
-
   @media (max-width: 768px) {
     .project-row {
       gap: 16px;
@@ -315,10 +274,6 @@
       flex-direction: column;
       align-items: flex-start;
       gap: 8px;
-    }
-
-    .legend {
-      gap: 16px;
     }
   }
 </style>

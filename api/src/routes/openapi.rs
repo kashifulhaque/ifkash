@@ -13,7 +13,6 @@ use crate::handlers;
         handlers::resume_api::get_history,
         handlers::resume_api::get_by_id,
         handlers::resume_api::upload,
-        handlers::ai::rewrite,
         handlers::home_weather::handle,
     ),
     components(
@@ -23,8 +22,6 @@ use crate::handlers;
             handlers::resume_api::LatestResumeResponse,
             handlers::resume_api::ResumeHistoryItem,
             handlers::resume_api::UploadResponse,
-            handlers::ai::AiRewriteRequest,
-            handlers::ai::AiRewriteResponse,
             handlers::home_weather::HomeWeatherResponse,
             handlers::home_weather::LocalityWeatherData,
         )
@@ -32,7 +29,6 @@ use crate::handlers;
     tags(
         (name = "Resume", description = "Resume endpoints"),
         (name = "Resume API", description = "Resume API endpoints"),
-        (name = "AI", description = "AI Integration endpoints"),
         (name = "Weather", description = "Local weather endpoints"),
     ),
     modifiers(&SecurityAddon),

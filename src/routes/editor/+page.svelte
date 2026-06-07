@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { browser } from "$app/environment";
   import MonacoEditor from "$lib/components/MonacoEditor.svelte";
   import { compileTypstToPdf } from "$lib/typst";
   import type { PageData } from "./$types";
@@ -13,9 +12,6 @@
     AlertTriangle,
     Play,
     Loader2,
-    Sparkles,
-    Undo2,
-    X,
   } from "lucide-svelte";
 
   export let data: PageData;
@@ -31,20 +27,6 @@
   let hasUnsavedChanges = false;
   let isDownloadOpen = false;
 
-  let isAiModalOpen = false;
-  let isAiProcessing = false;
-  let jobDescription = "";
-  let selectedModel = "anthropic/claude-3.5-sonnet";
-  let previousTypstContent = "";
-  let canUndo = false;
-
-  const AI_MODELS = [
-    { id: "anthropic/claude-3.5-sonnet", name: "Claude 3.5 Sonnet" },
-    { id: "google/gemini-flash-1.5", name: "Gemini 1.5 Flash" },
-    { id: "openai/gpt-4o-mini", name: "GPT-4o Mini" },
-    { id: "meta-llama/llama-3.1-70b-instruct", name: "Llama 3.1 70B" },
-  ];
-
   $: resume = data.resume;
 
   function loadTypstContent() {
@@ -55,10 +37,6 @@
       error = "Failed to load resume";
     } finally {
       loading = false;
-      if (browser) {
-        const savedModel = localStorage.getItem("preferred_ai_model");
-        if (savedModel) selectedModel = savedModel;
-      }
     }
   }
 
@@ -163,52 +141,6 @@
     }
   }
 
-  function handleUndo() {
-    if (canUndo && previousTypstContent) {
-      typstContent = previousTypstContent;
-      previousTypstContent = "";
-      canUndo = false;
-      hasUnsavedChanges = true;
-    }
-  }
-
-  async function handleAiRewrite() {
-    if (!jobDescription.trim()) return;
-
-    isAiProcessing = true;
-    previousTypstContent = typstContent;
-
-    try {
-      if (browser) localStorage.setItem("preferred_ai_model", selectedModel);
-
-      const apiUrl = typeof window !== "undefined" && window.location.hostname === "localhost"
-        ? "http://localhost:8787/api/ai/rewrite"
-        : "https://ifkash.dev/api/ai/rewrite";
-
-      const response = await fetch(apiUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code: typstContent, job_description: jobDescription, model: selectedModel }),
-      });
-
-      if (!response.ok) throw new Error(await response.text() || "AI failed");
-
-      const data = await response.json();
-      if (data.success && data.code) {
-        typstContent = data.code;
-        hasUnsavedChanges = true;
-        canUndo = true;
-        isAiModalOpen = false;
-      } else {
-        throw new Error(data.message || "Unknown error");
-      }
-    } catch (e: any) {
-      alert("AI failed: " + e.message);
-    } finally {
-      isAiProcessing = false;
-    }
-  }
-
   function handleKeydown(e: KeyboardEvent) {
     if ((e.ctrlKey || e.metaKey) && e.key === "s") {
       e.preventDefault();
@@ -246,13 +178,6 @@
     </div>
 
     <div class="toolbar-right">
-      {#if canUndo}
-        <button on:click={handleUndo} class="tb-btn" title="Undo"><Undo2 size={16} /></button>
-      {/if}
-      <button on:click={() => (isAiModalOpen = true)} disabled={compiling || uploading} class="tb-btn" title="AI">
-        <Sparkles size={16} />
-      </button>
-      <div class="tb-divider"></div>
       <a href="/editor/history" class="tb-btn" title="History"><History size={16} /></a>
       <div class="tb-divider"></div>
       <button on:click={handleCompile} disabled={compiling || uploading} class="tb-btn" title="Compile">
@@ -287,32 +212,6 @@
   <!-- Error -->
   {#if compilationError}
     <div class="error-bar"><AlertTriangle size={14} /> {compilationError}</div>
-  {/if}
-
-  <!-- AI Modal -->
-  {#if isAiModalOpen}
-    <div class="modal-overlay">
-      <div class="modal">
-        <div class="modal-header">
-          <h3><Sparkles size={16} /> AI Tailor</h3>
-          <button on:click={() => (isAiModalOpen = false)}><X size={18} /></button>
-        </div>
-        <div class="modal-body">
-          <label for="ai-model">Model</label>
-          <select id="ai-model" bind:value={selectedModel}>
-            {#each AI_MODELS as m}<option value={m.id}>{m.name}</option>{/each}
-          </select>
-          <label for="jd">Job Description</label>
-          <textarea id="jd" bind:value={jobDescription} placeholder="Paste JD here..."></textarea>
-        </div>
-        <div class="modal-footer">
-          <button on:click={() => (isAiModalOpen = false)} class="btn-cancel">Cancel</button>
-          <button on:click={handleAiRewrite} disabled={isAiProcessing || !jobDescription.trim()} class="btn-submit">
-            {#if isAiProcessing}<Loader2 size={14} class="spin" /> Processing{:else}Tailor{/if}
-          </button>
-        </div>
-      </div>
-    </div>
   {/if}
 
   <!-- Main -->
@@ -511,133 +410,6 @@
     color: var(--text-primary);
     background: var(--surface-sunken);
     border-bottom: 1px solid var(--border);
-  }
-
-  .modal-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 100;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 1rem;
-    background: var(--overlay-bg);
-  }
-
-  .modal {
-    width: 100%;
-    max-width: 420px;
-    background: var(--surface-raised);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-  }
-
-  .modal-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 1rem 1.25rem;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .modal-header h3 {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--text-primary);
-  }
-
-  .modal-header button {
-    padding: 0.25rem;
-    color: var(--text-tertiary);
-    background: transparent;
-    border: none;
-    cursor: pointer;
-  }
-
-  .modal-header button:hover {
-    color: var(--text-primary);
-  }
-
-  .modal-body {
-    padding: 1.25rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-
-  .modal-body label {
-    font-size: 0.8125rem;
-    font-weight: 500;
-    color: var(--text-secondary);
-  }
-
-  .modal-body select,
-  .modal-body textarea {
-    padding: 0.625rem 0.875rem;
-    font-size: 0.875rem;
-    color: var(--text-primary);
-    background: var(--paper);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-  }
-
-  .modal-body textarea {
-    min-height: 140px;
-    resize: none;
-  }
-
-  .modal-body select:focus,
-  .modal-body textarea:focus {
-    outline: none;
-    border-color: var(--text-faint);
-  }
-
-  .modal-footer {
-    display: flex;
-    justify-content: flex-end;
-    gap: 0.75rem;
-    padding: 1rem 1.25rem;
-    border-top: 1px solid var(--border);
-  }
-
-  .btn-cancel {
-    padding: 0.5rem 1rem;
-    font-size: 0.8125rem;
-    color: var(--text-secondary);
-    background: transparent;
-    border: none;
-    border-radius: var(--radius-sm);
-    cursor: pointer;
-  }
-
-  .btn-cancel:hover {
-    color: var(--text-primary);
-  }
-
-  .btn-submit {
-    display: flex;
-    align-items: center;
-    gap: 0.375rem;
-    padding: 0.5rem 1rem;
-    font-size: 0.8125rem;
-    font-weight: 500;
-    color: var(--paper);
-    background: var(--ink);
-    border: none;
-    border-radius: var(--radius-sm);
-    cursor: pointer;
-  }
-
-  .btn-submit:hover:not(:disabled) {
-    background: var(--paper-dim);
-  }
-
-  .btn-submit:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
   }
 
   .main {

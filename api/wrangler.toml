@@ -40,7 +40,6 @@ bucket_name = "ifkash"
 OWNER_EMAIL = "haque.kashiful7@gmail.com"
 
 # Secrets (set via `wrangler secret put <NAME>`):
-#   OPENROUTER_API_KEY    - /api/ai/rewrite
 #   WEATHER_UNION_API_KEY - /api/home_weather
 # The old POCKETBASE_EMAIL/PASSWORD secrets are no longer used and can be
 # removed with `wrangler secret delete POCKETBASE_EMAIL` (and ...PASSWORD).

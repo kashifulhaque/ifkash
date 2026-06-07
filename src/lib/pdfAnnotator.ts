@@ -9,6 +9,7 @@
 
 import type * as Pdfjs from 'pdfjs-dist';
 import type { PDFDocumentProxy } from 'pdfjs-dist';
+import type { PDFDocument, PDFFont, PDFPage } from 'pdf-lib';
 
 // Use the *legacy* build: it ships the polyfills (e.g. Map.getOrInsertComputed)
 // pdf.js v6 relies on, so rendering works across all browsers, not just the
@@ -140,6 +141,65 @@ function dataUrlToBytes(dataUrl: string): Uint8Array {
 	return bytes;
 }
 
+/** Unicode-capable font embedded on export so text isn't limited to Latin-1. */
+const UNICODE_FONT_URL = '/fonts/DejaVuSans.ttf';
+
+/**
+ * Embed a Unicode-capable TrueType font (DejaVu Sans) via fontkit so glyphs like
+ * `✓` (U+2713), arrows and accents render correctly. The PDF *standard* fonts
+ * only support WinAnsi encoding and throw on anything outside Latin-1 (that's the
+ * `WinAnsi cannot encode "✓"` error). Falls back to Helvetica if the font asset
+ * can't be fetched.
+ */
+async function embedTextFont(pdfDoc: PDFDocument): Promise<PDFFont> {
+	try {
+		const fontkit = (await import('@pdf-lib/fontkit')).default;
+		pdfDoc.registerFontkit(fontkit);
+		const res = await fetch(UNICODE_FONT_URL);
+		if (!res.ok) throw new Error(`font HTTP ${res.status}`);
+		return await pdfDoc.embedFont(await res.arrayBuffer(), { subset: true });
+	} catch {
+		const { StandardFonts } = await import('pdf-lib');
+		return pdfDoc.embedFont(StandardFonts.Helvetica);
+	}
+}
+
+/**
+ * Draw text without ever aborting the export. If the font can't encode a glyph
+ * (e.g. a colour emoji even the Unicode font lacks), drop the offending
+ * characters and retry instead of letting pdf-lib throw and kill the download.
+ */
+function drawTextSafe(
+	page: PDFPage,
+	text: string,
+	options: Parameters<PDFPage['drawText']>[1]
+): void {
+	try {
+		page.drawText(text, options);
+		return;
+	} catch {
+		const font = options?.font;
+		const safe = font
+			? Array.from(text)
+					.map((ch) => {
+						try {
+							font.encodeText(ch);
+							return ch;
+						} catch {
+							return '';
+						}
+					})
+					.join('')
+			: text.replace(/[^\u0000-\u00ff]/g, '');
+		if (!safe.trim()) return;
+		try {
+			page.drawText(safe, options);
+		} catch {
+			// Give up on this one annotation rather than failing the whole export.
+		}
+	}
+}
+
 /**
  * Burn annotations into the original PDF bytes and return the new PDF bytes.
  * `scale` must match the scale the annotations were captured at (`RENDER_SCALE`).
@@ -149,9 +209,10 @@ export async function exportAnnotatedPdf(
 	annotations: Annotation[],
 	scale: number = RENDER_SCALE
 ): Promise<Uint8Array> {
-	const { PDFDocument, StandardFonts, rgb } = await import('pdf-lib');
-	const pdfDoc = await PDFDocument.load(originalBytes);
-	const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+	const pdfLib = await import('pdf-lib');
+	const { rgb } = pdfLib;
+	const pdfDoc = await pdfLib.PDFDocument.load(originalBytes);
+	const font = await embedTextFont(pdfDoc);
 	const pages = pdfDoc.getPages();
 
 	for (const ann of annotations) {
@@ -190,7 +251,7 @@ export async function exportAnnotatedPdf(
 			const fontSizePts = ann.fontSize / scale;
 			// Baseline of the first line ~ top + ~0.9em (ascent + half-leading).
 			const baselineFromTop = ann.y / scale + fontSizePts * 0.9;
-			page.drawText(ann.text, {
+			drawTextSafe(page, ann.text, {
 				x: ann.x / scale,
 				y: pageHeight - baselineFromTop,
 				size: fontSizePts,

@@ -37,6 +37,8 @@
     "katex": "^0.16.27",
     "marked": "^14.1.4",
     "monaco-editor": "^0.55.1",
+    "pdf-lib": "^1.17.1",
+    "pdfjs-dist": "^6.0.227",
     "rehype-katex": "^7.0.1",
     "remark-math": "^6.0.0",
     "svelte-markdown": "^0.4.1",

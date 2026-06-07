@@ -4,13 +4,18 @@
   import AiAgent from "$lib/components/AiAgent.svelte";
   import WeatherHeadsUp from "$lib/components/WeatherHeadsUp.svelte";
 
-  $: isFullWidth = $page.url.pathname === "/editor";
   $: currentPath = $page.url.pathname;
+  // Tool sub-pages (e.g. /tools/pdf-annotator) render full-width like the editor;
+  // the /tools listing stays in the normal container.
+  $: isFullWidth =
+    currentPath === "/editor" ||
+    (currentPath.startsWith("/tools/") && currentPath !== "/tools");
 
   const navItems = [
     { href: "/", label: "Home" },
     { href: "/work", label: "Work" },
     { href: "/projects", label: "Projects" },
+    { href: "/tools", label: "Tools" },
     { href: "/education", label: "Education" },
     { href: "/blog", label: "Blog" },
   ];

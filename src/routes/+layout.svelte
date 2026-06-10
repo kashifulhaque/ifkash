@@ -9,6 +9,7 @@
   // the /tools listing stays in the normal container.
   $: isFullWidth =
     currentPath === "/editor" ||
+    currentPath === "/admin/notes" ||
     (currentPath.startsWith("/tools/") && currentPath !== "/tools");
 
   const navItems = [

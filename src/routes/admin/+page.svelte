@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { FileText, History } from "lucide-svelte";
+  import { FileText, History, NotebookPen } from "lucide-svelte";
   import type { PageData } from "./$types";
 
   export let data: PageData;
@@ -12,6 +12,12 @@
   };
 
   const entries: AdminEntry[] = [
+    {
+      name: "Notes",
+      desc: "Browse and edit the obsidian-sync vault. Reads and commits straight through the GitHub API — no local Obsidian needed.",
+      href: "/admin/notes",
+      icon: NotebookPen,
+    },
     {
       name: "Resume Editor",
       desc: "Edit the Typst source of the resume, compile it in the browser and publish the latest copy shown on the homepage.",

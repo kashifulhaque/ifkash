@@ -53,7 +53,7 @@
             </a>
           {/each}
 
-          <a href="/editor" class="header-login" aria-label="Editor">&rarr;</a>
+          <a href="/admin" class="header-login" aria-label="Admin">&rarr;</a>
         </nav>
 
         <button
@@ -101,7 +101,7 @@
           class="mobile-link"
           on:click={closeMenu}>GitHub</a
         >
-        <a href="/editor" class="mobile-link" on:click={closeMenu}>Editor</a>
+        <a href="/admin" class="mobile-link" on:click={closeMenu}>Admin</a>
       </nav>
     {/if}
 

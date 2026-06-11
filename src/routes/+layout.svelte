@@ -8,6 +8,7 @@
   // Tool sub-pages (e.g. /tools/pdf-annotator) render full-width like the editor;
   // the /tools listing stays in the normal container.
   $: isFullWidth =
+    currentPath === "/game" ||
     currentPath === "/editor" ||
     currentPath === "/admin/notes" ||
     (currentPath.startsWith("/tools/") && currentPath !== "/tools");

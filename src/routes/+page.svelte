@@ -26,6 +26,7 @@
 
 <section class="quick-actions">
   <a href={resumeUrl} class="btn">Read Resume &nearr;</a>
+  <a href="/game" class="btn btn-primary">Enter Game Mode &nearr;</a>
 </section>
 
 <style>

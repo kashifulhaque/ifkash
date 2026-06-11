@@ -10,7 +10,6 @@
   import LootOverlay from '$lib/game/ui/LootOverlay.svelte';
   import TouchControls from '$lib/game/ui/TouchControls.svelte';
   import StartScreen from '$lib/game/ui/StartScreen.svelte';
-  import FallbackPortfolio from '$lib/game/ui/FallbackPortfolio.svelte';
 
   let canvas: HTMLCanvasElement;
   let game: Game | null = null;
@@ -56,6 +55,7 @@
     } catch (err) {
       console.error('WebGL init failed', err);
       gameState.update((s) => ({ ...s, webglFailed: true }));
+      goto('/');
     }
   });
 
@@ -120,9 +120,7 @@
 </svelte:head>
 
 <div class="game-root">
-  {#if $gameState.webglFailed}
-    <FallbackPortfolio showGameLink={false} />
-  {:else}
+  {#if !$gameState.webglFailed}
     <canvas bind:this={canvas} class="game-canvas"></canvas>
 
     <Hud

@@ -2,7 +2,17 @@ import * as THREE from 'three';
 import type { AABB } from './collision';
 import { chunkRng } from './rng';
 import { loadModel, cloneStatic, NATURE_MODELS, COVER_MODELS } from './assets';
-import { terrainHeight, roadFactor, villageContaining, villagePlan, REGION } from './terrain';
+import {
+  terrainHeight,
+  roadFactor,
+  riverFactor,
+  riverCarveAt,
+  waterLevel,
+  slopeAt,
+  villageContaining,
+  villagePlan,
+  REGION
+} from './terrain';
 import { makeHouse } from './buildings';
 
 export const CHUNK_SIZE = 24;
@@ -13,6 +23,8 @@ const ROAD_COLORS = [0xa1887f, 0x8d6e63, 0x97806f];
 const VILLAGE_COLORS = [0xa5b85b, 0x9aad55, 0xb0c266];
 const ROCK_COLORS = [0x8d8d85, 0x7f7f78, 0x96968c];
 const SNOW_COLORS = [0xe8e8ec, 0xdfe2e8, 0xf2f2f6];
+const RIVERBED_COLORS = [0x8a7a5c, 0x817152, 0x938265]; // wet mud under the water
+const BANK_COLORS = [0xc2b280, 0xb8a96f, 0xccbd8d]; // sandy banks
 
 // Scale a model so its bounding-box height matches target.
 export function normalizeHeight(obj: THREE.Object3D, target: number) {
@@ -30,10 +42,17 @@ export class ChunkManager {
   private scene: THREE.Scene;
   private chunks = new Map<string, Chunk>();
   private groundMat: THREE.MeshLambertMaterial;
+  private waterMat: THREE.MeshLambertMaterial;
 
   constructor(scene: THREE.Scene) {
     this.scene = scene;
     this.groundMat = new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true });
+    this.waterMat = new THREE.MeshLambertMaterial({
+      color: 0x3f7fae,
+      transparent: true,
+      opacity: 0.78,
+      flatShading: true
+    });
   }
 
   update(px: number, pz: number) {
@@ -96,14 +115,21 @@ export class ChunkManager {
     const villagePalette = VILLAGE_COLORS.map((c) => new THREE.Color(c));
     const rockPalette = ROCK_COLORS.map((c) => new THREE.Color(c));
     const snowPalette = SNOW_COLORS.map((c) => new THREE.Color(c));
+    const bedPalette = RIVERBED_COLORS.map((c) => new THREE.Color(c));
+    const bankPalette = BANK_COLORS.map((c) => new THREE.Color(c));
+    let maxCarve = 0; // does a river run through this chunk?
     for (let i = 0; i < pos.count; i++) {
       const wx = pos.getX(i) + ox + CHUNK_SIZE / 2;
       const wz = pos.getZ(i) + oz + CHUNK_SIZE / 2;
       const h = terrainHeight(wx, wz);
       pos.setY(i, h);
+      maxCarve = Math.max(maxCarve, riverCarveAt(wx, wz));
       const pick = Math.floor(Math.abs(Math.sin(wx * 12.9898 + wz * 78.233) * 43758.5453) % 1 * 3) % 3;
       let c = palette[pick];
+      const rf = riverFactor(wx, wz);
       if (roadFactor(wx, wz) > 0.5) c = roadPalette[pick];
+      else if (rf > 0.55) c = bedPalette[pick];
+      else if (rf > 0.2) c = bankPalette[pick];
       else if (villageContaining(wx, wz)) c = villagePalette[pick];
       else {
         // Mountains: bare rock on steep faces, snow on the high peaks
@@ -119,6 +145,24 @@ export class ChunkManager {
     const ground = new THREE.Mesh(geo, this.groundMat);
     ground.position.set(ox + CHUNK_SIZE / 2, 0, oz + CHUNK_SIZE / 2);
     group.add(ground);
+
+    // Water surface where a river crosses this chunk. The surface follows the
+    // un-carved bank line minus a bit, so it pokes above the riverbed but
+    // dives underground at the banks — no hard shoreline geometry needed.
+    if (maxCarve > 0.6) {
+      const wgeo = new THREE.PlaneGeometry(CHUNK_SIZE, CHUNK_SIZE, 8, 8);
+      wgeo.rotateX(-Math.PI / 2);
+      const wpos = wgeo.attributes.position;
+      for (let i = 0; i < wpos.count; i++) {
+        const wx = wpos.getX(i) + ox + CHUNK_SIZE / 2;
+        const wz = wpos.getZ(i) + oz + CHUNK_SIZE / 2;
+        wpos.setY(i, waterLevel(wx, wz));
+      }
+      wgeo.computeVertexNormals();
+      const water = new THREE.Mesh(wgeo, this.waterMat);
+      water.position.set(ox + CHUNK_SIZE / 2, 0, oz + CHUNK_SIZE / 2);
+      group.add(water);
+    }
 
     const place = (
       url: string,
@@ -147,22 +191,65 @@ export class ChunkManager {
     };
 
     const spot = () => [ox + 1.5 + rng() * (CHUNK_SIZE - 3), oz + 1.5 + rng() * (CHUNK_SIZE - 3)];
-    // Keep wild props off roads, out of village clearings and off steep faces
-    // (props sit at their center height; cliffs would expose floating bases)
+    // Keep wild props off roads, out of village clearings, out of the water
+    // and off steep faces (props sit at their center height; cliffs would
+    // expose floating bases)
     const blocked = (x: number, z: number) => {
-      if (roadFactor(x, z) > 0.1 || villageContaining(x, z)) return true;
+      if (roadFactor(x, z) > 0.1 || riverFactor(x, z) > 0.2 || villageContaining(x, z)) return true;
       const h = terrainHeight(x, z);
       return Math.abs(terrainHeight(x + 1, z) - h) + Math.abs(terrainHeight(x, z + 1) - h) > 1.5;
     };
 
-    // Trees
+    // Trees: wide size spread, with the occasional giant; willows and palms
+    // crowd the riverbanks
     const nTrees = 2 + Math.floor(rng() * 4);
     for (let i = 0; i < nTrees; i++) {
       const [x, z] = spot();
-      const url = NATURE_MODELS.trees[Math.floor(rng() * NATURE_MODELS.trees.length)];
-      const h = 5 + rng() * 3;
+      const rf = riverFactor(x, z);
+      const pool = rf > 0.02 && rf <= 0.2 ? NATURE_MODELS.riverTrees : NATURE_MODELS.trees;
+      const url = pool[Math.floor(rng() * pool.length)];
+      const giant = rng() < 0.1;
+      const h = giant ? 10 + rng() * 4 : 4 + rng() * 4.5;
       const rot = rng() * Math.PI * 2;
-      if (!blocked(x, z)) place(url, x, z, h, rot, 0.55);
+      if (!blocked(x, z)) place(url, x, z, h, rot, giant ? 0.95 : 0.55);
+    }
+
+    // Cliff outcrops on steep mountain faces: big scaled-up rocks sunk into
+    // the slope, facing downhill
+    for (let i = 0; i < 2; i++) {
+      const [x, z] = spot();
+      if (slopeAt(x, z) > 0.7 && riverFactor(x, z) < 0.2 && !villageContaining(x, z)) {
+        const url = NATURE_MODELS.cliffs[Math.floor(rng() * NATURE_MODELS.cliffs.length)];
+        const h = 6 + rng() * 4;
+        const downhill = Math.atan2(
+          terrainHeight(x - 1, z) - terrainHeight(x + 1, z),
+          terrainHeight(x, z - 1) - terrainHeight(x, z + 1)
+        );
+        const y = terrainHeight(x, z) - 0.5;
+        loadModel(url).then((gltf) => {
+          const obj = cloneStatic(gltf);
+          normalizeHeight(obj, h);
+          obj.position.set(x, y, z);
+          obj.rotation.y = downhill;
+          group.add(obj);
+        });
+        colliders.push({ minX: x - 2, maxX: x + 2, minZ: z - 2, maxZ: z + 2 });
+      }
+    }
+
+    // Lilypads drifting on river water
+    for (let i = 0; i < 3; i++) {
+      const [x, z] = spot();
+      if (riverFactor(x, z) > 0.7) {
+        const y = waterLevel(x, z) + 0.02;
+        const rot = rng() * Math.PI * 2;
+        loadModel(NATURE_MODELS.lilypad).then((gltf) => {
+          const obj = cloneStatic(gltf);
+          obj.position.set(x, y, z);
+          obj.rotation.y = rot;
+          group.add(obj);
+        });
+      }
     }
     // Rocks
     const nRocks = 1 + Math.floor(rng() * 3);
@@ -233,7 +320,8 @@ export class ChunkManager {
     chunk.group.traverse((obj) => {
       const mesh = obj as THREE.Mesh;
       // Only dispose the per-chunk ground geometry; prop geometries are shared via the GLTF cache.
-      if (mesh.isMesh && mesh.material === this.groundMat) mesh.geometry.dispose();
+      if (mesh.isMesh && (mesh.material === this.groundMat || mesh.material === this.waterMat))
+        mesh.geometry.dispose();
     });
   }
 
@@ -241,5 +329,6 @@ export class ChunkManager {
     for (const chunk of this.chunks.values()) this.disposeChunk(chunk);
     this.chunks.clear();
     this.groundMat.dispose();
+    this.waterMat.dispose();
   }
 }

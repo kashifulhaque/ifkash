@@ -1,7 +1,8 @@
 # 3D Model Credits
 
-All models by [Quaternius](https://quaternius.com) — licensed CC0 (public domain).
+All models licensed CC0 (public domain).
 
-- `npc/` — Modular Men Pack
-- `nature/` — Ultimate Nature Pack
-- `props/` — Medieval Village Pack
+- `npc/` — [Quaternius](https://quaternius.com) Modular Men Pack + Modular Women Pack (`W_*.glb`)
+- `nature/` — [Quaternius](https://quaternius.com) Ultimate Nature Pack
+- `props/` — [Quaternius](https://quaternius.com) Medieval Village Pack
+- `vehicles/` — [Kenney](https://kenney.nl) Car Kit

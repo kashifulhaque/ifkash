@@ -104,7 +104,7 @@
   {#if interactPrompt}
     <div class="interact">
       {#if isTouch}TAP <span class="key">USE</span>{:else}PRESS <span class="key">E</span>{/if}
-      TO OPEN {interactPrompt} LOOT
+      TO {interactPrompt}
     </div>
   {:else if pointerLocked || isTouch}
     <div class="hint">SHOOT A TARGET · LOOT THE CRATE · THEY SHOOT BACK</div>

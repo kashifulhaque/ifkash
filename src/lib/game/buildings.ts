@@ -48,16 +48,33 @@ const roofGeo = makeRoofGeo();
 
 export function makeHouse(slot: HouseSlot): THREE.Group {
   const group = new THREE.Group();
-  const { width, depth, height, variant } = slot;
+  const { width, depth, height, variant, stories } = slot;
 
   const walls = new THREE.Mesh(wallGeo, wallMats[variant % wallMats.length]);
   walls.scale.set(width, height, depth);
   walls.position.y = height / 2;
   group.add(walls);
 
+  // Two-story town buildings stack a slightly inset upper floor
+  let roofBase = height;
+  let roofW = width;
+  let roofD = depth;
+  if (stories > 1) {
+    const upper = new THREE.Mesh(wallGeo, wallMats[(variant + 2) % wallMats.length]);
+    const uw = width * 0.82;
+    const ud = depth * 0.82;
+    const uh = height * 0.85;
+    upper.scale.set(uw, uh, ud);
+    upper.position.y = height + uh / 2;
+    group.add(upper);
+    roofBase = height + uh;
+    roofW = uw;
+    roofD = ud;
+  }
+
   const roof = new THREE.Mesh(roofGeo, roofMats[(variant + 1) % roofMats.length]);
-  roof.scale.set(width * 1.15, height * 0.55, depth * 1.15);
-  roof.position.y = height;
+  roof.scale.set(roofW * 1.15, height * 0.55, roofD * 1.15);
+  roof.position.y = roofBase;
   group.add(roof);
 
   // Door on the +z face (which faces the village center via slot.rot)

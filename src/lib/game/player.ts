@@ -69,6 +69,16 @@ export class Player {
     }
   }
 
+  /** Teleport to a spot on the ground (e.g. stepping out of a car). */
+  placeAt(x: number, z: number) {
+    this.feetY = terrainHeight(x, z);
+    this.vy = 0;
+    this.grounded = true;
+    this.velocity.set(0, 0, 0);
+    this.position.set(x, this.feetY + this.eyeHeight, z);
+    this.syncCamera();
+  }
+
   /** Camera kick on firing; recovers via spring in syncCamera. */
   kickRecoil() {
     this.recoilPitch += 0.014 + Math.random() * 0.006;

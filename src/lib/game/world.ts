@@ -13,15 +13,17 @@ type Phase = {
   sunIntensity: number;
   stars: number;
 };
+// "Night" never goes fully dark — it bottoms out at an indigo dusk so the
+// world stays readable around the clock.
 const PHASES: Phase[] = [
-  { t: 0.0, sky: 0x0b1026, hemi: 0x223355, hemiIntensity: 0.25, sun: 0x8899ff, sunIntensity: 0.15, stars: 0.9 },
-  { t: 0.21, sky: 0x0b1026, hemi: 0x223355, hemiIntensity: 0.25, sun: 0x8899ff, sunIntensity: 0.15, stars: 0.9 },
+  { t: 0.0, sky: 0x3a3f6b, hemi: 0x55608f, hemiIntensity: 0.45, sun: 0x9fa8e8, sunIntensity: 0.4, stars: 0.5 },
+  { t: 0.21, sky: 0x3a3f6b, hemi: 0x55608f, hemiIntensity: 0.45, sun: 0x9fa8e8, sunIntensity: 0.4, stars: 0.5 },
   { t: 0.27, sky: 0xf4a261, hemi: 0xffd9a0, hemiIntensity: 0.55, sun: 0xffb36b, sunIntensity: 0.8, stars: 0 },
   { t: 0.35, sky: 0x87ceeb, hemi: 0xfff8e7, hemiIntensity: 0.9, sun: 0xfff2cc, sunIntensity: 1.4, stars: 0 },
   { t: 0.65, sky: 0x87ceeb, hemi: 0xfff8e7, hemiIntensity: 0.9, sun: 0xfff2cc, sunIntensity: 1.4, stars: 0 },
   { t: 0.73, sky: 0xf4a261, hemi: 0xffd9a0, hemiIntensity: 0.55, sun: 0xffb36b, sunIntensity: 0.8, stars: 0 },
-  { t: 0.79, sky: 0x0b1026, hemi: 0x223355, hemiIntensity: 0.25, sun: 0x8899ff, sunIntensity: 0.15, stars: 0.9 },
-  { t: 1.0, sky: 0x0b1026, hemi: 0x223355, hemiIntensity: 0.25, sun: 0x8899ff, sunIntensity: 0.15, stars: 0.9 }
+  { t: 0.79, sky: 0x3a3f6b, hemi: 0x55608f, hemiIntensity: 0.45, sun: 0x9fa8e8, sunIntensity: 0.4, stars: 0.5 },
+  { t: 1.0, sky: 0x3a3f6b, hemi: 0x55608f, hemiIntensity: 0.45, sun: 0x9fa8e8, sunIntensity: 0.4, stars: 0.5 }
 ];
 
 // Sky, fog, day/night lighting, stars and clouds that drift along with the

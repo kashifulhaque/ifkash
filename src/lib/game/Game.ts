@@ -9,6 +9,7 @@ import { LootCrate, INTERACT_RANGE, CRATE_DESPAWN_DIST } from './crates';
 import { Shooter } from './shooting';
 import { GameAudio } from './audio';
 import { ViewModel } from './viewmodel';
+import { Vehicle, VehicleManager } from './vehicle';
 import { preloadAll } from './assets';
 
 export const MAG_SIZE = 12;
@@ -37,6 +38,8 @@ export class Game {
   private environment: Environment;
   private chunks: ChunkManager;
   private npcs: NpcManager;
+  private vehicles: VehicleManager;
+  private drivingCar: Vehicle | null = null;
   private crates: LootCrate[] = [];
   private shooter: Shooter;
   private viewModel: ViewModel;
@@ -80,6 +83,7 @@ export class Game {
 
     this.npcs = new NpcManager(this.scene, sections);
     this.npcs.onDeath = (npc) => this.dropCrate(npc);
+    this.vehicles = new VehicleManager(this.scene);
 
     this.shooter = new Shooter(this.scene);
     this.input = new InputManager(canvas, (locked) => callbacks.onLockChange(locked));
@@ -157,6 +161,42 @@ export class Game {
     this.crates.push(crate);
   }
 
+  private setPrompt(label: string | null) {
+    if (label !== this.promptShown) {
+      this.promptShown = label;
+      this.callbacks.onInteractPrompt(label);
+    }
+  }
+
+  private enterCar(car: Vehicle) {
+    this.input.state.interactQueued = false; // don't exit again this frame
+    this.vehicles.claim(car);
+    this.drivingCar = car;
+    // Face down the hood (camera looks along -z at yaw 0; the car drives +z)
+    this.player.yaw = car.yaw + Math.PI;
+    this.player.pitch = 0;
+    this.viewModel.gun.visible = false;
+    this.player.aiming = false;
+    if (this.aimShown) {
+      this.aimShown = false;
+      this.callbacks.onAimChange(false);
+    }
+    this.setPrompt('EXIT THE CAR');
+  }
+
+  private exitCar() {
+    const car = this.drivingCar;
+    if (!car) return;
+    this.input.state.interactQueued = false; // don't re-enter this frame
+    car.speed = 0;
+    this.drivingCar = null;
+    this.vehicles.park(car);
+    const spot = car.exitSpot(new THREE.Vector3());
+    this.player.placeAt(spot.x, spot.z);
+    this.viewModel.gun.visible = true;
+    this.setPrompt(null);
+  }
+
   private removeCrate(crate: LootCrate) {
     this.scene.remove(crate.group);
     this.crates = this.crates.filter((c) => c !== crate);
@@ -182,24 +222,51 @@ export class Game {
 
     if (!this.paused) {
       this.chunks.update(ppos.x, ppos.z);
-      this.player.update(dt, input, this.chunks.collidersNear(ppos.x, ppos.z));
+      this.vehicles.update(ppos.x, ppos.z);
 
-      if (input.fireQueued) this.tryFire();
-      if (input.reloadQueued) this.tryReload(false);
+      if (this.drivingCar) {
+        // Driving: car physics replace the foot controller; the weapon stays
+        // holstered and the camera rides the driver seat with free mouse-look.
+        const car = this.drivingCar;
+        car.update(dt, input, [
+          ...this.chunks.collidersNear(car.x, car.z),
+          ...this.vehicles.colliders(car.x, car.z)
+        ]);
+        this.player.yaw -= input.lookDX * 0.0023;
+        this.player.pitch = Math.max(
+          -1.2,
+          Math.min(1.2, this.player.pitch - input.lookDY * 0.0023)
+        );
+        car.seatWorld(this.player.position);
+        this.player.camera.position.copy(this.player.position);
+        this.player.camera.rotation.set(this.player.pitch, this.player.yaw, 0, 'YXZ');
+        this.setPrompt('EXIT THE CAR');
+        if (input.interactQueued) this.exitCar();
+      } else {
+        this.player.update(dt, input, [
+          ...this.chunks.collidersNear(ppos.x, ppos.z),
+          ...this.vehicles.colliders(ppos.x, ppos.z)
+        ]);
 
-      this.viewModel.update(dt, input, this.player);
-      // Reload finished this frame → top off the mag
-      if (this.wasReloading && !this.viewModel.reloading) {
-        this.ammo = MAG_SIZE;
-        this.callbacks.onAmmoChange(this.ammo, false);
+        if (input.fireQueued) this.tryFire();
+        if (input.reloadQueued) this.tryReload(false);
+
+        this.viewModel.update(dt, input, this.player);
+        // Reload finished this frame → top off the mag
+        if (this.wasReloading && !this.viewModel.reloading) {
+          this.ammo = MAG_SIZE;
+          this.callbacks.onAmmoChange(this.ammo, false);
+        }
+        this.wasReloading = this.viewModel.reloading;
+
+        // HUD signals: ADS crosshair
+        if (this.player.aiming !== this.aimShown) {
+          this.aimShown = this.player.aiming;
+          this.callbacks.onAimChange(this.aimShown);
+        }
       }
-      this.wasReloading = this.viewModel.reloading;
 
-      // HUD signals: ADS crosshair + compass yaw
-      if (this.player.aiming !== this.aimShown) {
-        this.aimShown = this.player.aiming;
-        this.callbacks.onAimChange(this.aimShown);
-      }
+      // Compass yaw (foot or drive)
       if (Math.abs(this.player.yaw - this.yawShown) > 0.01) {
         this.yawShown = this.player.yaw;
         this.callbacks.onYawChange(this.yawShown);
@@ -232,17 +299,19 @@ export class Game {
           nearestDist = d;
         }
       }
-      const prompt = nearest ? nearest.section.label : null;
-      if (prompt !== this.promptShown) {
-        this.promptShown = prompt;
-        this.callbacks.onInteractPrompt(prompt);
-      }
-      if (nearest && input.interactQueued) {
-        this.audio.crateOpen();
-        this.callbacks.onOpenSection(nearest.section);
-        this.removeCrate(nearest);
-        this.promptShown = null;
-        this.callbacks.onInteractPrompt(null);
+      if (!this.drivingCar) {
+        const nearCar = nearest ? null : this.vehicles.nearestParked(ppos.x, ppos.z, 3.5);
+        this.setPrompt(
+          nearest ? `OPEN ${nearest.section.label} LOOT` : nearCar ? 'DRIVE THE CAR' : null
+        );
+        if (nearest && input.interactQueued) {
+          this.audio.crateOpen();
+          this.callbacks.onOpenSection(nearest.section);
+          this.removeCrate(nearest);
+          this.setPrompt(null);
+        } else if (nearCar && input.interactQueued) {
+          this.enterCar(nearCar);
+        }
       }
     }
 
@@ -263,6 +332,8 @@ export class Game {
     this.audio.dispose();
     this.viewModel.dispose();
     this.npcs.dispose();
+    this.vehicles.dispose();
+    if (this.drivingCar) this.scene.remove(this.drivingCar.group);
     this.chunks.dispose();
     this.scene.traverse((obj) => {
       const mesh = obj as THREE.Mesh;

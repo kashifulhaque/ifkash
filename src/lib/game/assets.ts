@@ -24,40 +24,79 @@ export function cloneRigged(gltf: GLTF): THREE.Object3D {
   return cloneSkeleton(gltf.scene);
 }
 
-export const NPC_MODELS: Record<string, string> = {
-  work: '/models/npc/Suit.glb',
-  education: '/models/npc/Adventurer.glb',
-  projects: '/models/npc/Worker.glb',
-  resume: '/models/npc/Casual.glb',
-  blog: '/models/npc/Punk.glb',
-  contact: '/models/npc/Farmer.glb'
+// Several outfits per portfolio section (Modular Men + Modular Women packs —
+// identical rig, so the procedural animation works on all of them).
+export const NPC_MODELS: Record<string, string[]> = {
+  work: ['/models/npc/Suit.glb', '/models/npc/W_Formal.glb', '/models/npc/King.glb'],
+  education: ['/models/npc/Adventurer.glb', '/models/npc/W_Adventurer.glb'],
+  projects: ['/models/npc/Worker.glb', '/models/npc/W_Worker.glb', '/models/npc/Swat.glb'],
+  resume: ['/models/npc/Casual.glb', '/models/npc/Casual2.glb', '/models/npc/W_Casual.glb'],
+  blog: ['/models/npc/Punk.glb', '/models/npc/W_Punk.glb', '/models/npc/W_Witch.glb'],
+  contact: ['/models/npc/Farmer.glb', '/models/npc/Beach.glb', '/models/npc/W_Medieval.glb']
 };
 
 export const NATURE_MODELS = {
   trees: [
     '/models/nature/CommonTree_1.glb',
+    '/models/nature/CommonTree_2.glb',
     '/models/nature/CommonTree_3.glb',
+    '/models/nature/CommonTree_4.glb',
+    '/models/nature/CommonTree_5.glb',
+    '/models/nature/CommonTree_Dead_1.glb',
     '/models/nature/PineTree_1.glb',
+    '/models/nature/PineTree_2.glb',
     '/models/nature/PineTree_3.glb',
+    '/models/nature/PineTree_5.glb',
     '/models/nature/BirchTree_1.glb',
+    '/models/nature/BirchTree_2.glb',
     '/models/nature/Willow_1.glb'
+  ],
+  // Waterside picks, biased onto riverbanks
+  riverTrees: [
+    '/models/nature/Willow_1.glb',
+    '/models/nature/Willow_2.glb',
+    '/models/nature/PalmTree_1.glb'
   ],
   rocks: [
     '/models/nature/Rock_Moss_1.glb',
     '/models/nature/Rock_Moss_4.glb',
+    '/models/nature/Rock_Moss_5.glb',
     '/models/nature/Rock_1.glb',
-    '/models/nature/Rock_5.glb'
+    '/models/nature/Rock_2.glb',
+    '/models/nature/Rock_5.glb',
+    '/models/nature/Rock_7.glb'
+  ],
+  // Chunky silhouettes that read well scaled up on mountain faces
+  cliffs: [
+    '/models/nature/Rock_3.glb',
+    '/models/nature/Rock_6.glb',
+    '/models/nature/Rock_Moss_6.glb'
   ],
   smalls: [
     '/models/nature/Bush_1.glb',
+    '/models/nature/Bush_2.glb',
     '/models/nature/BushBerries_1.glb',
     '/models/nature/Grass_2.glb',
     '/models/nature/Grass_Short.glb',
+    '/models/nature/Grass.glb',
     '/models/nature/Flowers.glb',
+    '/models/nature/Plant_1.glb',
+    '/models/nature/Plant_2.glb',
+    '/models/nature/Wheat.glb',
     '/models/nature/TreeStump_Moss.glb',
     '/models/nature/WoodLog_Moss.glb'
-  ]
+  ],
+  lilypad: '/models/nature/Lilypad.glb'
 };
+
+export const VEHICLE_MODELS = [
+  '/models/vehicles/sedan.glb',
+  '/models/vehicles/suv.glb',
+  '/models/vehicles/hatchback-sports.glb',
+  '/models/vehicles/truck.glb',
+  '/models/vehicles/van.glb',
+  '/models/vehicles/taxi.glb'
+];
 
 export const COVER_MODELS = [
   '/models/props/Crate.glb',
@@ -72,11 +111,15 @@ export const COVER_MODELS = [
 
 export async function preloadAll(): Promise<void> {
   const urls = [
-    ...Object.values(NPC_MODELS),
+    ...Object.values(NPC_MODELS).flat(),
     ...NATURE_MODELS.trees,
+    ...NATURE_MODELS.riverTrees,
     ...NATURE_MODELS.rocks,
+    ...NATURE_MODELS.cliffs,
     ...NATURE_MODELS.smalls,
-    ...COVER_MODELS
+    NATURE_MODELS.lilypad,
+    ...COVER_MODELS,
+    ...VEHICLE_MODELS
   ];
   await Promise.all(urls.map(loadModel));
 }

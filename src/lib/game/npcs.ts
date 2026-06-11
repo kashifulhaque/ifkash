@@ -436,9 +436,12 @@ export class NpcManager {
     }
     if (!ok) return;
 
-    const gltf = await loadModel(NPC_MODELS[section.id]);
+    const variants = NPC_MODELS[section.id];
+    const gltf = await loadModel(variants[Math.floor(Math.random() * variants.length)]);
     const model = cloneRigged(gltf);
     const npc = new Npc(section, model, x, z);
+    // Slight per-NPC size variation (label/hitbox scale along with the group)
+    npc.group.scale.setScalar(0.92 + Math.random() * 0.16);
     npc.onDeath = (n) => this.onDeath?.(n);
     this.scene.add(npc.group);
     this.npcs.push(npc);

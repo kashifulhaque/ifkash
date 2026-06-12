@@ -35,7 +35,10 @@ export class Environment {
   private scene: THREE.Scene;
   private stars: THREE.Points;
   private starMat: THREE.PointsMaterial;
-  private timeOfDay = 0.4; // start mid-morning
+  /** Fixed daytime used when the cycle is disabled (the default). */
+  private static readonly FIXED_DAY = 0.45;
+  private timeOfDay = Environment.FIXED_DAY;
+  private cycleEnabled = false;
   private colA = new THREE.Color();
   private colB = new THREE.Color();
 
@@ -123,8 +126,18 @@ export class Environment {
     this.stars.visible = starOpacity > 0.01;
   }
 
+  /** Turn the day/night cycle on or off; off snaps back to fixed daytime. */
+  setCycleEnabled(on: boolean) {
+    this.cycleEnabled = on;
+    if (!on) this.timeOfDay = Environment.FIXED_DAY;
+  }
+
+  get cycleOn(): boolean {
+    return this.cycleEnabled;
+  }
+
   update(dt: number, px: number, pz: number) {
-    this.timeOfDay = (this.timeOfDay + dt / DAY_LENGTH) % 1;
+    if (this.cycleEnabled) this.timeOfDay = (this.timeOfDay + dt / DAY_LENGTH) % 1;
     this.applyTimeOfDay();
 
     // Sun arcs overhead through the day; at night it sits low as "moonlight"

@@ -9,6 +9,7 @@
   export let deathCount = 0;
   export let muted = false;
   export let ammo = 12;
+  export let reserve = 24;
   export let reloading = false;
   export let score = 0;
   export let streak = 0;
@@ -74,8 +75,8 @@
     {/if}
   </div>
 
-  <div class="ammo" class:reloading>
-    {#if reloading}RELOADING…{:else}{ammo} / ∞{/if}
+  <div class="ammo" class:reloading class:empty={!reloading && ammo === 0 && reserve === 0}>
+    {#if reloading}RELOADING…{:else}{ammo} / {reserve}{/if}
   </div>
 
   {#key hitCount}
@@ -260,6 +261,10 @@
     font-size: 1.1rem;
     color: #ffd23f;
     animation: blink 0.7s ease-in-out infinite;
+  }
+
+  .ammo.empty {
+    color: #ff5252;
   }
 
   .damage-flash {

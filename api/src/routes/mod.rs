@@ -4,6 +4,7 @@ pub mod resume;
 pub mod resume_api;
 pub mod home_weather;
 pub mod whoami;
+pub mod game;
 
 use worker::*;
 
@@ -18,4 +19,6 @@ pub fn register_routes(router: Router<'_, ()>) -> Router<'_, ()> {
     .post_async("/api/resume/upload", resume_api::upload)
     .get_async("/api/home_weather", home_weather::route)
     .get_async("/api/whoami", whoami::route)
+    .post_async("/api/game/score", game::submit_score)
+    .get_async("/api/game/leaderboard", game::leaderboard)
 }

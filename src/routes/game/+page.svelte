@@ -10,6 +10,7 @@
   import LootOverlay from '$lib/game/ui/LootOverlay.svelte';
   import TouchControls from '$lib/game/ui/TouchControls.svelte';
   import StartScreen from '$lib/game/ui/StartScreen.svelte';
+  import DeathScreen from '$lib/game/ui/DeathScreen.svelte';
 
   let canvas: HTMLCanvasElement;
   let game: Game | null = null;
@@ -39,13 +40,20 @@
         },
         onHealthChange: (health) => gameState.update((s) => ({ ...s, health })),
         onPlayerHit: () => gameState.update((s) => ({ ...s, hitCount: s.hitCount + 1 })),
-        onPlayerDeath: () => gameState.update((s) => ({ ...s, deathCount: s.deathCount + 1 })),
+        onPlayerDeath: () =>
+          gameState.update((s) => ({
+            ...s,
+            deathCount: s.deathCount + 1,
+            dead: true,
+            finalScore: s.score
+          })),
         onHitMarker: (headshot, killed) =>
           gameState.update((s) => ({
             ...s,
             hitMarker: { id: (s.hitMarker?.id ?? 0) + 1, headshot, killed }
           })),
-        onAmmoChange: (ammo, reloading) => gameState.update((s) => ({ ...s, ammo, reloading })),
+        onAmmoChange: (ammo, reserve, reloading) =>
+          gameState.update((s) => ({ ...s, ammo, reserve, reloading })),
         onScoreChange: (score, streak) => gameState.update((s) => ({ ...s, score, streak })),
         onAimChange: (aiming) => gameState.update((s) => ({ ...s, aiming })),
         onYawChange: (yaw) => gameState.update((s) => ({ ...s, yaw }))
@@ -75,13 +83,17 @@
       hitCount: 0,
       deathCount: 0,
       muted: false,
+      dayNightCycle: false,
       ammo: 12,
+      reserve: 24,
       reloading: false,
       score: 0,
       streak: 0,
       aiming: false,
       yaw: 0,
-      hitMarker: null
+      hitMarker: null,
+      dead: false,
+      finalScore: 0
     });
   });
 
@@ -98,6 +110,18 @@
     gameState.update((s) => ({ ...s, muted }));
   }
 
+  function toggleCycle() {
+    if (!game) return;
+    game.setDayNightCycle(!game.dayNightCycle);
+    gameState.update((s) => ({ ...s, dayNightCycle: game!.dayNightCycle }));
+  }
+
+  function respawn() {
+    gameState.update((s) => ({ ...s, dead: false }));
+    game?.respawn();
+    if (!$gameState.isTouch) game?.requestLock();
+  }
+
   function closeOverlay() {
     gameState.update((s) => ({ ...s, openSection: null }));
     game?.setPaused(false);
@@ -108,6 +132,7 @@
     !$gameState.webglFailed &&
     !$gameState.textMode &&
     !$gameState.openSection &&
+    !$gameState.dead &&
     (!$gameState.started || (!$gameState.isTouch && !$gameState.pointerLocked));
 </script>
 
@@ -132,6 +157,7 @@
       deathCount={$gameState.deathCount}
       muted={$gameState.muted}
       ammo={$gameState.ammo}
+      reserve={$gameState.reserve}
       reloading={$gameState.reloading}
       score={$gameState.score}
       streak={$gameState.streak}
@@ -159,9 +185,17 @@
       <StartScreen
         isTouch={$gameState.isTouch}
         resumed={$gameState.started}
+        muted={$gameState.muted}
+        dayNightCycle={$gameState.dayNightCycle}
         on:start={start}
+        on:mute={toggleMute}
+        on:togglecycle={toggleCycle}
         on:textmode={() => goto('/')}
       />
+    {/if}
+
+    {#if $gameState.dead}
+      <DeathScreen finalScore={$gameState.finalScore} on:respawn={respawn} />
     {/if}
 
     {#if $gameState.openSection}

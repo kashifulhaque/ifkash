@@ -62,11 +62,14 @@ export class Player {
     this.health = Math.max(0, this.health - amount);
     this.sinceDamage = 0;
     this.onHealthChange?.(this.health);
-    if (this.health === 0) {
-      this.onDeath?.();
-      this.health = MAX_HEALTH;
-      this.onHealthChange?.(this.health);
-    }
+    if (this.health === 0) this.onDeath?.();
+  }
+
+  /** Back to life after the death screen. */
+  revive() {
+    this.health = MAX_HEALTH;
+    this.sinceDamage = 999;
+    this.onHealthChange?.(this.health);
   }
 
   /** Teleport to a spot on the ground (e.g. stepping out of a car). */

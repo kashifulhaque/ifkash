@@ -4,6 +4,8 @@
 
   export let isTouch: boolean;
   export let resumed = false; // true when pointer lock was lost mid-game
+  export let muted = false;
+  export let dayNightCycle = false;
 
   const dispatch = createEventDispatcher();
 </script>
@@ -26,11 +28,19 @@
       </div>
     {/if}
     <span class="enter">{resumed ? 'CLICK TO RESUME' : isTouch ? 'TAP TO ENTER' : 'CLICK TO ENTER'}</span>
-    {#if !resumed}
-      <button class="text-link" on:click|stopPropagation={() => dispatch('textmode')}>
-        exit to the regular site
-      </button>
+    {#if resumed}
+      <div class="menu">
+        <button class="menu-item" on:click|stopPropagation={() => dispatch('togglecycle')}>
+          DAY/NIGHT CYCLE · {dayNightCycle ? 'ON' : 'OFF'}
+        </button>
+        <button class="menu-item" on:click|stopPropagation={() => dispatch('mute')}>
+          SOUND · {muted ? 'OFF' : 'ON'}
+        </button>
+      </div>
     {/if}
+    <button class="text-link" on:click|stopPropagation={() => dispatch('textmode')}>
+      exit to the regular site
+    </button>
   </div>
 </div>
 
@@ -95,6 +105,31 @@
     border: 2px solid #fff;
     padding: 10px 28px;
     animation: blink 1.4s ease-in-out infinite;
+  }
+
+  .menu {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 26px;
+    align-items: center;
+  }
+
+  .menu-item {
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    font-family: var(--font-mono, monospace);
+    font-size: 0.78rem;
+    letter-spacing: 0.12em;
+    color: rgba(255, 255, 255, 0.85);
+    padding: 9px 22px;
+    min-width: 240px;
+    cursor: pointer;
+  }
+
+  .menu-item:hover {
+    border-color: #ffd23f;
+    color: #ffd23f;
   }
 
   .text-link {

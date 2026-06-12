@@ -6,6 +6,7 @@ import { Environment } from './world';
 import { ChunkManager } from './chunks';
 import { NpcManager, type Npc } from './npcs';
 import { LootCrate, INTERACT_RANGE, CRATE_DESPAWN_DIST } from './crates';
+import { AmmoPickup, PICKUP_RANGE, PICKUP_DESPAWN_DIST } from './pickups';
 import { Shooter } from './shooting';
 import { GameAudio } from './audio';
 import { ViewModel } from './viewmodel';
@@ -13,6 +14,9 @@ import { Vehicle, VehicleManager } from './vehicle';
 import { preloadAll } from './assets';
 
 export const MAG_SIZE = 12;
+export const RESERVE_START = 24;
+const RESERVE_CAP = 96;
+const AMMO_DROP_CHANCE = 0.7;
 
 export type GameCallbacks = {
   onLockChange: (locked: boolean) => void;
@@ -22,7 +26,7 @@ export type GameCallbacks = {
   onPlayerHit: () => void;
   onPlayerDeath: () => void;
   onHitMarker: (headshot: boolean, killed: boolean) => void;
-  onAmmoChange: (ammo: number, reloading: boolean) => void;
+  onAmmoChange: (ammo: number, reserve: number, reloading: boolean) => void;
   onScoreChange: (score: number, streak: number) => void;
   onAimChange: (aiming: boolean) => void;
   onYawChange: (yaw: number) => void;
@@ -41,9 +45,12 @@ export class Game {
   private vehicles: VehicleManager;
   private drivingCar: Vehicle | null = null;
   private crates: LootCrate[] = [];
+  private pickups: AmmoPickup[] = [];
   private shooter: Shooter;
   private viewModel: ViewModel;
   private ammo = MAG_SIZE;
+  private reserve = RESERVE_START;
+  private dead = false;
   private wasReloading = false;
   private score = 0;
   private streak = 0;
@@ -68,8 +75,9 @@ export class Game {
     this.player = new Player(canvas.clientWidth / Math.max(canvas.clientHeight, 1));
     this.player.onHealthChange = (h) => callbacks.onHealthChange(h);
     this.player.onDeath = () => {
-      this.streak = 0;
-      callbacks.onScoreChange(this.score, this.streak);
+      // Stay dead: freeze the sim and let the death screen drive respawn
+      this.dead = true;
+      this.setPaused(true);
       callbacks.onPlayerDeath();
     };
     this.player.onFootstep = (running) => this.audio.footstep(running);
@@ -82,7 +90,10 @@ export class Game {
     this.chunks.update(this.player.position.x, this.player.position.z);
 
     this.npcs = new NpcManager(this.scene, sections);
-    this.npcs.onDeath = (npc) => this.dropCrate(npc);
+    this.npcs.onDeath = (npc) => {
+      this.dropCrate(npc);
+      this.dropAmmo(npc);
+    };
     this.vehicles = new VehicleManager(this.scene);
 
     this.shooter = new Shooter(this.scene);
@@ -108,21 +119,47 @@ export class Game {
     return this.audio.toggleMute();
   }
 
+  setDayNightCycle(on: boolean) {
+    this.environment.setCycleEnabled(on);
+  }
+
+  get dayNightCycle(): boolean {
+    return this.environment.cycleOn;
+  }
+
   setPaused(paused: boolean) {
     this.paused = paused;
     this.input.enabled = !paused;
     if (paused) this.input.exitLock();
   }
 
+  get isDead(): boolean {
+    return this.dead;
+  }
+
+  /** Fresh run after the death screen: full health and starting ammo, score reset. */
+  respawn() {
+    if (!this.dead) return;
+    this.dead = false;
+    this.player.revive();
+    this.ammo = MAG_SIZE;
+    this.reserve = RESERVE_START;
+    this.score = 0;
+    this.streak = 0;
+    this.callbacks.onAmmoChange(this.ammo, this.reserve, false);
+    this.callbacks.onScoreChange(this.score, this.streak);
+    this.setPaused(false);
+  }
+
   private tryFire() {
     if (this.viewModel.reloading) return;
     if (this.ammo <= 0) {
       this.audio.dryFire();
-      this.tryReload(true);
+      if (this.reserve > 0) this.tryReload(true); // empty reserve: just the click
       return;
     }
     this.ammo--;
-    this.callbacks.onAmmoChange(this.ammo, false);
+    this.callbacks.onAmmoChange(this.ammo, this.reserve, false);
     this.audio.gunshot();
     this.player.kickRecoil();
     this.viewModel.kick();
@@ -139,14 +176,15 @@ export class Game {
         this.callbacks.onScoreChange(this.score, this.streak);
       }
     }
-    if (this.ammo === 0) this.tryReload(true);
+    if (this.ammo === 0 && this.reserve > 0) this.tryReload(true);
   }
 
   private tryReload(auto: boolean) {
+    if (this.reserve <= 0) return; // nothing to load from
     if (this.ammo >= MAG_SIZE && !auto) return;
     if (this.viewModel.startReload()) {
       this.audio.reload();
-      this.callbacks.onAmmoChange(this.ammo, true);
+      this.callbacks.onAmmoChange(this.ammo, this.reserve, true);
     }
   }
 
@@ -195,6 +233,22 @@ export class Game {
     this.player.placeAt(spot.x, spot.z);
     this.viewModel.gun.visible = true;
     this.setPrompt(null);
+  }
+
+  // Most kills drop a small randomized ammo box, collected by walking over it
+  private dropAmmo(npc: Npc) {
+    if (Math.random() > AMMO_DROP_CHANCE) return;
+    const pickup = new AmmoPickup(
+      npc.group.position.x + (Math.random() - 0.5) * 1.2,
+      npc.group.position.z + (Math.random() - 0.5) * 1.2
+    );
+    this.scene.add(pickup.group);
+    this.pickups.push(pickup);
+  }
+
+  private removePickup(pickup: AmmoPickup) {
+    this.scene.remove(pickup.group);
+    this.pickups = this.pickups.filter((p) => p !== pickup);
   }
 
   private removeCrate(crate: LootCrate) {
@@ -252,10 +306,12 @@ export class Game {
         if (input.reloadQueued) this.tryReload(false);
 
         this.viewModel.update(dt, input, this.player);
-        // Reload finished this frame → top off the mag
+        // Reload finished this frame → move rounds from reserve into the mag
         if (this.wasReloading && !this.viewModel.reloading) {
-          this.ammo = MAG_SIZE;
-          this.callbacks.onAmmoChange(this.ammo, false);
+          const take = Math.min(MAG_SIZE - this.ammo, this.reserve);
+          this.ammo += take;
+          this.reserve -= take;
+          this.callbacks.onAmmoChange(this.ammo, this.reserve, false);
         }
         this.wasReloading = this.viewModel.reloading;
 
@@ -281,6 +337,20 @@ export class Game {
           this.player.takeDamage(shot.damage);
           this.audio.playerHurt();
           this.callbacks.onPlayerHit();
+        }
+      }
+
+      // Ammo pickups: auto-collect on walk-over, despawn when far
+      for (let i = this.pickups.length - 1; i >= 0; i--) {
+        const pickup = this.pickups[i];
+        const d = pickup.distanceTo(ppos.x, ppos.z);
+        if (d > PICKUP_DESPAWN_DIST) {
+          this.removePickup(pickup);
+        } else if (d < PICKUP_RANGE && this.reserve < RESERVE_CAP) {
+          this.reserve = Math.min(RESERVE_CAP, this.reserve + pickup.amount);
+          this.audio.crateOpen();
+          this.callbacks.onAmmoChange(this.ammo, this.reserve, this.viewModel.reloading);
+          this.removePickup(pickup);
         }
       }
 
@@ -318,6 +388,7 @@ export class Game {
     // Day/night clock and cloud drift freeze with the rest of the sim
     this.environment.update(this.paused ? 0 : dt, ppos.x, ppos.z);
     for (const crate of this.crates) crate.update(dt);
+    for (const pickup of this.pickups) pickup.update(dt);
     this.shooter.update(dt);
     this.input.consumeFrame();
 

@@ -40,7 +40,7 @@ bucket_name = "ifkash"
 OWNER_EMAIL = "haque.kashiful7@gmail.com"
 # Google OAuth client ID for the /game leaderboard (audience check on ID tokens).
 # Must match PUBLIC_GOOGLE_CLIENT_ID in the web app's environment.
-GOOGLE_CLIENT_ID = ""
+GOOGLE_CLIENT_ID = "589199944334-at0seduhfggnrnmncrnnke6asstd13fc.apps.googleusercontent.com"
 
 # Secrets (set via `wrangler secret put <NAME>`):
 #   WEATHER_UNION_API_KEY - /api/home_weather

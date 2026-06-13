@@ -106,7 +106,9 @@ pub async fn submit_score(mut req: Request, ctx: RouteContext<()>) -> Result<Res
            games_played = games_played + 1, \
            updated = datetime('now')",
     )
-    .bind(&[info.sub.clone().into(), body.score.into()])?
+    // Bind the score as f64 — D1 rejects bigint JsValues, and the INTEGER
+    // column stores it losslessly (scores are well within f64's safe range).
+    .bind(&[info.sub.clone().into(), (body.score as f64).into()])?
     .run()
     .await?;
 

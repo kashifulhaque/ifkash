@@ -6,21 +6,93 @@ import { terrainHeight } from './terrain';
 
 const NPC_HEIGHT = 1.85;
 const HEADSHOT_Y = 1.45; // hit point above this (group-relative) counts as a headshot
-const HP_MIN = 2;
-const HP_MAX = 6;
-const WANDER_SPEED = 1.6;
-const CHASE_SPEED = 3.2;
-const ENGAGE_RANGE = 17;
-const SHOOT_RANGE = 15;
-const KEEP_DISTANCE = 8;
 const DESPAWN_DIST = 52;
 const SPAWN_MIN = 18;
 const SPAWN_MAX = 36;
-const DESIRED_NPCS = 7;
-const SHOT_COOLDOWN_MIN = 1.7;
-const SHOT_COOLDOWN_MAX = 3.0;
-const SHOT_DAMAGE_MIN = 6;
-const SHOT_DAMAGE_MAX = 14;
+
+// ── Enemy archetypes ─────────────────────────────────────────────────────────
+// Per-type tuning. The `grunt` row is the original rifle NPC; the others trade
+// speed/range/toughness for variety. `tint` multiplies the rig's mesh colors so
+// each type reads at a glance. `melee` enemies carry no gun and deal contact
+// damage instead of firing tracers.
+export type NpcType = 'grunt' | 'rusher' | 'heavy' | 'sniper';
+
+type NpcConfig = {
+  hp: [number, number];
+  wanderSpeed: number;
+  chaseSpeed: number;
+  engageRange: number;
+  shootRange: number;
+  keepDistance: number;
+  shotCooldown: [number, number];
+  shotDamage: [number, number];
+  /** Probability a shot connects when the player is standing (crouch lowers it). */
+  accuracy: number;
+  scale: number;
+  tint: number;
+  score: number;
+  melee?: boolean;
+};
+
+export const NPC_TYPES: Record<NpcType, NpcConfig> = {
+  grunt: {
+    hp: [2, 6],
+    wanderSpeed: 1.6,
+    chaseSpeed: 3.2,
+    engageRange: 17,
+    shootRange: 15,
+    keepDistance: 8,
+    shotCooldown: [1.7, 3.0],
+    shotDamage: [6, 14],
+    accuracy: 0.55,
+    scale: 1,
+    tint: 0xffffff,
+    score: 100
+  },
+  rusher: {
+    hp: [1, 2],
+    wanderSpeed: 2.4,
+    chaseSpeed: 5.4,
+    engageRange: 22,
+    shootRange: 1.7, // "shoot" range doubles as the melee reach
+    keepDistance: 0, // never backs off — charges into contact
+    shotCooldown: [0.8, 1.2],
+    shotDamage: [10, 18],
+    accuracy: 1,
+    scale: 0.85,
+    tint: 0xff6a5a,
+    score: 120,
+    melee: true
+  },
+  heavy: {
+    hp: [10, 14],
+    wanderSpeed: 1.0,
+    chaseSpeed: 2.0,
+    engageRange: 16,
+    shootRange: 14,
+    keepDistance: 9,
+    shotCooldown: [2.4, 3.6],
+    shotDamage: [14, 24],
+    accuracy: 0.5,
+    scale: 1.28,
+    tint: 0x6b7080,
+    score: 250
+  },
+  sniper: {
+    hp: [4, 6],
+    wanderSpeed: 0.8,
+    chaseSpeed: 1.4,
+    engageRange: 34,
+    shootRange: 30,
+    keepDistance: 24, // holds its distance and picks you off
+    shotCooldown: [3.2, 4.6],
+    shotDamage: [22, 34],
+    accuracy: 0.82,
+    scale: 1,
+    tint: 0x7ad8ff,
+    score: 200
+  }
+};
 
 export function makeLabelSprite(text: string, color: number): THREE.Sprite {
   const canvas = document.createElement('canvas');
@@ -87,6 +159,7 @@ export type NpcShot = {
   to: THREE.Vector3;
   hit: boolean;
   damage: number;
+  melee?: boolean;
 };
 
 // All six Quaternius rigs share these bone names (GLTFLoader strips the '.'
@@ -109,12 +182,15 @@ type BoneName = (typeof BONE_NAMES)[number];
 
 export class Npc {
   section: Section;
+  type: NpcType;
+  cfg: NpcConfig;
+  scoreValue: number;
   group = new THREE.Group();
   hittable: THREE.Object3D[] = [];
   state: NpcState = 'wander';
-  // Random toughness per NPC: weakest die to one headshot, tanky ones take 3
-  maxHp = HP_MIN + Math.floor(Math.random() * (HP_MAX - HP_MIN + 1));
-  hp = this.maxHp;
+  // Random toughness per NPC, bounded by the archetype's HP range
+  maxHp: number;
+  hp: number;
   private wanderTarget = new THREE.Vector2();
   private wanderTimer = 0;
   private shotTimer = 2 + Math.random() * 2;
@@ -133,8 +209,14 @@ export class Npc {
   private muzzle: THREE.Object3D | null = null;
   private armAxis = new THREE.Vector3(0, 1, 0); // upper-arm bone-local "along the arm"
 
-  constructor(section: Section, model: THREE.Object3D, x: number, z: number) {
+  constructor(section: Section, model: THREE.Object3D, x: number, z: number, type: NpcType = 'grunt') {
     this.section = section;
+    this.type = type;
+    const cfg = NPC_TYPES[type];
+    this.cfg = cfg;
+    this.scoreValue = cfg.score;
+    this.maxHp = cfg.hp[0] + Math.floor(Math.random() * (cfg.hp[1] - cfg.hp[0] + 1));
+    this.hp = this.maxHp;
     // Quaternius characters render at ~1.85u natively (armature compensates its
     // own x100 scale) — do NOT bbox-normalize; the bind-pose bbox lies.
     this.model = model;
@@ -145,9 +227,24 @@ export class Npc {
     this.group.add(label);
     this.group.position.set(x, terrainHeight(x, z), z);
 
+    const tint = new THREE.Color(cfg.tint);
     model.traverse((o) => {
-      if ((o as THREE.Mesh).isMesh || (o as THREE.SkinnedMesh).isSkinnedMesh) {
+      const mesh = o as THREE.Mesh;
+      if (mesh.isMesh || (o as THREE.SkinnedMesh).isSkinnedMesh) {
         o.frustumCulled = false; // skinned bounds lag the rig; avoid pop-out
+        // Tint the archetype so it reads at a glance (clone material first so we
+        // don't bleed color into the shared cached one).
+        if (cfg.tint !== 0xffffff && mesh.material) {
+          const recolor = (m: THREE.Material) => {
+            const lm = (m as THREE.MeshStandardMaterial).clone();
+            const col = (lm as THREE.MeshStandardMaterial).color;
+            if (col) col.multiply(tint);
+            return lm;
+          };
+          mesh.material = Array.isArray(mesh.material)
+            ? mesh.material.map(recolor)
+            : recolor(mesh.material);
+        }
       }
       if ((o as THREE.Bone).isBone && BONE_NAMES.includes(o.name as BoneName)) {
         // Relax the T-pose: arms down at the sides
@@ -157,12 +254,12 @@ export class Npc {
       }
     });
 
-    // Put a rifle in the right hand. The Quaternius armature carries an
-    // internal x100 scale, so the gun sits in a holder that cancels the bone's
-    // world scale; the lower arm's child bone marks where the hand is.
+    // Put a rifle in the right hand (melee archetypes go unarmed). The Quaternius
+    // armature carries an internal x100 scale, so the gun sits in a holder that
+    // cancels the bone's world scale; the lower arm's child bone marks the hand.
     const lowerArm = this.bones.get('LowerArmR');
     const upperArm = this.bones.get('UpperArmR');
-    if (lowerArm && upperArm) {
+    if (!cfg.melee && lowerArm && upperArm) {
       this.model.updateMatrixWorld(true);
       const ws = lowerArm.getWorldScale(new THREE.Vector3());
       const holder = new THREE.Group();
@@ -292,18 +389,23 @@ export class Npc {
 
     this.flinchTimer = Math.max(0, this.flinchTimer - dt);
 
+    const cfg = this.cfg;
     const pos = this.group.position;
     const distToPlayer = Math.hypot(playerPos.x - pos.x, playerPos.z - pos.z);
-    this.state = distToPlayer < ENGAGE_RANGE ? 'engage' : 'wander';
+    this.state = distToPlayer < cfg.engageRange ? 'engage' : 'wander';
 
-    // Raise/lower the gun (firing is gated on being mostly aimed-in)
+    // Raise/lower the gun (firing is gated on being mostly aimed-in). Melee
+    // archetypes never raise a gun — they just charge.
     const wantAim =
-      this.state === 'engage' && distToPlayer < SHOOT_RANGE * 1.2 && this.flinchTimer <= 0;
+      !cfg.melee &&
+      this.state === 'engage' &&
+      distToPlayer < cfg.shootRange * 1.2 &&
+      this.flinchTimer <= 0;
     this.aimBlend += ((wantAim ? 1 : 0) - this.aimBlend) * Math.min(1, dt * 6);
 
     let moveX = 0;
     let moveZ = 0;
-    let speed = WANDER_SPEED;
+    let speed = cfg.wanderSpeed;
     let shot: NpcShot | null = null;
 
     if (this.state === 'wander') {
@@ -323,23 +425,39 @@ export class Npc {
       const dz = playerPos.z - pos.z;
       this.group.rotation.y = Math.atan2(dx, dz);
       // Close distance until comfortable, then hold
-      if (distToPlayer > KEEP_DISTANCE) {
+      if (distToPlayer > cfg.keepDistance) {
         moveX = dx / distToPlayer;
         moveZ = dz / distToPlayer;
-        speed = CHASE_SPEED;
+        speed = cfg.chaseSpeed;
       }
 
-      // Shoot back (flinching interrupts aim; must be visibly aimed-in first)
+      // Attack: melee lands a contact hit at point-blank; ranged fires a tracer
+      // (flinching interrupts aim; must be visibly aimed-in first).
       this.shotTimer -= dt;
-      if (
+      const baseAcc = playerCrouching ? cfg.accuracy * 0.6 : cfg.accuracy;
+      if (cfg.melee) {
+        if (this.shotTimer <= 0 && distToPlayer < cfg.shootRange && this.flinchTimer <= 0) {
+          this.shotTimer =
+            cfg.shotCooldown[0] + Math.random() * (cfg.shotCooldown[1] - cfg.shotCooldown[0]);
+          const at = pos.clone();
+          at.y += 1.2;
+          shot = {
+            from: at,
+            to: playerPos.clone(),
+            hit: true,
+            melee: true,
+            damage: Math.round(cfg.shotDamage[0] + Math.random() * (cfg.shotDamage[1] - cfg.shotDamage[0]))
+          };
+        }
+      } else if (
         this.shotTimer <= 0 &&
-        distToPlayer < SHOOT_RANGE &&
+        distToPlayer < cfg.shootRange &&
         this.flinchTimer <= 0 &&
         this.aimBlend > 0.85
       ) {
-        this.shotTimer = SHOT_COOLDOWN_MIN + Math.random() * (SHOT_COOLDOWN_MAX - SHOT_COOLDOWN_MIN);
-        const missChance = playerCrouching ? 0.65 : 0.45;
-        const hit = Math.random() > missChance;
+        this.shotTimer =
+          cfg.shotCooldown[0] + Math.random() * (cfg.shotCooldown[1] - cfg.shotCooldown[0]);
+        const hit = Math.random() < baseAcc;
         // Tracer starts at the gun barrel
         const from = this.muzzle ? this.muzzle.getWorldPosition(new THREE.Vector3()) : pos.clone();
         if (!this.muzzle) from.y = pos.y + 1.4;
@@ -353,7 +471,7 @@ export class Npc {
           from,
           to,
           hit,
-          damage: Math.round(SHOT_DAMAGE_MIN + Math.random() * (SHOT_DAMAGE_MAX - SHOT_DAMAGE_MIN))
+          damage: Math.round(cfg.shotDamage[0] + Math.random() * (cfg.shotDamage[1] - cfg.shotDamage[0]))
         };
       }
     }
@@ -376,17 +494,69 @@ export class Npc {
   }
 }
 
+export type WaveInfo = { wave: number; kills: number; quota: number };
+
 export class NpcManager {
   npcs: Npc[] = [];
   onDeath?: (npc: Npc) => void;
+  /** Fired when wave progress changes (a kill counts, or a new wave begins). */
+  onWave?: (info: WaveInfo, started: boolean) => void;
   private scene: THREE.Scene;
   private sections: Section[];
   private spawnCursor = 0;
   private pendingSpawns = 0;
+  // Wave state: kill `quota` enemies to advance; each wave raises the live
+  // population cap and shifts the type mix toward tougher archetypes.
+  private wave = 1;
+  private waveKills = 0;
 
   constructor(scene: THREE.Scene, sections: Section[]) {
     this.scene = scene;
     this.sections = sections;
+  }
+
+  private get quota(): number {
+    return 6 + this.wave * 2;
+  }
+
+  /** Live population cap grows with the wave. */
+  private get desired(): number {
+    return Math.min(14, 6 + Math.floor(this.wave * 1.2));
+  }
+
+  waveInfo(): WaveInfo {
+    return { wave: this.wave, kills: this.waveKills, quota: this.quota };
+  }
+
+  resetWaves() {
+    this.wave = 1;
+    this.waveKills = 0;
+    this.onWave?.(this.waveInfo(), false);
+  }
+
+  /** Called by the owner when an NPC dies, to drive wave progression. */
+  registerKill() {
+    this.waveKills++;
+    if (this.waveKills >= this.quota) {
+      this.wave++;
+      this.waveKills = 0;
+      this.onWave?.(this.waveInfo(), true);
+    } else {
+      this.onWave?.(this.waveInfo(), false);
+    }
+  }
+
+  /** Bias the spawn mix toward tougher types as waves climb. */
+  private pickType(): NpcType {
+    const w = this.wave;
+    const r = Math.random();
+    // Snipers appear from wave 3, sparsely.
+    if (w >= 3 && r < 0.12) return 'sniper';
+    // Heavies ramp in from wave 2.
+    if (w >= 2 && r < 0.12 + Math.min(0.25, w * 0.04)) return 'heavy';
+    // Rushers ramp harder — they drive the pressure.
+    if (r < 0.5 + Math.min(0.3, w * 0.06)) return 'rusher';
+    return 'grunt';
   }
 
   update(
@@ -412,7 +582,7 @@ export class NpcManager {
     }
 
     // Top up population near the player
-    if (this.npcs.length + this.pendingSpawns < DESIRED_NPCS) {
+    if (this.npcs.length + this.pendingSpawns < this.desired) {
       this.pendingSpawns++;
       this.spawn(playerPos, chunks).finally(() => this.pendingSpawns--);
     }
@@ -423,6 +593,7 @@ export class NpcManager {
     // Round-robin sections so every portfolio section keeps appearing
     const section = this.sections[this.spawnCursor % this.sections.length];
     this.spawnCursor++;
+    const type = this.pickType();
 
     let x = 0;
     let z = 0;
@@ -439,9 +610,9 @@ export class NpcManager {
     const variants = NPC_MODELS[section.id];
     const gltf = await loadModel(variants[Math.floor(Math.random() * variants.length)]);
     const model = cloneRigged(gltf);
-    const npc = new Npc(section, model, x, z);
-    // Slight per-NPC size variation (label/hitbox scale along with the group)
-    npc.group.scale.setScalar(0.92 + Math.random() * 0.16);
+    const npc = new Npc(section, model, x, z, type);
+    // Archetype base size × slight per-NPC variation (label/hitbox scale along)
+    npc.group.scale.setScalar(npc.cfg.scale * (0.92 + Math.random() * 0.16));
     npc.onDeath = (n) => this.onDeath?.(n);
     this.scene.add(npc.group);
     this.npcs.push(npc);

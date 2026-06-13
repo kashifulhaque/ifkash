@@ -50,6 +50,7 @@ export class Player {
   private recoilYaw = 0;
   private landDip = 0;
   private landDipVel = 0;
+  private shakeAmount = 0;
 
   constructor(aspect: number) {
     this.camera = new THREE.PerspectiveCamera(BASE_FOV, aspect, 0.1, 300);
@@ -86,6 +87,11 @@ export class Player {
   kickRecoil() {
     this.recoilPitch += 0.014 + Math.random() * 0.006;
     this.recoilYaw += (Math.random() - 0.5) * 0.006;
+  }
+
+  /** Brief additive camera shake (e.g. a satisfying kill); decays each frame. */
+  shake(amount: number) {
+    this.shakeAmount = Math.min(0.14, this.shakeAmount + amount);
   }
 
   update(dt: number, input: InputState, colliders: AABB[]) {
@@ -174,6 +180,7 @@ export class Player {
     this.recoilYaw *= Math.max(0, 1 - dt * 8);
     this.landDipVel += -this.landDip * 90 * dt - this.landDipVel * 11 * dt;
     this.landDip += this.landDipVel * dt;
+    this.shakeAmount *= Math.max(0, 1 - dt * 9);
 
     // One FOV target per frame: ADS < base < sprint
     const sprinting = this.running && this.groundSpeed > WALK_SPEED + 0.5;
@@ -206,6 +213,11 @@ export class Player {
       roll = Math.sin(this.bobPhase) * 0.006;
     }
     this.camera.position.y += this.landDip;
+    if (this.shakeAmount > 0.0005) {
+      this.camera.position.x += (Math.random() - 0.5) * this.shakeAmount;
+      this.camera.position.y += (Math.random() - 0.5) * this.shakeAmount;
+      this.camera.position.z += (Math.random() - 0.5) * this.shakeAmount;
+    }
     this.camera.rotation.set(
       this.pitch + this.recoilPitch,
       this.yaw + this.recoilYaw,

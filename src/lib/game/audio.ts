@@ -173,6 +173,32 @@ export class GameAudio {
     this.note(160, this.ctx.currentTime, 0.18, 'sawtooth', 0.3, this.sfxGain);
   }
 
+  // A close-range claw/melee swipe — gritty noise thump, no tonal hit.
+  melee() {
+    this.noiseBurst(0.16, 600, 0.5);
+    if (this.ctx && this.sfxGain)
+      this.note(90, this.ctx.currentTime, 0.14, 'sawtooth', 0.28, this.sfxGain);
+  }
+
+  // Combo multiplier climbed a tier: a bright rising two-note stab, pitched up
+  // with the tier so x5 sings higher than x2.
+  comboTier(mult: number) {
+    if (!this.ctx || !this.sfxGain) return;
+    const base = 520 * Math.pow(1.18, Math.max(0, mult - 1));
+    const t = this.ctx.currentTime;
+    this.note(base, t, 0.08, 'square', 0.26, this.sfxGain);
+    this.note(base * 1.5, t + 0.06, 0.12, 'square', 0.24, this.sfxGain);
+  }
+
+  // New wave begins: short ascending fanfare arpeggio.
+  waveStart() {
+    if (!this.ctx || !this.sfxGain) return;
+    const t = this.ctx.currentTime;
+    [392, 523, 659, 784, 1046].forEach((f, i) =>
+      this.note(f, t + i * 0.09, 0.22, 'triangle', 0.28, this.sfxGain!)
+    );
+  }
+
   crateOpen() {
     if (!this.ctx || !this.sfxGain) return;
     const t = this.ctx.currentTime;

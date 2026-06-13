@@ -19,6 +19,14 @@ export type GameState = {
   reloading: boolean;
   score: number;
   streak: number;
+  combo: number; // consecutive kills inside the combo window
+  comboMult: number; // current points multiplier (1..5)
+  comboTimer: number; // 0..1 remaining fraction of the combo window (drives the bar)
+  wave: number;
+  waveKills: number;
+  waveQuota: number;
+  waveBanner: { id: number; wave: number } | null; // increments on wave start → banner flash
+  scorePopups: { id: number; amount: number; mult: number; headshot: boolean }[];
   aiming: boolean;
   yaw: number;
   hitMarker: { id: number; headshot: boolean; killed: boolean } | null;
@@ -44,6 +52,14 @@ export const gameState = writable<GameState>({
   reloading: false,
   score: 0,
   streak: 0,
+  combo: 0,
+  comboMult: 1,
+  comboTimer: 0,
+  wave: 1,
+  waveKills: 0,
+  waveQuota: 8,
+  waveBanner: null,
+  scorePopups: [],
   aiming: false,
   yaw: 0,
   hitMarker: null,

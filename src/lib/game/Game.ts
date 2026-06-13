@@ -28,9 +28,15 @@ export type GameCallbacks = {
   onHitMarker: (headshot: boolean, killed: boolean) => void;
   onAmmoChange: (ammo: number, reserve: number, reloading: boolean) => void;
   onScoreChange: (score: number, streak: number) => void;
+  onComboChange: (combo: number, mult: number, timer01: number) => void;
+  onWaveChange: (wave: number, kills: number, quota: number, started: boolean) => void;
+  onScorePopup: (amount: number, mult: number, headshot: boolean) => void;
   onAimChange: (aiming: boolean) => void;
   onYawChange: (yaw: number) => void;
 };
+
+const COMBO_WINDOW = 3; // seconds before the combo decays
+const COMBO_MULT_CAP = 5;
 
 export class Game {
   input: InputManager;
@@ -54,6 +60,9 @@ export class Game {
   private wasReloading = false;
   private score = 0;
   private streak = 0;
+  private combo = 0;
+  private comboTimer = 0; // seconds remaining in the combo window
+  private comboMult = 1;
   private aimShown = false;
   private yawShown = 999;
   private callbacks: GameCallbacks;
@@ -93,6 +102,11 @@ export class Game {
     this.npcs.onDeath = (npc) => {
       this.dropCrate(npc);
       this.dropAmmo(npc);
+      this.npcs.registerKill();
+    };
+    this.npcs.onWave = (info, started) => {
+      this.callbacks.onWaveChange(info.wave, info.kills, info.quota, started);
+      if (started) this.audio.waveStart();
     };
     this.vehicles = new VehicleManager(this.scene);
 
@@ -146,8 +160,13 @@ export class Game {
     this.reserve = RESERVE_START;
     this.score = 0;
     this.streak = 0;
+    this.combo = 0;
+    this.comboMult = 1;
+    this.comboTimer = 0;
+    this.npcs.resetWaves();
     this.callbacks.onAmmoChange(this.ammo, this.reserve, false);
     this.callbacks.onScoreChange(this.score, this.streak);
+    this.callbacks.onComboChange(0, 1, 0);
     this.setPaused(false);
   }
 
@@ -169,14 +188,27 @@ export class Game {
       if (result.headshot) this.audio.headshotConfirm();
       else this.audio.hitConfirm();
       this.callbacks.onHitMarker(result.headshot, result.killed);
-      if (result.killed) {
-        this.score += result.headshot ? 150 : 100;
-        this.streak++;
-        if (this.streak >= 2) this.audio.streak(this.streak);
-        this.callbacks.onScoreChange(this.score, this.streak);
-      }
+      if (result.killed) this.registerKillScore(result.npc.scoreValue, result.headshot);
     }
     if (this.ammo === 0 && this.reserve > 0) this.tryReload(true);
+  }
+
+  /** A kill landed: advance the combo, award multiplied points, fire the popup. */
+  private registerKillScore(baseValue: number, headshot: boolean) {
+    this.combo++;
+    this.streak = this.combo;
+    this.comboTimer = COMBO_WINDOW;
+    const prevMult = this.comboMult;
+    this.comboMult = Math.min(COMBO_MULT_CAP, 1 + Math.floor(this.combo / 3));
+    const base = headshot ? Math.round(baseValue * 1.5) : baseValue;
+    const gained = base * this.comboMult;
+    this.score += gained;
+    if (this.comboMult > prevMult) this.audio.comboTier(this.comboMult);
+    else if (this.combo >= 2) this.audio.streak(this.combo);
+    this.callbacks.onScoreChange(this.score, this.streak);
+    this.callbacks.onComboChange(this.combo, this.comboMult, 1);
+    this.callbacks.onScorePopup(gained, this.comboMult, headshot);
+    this.player.shake(0.04 + 0.02 * this.comboMult);
   }
 
   private tryReload(auto: boolean) {
@@ -322,6 +354,21 @@ export class Game {
         }
       }
 
+      // Combo window decay: drain the timer and reset the chain when it lapses.
+      if (this.combo > 0) {
+        this.comboTimer -= dt;
+        if (this.comboTimer <= 0) {
+          this.combo = 0;
+          this.streak = 0;
+          this.comboMult = 1;
+          this.comboTimer = 0;
+          this.callbacks.onScoreChange(this.score, this.streak);
+          this.callbacks.onComboChange(0, 1, 0);
+        } else {
+          this.callbacks.onComboChange(this.combo, this.comboMult, this.comboTimer / COMBO_WINDOW);
+        }
+      }
+
       // Compass yaw (foot or drive)
       if (Math.abs(this.player.yaw - this.yawShown) > 0.01) {
         this.yawShown = this.player.yaw;
@@ -331,8 +378,12 @@ export class Game {
       // NPC AI: returns any shots fired at the player this frame
       const shots = this.npcs.update(dt, ppos, this.player.crouching, this.chunks);
       for (const shot of shots) {
-        this.audio.enemyShot();
-        this.shooter.enemyShot(shot.from, shot.to, shot.hit);
+        if (shot.melee) {
+          this.audio.melee();
+        } else {
+          this.audio.enemyShot();
+          this.shooter.enemyShot(shot.from, shot.to, shot.hit);
+        }
         if (shot.hit) {
           this.player.takeDamage(shot.damage);
           this.audio.playerHurt();

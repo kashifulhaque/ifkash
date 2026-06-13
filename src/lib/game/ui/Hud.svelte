@@ -12,7 +12,14 @@
   export let reserve = 24;
   export let reloading = false;
   export let score = 0;
-  export let streak = 0;
+  export let combo = 0;
+  export let comboMult = 1;
+  export let comboTimer = 0; // 0..1 remaining fraction of the combo window
+  export let wave = 1;
+  export let waveKills = 0;
+  export let waveQuota = 8;
+  export let waveBanner: { id: number; wave: number } | null = null;
+  export let scorePopups: { id: number; amount: number; mult: number; headshot: boolean }[] = [];
   export let aiming = false;
   export let yaw = 0;
   export let hitMarker: { id: number; headshot: boolean; killed: boolean } | null = null;
@@ -68,12 +75,40 @@
     <div class="compass-tick"></div>
   </div>
 
+  <!-- Floating +N / ×M popups near the crosshair on each kill -->
+  <div class="popups">
+    {#each scorePopups as p (p.id)}
+      <div class="popup" class:headshot={p.headshot} class:big={p.mult >= 3}>
+        +{p.amount}{#if p.mult > 1}<span class="popup-mult">×{p.mult}</span>{/if}
+      </div>
+    {/each}
+  </div>
+
   <div class="score">
     <div class="score-value">{score}</div>
-    {#if streak >= 2}
-      <div class="streak">×{streak} STREAK</div>
+    {#if combo >= 2}
+      <div class="combo" class:hot={comboMult >= 3}>
+        <span class="combo-mult">×{comboMult}</span>
+        <span class="combo-count">{combo} COMBO</span>
+        <div class="combo-bar"><div class="combo-fill" style="width: {Math.max(0, Math.min(1, comboTimer)) * 100}%"></div></div>
+      </div>
     {/if}
   </div>
+
+  <div class="wave">
+    <span class="wave-label">WAVE {wave}</span>
+    <div class="wave-pips">
+      {#each Array(Math.min(waveQuota, 16)) as _, i}
+        <span class="pip" class:filled={i < waveKills}></span>
+      {/each}
+    </div>
+  </div>
+
+  {#key waveBanner?.id}
+    {#if waveBanner}
+      <div class="wave-banner"><span>WAVE {waveBanner.wave}</span></div>
+    {/if}
+  {/key}
 
   <div class="ammo" class:reloading class:empty={!reloading && ammo === 0 && reserve === 0}>
     {#if reloading}RELOADING…{:else}{ammo} / {reserve}{/if}
@@ -241,10 +276,153 @@
     font-size: 1.5rem;
   }
 
-  .streak {
-    font-size: 0.95rem;
+  .combo {
+    margin-top: 2px;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-end;
+  }
+
+  .combo-mult {
+    font-size: 1.5rem;
     color: #ffd23f;
-    animation: pulse 1.2s ease-in-out infinite;
+    line-height: 1;
+  }
+
+  .combo.hot .combo-mult {
+    color: #ff7a3f;
+    animation: pulse 0.6s ease-in-out infinite;
+  }
+
+  .combo-count {
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    color: rgba(255, 255, 255, 0.75);
+  }
+
+  .combo-bar {
+    margin-top: 3px;
+    width: 84px;
+    height: 4px;
+    background: rgba(0, 0, 0, 0.45);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .combo-fill {
+    height: 100%;
+    background: #ffd23f;
+    /* drains continuously; the engine pushes a fresh fraction each frame */
+  }
+
+  .combo.hot .combo-fill {
+    background: #ff7a3f;
+  }
+
+  /* ── Floating score popups ── */
+  .popups {
+    position: absolute;
+    top: calc(50% - 60px);
+    left: 50%;
+    transform: translateX(-50%);
+    pointer-events: none;
+    display: flex;
+    flex-direction: column-reverse;
+    align-items: center;
+    gap: 2px;
+  }
+
+  .popup {
+    font-family: var(--font-display, monospace);
+    font-size: 1.5rem;
+    color: #fff;
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.7);
+    animation: popup-rise 0.9s ease-out forwards;
+    white-space: nowrap;
+  }
+
+  .popup.headshot {
+    color: #ffd23f;
+  }
+
+  .popup.big {
+    font-size: 2rem;
+    color: #ff7a3f;
+  }
+
+  .popup-mult {
+    margin-left: 4px;
+    font-size: 0.8em;
+    opacity: 0.9;
+  }
+
+  @keyframes popup-rise {
+    0% { opacity: 0; transform: translateY(8px) scale(0.8); }
+    20% { opacity: 1; transform: translateY(0) scale(1.1); }
+    35% { transform: translateY(0) scale(1); }
+    100% { opacity: 0; transform: translateY(-28px) scale(1); }
+  }
+
+  /* ── Wave indicator + banner ── */
+  .wave {
+    position: absolute;
+    top: 48px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .wave-label {
+    font-family: var(--font-display, monospace);
+    font-size: 1rem;
+    letter-spacing: 0.14em;
+    color: #ffd23f;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+  }
+
+  .wave-pips {
+    display: flex;
+    gap: 3px;
+  }
+
+  .pip {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.25);
+  }
+
+  .pip.filled {
+    background: #ffd23f;
+    box-shadow: 0 0 4px rgba(255, 210, 63, 0.7);
+  }
+
+  .wave-banner {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fade-out 1.8s ease-out forwards;
+  }
+
+  .wave-banner span {
+    font-family: var(--font-display, monospace);
+    font-size: clamp(2.5rem, 8vw, 5rem);
+    letter-spacing: 0.18em;
+    color: #ffd23f;
+    text-shadow: 0 0 24px rgba(255, 170, 40, 0.8), 0 4px 12px rgba(0, 0, 0, 0.8);
+    animation: banner-pop 1.8s ease-out forwards;
+  }
+
+  @keyframes banner-pop {
+    0% { transform: scale(0.6); opacity: 0; }
+    15% { transform: scale(1.1); opacity: 1; }
+    30% { transform: scale(1); }
+    100% { transform: scale(1); opacity: 1; }
   }
 
   .ammo {
@@ -391,5 +569,11 @@
     .compass { width: 200px; }
     .score { right: 70px; top: 14px; }
     .score-value { font-size: 1.2rem; }
+    .combo-mult { font-size: 1.1rem; }
+    .combo-bar { width: 64px; }
+    .wave { top: 42px; }
+    .wave-label { font-size: 0.8rem; }
+    .popup { font-size: 1.1rem; }
+    .popup.big { font-size: 1.5rem; }
   }
 </style>

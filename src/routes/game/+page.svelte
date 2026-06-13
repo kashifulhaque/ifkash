@@ -15,6 +15,7 @@
   let canvas: HTMLCanvasElement;
   let game: Game | null = null;
   let destroyed = false;
+  let popupId = 1;
 
   onMount(async () => {
     if (!browser) return;
@@ -55,6 +56,25 @@
         onAmmoChange: (ammo, reserve, reloading) =>
           gameState.update((s) => ({ ...s, ammo, reserve, reloading })),
         onScoreChange: (score, streak) => gameState.update((s) => ({ ...s, score, streak })),
+        onComboChange: (combo, comboMult, comboTimer) =>
+          gameState.update((s) => ({ ...s, combo, comboMult, comboTimer })),
+        onWaveChange: (wave, waveKills, waveQuota, started) =>
+          gameState.update((s) => ({
+            ...s,
+            wave,
+            waveKills,
+            waveQuota,
+            waveBanner: started ? { id: (s.waveBanner?.id ?? 0) + 1, wave } : s.waveBanner
+          })),
+        onScorePopup: (amount, mult, headshot) =>
+          gameState.update((s) => ({
+            ...s,
+            // Cap the list so it never grows unbounded; CSS animates each out
+            scorePopups: [
+              ...s.scorePopups.slice(-7),
+              { id: popupId++, amount, mult, headshot }
+            ]
+          })),
         onAimChange: (aiming) => gameState.update((s) => ({ ...s, aiming })),
         onYawChange: (yaw) => gameState.update((s) => ({ ...s, yaw }))
       });
@@ -89,6 +109,14 @@
       reloading: false,
       score: 0,
       streak: 0,
+      combo: 0,
+      comboMult: 1,
+      comboTimer: 0,
+      wave: 1,
+      waveKills: 0,
+      waveQuota: 8,
+      waveBanner: null,
+      scorePopups: [],
       aiming: false,
       yaw: 0,
       hitMarker: null,
@@ -160,7 +188,14 @@
       reserve={$gameState.reserve}
       reloading={$gameState.reloading}
       score={$gameState.score}
-      streak={$gameState.streak}
+      combo={$gameState.combo}
+      comboMult={$gameState.comboMult}
+      comboTimer={$gameState.comboTimer}
+      wave={$gameState.wave}
+      waveKills={$gameState.waveKills}
+      waveQuota={$gameState.waveQuota}
+      waveBanner={$gameState.waveBanner}
+      scorePopups={$gameState.scorePopups}
       aiming={$gameState.aiming}
       yaw={$gameState.yaw}
       hitMarker={$gameState.hitMarker}

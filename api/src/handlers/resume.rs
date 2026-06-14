@@ -6,7 +6,9 @@ use wasm_bindgen::JsValue;
 // Statically hosted resume (served by Cloudflare Pages, independent of D1)
 // used as a graceful fallback when the database is unavailable or empty.
 const STATIC_RESUME_URL: &str = "https://ifkash.dev/assets/Kashiful_Haque.pdf";
-const PUBLIC_RESUME_URL: &str = "https://ifkash.dev/api/resume";
+// Public, unauthenticated endpoint for the rendered PDF. NOT `/api/resume`,
+// which sits behind Cloudflare Access alongside the editor endpoints.
+const PUBLIC_RESUME_URL: &str = "https://ifkash.dev/api/cv";
 const RESUME_FILENAME: &str = "Kashiful_Haque.pdf";
 
 #[derive(Debug, Deserialize)]
@@ -37,7 +39,7 @@ pub struct ResumeUrlResponse {
 
 #[utoipa::path(
     get,
-    path = "/api/resume",
+    path = "/api/cv",
     tag = "Resume",
     params(
         ("format" = Option<String>, Query, description = "Response format: 'json', 'url', 'view' (inline), 'download' (attachment), or omit for inline view"),
@@ -49,6 +51,10 @@ pub struct ResumeUrlResponse {
         (status = 200, description = "PDF File", body = String, content_type = "application/pdf")
     )
 )]
+/// Public, unauthenticated resume PDF (the homepage "Read Resume" button).
+/// The same handler is also mounted at `/api/resume`, but that path sits behind
+/// Cloudflare Access alongside the editor endpoints — use `/api/cv` for public
+/// access.
 pub async fn handle(req: Request, ctx: RouteContext<()>) -> Result<Response> {
     let url = req.url()?;
     let format = url

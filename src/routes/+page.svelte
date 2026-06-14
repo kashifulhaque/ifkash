@@ -1,9 +1,11 @@
 <script>
   import { dev } from "$app/environment";
 
+  // Public, unauthenticated resume PDF. Served from `/api/cv` (not `/api/resume`,
+  // which is behind Cloudflare Access for the editor) so no login is required.
   const resumeUrl = dev
-    ? "http://localhost:8787/api/resume?format=view"
-    : "/api/resume?format=view";
+    ? "http://localhost:8787/api/cv?format=view"
+    : "/api/cv?format=view";
 </script>
 
 <svelte:head>

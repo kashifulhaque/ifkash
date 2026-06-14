@@ -1,5 +1,7 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
+  import { sections } from '$lib/content';
+  import type { SectionId } from '$lib/content';
 
   export let pointerLocked: boolean;
   export let isTouch: boolean;
@@ -23,8 +25,11 @@
   export let aiming = false;
   export let yaw = 0;
   export let hitMarker: { id: number; headshot: boolean; killed: boolean } | null = null;
+  export let sectionsOpened: SectionId[] = [];
 
   const dispatch = createEventDispatcher();
+
+  $: openedSet = new Set(sectionsOpened);
 
   const COMPASS_POINTS = [
     { label: 'N', angle: 0 },
@@ -93,6 +98,15 @@
         <div class="combo-bar"><div class="combo-fill" style="width: {Math.max(0, Math.min(1, comboTimer)) * 100}%"></div></div>
       </div>
     {/if}
+  </div>
+
+  <div class="sections">
+    <span class="sections-label">PORTFOLIO {openedSet.size}/{sections.length}</span>
+    <div class="sections-list">
+      {#each sections as s}
+        <span class="sec" class:found={openedSet.has(s.id)}>{s.label}</span>
+      {/each}
+    </div>
   </div>
 
   <div class="wave">
@@ -363,6 +377,49 @@
     100% { opacity: 0; transform: translateY(-28px) scale(1); }
   }
 
+  /* ── Section-completion tracker (top-left) ── */
+  .sections {
+    position: absolute;
+    top: 14px;
+    left: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .sections-label {
+    font-family: var(--font-display, monospace);
+    font-size: 0.85rem;
+    letter-spacing: 0.12em;
+    color: #ffd23f;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+  }
+
+  .sections-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .sec {
+    font-family: var(--font-mono, monospace);
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    color: rgba(255, 255, 255, 0.35);
+  }
+
+  .sec::before {
+    content: '○ ';
+  }
+
+  .sec.found {
+    color: #9ccc65;
+  }
+
+  .sec.found::before {
+    content: '● ';
+  }
+
   /* ── Wave indicator + banner ── */
   .wave {
     position: absolute;
@@ -573,6 +630,9 @@
     .combo-bar { width: 64px; }
     .wave { top: 42px; }
     .wave-label { font-size: 0.8rem; }
+    .sections { top: 10px; left: 10px; }
+    .sections-label { font-size: 0.62rem; }
+    .sec { font-size: 0.52rem; }
     .popup { font-size: 1.1rem; }
     .popup.big { font-size: 1.5rem; }
   }

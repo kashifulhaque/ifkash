@@ -73,6 +73,13 @@ export class Player {
     this.onHealthChange?.(this.health);
   }
 
+  /** Top up to full health (e.g. the Combat Medic perk). */
+  healFull() {
+    this.health = MAX_HEALTH;
+    this.sinceDamage = 999;
+    this.onHealthChange?.(this.health);
+  }
+
   /** Teleport to a spot on the ground (e.g. stepping out of a car). */
   placeAt(x: number, z: number) {
     this.feetY = terrainHeight(x, z);

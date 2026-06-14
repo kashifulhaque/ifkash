@@ -4,30 +4,24 @@
   import { goto } from '$app/navigation';
   import { sections, name } from '$lib/content';
   import { gameState } from '$lib/game/store';
-  import type { Game } from '$lib/game/Game';
+  import type { Game, GameCallbacks } from '$lib/game/Game';
   import type { Section } from '$lib/content';
   import Hud from '$lib/game/ui/Hud.svelte';
   import LootOverlay from '$lib/game/ui/LootOverlay.svelte';
   import TouchControls from '$lib/game/ui/TouchControls.svelte';
   import StartScreen from '$lib/game/ui/StartScreen.svelte';
   import DeathScreen from '$lib/game/ui/DeathScreen.svelte';
+  import PerkOverlay from '$lib/game/ui/PerkOverlay.svelte';
 
   let canvas: HTMLCanvasElement;
   let game: Game | null = null;
+  let GameClass: typeof import('$lib/game/Game').Game | null = null;
   let destroyed = false;
   let popupId = 1;
 
-  onMount(async () => {
-    if (!browser) return;
-    const isTouch = window.matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window;
-    gameState.update((s) => ({ ...s, isTouch }));
-    try {
-      const { Game: GameClass } = await import('$lib/game/Game');
-      // The layout's full-width branch flip can destroy and remount this page
-      // mid-import; the stale instance must not touch the (unbound) canvas.
-      if (destroyed || !canvas) return;
-      game = new GameClass(canvas, sections, {
-        onLockChange: (locked) => {
+  function makeCallbacks(): GameCallbacks {
+    return {
+      onLockChange: (locked) => {
           gameState.update((s) => ({ ...s, pointerLocked: locked }));
           // Esc (pointer-lock loss) shows the pause screen — freeze the sim too
           if (!locked && $gameState.started && !$gameState.openSection && !$gameState.isTouch)
@@ -76,15 +70,50 @@
             ]
           })),
         onAimChange: (aiming) => gameState.update((s) => ({ ...s, aiming })),
-        onYawChange: (yaw) => gameState.update((s) => ({ ...s, yaw }))
-      });
-      gameState.update((s) => ({ ...s, muted: game!.audio.muted }));
-      if (dev) (window as unknown as Record<string, unknown>).__game = game;
+        onYawChange: (yaw) => gameState.update((s) => ({ ...s, yaw })),
+        onSectionsChange: (sectionsOpened, allSectionsCleared) =>
+          gameState.update((s) => ({ ...s, sectionsOpened, allSectionsCleared })),
+        onPerkOffer: (perkOffer) => gameState.update((s) => ({ ...s, perkOffer }))
+    };
+  }
+
+  // Build (or rebuild) the Game. Rebuilding is how we switch between the normal
+  // run and the daily challenge, since daily mode is fixed at construction.
+  async function buildGame(daily: boolean): Promise<boolean> {
+    if (!GameClass || destroyed || !canvas) return false;
+    game?.dispose();
+    try {
+      game = new GameClass(canvas, sections, makeCallbacks(), { daily });
     } catch (err) {
       console.error('WebGL init failed', err);
       gameState.update((s) => ({ ...s, webglFailed: true }));
       goto('/');
+      return false;
     }
+    gameState.update((s) => ({
+      ...s,
+      muted: game!.audio.muted,
+      daily: game!.daily,
+      dailyDay: game!.dailyDay,
+      mutators: game!.mutators,
+      sectionsOpened: [],
+      allSectionsCleared: false,
+      perkOffer: null
+    }));
+    if (dev) (window as unknown as Record<string, unknown>).__game = game;
+    return true;
+  }
+
+  onMount(async () => {
+    if (!browser) return;
+    const isTouch = window.matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window;
+    gameState.update((s) => ({ ...s, isTouch }));
+    const mod = await import('$lib/game/Game');
+    // The layout's full-width branch flip can destroy and remount this page
+    // mid-import; the stale instance must not touch the (unbound) canvas.
+    if (destroyed || !canvas) return;
+    GameClass = mod.Game;
+    await buildGame(false);
   });
 
   onDestroy(() => {
@@ -121,14 +150,32 @@
       yaw: 0,
       hitMarker: null,
       dead: false,
-      finalScore: 0
+      finalScore: 0,
+      sectionsOpened: [],
+      allSectionsCleared: false,
+      daily: false,
+      dailyDay: null,
+      mutators: [],
+      perkOffer: null,
+      perksTaken: []
     });
   });
 
-  function start() {
+  async function start(daily = false) {
+    // Switching into/out of daily means rebuilding the sim (mode is fixed at
+    // construction). A plain resume keeps the current game.
+    if (game && game.daily !== daily) {
+      if (!(await buildGame(daily))) return;
+    }
     gameState.update((s) => ({ ...s, started: true }));
     game?.setPaused(false);
     game?.startAudio();
+    if (!$gameState.isTouch) game?.requestLock();
+  }
+
+  function choosePerk(perk: import('$lib/game/perks').Perk) {
+    game?.choosePerk(perk);
+    gameState.update((s) => ({ ...s, perksTaken: [...s.perksTaken, perk.id] }));
     if (!$gameState.isTouch) game?.requestLock();
   }
 
@@ -161,6 +208,7 @@
     !$gameState.textMode &&
     !$gameState.openSection &&
     !$gameState.dead &&
+    !$gameState.perkOffer &&
     (!$gameState.started || (!$gameState.isTouch && !$gameState.pointerLocked));
 </script>
 
@@ -199,6 +247,7 @@
       aiming={$gameState.aiming}
       yaw={$gameState.yaw}
       hitMarker={$gameState.hitMarker}
+      sectionsOpened={$gameState.sectionsOpened}
       on:mute={toggleMute}
     />
 
@@ -222,15 +271,31 @@
         resumed={$gameState.started}
         muted={$gameState.muted}
         dayNightCycle={$gameState.dayNightCycle}
-        on:start={start}
+        on:start={() => start($gameState.started ? $gameState.daily : false)}
+        on:startdaily={() => start(true)}
         on:mute={toggleMute}
         on:togglecycle={toggleCycle}
         on:textmode={() => goto('/')}
       />
     {/if}
 
+    {#if $gameState.perkOffer}
+      <PerkOverlay
+        perks={$gameState.perkOffer}
+        wave={$gameState.wave}
+        on:choose={(e) => choosePerk(e.detail)}
+      />
+    {/if}
+
     {#if $gameState.dead}
-      <DeathScreen finalScore={$gameState.finalScore} on:respawn={respawn} />
+      <DeathScreen
+        finalScore={$gameState.finalScore}
+        allSectionsCleared={$gameState.allSectionsCleared}
+        sectionsCount={$gameState.sectionsOpened.length}
+        daily={$gameState.daily}
+        dailyDay={$gameState.dailyDay}
+        on:respawn={respawn}
+      />
     {/if}
 
     {#if $gameState.openSection}

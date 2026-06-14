@@ -1,5 +1,7 @@
 import { writable } from 'svelte/store';
-import type { Section } from '$lib/content';
+import type { Section, SectionId } from '$lib/content';
+import type { Perk } from './perks';
+import type { Mutator } from './mutators';
 
 export type GameState = {
   started: boolean;
@@ -32,6 +34,16 @@ export type GameState = {
   hitMarker: { id: number; headshot: boolean; killed: boolean } | null;
   dead: boolean;
   finalScore: number;
+  // Feature 1 — section-completion objective
+  sectionsOpened: SectionId[];
+  allSectionsCleared: boolean;
+  // Feature 2 — daily challenge
+  daily: boolean;
+  dailyDay: string | null; // YYYY-MM-DD of the active daily run
+  mutators: Mutator[];
+  // Feature 3 — between-wave perk picks
+  perkOffer: Perk[] | null;
+  perksTaken: string[];
 };
 
 export const gameState = writable<GameState>({
@@ -64,5 +76,12 @@ export const gameState = writable<GameState>({
   yaw: 0,
   hitMarker: null,
   dead: false,
-  finalScore: 0
+  finalScore: 0,
+  sectionsOpened: [],
+  allSectionsCleared: false,
+  daily: false,
+  dailyDay: null,
+  mutators: [],
+  perkOffer: null,
+  perksTaken: []
 });

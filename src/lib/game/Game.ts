@@ -1,6 +1,9 @@
 import * as THREE from 'three';
-import type { Section } from '$lib/content';
+import type { Section, SectionId } from '$lib/content';
 import { InputManager } from './input';
+import { offerPerks, type Perk, type PerkContext } from './perks';
+import { buildMutatorEnv, pickDailyMutators, type Mutator } from './mutators';
+import { seededRng, dailySeed, dayString } from './rng';
 import { Player } from './player';
 import { Environment } from './world';
 import { ChunkManager } from './chunks';
@@ -33,12 +36,20 @@ export type GameCallbacks = {
   onScorePopup: (amount: number, mult: number, headshot: boolean) => void;
   onAimChange: (aiming: boolean) => void;
   onYawChange: (yaw: number) => void;
+  onSectionsChange: (ids: SectionId[], allCleared: boolean) => void;
+  onPerkOffer: (perks: Perk[] | null) => void;
 };
 
-const COMBO_WINDOW = 3; // seconds before the combo decays
-const COMBO_MULT_CAP = 5;
+export type GameOptions = {
+  /** Daily-challenge run: deterministic mutators + seeded spawns/perks. */
+  daily?: boolean;
+};
 
-export class Game {
+const COMBO_WINDOW = 3; // seconds before the combo decays (base; perks extend)
+const COMBO_MULT_CAP = 5;
+const ALL_SECTIONS_BONUS = 2500; // one-time award for viewing every section
+
+export class Game implements PerkContext {
   input: InputManager;
   audio = new GameAudio();
 
@@ -73,9 +84,46 @@ export class Game {
   private promptShown: string | null = null;
   private disposed = false;
 
-  constructor(canvas: HTMLCanvasElement, sections: Section[], callbacks: GameCallbacks) {
+  // Feature 1 — section-completion objective
+  private totalSections: number;
+  private openedSections = new Set<SectionId>();
+
+  // Feature 2 — daily challenge
+  readonly daily: boolean;
+  readonly dailyDay: string | null;
+  readonly mutators: Mutator[];
+  private perkRng: () => number = Math.random;
+
+  // Feature 3 — per-run tuning knobs (PerkContext). Reset each run.
+  private magSize = MAG_SIZE;
+  private comboWindow = COMBO_WINDOW;
+  private headshotMult = 1.5;
+  private dropChance = AMMO_DROP_CHANCE;
+
+  constructor(
+    canvas: HTMLCanvasElement,
+    sections: Section[],
+    callbacks: GameCallbacks,
+    options: GameOptions = {}
+  ) {
     this.canvas = canvas;
     this.callbacks = callbacks;
+    this.totalSections = sections.length;
+    this.daily = !!options.daily;
+
+    // Daily run: deterministic mutators + a seeded spawn/perk stream.
+    let mutatorEnv;
+    if (this.daily) {
+      this.dailyDay = dayString();
+      const seed = dailySeed();
+      this.mutators = pickDailyMutators(seededRng(seed));
+      mutatorEnv = buildMutatorEnv(this.mutators);
+      // Separate stream for perks so spawn consumption doesn't desync it.
+      this.perkRng = seededRng(seed ^ 0x9e3779b9);
+    } else {
+      this.dailyDay = null;
+      this.mutators = [];
+    }
 
     // Throws if WebGL is unavailable — caller catches and shows fallback.
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
@@ -98,7 +146,8 @@ export class Game {
     this.chunks = new ChunkManager(this.scene);
     this.chunks.update(this.player.position.x, this.player.position.z);
 
-    this.npcs = new NpcManager(this.scene, sections);
+    const spawnRng = this.daily ? seededRng(dailySeed()) : undefined;
+    this.npcs = new NpcManager(this.scene, sections, mutatorEnv, spawnRng);
     this.npcs.onDeath = (npc) => {
       this.dropCrate(npc);
       this.dropAmmo(npc);
@@ -106,7 +155,10 @@ export class Game {
     };
     this.npcs.onWave = (info, started) => {
       this.callbacks.onWaveChange(info.wave, info.kills, info.quota, started);
-      if (started) this.audio.waveStart();
+      if (started) {
+        this.audio.waveStart();
+        this.offerPerk();
+      }
     };
     this.vehicles = new VehicleManager(this.scene);
 
@@ -156,17 +208,76 @@ export class Game {
     if (!this.dead) return;
     this.dead = false;
     this.player.revive();
-    this.ammo = MAG_SIZE;
+    // Reset per-run perk tuning back to defaults
+    this.magSize = MAG_SIZE;
+    this.comboWindow = COMBO_WINDOW;
+    this.headshotMult = 1.5;
+    this.dropChance = AMMO_DROP_CHANCE;
+    this.viewModel.reloadScale = 1;
+    this.ammo = this.magSize;
     this.reserve = RESERVE_START;
     this.score = 0;
     this.streak = 0;
     this.combo = 0;
     this.comboMult = 1;
     this.comboTimer = 0;
+    this.openedSections.clear();
+    this.callbacks.onSectionsChange([], false);
+    this.callbacks.onPerkOffer(null);
     this.npcs.resetWaves();
     this.callbacks.onAmmoChange(this.ammo, this.reserve, false);
     this.callbacks.onScoreChange(this.score, this.streak);
     this.callbacks.onComboChange(0, 1, 0);
+    this.setPaused(false);
+  }
+
+  // ── PerkContext: per-run tuning the perk cards mutate ──────────────────────
+  addMagSize(n: number) {
+    this.magSize += n;
+    this.callbacks.onAmmoChange(this.ammo, this.reserve, this.viewModel.reloading);
+  }
+  scaleReload(factor: number) {
+    this.viewModel.reloadScale *= factor;
+  }
+  healFull() {
+    this.player.healFull();
+  }
+  addComboWindow(seconds: number) {
+    this.comboWindow += seconds;
+  }
+  addHeadshotBonus(frac: number) {
+    this.headshotMult += frac;
+  }
+  addDropChance(frac: number) {
+    this.dropChance = Math.min(1, this.dropChance + frac);
+  }
+
+  /** Record a freshly opened portfolio section; award a one-time clear bonus. */
+  private registerSectionOpen(id: SectionId) {
+    if (this.openedSections.has(id)) return;
+    this.openedSections.add(id);
+    const allCleared = this.openedSections.size >= this.totalSections;
+    this.callbacks.onSectionsChange([...this.openedSections], allCleared);
+    if (allCleared) {
+      this.score += ALL_SECTIONS_BONUS;
+      this.audio.waveStart();
+      this.callbacks.onScoreChange(this.score, this.streak);
+      this.callbacks.onScorePopup(ALL_SECTIONS_BONUS, 1, false);
+    }
+  }
+
+  /** Offer 3 perks and pause the sim until the player picks one. */
+  private offerPerk() {
+    const perks = offerPerks(this.perkRng);
+    this.setPaused(true);
+    this.callbacks.onPerkOffer(perks);
+  }
+
+  /** Apply the chosen perk and resume. */
+  choosePerk(perk: Perk) {
+    perk.apply(this);
+    this.callbacks.onPerkOffer(null);
+    this.audio.crateOpen();
     this.setPaused(false);
   }
 
@@ -197,10 +308,10 @@ export class Game {
   private registerKillScore(baseValue: number, headshot: boolean) {
     this.combo++;
     this.streak = this.combo;
-    this.comboTimer = COMBO_WINDOW;
+    this.comboTimer = this.comboWindow;
     const prevMult = this.comboMult;
     this.comboMult = Math.min(COMBO_MULT_CAP, 1 + Math.floor(this.combo / 3));
-    const base = headshot ? Math.round(baseValue * 1.5) : baseValue;
+    const base = headshot ? Math.round(baseValue * this.headshotMult) : baseValue;
     const gained = base * this.comboMult;
     this.score += gained;
     if (this.comboMult > prevMult) this.audio.comboTier(this.comboMult);
@@ -213,7 +324,7 @@ export class Game {
 
   private tryReload(auto: boolean) {
     if (this.reserve <= 0) return; // nothing to load from
-    if (this.ammo >= MAG_SIZE && !auto) return;
+    if (this.ammo >= this.magSize && !auto) return;
     if (this.viewModel.startReload()) {
       this.audio.reload();
       this.callbacks.onAmmoChange(this.ammo, this.reserve, true);
@@ -269,7 +380,7 @@ export class Game {
 
   // Most kills drop a small randomized ammo box, collected by walking over it
   private dropAmmo(npc: Npc) {
-    if (Math.random() > AMMO_DROP_CHANCE) return;
+    if (Math.random() > this.dropChance) return;
     const pickup = new AmmoPickup(
       npc.group.position.x + (Math.random() - 0.5) * 1.2,
       npc.group.position.z + (Math.random() - 0.5) * 1.2
@@ -340,7 +451,7 @@ export class Game {
         this.viewModel.update(dt, input, this.player);
         // Reload finished this frame → move rounds from reserve into the mag
         if (this.wasReloading && !this.viewModel.reloading) {
-          const take = Math.min(MAG_SIZE - this.ammo, this.reserve);
+          const take = Math.min(this.magSize - this.ammo, this.reserve);
           this.ammo += take;
           this.reserve -= take;
           this.callbacks.onAmmoChange(this.ammo, this.reserve, false);
@@ -365,7 +476,7 @@ export class Game {
           this.callbacks.onScoreChange(this.score, this.streak);
           this.callbacks.onComboChange(0, 1, 0);
         } else {
-          this.callbacks.onComboChange(this.combo, this.comboMult, this.comboTimer / COMBO_WINDOW);
+          this.callbacks.onComboChange(this.combo, this.comboMult, this.comboTimer / this.comboWindow);
         }
       }
 
@@ -427,6 +538,7 @@ export class Game {
         );
         if (nearest && input.interactQueued) {
           this.audio.crateOpen();
+          this.registerSectionOpen(nearest.section.id);
           this.callbacks.onOpenSection(nearest.section);
           this.removeCrate(nearest);
           this.setPrompt(null);

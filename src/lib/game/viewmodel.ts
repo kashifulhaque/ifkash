@@ -22,6 +22,8 @@ export class ViewModel {
   gun = new THREE.Group();
   adsT = 0; // 0 hip → 1 fully aimed
   reloading = false;
+  /** Per-run reload duration scale (perks lower it; 1 = base). */
+  reloadScale = 1;
   private reloadT = 0;
   private muzzle = new THREE.Object3D();
   private flash: THREE.Mesh;
@@ -129,7 +131,7 @@ export class ViewModel {
     let reloadDip = 0;
     let reloadRoll = 0;
     if (this.reloading) {
-      this.reloadT += dt / RELOAD_TIME;
+      this.reloadT += dt / (RELOAD_TIME * this.reloadScale);
       if (this.reloadT >= 1) this.reloading = false;
       else {
         const r = Math.sin(Math.PI * this.reloadT);

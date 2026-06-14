@@ -1,6 +1,8 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
   import { name, tagline } from '$lib/content';
+  import { pickDailyMutators } from '$lib/game/mutators';
+  import { dayString, dailySeed, seededRng } from '$lib/game/rng';
 
   export let isTouch: boolean;
   export let resumed = false; // true when pointer lock was lost mid-game
@@ -8,6 +10,9 @@
   export let dayNightCycle = false;
 
   const dispatch = createEventDispatcher();
+  const today = dayString();
+  // Preview today's mutators deterministically (matches the seed the Game uses).
+  const dailyMutators = pickDailyMutators(seededRng(dailySeed()));
 </script>
 
 <div class="start" role="button" tabindex="0"
@@ -28,6 +33,16 @@
       </div>
     {/if}
     <span class="enter">{resumed ? 'CLICK TO RESUME' : isTouch ? 'TAP TO ENTER' : 'CLICK TO ENTER'}</span>
+    {#if !resumed}
+      <div class="daily">
+        <button class="daily-btn" on:click|stopPropagation={() => dispatch('startdaily')}>
+          DAILY CHALLENGE · {today}
+        </button>
+        <p class="daily-mods">
+          {#each dailyMutators as m, i}<span class="mod">{m.label}</span>{#if i < dailyMutators.length - 1}<span class="plus">+</span>{/if}{/each}
+        </p>
+      </div>
+    {/if}
     {#if resumed}
       <div class="menu">
         <button class="menu-item" on:click|stopPropagation={() => dispatch('togglecycle')}>
@@ -105,6 +120,42 @@
     border: 2px solid #fff;
     padding: 10px 28px;
     animation: blink 1.4s ease-in-out infinite;
+  }
+
+  .daily {
+    margin-top: 22px;
+  }
+
+  .daily-btn {
+    background: rgba(255, 210, 63, 0.12);
+    border: 2px solid #ffd23f;
+    font-family: var(--font-display, monospace);
+    font-size: 1.05rem;
+    letter-spacing: 0.1em;
+    color: #ffd23f;
+    padding: 9px 26px;
+    cursor: pointer;
+  }
+
+  .daily-btn:hover {
+    background: rgba(255, 210, 63, 0.22);
+  }
+
+  .daily-mods {
+    margin-top: 10px;
+    font-family: var(--font-mono, monospace);
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    color: rgba(255, 255, 255, 0.65);
+  }
+
+  .daily-mods .mod {
+    color: #ffd23f;
+  }
+
+  .daily-mods .plus {
+    margin: 0 6px;
+    color: rgba(255, 255, 255, 0.4);
   }
 
   .menu {

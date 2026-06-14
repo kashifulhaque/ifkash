@@ -3,6 +3,7 @@ import type { Section } from '$lib/content';
 import { loadModel, cloneRigged, NPC_MODELS } from './assets';
 import type { ChunkManager } from './chunks';
 import { terrainHeight } from './terrain';
+import { defaultMutatorEnv, type MutatorEnv } from './mutators';
 
 const NPC_HEIGHT = 1.85;
 const HEADSHOT_Y = 1.45; // hit point above this (group-relative) counts as a headshot
@@ -197,6 +198,8 @@ export class Npc {
   private deadTimer = 0;
   private flinchTimer = 0;
   removeMe = false;
+  /** Daily-mutator scaling on outgoing damage (1 = unmodified). */
+  damageMult = 1;
   onDeath?: (npc: Npc) => void;
 
   private model: THREE.Object3D;
@@ -446,7 +449,10 @@ export class Npc {
             to: playerPos.clone(),
             hit: true,
             melee: true,
-            damage: Math.round(cfg.shotDamage[0] + Math.random() * (cfg.shotDamage[1] - cfg.shotDamage[0]))
+            damage: Math.round(
+              (cfg.shotDamage[0] + Math.random() * (cfg.shotDamage[1] - cfg.shotDamage[0])) *
+                this.damageMult
+            )
           };
         }
       } else if (
@@ -471,7 +477,10 @@ export class Npc {
           from,
           to,
           hit,
-          damage: Math.round(cfg.shotDamage[0] + Math.random() * (cfg.shotDamage[1] - cfg.shotDamage[0]))
+          damage: Math.round(
+            (cfg.shotDamage[0] + Math.random() * (cfg.shotDamage[1] - cfg.shotDamage[0])) *
+              this.damageMult
+          )
         };
       }
     }
@@ -509,19 +518,25 @@ export class NpcManager {
   // population cap and shifts the type mix toward tougher archetypes.
   private wave = 1;
   private waveKills = 0;
+  // Daily-challenge tuning. `rng` defaults to Math.random so normal runs are
+  // unchanged; daily runs inject a seeded stream for deterministic spawns.
+  private env: MutatorEnv;
+  private rng: () => number;
 
-  constructor(scene: THREE.Scene, sections: Section[]) {
+  constructor(scene: THREE.Scene, sections: Section[], env?: MutatorEnv, rng?: () => number) {
     this.scene = scene;
     this.sections = sections;
+    this.env = env ?? defaultMutatorEnv();
+    this.rng = rng ?? Math.random;
   }
 
   private get quota(): number {
     return 6 + this.wave * 2;
   }
 
-  /** Live population cap grows with the wave. */
+  /** Live population cap grows with the wave (plus any daily bonus). */
   private get desired(): number {
-    return Math.min(14, 6 + Math.floor(this.wave * 1.2));
+    return Math.min(14 + this.env.popCapBonus, 6 + this.env.popCapBonus + Math.floor(this.wave * 1.2));
   }
 
   waveInfo(): WaveInfo {
@@ -549,13 +564,13 @@ export class NpcManager {
   /** Bias the spawn mix toward tougher types as waves climb. */
   private pickType(): NpcType {
     const w = this.wave;
-    const r = Math.random();
-    // Snipers appear from wave 3, sparsely.
-    if (w >= 3 && r < 0.12) return 'sniper';
+    const r = this.rng();
+    // Snipers appear from `snipersFromWave` (default 3), sparsely.
+    if (w >= this.env.snipersFromWave && r < 0.12) return 'sniper';
     // Heavies ramp in from wave 2.
     if (w >= 2 && r < 0.12 + Math.min(0.25, w * 0.04)) return 'heavy';
-    // Rushers ramp harder — they drive the pressure.
-    if (r < 0.5 + Math.min(0.3, w * 0.06)) return 'rusher';
+    // Rushers ramp harder — they drive the pressure (daily bias can amplify).
+    if (r < 0.5 + this.env.rusherBias + Math.min(0.3, w * 0.06)) return 'rusher';
     return 'grunt';
   }
 
@@ -599,8 +614,8 @@ export class NpcManager {
     let z = 0;
     let ok = false;
     for (let tries = 0; tries < 10 && !ok; tries++) {
-      const a = Math.random() * Math.PI * 2;
-      const d = SPAWN_MIN + Math.random() * (SPAWN_MAX - SPAWN_MIN);
+      const a = this.rng() * Math.PI * 2;
+      const d = SPAWN_MIN + this.rng() * (SPAWN_MAX - SPAWN_MIN);
       x = playerPos.x + Math.cos(a) * d;
       z = playerPos.z + Math.sin(a) * d;
       ok = chunks.isFree(x, z, 1);
@@ -608,11 +623,18 @@ export class NpcManager {
     if (!ok) return;
 
     const variants = NPC_MODELS[section.id];
-    const gltf = await loadModel(variants[Math.floor(Math.random() * variants.length)]);
+    const gltf = await loadModel(variants[Math.floor(this.rng() * variants.length)]);
     const model = cloneRigged(gltf);
     const npc = new Npc(section, model, x, z, type);
+    // Daily mutators: tougher / harder-hitting / better-paying enemies.
+    if (this.env.hpMult !== 1) {
+      npc.maxHp = Math.max(1, Math.round(npc.maxHp * this.env.hpMult));
+      npc.hp = npc.maxHp;
+    }
+    npc.damageMult = this.env.damageMult;
+    npc.scoreValue = Math.round(npc.scoreValue * this.env.scoreMult);
     // Archetype base size × slight per-NPC variation (label/hitbox scale along)
-    npc.group.scale.setScalar(npc.cfg.scale * (0.92 + Math.random() * 0.16));
+    npc.group.scale.setScalar(npc.cfg.scale * (0.92 + this.rng() * 0.16));
     npc.onDeath = (n) => this.onDeath?.(n);
     this.scene.add(npc.group);
     this.npcs.push(npc);

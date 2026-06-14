@@ -4,6 +4,10 @@
   import { getApiBase } from '$lib/apiBase';
 
   export let finalScore = 0;
+  export let allSectionsCleared = false;
+  export let sectionsCount = 0;
+  export let daily = false;
+  export let dailyDay: string | null = null;
 
   const dispatch = createEventDispatcher();
   const clientId = env.PUBLIC_GOOGLE_CLIENT_ID ?? '';
@@ -19,9 +23,15 @@
   let signedIn = false;
   let gisButton: HTMLDivElement;
 
+  // Daily runs report to a separate per-day board; normal runs to the all-time one.
+  const boardUrl = daily
+    ? `${getApiBase()}/api/game/daily/leaderboard?day=${encodeURIComponent(dailyDay ?? '')}`
+    : `${getApiBase()}/api/game/leaderboard`;
+  const submitUrl = daily ? `${getApiBase()}/api/game/daily/score` : `${getApiBase()}/api/game/score`;
+
   async function fetchLeaderboard() {
     try {
-      const res = await fetch(`${getApiBase()}/api/game/leaderboard`);
+      const res = await fetch(boardUrl);
       leaderboard = (await res.json()).entries ?? [];
       leaderboardError = false;
     } catch {
@@ -32,10 +42,13 @@
   async function submitScore(idToken: string) {
     submitState = 'submitting';
     try {
-      const res = await fetch(`${getApiBase()}/api/game/score`, {
+      const body = daily
+        ? { id_token: idToken, score: finalScore, day: dailyDay }
+        : { id_token: idToken, score: finalScore };
+      const res = await fetch(submitUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id_token: idToken, score: finalScore })
+        body: JSON.stringify(body)
       });
       if (res.status === 401) {
         // Token expired — forget it and show the button again
@@ -107,6 +120,15 @@
   <div class="inner">
     <h1 class="wasted">WASTED</h1>
     <p class="score">SCORE · {finalScore}</p>
+    {#if daily}
+      <p class="daily-tag">DAILY CHALLENGE · {dailyDay}</p>
+    {/if}
+
+    {#if allSectionsCleared}
+      <p class="badge-100">★ 100% KASHIF — ALL SECTIONS VIEWED ★</p>
+    {:else}
+      <p class="sections-progress">SECTIONS VIEWED · {sectionsCount}/6</p>
+    {/if}
 
     <button class="respawn" on:click={() => dispatch('respawn')}>RESPAWN</button>
 
@@ -129,7 +151,7 @@
 
     {#if leaderboard.length > 0}
       <div class="board">
-        <p class="board-title">LEADERBOARD</p>
+        <p class="board-title">{daily ? `DAILY · ${dailyDay}` : 'LEADERBOARD'}</p>
         <ol>
           {#each leaderboard as entry, i}
             <li>
@@ -180,6 +202,31 @@
     font-size: 1.1rem;
     letter-spacing: 0.15em;
     color: #fff;
+  }
+
+  .daily-tag {
+    margin-top: 6px;
+    font-family: var(--font-mono, monospace);
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    color: #ffd23f;
+  }
+
+  .sections-progress {
+    margin-top: 12px;
+    font-family: var(--font-mono, monospace);
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    color: rgba(255, 255, 255, 0.6);
+  }
+
+  .badge-100 {
+    margin-top: 14px;
+    font-family: var(--font-display, monospace);
+    font-size: 0.95rem;
+    letter-spacing: 0.1em;
+    color: #9ccc65;
+    text-shadow: 0 0 12px rgba(156, 204, 101, 0.6);
   }
 
   .respawn {

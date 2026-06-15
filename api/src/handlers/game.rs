@@ -1,3 +1,4 @@
+use super::google_auth::verify_google;
 use serde::{Deserialize, Serialize};
 use worker::*;
 
@@ -57,17 +58,6 @@ fn day_is_acceptable(day: &str) -> bool {
     (now_days - 1..=now_days + 1).any(|d| day_string_for_epoch_days(d) == day)
 }
 
-/// Subset of Google's tokeninfo response we care about.
-#[derive(Deserialize)]
-struct TokenInfo {
-    aud: String,
-    iss: String,
-    sub: String,
-    email: Option<String>,
-    name: Option<String>,
-    picture: Option<String>,
-}
-
 #[derive(Serialize)]
 struct SubmitResponse {
     best: i64,
@@ -85,29 +75,6 @@ struct LeaderboardEntry {
 #[derive(Serialize)]
 struct LeaderboardResponse {
     entries: Vec<LeaderboardEntry>,
-}
-
-/// Verify a Google ID token via Google's tokeninfo endpoint. This avoids
-/// shipping a JWT/crypto stack to wasm; Google validates the signature and
-/// expiry, we validate audience and issuer.
-async fn verify_google(id_token: &str, client_id: &str) -> std::result::Result<TokenInfo, Response> {
-    let url = format!(
-        "https://oauth2.googleapis.com/tokeninfo?id_token={}",
-        urlencoding::encode(id_token)
-    );
-    let unauthorized = || Response::error("invalid token", 401).unwrap();
-    let resp = reqwest::get(&url).await.map_err(|_| unauthorized())?;
-    if !resp.status().is_success() {
-        return Err(unauthorized());
-    }
-    let info: TokenInfo = resp.json().await.map_err(|_| unauthorized())?;
-    if info.aud != client_id {
-        return Err(unauthorized());
-    }
-    if info.iss != "https://accounts.google.com" && info.iss != "accounts.google.com" {
-        return Err(unauthorized());
-    }
-    Ok(info)
 }
 
 /// POST /api/game/score — verify the Google token, upsert the player and

@@ -5,6 +5,7 @@ pub mod resume_api;
 pub mod home_weather;
 pub mod whoami;
 pub mod game;
+pub mod splitter;
 
 use worker::*;
 
@@ -30,4 +31,14 @@ pub fn register_routes(router: Router<'_, ()>) -> Router<'_, ()> {
     .get_async("/api/game/leaderboard", game::leaderboard)
     .post_async("/api/game/daily/score", game::submit_daily_score)
     .get_async("/api/game/daily/leaderboard", game::daily_leaderboard)
+    // Expense splitter — all endpoints require a Google ID token in the
+    // `Authorization: Bearer <token>` header; data is scoped to that user.
+    .get_async("/api/splitter/groups", splitter::list_groups)
+    .post_async("/api/splitter/groups", splitter::create_group)
+    .get_async("/api/splitter/groups/:id", splitter::get_group)
+    .delete_async("/api/splitter/groups/:id", splitter::delete_group)
+    .post_async("/api/splitter/groups/:id/members", splitter::add_member)
+    .delete_async("/api/splitter/members/:id", splitter::delete_member)
+    .post_async("/api/splitter/groups/:id/expenses", splitter::add_expense)
+    .delete_async("/api/splitter/expenses/:id", splitter::delete_expense)
 }

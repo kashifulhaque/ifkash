@@ -19,6 +19,13 @@
       page: '/tools/pdf-annotator',
       status: 'active',
       links: []
+    },
+    {
+      name: 'Expense Splitter',
+      desc: 'Split expenses with friends and settle up — a self-hosted Splitwise. Sign in with Google, add friends as names, log expenses with equal/exact/percent/share splits, and get the minimal set of payments to square up.',
+      page: '/tools/splitter',
+      status: 'active',
+      links: []
     }
   ];
 </script>

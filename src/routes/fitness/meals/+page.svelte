@@ -234,15 +234,23 @@
 </script>
 
 <div class="meals">
-  <header class="head">
-    <div>
-      <a href="/fitness" class="back-link">← Fitness</a>
-      <h1>Meal Tracker</h1>
-      <p class="sub">Snap a meal, get an estimated nutrition breakdown, logged by day.</p>
+  <header class="page-header">
+    <div class="breadcrumb">
+      <a href="/fitness">Fitness</a>
+      <span class="separator">/</span>
+      <span>Meals</span>
     </div>
-    {#if signedIn}
-      <button class="ghost" on:click={signOut}><LogOut size={15} /> Sign out</button>
-    {/if}
+    <div class="header-top">
+      <h1 class="page-title">Meal Tracker 🍽️</h1>
+      {#if signedIn}
+        <div class="header-actions">
+          <button class="ghost-btn" on:click={signOut} title="Sign out">
+            <LogOut size={15} /> Sign out
+          </button>
+        </div>
+      {/if}
+    </div>
+    <p class="page-desc">Snap a meal, get an estimated nutrition breakdown, logged by day.</p>
   </header>
 
   {#if errorMsg}
@@ -351,38 +359,63 @@
 
 <style>
   .meals {
-    max-width: 760px;
+    max-width: 48rem;
     margin: 0 auto;
     padding: 24px 20px 80px;
     font-family: var(--font-body);
     color: var(--ink);
   }
-  .head {
+  .page-header {
     display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 16px;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding-bottom: 1.25rem;
     margin-bottom: 18px;
+    border-bottom: 1px solid var(--border);
   }
-  h1 {
-    font-family: var(--font-display);
-    font-size: 2rem;
-    text-transform: uppercase;
-    letter-spacing: 0.02em;
+  .breadcrumb { font-size: 0.875rem; color: var(--text-tertiary); }
+  .breadcrumb a { color: var(--text-tertiary); transition: color 0.15s; border-bottom: none; }
+  .breadcrumb a:hover { color: var(--text-primary); }
+  .separator { margin: 0 0.5rem; }
+
+  .header-top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+  }
+  .page-title {
+    font-size: 2.25rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--text-primary);
     margin: 0;
   }
-  .sub { color: var(--ink-soft); font-size: 0.95rem; margin: 4px 0 0; }
-  .back-link {
-    display: inline-block;
-    margin-bottom: 8px;
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--ink-mute);
-    border-bottom: none;
+  .page-desc {
+    font-size: 0.95rem;
+    line-height: 1.55;
+    color: var(--text-secondary);
+    margin: 0;
   }
-  .back-link:hover { color: var(--blueprint); border-bottom: none; }
+  .ghost-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.8125rem;
+    color: var(--text-tertiary);
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 0.375rem;
+    padding: 0.4rem 0.75rem;
+    cursor: pointer;
+  }
+  .ghost-btn:hover { color: var(--text-primary); border-color: var(--border-strong); }
   .note { color: var(--ink-mute); font-size: 0.9rem; }
   .error { color: #e06c6c; font-size: 0.88rem; }
   .disclaimer { color: var(--ink-mute); font-size: 0.78rem; margin: 4px 0 0; }

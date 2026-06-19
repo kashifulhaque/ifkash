@@ -11,7 +11,6 @@
     currentPath === "/game" ||
     currentPath === "/editor" ||
     currentPath === "/admin/notes" ||
-    currentPath === "/fitness/meals" ||
     (currentPath.startsWith("/tools/") && currentPath !== "/tools");
 
   const navItems = [

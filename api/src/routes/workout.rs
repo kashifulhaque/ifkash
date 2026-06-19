@@ -9,6 +9,10 @@ pub async fn create_session(req: Request, ctx: RouteContext<()>) -> Result<Respo
     handlers::workout::create_session(req, ctx).await
 }
 
+pub async fn upsert_session(req: Request, ctx: RouteContext<()>) -> Result<Response> {
+    handlers::workout::upsert_session(req, ctx).await
+}
+
 pub async fn get_session(req: Request, ctx: RouteContext<()>) -> Result<Response> {
     handlers::workout::get_session(req, ctx).await
 }

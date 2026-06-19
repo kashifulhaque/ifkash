@@ -52,6 +52,19 @@ export const workoutApi = {
       body: JSON.stringify(payload)
     }),
 
+  /** Upsert the session for (date, day_label) — replaces any existing one for
+   *  that day. Used by the merged workout page's auto-save. */
+  upsertSession: (payload: {
+    day_label: string;
+    date: string;
+    notes: string;
+    exercises: ExercisePayload[];
+  }) =>
+    api<{ id: number }>('/sessions', {
+      method: 'PUT',
+      body: JSON.stringify(payload)
+    }),
+
   getSession: (id: number) => api<SessionDetail>(`/sessions/${id}`),
 
   deleteSession: (id: number) =>

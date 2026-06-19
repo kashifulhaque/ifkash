@@ -231,6 +231,96 @@ pub async fn create_session(mut req: Request, ctx: RouteContext<()>) -> Result<R
     Response::from_json(&IdResponse { id: session_id })
 }
 
+/// PUT /api/workout/sessions — upsert the session for (owner, date, day_label).
+///
+/// Replaces any existing session for that day with the supplied exercises/sets,
+/// so the merged workout page can auto-save repeatedly without piling up rows.
+pub async fn upsert_session(mut req: Request, ctx: RouteContext<()>) -> Result<Response> {
+    let owner_id = owner!(req, ctx);
+    let body: CreateSessionRequest = match req.json().await {
+        Ok(b) => b,
+        Err(_) => return Response::error("bad request", 400),
+    };
+    let date = body.date.trim();
+    if date.is_empty() {
+        return Response::error("date required", 400);
+    }
+    let day_label = body.day_label.trim();
+
+    let d1 = ctx.d1("IFKASH_D1")?;
+
+    // Find the existing session for this day, if any, and reuse its id.
+    #[derive(Deserialize)]
+    struct IdRow {
+        id: i64,
+    }
+    let existing: Option<IdRow> = d1
+        .prepare(
+            "SELECT id FROM workout_sessions \
+             WHERE owner_id = ?1 AND date = ?2 AND day_label = ?3",
+        )
+        .bind(&[n(owner_id), date.into(), day_label.into()])?
+        .first(None)
+        .await?;
+
+    let session_id = match existing {
+        Some(r) => {
+            // Clear old sets and refresh notes; keep the same id.
+            d1.prepare("DELETE FROM workout_sets WHERE session_id = ?1")
+                .bind(&[n(r.id)])?
+                .run()
+                .await?;
+            d1.prepare("UPDATE workout_sessions SET notes = ?1 WHERE id = ?2")
+                .bind(&[body.notes.trim().into(), n(r.id)])?
+                .run()
+                .await?;
+            r.id
+        }
+        None => {
+            let inserted: Option<IdRow> = d1
+                .prepare(
+                    "INSERT INTO workout_sessions (owner_id, day_label, date, notes) \
+                     VALUES (?1, ?2, ?3, ?4) RETURNING id",
+                )
+                .bind(&[
+                    n(owner_id),
+                    day_label.into(),
+                    date.into(),
+                    body.notes.trim().into(),
+                ])?
+                .first(None)
+                .await?;
+            inserted
+                .ok_or_else(|| Error::RustError("session insert returned no id".into()))?
+                .id
+        }
+    };
+
+    for exercise in &body.exercises {
+        let name = exercise.exercise.trim();
+        if name.is_empty() {
+            continue;
+        }
+        for (i, set) in exercise.sets.iter().enumerate() {
+            d1.prepare(
+                "INSERT INTO workout_sets (session_id, exercise, set_index, reps, weight_g) \
+                 VALUES (?1, ?2, ?3, ?4, ?5)",
+            )
+            .bind(&[
+                n(session_id),
+                name.into(),
+                n((i + 1) as i64),
+                n(set.reps.max(0)),
+                n(set.weight_g.max(0)),
+            ])?
+            .run()
+            .await?;
+        }
+    }
+
+    Response::from_json(&IdResponse { id: session_id })
+}
+
 /// GET /api/workout/sessions/:id — full session detail (session + sets).
 pub async fn get_session(req: Request, ctx: RouteContext<()>) -> Result<Response> {
     let owner_id = owner!(req, ctx);
@@ -306,7 +396,10 @@ pub async fn list_bodyweight(req: Request, ctx: RouteContext<()>) -> Result<Resp
     Response::from_json(&rows)
 }
 
-/// POST /api/workout/bodyweight — add a bodyweight entry.
+/// POST /api/workout/bodyweight — upsert the bodyweight entry for a date.
+///
+/// One entry per (owner, date): re-posting the same date overwrites the weight
+/// rather than appending, so the merged page can auto-save it on edit.
 pub async fn add_bodyweight(mut req: Request, ctx: RouteContext<()>) -> Result<Response> {
     let owner_id = owner!(req, ctx);
     let body: AddBodyweightRequest = match req.json().await {
@@ -328,7 +421,9 @@ pub async fn add_bodyweight(mut req: Request, ctx: RouteContext<()>) -> Result<R
     let inserted: Option<InsertedRow> = d1
         .prepare(
             "INSERT INTO bodyweight_logs (owner_id, date, weight_g) \
-             VALUES (?1, ?2, ?3) RETURNING id",
+             VALUES (?1, ?2, ?3) \
+             ON CONFLICT(owner_id, date) DO UPDATE SET weight_g = excluded.weight_g \
+             RETURNING id",
         )
         .bind(&[n(owner_id), date.into(), n(body.weight_g)])?
         .first(None)

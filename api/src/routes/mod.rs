@@ -8,6 +8,7 @@ pub mod game;
 pub mod splitter;
 pub mod workout;
 pub mod meals;
+pub mod profile;
 
 use worker::*;
 
@@ -47,6 +48,7 @@ pub fn register_routes(router: Router<'_, ()>) -> Router<'_, ()> {
     // `Authorization: Bearer <token>` header; data is scoped to that user.
     .get_async("/api/workout/sessions", workout::list_sessions)
     .post_async("/api/workout/sessions", workout::create_session)
+    .put_async("/api/workout/sessions", workout::upsert_session)
     .get_async("/api/workout/sessions/:id", workout::get_session)
     .delete_async("/api/workout/sessions/:id", workout::delete_session)
     .get_async("/api/workout/bodyweight", workout::list_bodyweight)
@@ -58,4 +60,8 @@ pub fn register_routes(router: Router<'_, ()>) -> Router<'_, ()> {
     .get_async("/api/meals", meals::list)
     .patch_async("/api/meals/:id", meals::update)
     .delete_async("/api/meals/:id", meals::delete)
+    // Body profile — drives the BMI/BMR/TDEE metrics and daily nutrition targets.
+    // Requires a Google ID token; data is scoped to that user.
+    .get_async("/api/profile", profile::get_profile)
+    .put_async("/api/profile", profile::upsert_profile)
 }

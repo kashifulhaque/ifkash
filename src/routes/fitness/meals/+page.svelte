@@ -15,6 +15,14 @@
     type Meal,
     type Totals
   } from '$lib/mealsApi';
+  import { profileApi } from '$lib/profileApi';
+  import NutritionRings from '$lib/components/NutritionRings.svelte';
+  import {
+    DEFAULT_PROFILE,
+    nutritionTargets,
+    type Profile,
+    type NutritionTargets
+  } from '$lib/fitnessMetrics';
 
   const clientId = env.PUBLIC_GOOGLE_CLIENT_ID ?? '';
 
@@ -31,6 +39,14 @@
   let date = todayLocal();
   let meals: Meal[] = [];
   let totals: Totals = { calories: 0, protein_g: 0, carbs_g: 0, fat_g: 0 };
+
+  // Body profile drives the daily nutrition targets the rings fill toward.
+  let profile: Profile = { ...DEFAULT_PROFILE };
+  $: weightKg = (profile.latest_weight_g ?? 0) / 1000;
+  $: targets = (weightKg > 0
+    ? nutritionTargets(weightKg, profile)
+    : null) as NutritionTargets | null;
+
   let errorMsg = '';
   let loading = false;
   let analyzing = false;
@@ -46,6 +62,7 @@
     setToken(resp.credential);
     signedIn = true;
     refresh();
+    loadProfile();
   }
 
   function renderGoogleButton() {
@@ -107,6 +124,14 @@
       meals = day.meals;
       totals = day.totals;
     }
+  }
+
+  /** Pull the body profile (+ latest bodyweight) so the rings have targets. */
+  async function loadProfile() {
+    const token = loadToken();
+    if (!token) return;
+    const p = await guard(() => profileApi.get(token));
+    if (p) profile = p;
   }
 
   // ---- photo → downscale → analyze ----------------------------------------
@@ -196,6 +221,7 @@
     if (stored) {
       signedIn = true;
       refresh();
+      loadProfile();
     } else {
       try {
         await loadGis();
@@ -278,12 +304,17 @@
     <!-- daily totals -->
     <section class="card totals">
       <h3 class="panel-title"><Utensils size={15} /> {date} totals</h3>
-      <div class="totals-grid">
-        <div class="tot cal"><span class="tval">{round(totals.calories)}</span><span class="tlabel">kcal</span></div>
-        <div class="tot"><span class="tval">{round(totals.protein_g)}g</span><span class="tlabel">protein</span></div>
-        <div class="tot"><span class="tval">{round(totals.carbs_g)}g</span><span class="tlabel">carbs</span></div>
-        <div class="tot"><span class="tval">{round(totals.fat_g)}g</span><span class="tlabel">fat</span></div>
-      </div>
+      {#if targets}
+        <NutritionRings {totals} {targets} />
+      {:else}
+        <div class="totals-grid">
+          <div class="tot cal"><span class="tval">{round(totals.calories)}</span><span class="tlabel">kcal</span></div>
+          <div class="tot"><span class="tval">{round(totals.protein_g)}g</span><span class="tlabel">protein</span></div>
+          <div class="tot"><span class="tval">{round(totals.carbs_g)}g</span><span class="tlabel">carbs</span></div>
+          <div class="tot"><span class="tval">{round(totals.fat_g)}g</span><span class="tlabel">fat</span></div>
+        </div>
+        <p class="disclaimer">Log a bodyweight on the Workout page to see goal rings.</p>
+      {/if}
     </section>
 
     <!-- meal log -->

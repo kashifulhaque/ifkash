@@ -6,3 +6,4 @@ pub mod whoami;
 pub mod game;
 pub mod google_auth;
 pub mod splitter;
+pub mod workout;

@@ -6,6 +6,7 @@ pub mod home_weather;
 pub mod whoami;
 pub mod game;
 pub mod splitter;
+pub mod workout;
 
 use worker::*;
 
@@ -41,4 +42,13 @@ pub fn register_routes(router: Router<'_, ()>) -> Router<'_, ()> {
     .delete_async("/api/splitter/members/:id", splitter::delete_member)
     .post_async("/api/splitter/groups/:id/expenses", splitter::add_expense)
     .delete_async("/api/splitter/expenses/:id", splitter::delete_expense)
+    // Workout tracker — all endpoints require a Google ID token in the
+    // `Authorization: Bearer <token>` header; data is scoped to that user.
+    .get_async("/api/workout/sessions", workout::list_sessions)
+    .post_async("/api/workout/sessions", workout::create_session)
+    .get_async("/api/workout/sessions/:id", workout::get_session)
+    .delete_async("/api/workout/sessions/:id", workout::delete_session)
+    .get_async("/api/workout/bodyweight", workout::list_bodyweight)
+    .post_async("/api/workout/bodyweight", workout::add_bodyweight)
+    .delete_async("/api/workout/bodyweight/:id", workout::delete_bodyweight)
 }

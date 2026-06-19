@@ -44,5 +44,6 @@ GOOGLE_CLIENT_ID = "589199944334-at0seduhfggnrnmncrnnke6asstd13fc.apps.googleuse
 
 # Secrets (set via `wrangler secret put <NAME>`):
 #   WEATHER_UNION_API_KEY - /api/home_weather
+#   OPENROUTER_API_KEY    - /api/meals/analyze (Qwen2.5-VL vision call)
 # The old POCKETBASE_EMAIL/PASSWORD secrets are no longer used and can be
 # removed with `wrangler secret delete POCKETBASE_EMAIL` (and ...PASSWORD).

@@ -621,6 +621,7 @@ dependencies = [
 name = "ifkash"
 version = "0.1.0"
 dependencies = [
+ "base64",
  "chrono",
  "futures",
  "reqwest",

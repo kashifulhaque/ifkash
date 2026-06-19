@@ -19,7 +19,7 @@
 <div class="page">
   <header class="page-header">
     <div class="breadcrumb">
-      <a href="/">Home</a>
+      <a href="/fitness">Fitness</a>
       <span class="separator">/</span>
       <span>Workout</span>
     </div>
@@ -30,7 +30,7 @@
       build muscle while cutting.
     </p>
     <div class="cta-row">
-      <a href="/workout/log" class="cta-link">Log a workout →</a>
+      <a href="/fitness/workout/log" class="cta-link">Log a workout →</a>
     </div>
   </header>
 

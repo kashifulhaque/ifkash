@@ -14,13 +14,6 @@
 
   const tools: Tool[] = [
     {
-      name: 'Meal Tracker',
-      desc: 'Snap a photo of your meal and get an estimated nutritional breakdown — calories, protein, carbs, fat. Sign in with Google; meals are logged by day with running totals. An open-weights vision model (Qwen3.7 Plus) does the analysis server-side, and every value stays editable.',
-      page: '/tools/meal-tracker',
-      status: 'active',
-      links: []
-    },
-    {
       name: 'PDF Annotator',
       desc: 'Annotate PDFs right in the browser — add text, draw freehand, stamp a signature or image, then download. Fully client-side; your files never leave the page.',
       page: '/tools/pdf-annotator',

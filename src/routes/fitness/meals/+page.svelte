@@ -6,7 +6,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { env } from '$env/dynamic/public';
-  import { Camera, Trash2, LogOut, Loader, Save, Utensils } from 'lucide-svelte';
+  import { Camera, ImageUp, Trash2, LogOut, Loader, Save, Utensils } from 'lucide-svelte';
   import {
     mealsApi,
     setToken,
@@ -35,8 +35,9 @@
   let loading = false;
   let analyzing = false;
 
-  // upload form
-  let fileInput: HTMLInputElement;
+  // upload form — two inputs so the user can choose camera vs. photo library.
+  let cameraInput: HTMLInputElement;
+  let uploadInput: HTMLInputElement;
   let hint = '';
 
   // ---- auth ----------------------------------------------------------------
@@ -209,6 +210,7 @@
 <div class="meals">
   <header class="head">
     <div>
+      <a href="/fitness" class="back-link">← Fitness</a>
       <h1>Meal Tracker</h1>
       <p class="sub">Snap a meal, get an estimated nutrition breakdown, logged by day.</p>
     </div>
@@ -242,20 +244,34 @@
         bind:value={hint}
       />
       <input
-        bind:this={fileInput}
+        bind:this={cameraInput}
         type="file"
         accept="image/*"
         capture="environment"
         class="hidden-file"
         on:change={onPhotoChosen}
       />
-      <button class="primary big" disabled={analyzing} on:click={() => fileInput?.click()}>
-        {#if analyzing}
+      <input
+        bind:this={uploadInput}
+        type="file"
+        accept="image/*"
+        class="hidden-file"
+        on:change={onPhotoChosen}
+      />
+      {#if analyzing}
+        <button class="primary big" disabled>
           <Loader size={16} class="spin" /> Analyzing…
-        {:else}
-          <Camera size={16} /> Snap / upload a meal
-        {/if}
-      </button>
+        </button>
+      {:else}
+        <div class="capture-btns">
+          <button class="primary big" on:click={() => cameraInput?.click()}>
+            <Camera size={16} /> Take photo
+          </button>
+          <button class="primary big" on:click={() => uploadInput?.click()}>
+            <ImageUp size={16} /> Upload
+          </button>
+        </div>
+      {/if}
       <p class="disclaimer">Macros are AI estimates — edit any value after analysis.</p>
     </section>
 
@@ -325,6 +341,17 @@
     margin: 0;
   }
   .sub { color: var(--ink-soft); font-size: 0.95rem; margin: 4px 0 0; }
+  .back-link {
+    display: inline-block;
+    margin-bottom: 8px;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    border-bottom: none;
+  }
+  .back-link:hover { color: var(--blueprint); border-bottom: none; }
   .note { color: var(--ink-mute); font-size: 0.9rem; }
   .error { color: #e06c6c; font-size: 0.88rem; }
   .disclaimer { color: var(--ink-mute); font-size: 0.78rem; margin: 4px 0 0; }
@@ -345,6 +372,8 @@
   .capture { display: flex; flex-direction: column; gap: 10px; }
   .day-row { display: flex; gap: 10px; }
   .hidden-file { display: none; }
+  .capture-btns { display: flex; gap: 10px; }
+  .capture-btns .big { flex: 1; }
 
   /* totals */
   .totals-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }

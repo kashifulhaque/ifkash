@@ -17,7 +17,7 @@
 </svelte:head>
 
 <section class="manual-masthead">
-  <h1 class="manual-title">Kashiful Haque.</h1>
+  <h1 class="manual-title">Kashiful Haque<a href="/fitness" class="dot" aria-label="."  rel="nofollow">.</a></h1>
   <p class="manual-tagline">
     ML Engineer with 4 YOE pre-training and post-training LLMs with RL pipelines,
     and building high-performance inference systems in C++ and Rust.
@@ -35,6 +35,18 @@
   /* ─── Masthead ─────────────────────────────────────────────── */
   .manual-masthead {
     padding: 64px 0 24px;
+  }
+
+  /* The trailing period is a deliberately unmarked link to the fitness hub —
+     looks like plain punctuation, but it's clickable. */
+  .dot {
+    color: inherit;
+    border-bottom: none;
+    cursor: pointer;
+  }
+
+  .dot:hover {
+    border-bottom: none;
   }
 
   .manual-title {

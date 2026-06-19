@@ -304,9 +304,9 @@
 <div class="page">
   <header class="page-header">
     <div class="breadcrumb">
-      <a href="/">Home</a>
+      <a href="/fitness">Fitness</a>
       <span class="separator">/</span>
-      <a href="/workout">Workout</a>
+      <a href="/fitness/workout">Workout</a>
       <span class="separator">/</span>
       <span>Tracker</span>
     </div>

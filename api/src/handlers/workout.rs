@@ -77,6 +77,7 @@ fn parse_id(ctx: &RouteContext<()>, name: &str) -> Option<i64> {
 async fn owns_session(d1: &D1Database, owner_id: i64, session_id: i64) -> Result<bool> {
     #[derive(Deserialize)]
     struct IdRow {
+        #[allow(dead_code)]
         id: i64,
     }
     let row: Option<IdRow> = d1
@@ -444,6 +445,7 @@ pub async fn delete_bodyweight(req: Request, ctx: RouteContext<()>) -> Result<Re
     let d1 = ctx.d1("IFKASH_D1")?;
     #[derive(Deserialize)]
     struct IdRow {
+        #[allow(dead_code)]
         id: i64,
     }
     let owned: Option<IdRow> = d1

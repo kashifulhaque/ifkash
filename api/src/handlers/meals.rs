@@ -76,6 +76,7 @@ macro_rules! owner {
 async fn owns_meal(d1: &D1Database, owner_id: i64, meal_id: i64) -> Result<bool> {
     #[derive(Deserialize)]
     struct IdRow {
+        #[allow(dead_code)]
         id: i64,
     }
     let row: Option<IdRow> = d1

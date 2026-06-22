@@ -9,15 +9,18 @@ export const PUSH: Exercise[] = [
   { name: 'Pec fly', scheme: '3×12' },
   { name: 'Incline dumbbell press (adjustable bench)', scheme: '3×10' },
   { name: 'Rear delts', scheme: '3×15' },
-  { name: 'Cable tricep pushdown', scheme: '3×12' }
+  { name: 'Cable tricep pushdown', scheme: '3×12' },
+  { name: 'Cable crunch (cable machine)', scheme: '3×15' }
 ];
 
 export const PULL: Exercise[] = [
   { name: 'Lat pulldown', scheme: '4×10' },
   { name: 'Row machine', scheme: '4×10' },
-  { name: 'Deadlift (smith) — heavy, controlled', scheme: '3×6' },
+  { name: 'Deadlift (smith) — ramping pyramid to a top single', scheme: '50×5 60×3 80×2 90×1 100×1' },
   { name: 'Cable rows / face pulls', scheme: '3×12' },
-  { name: 'Dumbbell bicep curls', scheme: '3×12' }
+  { name: 'Dumbbell bicep curls', scheme: '3×12' },
+  { name: 'Hyperextension / back raise (glute bench)', scheme: '3×12' },
+  { name: 'Hanging / captain’s leg raise', scheme: '3×15' }
 ];
 
 export const LEGS: Exercise[] = [
@@ -25,7 +28,9 @@ export const LEGS: Exercise[] = [
   { name: 'Leg press', scheme: '4×10' },
   { name: 'Leg curls', scheme: '3×12' },
   { name: 'Leg raise (hits abs/hip flexors, fine as accessory)', scheme: '3×15' },
-  { name: 'Crunches bench', scheme: '3×15–20' }
+  { name: 'Crunches bench (reverse-incline slope)', scheme: '3×15–20' },
+  { name: 'Reverse crunch (incline bench)', scheme: '3×15' },
+  { name: 'Cable woodchopper (oblique, each side)', scheme: '3×12' }
 ];
 
 export type DayLabel = 'Push' | 'Pull' | 'Legs';
@@ -36,8 +41,14 @@ export const DAY_TEMPLATES: Record<DayLabel, Exercise[]> = {
   Legs: LEGS
 };
 
-/** Parse the leading set count out of a scheme like "4×8" or "3×15–20" (defaults to 3). */
+/**
+ * How many set rows a scheme renders. Normal schemes lead with the set count
+ * ("4×8" → 4, "3×15–20" → 3). Pyramid schemes list each set explicitly as
+ * weight×reps tokens ("50×5 60×3 80×2 90×1 100×1" → 5), so count those instead.
+ */
 export function setsFromScheme(scheme: string): number {
+  const tokens = scheme.trim().split(/\s+/).filter((t) => t.includes('×'));
+  if (tokens.length > 1) return tokens.length;
   const n = parseInt(scheme, 10);
   return Number.isFinite(n) && n > 0 ? n : 3;
 }

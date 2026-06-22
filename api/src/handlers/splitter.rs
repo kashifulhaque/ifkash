@@ -66,6 +66,7 @@ async fn resolve_owner(
 async fn owns_group(d1: &D1Database, owner_id: i64, group_id: i64) -> Result<bool> {
     #[derive(Deserialize)]
     struct IdRow {
+        #[allow(dead_code)]
         id: i64,
     }
     let row: Option<IdRow> = d1
@@ -367,6 +368,7 @@ pub async fn delete_member(req: Request, ctx: RouteContext<()>) -> Result<Respon
     // The member must belong to a group owned by this bookkeeper.
     #[derive(Deserialize)]
     struct IdRow {
+        #[allow(dead_code)]
         id: i64,
     }
     let owned: Option<IdRow> = d1
@@ -497,6 +499,7 @@ pub async fn delete_expense(req: Request, ctx: RouteContext<()>) -> Result<Respo
 
     #[derive(Deserialize)]
     struct IdRow {
+        #[allow(dead_code)]
         id: i64,
     }
     let owned: Option<IdRow> = d1

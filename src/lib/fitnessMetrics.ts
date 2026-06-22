@@ -17,7 +17,7 @@ export const DEFAULT_PROFILE: Profile = {
   height_cm: 179,
   sex: 'male',
   age_years: 28,
-  activity: 1.55,
+  activity: 1.375, // Light — lifts daily but otherwise desk/sedentary (low NEAT)
   goal: 'cut_moderate',
   latest_weight_g: null
 };

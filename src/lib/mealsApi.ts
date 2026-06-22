@@ -60,6 +60,15 @@ export type Totals = {
 
 export type DayResponse = { meals: Meal[]; totals: Totals };
 
+export type DaySummary = {
+  eaten_on: string;
+  calories: number;
+  protein_g: number;
+  carbs_g: number;
+  fat_g: number;
+  count: number;
+};
+
 export type MealPatch = {
   description?: string;
   calories?: number;
@@ -106,6 +115,24 @@ export const mealsApi = {
   },
 
   list: (date: string) => request<DayResponse>(`?date=${encodeURIComponent(date)}`),
+
+  /** Recent days with per-day totals, newest first — powers the history list. */
+  listDays: (limit = 14) => request<DaySummary[]>(`/days?limit=${limit}`),
+
+  /** Fetch a meal's photo with the bearer token and return an object URL.
+   *  An <img src> can't send the Authorization header, so we go via fetch. */
+  photoUrl: async (id: number): Promise<string | null> => {
+    if (!token) throw new AuthError('not signed in');
+    const res = await fetch(`${getApiBase()}/api/meals/${id}/photo`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (res.status === 401) {
+      setToken(null);
+      throw new AuthError('session expired');
+    }
+    if (!res.ok) return null;
+    return URL.createObjectURL(await res.blob());
+  },
 
   update: (id: number, patch: MealPatch) =>
     request<{ id: number }>(`/${id}`, {

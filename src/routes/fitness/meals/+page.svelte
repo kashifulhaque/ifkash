@@ -13,9 +13,11 @@
     loadToken,
     AuthError,
     type Meal,
-    type Totals
+    type Totals,
+    type DaySummary
   } from '$lib/mealsApi';
   import { profileApi } from '$lib/profileApi';
+  import { scheduleTokenRefresh } from '$lib/fitnessAuth';
   import NutritionRings from '$lib/components/NutritionRings.svelte';
   import {
     DEFAULT_PROFILE,
@@ -40,6 +42,11 @@
   let meals: Meal[] = [];
   let totals: Totals = { calories: 0, protein_g: 0, carbs_g: 0, fat_g: 0 };
 
+  // Past days with totals, for the history list. `photoUrls` holds object URLs
+  // fetched with auth (an <img src> can't carry the bearer token).
+  let days: DaySummary[] = [];
+  let photoUrls: Record<number, string> = {};
+
   // Body profile drives the daily nutrition targets the rings fill toward.
   let profile: Profile = { ...DEFAULT_PROFILE };
   $: weightKg = (profile.latest_weight_g ?? 0) / 1000;
@@ -58,9 +65,16 @@
 
   // ---- auth ----------------------------------------------------------------
 
+  let refreshTimer: ReturnType<typeof setTimeout> | undefined;
+  function scheduleRefresh() {
+    clearTimeout(refreshTimer);
+    refreshTimer = scheduleTokenRefresh(loadToken(), clientId, onCredential);
+  }
+
   function onCredential(resp: { credential: string }) {
     setToken(resp.credential);
     signedIn = true;
+    scheduleRefresh();
     refresh();
     loadProfile();
   }
@@ -123,7 +137,37 @@
     if (day) {
       meals = day.meals;
       totals = day.totals;
+      revokePhotos();
+      loadPhotos();
     }
+    loadDays();
+  }
+
+  /** Fetch each meal's photo (auth'd) into an object URL for <img>. */
+  async function loadPhotos() {
+    for (const m of meals) {
+      if (m.photo_r2_key && !photoUrls[m.id]) {
+        const url = await guard(() => mealsApi.photoUrl(m.id));
+        if (url) photoUrls = { ...photoUrls, [m.id]: url };
+      }
+    }
+  }
+
+  function revokePhotos() {
+    for (const u of Object.values(photoUrls)) URL.revokeObjectURL(u);
+    photoUrls = {};
+  }
+
+  /** Recent days (with totals) for the history list. */
+  async function loadDays() {
+    const d = await guard(() => mealsApi.listDays(14));
+    if (d) days = d;
+  }
+
+  function pickDay(d: string) {
+    if (d === date) return;
+    date = d;
+    refresh();
   }
 
   /** Pull the body profile (+ latest bodyweight) so the rings have targets. */
@@ -217,18 +261,21 @@
 
   onMount(async () => {
     if (!clientId) return;
+    // Load GIS regardless so the silent token-refresh prompt can fire even when
+    // we're already signed in (the sign-in button itself stays hidden).
+    try {
+      await loadGis();
+    } catch {
+      /* GIS blocked */
+    }
     const stored = loadToken();
     if (stored) {
       signedIn = true;
+      scheduleRefresh();
       refresh();
       loadProfile();
     } else {
-      try {
-        await loadGis();
-        renderGoogleButton();
-      } catch {
-        /* GIS blocked */
-      }
+      renderGoogleButton();
     }
   });
 </script>
@@ -334,25 +381,54 @@
       <ul class="meal-list">
         {#each meals as m (m.id)}
           <li class="card meal">
-            <div class="meal-head">
-              <input class="in desc" bind:value={m.description} placeholder="Description" />
-              <button class="icon-btn" title="Delete" on:click={() => deleteMeal(m.id)}>
-                <Trash2 size={14} />
-              </button>
-            </div>
-            <div class="macro-row">
-              <label class="lbl">kcal<input class="in tiny" type="number" min="0" bind:value={m.calories} /></label>
-              <label class="lbl">protein<input class="in tiny" type="number" min="0" bind:value={m.protein_g} /></label>
-              <label class="lbl">carbs<input class="in tiny" type="number" min="0" bind:value={m.carbs_g} /></label>
-              <label class="lbl">fat<input class="in tiny" type="number" min="0" bind:value={m.fat_g} /></label>
-              <button class="primary small" on:click={() => saveMeal(m)}><Save size={13} /> Save</button>
-            </div>
-            {#if m.items?.length}
-              <p class="items">{m.items.map((it) => it.name).join(' · ')}</p>
+            {#if photoUrls[m.id]}
+              <img class="meal-photo" src={photoUrls[m.id]} alt={m.description ?? 'meal photo'} />
+            {:else if m.photo_r2_key}
+              <div class="meal-photo placeholder"><Camera size={18} /></div>
             {/if}
+            <div class="meal-body">
+              <div class="meal-head">
+                <input class="in desc" bind:value={m.description} placeholder="Description" />
+                <button class="icon-btn" title="Delete" on:click={() => deleteMeal(m.id)}>
+                  <Trash2 size={14} />
+                </button>
+              </div>
+              <div class="macro-row">
+                <label class="lbl">kcal<input class="in tiny" type="number" min="0" bind:value={m.calories} /></label>
+                <label class="lbl">protein<input class="in tiny" type="number" min="0" bind:value={m.protein_g} /></label>
+                <label class="lbl">carbs<input class="in tiny" type="number" min="0" bind:value={m.carbs_g} /></label>
+                <label class="lbl">fat<input class="in tiny" type="number" min="0" bind:value={m.fat_g} /></label>
+                <button class="primary small" on:click={() => saveMeal(m)}><Save size={13} /> Save</button>
+              </div>
+              {#if m.items?.length}
+                <p class="items">{m.items.map((it) => it.name).join(' · ')}</p>
+              {/if}
+            </div>
           </li>
         {/each}
       </ul>
+    {/if}
+
+    <!-- Past days — tap to jump back to that day's log. -->
+    {#if days.length > 1}
+      <section class="card history">
+        <h3 class="panel-title"><Utensils size={15} /> History</h3>
+        <ul class="day-list">
+          {#each days as d}
+            <li>
+              <button
+                class="day-row"
+                class:active={d.eaten_on === date}
+                on:click={() => pickDay(d.eaten_on)}
+              >
+                <span class="day-date">{d.eaten_on}</span>
+                <span class="day-cal">{round(d.calories)} kcal</span>
+                <span class="day-count">{d.count} {d.count === 1 ? 'meal' : 'meals'}</span>
+              </button>
+            </li>
+          {/each}
+        </ul>
+      </section>
     {/if}
   {/if}
 </div>
@@ -448,10 +524,35 @@
 
   /* meal list */
   .meal-list { list-style: none; margin: 0; padding: 0; }
+  .meal { display: flex; gap: 14px; align-items: flex-start; }
+  .meal-photo {
+    width: 84px; height: 84px; flex-shrink: 0;
+    object-fit: cover; border-radius: 6px; border: 1px solid var(--rule-soft);
+  }
+  .meal-photo.placeholder {
+    display: flex; align-items: center; justify-content: center;
+    color: var(--ink-mute); background: var(--bg);
+  }
+  .meal-body { flex: 1; min-width: 0; }
   .meal-head { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
-  .desc { flex: 1; }
+  .desc { flex: 1; min-width: 0; }
   .macro-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; }
   .items { font-family: var(--font-mono); font-size: 0.72rem; color: var(--ink-mute); margin: 10px 0 0; }
+
+  /* history */
+  .day-list { list-style: none; margin: 0; padding: 0; }
+  .day-row {
+    width: 100%; display: flex; align-items: baseline; gap: 12px;
+    background: none; border: none; border-bottom: 1px solid var(--rule-soft);
+    padding: 10px 4px; cursor: pointer; text-align: left;
+    color: var(--ink); font-family: var(--font-body);
+  }
+  .day-list li:last-child .day-row { border-bottom: none; }
+  .day-row:hover { background: var(--bg); }
+  .day-row.active { color: var(--blueprint); }
+  .day-date { font-family: var(--font-mono); font-size: 0.82rem; flex: 1; }
+  .day-cal { font-family: var(--font-mono); font-size: 0.82rem; }
+  .day-count { font-family: var(--font-mono); font-size: 0.68rem; color: var(--ink-mute); }
 
   /* form controls */
   .lbl { display: flex; flex-direction: column; gap: 4px; font-size: 0.72rem; color: var(--ink-soft); }
@@ -481,6 +582,12 @@
   @keyframes spin { to { transform: rotate(360deg); } }
 
   @media (max-width: 520px) {
+    .meals { padding: 20px 14px 64px; }
     .totals-grid { grid-template-columns: repeat(2, 1fr); }
+    .capture-btns { flex-direction: column; }
+    .meal { gap: 10px; }
+    .meal-photo { width: 64px; height: 64px; }
+    .tiny { width: 64px; }
+    .page-title { font-size: 1.75rem; }
   }
 </style>

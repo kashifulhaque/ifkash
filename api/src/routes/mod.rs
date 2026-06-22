@@ -58,6 +58,8 @@ pub fn register_routes(router: Router<'_, ()>) -> Router<'_, ()> {
     // `Authorization: Bearer <token>` header; data is scoped to that user.
     .post_async("/api/meals/analyze", meals::analyze)
     .get_async("/api/meals", meals::list)
+    .get_async("/api/meals/days", meals::days)
+    .get_async("/api/meals/:id/photo", meals::photo)
     .patch_async("/api/meals/:id", meals::update)
     .delete_async("/api/meals/:id", meals::delete)
     // Body profile — drives the BMI/BMR/TDEE metrics and daily nutrition targets.

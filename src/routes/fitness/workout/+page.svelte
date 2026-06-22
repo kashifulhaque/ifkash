@@ -8,6 +8,7 @@
   import { env } from '$env/dynamic/public';
   import { LogOut, Check, Loader, Plus, Trash2 } from 'lucide-svelte';
   import { setToken, loadToken, AuthError } from '$lib/splitterApi';
+  import { scheduleTokenRefresh } from '$lib/fitnessAuth';
   import { workoutApi, type ExercisePayload } from '$lib/workoutApi';
   import { profileApi } from '$lib/profileApi';
   import {
@@ -236,6 +237,13 @@
     scheduleSave();
   }
 
+  // The bodyweight field is prefilled with yesterday's weight as a faded hint;
+  // tapping it should clear that so you can type today's fresh, not edit a stale
+  // number. Only clears the hint — a real, committed value is left alone.
+  function onBwFocus() {
+    if (bwSuggested) bw = '';
+  }
+
   function addSet(i: number) {
     exercises[i].sets = [...exercises[i].sets, blankSet()];
     exercises = exercises;
@@ -292,8 +300,31 @@
       .filter((ex) => ex.exercise !== '' && ex.sets.length > 0);
   }
 
+  // Serialize saves: if a flush is already in flight, mark one pending and run
+  // it once the current finishes — so two debounced saves never overlap (which,
+  // combined with the backend's atomic batch, kills the duplicate-set bug).
+  let flushing = false;
+  let flushPending = false;
+
   async function flush() {
     if (!signedIn) return;
+    if (flushing) {
+      flushPending = true;
+      return;
+    }
+    flushing = true;
+    try {
+      await doFlush();
+    } finally {
+      flushing = false;
+      if (flushPending) {
+        flushPending = false;
+        flush();
+      }
+    }
+  }
+
+  async function doFlush() {
     const payload = buildPayload();
     let ok = true;
 
@@ -399,9 +430,16 @@
 
   // ---- auth (mirrors the splitter / tracker Google Identity flow) ----------
 
+  let refreshTimer: ReturnType<typeof setTimeout> | undefined;
+  function scheduleRefresh() {
+    clearTimeout(refreshTimer);
+    refreshTimer = scheduleTokenRefresh(loadToken(), clientId, onCredential);
+  }
+
   function onCredential(resp: { credential: string }) {
     setToken(resp.credential);
     signedIn = true;
+    scheduleRefresh();
     bootSignedIn();
   }
 
@@ -471,6 +509,7 @@
     await loadGis();
     if (loadToken()) {
       signedIn = true;
+      scheduleRefresh();
       await bootSignedIn();
     } else {
       renderGoogleButton();
@@ -567,6 +606,7 @@
           placeholder="e.g. 87.5"
           class:suggested={bwSuggested}
           bind:value={bw}
+          on:focus={onBwFocus}
           on:input={onBwInput}
         />
       </label>
@@ -1343,9 +1383,38 @@
   @keyframes spin { to { transform: rotate(360deg); } }
 
   @media (max-width: 640px) {
+    .page { gap: 1.15rem; }
     .page-title { font-size: 1.75rem; }
-    .week-strip { grid-template-columns: repeat(3, 1fr); }
+    .week-strip { grid-template-columns: repeat(3, 1fr); gap: 0.4rem; }
+    .day-chip { padding: 0.5rem 0.5rem; }
     .notes-body { grid-template-columns: 1fr; gap: 1rem; }
-    .num { width: 4rem; }
+
+    /* Session bar: stack date + bodyweight so neither gets squeezed. */
+    .session-bar { gap: 0.75rem; }
+    .session-bar label { min-width: 100%; }
+
+    /* Exercise rows: switch the header from grid to wrapping flex so a long
+       name keeps the chevron on the first line and the target/scheme drops to
+       its own line instead of crushing everything. */
+    .log-ex-head {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      padding: 0.75rem 0.75rem;
+    }
+    .log-ex-head .ex-name,
+    .log-ex-head .ex-name-input { flex: 1; min-width: 0; }
+    .chevron { order: 2; }
+    .ex-target { order: 3; flex-basis: 100%; padding-left: 2rem; }
+    .day-card-head { padding: 0.75rem 0.75rem; }
+    .sets { padding: 0.5rem 0.75rem 0.9rem; }
+    .set-row { gap: 0.4rem; }
+    .num { width: 100%; min-width: 0; flex: 1; }
+    .set-num { width: 1rem; }
+  }
+
+  @media (max-width: 380px) {
+    .week-strip { grid-template-columns: repeat(2, 1fr); }
+    .metrics-grid { gap: 0.5rem; }
   }
 </style>

@@ -475,3 +475,91 @@ pub async fn delete(req: Request, ctx: RouteContext<()>) -> Result<Response> {
 
     Response::from_json(&serde_json::json!({ "id": id }))
 }
+
+// ---- GET /api/meals/:id/photo ----------------------------------------------
+
+/// Stream a meal's stored photo from R2. Scoped to the owner so one user can't
+/// read another's images. The frontend fetches this with the bearer token and
+/// turns the bytes into an object URL (an `<img src>` can't send the header).
+pub async fn photo(req: Request, ctx: RouteContext<()>) -> Result<Response> {
+    let owner_id = owner!(req, ctx);
+    let id = match ctx.param("id").and_then(|s| s.parse::<i64>().ok()) {
+        Some(id) => id,
+        None => return Response::error("Invalid id", 400),
+    };
+
+    let d1 = ctx.d1("IFKASH_D1")?;
+    #[derive(Deserialize)]
+    struct KeyRow {
+        photo_r2_key: Option<String>,
+    }
+    let row: Option<KeyRow> = d1
+        .prepare("SELECT photo_r2_key FROM meals WHERE id = ?1 AND owner_id = ?2")
+        .bind(&[n(id), n(owner_id)])?
+        .first(None)
+        .await?;
+
+    let key = match row.and_then(|r| r.photo_r2_key) {
+        Some(k) => k,
+        None => return Response::error("not found", 404),
+    };
+
+    let object = match ctx.bucket("RESUME_BUCKET")?.get(&key).execute().await? {
+        Some(o) => o,
+        None => return Response::error("not found", 404),
+    };
+    let bytes = match object.body() {
+        Some(b) => b.bytes().await?,
+        None => return Response::error("not found", 404),
+    };
+
+    let headers = Headers::new();
+    headers.set("Content-Type", "image/jpeg")?;
+    headers.set("Cache-Control", "private, max-age=86400")?;
+    Ok(Response::from_bytes(bytes)?.with_headers(headers))
+}
+
+// ---- GET /api/meals/days?limit=14 ------------------------------------------
+
+#[derive(Serialize, Deserialize)]
+struct DaySummary {
+    eaten_on: String,
+    calories: f64,
+    protein_g: f64,
+    carbs_g: f64,
+    fat_g: f64,
+    count: i64,
+}
+
+/// Per-day totals for the most recent logged days, newest first. Powers the
+/// meal page's history list so the user can jump back to a previous day.
+pub async fn days(req: Request, ctx: RouteContext<()>) -> Result<Response> {
+    let owner_id = owner!(req, ctx);
+
+    let url = req.url()?;
+    let limit = url
+        .query_pairs()
+        .find(|(k, _)| k == "limit")
+        .and_then(|(_, v)| v.parse::<i64>().ok())
+        .unwrap_or(14)
+        .clamp(1, 90);
+
+    let d1 = ctx.d1("IFKASH_D1")?;
+    // `limit` is a clamped integer we control, so it's safe to inline — D1 binds
+    // ints as f64 which SQLite won't accept in a LIMIT clause.
+    let sql = format!(
+        "SELECT eaten_on, \
+         COALESCE(SUM(calories), 0) AS calories, \
+         COALESCE(SUM(protein_g), 0) AS protein_g, \
+         COALESCE(SUM(carbs_g), 0) AS carbs_g, \
+         COALESCE(SUM(fat_g), 0) AS fat_g, \
+         COUNT(*) AS count \
+         FROM meals WHERE owner_id = ?1 \
+         GROUP BY eaten_on ORDER BY eaten_on DESC LIMIT {}",
+        limit
+    );
+    let result = d1.prepare(&sql).bind(&[n(owner_id)])?.all().await?;
+    let rows: Vec<DaySummary> = result.results()?;
+
+    Response::from_json(&rows)
+}

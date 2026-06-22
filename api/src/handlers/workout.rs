@@ -266,11 +266,7 @@ pub async fn upsert_session(mut req: Request, ctx: RouteContext<()>) -> Result<R
 
     let session_id = match existing {
         Some(r) => {
-            // Clear old sets and refresh notes; keep the same id.
-            d1.prepare("DELETE FROM workout_sets WHERE session_id = ?1")
-                .bind(&[n(r.id)])?
-                .run()
-                .await?;
+            // Refresh notes; the old sets are cleared atomically in the batch below.
             d1.prepare("UPDATE workout_sessions SET notes = ?1 WHERE id = ?2")
                 .bind(&[body.notes.trim().into(), n(r.id)])?
                 .run()
@@ -297,27 +293,35 @@ pub async fn upsert_session(mut req: Request, ctx: RouteContext<()>) -> Result<R
         }
     };
 
+    // Clear the old sets and re-insert the new ones in a single D1 batch. The
+    // batch runs as one transaction, so two overlapping auto-saves can't
+    // interleave their delete/insert steps and double up the rows (the cause of
+    // the duplicate-set bug). The clear must be the first statement.
+    let mut statements = vec![d1
+        .prepare("DELETE FROM workout_sets WHERE session_id = ?1")
+        .bind(&[n(session_id)])?];
     for exercise in &body.exercises {
         let name = exercise.exercise.trim();
         if name.is_empty() {
             continue;
         }
         for (i, set) in exercise.sets.iter().enumerate() {
-            d1.prepare(
-                "INSERT INTO workout_sets (session_id, exercise, set_index, reps, weight_g) \
-                 VALUES (?1, ?2, ?3, ?4, ?5)",
-            )
-            .bind(&[
-                n(session_id),
-                name.into(),
-                n((i + 1) as i64),
-                n(set.reps.max(0)),
-                n(set.weight_g.max(0)),
-            ])?
-            .run()
-            .await?;
+            statements.push(
+                d1.prepare(
+                    "INSERT INTO workout_sets (session_id, exercise, set_index, reps, weight_g) \
+                     VALUES (?1, ?2, ?3, ?4, ?5)",
+                )
+                .bind(&[
+                    n(session_id),
+                    name.into(),
+                    n((i + 1) as i64),
+                    n(set.reps.max(0)),
+                    n(set.weight_g.max(0)),
+                ])?,
+            );
         }
     }
+    d1.batch(statements).await?;
 
     Response::from_json(&IdResponse { id: session_id })
 }

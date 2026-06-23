@@ -20,17 +20,17 @@ export const PULL: Exercise[] = [
   { name: 'Cable rows / face pulls', scheme: '3×12' },
   { name: 'Dumbbell bicep curls', scheme: '3×12' },
   { name: 'Hyperextension / back raise (glute bench)', scheme: '3×12' },
-  { name: 'Hanging / captain’s leg raise', scheme: '3×15' }
+  { name: 'Cable woodchopper (oblique, each side)', scheme: '3×12' }
 ];
 
 export const LEGS: Exercise[] = [
   { name: 'Smith barbell squat', scheme: '4×8' },
   { name: 'Leg press', scheme: '4×10' },
   { name: 'Leg curls', scheme: '3×12' },
-  { name: 'Leg raise (hits abs/hip flexors, fine as accessory)', scheme: '3×15' },
-  { name: 'Crunches bench (reverse-incline slope)', scheme: '3×15–20' },
-  { name: 'Reverse crunch (incline bench)', scheme: '3×15' },
-  { name: 'Cable woodchopper (oblique, each side)', scheme: '3×12' }
+  { name: 'Leg extension', scheme: '3×12' },
+  { name: 'Walking lunges (dumbbell, each leg)', scheme: '3×12' },
+  { name: 'Standing calf raise', scheme: '3×15' },
+  { name: 'Reverse crunch (incline bench)', scheme: '3×15' }
 ];
 
 export type DayLabel = 'Push' | 'Pull' | 'Legs';

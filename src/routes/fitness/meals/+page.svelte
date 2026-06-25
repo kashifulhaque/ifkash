@@ -318,6 +318,10 @@
         <label class="lbl">Day
           <input class="in" type="date" bind:value={date} on:change={refresh} />
         </label>
+        <span class="totals-pill" title="Day totals">
+          {round(totals.protein_g)}g protein · {round(totals.carbs_g)}g carbs ·
+          {round(totals.fat_g)}g fat · {round(totals.calories)} kcal
+        </span>
       </div>
       <input
         class="in"
@@ -510,7 +514,12 @@
 
   .card { border: 1px solid var(--rule-soft); padding: 16px; margin-bottom: 16px; }
   .capture { display: flex; flex-direction: column; gap: 10px; }
-  .day-row { display: flex; gap: 10px; }
+  .day-row { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; }
+  .totals-pill {
+    font-family: var(--font-mono); font-size: 0.72rem; color: var(--ink-soft);
+    border: 1px solid var(--rule-soft); border-radius: 999px; padding: 6px 12px;
+    align-self: center;
+  }
   .hidden-file { display: none; }
   .capture-btns { display: flex; gap: 10px; }
   .capture-btns .big { flex: 1; }

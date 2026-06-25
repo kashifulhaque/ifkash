@@ -6,31 +6,27 @@ export type Exercise = { name: string; scheme: string };
 export const PUSH: Exercise[] = [
   { name: 'Smith machine bench press', scheme: '4×8' },
   { name: 'Shoulder press (machine)', scheme: '3×10' },
-  { name: 'Pec fly', scheme: '3×12' },
   { name: 'Incline dumbbell press (adjustable bench)', scheme: '3×10' },
-  { name: 'Rear delts', scheme: '3×15' },
-  { name: 'Cable tricep pushdown', scheme: '3×12' },
-  { name: 'Cable crunch (cable machine)', scheme: '3×15' }
+  { name: 'Pec fly', scheme: '3×12' },
+  { name: 'Cable tricep pushdown', scheme: '3×12' }
 ];
 
 export const PULL: Exercise[] = [
-  { name: 'Lat pulldown', scheme: '4×10' },
-  { name: 'Row machine', scheme: '4×10' },
+  { name: 'Lat pulldown', scheme: '3×10' },
+  { name: 'Row machine', scheme: '3×10' },
   { name: 'Deadlift (smith) — ramping pyramid to a top single', scheme: '50×5 60×3 80×2 90×1 100×1' },
   { name: 'Cable rows / face pulls', scheme: '3×12' },
-  { name: 'Dumbbell bicep curls', scheme: '3×12' },
-  { name: 'Hyperextension / back raise (glute bench)', scheme: '3×12' },
-  { name: 'Cable woodchopper (oblique, each side)', scheme: '3×12' }
+  { name: 'Rear delts', scheme: '3×15' },
+  { name: 'Dumbbell bicep curls', scheme: '3×12' }
 ];
 
 export const LEGS: Exercise[] = [
   { name: 'Smith barbell squat', scheme: '4×8' },
-  { name: 'Leg press', scheme: '4×10' },
+  { name: 'Leg press', scheme: '3×10' },
   { name: 'Leg curls', scheme: '3×12' },
   { name: 'Leg extension', scheme: '3×12' },
-  { name: 'Walking lunges (dumbbell, each leg)', scheme: '3×12' },
   { name: 'Standing calf raise', scheme: '3×15' },
-  { name: 'Reverse crunch (incline bench)', scheme: '3×15' }
+  { name: 'Cable crunch (cable machine)', scheme: '3×15' }
 ];
 
 export type DayLabel = 'Push' | 'Pull' | 'Legs';

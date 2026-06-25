@@ -818,6 +818,17 @@
           0.7–0.8 kg/week and lets recomp do the rest.
         </p>
       </div>
+      <div class="note">
+        <h3>Why the plan got leaner</h3>
+        <p>
+          Trimmed each day to its essentials. Rear delts moved to Pull day — they're a
+          pulling muscle, so anatomically that's where they belong. Abs consolidated onto
+          Legs day, since you're less smashed after legs than after pull. Lat pulldown and
+          row machine dropped to 3×10 from 4×10 — still plenty of back volume. Walking
+          lunges cut entirely: squat + leg press is already redundant quad work, and lunges
+          were the first thing getting skipped anyway.
+        </p>
+      </div>
     </div>
   </details>
 

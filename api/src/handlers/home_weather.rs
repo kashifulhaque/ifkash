@@ -6,7 +6,7 @@ use utoipa::ToSchema;
 
 const KV_BINDING: &str = "IFKASH_HN";
 const CACHE_TTL_SECS: u64 = 300; // 5 min
-const DEFAULT_LOCALITY: &str = "ZWL006658";
+const DEFAULT_LOCALITY: &str = "ZWL008797";
 const WEATHER_UNION_URL: &str =
     "https://www.weatherunion.com/gw/weather/external/v0/get_locality_weather_data";
 

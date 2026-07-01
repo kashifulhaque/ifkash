@@ -72,6 +72,29 @@ export function computeMetrics(weightKg: number, p: Profile): Metrics {
   };
 }
 
+// ---- energy expenditure (MET-based) ----------------------------------------
+
+/**
+ * Calories burnt for `minutes` of activity at a given MET, for a bodyweight in
+ * kg. Standard MET formula: kcal = MET × 3.5 × kg / 200 × minutes. Rounded to a
+ * whole kcal; returns 0 for non-positive weight or duration.
+ */
+export function metKcal(met: number, weightKg: number, minutes: number): number {
+  if (weightKg <= 0 || minutes <= 0 || met <= 0) return 0;
+  return Math.round(((met * 3.5 * weightKg) / 200) * minutes);
+}
+
+// Vigorous resistance training sits around 5 MET. We don't time the lift, so
+// estimate gym time as ~2.5 min per logged set (the work plus its rest).
+const STRENGTH_MET = 5.0;
+const MINUTES_PER_SET = 2.5;
+
+/** Rough burn for a strength session from its total number of logged sets. */
+export function strengthKcal(weightKg: number, totalSets: number): number {
+  if (totalSets <= 0) return 0;
+  return metKcal(STRENGTH_MET, weightKg, totalSets * MINUTES_PER_SET);
+}
+
 export type NutritionTargets = {
   calories: number;
   protein_g: number;

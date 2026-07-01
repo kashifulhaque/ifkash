@@ -120,6 +120,25 @@ struct ExerciseInput {
     sets: Vec<SetInput>,
 }
 
+#[derive(Serialize, Deserialize)]
+struct CardioRow {
+    id: i64,
+    kind: String,
+    minutes: i64,
+    kcal: i64,
+    entry_index: i64,
+}
+
+#[derive(Deserialize)]
+struct CardioInput {
+    #[serde(default)]
+    kind: String,
+    #[serde(default)]
+    minutes: i64,
+    #[serde(default)]
+    kcal: i64,
+}
+
 #[derive(Deserialize)]
 struct CreateSessionRequest {
     #[serde(default)]
@@ -129,12 +148,15 @@ struct CreateSessionRequest {
     notes: String,
     #[serde(default)]
     exercises: Vec<ExerciseInput>,
+    #[serde(default)]
+    cardio: Vec<CardioInput>,
 }
 
 #[derive(Serialize)]
 struct SessionDetail {
     session: SessionRow,
     sets: Vec<SetRow>,
+    cardio: Vec<CardioRow>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -229,6 +251,25 @@ pub async fn create_session(mut req: Request, ctx: RouteContext<()>) -> Result<R
         }
     }
 
+    for (i, c) in body.cardio.iter().enumerate() {
+        if c.kind.trim().is_empty() && c.minutes <= 0 && c.kcal <= 0 {
+            continue;
+        }
+        d1.prepare(
+            "INSERT INTO workout_cardio (session_id, kind, minutes, kcal, entry_index) \
+             VALUES (?1, ?2, ?3, ?4, ?5)",
+        )
+        .bind(&[
+            n(session_id),
+            c.kind.trim().into(),
+            n(c.minutes.max(0)),
+            n(c.kcal.max(0)),
+            n((i + 1) as i64),
+        ])?
+        .run()
+        .await?;
+    }
+
     Response::from_json(&IdResponse { id: session_id })
 }
 
@@ -297,9 +338,12 @@ pub async fn upsert_session(mut req: Request, ctx: RouteContext<()>) -> Result<R
     // batch runs as one transaction, so two overlapping auto-saves can't
     // interleave their delete/insert steps and double up the rows (the cause of
     // the duplicate-set bug). The clear must be the first statement.
-    let mut statements = vec![d1
-        .prepare("DELETE FROM workout_sets WHERE session_id = ?1")
-        .bind(&[n(session_id)])?];
+    let mut statements = vec![
+        d1.prepare("DELETE FROM workout_sets WHERE session_id = ?1")
+            .bind(&[n(session_id)])?,
+        d1.prepare("DELETE FROM workout_cardio WHERE session_id = ?1")
+            .bind(&[n(session_id)])?,
+    ];
     for exercise in &body.exercises {
         let name = exercise.exercise.trim();
         if name.is_empty() {
@@ -320,6 +364,24 @@ pub async fn upsert_session(mut req: Request, ctx: RouteContext<()>) -> Result<R
                 ])?,
             );
         }
+    }
+    for (i, c) in body.cardio.iter().enumerate() {
+        if c.kind.trim().is_empty() && c.minutes <= 0 && c.kcal <= 0 {
+            continue;
+        }
+        statements.push(
+            d1.prepare(
+                "INSERT INTO workout_cardio (session_id, kind, minutes, kcal, entry_index) \
+                 VALUES (?1, ?2, ?3, ?4, ?5)",
+            )
+            .bind(&[
+                n(session_id),
+                c.kind.trim().into(),
+                n(c.minutes.max(0)),
+                n(c.kcal.max(0)),
+                n((i + 1) as i64),
+            ])?,
+        );
     }
     d1.batch(statements).await?;
 
@@ -358,7 +420,21 @@ pub async fn get_session(req: Request, ctx: RouteContext<()>) -> Result<Response
         .await?
         .results()?;
 
-    Response::from_json(&SessionDetail { session, sets })
+    let cardio: Vec<CardioRow> = d1
+        .prepare(
+            "SELECT id, kind, minutes, kcal, entry_index FROM workout_cardio \
+             WHERE session_id = ?1 ORDER BY entry_index ASC, id ASC",
+        )
+        .bind(&[n(session_id)])?
+        .all()
+        .await?
+        .results()?;
+
+    Response::from_json(&SessionDetail {
+        session,
+        sets,
+        cardio,
+    })
 }
 
 /// DELETE /api/workout/sessions/:id — delete a session and its sets.
@@ -373,6 +449,10 @@ pub async fn delete_session(req: Request, ctx: RouteContext<()>) -> Result<Respo
         return Response::error("not found", 404);
     }
     d1.prepare("DELETE FROM workout_sets WHERE session_id = ?1")
+        .bind(&[n(session_id)])?
+        .run()
+        .await?;
+    d1.prepare("DELETE FROM workout_cardio WHERE session_id = ?1")
         .bind(&[n(session_id)])?
         .run()
         .await?;

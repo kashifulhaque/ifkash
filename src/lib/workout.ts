@@ -49,6 +49,32 @@ export function setsFromScheme(scheme: string): number {
   return Number.isFinite(n) && n > 0 ? n : 3;
 }
 
+// ---- cardio ----------------------------------------------------------------
+
+// Cardio machines with a representative MET, used to estimate calories burnt.
+// METs from the Compendium of Physical Activities (moderate-effort figures).
+export const CARDIO_OPTIONS: { value: string; met: number }[] = [
+  { value: 'Cycle', met: 7.0 },
+  { value: 'Crosstrainer', met: 5.0 },
+  { value: 'Treadmill (incline walk)', met: 6.3 },
+  { value: 'Treadmill (run)', met: 9.8 },
+  { value: 'Rowing', met: 7.0 },
+  { value: 'Stair climber', met: 8.0 },
+  { value: 'Other', met: 6.0 }
+];
+
+/** MET for a cardio kind; falls back to a moderate 6.0 for anything unlisted. */
+export function cardioMet(kind: string): number {
+  return CARDIO_OPTIONS.find((o) => o.value === kind)?.met ?? 6.0;
+}
+
+// The day's suggested cardio bout — mirrors the plan's "cardio rule" per focus.
+export const CARDIO_DEFAULTS: Record<DayLabel, { kind: string; minutes: number }> = {
+  Push: { kind: 'Cycle', minutes: 15 },
+  Pull: { kind: 'Crosstrainer', minutes: 15 },
+  Legs: { kind: 'Treadmill (incline walk)', minutes: 20 }
+};
+
 // ---- API types -------------------------------------------------------------
 
 export type SessionSummary = {
@@ -67,9 +93,18 @@ export type WorkoutSet = {
   weight_g: number;
 };
 
+export type CardioEntry = {
+  id: number;
+  kind: string;
+  minutes: number;
+  kcal: number;
+  entry_index: number;
+};
+
 export type SessionDetail = {
   session: SessionSummary;
   sets: WorkoutSet[];
+  cardio?: CardioEntry[];
 };
 
 export type BodyweightEntry = {

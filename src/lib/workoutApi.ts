@@ -38,6 +38,12 @@ export type ExercisePayload = {
   sets: { reps: number; weight_g: number }[];
 };
 
+export type CardioPayload = {
+  kind: string;
+  minutes: number;
+  kcal: number;
+};
+
 export const workoutApi = {
   listSessions: () => api<SessionSummary[]>('/sessions'),
 
@@ -46,6 +52,7 @@ export const workoutApi = {
     date: string;
     notes: string;
     exercises: ExercisePayload[];
+    cardio?: CardioPayload[];
   }) =>
     api<{ id: number }>('/sessions', {
       method: 'POST',
@@ -59,6 +66,7 @@ export const workoutApi = {
     date: string;
     notes: string;
     exercises: ExercisePayload[];
+    cardio?: CardioPayload[];
   }) =>
     api<{ id: number }>('/sessions', {
       method: 'PUT',

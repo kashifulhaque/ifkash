@@ -9,12 +9,14 @@
   import { LogOut, Check, Loader, Plus, Trash2 } from 'lucide-svelte';
   import { setToken, loadToken, AuthError } from '$lib/splitterApi';
   import { scheduleTokenRefresh } from '$lib/fitnessAuth';
-  import { workoutApi, type ExercisePayload } from '$lib/workoutApi';
+  import { workoutApi, type ExercisePayload, type CardioPayload } from '$lib/workoutApi';
   import { profileApi } from '$lib/profileApi';
   import {
     DEFAULT_PROFILE,
     computeMetrics,
     nutritionTargets,
+    metKcal,
+    strengthKcal,
     GOAL_LABELS,
     ACTIVITY_OPTIONS,
     type Profile,
@@ -26,6 +28,9 @@
     kgToGrams,
     gramsToKg,
     weeklyAverages,
+    CARDIO_OPTIONS,
+    CARDIO_DEFAULTS,
+    cardioMet,
     type DayLabel,
     type SessionSummary,
     type SessionDetail,
@@ -81,6 +86,12 @@
   type ExerciseRow = { name: string; scheme: string; sets: SetRow[] };
   let exercises: ExerciseRow[] = [];
 
+  // Cardio bouts logged for the session. `kcalEdited` tracks whether the user
+  // has overridden the auto-estimate: while false, kcal follows the live
+  // MET-based estimate (kind × minutes × bodyweight); once typed, we stop.
+  type CardioRow = { kind: string; minutes: string; kcal: string; kcalEdited: boolean };
+  let cardioRows: CardioRow[] = [];
+
   let saveStatus: 'idle' | 'saving' | 'saved' | 'error' = 'idle';
 
   // ---- body profile + live metrics -----------------------------------------
@@ -135,6 +146,63 @@
     }));
   }
 
+  // ---- cardio --------------------------------------------------------------
+
+  /** The MET-estimated kcal for a cardio row at the current bodyweight. */
+  function cardioEstimate(row: { kind: string; minutes: string }): number {
+    const mins = parseFloat(str(row.minutes));
+    if (!Number.isFinite(mins) || mins <= 0) return 0;
+    return metKcal(cardioMet(row.kind), metricKg, mins);
+  }
+
+  /** One cardio row seeded from the day's suggested bout (kcal auto-estimated). */
+  function defaultCardio(focus: Focus): CardioRow {
+    const d = CARDIO_DEFAULTS[focus];
+    return { kind: d.kind, minutes: String(d.minutes), kcal: '', kcalEdited: false };
+  }
+  function blankCardio(): CardioRow {
+    return { kind: CARDIO_OPTIONS[0].value, minutes: '', kcal: '', kcalEdited: false };
+  }
+
+  // Editing: while kcal is untouched it tracks the estimate; typing kcal pins it.
+  function onCardioChange(row: CardioRow) {
+    if (!row.kcalEdited) {
+      const est = cardioEstimate(row);
+      row.kcal = est > 0 ? String(est) : '';
+    }
+    cardioRows = cardioRows;
+    scheduleSave();
+  }
+  function onCardioKcal(row: CardioRow) {
+    row.kcalEdited = str(row.kcal).trim() !== '';
+    scheduleSave();
+  }
+  function addCardio() {
+    cardioRows = [...cardioRows, blankCardio()];
+  }
+  function removeCardio(i: number) {
+    cardioRows = cardioRows.filter((_, idx) => idx !== i);
+    scheduleSave();
+  }
+
+  // The kcal actually attributed to a cardio row: the user's value if entered,
+  // otherwise the live estimate — so a bout always contributes to the total.
+  function cardioKcal(row: CardioRow): number {
+    const typed = parseFloat(str(row.kcal));
+    if (Number.isFinite(typed) && typed > 0) return Math.round(typed);
+    return cardioEstimate(row);
+  }
+
+  // ---- session burn totals -------------------------------------------------
+
+  $: totalSets = exercises.reduce(
+    (n, ex) => n + ex.sets.filter((s) => !s.suggested && (str(s.reps).trim() !== '' || str(s.weight).trim() !== '')).length,
+    0
+  );
+  $: liftKcal = metricKg > 0 ? strengthKcal(metricKg, totalSets) : 0;
+  $: cardioBurn = cardioRows.reduce((n, r) => n + cardioKcal(r), 0);
+  $: sessionKcal = liftKcal + cardioBurn;
+
   // ---- data loading + prefill ---------------------------------------------
 
   let sessions: SessionSummary[] = [];
@@ -170,12 +238,17 @@
    */
   async function loadDayData() {
     const rows = templateRows(active);
+    let cardio: CardioRow[] = [defaultCardio(active)];
 
     if (signedIn) {
       const todays = sessions.find((s) => s.date === sessionDate && s.day_label === active);
       if (todays) {
         const d = await detailFor(todays.id);
-        if (d) fillRows(rows, d, true);
+        if (d) {
+          fillRows(rows, d, true);
+          const restored = cardioFromDetail(d);
+          if (restored.length) cardio = restored;
+        }
       } else {
         const prior = sessions.find((s) => s.day_label === active && s.date < sessionDate);
         if (prior) {
@@ -201,6 +274,17 @@
     }
 
     exercises = rows;
+    cardioRows = cardio;
+  }
+
+  /** Restore committed cardio rows from a saved session detail. */
+  function cardioFromDetail(detail: SessionDetail): CardioRow[] {
+    return (detail.cardio ?? []).map((c) => ({
+      kind: c.kind || CARDIO_OPTIONS[0].value,
+      minutes: c.minutes > 0 ? String(c.minutes) : '',
+      kcal: c.kcal > 0 ? String(c.kcal) : '',
+      kcalEdited: c.kcal > 0
+    }));
   }
 
   /** Fill `rows` from a saved session. `committed` true → keep reps+weight as
@@ -300,6 +384,16 @@
       .filter((ex) => ex.exercise !== '' && ex.sets.length > 0);
   }
 
+  function buildCardio(): CardioPayload[] {
+    return cardioRows
+      .map((r) => ({
+        kind: r.kind.trim(),
+        minutes: Math.max(0, parseInt(str(r.minutes), 10) || 0),
+        kcal: cardioKcal(r)
+      }))
+      .filter((r) => r.minutes > 0 || r.kcal > 0);
+  }
+
   // Serialize saves: if a flush is already in flight, mark one pending and run
   // it once the current finishes — so two debounced saves never overlap (which,
   // combined with the backend's atomic batch, kills the duplicate-set bug).
@@ -326,15 +420,17 @@
 
   async function doFlush() {
     const payload = buildPayload();
+    const cardio = buildCardio();
     let ok = true;
 
-    if (payload.length > 0) {
+    if (payload.length > 0 || cardio.length > 0) {
       const r = await guard(() =>
         workoutApi.upsertSession({
           day_label: active,
           date: sessionDate,
           notes: '',
-          exercises: payload
+          exercises: payload,
+          cardio
         })
       );
       ok = ok && r !== undefined;
@@ -477,6 +573,7 @@
     openDetail = null;
     saveStatus = 'idle';
     exercises = templateRows(active);
+    cardioRows = [defaultCardio(active)];
     setTimeout(renderGoogleButton, 0);
   }
 
@@ -506,6 +603,7 @@
 
   onMount(async () => {
     exercises = templateRows(active);
+    cardioRows = [defaultCardio(active)];
     await loadGis();
     if (loadToken()) {
       signedIn = true;
@@ -780,8 +878,83 @@
           <Plus size={15} /> add exercise
         </button>
       </div>
+
+      <!-- Cardio log — kind + minutes + kcal (auto-estimated, editable). -->
+      <div class="cardio-log">
+        <div class="cardio-log-head">
+          <span class="cardio-log-title">🚴 Cardio</span>
+          <span class="cardio-log-hint">kcal auto-estimates from time &amp; bodyweight — tap to override</span>
+        </div>
+        {#each cardioRows as c, i}
+          <div class="cardio-row">
+            <select class="cardio-kind" bind:value={c.kind} on:change={() => onCardioChange(c)}>
+              {#each CARDIO_OPTIONS as o}
+                <option value={o.value}>{o.value}</option>
+              {/each}
+            </select>
+            <div class="cardio-field">
+              <input
+                class="num"
+                type="number"
+                inputmode="numeric"
+                min="0"
+                placeholder="min"
+                bind:value={c.minutes}
+                on:input={() => onCardioChange(c)}
+              />
+              <span class="unit">min</span>
+            </div>
+            <div class="cardio-field">
+              <input
+                class="num"
+                class:suggested={!c.kcalEdited}
+                type="number"
+                inputmode="numeric"
+                min="0"
+                placeholder={cardioEstimate(c) > 0 ? `≈${cardioEstimate(c)}` : 'kcal'}
+                bind:value={c.kcal}
+                on:input={() => onCardioKcal(c)}
+              />
+              <span class="unit">kcal</span>
+            </div>
+            <button class="icon-btn" on:click={() => removeCardio(i)} title="Remove cardio">
+              <Trash2 size={14} />
+            </button>
+          </div>
+        {/each}
+        <button class="text-btn add-ex cardio-add" on:click={addCardio}>
+          <Plus size={14} /> cardio
+        </button>
+      </div>
     {/if}
   </section>
+
+  <!-- Session energy burn — rough MET-based estimate from the sets + cardio. -->
+  {#if signedIn && metricKg > 0}
+    <div class="burn-card">
+      <div class="burn-grid">
+        <div class="burn-metric">
+          <span class="b-val">{liftKcal}</span>
+          <span class="b-label">Lifting</span>
+          <span class="b-sub">{totalSets} {totalSets === 1 ? 'set' : 'sets'}</span>
+        </div>
+        <div class="burn-metric">
+          <span class="b-val">{cardioBurn}</span>
+          <span class="b-label">Cardio</span>
+          <span class="b-sub">kcal</span>
+        </div>
+        <div class="burn-metric total">
+          <span class="b-val">{sessionKcal}</span>
+          <span class="b-label">Session</span>
+          <span class="b-sub">kcal burnt</span>
+        </div>
+      </div>
+      <p class="burn-note">
+        Rough estimate at {metricKg.toFixed(1)} kg — lifting assumes ~2.5 min per logged set at
+        vigorous effort. Cardio counts your logged (or estimated) kcal.
+      </p>
+    </div>
+  {/if}
 
   <!-- Reference / rationale, collapsed by default. -->
   <details class="fold">
@@ -894,6 +1067,18 @@
                           </div>
                         </div>
                       {/each}
+                      {#if openDetail.cardio && openDetail.cardio.length}
+                        <div class="detail-ex">
+                          <span class="detail-ex-name">🚴 Cardio</span>
+                          <div class="detail-sets">
+                            {#each openDetail.cardio as c}
+                              <span class="set-badge">
+                                {c.kind}{c.minutes > 0 ? ` · ${c.minutes} min` : ''} · {c.kcal} kcal
+                              </span>
+                            {/each}
+                          </div>
+                        </div>
+                      {/if}
                     {/if}
                   </div>
                 {/if}
@@ -1285,6 +1470,74 @@
     padding: 0.5rem 0.75rem;
     align-self: flex-start;
   }
+
+  /* ── Cardio log ─────────────────────────────────────────── */
+  .cardio-log {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.9rem 1rem 1rem;
+    border-top: 1px solid var(--border-subtle);
+    background: var(--blueprint-tint);
+  }
+  .cardio-log-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+  .cardio-log-title {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+  }
+  .cardio-log-hint { font-size: 0.72rem; color: var(--text-tertiary); font-style: italic; }
+  .cardio-row { display: flex; align-items: center; gap: 0.5rem; }
+  .cardio-kind {
+    flex: 1;
+    min-width: 0;
+    font-family: inherit;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 0.375rem;
+    padding: 0.5rem 0.5rem;
+  }
+  .cardio-kind:focus { outline: none; border-color: var(--border-strong); }
+  .cardio-field { display: flex; align-items: center; gap: 0.3rem; }
+  .cardio-field .unit { font-size: 0.72rem; color: var(--text-faint); }
+  .cardio-add { margin: 0.25rem 0 0; align-self: flex-start; }
+
+  /* ── Session burn ───────────────────────────────────────── */
+  .burn-card {
+    border: 1px solid var(--border);
+    border-radius: 0.625rem;
+    padding: 1rem;
+  }
+  .burn-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+  }
+  .burn-metric {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.15rem;
+    padding: 0.75rem 0.4rem;
+    border: 1px solid var(--border-subtle);
+    border-radius: 0.5rem;
+  }
+  .burn-metric.total { border-color: var(--blueprint); background: var(--blueprint-tint); }
+  .b-val { font-size: 1.25rem; font-weight: 700; color: var(--text-primary); }
+  .b-label { font-size: 0.7rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-secondary); }
+  .b-sub { font-size: 0.66rem; color: var(--text-tertiary); }
+  .burn-note { margin: 0.85rem 0 0; font-size: 0.78rem; line-height: 1.5; color: var(--text-tertiary); text-align: center; }
 
   /* ── Folds (notes / history / trend) ────────────────────── */
   .fold { border: 1px solid var(--border); border-radius: 0.625rem; }

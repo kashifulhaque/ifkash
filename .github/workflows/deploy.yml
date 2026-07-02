@@ -30,6 +30,19 @@ jobs:
         working-directory: ./api
         run: worker-build --release
 
+      # Apply any pending D1 migrations BEFORE deploying the new code, so the
+      # schema is never behind the Worker that queries it. This is idempotent:
+      # wrangler tracks applied migrations in the d1_migrations table and skips
+      # ones already run, so re-runs with nothing pending are a no-op.
+      - name: Apply D1 migrations
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_WORKERS_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: ./api
+          wranglerVersion: "4.50.0"
+          command: d1 migrations apply ifkash --remote
+
       - name: Deploy to Cloudflare Workers
         uses: cloudflare/wrangler-action@v3
         with:

@@ -95,8 +95,13 @@ cd api && npx wrangler d1 migrations apply ifkash --local
   kept I/O-free and separate from API wrappers — e.g. `fitnessMetrics.ts` (BMI/BMR/TDEE, MET
   kcal math) vs `workoutApi.ts` (fetch calls). Put new pure helpers alongside the former.
 - **Migrations are append-only**, numbered `NNNN_name.sql` in `api/migrations/`. Add a new
-  file; never edit an applied one. New tables/columns need a matching migration **and** a
-  redeploy before the feature works in prod (`wrangler d1 migrations apply ifkash --remote`).
+  file; never edit an applied one. CI applies pending migrations to the remote D1 before
+  each Worker deploy, so a migration ships with the `api/**` push that needs it.
+- **Theme is a single dark, monochrome palette** defined entirely as CSS variables at the
+  top of `src/app.css` (warm-graphite base, cream accent via `--blueprint`). Restyle by
+  editing the variables, not per-page colors. Careful with the legacy aliases: `--paper*`
+  tokens are dark *surface* colors — never use them as text colors on cards (past
+  dark-on-dark bug in the project pages).
 - **Résumé rendering is fully client-side** — Typst → PDF happens in the browser via
   `typst.ts` WASM (`src/lib/typst.ts`); there is no compile server. It fetches its WASM
   compiler from a CDN on first compile (needs internet) and uses fonts from `static/fonts`.
@@ -107,5 +112,6 @@ cd api && npx wrangler d1 migrations apply ifkash --local
 ## Deploy (brief)
 
 Push to `main`: the Worker deploys via `.github/workflows/deploy.yml` (on `api/**` changes),
-the frontend via the Cloudflare Pages Git integration. Migrations are **not** applied by CI —
-run `wrangler d1 migrations apply ifkash --remote` yourself. Full runbook in the README.
+the frontend via the Cloudflare Pages Git integration. The workflow applies pending D1
+migrations (`wrangler d1 migrations apply ifkash --remote`) before deploying the Worker;
+frontend-only pushes don't trigger it. Full runbook in the README.

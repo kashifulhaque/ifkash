@@ -29,12 +29,22 @@ export const LEGS: Exercise[] = [
   { name: 'Cable crunch (cable machine)', scheme: '3×15' }
 ];
 
-export type DayLabel = 'Push' | 'Pull' | 'Legs';
+// Day 6 — lighter optional session: core work, with extra cardio as the main event.
+export const CORE: Exercise[] = [
+  { name: 'Plank', scheme: '3×60s' },
+  { name: 'Hanging leg raise', scheme: '3×12' },
+  { name: 'Cable crunch (cable machine)', scheme: '3×15' },
+  { name: 'Russian twists (weighted)', scheme: '3×20' },
+  { name: 'Back extension', scheme: '3×15' }
+];
+
+export type DayLabel = 'Push' | 'Pull' | 'Legs' | 'Core';
 
 export const DAY_TEMPLATES: Record<DayLabel, Exercise[]> = {
   Push: PUSH,
   Pull: PULL,
-  Legs: LEGS
+  Legs: LEGS,
+  Core: CORE
 };
 
 /**
@@ -72,7 +82,8 @@ export function cardioMet(kind: string): number {
 export const CARDIO_DEFAULTS: Record<DayLabel, { kind: string; minutes: number }> = {
   Push: { kind: 'Cycle', minutes: 15 },
   Pull: { kind: 'Crosstrainer', minutes: 15 },
-  Legs: { kind: 'Treadmill (incline walk)', minutes: 20 }
+  Legs: { kind: 'Treadmill (incline walk)', minutes: 20 },
+  Core: { kind: 'Treadmill (run)', minutes: 25 }
 };
 
 // ---- API types -------------------------------------------------------------

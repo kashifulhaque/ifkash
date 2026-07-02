@@ -45,16 +45,17 @@
   const cardio: Record<Focus, string> = {
     Push: '15 min cycle',
     Pull: '15 min crosstrainer',
-    Legs: '20 min treadmill incline walk (incline 8–10%)'
+    Legs: '20 min treadmill incline walk (incline 8–10%)',
+    Core: '25 min treadmill run'
   };
 
-  const split: { day: string; focus: Focus | 'Optional'; detail: string }[] = [
+  const split: { day: string; focus: Focus; detail: string }[] = [
     { day: 'Day 1', focus: 'Push', detail: 'chest / shoulders / triceps' },
     { day: 'Day 2', focus: 'Pull', detail: 'back / biceps' },
     { day: 'Day 3', focus: 'Legs', detail: 'quads / hamstrings / abs' },
     { day: 'Day 4', focus: 'Push', detail: 'chest / shoulders / triceps' },
     { day: 'Day 5', focus: 'Pull', detail: 'back / biceps' },
-    { day: 'Day 6', focus: 'Optional', detail: 'Legs or full body + extra cardio' }
+    { day: 'Day 6', focus: 'Core', detail: 'core / abs + extra cardio (optional)' }
   ];
 
   // ---- state ---------------------------------------------------------------
@@ -64,7 +65,7 @@
   let errorMsg = '';
 
   let active: Focus = 'Push';
-  const FOCUSES: Focus[] = ['Push', 'Pull', 'Legs'];
+  const FOCUSES: Focus[] = ['Push', 'Pull', 'Legs', 'Core'];
   let expanded: Record<string, boolean> = {};
 
   function today(): string {
@@ -656,9 +657,7 @@
       <button
         class="day-chip"
         class:active={row.focus === active}
-        class:rest={row.focus === 'Optional'}
-        on:click={() => row.focus !== 'Optional' && selectDay(row.focus)}
-        disabled={row.focus === 'Optional'}
+        on:click={() => selectDay(row.focus)}
         title={row.detail}
       >
         <span class="chip-day">{row.day}</span>
@@ -1202,7 +1201,6 @@
   }
   .day-chip:hover:not(:disabled) { border-color: var(--blueprint); }
   .day-chip.active { border-color: var(--blueprint); background: var(--blueprint-tint); }
-  .day-chip.rest { opacity: 0.5; cursor: default; }
   .chip-day {
     font-family: var(--font-mono);
     font-size: 0.6rem;

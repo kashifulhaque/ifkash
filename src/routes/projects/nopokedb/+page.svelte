@@ -473,7 +473,7 @@ db.close()</code></pre>
     font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, monospace;
     font-size: 0.875rem;
     font-weight: 600;
-    color: var(--paper-dim);
+    color: var(--blueprint);
     margin-bottom: 0.375rem;
   }
 

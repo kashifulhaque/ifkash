@@ -11,24 +11,24 @@
   --font-mono: 'JetBrains Mono', ui-monospace, 'Consolas', monospace;
   --font-heading: var(--font-display);
 
-  --bg: #0d0b08;
-  --bg-surface: #15130f;
-  --bg-surface-hover: #1d1a14;
+  --bg: #0b0a08;
+  --bg-surface: #171410;
+  --bg-surface-hover: #211d16;
 
-  --ink: #d6d2c4;
-  --ink-soft: #9a958a;
+  --ink: #ded9cb;
+  --ink-soft: #a29d91;
   --ink-mute: #6b6760;
 
   --rule: #d6d2c4;
   --rule-soft: rgba(214, 210, 196, 0.18);
   --paper-rule: rgba(214, 210, 196, 0.06);
 
-  --blueprint: #ebe5d2;
-  --blueprint-tint: rgba(235, 229, 210, 0.08);
-  --blueprint-tint-strong: rgba(235, 229, 210, 0.18);
+  --blueprint: #f4efdf;
+  --blueprint-tint: rgba(244, 239, 223, 0.07);
+  --blueprint-tint-strong: rgba(244, 239, 223, 0.2);
 
-  --status-complete: #ebe5d2;
-  --status-in-progress: #9a958a;
+  --status-complete: #f4efdf;
+  --status-in-progress: #a29d91;
   --status-planned: #3d3a32;
   --warn: #c5a672;
 
@@ -43,7 +43,7 @@
   --text-muted: var(--ink-soft);
   --border: var(--rule-soft);
   --accent: var(--blueprint);
-  --accent-hover: #f5efe0;
+  --accent-hover: #fffdf5;
   --secondary: var(--blueprint);
   --complete: var(--status-complete);
   --planned: var(--status-planned);
@@ -108,7 +108,7 @@
   --agent-fab-hover-color: var(--ink);
   --agent-fab-hover-border: var(--rule);
   --agent-fab-shadow: rgba(0, 0, 0, 0.4);
-  --agent-fab-pulse-shadow: rgba(235, 229, 210, 0.12);
+  --agent-fab-pulse-shadow: rgba(244, 239, 223, 0.12);
 }
 
 /* Shared primitives */
@@ -167,9 +167,6 @@ body {
   line-height: 1.62;
   color: var(--ink);
   background-color: var(--bg);
-  background-image: radial-gradient(var(--paper-rule) 1px, transparent 1px);
-  background-size: 16px 16px;
-  background-attachment: fixed;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

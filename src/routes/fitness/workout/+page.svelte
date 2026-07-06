@@ -1506,15 +1506,6 @@
   .fold[open] summary::before { content: '– '; }
   .fold[open] summary { color: var(--text-primary); border-bottom: 1px solid var(--border-subtle); }
 
-  .notes-body {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1.25rem;
-    padding: 1.25rem 1rem;
-  }
-  .note h3 { font-size: 0.95rem; font-weight: 600; color: var(--text-primary); margin: 0 0 0.4rem; }
-  .note p { font-size: 0.875rem; line-height: 1.6; color: var(--text-secondary); margin: 0; }
-
   .fold-body { padding: 1.25rem 1rem; }
 
   .spark { width: 100%; height: 64px; }
@@ -1600,7 +1591,6 @@
     .page-title { font-size: 1.75rem; }
     .week-strip { grid-template-columns: repeat(3, 1fr); gap: 0.4rem; }
     .day-chip { padding: 0.5rem 0.5rem; }
-    .notes-body { grid-template-columns: 1fr; gap: 1rem; }
 
     /* Session bar: stack date + bodyweight so neither gets squeezed. */
     .session-bar { gap: 0.75rem; }

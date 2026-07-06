@@ -15,13 +15,11 @@ cargo install -q worker-build
 
 [tasks."api:build"]
 dir = "api"
-depends = ["api:prep"]
 description = "Build the Worker (release) using worker-build"
 run = "worker-build --release"
 
 [tasks."api:dev"]
 dir = "api"
-depends = ["api:prep"]
 description = "Run the Worker locally with wrangler + Miniflare (KV persisted)"
 run = "npx wrangler dev --persist-to .wrangler/state"
 

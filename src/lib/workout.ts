@@ -4,9 +4,9 @@
 export type Exercise = { name: string; scheme: string };
 
 export const PUSH: Exercise[] = [
-  { name: 'Smith machine bench press', scheme: '4×8' },
-  { name: 'Shoulder press (machine)', scheme: '3×10' },
-  { name: 'Incline dumbbell press (adjustable bench)', scheme: '3×10' },
+  { name: 'Bench press', scheme: '4×8' },
+  { name: 'Shoulder press', scheme: '3×10' },
+  { name: 'Incline dumbbell press', scheme: '3×10' },
   { name: 'Pec fly', scheme: '3×12' },
   { name: 'Cable tricep pushdown', scheme: '3×12' }
 ];
@@ -14,27 +14,26 @@ export const PUSH: Exercise[] = [
 export const PULL: Exercise[] = [
   { name: 'Lat pulldown', scheme: '3×10' },
   { name: 'Row machine', scheme: '3×10' },
-  { name: 'Deadlift (smith) — ramping pyramid to a top single', scheme: '50×5 60×3 80×2 90×1 100×1' },
-  { name: 'Cable rows / face pulls', scheme: '3×12' },
+  { name: 'Deadlift', scheme: '50×5 60×3 80×2 90×1 100×1' },
+  { name: 'Face pulls', scheme: '3×12' },
   { name: 'Rear delts', scheme: '3×15' },
-  { name: 'Dumbbell bicep curls', scheme: '3×12' }
+  { name: 'Bicep curls', scheme: '3×12' }
 ];
 
 export const LEGS: Exercise[] = [
-  { name: 'Smith barbell squat', scheme: '4×8' },
+  { name: 'Barbell squat', scheme: '4×8' },
   { name: 'Leg press', scheme: '3×10' },
   { name: 'Leg curls', scheme: '3×12' },
   { name: 'Leg extension', scheme: '3×12' },
-  { name: 'Standing calf raise', scheme: '3×15' },
-  { name: 'Cable crunch (cable machine)', scheme: '3×15' }
+  { name: 'Crunches', scheme: '3×15' }
 ];
 
 // Day 6 — lighter optional session: core work, with extra cardio as the main event.
 export const CORE: Exercise[] = [
   { name: 'Plank', scheme: '3×60s' },
   { name: 'Hanging leg raise', scheme: '3×12' },
-  { name: 'Cable crunch (cable machine)', scheme: '3×15' },
-  { name: 'Russian twists (weighted)', scheme: '3×20' },
+  { name: 'Crunches', scheme: '3×15' },
+  { name: 'Russian twists', scheme: '3×20' },
   { name: 'Back extension', scheme: '3×15' }
 ];
 

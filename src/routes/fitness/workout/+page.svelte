@@ -955,55 +955,6 @@
     </div>
   {/if}
 
-  <!-- Reference / rationale, collapsed by default. -->
-  <details class="fold">
-    <summary>Notes &amp; rationale</summary>
-    <div class="notes-body">
-      <div class="note">
-        <h3>Cardio rule</h3>
-        <p>
-          15–20 min post-lift, every day. Rotate cycle / crosstrainer / treadmill so it
-          never gets boring. Never before lifting — it kills strength on the compounds.
-        </p>
-      </div>
-      <div class="note">
-        <h3>Progressive overload</h3>
-        <p>
-          The whole game. Same weight every week = no growth. Add weight or reps in small
-          steps, every week.
-        </p>
-      </div>
-      <div class="note">
-        <h3>On the numbers</h3>
-        <p>
-          178–179 cm, 86–90 kg fluctuating is mostly water and food noise. Ignore daily
-          swings, track the weekly average. ~88 kg → 80 kg in two months means ~1 kg/week —
-          aggressive but doable with protein-heavy eating plus lifting. Don't go below
-          0.7–1 kg/week or you'll burn muscle.
-        </p>
-      </div>
-      <div class="note">
-        <h3>Quick math check</h3>
-        <p>
-          8 kg in 8 weeks = 1 kg/week ≈ 1,100 kcal/day deficit — steep while lifting hard.
-          Better: a 700–800 kcal deficit leaning on protein lands loss closer to
-          0.7–0.8 kg/week and lets recomp do the rest.
-        </p>
-      </div>
-      <div class="note">
-        <h3>Why the plan got leaner</h3>
-        <p>
-          Trimmed each day to its essentials. Rear delts moved to Pull day — they're a
-          pulling muscle, so anatomically that's where they belong. Abs consolidated onto
-          Legs day, since you're less smashed after legs than after pull. Lat pulldown and
-          row machine dropped to 3×10 from 4×10 — still plenty of back volume. Walking
-          lunges cut entirely: squat + leg press is already redundant quad work, and lunges
-          were the first thing getting skipped anyway.
-        </p>
-      </div>
-    </div>
-  </details>
-
   {#if signedIn}
     <!-- Bodyweight trend -->
     <details class="fold">

@@ -15,3 +15,5 @@ api.old/
 
 # DevContainer logs
 .devcontainer/logs/
+
+.claude/

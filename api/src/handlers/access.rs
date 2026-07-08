@@ -40,7 +40,9 @@ pub fn is_authorized(req: &Request, ctx: &RouteContext<()>) -> bool {
 
 /// Dev-only bypass driven by the `LOCAL_DEV` flag in `api/.dev.vars`. It is
 /// never set in production, so Cloudflare Access stays enforced when deployed.
-fn is_local_dev(ctx: &RouteContext<()>) -> bool {
+/// Shared by the Cloudflare-Access (editor) check and the per-user Google ID
+/// token check used by the fitness handlers.
+pub fn is_local_dev(ctx: &RouteContext<()>) -> bool {
     let truthy = |v: String| matches!(v.as_str(), "1" | "true" | "TRUE");
     if let Ok(v) = ctx.secret("LOCAL_DEV") {
         if truthy(v.to_string()) {

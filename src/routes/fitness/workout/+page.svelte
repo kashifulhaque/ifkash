@@ -8,6 +8,7 @@
   import { env } from '$env/dynamic/public';
   import { LogOut, Check, Loader, Plus, Trash2 } from 'lucide-svelte';
   import { setToken, loadToken, AuthError } from '$lib/splitterApi';
+  import { isLocalDev } from '$lib/apiBase';
   import { scheduleTokenRefresh } from '$lib/fitnessAuth';
   import { workoutApi, type ExercisePayload, type CardioPayload } from '$lib/workoutApi';
   import { profileApi } from '$lib/profileApi';
@@ -605,6 +606,14 @@
   onMount(async () => {
     exercises = templateRows(active);
     cardioRows = [defaultCardio(active)];
+    if (isLocalDev()) {
+      // Local dev: the Worker bypasses Google auth (LOCAL_DEV in api/.dev.vars),
+      // so skip sign-in entirely and boot straight into the data.
+      setToken('local-dev');
+      signedIn = true;
+      await bootSignedIn();
+      return;
+    }
     await loadGis();
     if (loadToken()) {
       signedIn = true;

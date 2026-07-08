@@ -17,6 +17,7 @@
     type DaySummary
   } from '$lib/mealsApi';
   import { profileApi } from '$lib/profileApi';
+  import { isLocalDev } from '$lib/apiBase';
   import { scheduleTokenRefresh } from '$lib/fitnessAuth';
   import NutritionRings from '$lib/components/NutritionRings.svelte';
   import {
@@ -27,6 +28,7 @@
   } from '$lib/fitnessMetrics';
 
   const clientId = env.PUBLIC_GOOGLE_CLIENT_ID ?? '';
+  const localDev = isLocalDev();
 
   let signedIn = false;
   let gisButton: HTMLDivElement;
@@ -260,6 +262,15 @@
   // ---- lifecycle -----------------------------------------------------------
 
   onMount(async () => {
+    if (localDev) {
+      // Local dev: the Worker bypasses Google auth (LOCAL_DEV in api/.dev.vars),
+      // so skip sign-in entirely and boot straight into the data.
+      setToken('local-dev');
+      signedIn = true;
+      refresh();
+      loadProfile();
+      return;
+    }
     if (!clientId) return;
     // Load GIS regardless so the silent token-refresh prompt can fire even when
     // we're already signed in (the sign-in button itself stays hidden).
@@ -304,7 +315,7 @@
     <p class="error">{errorMsg}</p>
   {/if}
 
-  {#if !clientId}
+  {#if !clientId && !localDev}
     <p class="note">Set <code>PUBLIC_GOOGLE_CLIENT_ID</code> to enable sign-in.</p>
   {:else if !signedIn}
     <div class="gate">

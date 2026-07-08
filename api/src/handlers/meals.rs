@@ -1,4 +1,5 @@
-use super::google_auth::verify_google;
+use super::access::is_local_dev;
+use super::google_auth::{verify_google, GoogleIdentity};
 use base64::{engine::general_purpose::STANDARD, Engine as _};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -20,15 +21,29 @@ async fn resolve_owner(
     req: &Request,
     ctx: &RouteContext<()>,
 ) -> Result<std::result::Result<i64, Response>> {
-    let auth = req.headers().get("Authorization")?.unwrap_or_default();
-    let token = auth.strip_prefix("Bearer ").unwrap_or(auth.as_str()).trim();
-    if token.is_empty() {
-        return Ok(Err(Response::error("unauthorized", 401)?));
-    }
-    let client_id = ctx.env.var("GOOGLE_CLIENT_ID")?.to_string();
-    let info = match verify_google(token, &client_id).await {
-        Ok(i) => i,
-        Err(resp) => return Ok(Err(resp)),
+    let info = if is_local_dev(ctx) {
+        // Local dev bypass: synthesize a fixed identity instead of verifying a
+        // Google ID token, so the fitness pages work without signing in. Driven
+        // by LOCAL_DEV in api/.dev.vars, which is never present in production.
+        GoogleIdentity {
+            aud: String::new(),
+            iss: String::new(),
+            sub: "local-dev-user".to_string(),
+            email: Some("dev@localhost".to_string()),
+            name: Some("Local Dev".to_string()),
+            picture: None,
+        }
+    } else {
+        let auth = req.headers().get("Authorization")?.unwrap_or_default();
+        let token = auth.strip_prefix("Bearer ").unwrap_or(auth.as_str()).trim();
+        if token.is_empty() {
+            return Ok(Err(Response::error("unauthorized", 401)?));
+        }
+        let client_id = ctx.env.var("GOOGLE_CLIENT_ID")?.to_string();
+        match verify_google(token, &client_id).await {
+            Ok(i) => i,
+            Err(resp) => return Ok(Err(resp)),
+        }
     };
     let name = info.name.unwrap_or_else(|| "anonymous".to_string());
     let email = info.email.unwrap_or_default();

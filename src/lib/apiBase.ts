@@ -30,3 +30,13 @@ export function getApiBase(
 
   return PROD_BASE;
 }
+
+/** True when the app is talking to the local Worker (localhost), where auth is
+ *  bypassed via the LOCAL_DEV flag in api/.dev.vars. Considers the same
+ *  ?api=/api_env overrides as getApiBase, so `?api=prod` on localhost correctly
+ *  keeps Google auth enforced. */
+export function isLocalDev(
+  win: Window | undefined = typeof window !== 'undefined' ? window : undefined
+): boolean {
+  return getApiBase(win) === DEV_BASE;
+}

@@ -1,6 +1,8 @@
 // Shared workout data + helpers. The day templates live here so the static plan
 // page (/workout) and the tracker (/workout/log) read from one source of truth.
 
+import { strengthKcal, metKcal } from './fitnessMetrics';
+
 export type Exercise = { name: string; scheme: string };
 
 export const PUSH: Exercise[] = [
@@ -170,4 +172,31 @@ export function weeklyAverages(entries: BodyweightEntry[]): WeeklyAverage[] {
       avgKg: Math.round((b.sum / b.count / 1000) * 10) / 10,
       count: b.count
     }));
+}
+
+// ---- energy burn (MET-based, mirrors the workout page's live estimate) ------
+
+/**
+ * Calories burnt in a single saved session: lifting (strengthKcal per logged
+ * set) + cardio (stored kcal, falling back to a MET estimate from kind +
+ * minutes at `weightKg` when the row has no kcal). Mirrors the per-session calc
+ * on /fitness/workout so the meals page can reuse the same number.
+ */
+export function sessionBurnKcal(weightKg: number, detail: SessionDetail): number {
+  const lift = strengthKcal(weightKg, detail.sets.length);
+  const card = (detail.cardio ?? []).reduce((n, c) => {
+    if (c.kcal > 0) return n + c.kcal;
+    if (c.minutes > 0) return n + metKcal(cardioMet(c.kind), weightKg, c.minutes);
+    return n;
+  }, 0);
+  return lift + card;
+}
+
+/**
+ * Total calories burnt across every session on a given date — sum of
+ * `sessionBurnKcal` over `sessions`. Used by the meals page to show today's
+ * logged workout burn alongside the TDEE whole-day estimate.
+ */
+export function dayBurnKcal(weightKg: number, sessions: SessionDetail[]): number {
+  return sessions.reduce((n, s) => n + sessionBurnKcal(weightKg, s), 0);
 }

@@ -6,7 +6,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { env } from '$env/dynamic/public';
-  import { Camera, ImageUp, Trash2, LogOut, Loader, Save, Utensils } from 'lucide-svelte';
+  import { Camera, ImageUp, Trash2, LogOut, Loader, Save, Utensils, Flame, Dumbbell } from 'lucide-svelte';
   import {
     mealsApi,
     setToken,
@@ -16,16 +16,28 @@
     type Totals,
     type DaySummary
   } from '$lib/mealsApi';
+  // The workout auth helpers reuse the splitter's credential store. We mirror
+  // the meals Google token into it on sign-in so workoutApi's calls (which read
+  // from that store) authenticate as the same user from the meals page too.
+  import { setToken as setSplitterToken, loadToken as loadSplitterToken } from '$lib/splitterApi';
   import { profileApi } from '$lib/profileApi';
+  import { workoutApi } from '$lib/workoutApi';
   import { isLocalDev } from '$lib/apiBase';
   import { scheduleTokenRefresh } from '$lib/fitnessAuth';
   import NutritionRings from '$lib/components/NutritionRings.svelte';
   import {
     DEFAULT_PROFILE,
+    computeMetrics,
     nutritionTargets,
     type Profile,
     type NutritionTargets
   } from '$lib/fitnessMetrics';
+  import {
+    dayBurnKcal,
+    type SessionSummary,
+    type SessionDetail,
+    type BodyweightEntry
+  } from '$lib/workout';
 
   const clientId = env.PUBLIC_GOOGLE_CLIENT_ID ?? '';
   const localDev = isLocalDev();
@@ -75,10 +87,14 @@
 
   function onCredential(resp: { credential: string }) {
     setToken(resp.credential);
+    // Same Google ID token — mirror it into the splitter store so the shared
+    // workoutApi (which reads from there) authenticates from the meals page.
+    setSplitterToken(resp.credential);
     signedIn = true;
     scheduleRefresh();
     refresh();
     loadProfile();
+    loadWorkoutSummary();
   }
 
   function renderGoogleButton() {
@@ -107,9 +123,13 @@
 
   function signOut() {
     setToken(null);
+    setSplitterToken(null);
     signedIn = false;
     meals = [];
     totals = { calories: 0, protein_g: 0, carbs_g: 0, fat_g: 0 };
+    workoutSessionDetails = [];
+    sessions = [];
+    bodyweights = [];
     setTimeout(renderGoogleButton, 0);
   }
 
@@ -143,6 +163,8 @@
       loadPhotos();
     }
     loadDays();
+    // The active day changed → today's logged workout burn may differ.
+    refreshWorkoutBurn();
   }
 
   /** Fetch each meal's photo (auth'd) into an object URL for <img>. */
@@ -179,6 +201,56 @@
     const p = await guard(() => profileApi.get(token));
     if (p) profile = p;
   }
+
+  // ---- workout summary (powers the day's "burnt" estimate) ------------------
+  // Pulled from the workout API so the meals page can answer "how much have I
+  // eaten vs. burnt today?" without leaving the meal tracker.
+
+  let sessions: SessionSummary[] = [];
+  let bodyweights: BodyweightEntry[] = [];
+  // Details for every session row whose date matches the active meal day — used
+  // to Sum logged lifting + cardio burn for the whole-day energy estimate.
+  let workoutSessionDetails: SessionDetail[] = [];
+
+  async function loadWorkoutSummary() {
+    const [s, b] = await Promise.all([
+      guard(() => workoutApi.listSessions()),
+      guard(() => workoutApi.listBodyweight())
+    ]);
+    if (s) sessions = s;
+    if (b) bodyweights = b;
+    await refreshWorkoutBurn();
+  }
+
+  /** Fetch the details for every session logged on the active day and stash
+   *  them so the reactive `workoutBurn` can total them. */
+  async function refreshWorkoutBurn() {
+    const todays = sessions.filter((s) => s.date === date);
+    const details = await Promise.all(
+      todays.map((s) => guard(() => workoutApi.getSession(s.id)))
+    );
+    workoutSessionDetails = details.filter((d): d is SessionDetail => !!d);
+  }
+
+  /** Bodyweight in kg for the active day, falling back to the latest entry and
+   *  then the profile's last-known weight so we always have something for the
+   *  BMR/TDEE math. */
+  $: burnWeightKg = (() => {
+    const bwToday = bodyweights.find((b) => b.date === date);
+    if (bwToday) return bwToday.weight_g / 1000;
+    if (bodyweights.length) return bodyweights[bodyweights.length - 1].weight_g / 1000;
+    return (profile.latest_weight_g ?? 0) / 1000;
+  })();
+  $: metrics = burnWeightKg > 0 ? computeMetrics(burnWeightKg, profile) : null;
+  $: workoutBurn = burnWeightKg > 0 ? dayBurnKcal(burnWeightKg, workoutSessionDetails) : 0;
+  // Whole-day burn estimate: TDEE (maintenance = BMR × activity) plus the
+  // kcal explicitly logged from today's workout sessions. TDEE's activity
+  // factor already covers general daily movement; adding the logged workout
+  // sessions gives credit for an above-average training day.
+  $: totalBurn = (metrics?.tdee ?? 0) + workoutBurn;
+  $: eaten = totals.calories ?? 0;
+  $: netCalories = Math.round(eaten - totalBurn);
+  $: burnPct = totalBurn > 0 ? Math.min(1, eaten / totalBurn) : 0;
 
   // ---- photo → downscale → analyze ----------------------------------------
 
@@ -266,9 +338,11 @@
       // Local dev: the Worker bypasses Google auth (LOCAL_DEV in api/.dev.vars),
       // so skip sign-in entirely and boot straight into the data.
       setToken('local-dev');
+      setSplitterToken('local-dev');
       signedIn = true;
       refresh();
       loadProfile();
+      loadWorkoutSummary();
       return;
     }
     if (!clientId) return;
@@ -282,9 +356,13 @@
     const stored = loadToken();
     if (stored) {
       signedIn = true;
+      // Reuse whatever credential the splitter/workout page may already hold
+      // so workoutApi authenticates from the meals session too.
+      if (!loadSplitterToken()) setSplitterToken(stored);
       scheduleRefresh();
       refresh();
       loadProfile();
+      loadWorkoutSummary();
     } else {
       renderGoogleButton();
     }
@@ -386,6 +464,44 @@
         <p class="disclaimer">Log a bodyweight on the Workout page to see goal rings.</p>
       {/if}
     </section>
+
+    <!-- Energy balance — eaten vs whole-day burn (TDEE + today's logged workout). -->
+    {#if metrics}
+      <section class="card energy">
+        <h3 class="panel-title"><Flame size={15} /> Energy balance</h3>
+        <div class="energy-grid">
+          <div class="energy-cell in">
+            <span class="e-val">{round(totals.calories)}</span>
+            <span class="e-label">Eaten</span>
+            <span class="e-sub">kcal today</span>
+          </div>
+          <div class="energy-cell out tdee">
+            <span class="e-val">{metrics.tdee}</span>
+            <span class="e-label">TDEE</span>
+            <span class="e-sub">maintenance · BMR {metrics.bmr}</span>
+          </div>
+          <div class="energy-cell out">
+            <span class="e-val">{workoutBurn}</span>
+            <span class="e-label">Workout</span>
+            <span class="e-sub">{workoutSessionDetails.length} {workoutSessionDetails.length === 1 ? 'session' : 'sessions'} logged</span>
+          </div>
+          <div class="energy-cell sum" class:surplus={netCalories > 0} class:deficit={netCalories < 0}>
+            <span class="e-val">{netCalories > 0 ? '+' : ''}{netCalories}</span>
+            <span class="e-label">{netCalories === 0 ? 'Balanced' : netCalories > 0 ? 'Surplus' : 'Deficit'}</span>
+            <span class="e-sub">of {round(totalBurn)}</span>
+          </div>
+        </div>
+        <div class="balance-bar" title="{round(eaten)} eaten / {round(totalBurn)} burnt">
+          <div class="balance-fill" style="width: {Math.round(burnPct * 100)}%"></div>
+        </div>
+        <p class="energy-note">
+          Whole-day estimate at {burnWeightKg.toFixed(1)} kg — <strong>{round(totals.calories)}</strong>
+          eaten vs <strong>{round(totalBurn)}</strong> burnt
+          (TDEE {metrics.tdee}{workoutBurn > 0 ? ` + ${workoutBurn} workout` : ''}).
+          <a href="/fitness/workout" class="energy-link">Log a workout <Dumbbell size={12} /></a>
+        </p>
+      </section>
+    {/if}
 
     <!-- meal log -->
     {#if loading}
@@ -541,6 +657,40 @@
   .tot.cal { border-color: var(--blueprint); }
   .tval { font-family: var(--font-mono); font-size: 1.15rem; color: var(--ink); }
   .tlabel { font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-mute); }
+
+  /* energy balance card */
+  .energy-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .energy-cell {
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+    border: 1px solid var(--rule-soft); padding: 12px 6px;
+  }
+  .energy-cell.tdee { border-color: var(--rule-soft); }
+  .energy-cell.sum { border-color: var(--blueprint); background: var(--blueprint-tint, rgba(110,168,254,0.08)); }
+  .energy-cell.deficit { border-color: #5bb98c; }
+  .energy-cell.surplus { border-color: #e06c6c; }
+  .e-val { font-family: var(--font-mono); font-size: 1.15rem; color: var(--ink); }
+  .energy-cell.deficit .e-val { color: #5bb98c; }
+  .energy-cell.surplus .e-val { color: #e06c6c; }
+  .e-label { font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-mute); }
+  .e-sub { font-family: var(--font-mono); font-size: 0.6rem; color: var(--ink-mute); text-align: center; }
+
+  .balance-bar {
+    margin: 12px 0 0; height: 8px; border: 1px solid var(--rule-soft);
+    background: var(--bg); overflow: hidden;
+  }
+  .balance-fill { height: 100%; background: var(--blueprint); transition: width 0.4s ease; }
+
+  .energy-note { font-size: 0.82rem; line-height: 1.5; color: var(--ink-mute); margin: 10px 0 0; }
+  .energy-note strong { color: var(--ink); }
+  .energy-link {
+    display: inline-flex; align-items: center; gap: 4px; margin-left: 6px;
+    color: var(--blueprint); border-bottom: 1px solid transparent; font-family: var(--font-mono); font-size: 0.72rem;
+  }
+  .energy-link:hover { border-bottom-color: var(--blueprint); }
+
+  @media (max-width: 520px) {
+    .energy-grid { grid-template-columns: repeat(2, 1fr); }
+  }
 
   /* meal list */
   .meal-list { list-style: none; margin: 0; padding: 0; }

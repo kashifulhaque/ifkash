@@ -80,7 +80,9 @@ export class Game implements PerkContext {
   private canvas: HTMLCanvasElement;
   private raf = 0;
   private lastTime = 0;
-  private paused = false;
+  // The briefing screen is shown before a run begins. Keep the world inert until
+  // the player explicitly deploys so enemies cannot damage them behind the UI.
+  private paused = true;
   private promptShown: string | null = null;
   private disposed = false;
 

@@ -32,7 +32,9 @@
     CARDIO_OPTIONS,
     CARDIO_DEFAULTS,
     cardioMet,
+    exerciseKind,
     type DayLabel,
+    type ExerciseKind,
     type SessionSummary,
     type SessionDetail,
     type BodyweightEntry,
@@ -85,7 +87,7 @@
   // A set's `suggested` flag means it was prefilled from a *previous* day as a
   // hint — it is excluded from saves until the user actually edits it.
   type SetRow = { weight: string; reps: string; suggested: boolean };
-  type ExerciseRow = { name: string; scheme: string; sets: SetRow[] };
+  type ExerciseRow = { name: string; scheme: string; kind: ExerciseKind; sets: SetRow[] };
   let exercises: ExerciseRow[] = [];
 
   // Cardio bouts logged for the session. `kcalEdited` tracks whether the user
@@ -144,6 +146,7 @@
     return DAY_TEMPLATES[focus].map((ex) => ({
       name: ex.name,
       scheme: ex.scheme,
+      kind: ex.kind,
       sets: Array.from({ length: setsFromScheme(ex.scheme) }, blankSet)
     }));
   }
@@ -297,7 +300,7 @@
       let row = rows.find((r) => r.name === g.exercise);
       if (!row) {
         if (!committed) continue; // don't invent off-template rows from suggestions
-        row = { name: g.exercise, scheme: '', sets: [] };
+        row = { name: g.exercise, scheme: '', kind: exerciseKind(g.exercise), sets: [] };
         rows.push(row);
       }
       g.sets.forEach((s, j) => {
@@ -340,7 +343,7 @@
     scheduleSave();
   }
   function addExercise() {
-    exercises = [...exercises, { name: '', scheme: '', sets: [blankSet()] }];
+    exercises = [...exercises, { name: '', scheme: '', kind: 'weighted', sets: [blankSet()] }];
   }
   function removeExercise(i: number) {
     exercises = exercises.filter((_, idx) => idx !== i);
@@ -513,7 +516,8 @@
     }
   }
 
-  function setLabel(reps: number, weight_g: number): string {
+  function setLabel(reps: number, weight_g: number, name: string): string {
+    if (exerciseKind(name) === 'time') return `${reps}s`;
     return weight_g > 0 ? `${gramsToKg(weight_g)}kg × ${reps}` : `BW × ${reps}`;
   }
 
@@ -841,24 +845,27 @@
                 {#each ex.sets as s, j}
                   <div class="set-row">
                     <span class="set-num">{j + 1}</span>
+                    {#if ex.kind === 'weighted'}
+                      <input
+                        class="num"
+                        class:suggested={s.suggested}
+                        type="number"
+                        inputmode="decimal"
+                        min="0"
+                        step="0.5"
+                        placeholder="kg"
+                        bind:value={s.weight}
+                        on:input={() => touchSet(s)}
+                      />
+                      <span class="times">×</span>
+                    {/if}
                     <input
                       class="num"
                       class:suggested={s.suggested}
                       type="number"
-                      inputmode="decimal"
-                      min="0"
-                      step="0.5"
-                      placeholder="kg"
-                      bind:value={s.weight}
-                      on:input={() => touchSet(s)}
-                    />
-                    <span class="times">×</span>
-                    <input
-                      class="num"
-                      type="number"
                       inputmode="numeric"
                       min="0"
-                      placeholder="reps"
+                      placeholder={ex.kind === 'time' ? 'sec' : 'reps'}
                       bind:value={s.reps}
                       on:input={() => touchSet(s)}
                     />
@@ -1021,7 +1028,7 @@
                           <span class="detail-ex-name">{g.exercise}</span>
                           <div class="detail-sets">
                             {#each g.sets as st}
-                              <span class="set-badge">{setLabel(st.reps, st.weight_g)}</span>
+                              <span class="set-badge">{setLabel(st.reps, st.weight_g, g.exercise)}</span>
                             {/each}
                           </div>
                         </div>

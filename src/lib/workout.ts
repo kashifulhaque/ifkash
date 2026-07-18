@@ -3,40 +3,47 @@
 
 import { strengthKcal, metKcal } from './fitnessMetrics';
 
-export type Exercise = { name: string; scheme: string };
+// `kind` drives how the set-row UI renders:
+//  - 'weighted'   → weight × reps inputs (e.g. bench press)
+//  - 'bodyweight' → reps only; weight hidden (e.g. crunches)
+//  - 'time'       → seconds only; weight hidden (e.g. plank hold)
+// The persisted shape is unchanged (weight_g + reps); for time exercises the
+// seconds go in the `reps` column and weight_g stays 0.
+export type ExerciseKind = 'weighted' | 'bodyweight' | 'time';
+export type Exercise = { name: string; scheme: string; kind: ExerciseKind };
 
 export const PUSH: Exercise[] = [
-  { name: 'Bench press', scheme: '4×8' },
-  { name: 'Shoulder press', scheme: '3×10' },
-  { name: 'Incline dumbbell press', scheme: '3×10' },
-  { name: 'Pec fly', scheme: '3×12' },
-  { name: 'Cable tricep pushdown', scheme: '3×12' }
+  { name: 'Bench press', scheme: '4×8', kind: 'weighted' },
+  { name: 'Shoulder press', scheme: '3×10', kind: 'weighted' },
+  { name: 'Incline dumbbell press', scheme: '3×10', kind: 'weighted' },
+  { name: 'Pec fly', scheme: '3×12', kind: 'weighted' },
+  { name: 'Cable tricep pushdown', scheme: '3×12', kind: 'weighted' }
 ];
 
 export const PULL: Exercise[] = [
-  { name: 'Lat pulldown', scheme: '3×10' },
-  { name: 'Row machine', scheme: '3×10' },
-  { name: 'Deadlift', scheme: '50×5 60×3 80×2 90×1 100×1' },
-  { name: 'Face pulls', scheme: '3×12' },
-  { name: 'Rear delts', scheme: '3×15' },
-  { name: 'Bicep curls', scheme: '3×12' }
+  { name: 'Lat pulldown', scheme: '3×10', kind: 'weighted' },
+  { name: 'Row machine', scheme: '3×10', kind: 'weighted' },
+  { name: 'Deadlift', scheme: '50×5 60×3 80×2 90×1 100×1', kind: 'weighted' },
+  { name: 'Face pulls', scheme: '3×12', kind: 'weighted' },
+  { name: 'Rear delts', scheme: '3×15', kind: 'weighted' },
+  { name: 'Bicep curls', scheme: '3×12', kind: 'weighted' }
 ];
 
 export const LEGS: Exercise[] = [
-  { name: 'Barbell squat', scheme: '4×8' },
-  { name: 'Leg press', scheme: '3×10' },
-  { name: 'Leg curls', scheme: '3×12' },
-  { name: 'Leg extension', scheme: '3×12' },
-  { name: 'Crunches', scheme: '3×15' }
+  { name: 'Barbell squat', scheme: '4×8', kind: 'weighted' },
+  { name: 'Leg press', scheme: '3×10', kind: 'weighted' },
+  { name: 'Leg curls', scheme: '3×12', kind: 'weighted' },
+  { name: 'Leg extension', scheme: '3×12', kind: 'weighted' },
+  { name: 'Crunches', scheme: '3×15', kind: 'bodyweight' }
 ];
 
 // Day 6 — lighter optional session: core work, with extra cardio as the main event.
 export const CORE: Exercise[] = [
-  { name: 'Plank', scheme: '3×60s' },
-  { name: 'Hanging leg raise', scheme: '3×12' },
-  { name: 'Crunches', scheme: '3×15' },
-  { name: 'Russian twists', scheme: '3×20' },
-  { name: 'Back extension', scheme: '3×15' }
+  { name: 'Plank', scheme: '3×60s', kind: 'time' },
+  { name: 'Hanging leg raise', scheme: '3×12', kind: 'bodyweight' },
+  { name: 'Crunches', scheme: '3×15', kind: 'bodyweight' },
+  { name: 'Russian twists', scheme: '3×20', kind: 'bodyweight' },
+  { name: 'Back extension', scheme: '3×15', kind: 'bodyweight' }
 ];
 
 export type DayLabel = 'Push' | 'Pull' | 'Legs' | 'Core';
@@ -47,6 +54,21 @@ export const DAY_TEMPLATES: Record<DayLabel, Exercise[]> = {
   Legs: LEGS,
   Core: CORE
 };
+
+// Name → kind lookup across every template, so history / restored off-template
+// rows can be rendered with the right units without a DB column. Defaults to
+// 'weighted' for custom-added exercises not in any template.
+const EXERCISE_KIND: Record<string, ExerciseKind> = (() => {
+  const m: Record<string, ExerciseKind> = {};
+  for (const list of Object.values(DAY_TEMPLATES)) {
+    for (const ex of list) m[ex.name] = ex.kind;
+  }
+  return m;
+})();
+
+export function exerciseKind(name: string): ExerciseKind {
+  return EXERCISE_KIND[name] ?? 'weighted';
+}
 
 /**
  * How many set rows a scheme renders. Normal schemes lead with the set count

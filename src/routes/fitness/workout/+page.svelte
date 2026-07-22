@@ -966,7 +966,7 @@
       </div>
       <p class="burn-note">
         Rough estimate at {metricKg.toFixed(1)} kg — lifting assumes ~2.5 min per logged set at
-        vigorous effort. Cardio counts your logged (or estimated) kcal.
+        moderate effort (8-15 reps). Cardio counts your logged (or estimated) kcal.
       </p>
     </div>
   {/if}

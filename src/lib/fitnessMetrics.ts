@@ -84,9 +84,12 @@ export function metKcal(met: number, weightKg: number, minutes: number): number 
   return Math.round(((met * 3.5 * weightKg) / 200) * minutes);
 }
 
-// Vigorous resistance training sits around 5 MET. We don't time the lift, so
-// estimate gym time as ~2.5 min per logged set (the work plus its rest).
-const STRENGTH_MET = 5.0;
+// General resistance training with multiple exercises at 8-15 reps lands at
+// ~3.5 MET (Compendium of Physical Activities code 20024). We don't time the
+// lift, so estimate gym time as ~2.5 min per logged set (the work plus its
+// rest). Earlier this used 5.0 MET (the "explosive squats" entry), which
+// over-counted a hypertrophy session by ~40%.
+const STRENGTH_MET = 3.5;
 const MINUTES_PER_SET = 2.5;
 
 /** Rough burn for a strength session from its total number of logged sets. */

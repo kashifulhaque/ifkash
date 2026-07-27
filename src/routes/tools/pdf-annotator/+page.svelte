@@ -930,8 +930,7 @@
   .title {
     font-family: var(--font-display);
     font-size: 1.25rem;
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
+    letter-spacing: -0.005em;
     color: var(--ink);
     white-space: nowrap;
   }

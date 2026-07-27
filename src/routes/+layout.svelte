@@ -3,6 +3,7 @@
   import { page } from "$app/stores";
   import AiAgent from "$lib/components/AiAgent.svelte";
   import WeatherHeadsUp from "$lib/components/WeatherHeadsUp.svelte";
+  import { toggleTheme } from "$lib/stores/theme";
 
   $: currentPath = $page.url.pathname;
   // Tool sub-pages (e.g. /tools/pdf-annotator) render full-width like the editor;
@@ -58,18 +59,67 @@
           <a href="/admin" class="header-login" aria-label="Admin">&rarr;</a>
         </nav>
 
-        <button
-          class="mobile-menu-btn"
-          on:click={toggleMenu}
-          aria-label="Toggle menu"
-          aria-expanded={mobileMenuOpen}
-        >
-          {#if mobileMenuOpen}
-            <span aria-hidden="true">×</span>
-          {:else}
-            <span aria-hidden="true">≡</span>
-          {/if}
-        </button>
+        <div class="header-actions">
+          <button
+            class="theme-toggle"
+            on:click={toggleTheme}
+            aria-label="Toggle color theme"
+            title="Toggle theme"
+          >
+            <svg
+              class="icon-moon"
+              viewBox="0 0 24 24"
+              width="15"
+              height="15"
+              aria-hidden="true"
+            >
+              <path
+                d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+            <svg
+              class="icon-sun"
+              viewBox="0 0 24 24"
+              width="15"
+              height="15"
+              aria-hidden="true"
+            >
+              <circle
+                cx="12"
+                cy="12"
+                r="4"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              />
+              <path
+                d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+              />
+            </svg>
+          </button>
+
+          <button
+            class="mobile-menu-btn"
+            on:click={toggleMenu}
+            aria-label="Toggle menu"
+            aria-expanded={mobileMenuOpen}
+          >
+            {#if mobileMenuOpen}
+              <span aria-hidden="true">×</span>
+            {:else}
+              <span aria-hidden="true">≡</span>
+            {/if}
+          </button>
+        </div>
       </div>
     </header>
 
@@ -174,29 +224,30 @@
   }
 
   .logo {
-    font-family: var(--font-display);
-    font-size: 1.6rem;
+    font-family: var(--font-grotesk);
+    font-size: 1.15rem;
+    font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 0.04em;
     color: var(--ink);
     border-bottom: none;
     display: flex;
-    align-items: baseline;
+    align-items: center;
     gap: 8px;
     white-space: nowrap;
   }
 
   .logo:hover {
-    color: var(--blueprint);
+    color: var(--accent);
     border-bottom: none;
   }
 
   .logo-icon {
     display: inline-block;
-    width: 12px;
-    height: 12px;
-    background: var(--blueprint);
-    transform: translateY(2px);
+    width: 10px;
+    height: 10px;
+    background: var(--accent);
+    transform: translateY(0);
   }
 
   .header-nav {
@@ -206,10 +257,10 @@
   }
 
   .header-nav a {
-    font-family: var(--font-mono);
-    font-size: 0.8rem;
-    font-weight: 500;
-    letter-spacing: 0.08em;
+    font-family: var(--font-grotesk);
+    font-size: 0.9rem;
+    font-weight: 400;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
     color: var(--ink-soft);
     border-bottom: none;
@@ -217,12 +268,12 @@
   }
 
   .header-nav a:hover {
-    color: var(--blueprint);
+    color: var(--accent);
     border-bottom: none;
   }
 
   .header-nav a.active {
-    color: var(--blueprint);
+    color: var(--accent);
   }
 
   .header-login {
@@ -243,9 +294,10 @@
     height: 36px;
     padding: 0;
     background: transparent;
-    border: 1px solid var(--rule-soft);
+    border: 1px solid var(--grid-strong);
+    border-radius: 4px;
     color: var(--ink);
-    font-family: var(--font-display);
+    font-family: var(--font-grotesk);
     font-size: 1.4rem;
     line-height: 1;
     cursor: pointer;
@@ -255,8 +307,51 @@
   }
 
   .mobile-menu-btn:hover {
-    border-color: var(--blueprint);
-    color: var(--blueprint);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    background: transparent;
+    border: 1px solid var(--grid-strong);
+    border-radius: 50%;
+    color: var(--ink-soft);
+    cursor: pointer;
+    transition:
+      color 0.15s,
+      border-color 0.15s,
+      background 0.15s;
+  }
+
+  .theme-toggle:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+
+  /* Icon swap driven purely by [data-theme] — no hydration flash. */
+  .theme-toggle .icon-sun {
+    display: none;
+  }
+  .theme-toggle .icon-moon {
+    display: inline-flex;
+  }
+  :global(html[data-theme="dark"]) .theme-toggle .icon-moon {
+    display: none;
+  }
+  :global(html[data-theme="dark"]) .theme-toggle .icon-sun {
+    display: inline-flex;
   }
 
   /* ─── Mobile menu ──────────────────────────────────────────── */
@@ -286,10 +381,10 @@
   .mobile-link {
     display: block;
     padding: 14px 32px;
-    font-family: var(--font-mono);
-    font-size: 0.85rem;
-    font-weight: 500;
-    letter-spacing: 0.08em;
+    font-family: var(--font-grotesk);
+    font-size: 0.9rem;
+    font-weight: 400;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
     color: var(--ink-soft);
     border-bottom: none;
@@ -300,7 +395,7 @@
 
   .mobile-link:hover,
   .mobile-link.active {
-    color: var(--blueprint);
+    color: var(--accent);
     background: var(--blueprint-tint);
     border-bottom: none;
   }
@@ -341,10 +436,10 @@
   }
 
   .footer-inner p {
-    font-family: var(--font-mono);
-    font-size: 0.78rem;
+    font-family: var(--font-grotesk);
+    font-size: 0.82rem;
     letter-spacing: 0.06em;
-    color: var(--ink-mute);
+    color: var(--ink-soft);
     text-transform: uppercase;
   }
 
@@ -354,8 +449,8 @@
   }
 
   .footer-links a {
-    font-family: var(--font-mono);
-    font-size: 0.78rem;
+    font-family: var(--font-grotesk);
+    font-size: 0.82rem;
     letter-spacing: 0.06em;
     text-transform: uppercase;
     color: var(--ink-soft);
@@ -363,7 +458,7 @@
   }
 
   .footer-links a:hover {
-    color: var(--blueprint);
+    color: var(--accent);
     border-bottom: none;
   }
 

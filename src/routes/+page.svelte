@@ -40,23 +40,26 @@
   /* The trailing period is a deliberately unmarked link to the fitness hub —
      looks like plain punctuation, but it's clickable. */
   .dot {
-    color: inherit;
+    color: var(--red);
     border-bottom: none;
     cursor: pointer;
+    transition: color 0.15s;
   }
 
   .dot:hover {
+    color: var(--accent);
     border-bottom: none;
   }
 
   .manual-title {
     display: block;
-    font-family: var(--font-display);
-    font-size: clamp(3.2rem, 11vw, 8rem);
-    line-height: 0.86;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
-    color: var(--blueprint);
+    font-family: var(--hand);
+    font-size: clamp(3.4rem, 11vw, 8rem);
+    font-weight: 500;
+    line-height: 0.9;
+    letter-spacing: -0.005em;
+    text-transform: none;
+    color: var(--ink);
   }
 
   .manual-tagline {

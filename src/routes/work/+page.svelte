@@ -131,8 +131,7 @@
   .job-role {
     font-family: var(--font-display);
     font-size: 1.4rem;
-    text-transform: uppercase;
-    letter-spacing: 0.02em;
+    letter-spacing: -0.005em;
     color: var(--ink);
     line-height: 1.05;
   }

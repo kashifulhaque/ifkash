@@ -53,9 +53,8 @@
     font-family: var(--font-display);
     font-size: clamp(2rem, 6vw, 4rem);
     line-height: 0.95;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
-    color: var(--blueprint);
+    letter-spacing: -0.005em;
+    color: var(--accent);
   }
 
   .blog-card p {

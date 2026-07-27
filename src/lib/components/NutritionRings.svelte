@@ -22,10 +22,10 @@
   };
 
   $: rings = [
-    { key: 'calories', label: 'Calories', color: 'var(--blueprint)', unit: 'kcal', consumed: totals.calories, target: targets.calories },
-    { key: 'protein', label: 'Protein', color: '#e0b341', unit: 'g', consumed: totals.protein_g, target: targets.protein_g },
-    { key: 'carbs', label: 'Carbs', color: '#5bb98c', unit: 'g', consumed: totals.carbs_g, target: targets.carbs_g },
-    { key: 'fat', label: 'Fat', color: '#e06c8c', unit: 'g', consumed: totals.fat_g, target: targets.fat_g }
+    { key: 'calories', label: 'Calories', color: 'var(--accent)', unit: 'kcal', consumed: totals.calories, target: targets.calories },
+    { key: 'protein', label: 'Protein', color: 'var(--green)', unit: 'g', consumed: totals.protein_g, target: targets.protein_g },
+    { key: 'carbs', label: 'Carbs', color: 'var(--red)', unit: 'g', consumed: totals.carbs_g, target: targets.carbs_g },
+    { key: 'fat', label: 'Fat', color: 'var(--ink-soft)', unit: 'g', consumed: totals.fat_g, target: targets.fat_g }
   ] as RingDef[];
 
   const radiusFor = (i: number) => CENTER - STROKE / 2 - i * (STROKE + GAP);

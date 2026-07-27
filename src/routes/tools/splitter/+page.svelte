@@ -485,8 +485,7 @@
   h1 {
     font-family: var(--font-display);
     font-size: 2rem;
-    text-transform: uppercase;
-    letter-spacing: 0.02em;
+    letter-spacing: -0.005em;
     margin: 0;
   }
   .sub { color: var(--ink-soft); font-size: 0.95rem; margin: 4px 0 0; }
@@ -530,7 +529,7 @@
   .create { display: flex; flex-direction: column; gap: 8px; border-top: 1px solid var(--rule-soft); padding-top: 14px; }
 
   /* detail */
-  .group-name { font-family: var(--font-display); font-size: 1.5rem; text-transform: uppercase; margin: 0 0 16px; }
+  .group-name { font-family: var(--font-display); font-size: 1.5rem; margin: 0 0 16px; }
   .card { border: 1px solid var(--rule-soft); padding: 16px; margin-bottom: 16px; }
 
   .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }

@@ -4,12 +4,13 @@
 </svelte:head>
 
 <header class="page-header">
-  <h1 class="section-title">Education.</h1>
+  <h1 class="section-title">Education</h1>
+  <p class="section-subtitle">Academic background</p>
 </header>
 
 <section class="edu-list">
   <article class="edu-row">
-    <span class="edu-status"></span>
+    <span class="edu-led" aria-hidden="true"></span>
     <div class="edu-main">
       <h2 class="edu-school">Indian Institute of Technology Madras</h2>
       <p class="edu-degree">BS, Data Science and Applications</p>
@@ -27,7 +28,7 @@
   .edu-list {
     display: flex;
     flex-direction: column;
-    border-top: 1px solid var(--rule-soft);
+    border-top: 1px solid var(--line-soft);
   }
 
   .edu-row {
@@ -35,44 +36,52 @@
     grid-template-columns: 14px minmax(0, 1fr) auto auto;
     align-items: baseline;
     gap: 24px;
-    padding: 20px 0;
-    border-bottom: 1px solid var(--rule-soft);
+    padding: 22px 12px;
+    margin: 0 -12px;
+    border-bottom: 1px solid var(--line-soft);
   }
 
-  .edu-status {
-    width: 12px;
-    height: 12px;
-    background: var(--blueprint);
-    border: 1px solid var(--blueprint);
-    transform: translateY(2px);
+  .edu-led {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--ok);
+    border: 1px solid var(--ok);
+    box-shadow: 0 0 5px rgba(61, 220, 132, 0.4);
+    transform: translateY(1px);
+    justify-self: center;
   }
 
   .edu-main {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 6px;
     min-width: 0;
   }
 
   .edu-school {
-    font-family: var(--font-display);
-    font-size: 1.5rem;
-    letter-spacing: -0.005em;
+    font-family: var(--font-dots);
+    font-size: 1.75rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
     color: var(--ink);
-    line-height: 1.05;
+    line-height: 1;
   }
 
   .edu-degree {
-    font-family: var(--font-body);
-    font-size: 0.95rem;
+    font-family: var(--font-mono-g);
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
     color: var(--ink-soft);
     line-height: 1.4;
   }
 
   .edu-period {
-    font-family: var(--font-mono);
-    font-size: 0.78rem;
-    letter-spacing: 0.06em;
+    font-family: var(--font-mono-g);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
     color: var(--ink);
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
@@ -80,9 +89,9 @@
   }
 
   .edu-location {
-    font-family: var(--font-mono);
-    font-size: 0.72rem;
-    letter-spacing: 0.06em;
+    font-family: var(--font-mono-g);
+    font-size: 0.66rem;
+    letter-spacing: 0.1em;
     color: var(--ink-mute);
     text-transform: uppercase;
     white-space: nowrap;
@@ -94,12 +103,14 @@
     .edu-row {
       grid-template-columns: 12px minmax(0, 1fr);
       grid-template-rows: auto auto auto;
-      gap: 4px 16px;
-      padding: 16px 0;
+      gap: 6px 16px;
+      padding: 18px 10px;
+      margin: 0 -10px;
     }
 
-    .edu-status {
+    .edu-led {
       grid-row: 1;
+      transform: translateY(6px);
     }
 
     .edu-main {
@@ -121,7 +132,7 @@
     }
 
     .edu-school {
-      font-size: 1.2rem;
+      font-size: 1.35rem;
     }
   }
 </style>

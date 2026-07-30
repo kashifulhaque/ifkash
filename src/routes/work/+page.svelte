@@ -50,7 +50,8 @@
 </script>
 
 <header class="page-header">
-  <h1 class="section-title">Work.</h1>
+  <h1 class="section-title">Work</h1>
+  <p class="section-subtitle">Roles and companies</p>
 </header>
 
 <section class="jobs-list">
@@ -62,7 +63,11 @@
       class="job-row stagger"
       style="--i: {i}"
     >
-      <span class="job-status" class:current={job.status === 'current'}></span>
+      <span
+        class="job-led"
+        class:lit={job.status === 'current'}
+        aria-hidden="true"
+      ></span>
       <div class="job-main">
         <span class="job-role">{job.role}</span>
         <span class="job-company">{job.company}</span>
@@ -82,7 +87,7 @@
   .jobs-list {
     display: flex;
     flex-direction: column;
-    border-top: 1px solid var(--rule-soft);
+    border-top: 1px solid var(--line-soft);
     padding-top: 0;
   }
 
@@ -91,77 +96,87 @@
     grid-template-columns: 14px minmax(0, 1fr) auto auto;
     align-items: baseline;
     gap: 24px;
-    padding: 18px 0;
-    border-bottom: 1px solid var(--rule-soft);
-    border-left: none !important;
-    border-right: none !important;
-    transition: background 0.15s, padding 0.15s;
+    padding: 20px 12px;
+    margin: 0 -12px;
+    border-bottom: 1px solid var(--line-soft);
+    transition:
+      background 0.15s,
+      color 0.15s;
     color: var(--ink);
   }
 
   .job-row:hover {
-    background: var(--blueprint-tint);
-    padding-left: 12px;
-    padding-right: 12px;
-    margin-left: -12px;
-    margin-right: -12px;
-    border-bottom-color: var(--rule-soft);
+    background: var(--ink);
+    color: var(--void);
+    border-bottom-color: var(--ink);
   }
 
-  .job-status {
-    width: 12px;
-    height: 12px;
+  .job-led {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
     border: 1px solid var(--ink-mute);
     background: transparent;
-    transform: translateY(2px);
+    transform: translateY(1px);
+    justify-self: center;
   }
 
-  .job-status.current {
-    background: var(--blueprint);
-    border-color: var(--blueprint);
+  .job-led.lit {
+    background: var(--signal);
+    border-color: var(--signal);
+    box-shadow:
+      0 0 6px var(--signal-glow),
+      0 0 2px var(--signal);
+    animation: led-pulse 2.4s ease-in-out infinite;
   }
 
   .job-main {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 6px;
     min-width: 0;
   }
 
   .job-role {
-    font-family: var(--font-display);
-    font-size: 1.4rem;
-    letter-spacing: -0.005em;
-    color: var(--ink);
-    line-height: 1.05;
-  }
-
-  .job-row:hover .job-role {
-    color: var(--blueprint);
+    font-family: var(--font-dots);
+    font-size: 1.75rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: inherit;
+    line-height: 1;
   }
 
   .job-company {
-    font-family: var(--font-mono);
-    font-size: 0.78rem;
-    letter-spacing: 0.08em;
+    font-family: var(--font-mono-g);
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--ink-soft);
   }
 
+  .job-row:hover .job-company {
+    color: var(--void);
+  }
+
   .job-period {
-    font-family: var(--font-mono);
-    font-size: 0.78rem;
-    letter-spacing: 0.06em;
+    font-family: var(--font-mono-g);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
     color: var(--ink);
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
     text-align: right;
   }
 
+  .job-row:hover .job-period {
+    color: var(--void);
+  }
+
   .job-location {
-    font-family: var(--font-mono);
-    font-size: 0.72rem;
-    letter-spacing: 0.06em;
+    font-family: var(--font-mono-g);
+    font-size: 0.66rem;
+    letter-spacing: 0.1em;
     color: var(--ink-mute);
     text-transform: uppercase;
     white-space: nowrap;
@@ -169,16 +184,22 @@
     text-align: right;
   }
 
+  .job-row:hover .job-location {
+    color: var(--void);
+  }
+
   @media (max-width: 768px) {
     .job-row {
       grid-template-columns: 12px minmax(0, 1fr);
       grid-template-rows: auto auto;
-      gap: 4px 16px;
-      padding: 14px 0;
+      gap: 6px 16px;
+      padding: 16px 10px;
+      margin: 0 -10px;
     }
 
-    .job-status {
+    .job-led {
       grid-row: 1;
+      transform: translateY(6px);
     }
 
     .job-main {
@@ -195,18 +216,11 @@
     .job-location {
       display: none;
     }
-
-    .job-row:hover {
-      padding-left: 8px;
-      margin-left: -8px;
-      padding-right: 8px;
-      margin-right: -8px;
-    }
   }
 
   @media (max-width: 480px) {
     .job-role {
-      font-size: 1.15rem;
+      font-size: 1.35rem;
     }
   }
 </style>

@@ -458,21 +458,24 @@ The colors of the rainbow are red, orange, yellow, green, blue, indigo, and viol
         flex-direction: column;
         gap: 1rem;
         padding-bottom: 2rem;
-        border-bottom: 1px solid var(--border);
+        border-bottom: 1px solid var(--line-soft);
     }
 
     .breadcrumb {
-        font-size: 0.875rem;
-        color: var(--text-tertiary);
+        font-family: var(--font-mono-g);
+        font-size: 0.7rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--ink-mute);
     }
 
     .breadcrumb a {
-        color: var(--text-tertiary);
+        color: var(--ink-mute);
         transition: color var(--dur-instant) var(--ease-out-quart);
     }
 
     .breadcrumb a:hover {
-        color: var(--text-primary);
+        color: var(--signal-hi);
     }
 
     .separator {
@@ -480,17 +483,19 @@ The colors of the rainbow are red, orange, yellow, green, blue, indigo, and viol
     }
 
     .page-title {
-        font-size: 2.5rem;
-        font-weight: 700;
-        letter-spacing: -0.02em;
-        color: var(--text-primary);
+        font-family: var(--font-dots);
+        font-size: clamp(2.4rem, 6vw, 4rem);
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+        color: var(--ink);
         margin: 0;
     }
 
     .page-desc {
         font-size: 1.0625rem;
         line-height: 1.6;
-        color: var(--text-secondary);
+        color: var(--ink-soft);
         margin: 0;
     }
 
@@ -500,20 +505,25 @@ The colors of the rainbow are red, orange, yellow, green, blue, indigo, and viol
     }
 
     .project-link {
-        font-size: 0.75rem;
+        font-family: var(--font-mono-g);
+        font-size: 0.7rem;
         font-weight: 500;
-        color: var(--text-faint);
+        letter-spacing: 0.12em;
         text-transform: uppercase;
-        letter-spacing: 0.05em;
-        transition: color var(--dur-instant) var(--ease-out-quart);
+        color: var(--ink-soft);
         padding: 0.5rem 1rem;
-        border: 1px solid var(--border);
-        border-radius: 0.375rem;
+        border: 1px solid var(--line-soft);
+        border-radius: var(--radius-sm);
+        transition:
+            color var(--dur-instant) var(--ease-out-quart),
+            background-color var(--dur-instant) var(--ease-out-quart),
+            border-color var(--dur-instant) var(--ease-out-quart);
     }
 
     .project-link:hover {
-        color: var(--text-primary);
-        border-color: var(--border-strong);
+        background: var(--ink);
+        color: var(--void);
+        border-color: var(--ink);
     }
 
     .content {
@@ -525,16 +535,17 @@ The colors of the rainbow are red, orange, yellow, green, blue, indigo, and viol
     .section h2 {
         font-size: 1.5rem;
         font-weight: 600;
-        color: var(--text-primary);
-        letter-spacing: -0.01em;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+        color: var(--ink);
         margin-bottom: 1rem;
     }
 
     .section h3 {
         font-size: 1.125rem;
         font-weight: 600;
-        color: var(--text-primary);
-        letter-spacing: -0.01em;
+        letter-spacing: 0.02em;
+        color: var(--ink);
         margin-top: 1.5rem;
         margin-bottom: 0.75rem;
     }
@@ -542,7 +553,7 @@ The colors of the rainbow are red, orange, yellow, green, blue, indigo, and viol
     .section p {
         font-size: 0.9375rem;
         line-height: 1.7;
-        color: var(--text-secondary);
+        color: var(--ink-soft);
         margin-bottom: 1rem;
     }
 
@@ -553,19 +564,19 @@ The colors of the rainbow are red, orange, yellow, green, blue, indigo, and viol
     .section-note {
         margin-top: 1rem;
         font-size: 0.875rem;
-        color: var(--text-tertiary);
+        color: var(--ink-mute);
     }
 
     .inline-link {
-        color: var(--text-secondary);
+        color: var(--ink-soft);
         text-decoration: underline;
-        text-decoration-color: var(--text-faint);
+        text-decoration-color: var(--ink-mute);
         transition: all var(--dur-instant) var(--ease-out-quart);
     }
 
     .inline-link:hover {
-        color: var(--text-primary);
-        text-decoration-color: var(--text-tertiary);
+        color: var(--signal);
+        text-decoration-color: var(--signal);
     }
 
     .feature-list {
@@ -580,7 +591,7 @@ The colors of the rainbow are red, orange, yellow, green, blue, indigo, and viol
     .feature-list li {
         font-size: 0.9375rem;
         line-height: 1.6;
-        color: var(--text-secondary);
+        color: var(--ink-soft);
         padding-left: 1.5rem;
         position: relative;
     }
@@ -589,18 +600,18 @@ The colors of the rainbow are red, orange, yellow, green, blue, indigo, and viol
         content: "→";
         position: absolute;
         left: 0;
-        color: var(--text-faint);
+        color: var(--signal);
     }
 
     .feature-list code,
     p code {
-        font-family: "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas,
-            "Courier New", monospace;
+        font-family: var(--font-mono-g);
         font-size: 0.875rem;
-        color: var(--text-secondary);
-        background: var(--surface-raised);
+        color: var(--ink-soft);
+        background: var(--code-bg);
+        border: 1px solid var(--line-soft);
         padding: 0.125rem 0.375rem;
-        border-radius: 0.25rem;
+        border-radius: var(--radius-sm);
     }
 
     .resource-list {
@@ -614,25 +625,32 @@ The colors of the rainbow are red, orange, yellow, green, blue, indigo, and viol
     .resource-link {
         display: inline-flex;
         align-items: center;
-        font-size: 0.9375rem;
-        color: var(--text-secondary);
+        font-family: var(--font-mono-g);
+        font-size: 0.7rem;
+        font-weight: 500;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--ink-soft);
         padding: 0.75rem 1rem;
-        background: var(--surface-raised);
-        border: 1px solid var(--border);
-        border-radius: 0.375rem;
-        transition: all var(--dur-instant) var(--ease-out-quart);
+        background: var(--panel);
+        border: 1px solid var(--line-soft);
+        border-radius: var(--radius-sm);
+        transition:
+            color var(--dur-instant) var(--ease-out-quart),
+            background-color var(--dur-instant) var(--ease-out-quart),
+            border-color var(--dur-instant) var(--ease-out-quart);
     }
 
     .resource-link:hover {
-        color: var(--text-primary);
-        border-color: var(--border-strong);
-        transform: translateX(4px);
+        background: var(--ink);
+        color: var(--void);
+        border-color: var(--ink);
     }
 
     .code-block {
-        background: var(--surface-raised);
-        border: 1px solid var(--border);
-        border-radius: 0.5rem;
+        background: var(--code-bg);
+        border: 1px solid var(--line-soft);
+        border-radius: var(--radius-sm);
         overflow-x: auto;
     }
 
@@ -642,11 +660,10 @@ The colors of the rainbow are red, orange, yellow, green, blue, indigo, and viol
     }
 
     .code-block code {
-        font-family: "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas,
-            "Courier New", monospace;
+        font-family: var(--font-mono-g);
         font-size: 0.875rem;
         line-height: 1.6;
-        color: var(--text-secondary);
+        color: var(--ink-soft);
         background: transparent;
         padding: 0;
     }
@@ -663,10 +680,6 @@ The colors of the rainbow are red, orange, yellow, green, blue, indigo, and viol
     }
 
     @media (max-width: 768px) {
-        .page-title {
-            font-size: 2rem;
-        }
-
         .section h2 {
             font-size: 1.25rem;
         }

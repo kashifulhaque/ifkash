@@ -319,21 +319,24 @@ print(np.allclose(a_np, a_back))  # True</code></pre>
     flex-direction: column;
     gap: 1rem;
     padding-bottom: 2rem;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--line-soft);
   }
 
   .breadcrumb {
-    font-size: 0.875rem;
-    color: var(--text-tertiary);
+    font-family: var(--font-mono-g);
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-faint);
   }
 
   .breadcrumb a {
-    color: var(--text-tertiary);
+    color: var(--text-faint);
     transition: color var(--dur-instant) var(--ease-out-quart);
   }
 
   .breadcrumb a:hover {
-    color: var(--text-primary);
+    color: var(--signal-hi);
   }
 
   .separator {
@@ -341,9 +344,11 @@ print(np.allclose(a_np, a_back))  # True</code></pre>
   }
 
   .page-title {
-    font-size: 2.5rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
+    font-family: var(--font-dots);
+    font-size: clamp(2.4rem, 6vw, 4rem);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
     color: var(--text-primary);
     margin: 0;
   }
@@ -361,20 +366,24 @@ print(np.allclose(a_np, a_back))  # True</code></pre>
   }
 
   .project-link {
-    font-size: 0.75rem;
+    font-family: var(--font-mono-g);
+    font-size: 0.7rem;
     font-weight: 500;
-    color: var(--text-faint);
+    color: var(--ink-soft);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    transition: color var(--dur-instant) var(--ease-out-quart);
+    letter-spacing: 0.12em;
+    transition: color var(--dur-instant) var(--ease-out-quart),
+      background-color var(--dur-instant) var(--ease-out-quart),
+      border-color var(--dur-instant) var(--ease-out-quart);
     padding: 0.5rem 1rem;
-    border: 1px solid var(--border);
-    border-radius: 0.375rem;
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius-sm);
   }
 
   .project-link:hover {
-    color: var(--text-primary);
-    border-color: var(--border-strong);
+    background: var(--ink);
+    color: var(--void);
+    border-color: var(--ink);
   }
 
   .content {
@@ -387,7 +396,8 @@ print(np.allclose(a_np, a_back))  # True</code></pre>
     font-size: 1.5rem;
     font-weight: 600;
     color: var(--text-primary);
-    letter-spacing: -0.01em;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
     margin-bottom: 1rem;
   }
 
@@ -440,16 +450,17 @@ print(np.allclose(a_np, a_back))  # True</code></pre>
     content: '→';
     position: absolute;
     left: 0;
-    color: var(--text-faint);
+    color: var(--signal);
   }
 
   .structure-list code {
-    font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, monospace;
+    font-family: var(--font-mono-g);
     font-size: 0.875rem;
     color: var(--text-secondary);
-    background: var(--surface-raised);
+    background: var(--code-bg);
+    border: 1px solid var(--line-soft);
     padding: 0.125rem 0.375rem;
-    border-radius: 0.25rem;
+    border-radius: var(--radius-sm);
   }
 
   .ops-grid {
@@ -459,9 +470,9 @@ print(np.allclose(a_np, a_back))  # True</code></pre>
 
   .ops-category {
     padding: 1rem;
-    background: var(--surface-raised);
-    border: 1px solid var(--border);
-    border-radius: 0.5rem;
+    background: var(--panel);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius-sm);
   }
 
   .ops-title {
@@ -486,12 +497,13 @@ print(np.allclose(a_np, a_back))  # True</code></pre>
   }
 
   .ops-list code {
-    font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, monospace;
+    font-family: var(--font-mono-g);
     font-size: 0.875rem;
     color: var(--text-secondary);
-    background: var(--surface-sunken);
+    background: var(--code-bg);
+    border: 1px solid var(--line-soft);
     padding: 0.125rem 0.375rem;
-    border-radius: 0.25rem;
+    border-radius: var(--radius-sm);
   }
 
   .prereq-grid {
@@ -501,24 +513,25 @@ print(np.allclose(a_np, a_back))  # True</code></pre>
 
   .prereq-item {
     padding: 1rem;
-    background: var(--surface-raised);
-    border: 1px solid var(--border);
-    border-radius: 0.5rem;
+    background: var(--panel);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius-sm);
   }
 
   .prereq-name {
+    font-family: var(--font-mono-g);
     font-size: 0.875rem;
     font-weight: 600;
     color: var(--text-secondary);
     margin-bottom: 0.75rem;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.12em;
   }
 
   .code-block {
-    background: var(--surface-raised);
-    border: 1px solid var(--border);
-    border-radius: 0.5rem;
+    background: var(--code-bg);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius-sm);
     overflow-x: auto;
   }
 
@@ -528,7 +541,7 @@ print(np.allclose(a_np, a_back))  # True</code></pre>
   }
 
   .code-block code {
-    font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+    font-family: var(--font-mono-g);
     font-size: 0.875rem;
     line-height: 1.6;
     color: var(--text-secondary);
@@ -542,15 +555,16 @@ print(np.allclose(a_np, a_back))  # True</code></pre>
 
   .mise-item {
     padding: 0.875rem 1rem;
-    background: var(--surface-raised);
-    border-left: 2px solid var(--border);
+    background: var(--panel);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius-sm);
   }
 
   .mise-cmd {
-    font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, monospace;
+    font-family: var(--font-mono-g);
     font-size: 0.875rem;
     font-weight: 600;
-    color: var(--blueprint);
+    color: var(--ink);
     margin-bottom: 0.375rem;
   }
 
@@ -571,16 +585,17 @@ print(np.allclose(a_np, a_back))  # True</code></pre>
     flex-direction: column;
     gap: 0.25rem;
     padding: 0.75rem 1rem;
-    background: var(--surface-raised);
-    border: 1px solid var(--border);
-    border-radius: 0.375rem;
+    background: var(--panel);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius-sm);
   }
 
   .tech-label {
+    font-family: var(--font-mono-g);
     font-size: 0.75rem;
-    color: var(--text-tertiary);
+    color: var(--text-faint);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.12em;
   }
 
   .tech-value {
@@ -593,9 +608,9 @@ print(np.allclose(a_np, a_back))  # True</code></pre>
     display: flex;
     gap: 1rem;
     padding: 1.5rem;
-    background: var(--surface-raised);
-    border: 1px solid var(--border);
-    border-radius: 0.5rem;
+    background: var(--panel);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius-sm);
   }
 
   .status-icon {
@@ -627,10 +642,6 @@ print(np.allclose(a_np, a_back))  # True</code></pre>
   }
 
   @media (max-width: 768px) {
-    .page-title {
-      font-size: 2rem;
-    }
-
     .section h2 {
       font-size: 1.25rem;
     }

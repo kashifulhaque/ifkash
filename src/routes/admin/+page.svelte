@@ -39,14 +39,14 @@
 </svelte:head>
 
 <header class="page-header">
-  <h1 class="section-title">Admin.</h1>
+  <h1 class="section-title">Admin</h1>
   <p class="section-subtitle">Signed in as <span class="email">{data.email}</span></p>
 </header>
 
 <section class="admin-list">
   {#each entries as entry, i}
     <a href={entry.href} class="admin-row stagger" style="--i: {i}">
-      <span class="admin-icon"><svelte:component this={entry.icon} size={18} /></span>
+      <span class="admin-icon"><svelte:component this={entry.icon} size={18} strokeWidth={1.8} /></span>
       <div class="admin-body">
         <span class="admin-name">{entry.name}</span>
         <p class="admin-desc">{entry.desc}</p>
@@ -62,8 +62,8 @@
   }
 
   .email {
-    font-family: var(--font-mono);
-    color: var(--blueprint);
+    font-family: var(--font-mono-g);
+    color: var(--signal-hi);
   }
 
   .admin-list {
@@ -73,22 +73,27 @@
   }
 
   .admin-row {
-    display: flex;
-    align-items: flex-start;
-    gap: 16px;
-    padding: 20px 4px;
-    border-bottom: 1px solid var(--rule-soft);
-    color: inherit;
-    transition: background 0.15s;
+    display: grid;
+    grid-template-columns: 36px minmax(0, 1fr) 24px;
+    align-items: center;
+    gap: 20px;
+    padding: 22px 12px;
+    margin: 0 -12px;
+    border-bottom: 1px solid var(--line-soft);
+    color: var(--ink);
+    transition:
+      background 0.15s,
+      color 0.15s;
   }
 
   .admin-row:first-child {
-    border-top: 1px solid var(--rule-soft);
+    border-top: 1px solid var(--line-soft);
   }
 
   .admin-row:hover {
-    background: var(--blueprint-tint);
-    border-bottom-color: var(--rule-soft);
+    background: var(--ink);
+    color: var(--void);
+    border-bottom-color: var(--ink);
   }
 
   .admin-icon {
@@ -98,43 +103,68 @@
     width: 36px;
     height: 36px;
     flex-shrink: 0;
-    border: 1px solid var(--rule-soft);
-    color: var(--blueprint);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius-sm);
+    color: var(--signal);
+  }
+
+  .admin-row:hover .admin-icon {
+    border-color: var(--void);
+    color: var(--void);
   }
 
   .admin-body {
-    flex: 1;
     min-width: 0;
   }
 
   .admin-name {
-    font-family: var(--font-mono);
-    font-size: 0.9rem;
+    font-family: var(--font-dots);
+    font-size: 1.5rem;
     font-weight: 600;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.03em;
     text-transform: uppercase;
-    color: var(--ink);
-  }
-
-  .admin-row:hover .admin-name {
-    color: var(--blueprint);
+    line-height: 1;
+    color: inherit;
   }
 
   .admin-desc {
-    margin: 6px 0 0;
-    font-size: 0.92rem;
+    margin: 8px 0 0;
+    font-family: var(--font-sans-g);
+    font-size: 0.9rem;
     line-height: 1.5;
     color: var(--ink-soft);
+    max-width: 640px;
+  }
+
+  .admin-row:hover .admin-desc {
+    color: var(--void);
   }
 
   .admin-arrow {
-    font-size: 1.1rem;
+    font-family: var(--font-mono-g);
+    font-size: 1rem;
     color: var(--ink-mute);
     transition: color 0.15s, transform 0.15s;
   }
 
   .admin-row:hover .admin-arrow {
-    color: var(--blueprint);
+    color: var(--void);
     transform: translateX(4px);
+  }
+
+  @media (max-width: 768px) {
+    .admin-row {
+      grid-template-columns: 36px minmax(0, 1fr);
+      padding: 18px 10px;
+      margin: 0 -10px;
+    }
+
+    .admin-name {
+      font-size: 1.25rem;
+    }
+
+    .admin-arrow {
+      display: none;
+    }
   }
 </style>

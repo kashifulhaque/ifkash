@@ -102,18 +102,19 @@
 </script>
 
 <header class="page-header">
-  <h1 class="section-title">Projects.</h1>
-  <p class="section-subtitle">Things I've built or am actively shaping.</p>
+  <h1 class="section-title">Projects</h1>
+  <p class="section-subtitle">Things I've built or am actively shaping</p>
 </header>
 
 <section class="projects-list">
   {#each projects as project, i}
     <article class="project-row stagger" style="--i: {i}">
       <span
-        class="project-status"
-        class:active={project.status === 'active'}
+        class="project-led"
+        class:lit={project.status === 'active'}
         class:shipped={project.status === 'shipped'}
         class:archived={project.status === 'archived'}
+        aria-hidden="true"
       ></span>
       <div class="project-body">
         <div class="project-top">
@@ -151,7 +152,7 @@
   .projects-list {
     display: flex;
     flex-direction: column;
-    border-top: 1px solid var(--rule-soft);
+    border-top: 1px solid var(--line-soft);
   }
 
   .project-row {
@@ -159,36 +160,43 @@
     grid-template-columns: 14px minmax(0, 1fr);
     align-items: start;
     gap: 20px;
-    padding: 20px 0;
-    border-bottom: 1px solid var(--rule-soft);
+    padding: 22px 12px;
+    margin: 0 -12px;
+    border-bottom: 1px solid var(--line-soft);
+    transition: background 0.15s;
   }
 
-  .project-status {
-    width: 12px;
-    height: 12px;
+  .project-row:hover {
+    background: var(--blueprint-tint);
+  }
+
+  .project-led {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
     border: 1px solid var(--ink-mute);
     background: transparent;
-    transform: translateY(8px);
+    transform: translateY(10px);
+    justify-self: center;
     flex-shrink: 0;
   }
 
-  .project-status.active {
-    background: var(--blueprint);
-    border-color: var(--blueprint);
+  .project-led.lit {
+    background: var(--signal);
+    border-color: var(--signal);
+    box-shadow:
+      0 0 6px var(--signal-glow),
+      0 0 2px var(--signal);
+    animation: led-pulse 2.4s ease-in-out infinite;
   }
 
-  .project-status.shipped {
-    background: linear-gradient(
-      135deg,
-      var(--blueprint) 0%,
-      var(--blueprint) 50%,
-      transparent 50%,
-      transparent 100%
-    );
-    border-color: var(--blueprint);
+  .project-led.shipped {
+    background: var(--ok);
+    border-color: var(--ok);
+    box-shadow: 0 0 5px rgba(61, 220, 132, 0.4);
   }
 
-  .project-status.archived {
+  .project-led.archived {
     background: transparent;
     border-style: dashed;
     border-color: var(--ink-mute);
@@ -197,7 +205,7 @@
   .project-body {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 10px;
     min-width: 0;
   }
 
@@ -210,11 +218,13 @@
   }
 
   .project-name {
-    font-family: var(--font-display);
-    font-size: 1.5rem;
-    letter-spacing: -0.005em;
+    font-family: var(--font-dots);
+    font-size: 1.9rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
     color: var(--ink);
-    line-height: 1.05;
+    line-height: 1;
   }
 
   .project-name-link {
@@ -222,7 +232,7 @@
   }
 
   .project-name-link:hover .project-name {
-    color: var(--blueprint);
+    color: var(--signal-hi);
   }
 
   .project-links {
@@ -232,47 +242,52 @@
   }
 
   .project-link {
-    font-family: var(--font-mono);
-    font-size: 0.7rem;
+    font-family: var(--font-mono-g);
+    font-size: 0.64rem;
     font-weight: 500;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
-    padding: 4px 10px;
+    padding: 5px 11px;
     background: transparent;
     color: var(--ink-soft);
-    border: 1px solid var(--rule-soft);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius-sm);
     text-decoration: none;
-    transition: color 0.15s, border-color 0.15s;
+    transition:
+      color 0.15s,
+      background 0.15s,
+      border-color 0.15s;
   }
 
   .project-link:hover {
-    color: var(--blueprint);
-    border-color: var(--blueprint);
-    border-bottom: 1px solid var(--blueprint);
+    color: var(--void);
+    background: var(--ink);
+    border-color: var(--ink);
   }
 
   .project-desc {
-    font-family: var(--font-body);
-    font-size: 0.98rem;
+    font-family: var(--font-sans-g);
+    font-size: 0.95rem;
     line-height: 1.6;
     color: var(--ink-soft);
-    max-width: 760px;
+    max-width: 720px;
   }
 
   @media (max-width: 768px) {
     .project-row {
       gap: 16px;
-      padding: 18px 0;
+      padding: 18px 10px;
+      margin: 0 -10px;
     }
 
     .project-name {
-      font-size: 1.25rem;
+      font-size: 1.5rem;
     }
 
     .project-top {
       flex-direction: column;
       align-items: flex-start;
-      gap: 8px;
+      gap: 10px;
     }
   }
 </style>

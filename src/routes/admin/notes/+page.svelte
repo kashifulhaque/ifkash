@@ -653,9 +653,9 @@
   }
 
   .btn.danger:hover:not(:disabled) {
-    background: #fef3f2;
-    border-color: #b42318;
-    color: #b42318;
+    background: var(--signal-dim);
+    border-color: var(--signal);
+    color: var(--signal-hi);
   }
 
   .binary-pane {
@@ -711,8 +711,8 @@
   }
 
   .banner.error {
-    color: #b42318;
-    background: #fef3f2;
+    color: var(--signal-hi);
+    background: var(--signal-dim);
   }
 
   .banner.ok {

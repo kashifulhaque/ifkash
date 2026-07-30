@@ -286,21 +286,24 @@ db.close()</code></pre>
     flex-direction: column;
     gap: 1rem;
     padding-bottom: 2rem;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--line-soft);
   }
 
   .breadcrumb {
-    font-size: 0.875rem;
-    color: var(--text-tertiary);
+    font-family: var(--font-mono-g);
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
   }
 
   .breadcrumb a {
-    color: var(--text-tertiary);
+    color: var(--ink-mute);
     transition: color var(--dur-instant) var(--ease-out-quart);
   }
 
   .breadcrumb a:hover {
-    color: var(--text-primary);
+    color: var(--signal-hi);
   }
 
   .separator {
@@ -308,17 +311,19 @@ db.close()</code></pre>
   }
 
   .page-title {
-    font-size: 2.5rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    color: var(--text-primary);
+    font-family: var(--font-dots);
+    font-size: clamp(2.4rem, 6vw, 4rem);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--ink);
     margin: 0;
   }
 
   .page-desc {
     font-size: 1.0625rem;
     line-height: 1.6;
-    color: var(--text-secondary);
+    color: var(--ink-soft);
     margin: 0;
   }
 
@@ -328,20 +333,24 @@ db.close()</code></pre>
   }
 
   .project-link {
-    font-size: 0.75rem;
+    font-family: var(--font-mono-g);
+    font-size: 0.7rem;
     font-weight: 500;
-    color: var(--text-faint);
+    color: var(--ink-soft);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    transition: color var(--dur-instant) var(--ease-out-quart);
+    letter-spacing: 0.12em;
+    transition: color var(--dur-instant) var(--ease-out-quart),
+      background-color var(--dur-instant) var(--ease-out-quart),
+      border-color var(--dur-instant) var(--ease-out-quart);
     padding: 0.5rem 1rem;
-    border: 1px solid var(--border);
-    border-radius: 0.375rem;
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius-sm);
   }
 
   .project-link:hover {
-    color: var(--text-primary);
-    border-color: var(--border-strong);
+    background: var(--ink);
+    color: var(--void);
+    border-color: var(--ink);
   }
 
   .content {
@@ -353,22 +362,23 @@ db.close()</code></pre>
   .section h2 {
     font-size: 1.5rem;
     font-weight: 600;
-    color: var(--text-primary);
-    letter-spacing: -0.01em;
+    color: var(--ink);
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
     margin-bottom: 1rem;
   }
 
   .section h3 {
     font-size: 1.125rem;
     font-weight: 600;
-    color: var(--text-primary);
+    color: var(--ink);
     margin-bottom: 0.75rem;
   }
 
   .section p {
     font-size: 0.9375rem;
     line-height: 1.7;
-    color: var(--text-secondary);
+    color: var(--ink-soft);
     margin-bottom: 1rem;
   }
 
@@ -389,7 +399,7 @@ db.close()</code></pre>
   .usecase-list li {
     font-size: 0.9375rem;
     line-height: 1.6;
-    color: var(--text-secondary);
+    color: var(--ink-soft);
     padding-left: 1.5rem;
     position: relative;
   }
@@ -399,14 +409,14 @@ db.close()</code></pre>
     content: '→';
     position: absolute;
     left: 0;
-    color: var(--text-faint);
+    color: var(--signal);
   }
 
   .code-block,
   .result-example {
-    background: var(--surface-raised);
-    border: 1px solid var(--border);
-    border-radius: 0.5rem;
+    background: var(--code-bg);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius-sm);
     overflow-x: auto;
   }
 
@@ -418,10 +428,10 @@ db.close()</code></pre>
 
   .code-block code,
   .result-example code {
-    font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+    font-family: var(--font-mono-g);
     font-size: 0.875rem;
     line-height: 1.6;
-    color: var(--text-secondary);
+    color: var(--ink-soft);
   }
 
   .arch-grid {
@@ -432,22 +442,22 @@ db.close()</code></pre>
 
   .arch-item {
     padding: 1.25rem;
-    background: var(--surface-raised);
-    border: 1px solid var(--border);
-    border-radius: 0.5rem;
+    background: var(--panel);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius-sm);
   }
 
   .arch-title {
     font-size: 1rem;
     font-weight: 600;
-    color: var(--text-primary);
+    color: var(--ink);
     margin-bottom: 0.5rem;
   }
 
   .arch-desc {
     font-size: 0.875rem;
     line-height: 1.6;
-    color: var(--text-secondary);
+    color: var(--ink-soft);
   }
 
   .api-section {
@@ -465,22 +475,23 @@ db.close()</code></pre>
 
   .api-item {
     padding: 0.875rem 1rem;
-    background: var(--surface-raised);
-    border-left: 2px solid var(--border);
+    background: var(--panel);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius-sm);
   }
 
   .api-method {
-    font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, monospace;
+    font-family: var(--font-mono-g);
     font-size: 0.875rem;
     font-weight: 600;
-    color: var(--blueprint);
+    color: var(--ink);
     margin-bottom: 0.375rem;
   }
 
   .api-desc {
     font-size: 0.875rem;
     line-height: 1.6;
-    color: var(--text-secondary);
+    color: var(--ink-soft);
   }
 
   .metrics-grid {
@@ -490,29 +501,29 @@ db.close()</code></pre>
 
   .metric-item {
     padding: 1rem;
-    background: var(--surface-raised);
-    border: 1px solid var(--border);
-    border-radius: 0.5rem;
+    background: var(--panel);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius-sm);
   }
 
   .metric-name {
     font-size: 1rem;
     font-weight: 600;
-    color: var(--text-primary);
+    color: var(--ink);
     margin-bottom: 0.375rem;
   }
 
   .metric-code {
-    font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, monospace;
+    font-family: var(--font-mono-g);
     font-size: 0.8125rem;
-    color: var(--text-tertiary);
+    color: var(--ink-mute);
     margin-bottom: 0.5rem;
   }
 
   .metric-desc {
     font-size: 0.875rem;
     line-height: 1.6;
-    color: var(--text-secondary);
+    color: var(--ink-soft);
   }
 
   .why-grid {
@@ -526,9 +537,9 @@ db.close()</code></pre>
     flex-direction: column;
     gap: 0.5rem;
     padding: 1.25rem;
-    background: var(--surface-raised);
-    border: 1px solid var(--border);
-    border-radius: 0.5rem;
+    background: var(--panel);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius-sm);
   }
 
   .why-icon {
@@ -539,13 +550,13 @@ db.close()</code></pre>
   .why-title {
     font-size: 1rem;
     font-weight: 600;
-    color: var(--text-primary);
+    color: var(--ink);
   }
 
   .why-desc {
     font-size: 0.875rem;
     line-height: 1.5;
-    color: var(--text-secondary);
+    color: var(--ink-soft);
   }
 
   .stats-row {
@@ -560,20 +571,20 @@ db.close()</code></pre>
     align-items: center;
     gap: 0.5rem;
     padding: 1.5rem;
-    background: var(--surface-raised);
-    border: 1px solid var(--border);
-    border-radius: 0.5rem;
+    background: var(--panel);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius-sm);
   }
 
   .stat-value {
     font-size: 2rem;
     font-weight: 700;
-    color: var(--text-primary);
+    color: var(--ink);
   }
 
   .stat-label {
     font-size: 0.875rem;
-    color: var(--text-tertiary);
+    color: var(--ink-mute);
     text-align: center;
   }
 
@@ -583,10 +594,6 @@ db.close()</code></pre>
   }
 
   @media (max-width: 768px) {
-    .page-title {
-      font-size: 2rem;
-    }
-
     .section h2 {
       font-size: 1.25rem;
     }

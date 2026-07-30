@@ -4,21 +4,16 @@
     <meta charset="utf-8" />
     <link rel="icon" href="%sveltekit.assets%/favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#1B3FA0" />
+    <meta name="theme-color" content="#060607" />
     <script>
       (function () {
         try {
           var k = "ifkash-theme";
           var s = localStorage.getItem(k);
-          var t =
-            s === "light" || s === "dark"
-              ? s
-              : window.matchMedia("(prefers-color-scheme: dark)").matches
-                ? "dark"
-                : "light";
+          var t = s === "light" || s === "dark" ? s : "dark";
           document.documentElement.setAttribute("data-theme", t);
         } catch (e) {
-          document.documentElement.setAttribute("data-theme", "light");
+          document.documentElement.setAttribute("data-theme", "dark");
         }
       })();
     </script>

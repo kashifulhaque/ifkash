@@ -320,21 +320,24 @@ POSTGRES_DB=db-name</code></pre>
     flex-direction: column;
     gap: 1rem;
     padding-bottom: 2rem;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--line-soft);
   }
 
   .breadcrumb {
-    font-size: 0.875rem;
-    color: var(--text-tertiary);
+    font-family: var(--font-mono-g);
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-faint);
   }
 
   .breadcrumb a {
-    color: var(--text-tertiary);
+    color: var(--text-faint);
     transition: color var(--dur-instant) var(--ease-out-quart);
   }
 
   .breadcrumb a:hover {
-    color: var(--text-primary);
+    color: var(--signal-hi);
   }
 
   .separator {
@@ -342,9 +345,11 @@ POSTGRES_DB=db-name</code></pre>
   }
 
   .page-title {
-    font-size: 2.5rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
+    font-family: var(--font-dots);
+    font-size: clamp(2.4rem, 6vw, 4rem);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
     color: var(--text-primary);
     margin: 0;
   }
@@ -362,20 +367,24 @@ POSTGRES_DB=db-name</code></pre>
   }
 
   .project-link {
-    font-size: 0.75rem;
+    font-family: var(--font-mono-g);
+    font-size: 0.7rem;
     font-weight: 500;
     color: var(--text-faint);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    transition: color var(--dur-instant) var(--ease-out-quart);
+    letter-spacing: 0.12em;
+    transition: color var(--dur-instant) var(--ease-out-quart),
+      background-color var(--dur-instant) var(--ease-out-quart),
+      border-color var(--dur-instant) var(--ease-out-quart);
     padding: 0.5rem 1rem;
-    border: 1px solid var(--border);
-    border-radius: 0.375rem;
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius-sm);
   }
 
   .project-link:hover {
-    color: var(--text-primary);
-    border-color: var(--border-strong);
+    background: var(--ink);
+    color: var(--void);
+    border-color: var(--ink);
   }
 
   .content {
@@ -388,7 +397,8 @@ POSTGRES_DB=db-name</code></pre>
     font-size: 1.5rem;
     font-weight: 600;
     color: var(--text-primary);
-    letter-spacing: -0.01em;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
     margin-bottom: 1rem;
   }
 
@@ -426,9 +436,9 @@ POSTGRES_DB=db-name</code></pre>
     flex-direction: column;
     gap: 0.5rem;
     padding: 1.25rem;
-    background: var(--surface-raised);
-    border: 1px solid var(--border);
-    border-radius: 0.5rem;
+    background: var(--panel);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius-sm);
   }
 
   .feature-icon {
@@ -456,8 +466,9 @@ POSTGRES_DB=db-name</code></pre>
 
   .arch-item {
     padding: 1rem;
-    background: var(--surface-raised);
-    border-left: 2px solid var(--border);
+    background: var(--panel);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius-sm);
   }
 
   .arch-name {
@@ -481,23 +492,23 @@ POSTGRES_DB=db-name</code></pre>
 
   .command-item {
     padding: 0.875rem 1rem;
-    background: var(--surface-raised);
-    border: 1px solid var(--border);
-    border-radius: 0.375rem;
+    background: var(--panel);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius-sm);
   }
 
   .command-name {
-    font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, monospace;
+    font-family: var(--font-mono-g);
     font-size: 0.875rem;
     font-weight: 600;
-    color: var(--blueprint);
+    color: var(--ink);
     margin-bottom: 0.375rem;
   }
 
   .command-desc {
     font-size: 0.8125rem;
     line-height: 1.5;
-    color: var(--text-tertiary);
+    color: var(--text-faint);
   }
 
   .api-list {
@@ -513,12 +524,13 @@ POSTGRES_DB=db-name</code></pre>
     line-height: 1.6;
     color: var(--text-secondary);
     padding: 0.5rem 0.75rem;
-    background: var(--surface-raised);
-    border-left: 2px solid var(--border);
+    background: var(--panel);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius-sm);
   }
 
   .api-list code {
-    font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, monospace;
+    font-family: var(--font-mono-g);
     font-size: 0.875rem;
     color: var(--text-secondary);
   }
@@ -526,19 +538,19 @@ POSTGRES_DB=db-name</code></pre>
   .api-note {
     margin-top: 1rem;
     padding: 1rem;
-    background: var(--surface-raised);
-    border: 1px solid var(--border);
-    border-radius: 0.375rem;
+    background: var(--panel);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius-sm);
     font-size: 0.875rem;
   }
 
   .api-note code {
-    font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, monospace;
+    font-family: var(--font-mono-g);
     font-size: 0.875rem;
     color: var(--text-secondary);
-    background: var(--surface-sunken);
+    background: var(--panel-hi);
     padding: 0.125rem 0.375rem;
-    border-radius: 0.25rem;
+    border-radius: var(--radius-sm);
   }
 
   .tech-grid {
@@ -548,9 +560,9 @@ POSTGRES_DB=db-name</code></pre>
 
   .tech-item {
     padding: 1rem;
-    background: var(--surface-raised);
-    border: 1px solid var(--border);
-    border-radius: 0.5rem;
+    background: var(--panel);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius-sm);
   }
 
   .tech-category {
@@ -571,10 +583,10 @@ POSTGRES_DB=db-name</code></pre>
   .tech-tag {
     font-size: 0.8125rem;
     color: var(--text-secondary);
-    background: var(--surface-sunken);
+    background: var(--panel-hi);
     padding: 0.375rem 0.75rem;
-    border-radius: 0.25rem;
-    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--line-soft);
   }
 
   .extend-list,
@@ -600,23 +612,23 @@ POSTGRES_DB=db-name</code></pre>
     content: '→';
     position: absolute;
     left: 0;
-    color: var(--text-faint);
+    color: var(--signal);
   }
 
   .extend-list code,
   .structure-list code {
-    font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, monospace;
+    font-family: var(--font-mono-g);
     font-size: 0.875rem;
     color: var(--text-secondary);
-    background: var(--surface-raised);
+    background: var(--panel-hi);
     padding: 0.125rem 0.375rem;
-    border-radius: 0.25rem;
+    border-radius: var(--radius-sm);
   }
 
   .code-block {
-    background: var(--surface-raised);
-    border: 1px solid var(--border);
-    border-radius: 0.5rem;
+    background: var(--code-bg);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius-sm);
     overflow-x: auto;
   }
 
@@ -626,7 +638,7 @@ POSTGRES_DB=db-name</code></pre>
   }
 
   .code-block code {
-    font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+    font-family: var(--font-mono-g);
     font-size: 0.875rem;
     line-height: 1.6;
     color: var(--text-secondary);
@@ -638,10 +650,6 @@ POSTGRES_DB=db-name</code></pre>
   }
 
   @media (max-width: 768px) {
-    .page-title {
-      font-size: 2rem;
-    }
-
     .section h2 {
       font-size: 1.25rem;
     }

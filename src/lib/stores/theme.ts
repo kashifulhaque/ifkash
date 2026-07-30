@@ -5,20 +5,16 @@ export type Theme = 'light' | 'dark';
 
 const KEY = 'ifkash-theme';
 
-function preferred(): Theme {
-	return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-}
-
 function initial(): Theme {
-	if (!browser) return 'light';
+	if (!browser) return 'dark';
 	const saved = localStorage.getItem(KEY);
-	return saved === 'light' || saved === 'dark' ? saved : preferred();
+	return saved === 'light' || saved === 'dark' ? saved : 'dark';
 }
 
 function apply(t: Theme): void {
 	document.documentElement.setAttribute('data-theme', t);
 	const meta = document.querySelector('meta[name="theme-color"]');
-	if (meta) meta.setAttribute('content', t === 'dark' ? '#0e0e10' : '#1b3fa0');
+	if (meta) meta.setAttribute('content', t === 'dark' ? '#060607' : '#f1f1ec');
 }
 
 export const theme = writable<Theme>(initial());
@@ -27,11 +23,6 @@ if (browser) {
 	// Reflect every change onto <html data-theme> (the inline script in
 	// app.html already sets this before paint, so there is no flash).
 	theme.subscribe(apply);
-
-	// Follow the OS preference live, but only until the user picks explicitly.
-	window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-		if (!localStorage.getItem(KEY)) theme.set(e.matches ? 'dark' : 'light');
-	});
 }
 
 export function toggleTheme(): void {

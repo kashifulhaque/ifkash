@@ -13,7 +13,7 @@ import { AmmoPickup, PICKUP_RANGE, PICKUP_DESPAWN_DIST } from './pickups';
 import { Shooter } from './shooting';
 import { GameAudio } from './audio';
 import { ViewModel } from './viewmodel';
-import { Vehicle, VehicleManager } from './vehicle';
+import { CAR_RADIUS, Vehicle, VehicleManager } from './vehicle';
 import { preloadAll } from './assets';
 
 export const MAG_SIZE = 12;
@@ -48,6 +48,8 @@ export type GameOptions = {
 const COMBO_WINDOW = 3; // seconds before the combo decays (base; perks extend)
 const COMBO_MULT_CAP = 5;
 const ALL_SECTIONS_BONUS = 2500; // one-time award for viewing every section
+// Reused each frame as the driving chase-cam look target (avoids per-frame alloc).
+const _camTarget = new THREE.Vector3();
 
 export class Game implements PerkContext {
   input: InputManager;
@@ -380,6 +382,27 @@ export class Game implements PerkContext {
     this.setPrompt(null);
   }
 
+  /** Driving: smash through any NPC the chassis overlaps while moving. */
+  private runOverNpcs(car: Vehicle) {
+    const speed = Math.abs(car.speed);
+    if (speed < 1.2) return; // a crawl doesn't splat
+    const damage = Math.round(50 + speed * 10);
+    const reach = CAR_RADIUS + 0.6; // car radius + NPC half-width
+    const reachSq = reach * reach;
+    for (const npc of this.npcs.npcs) {
+      if (npc.state === 'dead') continue;
+      const dx = npc.group.position.x - car.x;
+      const dz = npc.group.position.z - car.z;
+      if (dx * dx + dz * dz > reachSq) continue;
+      const killed = npc.hit(damage);
+      this.callbacks.onHitMarker(false, killed);
+      if (killed) this.registerKillScore(npc.scoreValue, false);
+      this.audio.melee(); // impact thump
+      car.speed *= 0.82; // bleed a little momentum on the hit
+      this.player.shake(0.05);
+    }
+  }
+
   // Most kills drop a small randomized ammo box, collected by walking over it
   private dropAmmo(npc: Npc) {
     if (Math.random() > this.dropChance) return;
@@ -431,14 +454,14 @@ export class Game implements PerkContext {
           ...this.chunks.collidersNear(car.x, car.z),
           ...this.vehicles.colliders(car.x, car.z)
         ]);
-        this.player.yaw -= input.lookDX * 0.0023;
-        this.player.pitch = Math.max(
-          -1.2,
-          Math.min(1.2, this.player.pitch - input.lookDY * 0.0023)
-        );
-        car.seatWorld(this.player.position);
+        this.runOverNpcs(car);
+        // 3rd-person chase cam: locked behind the car, looking ahead over the
+        // roof. Mouse-look is intentionally inert while driving.
+        car.chaseCam(this.player.position);
         this.player.camera.position.copy(this.player.position);
-        this.player.camera.rotation.set(this.player.pitch, this.player.yaw, 0, 'YXZ');
+        car.chaseTarget(_camTarget);
+        this.player.camera.lookAt(_camTarget);
+        this.player.yaw = car.yaw + Math.PI; // keep the compass synced to heading
         this.setPrompt('EXIT THE CAR');
         if (input.interactQueued) this.exitCar();
       } else {

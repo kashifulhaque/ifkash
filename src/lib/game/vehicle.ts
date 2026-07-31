@@ -8,7 +8,13 @@ import { loadModel, cloneStatic, VEHICLE_MODELS } from './assets';
 import { normalizeHeight } from './chunks';
 
 const CAR_HEIGHT = 1.5;
-const RADIUS = 1.3; // collision circle
+export const CAR_RADIUS = 1.3; // collision circle
+// 3rd-person chase camera: how far behind the car the camera sits, how high,
+// how far ahead the look-target leads the car, and the body-height aim line.
+const CHASE_DIST = 6.2;
+const CHASE_HEIGHT = 3.4;
+const CHASE_LOOK_AHEAD = 3.5;
+const CHASE_TARGET_Y = 1.1;
 const ACCEL = 14;
 const BRAKE = 26;
 const REVERSE_ACCEL = 9;
@@ -61,12 +67,35 @@ export class Vehicle {
     return out;
   }
 
+  /** Third-person chase anchor: behind the car along its heading, raised so
+   * the roof sits in the lower third of the frame. */
+  chaseCam(out: THREE.Vector3): THREE.Vector3 {
+    const fx = Math.sin(this.yaw);
+    const fz = Math.cos(this.yaw);
+    return out.set(
+      this.x - fx * CHASE_DIST,
+      terrainHeight(this.x, this.z) + CHASE_HEIGHT,
+      this.z - fz * CHASE_DIST
+    );
+  }
+
+  /** Point ahead of the car at body height — what the chase camera looks at. */
+  chaseTarget(out: THREE.Vector3): THREE.Vector3 {
+    const fx = Math.sin(this.yaw);
+    const fz = Math.cos(this.yaw);
+    return out.set(
+      this.x + fx * CHASE_LOOK_AHEAD,
+      terrainHeight(this.x, this.z) + CHASE_TARGET_Y,
+      this.z + fz * CHASE_LOOK_AHEAD
+    );
+  }
+
   collider(): AABB {
     return {
-      minX: this.x - RADIUS,
-      maxX: this.x + RADIUS,
-      minZ: this.z - RADIUS,
-      maxZ: this.z + RADIUS
+      minX: this.x - CAR_RADIUS,
+      maxX: this.x + CAR_RADIUS,
+      minZ: this.z - CAR_RADIUS,
+      maxZ: this.z + CAR_RADIUS
     };
   }
 
@@ -94,7 +123,7 @@ export class Vehicle {
     let nz = this.z + Math.cos(this.yaw) * this.speed * dt;
     let hit = false;
     for (const box of colliders) {
-      const [rx, rz] = resolveCircleAABB(nx, nz, RADIUS, box);
+      const [rx, rz] = resolveCircleAABB(nx, nz, CAR_RADIUS, box);
       if (rx !== nx || rz !== nz) hit = true;
       nx = rx;
       nz = rz;

@@ -108,6 +108,23 @@ export function slopeAt(x: number, z: number): number {
   return Math.hypot(gx, gz);
 }
 
+// ── Biomes ────────────────────────────────────────────────────────────────
+// Coarse moisture/temperature fields carve the world into regions with
+// distinct character (forest, meadow, desert, autumn grove). Pure in (x, z)
+// like everything else here, so chunk seams and revisits always agree and the
+// ground tint + flora density/species stay coherent across a biome edge.
+export type Biome = 'grassland' | 'forest' | 'meadow' | 'autumn' | 'desert';
+
+export function biomeAt(x: number, z: number): Biome {
+  const temp = valueNoise(x / 150, z / 150, 505);
+  const moist = valueNoise(x / 120, z / 120, 606);
+  if (temp > 0.6 && moist < 0.42) return 'desert';
+  if (temp < 0.4 && moist > 0.45 && moist < 0.72) return 'autumn';
+  if (moist > 0.62) return 'forest';
+  if (moist < 0.4 && temp > 0.45) return 'meadow';
+  return 'grassland';
+}
+
 // ── Villages ──────────────────────────────────────────────────────────────
 
 const TIER_PARAMS: Record<

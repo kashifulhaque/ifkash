@@ -57,6 +57,18 @@ export const NATURE_MODELS = {
     '/models/nature/Willow_2.glb',
     '/models/nature/PalmTree_1.glb'
   ],
+  // Biome-flavored tree picks (subsets of trees/riverTrees, all preloaded)
+  autumnTrees: [
+    '/models/nature/CommonTree_Dead_1.glb',
+    '/models/nature/BirchTree_1.glb',
+    '/models/nature/BirchTree_2.glb',
+    '/models/nature/CommonTree_4.glb'
+  ],
+  dryTrees: [
+    '/models/nature/PalmTree_1.glb',
+    '/models/nature/CommonTree_Dead_1.glb',
+    '/models/nature/Willow_2.glb'
+  ],
   rocks: [
     '/models/nature/Rock_Moss_1.glb',
     '/models/nature/Rock_Moss_4.glb',

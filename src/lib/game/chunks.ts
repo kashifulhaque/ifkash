@@ -9,6 +9,8 @@ import {
   riverCarveAt,
   waterLevel,
   slopeAt,
+  biomeAt,
+  type Biome,
   villageContaining,
   villagePlan,
   REGION
@@ -25,6 +27,43 @@ const ROCK_COLORS = [0x8d8d85, 0x7f7f78, 0x96968c];
 const SNOW_COLORS = [0xe8e8ec, 0xdfe2e8, 0xf2f2f6];
 const RIVERBED_COLORS = [0x8a7a5c, 0x817152, 0x938265]; // wet mud under the water
 const BANK_COLORS = [0xc2b280, 0xb8a96f, 0xccbd8d]; // sandy banks
+
+// ── Biome flora & ground tables ───────────────────────────────────────────
+// Ground tint per biome (3-shade palette, indexed like GROUND_COLORS).
+const BIOME_GROUND: Record<Biome, number[]> = {
+  grassland: [0x8bc34a, 0x7cb342, 0x9ccc65], // lush default greens
+  forest: [0x4f7a38, 0x577f3c, 0x476f30], // darker mossy forest floor
+  meadow: [0x9fae4a, 0xaab658, 0x93a440], // golden-green (flowers & wheat)
+  autumn: [0xa07a3a, 0xb3884a, 0x8e6a30], // warm ochre
+  desert: [0xd6c683, 0xcab677, 0xe0d09a] // sand
+};
+// Tree species per biome (subsets of NATURE_MODELS, all preloaded).
+const TREE_POOLS: Record<Biome, string[]> = {
+  grassland: NATURE_MODELS.trees,
+  forest: NATURE_MODELS.trees,
+  meadow: NATURE_MODELS.trees,
+  autumn: NATURE_MODELS.autumnTrees,
+  desert: NATURE_MODELS.dryTrees
+};
+// Undergrowth picks per biome (subsets of NATURE_MODELS.smalls).
+const SMALL_POOLS: Record<Biome, string[]> = {
+  grassland: NATURE_MODELS.smalls,
+  forest: [
+    '/models/nature/Bush_1.glb', '/models/nature/Bush_2.glb', '/models/nature/Plant_1.glb',
+    '/models/nature/Plant_2.glb', '/models/nature/Grass_2.glb', '/models/nature/Grass_Short.glb',
+    '/models/nature/TreeStump_Moss.glb', '/models/nature/WoodLog_Moss.glb'
+  ],
+  meadow: [
+    '/models/nature/Flowers.glb', '/models/nature/Wheat.glb', '/models/nature/Grass.glb',
+    '/models/nature/Grass_2.glb', '/models/nature/Grass_Short.glb', '/models/nature/BushBerries_1.glb',
+    '/models/nature/Plant_1.glb'
+  ],
+  autumn: [
+    '/models/nature/Bush_1.glb', '/models/nature/Bush_2.glb', '/models/nature/Grass_Short.glb',
+    '/models/nature/TreeStump_Moss.glb', '/models/nature/WoodLog_Moss.glb'
+  ],
+  desert: ['/models/nature/Grass_Short.glb', '/models/nature/Grass_2.glb']
+};
 
 // Scale a model so its bounding-box height matches target.
 export function normalizeHeight(obj: THREE.Object3D, target: number) {
@@ -110,7 +149,14 @@ export class ChunkManager {
     geo.rotateX(-Math.PI / 2);
     const pos = geo.attributes.position;
     const colors: number[] = [];
-    const palette = GROUND_COLORS.map((c) => new THREE.Color(c));
+    const toCols = (hex: number[]) => hex.map((c) => new THREE.Color(c));
+    const biomePalettes: Record<Biome, THREE.Color[]> = {
+      grassland: toCols(BIOME_GROUND.grassland),
+      forest: toCols(BIOME_GROUND.forest),
+      meadow: toCols(BIOME_GROUND.meadow),
+      autumn: toCols(BIOME_GROUND.autumn),
+      desert: toCols(BIOME_GROUND.desert)
+    };
     const roadPalette = ROAD_COLORS.map((c) => new THREE.Color(c));
     const villagePalette = VILLAGE_COLORS.map((c) => new THREE.Color(c));
     const rockPalette = ROCK_COLORS.map((c) => new THREE.Color(c));
@@ -125,7 +171,7 @@ export class ChunkManager {
       pos.setY(i, h);
       maxCarve = Math.max(maxCarve, riverCarveAt(wx, wz));
       const pick = Math.floor(Math.abs(Math.sin(wx * 12.9898 + wz * 78.233) * 43758.5453) % 1 * 3) % 3;
-      let c = palette[pick];
+      let c = biomePalettes[biomeAt(wx, wz)][pick];
       const rf = riverFactor(wx, wz);
       if (roadFactor(wx, wz) > 0.5) c = roadPalette[pick];
       else if (rf > 0.55) c = bedPalette[pick];
@@ -200,13 +246,20 @@ export class ChunkManager {
       return Math.abs(terrainHeight(x + 1, z) - h) + Math.abs(terrainHeight(x, z + 1) - h) > 1.5;
     };
 
-    // Trees: wide size spread, with the occasional giant; willows and palms
-    // crowd the riverbanks
-    const nTrees = 2 + Math.floor(rng() * 4);
+    // Trees: density and species follow the biome — thick forests, open
+    // meadows, skeletal autumn groves, parched desert stands. Willows and
+    // palms still crowd the riverbanks regardless of biome.
+    const chunkBiome = biomeAt(ox + CHUNK_SIZE / 2, oz + CHUNK_SIZE / 2);
+    const nTrees =
+      chunkBiome === 'forest' ? 5 + Math.floor(rng() * 5)
+      : chunkBiome === 'autumn' ? 3 + Math.floor(rng() * 3)
+      : chunkBiome === 'meadow' ? Math.floor(rng() * 2)
+      : chunkBiome === 'desert' ? Math.floor(rng() * 2)
+      : 2 + Math.floor(rng() * 4);
     for (let i = 0; i < nTrees; i++) {
       const [x, z] = spot();
       const rf = riverFactor(x, z);
-      const pool = rf > 0.02 && rf <= 0.2 ? NATURE_MODELS.riverTrees : NATURE_MODELS.trees;
+      const pool = rf > 0.02 && rf <= 0.2 ? NATURE_MODELS.riverTrees : TREE_POOLS[biomeAt(x, z)];
       const url = pool[Math.floor(rng() * pool.length)];
       const giant = rng() < 0.1;
       const h = giant ? 10 + rng() * 4 : 4 + rng() * 4.5;
@@ -251,8 +304,11 @@ export class ChunkManager {
         });
       }
     }
-    // Rocks
-    const nRocks = 1 + Math.floor(rng() * 3);
+    // Rocks: deserts and autumn slopes are stonier; meadows stay clear.
+    const nRocks =
+      chunkBiome === 'desert' ? 3 + Math.floor(rng() * 4)
+      : chunkBiome === 'meadow' ? Math.floor(rng() * 2)
+      : 1 + Math.floor(rng() * 3);
     for (let i = 0; i < nRocks; i++) {
       const [x, z] = spot();
       const url = NATURE_MODELS.rocks[Math.floor(rng() * NATURE_MODELS.rocks.length)];
@@ -260,14 +316,51 @@ export class ChunkManager {
       const rot = rng() * Math.PI * 2;
       if (!blocked(x, z)) place(url, x, z, h, rot, h * 0.8);
     }
-    // Small decor (no collision)
-    const nSmall = 4 + Math.floor(rng() * 6);
+    // Small decor (no collision): lush undergrowth in forests, wildflowers
+    // and wheat in meadows, sparse tufts out in the desert.
+    const nSmall =
+      chunkBiome === 'meadow' ? 8 + Math.floor(rng() * 8)
+      : chunkBiome === 'forest' ? 6 + Math.floor(rng() * 6)
+      : chunkBiome === 'desert' ? 1 + Math.floor(rng() * 2)
+      : chunkBiome === 'autumn' ? 3 + Math.floor(rng() * 4)
+      : 4 + Math.floor(rng() * 6);
     for (let i = 0; i < nSmall; i++) {
       const [x, z] = spot();
-      const url = NATURE_MODELS.smalls[Math.floor(rng() * NATURE_MODELS.smalls.length)];
+      const pool = SMALL_POOLS[biomeAt(x, z)];
+      const url = pool[Math.floor(rng() * pool.length)];
       const h = 0.3 + rng() * 0.6;
       const rot = rng() * Math.PI * 2;
       if (!blocked(x, z)) place(url, x, z, h, rot, null);
+    }
+    // Biome points of interest: a blooming meadow patch, a forest clearing
+    // with fallen logs, or a ring of desert boulders — little landmarks
+    // that break up the open land.
+    if (chunkBiome === 'meadow' && rng() < 0.5) {
+      const [px, pz] = spot();
+      for (let i = 0; i < 10; i++) {
+        const x = px + (rng() - 0.5) * 5;
+        const z = pz + (rng() - 0.5) * 5;
+        const url = rng() < 0.5 ? '/models/nature/Wheat.glb' : '/models/nature/Flowers.glb';
+        if (!blocked(x, z)) place(url, x, z, 0.5 + rng() * 0.5, rng() * Math.PI * 2, null);
+      }
+    } else if (chunkBiome === 'forest' && rng() < 0.4) {
+      const [x, z] = spot();
+      if (!blocked(x, z)) {
+        place('/models/nature/WoodLog_Moss.glb', x, z, 1.1 + rng() * 0.4, rng() * Math.PI * 2, 0.7);
+        place('/models/nature/TreeStump_Moss.glb', x + 1.2, z + 0.6, 0.9, rng() * Math.PI * 2, 0.5);
+      }
+    } else if ((chunkBiome === 'desert' || chunkBiome === 'autumn') && rng() < 0.3) {
+      const [px, pz] = spot();
+      if (!blocked(px, pz)) {
+        const n = 3 + Math.floor(rng() * 3);
+        for (let i = 0; i < n; i++) {
+          const a = (i / n) * Math.PI * 2;
+          const x = px + Math.cos(a) * 1.4;
+          const z = pz + Math.sin(a) * 1.4;
+          const url = NATURE_MODELS.rocks[Math.floor(rng() * NATURE_MODELS.rocks.length)];
+          if (!blocked(x, z)) place(url, x, z, 0.9 + rng() * 0.8, rng() * Math.PI * 2, 0.7);
+        }
+      }
     }
     // Cover cluster in ~40% of chunks: crates/barrels/carts to duck behind
     if (rng() < 0.4) {

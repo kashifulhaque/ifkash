@@ -28,8 +28,70 @@ const PHASES: Phase[] = [
 
 // Sky, fog, day/night lighting, stars and clouds that drift along with the
 // player so the infinite world always has scenery overhead.
+
+// A loose flock of birds circling high over the player — cheap life for the
+// sky. Each bird is a tiny dart with two flapping wings; the flock recenters
+// on the player each frame so it always reads as ambient wildlife overhead.
+class BirdFlock {
+  private group = new THREE.Group();
+  private birds: {
+    mesh: THREE.Group;
+    wings: [THREE.Mesh, THREE.Mesh];
+    radius: number;
+    ang: number;
+    speed: number;
+    y: number;
+    bob: number;
+  }[] = [];
+  private time = 0;
+
+  constructor(scene: THREE.Scene) {
+    const mat = new THREE.MeshLambertMaterial({ color: 0x2a2a30, flatShading: true });
+    const bodyGeo = new THREE.ConeGeometry(0.16, 0.7, 4);
+    const wingGeo = new THREE.BoxGeometry(0.5, 0.04, 0.8);
+    for (let i = 0; i < 12; i++) {
+      const mesh = new THREE.Group();
+      const body = new THREE.Mesh(bodyGeo, mat);
+      body.rotation.z = -Math.PI / 2; // nose points +x (forward)
+      const lw = new THREE.Mesh(wingGeo, mat);
+      lw.position.z = 0.4;
+      const rw = new THREE.Mesh(wingGeo, mat);
+      rw.position.z = -0.4;
+      mesh.add(body, lw, rw);
+      this.birds.push({
+        mesh,
+        wings: [lw, rw],
+        radius: 14 + Math.random() * 18,
+        ang: Math.random() * Math.PI * 2,
+        speed: 0.25 + Math.random() * 0.25,
+        y: 17 + Math.random() * 8,
+        bob: Math.random() * Math.PI * 2
+      });
+      this.group.add(mesh);
+    }
+    scene.add(this.group);
+  }
+
+  update(dt: number, px: number, pz: number) {
+    this.time += dt;
+    for (const b of this.birds) {
+      b.ang += b.speed * dt;
+      b.mesh.position.set(
+        px + Math.cos(b.ang) * b.radius,
+        b.y + Math.sin(this.time * 1.4 + b.bob) * 0.6,
+        pz + Math.sin(b.ang) * b.radius
+      );
+      // Face the direction of travel (tangent to the circle)
+      b.mesh.rotation.y = -b.ang - Math.PI / 2;
+      const flap = Math.sin(this.time * 9 + b.bob) * 0.6;
+      b.wings[0].rotation.x = flap;
+      b.wings[1].rotation.x = flap;
+    }
+  }
+}
 export class Environment {
   private clouds: THREE.Group[] = [];
+  private birds: BirdFlock;
   private sun: THREE.DirectionalLight;
   private hemi: THREE.HemisphereLight;
   private scene: THREE.Scene;
@@ -97,6 +159,7 @@ export class Environment {
       scene.add(cloud);
       this.clouds.push(cloud);
     }
+    this.birds = new BirdFlock(scene);
   }
 
   // Lerp lighting between the two keyframes bracketing timeOfDay.
@@ -160,5 +223,6 @@ export class Environment {
       if (cloud.position.z - pz > 90) cloud.position.z = pz - 90;
       if (cloud.position.z - pz < -90) cloud.position.z = pz + 90;
     }
+    this.birds.update(dt, px, pz);
   }
 }

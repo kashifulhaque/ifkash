@@ -49,20 +49,33 @@ const TREE_POOLS: Record<Biome, string[]> = {
 const SMALL_POOLS: Record<Biome, string[]> = {
   grassland: NATURE_MODELS.smalls,
   forest: [
-    '/models/nature/Bush_1.glb', '/models/nature/Bush_2.glb', '/models/nature/Plant_1.glb',
-    '/models/nature/Plant_2.glb', '/models/nature/Grass_2.glb', '/models/nature/Grass_Short.glb',
-    '/models/nature/TreeStump_Moss.glb', '/models/nature/WoodLog_Moss.glb'
+    '/models/nature/bush-round-01.glb',
+    '/models/nature/lineside-shrub.glb',
+    '/models/nature/hedgerow-run.glb',
+    '/models/nature/grass-tuft-scatter.glb',
+    '/models/nature/rubble-scatter.glb',
+    '/models/nature/rockfall-debris.glb'
   ],
   meadow: [
-    '/models/nature/Flowers.glb', '/models/nature/Wheat.glb', '/models/nature/Grass.glb',
-    '/models/nature/Grass_2.glb', '/models/nature/Grass_Short.glb', '/models/nature/BushBerries_1.glb',
-    '/models/nature/Plant_1.glb'
+    '/models/nature/wheat-cluster.glb',
+    '/models/nature/flower-planter-01.glb',
+    '/models/nature/grass-tuft-scatter.glb',
+    '/models/nature/dune-grass-tuft.glb',
+    '/models/nature/bush-round-01.glb',
+    '/models/nature/plaza-planter-01.glb'
   ],
   autumn: [
-    '/models/nature/Bush_1.glb', '/models/nature/Bush_2.glb', '/models/nature/Grass_Short.glb',
-    '/models/nature/TreeStump_Moss.glb', '/models/nature/WoodLog_Moss.glb'
+    '/models/nature/bush-round-01.glb',
+    '/models/nature/lineside-shrub.glb',
+    '/models/nature/grass-tuft-scatter.glb',
+    '/models/nature/rubble-scatter.glb'
   ],
-  desert: ['/models/nature/Grass_Short.glb', '/models/nature/Grass_2.glb']
+  desert: [
+    '/models/nature/desert-scrub.glb',
+    '/models/nature/dune-grass-tuft.glb',
+    '/models/nature/shell-pebble-scatter.glb',
+    '/models/nature/sandstone-boulder.glb'
+  ]
 };
 
 // Scale a model so its bounding-box height matches target.
@@ -340,14 +353,15 @@ export class ChunkManager {
       for (let i = 0; i < 10; i++) {
         const x = px + (rng() - 0.5) * 5;
         const z = pz + (rng() - 0.5) * 5;
-        const url = rng() < 0.5 ? '/models/nature/Wheat.glb' : '/models/nature/Flowers.glb';
+        const url =
+          rng() < 0.5 ? '/models/nature/wheat-cluster.glb' : '/models/nature/flower-planter-01.glb';
         if (!blocked(x, z)) place(url, x, z, 0.5 + rng() * 0.5, rng() * Math.PI * 2, null);
       }
     } else if (chunkBiome === 'forest' && rng() < 0.4) {
       const [x, z] = spot();
       if (!blocked(x, z)) {
-        place('/models/nature/WoodLog_Moss.glb', x, z, 1.1 + rng() * 0.4, rng() * Math.PI * 2, 0.7);
-        place('/models/nature/TreeStump_Moss.glb', x + 1.2, z + 0.6, 0.9, rng() * Math.PI * 2, 0.5);
+        place('/models/nature/rockfall-debris.glb', x, z, 1.1 + rng() * 0.4, rng() * Math.PI * 2, 0.7);
+        place('/models/nature/rubble-scatter.glb', x + 1.2, z + 0.6, 0.9, rng() * Math.PI * 2, 0.5);
       }
     } else if ((chunkBiome === 'desert' || chunkBiome === 'autumn') && rng() < 0.3) {
       const [px, pz] = spot();

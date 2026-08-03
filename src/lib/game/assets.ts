@@ -1,8 +1,15 @@
 import * as THREE from 'three';
 import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 import { clone as cloneSkeleton } from 'three/examples/jsm/utils/SkeletonUtils.js';
 
+const draco = new DRACOLoader();
+// threejsassets GLBs are Draco-compressed; pin a versioned decoder CDN.
+draco.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.7/');
+
 const loader = new GLTFLoader();
+loader.setDRACOLoader(draco);
+
 const cache = new Map<string, Promise<GLTF>>();
 
 export function loadModel(url: string): Promise<GLTF> {
@@ -37,88 +44,100 @@ export const NPC_MODELS: Record<string, string[]> = {
 
 export const NATURE_MODELS = {
   trees: [
-    '/models/nature/CommonTree_1.glb',
-    '/models/nature/CommonTree_2.glb',
-    '/models/nature/CommonTree_3.glb',
-    '/models/nature/CommonTree_4.glb',
-    '/models/nature/CommonTree_5.glb',
-    '/models/nature/CommonTree_Dead_1.glb',
-    '/models/nature/PineTree_1.glb',
-    '/models/nature/PineTree_2.glb',
-    '/models/nature/PineTree_3.glb',
-    '/models/nature/PineTree_5.glb',
-    '/models/nature/BirchTree_1.glb',
-    '/models/nature/BirchTree_2.glb',
-    '/models/nature/Willow_1.glb'
+    '/models/nature/apple-tree.glb',
+    '/models/nature/tree-oak-01.glb',
+    '/models/nature/lineside-oak.glb',
+    '/models/nature/lineside-pine.glb',
+    '/models/nature/street-tree-01.glb',
+    '/models/nature/metropolis-street-tree-01.glb',
+    '/models/nature/coconut-palm.glb',
+    '/models/nature/royal-palm.glb',
+    '/models/nature/date-palm.glb'
   ],
   // Waterside picks, biased onto riverbanks
   riverTrees: [
-    '/models/nature/Willow_1.glb',
-    '/models/nature/Willow_2.glb',
-    '/models/nature/PalmTree_1.glb'
+    '/models/nature/coconut-palm.glb',
+    '/models/nature/royal-palm.glb',
+    '/models/nature/papyrus-reed.glb',
+    '/models/nature/date-palm.glb'
   ],
   // Biome-flavored tree picks (subsets of trees/riverTrees, all preloaded)
   autumnTrees: [
-    '/models/nature/CommonTree_Dead_1.glb',
-    '/models/nature/BirchTree_1.glb',
-    '/models/nature/BirchTree_2.glb',
-    '/models/nature/CommonTree_4.glb'
+    '/models/nature/apple-tree.glb',
+    '/models/nature/tree-oak-01.glb',
+    '/models/nature/lineside-oak.glb',
+    '/models/nature/lineside-pine.glb'
   ],
   dryTrees: [
-    '/models/nature/PalmTree_1.glb',
-    '/models/nature/CommonTree_Dead_1.glb',
-    '/models/nature/Willow_2.glb'
+    '/models/nature/date-palm.glb',
+    '/models/nature/coconut-palm.glb',
+    '/models/nature/royal-palm.glb'
   ],
   rocks: [
-    '/models/nature/Rock_Moss_1.glb',
-    '/models/nature/Rock_Moss_4.glb',
-    '/models/nature/Rock_Moss_5.glb',
-    '/models/nature/Rock_1.glb',
-    '/models/nature/Rock_2.glb',
-    '/models/nature/Rock_5.glb',
-    '/models/nature/Rock_7.glb'
+    '/models/nature/railway-boulder.glb',
+    '/models/nature/railway-rock-cluster.glb',
+    '/models/nature/sandstone-boulder.glb',
+    '/models/nature/rockfall-debris.glb',
+    '/models/nature/rubble-scatter.glb',
+    '/models/nature/shell-pebble-scatter.glb'
   ],
   // Chunky silhouettes that read well scaled up on mountain faces
   cliffs: [
-    '/models/nature/Rock_3.glb',
-    '/models/nature/Rock_6.glb',
-    '/models/nature/Rock_Moss_6.glb'
+    '/models/nature/cutting-rock-face.glb',
+    '/models/nature/cutting-wall-corner.glb',
+    '/models/nature/retaining-wall-run.glb',
+    '/models/nature/rockfall-debris.glb'
   ],
   smalls: [
-    '/models/nature/Bush_1.glb',
-    '/models/nature/Bush_2.glb',
-    '/models/nature/BushBerries_1.glb',
-    '/models/nature/Grass_2.glb',
-    '/models/nature/Grass_Short.glb',
-    '/models/nature/Grass.glb',
-    '/models/nature/Flowers.glb',
-    '/models/nature/Plant_1.glb',
-    '/models/nature/Plant_2.glb',
-    '/models/nature/Wheat.glb',
-    '/models/nature/TreeStump_Moss.glb',
-    '/models/nature/WoodLog_Moss.glb'
+    '/models/nature/bush-round-01.glb',
+    '/models/nature/lineside-shrub.glb',
+    '/models/nature/desert-scrub.glb',
+    '/models/nature/dune-grass-tuft.glb',
+    '/models/nature/grass-tuft-scatter.glb',
+    '/models/nature/wheat-cluster.glb',
+    '/models/nature/flower-planter-01.glb',
+    '/models/nature/plaza-planter-01.glb',
+    '/models/nature/papyrus-reed.glb',
+    '/models/nature/hedgerow-run.glb'
   ],
+  // Quaternius lilypad — no free threejsassets equivalent
   lilypad: '/models/nature/Lilypad.glb'
 };
 
 export const VEHICLE_MODELS = [
-  '/models/vehicles/sedan.glb',
-  '/models/vehicles/suv.glb',
-  '/models/vehicles/hatchback-sports.glb',
-  '/models/vehicles/truck.glb',
-  '/models/vehicles/van.glb',
-  '/models/vehicles/taxi.glb'
+  '/models/vehicles/car-sedan-01.glb',
+  '/models/vehicles/sedan-01.glb',
+  '/models/vehicles/taxi-01.glb',
+  '/models/vehicles/metropolis-taxi-01.glb',
+  '/models/vehicles/pastel-sedan.glb',
+  '/models/vehicles/white-sports-convertible.glb'
 ];
 
 export const COVER_MODELS = [
-  '/models/props/Crate.glb',
-  '/models/props/Barrel.glb',
-  '/models/props/Fence.glb',
-  '/models/props/Cart.glb',
-  '/models/props/Hay.glb',
-  '/models/props/Bags.glb',
-  '/models/props/MarketStand_1.glb',
-  '/models/props/Bench_1.glb'
+  '/models/props/crate-01.glb',
+  '/models/props/barrel-01.glb',
+  '/models/props/oil-drum-stack.glb',
+  '/models/props/hay-bale-square.glb',
+  '/models/props/basket-set.glb',
+  '/models/props/bazaar-stall.glb',
+  '/models/props/bench-01.glb',
+  '/models/props/plaza-bench-01.glb',
+  '/models/props/terrazzo-bench.glb',
+  '/models/props/cafe-table-chairs.glb',
+  '/models/props/picket-fence-01.glb',
+  '/models/props/farm-gate.glb',
+  '/models/props/wheelbarrow.glb',
+  '/models/props/scarecrow.glb',
+  '/models/props/amphora.glb',
+  '/models/props/streetlamp-01.glb',
+  '/models/props/trash-bin.glb',
+  '/models/props/recycling-bin-01.glb',
+  '/models/props/fire-brazier.glb',
+  '/models/props/wall-torch.glb',
+  '/models/props/beach-umbrella.glb',
+  '/models/props/sun-lounger.glb',
+  '/models/nature/drystone-wall.glb',
+  '/models/nature/lineside-fence-run.glb'
 ];
 
 export async function preloadAll(): Promise<void> {
@@ -133,5 +152,5 @@ export async function preloadAll(): Promise<void> {
     ...COVER_MODELS,
     ...VEHICLE_MODELS
   ];
-  await Promise.all(urls.map(loadModel));
+  await Promise.all([...new Set(urls)].map(loadModel));
 }

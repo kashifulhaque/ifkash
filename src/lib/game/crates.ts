@@ -18,7 +18,7 @@ export class LootCrate {
 
     const accent = new THREE.Color(section.color);
     // Proper crate model, topped with a glowing accent lid
-    loadModel('/models/props/Crate.glb').then((gltf) => {
+    loadModel('/models/props/crate-01.glb').then((gltf) => {
       const crate = cloneStatic(gltf);
       normalizeHeight(crate, 0.85);
       this.group.add(crate);

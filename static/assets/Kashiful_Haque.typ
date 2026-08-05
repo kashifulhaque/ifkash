@@ -19,6 +19,7 @@ _Backend AI / ML Engineer_ #h(1fr) 11/2025 -- Present \
 - Implemented OAuth/OIDC credential flows with deferred auth, token refresh, and variable propagation across agentic tasks.
 - Built workflow specs: generates auth gateways, OAuth triggers, and injects credential references into tool environments.
 - Added dynamic tool support: agents can define, reference, and execute tools that resolve workflow state variables at runtime.
+- Maintain a Go service and contribute to a gRPC-based internal API powering agent execution.
 
 *#cardo[American Express]* #h(1fr) _Bangalore_ \
 _Engineer III_ #h(1fr) 02/2025 -- 11/2025 \
@@ -31,27 +32,28 @@ _Associate Software Engineer_ #h(1fr) 01/2023 -- 02/2025 \
 - Built Fiery Scribe: translates natural-language print requests to printer XML using ModernBERT + LLM, replacing brittle rule-based parsing.
 - Built AskDB: an LLM agent that maps natural language to SQL over production DBs and generates business reports for non-technical users.
 - Built Fiery Chat: internal RAG assistant on the company knowledge base; fine-tuned the base model with SFT to eliminate acronym hallucinations across new-hire onboarding and query routing.
-- Fine-tuned domain LLMs using SFT/QLoRA, served via vLLM on T4 clusters with sub-second p95 TTFT.
-
+- Fine-tuned domain LLMs using SFT/QLoRA, served via vLLM on T4 clusters with sub-second p95 TTFT; evaluated SGLang but chose vLLM for tool-calling support at the time.
+- Deployed multi-GPU inference (4x 1080 Ti) using Ray Serve for request routing and scaling.
 
 = #cardo_headings[ML Engineering Work]
 
 *#cardo[banana.cpp: LLM Inference Engine in C++]* • 
 #link("https://github.com/kashifulhaque/banana.cpp")[github] \
 - Inference engine with KV-cache, speculative decoding, and continuous batching; 10x speedup via CPU parallelization and fused kernel optimizations.
-- Focused on Apple M-series silicon as a learning project into low-level inference mechanics.
 
 *#cardo[Llama-3.2 3B Politeness Alignment using ORPO]* •
 #link("https://huggingface.co/weights-and-wires/Llama-3.2-3B-Polite-ORPO")[hf] •
 #link("https://blog.ifkash.dev/teaching-llama-3-to-be-polite")[blog] \
 - Applied ORPO with TRL + Unsloth to align Llama-3.2 3B to a behavioral policy (respond politely or refuse).
-- Built a 32k-row preference dataset with behavioral constraints; validated convergence via reward margins and log-prob dynamics in W&B.
+- Built a 32k-row behavior preference dataset; validated convergence via reward margins and log-prob dynamics in W&B.
 
 *#cardo[smol-llama: 360M LLM pre-training]* • #link("https://github.com/weights-and-wires/smol-llama")[github] • #link("https://huggingface.co/weights-and-wires/smol-llama")[hf] •
 #link("https://api.wandb.ai/links/dotslasha/lydqsle8")[wandb] •
 #link("https://blog.ifkash.dev/smol-llama-pretraining")[blog] \
-- Trained a 360M LLaMA from scratch in PyTorch with GQA, RoPE, RMSNorm, and SwiGLU.
-- Pre-trained on 6B tokens using FlashAttention on H100 at 75K tokens/sec; built a cost-efficient pipeline with gradient accumulation and checkpointing.
+- Trained a 360M LLaMA from scratch in PyTorch with GQA, RoPE, RMSNorm, and SwiGLU on 6B tokens (H100, 75K tok/s).
+*#cardo[Micro-Llama: bare-metal inference on RP2040]* • #link("https://github.com/weights-and-wires/vicharak-llm")[github] • #link("https://huggingface.co/weights-and-wires/vicharak-micro-llama")[hf] •
+#link("https://api.wandb.ai/links/dotslasha/9zs6fx7t")[wandb] \
+- Trained a 213K-param LLaMA on TinyStories (JAX/Flax); bare-metal greedy inference in C on RP2040 (264KB SRAM).
 
 = #cardo_headings[Education]
 
@@ -61,4 +63,5 @@ BS, _Data Science and Applications_ #h(1fr) 2020 -- 2024
 = #cardo_headings[Skills]
 
 - Python, C++, Rust, Go
-- PyTorch, FlashAttention, CUDA, vLLM, TRL, QLoRA, Unsloth, Docker, Kubernetes, Redis, PostgreSQL
+- PyTorch, FlashAttention, CUDA, vLLM, SGLang, Ray Serve, gRPC, TRL, QLoRA, Docker, Kubernetes, Redis, PostgreSQL
+

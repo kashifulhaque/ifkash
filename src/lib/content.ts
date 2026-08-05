@@ -98,6 +98,15 @@ export const sections: Section[] = [
         ]
       },
       {
+        title: 'Micro-Llama on Vicharak Shrike-Lite',
+        body: 'Train a tiny Llama on TinyStories, then run bare-metal inference on the Vicharak Shrike-Lite (RP2040 + FPGA, 264KB SRAM). 213K params, C firmware.',
+        badge: 'active',
+        links: [
+          { label: 'Code', url: 'https://github.com/weights-and-wires/vicharak-llm' },
+          { label: 'Model', url: 'https://huggingface.co/weights-and-wires/vicharak-micro-llama' }
+        ]
+      },
+      {
         title: 'smoltorch',
         body: 'Autograd engine and neural networks in ~500 lines of NumPy. Educational deep learning.',
         badge: 'active',

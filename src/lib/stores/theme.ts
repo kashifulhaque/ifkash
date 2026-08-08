@@ -14,7 +14,7 @@ function initial(): Theme {
 function apply(t: Theme): void {
 	document.documentElement.setAttribute('data-theme', t);
 	const meta = document.querySelector('meta[name="theme-color"]');
-	if (meta) meta.setAttribute('content', t === 'dark' ? '#060607' : '#f1f1ec');
+	if (meta) meta.setAttribute('content', t === 'dark' ? '#0a0a0a' : '#fafafa');
 }
 
 export const theme = writable<Theme>(initial());

@@ -59,33 +59,35 @@
 </svelte:head>
 
 <section class="hero">
-  <p class="hero-eyebrow">
-    <span class="led" aria-hidden="true"></span>
-    ML Engineer · Bangalore, IN
-  </p>
+  <p class="eyebrow hero-eyebrow">ML Engineer · Bangalore, IN</p>
 
-  <h1 class="hero-title power-on">
-    Kashiful<br />Haque<a href="/fitness" class="dot" aria-label="." rel="nofollow"
-      >.</a
-    >
+  <h1 class="display hero-title power-on">
+    <span class="block">
+      <em class="headline-italic accent-em">Kashiful</em>
+    </span>
+    <span class="block">
+      Haque<a href="/fitness" class="dot" aria-label="." rel="nofollow">.</a>
+    </span>
   </h1>
 
-  <p class="hero-tagline">
+  <p class="lead hero-tagline">
     ML Engineer with 4 YOE pre-training and post-training LLMs with RL
     pipelines, and building high-performance inference systems in C++ and
     Rust. Also building LLM apps on the day job.
   </p>
 
-  <div class="quick-actions">
-    <a href={resumeUrl} class="btn btn-primary">Read Resume &nearr;</a>
-    <a href="/game" class="btn">Enter Game Mode &nearr;</a>
+  <div class="btn-row quick-actions">
+    <a href={resumeUrl} class="btn btn-primary">Read Resume</a>
+    <a href="/game" class="btn btn-gradient-ring">
+      <span class="btn-gradient-text">Enter Game Mode</span>
+    </a>
   </div>
 
   <div class="status-row">
-    <span class="status-chip"><span class="led" aria-hidden="true"></span>Online</span>
-    <span class="status-chip">EXP · 4+ YRS</span>
-    <span class="status-chip">Stack · C++ / Rust / Py</span>
-    <span class="status-chip">Focus · LLM systems</span>
+    <span class="label label--accent">Online</span>
+    <span class="label">Exp · 4+ yrs</span>
+    <span class="label">Stack · C++ / Rust / Py</span>
+    <span class="label">Focus · LLM systems</span>
   </div>
 </section>
 
@@ -93,284 +95,161 @@
   <div class="ticker-track">
     {#each [...tickerItems, ...tickerItems] as item}
       <span class="ticker-item">{item}</span>
-      <span class="ticker-dot"></span>
+      <span class="ticker-sep" aria-hidden="true">▪</span>
     {/each}
   </div>
 </div>
 
 <section class="index-section">
-  <p class="label index-label">Site index</p>
+  <p class="eyebrow index-label">Site index</p>
   <div class="index-list">
     {#each indexRows as row, i}
       <a href={row.href} class="index-row stagger" style="--i: {i}">
-        <span class="index-n">{row.n}</span>
+        <span class="index-n label label--accent">{row.n}</span>
         <span class="index-name">{row.name}</span>
-        <span class="index-desc">{row.desc}</span>
-        <span class="index-arrow" aria-hidden="true">&rarr;</span>
+        <span class="index-desc label">{row.desc}</span>
+        <span class="index-arrow" aria-hidden="true">→</span>
       </a>
     {/each}
   </div>
 </section>
 
 <style>
-  /* ─── Hero ─────────────────────────────────────────────────── */
-
   .hero {
-    min-height: 72vh;
+    min-height: 70vh;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding: 48px 0 40px;
+    padding: var(--spacing-hero-top, 48px) 0 40px;
   }
 
   .hero-eyebrow {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    font-family: var(--font-mono-g);
-    font-size: 0.75rem;
-    font-weight: 500;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: var(--ink-soft);
     margin-bottom: 24px;
   }
 
   .hero-title {
-    font-family: var(--font-dots);
-    font-size: clamp(4rem, 13vw, 10.5rem);
-    font-weight: 600;
-    line-height: 0.88;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
-    color: var(--ink);
+    margin: 0;
   }
 
-  /* The trailing period is a deliberately unmarked link to the fitness hub —
-     looks like plain punctuation, but it's clickable. */
+  /* Trailing period → hidden fitness hub link */
   .dot {
-    color: var(--signal);
+    color: var(--accent);
     border-bottom: none;
     cursor: pointer;
-    text-shadow: 0 0 18px var(--signal-glow);
-    transition: color 0.15s;
+    text-shadow: var(--accent-text-glow);
+    transition: color 0.15s var(--ease-inout);
+    font-style: normal;
   }
 
   .dot:hover {
-    color: var(--signal-hi);
+    color: var(--accent-2);
     border-bottom: none;
   }
 
   .hero-tagline {
-    max-width: 640px;
-    margin: 32px 0 0;
-    font-family: var(--font-sans-g);
-    font-size: clamp(1rem, 1.6vw, 1.15rem);
-    line-height: 1.6;
-    color: var(--ink-soft);
+    max-width: 36em;
+    margin: 28px 0 0;
   }
-
-  /* ─── Quick actions ────────────────────────────────────────── */
 
   .quick-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
     margin-top: 36px;
   }
-
-  /* ─── Status row ───────────────────────────────────────────── */
 
   .status-row {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 28px;
+    gap: 16px 24px;
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
   }
-
-  .status-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 7px 12px;
-    border: 1px solid var(--line-soft);
-    border-radius: var(--radius-sm);
-    font-family: var(--font-mono-g);
-    font-size: 0.66rem;
-    font-weight: 500;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--ink-soft);
-  }
-
-  /* ─── Ticker ───────────────────────────────────────────────── */
 
   .ticker {
-    overflow: hidden;
-    border-top: 1px solid var(--line-soft);
-    border-bottom: 1px solid var(--line-soft);
-    padding: 12px 0;
     margin: 8px 0 0;
-    mask-image: linear-gradient(
-      to right,
-      transparent,
-      black 8%,
-      black 92%,
-      transparent
-    );
-    -webkit-mask-image: linear-gradient(
-      to right,
-      transparent,
-      black 8%,
-      black 92%,
-      transparent
-    );
+    border-top: 1px solid var(--border);
   }
 
-  .ticker-track {
-    display: inline-flex;
-    align-items: center;
-    gap: 28px;
-    white-space: nowrap;
-    animation: ticker-scroll 36s linear infinite;
-    will-change: transform;
+  .ticker-sep {
+    color: var(--muted-foreground);
+    opacity: 0.5;
+    font-size: 8px;
+    align-self: center;
   }
-
-  .ticker-item {
-    font-family: var(--font-mono-g);
-    font-size: 0.72rem;
-    font-weight: 500;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--ink-soft);
-  }
-
-  .ticker-dot {
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: var(--signal);
-    box-shadow: 0 0 4px var(--signal-glow);
-    flex-shrink: 0;
-  }
-
-  /* ─── Site index ───────────────────────────────────────────── */
 
   .index-section {
-    padding: 72px 0 24px;
+    padding: var(--section-pt) 0 24px;
   }
 
   .index-label {
-    margin-bottom: 20px;
-    color: var(--ink-mute);
+    margin-bottom: 8px;
   }
 
   .index-list {
     display: flex;
     flex-direction: column;
-    border-top: 1px solid var(--line-soft);
+    border-top: 1px solid var(--border);
   }
 
   .index-row {
     display: grid;
-    grid-template-columns: 48px minmax(0, 1fr) auto 24px;
+    grid-template-columns: 48px minmax(0, 1fr) auto;
     align-items: baseline;
-    gap: 20px;
-    padding: 18px 12px;
-    margin: 0 -12px;
-    border-bottom: 1px solid var(--line-soft);
-    color: var(--ink);
-    transition:
-      background 0.15s,
-      color 0.15s;
+    gap: 16px;
+    padding-block: 20px;
+    border-bottom: 1px solid var(--border);
+    color: var(--foreground);
+    transition: color 0.15s var(--ease-inout);
   }
 
-  .index-row:hover {
-    background: var(--ink);
-    color: var(--void);
-    border-bottom-color: var(--ink);
-  }
-
-  .index-n {
-    font-family: var(--font-mono-g);
-    font-size: 0.72rem;
-    font-weight: 500;
-    letter-spacing: 0.12em;
-    color: var(--signal);
-  }
-
-  .index-row:hover .index-n {
-    color: var(--void);
-  }
-
-  .index-name {
-    font-family: var(--font-dots);
-    font-size: clamp(1.7rem, 4vw, 2.6rem);
-    font-weight: 600;
-    letter-spacing: 0.03em;
-    text-transform: uppercase;
-    line-height: 1;
-  }
-
-  .index-desc {
-    font-family: var(--font-mono-g);
-    font-size: 0.68rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--ink-mute);
-    white-space: nowrap;
-  }
-
-  .index-row:hover .index-desc {
-    color: var(--void);
-  }
-
-  .index-arrow {
-    font-family: var(--font-mono-g);
-    font-size: 1rem;
-    color: var(--ink-mute);
-    transition:
-      transform 0.15s,
-      color 0.15s;
+  .index-row:hover .index-name {
+    color: var(--accent-2);
   }
 
   .index-row:hover .index-arrow {
-    color: var(--void);
-    transform: translateX(4px);
+    color: var(--accent);
+    transform: translateX(2px);
   }
 
-  /* ─── Responsive ───────────────────────────────────────────── */
+  .index-n {
+    align-self: baseline;
+  }
+
+  .index-name {
+    font-family: var(--font-serif);
+    font-size: 24px;
+    line-height: 1.2;
+    letter-spacing: -0.025em;
+    color: var(--foreground);
+  }
+
+  .index-desc {
+    display: none;
+    color: var(--muted-foreground);
+  }
+
+  .index-arrow {
+    color: var(--muted-foreground);
+    transition:
+      transform 0.15s var(--ease-inout),
+      color 0.15s var(--ease-inout);
+  }
+
+  @media (min-width: 1024px) {
+    .index-row {
+      grid-template-columns: 80px minmax(0, 1fr) auto auto;
+      gap: 24px;
+    }
+
+    .index-desc {
+      display: inline;
+      justify-self: end;
+    }
+  }
 
   @media (max-width: 900px) {
     .hero {
       min-height: 0;
       padding: 32px 0 28px;
-    }
-
-    .hero-tagline {
-      margin: 24px 0 0;
-    }
-  }
-
-  @media (max-width: 640px) {
-    .index-row {
-      grid-template-columns: 36px minmax(0, 1fr) 20px;
-    }
-
-    .index-desc {
-      display: none;
-    }
-  }
-
-  @media (max-width: 480px) {
-    .hero-title {
-      font-size: clamp(3.2rem, 17vw, 4.6rem);
-      line-height: 0.9;
-    }
-
-    .quick-actions :global(.btn) {
-      width: 100%;
-      max-width: none;
     }
   }
 </style>

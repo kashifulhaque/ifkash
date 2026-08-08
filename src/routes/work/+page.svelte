@@ -87,7 +87,7 @@
   .jobs-list {
     display: flex;
     flex-direction: column;
-    border-top: 1px solid var(--line-soft);
+    border-top: 1px solid var(--border);
     padding-top: 0;
   }
 
@@ -98,23 +98,23 @@
     gap: 24px;
     padding: 20px 12px;
     margin: 0 -12px;
-    border-bottom: 1px solid var(--line-soft);
-    transition:
-      background 0.15s,
-      color 0.15s;
-    color: var(--ink);
+    border-bottom: 1px solid var(--border);
+    transition: color 0.15s var(--ease-inout);
+    color: var(--foreground);
   }
 
   .job-row:hover {
-    background: var(--ink);
-    color: var(--void);
-    border-bottom-color: var(--ink);
+    color: var(--foreground);
+  }
+
+  .job-row:hover .job-role {
+    color: var(--accent-2);
   }
 
   .job-led {
-    width: 9px;
-    height: 9px;
-    border-radius: 50%;
+    width: 6px;
+    height: 6px;
+    border-radius: 0;
     border: 1px solid var(--ink-mute);
     background: transparent;
     transform: translateY(1px);
@@ -122,12 +122,10 @@
   }
 
   .job-led.lit {
-    background: var(--signal);
-    border-color: var(--signal);
-    box-shadow:
-      0 0 6px var(--signal-glow),
-      0 0 2px var(--signal);
-    animation: led-pulse 2.4s ease-in-out infinite;
+    background: var(--accent);
+    border-color: var(--accent);
+    box-shadow: none;
+    animation: none;
   }
 
   .job-main {
@@ -138,44 +136,45 @@
   }
 
   .job-role {
-    font-family: var(--font-dots);
-    font-size: 1.75rem;
-    font-weight: 600;
-    letter-spacing: 0.03em;
-    text-transform: uppercase;
+    font-family: var(--font-serif);
+    font-size: 1.5rem;
+    font-weight: 400;
+    letter-spacing: -0.025em;
+    text-transform: none;
     color: inherit;
-    line-height: 1;
+    line-height: 1.2;
   }
 
   .job-company {
-    font-family: var(--font-mono-g);
-    font-size: 0.72rem;
-    letter-spacing: 0.12em;
+    font-family: var(--font-label);
+    font-size: 11px;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: var(--ink-soft);
+    color: var(--muted-foreground);
   }
 
   .job-row:hover .job-company {
-    color: var(--void);
+    color: var(--muted-foreground);
   }
 
   .job-period {
-    font-family: var(--font-mono-g);
-    font-size: 0.72rem;
-    letter-spacing: 0.08em;
-    color: var(--ink);
+    font-family: var(--font-label);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted-foreground);
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
     text-align: right;
   }
 
   .job-row:hover .job-period {
-    color: var(--void);
+    color: var(--muted-foreground);
   }
 
   .job-location {
-    font-family: var(--font-mono-g);
-    font-size: 0.66rem;
+    font-family: var(--font-label);
+    font-size: 11px;
     letter-spacing: 0.1em;
     color: var(--ink-mute);
     text-transform: uppercase;
@@ -185,7 +184,7 @@
   }
 
   .job-row:hover .job-location {
-    color: var(--void);
+    color: var(--ink-mute);
   }
 
   @media (max-width: 768px) {

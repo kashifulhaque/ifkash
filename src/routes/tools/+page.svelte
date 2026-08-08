@@ -74,23 +74,23 @@
     gap: 20px;
     padding: 22px 12px;
     margin: 0 -12px;
-    border-bottom: 1px solid var(--line-soft);
-    color: var(--ink);
-    transition:
-      background 0.15s,
-      color 0.15s;
+    border-bottom: 1px solid var(--border);
+    color: var(--foreground);
+    transition: color 0.15s var(--ease-inout);
   }
 
   .tool-row:hover {
-    background: var(--ink);
-    color: var(--void);
-    border-bottom-color: var(--ink);
+    color: var(--foreground);
+  }
+
+  .tool-row:hover .tool-name {
+    color: var(--accent-2);
   }
 
   .tool-led {
-    width: 9px;
-    height: 9px;
-    border-radius: 50%;
+    width: 6px;
+    height: 6px;
+    border-radius: 0;
     border: 1px solid var(--ink-mute);
     background: transparent;
     transform: translateY(10px);
@@ -99,18 +99,16 @@
   }
 
   .tool-led.lit {
-    background: var(--signal);
-    border-color: var(--signal);
-    box-shadow:
-      0 0 6px var(--signal-glow),
-      0 0 2px var(--signal);
-    animation: led-pulse 2.4s ease-in-out infinite;
+    background: var(--accent);
+    border-color: var(--accent);
+    box-shadow: none;
+    animation: none;
   }
 
   .tool-led.shipped {
     background: var(--ok);
     border-color: var(--ok);
-    box-shadow: 0 0 5px rgba(61, 220, 132, 0.4);
+    box-shadow: none;
   }
 
   .tool-led.archived {
@@ -134,39 +132,39 @@
   }
 
   .tool-name {
-    font-family: var(--font-dots);
-    font-size: 1.9rem;
-    font-weight: 600;
-    letter-spacing: 0.03em;
-    text-transform: uppercase;
-    line-height: 1;
+    font-family: var(--font-serif);
+    font-size: 1.5rem;
+    font-weight: 400;
+    letter-spacing: -0.025em;
+    text-transform: none;
+    line-height: 1.2;
     color: inherit;
   }
 
   .tool-arrow {
-    font-family: var(--font-mono-g);
+    font-family: var(--font-sans);
     font-size: 1rem;
     color: var(--ink-mute);
     transition:
-      transform 0.15s,
-      color 0.15s;
+      transform 0.15s var(--ease-inout),
+      color 0.15s var(--ease-inout);
   }
 
   .tool-row:hover .tool-arrow {
-    color: var(--void);
+    color: var(--accent);
     transform: translateX(4px);
   }
 
   .tool-desc {
-    font-family: var(--font-sans-g);
+    font-family: var(--font-sans);
     font-size: 0.95rem;
     line-height: 1.6;
-    color: var(--ink-soft);
+    color: var(--muted-foreground);
     max-width: 720px;
   }
 
   .tool-row:hover .tool-desc {
-    color: var(--void);
+    color: var(--muted-foreground);
   }
 
   @media (max-width: 768px) {

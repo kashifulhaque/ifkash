@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import "../app.css";
   import { page } from "$app/stores";
   import AiAgent from "$lib/components/AiAgent.svelte";
@@ -25,7 +25,7 @@
 
   let mobileMenuOpen = false;
 
-  function isActive(href) {
+  function isActive(href: string) {
     return href === "/" ? currentPath === "/" : currentPath.startsWith(href);
   }
 
@@ -43,19 +43,18 @@
 {:else}
   <div class="site-wrapper">
     <header class="site-header">
-      <div class="header-inner">
+      <div class="header-inner frame">
         <a href="/" class="logo" aria-label="ifkash.dev home">
-          <span class="logo-led" aria-hidden="true"></span>
-          <span class="logo-word">IFKASH</span><span class="logo-tld">.DEV</span>
+          <span class="logo-word">ifkash</span><span class="logo-tld">.dev</span>
         </a>
 
-        <nav class="header-nav" aria-label="Primary">
+        <nav class="nav-desktop" aria-label="Primary">
           {#each navItems as item}
-            <a href={item.href} class:active={isActive(item.href)}>
-              {#if isActive(item.href)}<span
-                  class="nav-led"
-                  aria-hidden="true"
-                ></span>{/if}
+            <a
+              href={item.href}
+              class="nav-link"
+              class:active={isActive(item.href)}
+            >
               {item.label}
             </a>
           {/each}
@@ -109,16 +108,36 @@
             </svg>
           </button>
 
+          <a href="/api/cv?format=view" class="btn btn--header header-cta"
+            >Resume</a
+          >
+
           <button
-            class="mobile-menu-btn"
+            class="nav-toggle"
             on:click={toggleMenu}
-            aria-label="Toggle menu"
+            aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
             aria-expanded={mobileMenuOpen}
           >
             {#if mobileMenuOpen}
-              <span aria-hidden="true">×</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="M6 6l12 12M18 6L6 18"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                />
+              </svg>
             {:else}
-              <span aria-hidden="true">≡</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="M4 7h16M4 12h16M4 17h16"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                />
+              </svg>
             {/if}
           </button>
         </div>
@@ -127,30 +146,28 @@
 
     {#if mobileMenuOpen}
       <div class="mobile-menu">
-        <nav class="mobile-nav" aria-label="Mobile">
-          {#each navItems as item, i}
-            <a
-              href={item.href}
-              class="mobile-link"
-              class:active={isActive(item.href)}
-              on:click={closeMenu}
-            >
-              <span class="mobile-index">0{i + 1}</span>
-              <span class="mobile-word">{item.label}</span>
-              {#if isActive(item.href)}<span
-                  class="led"
-                  aria-hidden="true"
-                ></span>{/if}
-            </a>
+        <ul class="mobile-menu__list">
+          {#each navItems as item}
+            <li>
+              <a
+                href={item.href}
+                class="mobile-menu__item"
+                class:active={isActive(item.href)}
+                on:click={closeMenu}
+              >
+                <span class="mobile-menu__label">{item.label}</span>
+              </a>
+            </li>
           {/each}
-        </nav>
-        <div class="mobile-foot">
-          <a
-            href="https://github.com/kashifulhaque"
-            target="_blank"
-            rel="noopener noreferrer"
-            on:click={closeMenu}>GitHub</a
-          >
+        </ul>
+        <a
+          href="https://github.com/kashifulhaque"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="mobile-menu__cta"
+          on:click={closeMenu}>GitHub</a
+        >
+        <div class="mobile-menu__foot">
           <a href="/admin" on:click={closeMenu}>Admin</a>
         </div>
       </div>
@@ -163,12 +180,16 @@
     </main>
 
     <footer class="site-footer">
-      <div class="container footer-inner">
-        <p class="footer-line">
-          <span class="led" aria-hidden="true"></span>
-          © {new Date().getFullYear()} · Kashiful Haque
-        </p>
-        <div class="footer-links">
+      <div class="frame site-footer__inner">
+        <div class="site-footer__brand">
+          <p class="label col-heading">ifkash.dev</p>
+          <p class="site-footer__mission">
+            ML systems, open source, and small tools — built in Bangalore.
+          </p>
+          <p class="label">Est. 2023</p>
+        </div>
+        <div class="site-footer__links">
+          <p class="label col-heading">Elsewhere</p>
           <a
             href="https://github.com/kashifulhaque"
             target="_blank"
@@ -184,8 +205,12 @@
             target="_blank"
             rel="noopener noreferrer">LinkedIn</a
           >
-          <a href="/admin" aria-label="Admin">Admin</a>
+          <a href="/admin">Admin</a>
         </div>
+      </div>
+      <div class="frame site-footer__bottom">
+        <span>© {new Date().getFullYear()} Kashiful Haque</span>
+        <span class="label">Bangalore, IN</span>
       </div>
     </footer>
 
@@ -204,168 +229,141 @@
   /* ─── Header ───────────────────────────────────────────────── */
 
   .site-header {
-    position: fixed;
+    position: sticky;
     top: 0;
-    left: 0;
-    right: 0;
-    z-index: 100;
+    z-index: 50;
+    isolation: isolate;
+    height: 69px;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .site-header::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -10;
     background: var(--header-bg);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--line-soft);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
   }
 
   .header-inner {
-    max-width: var(--maxw);
-    margin: 0 auto;
-    padding: 0 32px;
-    height: 60px;
+    width: 100%;
+    height: 69px;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 16px;
+    gap: var(--content-sm);
   }
 
   .logo {
     display: flex;
-    align-items: center;
-    gap: 10px;
+    align-items: baseline;
+    gap: 0;
     border-bottom: none;
     white-space: nowrap;
+    margin-right: auto;
+    color: var(--foreground);
   }
 
   .logo:hover {
     border-bottom: none;
-  }
-
-  .logo-led {
-    width: 9px;
-    height: 9px;
-    border-radius: 50%;
-    background: var(--signal);
-    box-shadow:
-      0 0 6px var(--signal-glow),
-      0 0 2px var(--signal);
-    animation: led-pulse 2.4s ease-in-out infinite;
+    color: var(--foreground);
   }
 
   .logo-word {
-    font-family: var(--font-dots);
-    font-size: 1.55rem;
-    font-weight: 600;
-    letter-spacing: 0.06em;
+    font-family: var(--font-serif);
+    font-size: 1.35rem;
+    font-weight: 400;
+    letter-spacing: -0.03em;
     line-height: 1;
-    color: var(--ink);
-    transform: translateY(1px);
+    color: var(--foreground);
   }
 
   .logo-tld {
-    font-family: var(--font-mono-g);
-    font-size: 0.68rem;
+    font-family: var(--font-label);
+    font-size: 11px;
+    font-weight: 500;
     letter-spacing: 0.1em;
-    color: var(--ink-mute);
-    transform: translateY(3px);
+    text-transform: uppercase;
+    color: var(--muted-foreground);
+    margin-left: 2px;
   }
 
   .logo:hover .logo-word {
-    color: var(--accent-hover);
+    color: var(--accent-2);
   }
 
-  .header-nav {
-    display: flex;
-    gap: 26px;
-    align-items: center;
-  }
-
-  .header-nav a {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    font-family: var(--font-mono-g);
-    font-size: 0.72rem;
-    font-weight: 500;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--ink-soft);
-    border-bottom: none;
-    transition: color 0.15s;
-  }
-
-  .header-nav a:hover {
-    color: var(--ink);
-    border-bottom: none;
-  }
-
-  .header-nav a.active {
-    color: var(--ink);
-  }
-
-  .nav-led {
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: var(--signal);
-    box-shadow: 0 0 4px var(--signal-glow);
-  }
-
-  .mobile-menu-btn {
+  .nav-desktop {
     display: none;
     align-items: center;
-    justify-content: center;
-    width: 34px;
-    height: 34px;
-    padding: 0;
-    background: transparent;
-    border: 1px solid var(--line-soft);
-    border-radius: var(--radius-sm);
-    color: var(--ink);
-    font-family: var(--font-mono-g);
-    font-size: 1.15rem;
-    line-height: 1;
-    cursor: pointer;
-    transition:
-      border-color 0.15s,
-      color 0.15s,
-      background 0.15s;
+    gap: 4px;
   }
 
-  .mobile-menu-btn:hover {
-    border-color: var(--ink);
-    color: var(--void);
-    background: var(--ink);
+  .nav-link {
+    display: inline-flex;
+    align-items: center;
+    height: 36px;
+    padding-inline: 16px;
+    border-radius: var(--radius-sm);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    font-weight: 400;
+    letter-spacing: normal;
+    text-transform: none;
+    color: var(--foreground);
+    border-bottom: none;
+    transition:
+      color 0.15s var(--ease-inout),
+      background-color 0.15s var(--ease-inout);
+  }
+
+  .nav-link:hover {
+    background: var(--input);
+    color: var(--foreground);
+    border-bottom: none;
+  }
+
+  .nav-link.active {
+    color: var(--accent);
   }
 
   .header-actions {
     display: flex;
     align-items: center;
     gap: 10px;
+    margin-left: auto;
   }
 
-  .theme-toggle {
+  .header-cta {
+    display: none;
+  }
+
+  .theme-toggle,
+  .nav-toggle {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 34px;
-    height: 34px;
+    width: 36px;
+    height: 36px;
     padding: 0;
     background: transparent;
-    border: 1px solid var(--line-soft);
-    border-radius: var(--radius-sm);
-    color: var(--ink-soft);
+    border: 0;
+    border-radius: var(--radius-md);
+    color: var(--foreground);
     cursor: pointer;
     transition:
-      color 0.15s,
-      border-color 0.15s,
-      background 0.15s;
+      color 0.15s var(--ease-inout),
+      background-color 0.15s var(--ease-inout);
   }
 
-  .theme-toggle:hover {
-    color: var(--void);
-    border-color: var(--ink);
-    background: var(--ink);
+  .theme-toggle:hover,
+  .nav-toggle:hover {
+    background: var(--input);
+    color: var(--foreground);
   }
 
-  /* Icon swap driven purely by [data-theme] — no hydration flash. */
   .theme-toggle .icon-sun {
     display: none;
   }
@@ -379,86 +377,92 @@
     display: inline-flex;
   }
 
-  /* ─── Mobile menu — full-screen console overlay ────────────── */
+  /* ─── Mobile menu ──────────────────────────────────────────── */
 
   .mobile-menu {
     position: fixed;
-    inset: 0;
-    z-index: 200;
+    inset: 69px 0 0;
+    z-index: 40;
+    background: var(--background);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .mobile-menu__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .mobile-menu__list > li + li {
+    border-top: 1px solid var(--rule);
+  }
+
+  .mobile-menu__item {
     display: flex;
-    flex-direction: column;
+    width: 100%;
+    align-items: center;
     justify-content: space-between;
-    background: var(--void);
-    background-image: radial-gradient(
-      circle,
-      var(--dots) 1px,
-      transparent 1.4px
-    );
-    background-size: var(--cell) var(--cell);
-    padding: 96px 32px 40px;
-    animation: fade-in var(--dur-fast) var(--ease-out-expo);
-  }
-
-  .mobile-nav {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .mobile-link {
-    display: flex;
-    align-items: baseline;
-    gap: 18px;
-    padding: 14px 0;
-    border-bottom: 1px solid var(--line-soft);
-    color: var(--ink);
-  }
-
-  .mobile-link:hover {
-    border-bottom-color: var(--line-soft);
-  }
-
-  .mobile-index {
-    font-family: var(--font-mono-g);
-    font-size: 0.72rem;
-    letter-spacing: 0.12em;
-    color: var(--signal);
-  }
-
-  .mobile-word {
-    font-family: var(--font-dots);
-    font-size: clamp(2.4rem, 9vw, 3.6rem);
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    line-height: 1;
-    color: var(--ink);
-  }
-
-  .mobile-link .led {
-    align-self: center;
-    margin-left: auto;
-  }
-
-  .mobile-link.active .mobile-word {
-    color: var(--signal-hi);
-  }
-
-  .mobile-foot {
-    display: flex;
     gap: 24px;
-  }
-
-  .mobile-foot a {
-    font-family: var(--font-mono-g);
-    font-size: 0.72rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--ink-soft);
+    min-height: 60px;
+    padding: 16px;
+    color: var(--foreground);
     border-bottom: none;
   }
 
-  .mobile-foot a:hover {
-    color: var(--ink);
+  .mobile-menu__item:hover {
+    border-bottom: none;
+    color: var(--foreground);
+  }
+
+  .mobile-menu__item:hover .mobile-menu__label {
+    text-decoration: underline;
+  }
+
+  .mobile-menu__item.active .mobile-menu__label {
+    color: var(--accent);
+  }
+
+  .mobile-menu__label {
+    font-family: var(--font-serif);
+    font-size: 20px;
+    line-height: 28px;
+    font-weight: 400;
+  }
+
+  .mobile-menu__cta {
+    display: block;
+    margin: 24px 16px;
+    padding: 10px 16px;
+    border-radius: var(--radius-sm);
+    background: var(--foreground);
+    color: var(--background);
+    font-size: 14px;
+    text-align: center;
+    border-bottom: none;
+  }
+
+  .mobile-menu__cta:hover {
+    background: var(--accent-2);
+    color: var(--background);
+    border-bottom: none;
+  }
+
+  .mobile-menu__foot {
+    padding: 0 16px 32px;
+  }
+
+  .mobile-menu__foot a {
+    font-family: var(--font-label);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted-foreground);
+    border-bottom: none;
+  }
+
+  .mobile-menu__foot a:hover {
+    color: var(--foreground);
     border-bottom: none;
   }
 
@@ -467,103 +471,111 @@
   .main-content {
     flex: 1;
     width: 100%;
-    padding-top: 60px;
   }
 
-  .main-content .container {
+  .main-content :global(.container) {
     padding-top: 40px;
-    padding-bottom: 96px;
+    padding-bottom: var(--section-pb);
     animation: enter var(--dur-slow) var(--ease-out-expo);
   }
 
   /* ─── Footer ───────────────────────────────────────────────── */
 
   .site-footer {
-    border-top: 1px solid var(--line-soft);
-    padding: 28px 0;
+    border-top: 1px solid var(--border);
+    padding-top: var(--section-pt);
   }
 
-  .footer-inner {
+  .site-footer__inner {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 64px;
+    padding-bottom: var(--section-gap-sm);
+  }
+
+  .site-footer__mission {
+    max-width: 36ch;
+    margin: 0 0 16px;
+    font-size: 16px;
+    color: var(--muted-foreground);
+  }
+
+  .site-footer .col-heading {
+    margin-bottom: 16px;
+  }
+
+  .site-footer__links {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 16px;
-  }
-
-  .footer-line {
-    display: inline-flex;
-    align-items: center;
+    flex-direction: column;
     gap: 10px;
-    font-family: var(--font-mono-g);
-    font-size: 0.7rem;
-    letter-spacing: 0.12em;
-    color: var(--ink-soft);
-    text-transform: uppercase;
   }
 
-  .footer-links {
+  .site-footer__links a {
+    font-size: 16px;
+    color: var(--foreground);
+    border-bottom: none;
+  }
+
+  .site-footer__links a:hover {
+    color: var(--accent-2);
+    border-bottom: none;
+  }
+
+  .site-footer__bottom {
+    border-top: 1px solid var(--border);
+    padding-block: 20px;
+    font-size: 13px;
+    color: var(--muted-foreground);
     display: flex;
-    gap: 24px;
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
   }
 
-  .footer-links a {
-    font-family: var(--font-mono-g);
-    font-size: 0.7rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--ink-soft);
-    border-bottom: none;
-    transition: color 0.15s;
-  }
+  /* Desktop nav at xl (1280), not lg */
+  @media (min-width: 1280px) {
+    .site-header {
+      border-bottom: 0;
+    }
 
-  .footer-links a:hover {
-    color: var(--ink);
-    border-bottom: none;
-  }
+    .nav-desktop {
+      display: flex;
+    }
 
-  /* ─── Responsive ───────────────────────────────────────────── */
-
-  @media (max-width: 900px) {
-    .header-nav {
+    .nav-toggle {
       display: none;
     }
 
-    .mobile-menu-btn {
+    .header-cta {
       display: inline-flex;
     }
-  }
 
-  @media (max-width: 768px) {
-    .header-inner {
-      height: 56px;
-      padding: 0 20px;
+    .mobile-menu {
+      display: none;
     }
 
-    .logo-word {
-      font-size: 1.35rem;
+    .site-footer__inner {
+      grid-template-columns: 2fr 1fr;
+      gap: 32px;
     }
 
-    .main-content {
-      padding-top: 56px;
-    }
-
-    .footer-inner {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 12px;
+    .site-footer__bottom {
+      flex-direction: row;
+      justify-content: space-between;
+      text-align: left;
     }
   }
 
-  @media (max-width: 480px) {
-    .header-inner {
-      padding: 0 16px;
-      gap: 8px;
+  @media (min-width: 1024px) {
+    .site-footer__inner {
+      grid-template-columns: 2fr 1fr;
+      gap: 32px;
     }
 
-    .footer-links {
-      gap: 16px;
-      flex-wrap: wrap;
+    .site-footer__bottom {
+      flex-direction: row;
+      justify-content: space-between;
+      text-align: left;
     }
   }
 </style>

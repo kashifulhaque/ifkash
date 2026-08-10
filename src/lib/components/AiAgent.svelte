@@ -432,7 +432,7 @@
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     color: var(--agent-fab-color);
-    cursor: pointer;
+    cursor: var(--cursor-pointer);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -542,7 +542,7 @@
     border: none;
     background: transparent;
     color: var(--agent-text-faint);
-    cursor: pointer;
+    cursor: var(--cursor-pointer);
     border-radius: var(--radius-sm);
     transition: all var(--dur-instant) var(--ease-out-quart);
   }
@@ -600,7 +600,7 @@
     background: var(--agent-surface);
     border: 1px solid var(--agent-border);
     border-radius: var(--radius-md);
-    cursor: pointer;
+    cursor: var(--cursor-pointer);
     transition: all var(--dur-instant) var(--ease-out-quart);
   }
 
@@ -756,7 +756,7 @@
     background: var(--agent-pill-bg);
     border: 1px solid var(--agent-pill-border);
     border-radius: 999px;
-    cursor: pointer;
+    cursor: var(--cursor-pointer);
     transition: all var(--dur-instant) var(--ease-out-quart);
   }
 
@@ -815,7 +815,7 @@
     background: var(--agent-surface);
     color: var(--agent-text-secondary);
     border-radius: var(--radius-md);
-    cursor: pointer;
+    cursor: var(--cursor-pointer);
     transition: all var(--dur-instant) var(--ease-out-quart);
     flex-shrink: 0;
   }

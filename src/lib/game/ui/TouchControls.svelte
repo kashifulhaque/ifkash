@@ -166,7 +166,7 @@
     letter-spacing: 0.08em;
     color: #fff;
     border-radius: 50%;
-    cursor: pointer;
+    cursor: var(--cursor-pointer);
     touch-action: none;
     -webkit-user-select: none;
     user-select: none;

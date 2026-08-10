@@ -69,7 +69,7 @@
     padding: 22px 18px;
     background: rgba(0, 0, 0, 0.45);
     border: 2px solid rgba(255, 255, 255, 0.35);
-    cursor: pointer;
+    cursor: var(--cursor-pointer);
     transition: border-color 0.15s, transform 0.15s, background 0.15s;
   }
 

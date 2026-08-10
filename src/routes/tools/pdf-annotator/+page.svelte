@@ -86,7 +86,11 @@
 
   $: hasPdf = pages.length > 0;
   $: captureCursor =
-    tool === "text" ? "text" : tool === "image" ? "copy" : "crosshair";
+    tool === "text"
+      ? "var(--cursor-text)"
+      : tool === "image"
+        ? "copy"
+        : "crosshair";
 
   // ─── History ───────────────────────────────────────────────
   const snapshot = (): Annotation[] => JSON.parse(JSON.stringify(annotations));
@@ -955,7 +959,7 @@
     border: 1px solid transparent;
     font-family: var(--font-mono);
     font-size: 0.78rem;
-    cursor: pointer;
+    cursor: var(--cursor-pointer);
     transition: color 0.12s, background 0.12s, border-color 0.12s;
   }
 
@@ -1007,7 +1011,7 @@
     width: 18px;
     height: 18px;
     border: 1px solid var(--rule-soft);
-    cursor: pointer;
+    cursor: var(--cursor-pointer);
     padding: 0;
   }
 
@@ -1022,7 +1026,7 @@
     padding: 0;
     border: 1px solid var(--rule-soft);
     background: transparent;
-    cursor: pointer;
+    cursor: var(--cursor-pointer);
   }
 
   .slider {
@@ -1090,7 +1094,7 @@
     font-size: 0.82rem;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    cursor: pointer;
+    cursor: var(--cursor-pointer);
   }
 
   .open-btn:hover {
@@ -1163,7 +1167,7 @@
     word-break: break-word;
     min-width: 8px;
     min-height: 1em;
-    cursor: text;
+    cursor: var(--cursor-text);
   }
 
   .anno-image {
@@ -1192,7 +1196,7 @@
     background: var(--warn);
     color: var(--bg);
     border-radius: 50%;
-    cursor: pointer;
+    cursor: var(--cursor-pointer);
     font-size: 13px;
     display: flex;
     align-items: center;

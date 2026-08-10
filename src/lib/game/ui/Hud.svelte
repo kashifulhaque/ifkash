@@ -581,7 +581,7 @@
     font-size: 1.1rem;
     width: 42px;
     height: 42px;
-    cursor: pointer;
+    cursor: var(--cursor-pointer);
     border-radius: 4px;
   }
 

@@ -633,7 +633,7 @@
     font-family: var(--font-mono);
     font-size: 0.75rem;
     color: var(--ink-soft);
-    cursor: pointer;
+    cursor: var(--cursor-pointer);
     transition: background 0.15s, color 0.15s;
   }
 
@@ -644,7 +644,7 @@
 
   .btn:disabled {
     opacity: 0.45;
-    cursor: default;
+    cursor: var(--cursor-default);
   }
 
   .btn.primary {
@@ -763,7 +763,7 @@
     font-size: 0.78rem;
     color: var(--ink-soft);
     text-align: left;
-    cursor: pointer;
+    cursor: var(--cursor-pointer);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -827,7 +827,7 @@
     font-size: 1rem;
     line-height: 1.65;
     color: var(--ink);
-    cursor: default;
+    cursor: var(--cursor-default);
   }
 
   .preview :global(h1),

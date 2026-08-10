@@ -238,7 +238,7 @@
     background: none;
     border: 2px solid #fff;
     padding: 10px 34px;
-    cursor: pointer;
+    cursor: var(--cursor-pointer);
     animation: blink 1.4s ease-in-out infinite;
   }
 

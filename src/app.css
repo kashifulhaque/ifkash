@@ -96,6 +96,11 @@
   --marquee-duration: 40s;
   --marquee-duration-mobile: 160s;
 
+  /* ---- Custom cursors (static/cursors) ---- */
+  --cursor-default: url("/cursors/default.png") 3 1, auto;
+  --cursor-pointer: url("/cursors/pointer.png") 6 1, pointer;
+  --cursor-text: url("/cursors/text.png") 8 8, text;
+
   /* ── Legacy aliases → Liquid ── */
   --void: var(--background);
   --panel: var(--card);
@@ -362,6 +367,7 @@ html {
   color-scheme: dark;
   background: var(--background);
   -webkit-text-size-adjust: 100%;
+  cursor: var(--cursor-default);
 }
 
 html[data-theme="light"] {
@@ -383,6 +389,49 @@ body {
   position: relative;
   min-height: 100vh;
   overflow-x: hidden;
+  cursor: var(--cursor-default);
+}
+
+a,
+button,
+[role="button"],
+summary,
+label[for],
+select,
+input[type="button"],
+input[type="submit"],
+input[type="reset"],
+input[type="checkbox"],
+input[type="radio"],
+input[type="file"],
+input[type="image"] {
+  cursor: var(--cursor-pointer);
+}
+
+input:not([type]),
+input[type="text"],
+input[type="search"],
+input[type="email"],
+input[type="password"],
+input[type="url"],
+input[type="tel"],
+input[type="number"],
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"],
+input[type="month"],
+input[type="week"],
+textarea,
+[contenteditable="true"] {
+  cursor: var(--cursor-text);
+}
+
+button:disabled,
+input:disabled,
+select:disabled,
+textarea:disabled,
+[aria-disabled="true"] {
+  cursor: not-allowed;
 }
 
 ::selection {
@@ -812,7 +861,7 @@ p.dropcap::first-letter {
   line-height: 21px;
   letter-spacing: normal;
   text-transform: none;
-  cursor: pointer;
+  cursor: var(--cursor-pointer);
   text-align: center;
   transition:
     color 0.3s var(--ease-out),

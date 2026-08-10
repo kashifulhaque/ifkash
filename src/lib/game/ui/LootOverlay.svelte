@@ -81,7 +81,7 @@
     inset: 0;
     background: rgba(10, 10, 14, 0.6);
     border: none;
-    cursor: pointer;
+    cursor: var(--cursor-pointer);
     backdrop-filter: blur(3px);
   }
 
@@ -134,7 +134,7 @@
     width: 34px;
     height: 34px;
     line-height: 1;
-    cursor: pointer;
+    cursor: var(--cursor-pointer);
   }
 
   .close-btn:hover {

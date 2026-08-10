@@ -517,7 +517,7 @@
   .group-list li { display: flex; align-items: center; gap: 4px; }
   .group-item {
     flex: 1; text-align: left; background: transparent; color: var(--ink-soft);
-    border: 1px solid var(--rule-soft); padding: 9px 11px; cursor: pointer;
+    border: 1px solid var(--rule-soft); padding: 9px 11px; cursor: var(--cursor-pointer);
     display: flex; justify-content: space-between; align-items: center; gap: 8px;
     transition: color 0.12s, border-color 0.12s;
   }
@@ -538,7 +538,7 @@
     background: var(--bg-surface); border: 1px solid var(--rule-soft);
     padding: 4px 6px 4px 10px; font-size: 0.85rem;
   }
-  .chip-x { background: none; border: none; color: var(--ink-mute); cursor: pointer; font-size: 1.05rem; line-height: 1; }
+  .chip-x { background: none; border: none; color: var(--ink-mute); cursor: var(--cursor-pointer); font-size: 1.05rem; line-height: 1; }
   .chip-x:hover { color: #e06c6c; }
 
   .balances { list-style: none; margin: 0; padding: 0; }
@@ -575,7 +575,7 @@
   textarea.in { resize: vertical; }
 
   button.primary, button.ghost {
-    display: inline-flex; align-items: center; gap: 7px; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 7px; cursor: var(--cursor-pointer);
     font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase;
     padding: 8px 14px; border: 1px solid var(--blueprint); background: transparent; color: var(--blueprint);
     transition: background 0.12s, color 0.12s;
@@ -584,7 +584,7 @@
   button.primary:disabled { opacity: 0.4; cursor: not-allowed; }
   button.ghost { border-color: var(--rule-soft); color: var(--ink-soft); }
   button.ghost:hover { color: var(--ink); }
-  .icon-btn { background: none; border: 1px solid var(--rule-soft); color: var(--ink-mute); cursor: pointer; padding: 7px; display: inline-flex; }
+  .icon-btn { background: none; border: 1px solid var(--rule-soft); color: var(--ink-mute); cursor: var(--cursor-pointer); padding: 7px; display: inline-flex; }
   .icon-btn:hover { color: #e06c6c; border-color: #e06c6c; }
 
   @media (max-width: 760px) {

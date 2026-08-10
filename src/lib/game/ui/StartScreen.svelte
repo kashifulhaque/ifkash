@@ -249,7 +249,7 @@
     letter-spacing: 0.12em;
     color: #10111a;
     padding: 12px 27px 10px;
-    cursor: pointer;
+    cursor: var(--cursor-pointer);
     box-shadow: 0 0 0 4px rgba(255, 210, 63, 0.11), 0 12px 38px rgba(0, 0, 0, 0.32);
     animation: shimmer 2.6s linear infinite;
     transition: transform 150ms ease, box-shadow 150ms ease;
@@ -269,7 +269,7 @@
     letter-spacing: 0.1em;
     color: #ffd23f;
     padding: 8px 18px;
-    cursor: pointer;
+    cursor: var(--cursor-pointer);
   }
 
   .daily-btn:hover {
@@ -311,7 +311,7 @@
     color: rgba(255, 255, 255, 0.85);
     padding: 9px 22px;
     min-width: 240px;
-    cursor: pointer;
+    cursor: var(--cursor-pointer);
   }
 
   .menu-item:hover {
@@ -329,7 +329,7 @@
     letter-spacing: 0.1em;
     color: rgba(255, 255, 255, 0.5);
     text-decoration: underline;
-    cursor: pointer;
+    cursor: var(--cursor-pointer);
   }
 
   .text-link:hover {

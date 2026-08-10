@@ -218,7 +218,7 @@
     color: var(--agent-fab-color);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    cursor: pointer;
+    cursor: var(--cursor-pointer);
     font-family: var(--font-mono);
     font-size: 0.75rem;
     font-weight: 600;
@@ -287,7 +287,7 @@
     background: transparent;
     border: none;
     color: var(--agent-text-faint);
-    cursor: pointer;
+    cursor: var(--cursor-pointer);
     border-radius: var(--radius-sm);
     transition: color var(--dur-instant) var(--ease-out-quart),
       background var(--dur-instant) var(--ease-out-quart);

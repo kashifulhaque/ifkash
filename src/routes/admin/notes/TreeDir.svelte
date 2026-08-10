@@ -74,7 +74,7 @@
     font-size: 0.78rem;
     color: var(--ink-soft);
     text-align: left;
-    cursor: pointer;
+    cursor: var(--cursor-pointer);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;

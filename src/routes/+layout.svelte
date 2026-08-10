@@ -352,7 +352,7 @@
     border: 0;
     border-radius: var(--radius-md);
     color: var(--foreground);
-    cursor: pointer;
+    cursor: var(--cursor-pointer);
     transition:
       color 0.15s var(--ease-inout),
       background-color 0.15s var(--ease-inout);

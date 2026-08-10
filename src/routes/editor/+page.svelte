@@ -307,7 +307,7 @@
     background: transparent;
     border: none;
     border-radius: var(--radius-sm);
-    cursor: pointer;
+    cursor: var(--cursor-pointer);
     transition: all var(--dur-instant) var(--ease-out-quart);
   }
 
@@ -374,7 +374,7 @@
     border: none;
     border-radius: var(--radius-sm);
     text-align: left;
-    cursor: pointer;
+    cursor: var(--cursor-pointer);
   }
 
   .dropdown-menu button:hover {

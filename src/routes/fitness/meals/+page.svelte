@@ -620,7 +620,7 @@
     border: 1px solid var(--border);
     border-radius: 0.375rem;
     padding: 0.4rem 0.75rem;
-    cursor: pointer;
+    cursor: var(--cursor-pointer);
   }
   .ghost-btn:hover { color: var(--text-primary); border-color: var(--border-strong); }
   .note { color: var(--ink-mute); font-size: 0.9rem; }
@@ -714,7 +714,7 @@
   .day-row {
     width: 100%; display: flex; align-items: baseline; gap: 12px;
     background: none; border: none; border-bottom: 1px solid var(--rule-soft);
-    padding: 10px 4px; cursor: pointer; text-align: left;
+    padding: 10px 4px; cursor: var(--cursor-pointer); text-align: left;
     color: var(--ink); font-family: var(--font-body);
   }
   .day-list li:last-child .day-row { border-bottom: none; }
@@ -734,7 +734,7 @@
   .tiny { width: 80px; }
 
   button.primary, button.ghost {
-    display: inline-flex; align-items: center; gap: 7px; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 7px; cursor: var(--cursor-pointer);
     font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase;
     padding: 8px 14px; border: 1px solid var(--blueprint); background: transparent; color: var(--blueprint);
     transition: background 0.12s, color 0.12s;
@@ -745,7 +745,7 @@
   button.primary.small { padding: 6px 10px; font-size: 0.66rem; }
   button.ghost { border-color: var(--rule-soft); color: var(--ink-soft); }
   button.ghost:hover { color: var(--ink); }
-  .icon-btn { background: none; border: 1px solid var(--rule-soft); color: var(--ink-mute); cursor: pointer; padding: 7px; display: inline-flex; }
+  .icon-btn { background: none; border: 1px solid var(--rule-soft); color: var(--ink-mute); cursor: var(--cursor-pointer); padding: 7px; display: inline-flex; }
   .icon-btn:hover { color: #e06c6c; border-color: #e06c6c; }
 
   :global(.spin) { animation: spin 0.9s linear infinite; }

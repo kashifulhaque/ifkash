@@ -135,7 +135,7 @@
   .dot {
     color: var(--accent);
     border-bottom: none;
-    cursor: pointer;
+    cursor: var(--cursor-pointer);
     text-shadow: var(--accent-text-glow);
     transition: color 0.15s var(--ease-inout);
     font-style: normal;

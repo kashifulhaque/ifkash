@@ -1127,7 +1127,7 @@
     border: 1px solid var(--border);
     border-radius: 0.375rem;
     padding: 0.4rem 0.75rem;
-    cursor: pointer;
+    cursor: var(--cursor-pointer);
   }
   .ghost-btn:hover { color: var(--text-primary); border-color: var(--border-strong); }
 
@@ -1162,7 +1162,7 @@
     background: transparent;
     border: 1px solid var(--border);
     border-radius: 0.5rem;
-    cursor: pointer;
+    cursor: var(--cursor-pointer);
     text-align: left;
     transition: border-color 0.15s, background 0.15s;
   }
@@ -1199,7 +1199,7 @@
     letter-spacing: 0.06em;
     text-transform: uppercase;
     color: var(--text-secondary);
-    cursor: pointer;
+    cursor: var(--cursor-pointer);
     transition: color 0.15s, background 0.15s;
   }
   .tab:hover { color: var(--text-primary); }
@@ -1363,7 +1363,7 @@
     padding: 0.75rem 1rem;
     background: transparent;
     border: none;
-    cursor: pointer;
+    cursor: var(--cursor-pointer);
     text-align: left;
   }
   .log-ex.open .log-ex-head { background: var(--blueprint-tint); }
@@ -1409,7 +1409,7 @@
     color: var(--text-faint);
     background: transparent;
     border: none;
-    cursor: pointer;
+    cursor: var(--cursor-pointer);
     border-radius: 0.25rem;
     transition: color 0.15s;
   }
@@ -1423,7 +1423,7 @@
     color: var(--text-secondary);
     background: transparent;
     border: none;
-    cursor: pointer;
+    cursor: var(--cursor-pointer);
     padding: 0.25rem 0;
   }
   .text-btn:hover { color: var(--text-primary); }
@@ -1514,7 +1514,7 @@
     letter-spacing: 0.06em;
     text-transform: uppercase;
     color: var(--text-secondary);
-    cursor: pointer;
+    cursor: var(--cursor-pointer);
     list-style: none;
   }
   .fold summary::-webkit-details-marker { display: none; }
@@ -1560,7 +1560,7 @@
     flex-wrap: wrap;
     background: transparent;
     border: none;
-    cursor: pointer;
+    cursor: var(--cursor-pointer);
     text-align: left;
     padding: 0;
   }

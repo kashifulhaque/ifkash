@@ -118,6 +118,9 @@ struct SessionRow {
 struct SetRow {
     id: i64,
     exercise: String,
+    /// Implement the set was performed with (Barbell/Dumbbell/Machine/Cable/…).
+    /// '' for rows logged before the column existed.
+    equipment: String,
     set_index: i64,
     reps: i64,
     weight_g: i64,
@@ -132,6 +135,9 @@ struct SetInput {
 #[derive(Deserialize)]
 struct ExerciseInput {
     exercise: String,
+    /// One implement per exercise block; applied to every set it contains.
+    #[serde(default)]
+    equipment: String,
     sets: Vec<SetInput>,
 }
 
@@ -249,14 +255,17 @@ pub async fn create_session(mut req: Request, ctx: RouteContext<()>) -> Result<R
         if name.is_empty() {
             continue;
         }
+        let equipment = exercise.equipment.trim();
         for (i, set) in exercise.sets.iter().enumerate() {
             d1.prepare(
-                "INSERT INTO workout_sets (session_id, exercise, set_index, reps, weight_g) \
-                 VALUES (?1, ?2, ?3, ?4, ?5)",
+                "INSERT INTO workout_sets \
+                 (session_id, exercise, equipment, set_index, reps, weight_g) \
+                 VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
             )
             .bind(&[
                 n(session_id),
                 name.into(),
+                equipment.into(),
                 n((i + 1) as i64),
                 n(set.reps.max(0)),
                 n(set.weight_g.max(0)),
@@ -364,15 +373,18 @@ pub async fn upsert_session(mut req: Request, ctx: RouteContext<()>) -> Result<R
         if name.is_empty() {
             continue;
         }
+        let equipment = exercise.equipment.trim();
         for (i, set) in exercise.sets.iter().enumerate() {
             statements.push(
                 d1.prepare(
-                    "INSERT INTO workout_sets (session_id, exercise, set_index, reps, weight_g) \
-                     VALUES (?1, ?2, ?3, ?4, ?5)",
+                    "INSERT INTO workout_sets \
+                     (session_id, exercise, equipment, set_index, reps, weight_g) \
+                     VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
                 )
                 .bind(&[
                     n(session_id),
                     name.into(),
+                    equipment.into(),
                     n((i + 1) as i64),
                     n(set.reps.max(0)),
                     n(set.weight_g.max(0)),
@@ -427,7 +439,7 @@ pub async fn get_session(req: Request, ctx: RouteContext<()>) -> Result<Response
 
     let sets: Vec<SetRow> = d1
         .prepare(
-            "SELECT id, exercise, set_index, reps, weight_g FROM workout_sets \
+            "SELECT id, exercise, equipment, set_index, reps, weight_g FROM workout_sets \
              WHERE session_id = ?1 ORDER BY id ASC",
         )
         .bind(&[n(session_id)])?

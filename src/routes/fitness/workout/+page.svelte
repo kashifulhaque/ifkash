@@ -33,8 +33,11 @@
     CARDIO_DEFAULTS,
     cardioMet,
     exerciseKind,
+    exerciseEquipment,
+    EQUIPMENT_OPTIONS,
     type DayLabel,
     type ExerciseKind,
+    type Equipment,
     type SessionSummary,
     type SessionDetail,
     type BodyweightEntry,
@@ -87,7 +90,13 @@
   // A set's `suggested` flag means it was prefilled from a *previous* day as a
   // hint — it is excluded from saves until the user actually edits it.
   type SetRow = { weight: string; reps: string; suggested: boolean };
-  type ExerciseRow = { name: string; scheme: string; kind: ExerciseKind; sets: SetRow[] };
+  type ExerciseRow = {
+    name: string;
+    scheme: string;
+    kind: ExerciseKind;
+    equipment: Equipment;
+    sets: SetRow[];
+  };
   let exercises: ExerciseRow[] = [];
 
   // Cardio bouts logged for the session. `kcalEdited` tracks whether the user
@@ -142,11 +151,18 @@
     return { weight: '', reps: '', suggested: false };
   }
 
+  /** Collapse/expand key. Includes the implement so the same exercise logged on
+   *  two implements gets two independently-foldable blocks. */
+  function rowKey(ex: ExerciseRow, i: number): string {
+    return ex.name ? `${ex.name}|${ex.equipment}` : `_${i}`;
+  }
+
   function templateRows(focus: Focus): ExerciseRow[] {
     return DAY_TEMPLATES[focus].map((ex) => ({
       name: ex.name,
       scheme: ex.scheme,
       kind: ex.kind,
+      equipment: ex.equipment ?? '',
       sets: Array.from({ length: setsFromScheme(ex.scheme) }, blankSet)
     }));
   }
@@ -221,13 +237,20 @@
     return d;
   }
 
-  /** Group a detail's flat set rows by exercise, preserving order. */
+  /** Group a detail's flat set rows by exercise + implement, preserving order.
+   *  Splitting on equipment keeps a machine pec fly and dumbbell flyes as two
+   *  separate blocks — their loads aren't comparable. */
   function groupSets(detail: SessionDetail) {
-    const groups: { exercise: string; sets: { reps: number; weight_g: number }[] }[] = [];
+    const groups: {
+      exercise: string;
+      equipment: Equipment;
+      sets: { reps: number; weight_g: number }[];
+    }[] = [];
     for (const s of detail.sets) {
-      let g = groups.find((x) => x.exercise === s.exercise);
+      const equipment = s.equipment ?? '';
+      let g = groups.find((x) => x.exercise === s.exercise && x.equipment === equipment);
       if (!g) {
-        g = { exercise: s.exercise, sets: [] };
+        g = { exercise: s.exercise, equipment, sets: [] };
         groups.push(g);
       }
       g.sets.push({ reps: s.reps, weight_g: s.weight_g });
@@ -296,20 +319,33 @@
    *  real values; false → prefill weights only, as suggestions. */
   function fillRows(rows: ExerciseRow[], detail: SessionDetail, committed: boolean) {
     const groups = groupSets(detail);
+    // A row can only absorb one group, so logging the same exercise on two
+    // implements in one session restores as two blocks rather than clobbering.
+    const claimed = new Set<ExerciseRow>();
     for (const g of groups) {
-      let row = rows.find((r) => r.name === g.exercise);
+      let row = rows.find((r) => r.name === g.exercise && !claimed.has(r));
       if (!row) {
         if (!committed) continue; // don't invent off-template rows from suggestions
-        row = { name: g.exercise, scheme: '', kind: exerciseKind(g.exercise), sets: [] };
+        row = {
+          name: g.exercise,
+          scheme: '',
+          kind: exerciseKind(g.exercise),
+          equipment: g.equipment || exerciseEquipment(g.exercise),
+          sets: []
+        };
         rows.push(row);
       }
+      claimed.add(row);
+      // Adopt the implement the weights were actually lifted on — otherwise a
+      // suggested 52.5 kg would sit under a "Dumbbell" label, or vice versa.
+      if (g.equipment) row.equipment = g.equipment;
       g.sets.forEach((s, j) => {
         if (!row!.sets[j]) row!.sets[j] = blankSet();
         row!.sets[j].weight = s.weight_g > 0 ? gramsToKg(s.weight_g) : '';
         row!.sets[j].reps = committed && s.reps > 0 ? String(s.reps) : '';
         row!.sets[j].suggested = !committed;
       });
-      if (committed) expanded[g.exercise] = true;
+      if (committed) expanded[rowKey(row, rows.indexOf(row))] = true;
     }
   }
 
@@ -343,7 +379,23 @@
     scheduleSave();
   }
   function addExercise() {
-    exercises = [...exercises, { name: '', scheme: '', kind: 'weighted', sets: [blankSet()] }];
+    exercises = [
+      ...exercises,
+      { name: '', scheme: '', kind: 'weighted', equipment: '', sets: [blankSet()] }
+    ];
+  }
+
+  /** Typing a known exercise name into a custom row adopts its default implement. */
+  function onExerciseName(i: number) {
+    const ex = exercises[i];
+    if (!ex.equipment) {
+      const guess = exerciseEquipment(ex.name.trim());
+      if (guess) {
+        ex.equipment = guess;
+        exercises = exercises;
+      }
+    }
+    scheduleSave();
   }
   function removeExercise(i: number) {
     exercises = exercises.filter((_, idx) => idx !== i);
@@ -379,6 +431,7 @@
     return exercises
       .map((ex) => ({
         exercise: ex.name.trim(),
+        equipment: ex.equipment,
         sets: ex.sets
           .filter((s) => !s.suggested && (str(s.reps).trim() !== '' || str(s.weight).trim() !== ''))
           .map((s) => ({
@@ -818,11 +871,11 @@
       <!-- interactive logging view -->
       <div class="log-list">
         {#each exercises as ex, i}
-          <div class="log-ex" class:open={expanded[ex.name || `_${i}`]}>
+          <div class="log-ex" class:open={expanded[rowKey(ex, i)]}>
             <button
               type="button"
               class="log-ex-head"
-              on:click={() => (expanded = { ...expanded, [ex.name || `_${i}`]: !expanded[ex.name || `_${i}`] })}
+              on:click={() => (expanded = { ...expanded, [rowKey(ex, i)]: !expanded[rowKey(ex, i)] })}
             >
               <span class="ex-num">{i + 1}</span>
               {#if ex.scheme}
@@ -834,13 +887,31 @@
                   placeholder="Exercise name"
                   bind:value={ex.name}
                   on:click|stopPropagation
-                  on:input={scheduleSave}
+                  on:input={() => onExerciseName(i)}
                 />
               {/if}
-              <span class="chevron" aria-hidden="true">{expanded[ex.name || `_${i}`] ? '−' : '+'}</span>
+              {#if ex.kind === 'weighted'}
+                <!-- Which implement — loads are only comparable within one. -->
+                <!-- svelte-ignore a11y-click-events-have-key-events -->
+                <select
+                  class="ex-equip"
+                  class:unset={!ex.equipment}
+                  bind:value={ex.equipment}
+                  on:click|stopPropagation
+                  on:change={scheduleSave}
+                  title="Equipment used"
+                  aria-label="Equipment for {ex.name || 'this exercise'}"
+                >
+                  <option value="">—</option>
+                  {#each EQUIPMENT_OPTIONS as opt}
+                    <option value={opt}>{opt}</option>
+                  {/each}
+                </select>
+              {/if}
+              <span class="chevron" aria-hidden="true">{expanded[rowKey(ex, i)] ? '−' : '+'}</span>
             </button>
 
-            {#if expanded[ex.name || `_${i}`]}
+            {#if expanded[rowKey(ex, i)]}
               <div class="sets">
                 {#each ex.sets as s, j}
                   <div class="set-row">
@@ -1025,7 +1096,10 @@
                     {:else if openDetail}
                       {#each groupSets(openDetail) as g}
                         <div class="detail-ex">
-                          <span class="detail-ex-name">{g.exercise}</span>
+                          <span class="detail-ex-name">
+                            {g.exercise}
+                            {#if g.equipment}<span class="detail-ex-equip">{g.equipment}</span>{/if}
+                          </span>
                           <div class="detail-sets">
                             {#each g.sets as st}
                               <span class="set-badge">{setLabel(st.reps, st.weight_g, g.exercise)}</span>
@@ -1374,6 +1448,20 @@
     color: var(--text-tertiary);
   }
   .ex-name-input { font-weight: 600; }
+  /* Implement picker — quiet until set, since loads only compare within one. */
+  .ex-equip {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    background: var(--surface-raised);
+    border: 1px solid var(--border-subtle);
+    border-radius: 999px;
+    padding: 0.15rem 0.4rem;
+    cursor: var(--cursor-pointer);
+    max-width: 7.5rem;
+  }
+  .ex-equip.unset { color: var(--text-tertiary); border-style: dashed; }
+  .ex-equip:focus-visible { outline: 2px solid var(--blueprint); outline-offset: 2px; }
   .chevron {
     font-family: var(--font-mono);
     font-size: 1rem;
@@ -1586,6 +1674,15 @@
   }
   .detail-ex { display: flex; flex-direction: column; gap: 0.375rem; }
   .detail-ex-name { font-size: 0.875rem; color: var(--text-secondary); }
+  .detail-ex-equip {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    color: var(--text-tertiary);
+    border: 1px solid var(--border-subtle);
+    border-radius: 999px;
+    padding: 0.05rem 0.4rem;
+    margin-left: 0.35rem;
+  }
   .detail-sets { display: flex; flex-wrap: wrap; gap: 0.375rem; }
   .set-badge {
     font-family: var(--font-mono);
@@ -1624,6 +1721,7 @@
     .log-ex-head .ex-name,
     .log-ex-head .ex-name-input { flex: 1; min-width: 0; }
     .chevron { order: 2; }
+    .ex-equip { order: 1; }
     .ex-target { order: 3; flex-basis: 100%; padding-left: 2rem; }
     .day-card-head { padding: 0.75rem 0.75rem; }
     .sets { padding: 0.5rem 0.75rem 0.9rem; }

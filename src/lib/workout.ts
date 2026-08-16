@@ -10,41 +10,74 @@ import { strengthKcal, metKcal } from './fitnessMetrics';
 // The persisted shape is unchanged (weight_g + reps); for time exercises the
 // seconds go in the `reps` column and weight_g stays 0.
 export type ExerciseKind = 'weighted' | 'bodyweight' | 'time';
-export type Exercise = { name: string; scheme: string; kind: ExerciseKind };
+export type Exercise = {
+  name: string;
+  scheme: string;
+  kind: ExerciseKind;
+  /** Default implement for the template row; the user can override per session. */
+  equipment?: Equipment;
+};
+
+// Which implement a set was performed with. The same exercise name can be run
+// on different equipment — a machine pec fly and dumbbell flyes are 50 kg apart
+// — so loads are only comparable within one implement. '' means unspecified
+// (every set logged before this field existed).
+export type Equipment = '' | 'Barbell' | 'Dumbbell' | 'Machine' | 'Cable' | 'Smith' | 'Bodyweight';
+
+export const EQUIPMENT_OPTIONS: Equipment[] = [
+  'Barbell',
+  'Dumbbell',
+  'Machine',
+  'Cable',
+  'Smith',
+  'Bodyweight'
+];
 
 export const PUSH: Exercise[] = [
-  { name: 'Bench press', scheme: '4×8', kind: 'weighted' },
-  { name: 'Shoulder press', scheme: '3×10', kind: 'weighted' },
-  { name: 'Incline dumbbell press', scheme: '3×10', kind: 'weighted' },
-  { name: 'Pec fly', scheme: '3×12', kind: 'weighted' },
-  { name: 'Cable tricep pushdown', scheme: '3×12', kind: 'weighted' }
+  { name: 'Bench press', scheme: '4×8', kind: 'weighted', equipment: 'Barbell' },
+  { name: 'Shoulder press', scheme: '3×10', kind: 'weighted', equipment: 'Dumbbell' },
+  { name: 'Incline dumbbell press', scheme: '3×10', kind: 'weighted', equipment: 'Dumbbell' },
+  { name: 'Pec fly', scheme: '3×12', kind: 'weighted', equipment: 'Machine' },
+  { name: 'Cable tricep pushdown', scheme: '3×12', kind: 'weighted', equipment: 'Cable' }
 ];
 
 export const PULL: Exercise[] = [
-  { name: 'Lat pulldown', scheme: '3×10', kind: 'weighted' },
-  { name: 'Row machine', scheme: '3×10', kind: 'weighted' },
-  { name: 'Deadlift', scheme: '50×5 60×3 80×2 90×1 100×1', kind: 'weighted' },
-  { name: 'Face pulls', scheme: '3×12', kind: 'weighted' },
-  { name: 'Cable rear delts (shoulder height)', scheme: '3×15', kind: 'weighted' },
-  { name: 'Lateral raises', scheme: '3×15', kind: 'weighted' },
-  { name: 'Bicep curls', scheme: '3×12', kind: 'weighted' }
+  { name: 'Lat pulldown', scheme: '3×10', kind: 'weighted', equipment: 'Cable' },
+  { name: 'Row machine', scheme: '3×10', kind: 'weighted', equipment: 'Machine' },
+  {
+    name: 'Deadlift',
+    scheme: '50×5 60×3 80×2 90×1 100×1',
+    kind: 'weighted',
+    equipment: 'Barbell'
+  },
+  { name: 'Face pulls', scheme: '3×12', kind: 'weighted', equipment: 'Cable' },
+  {
+    name: 'Cable rear delts (shoulder height)',
+    scheme: '3×15',
+    kind: 'weighted',
+    equipment: 'Cable'
+  },
+  { name: 'Lateral raises', scheme: '3×15', kind: 'weighted', equipment: 'Dumbbell' },
+  { name: 'Bicep curls', scheme: '3×12', kind: 'weighted', equipment: 'Dumbbell' }
 ];
 
 export const LEGS: Exercise[] = [
-  { name: 'Barbell squat', scheme: '4×8', kind: 'weighted' },
-  { name: 'Leg press', scheme: '3×10', kind: 'weighted' },
-  { name: 'Leg curls', scheme: '3×12', kind: 'weighted' },
-  { name: 'Leg extension', scheme: '3×12', kind: 'weighted' },
-  { name: 'Crunches', scheme: '3×15', kind: 'bodyweight' }
+  { name: 'Barbell squat', scheme: '4×8', kind: 'weighted', equipment: 'Barbell' },
+  { name: 'Leg press', scheme: '3×10', kind: 'weighted', equipment: 'Machine' },
+  { name: 'Romanian deadlift', scheme: '3×10', kind: 'weighted', equipment: 'Barbell' },
+  { name: 'Leg curls', scheme: '3×12', kind: 'weighted', equipment: 'Machine' },
+  { name: 'Leg extension', scheme: '3×12', kind: 'weighted', equipment: 'Machine' },
+  { name: 'Calf raises', scheme: '3×15', kind: 'weighted', equipment: 'Machine' },
+  { name: 'Crunches', scheme: '3×15', kind: 'bodyweight', equipment: 'Bodyweight' }
 ];
 
 // Day 6 — lighter optional session: core work, with extra cardio as the main event.
 export const CORE: Exercise[] = [
-  { name: 'Plank', scheme: '3×60s', kind: 'time' },
-  { name: 'Hanging leg raise', scheme: '3×12', kind: 'bodyweight' },
-  { name: 'Crunches', scheme: '3×15', kind: 'bodyweight' },
-  { name: 'Russian twists', scheme: '3×20', kind: 'bodyweight' },
-  { name: 'Back extension', scheme: '3×15', kind: 'bodyweight' }
+  { name: 'Plank', scheme: '3×60s', kind: 'time', equipment: 'Bodyweight' },
+  { name: 'Hanging leg raise', scheme: '3×12', kind: 'bodyweight', equipment: 'Bodyweight' },
+  { name: 'Crunches', scheme: '3×15', kind: 'bodyweight', equipment: 'Bodyweight' },
+  { name: 'Russian twists', scheme: '3×20', kind: 'bodyweight', equipment: 'Bodyweight' },
+  { name: 'Back extension', scheme: '3×15', kind: 'bodyweight', equipment: 'Bodyweight' }
 ];
 
 export type DayLabel = 'Push' | 'Pull' | 'Legs' | 'Core';
@@ -69,6 +102,20 @@ const EXERCISE_KIND: Record<string, ExerciseKind> = (() => {
 
 export function exerciseKind(name: string): ExerciseKind {
   return EXERCISE_KIND[name] ?? 'weighted';
+}
+
+// Name → default implement, so restored off-template rows and newly added
+// exercises start on the right equipment instead of blank.
+const EXERCISE_EQUIPMENT: Record<string, Equipment> = (() => {
+  const m: Record<string, Equipment> = {};
+  for (const list of Object.values(DAY_TEMPLATES)) {
+    for (const ex of list) if (ex.equipment) m[ex.name] = ex.equipment;
+  }
+  return m;
+})();
+
+export function exerciseEquipment(name: string): Equipment {
+  return EXERCISE_EQUIPMENT[name] ?? '';
 }
 
 /**
@@ -123,6 +170,8 @@ export type SessionSummary = {
 export type WorkoutSet = {
   id: number;
   exercise: string;
+  /** '' for sets logged before equipment was tracked. */
+  equipment: Equipment;
   set_index: number;
   reps: number;
   weight_g: number;

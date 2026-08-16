@@ -1,6 +1,6 @@
 import { getApiBase } from '$lib/apiBase';
 import { loadToken, AuthError } from '$lib/splitterApi';
-import type { SessionSummary, SessionDetail, BodyweightEntry } from '$lib/workout';
+import type { SessionSummary, SessionDetail, BodyweightEntry, Equipment } from '$lib/workout';
 
 // The tracker reuses the splitter's Google sign-in token (same localStorage key,
 // same auth flow) so the user signs in once across both tools. Auth helpers
@@ -35,6 +35,8 @@ async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
 
 export type ExercisePayload = {
   exercise: string;
+  /** One implement per exercise block; the Worker stamps it onto every set. */
+  equipment: Equipment;
   sets: { reps: number; weight_g: number }[];
 };
 

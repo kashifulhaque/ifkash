@@ -30,23 +30,29 @@
     },
     {
       n: "03",
+      name: "RL",
+      desc: "Reinforcement learning experiments",
+      href: "/rl",
+    },
+    {
+      n: "04",
       name: "Tools",
       desc: "Small in-browser utilities",
       href: "/tools",
     },
     {
-      n: "04",
+      n: "05",
       name: "Education",
       desc: "Academic background",
       href: "/education",
     },
     {
-      n: "05",
+      n: "06",
       name: "Blog",
       desc: "Writing on blog.ifkash.dev",
       href: "/blog",
     },
-    { n: "06", name: "Game", desc: "A browser FPS", href: "/game" },
+    { n: "07", name: "Game", desc: "A browser FPS", href: "/game" },
   ];
 </script>
 

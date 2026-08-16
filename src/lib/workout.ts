@@ -25,7 +25,8 @@ export const PULL: Exercise[] = [
   { name: 'Row machine', scheme: '3×10', kind: 'weighted' },
   { name: 'Deadlift', scheme: '50×5 60×3 80×2 90×1 100×1', kind: 'weighted' },
   { name: 'Face pulls', scheme: '3×12', kind: 'weighted' },
-  { name: 'Rear delts', scheme: '3×15', kind: 'weighted' },
+  { name: 'Cable rear delts (shoulder height)', scheme: '3×15', kind: 'weighted' },
+  { name: 'Lateral raises', scheme: '3×15', kind: 'weighted' },
   { name: 'Bicep curls', scheme: '3×12', kind: 'weighted' }
 ];
 

@@ -17,3 +17,5 @@ api.old/
 .devcontainer/logs/
 
 .claude/
+.commandcode/
+

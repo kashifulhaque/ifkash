@@ -18,6 +18,7 @@
     { href: "/", label: "Home" },
     { href: "/work", label: "Work" },
     { href: "/projects", label: "Projects" },
+    { href: "/rl", label: "RL" },
     { href: "/tools", label: "Tools" },
     { href: "/education", label: "Education" },
     { href: "/blog", label: "Blog" },

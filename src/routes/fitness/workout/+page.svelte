@@ -49,19 +49,22 @@
   const clientId = env.PUBLIC_GOOGLE_CLIENT_ID ?? '';
 
   const cardio: Record<Focus, string> = {
-    Push: '15 min cycle',
-    Pull: '15 min crosstrainer',
-    Legs: '20 min treadmill incline walk (incline 8–10%)',
-    Core: '25 min treadmill run'
+    Push: '20 min crosstrainer, steady',
+    Pull: '20 min crosstrainer intervals — 30s hard / 90s easy × 10',
+    Legs: '15 min easy cycle (legs are already done)',
+    Core: '20 min crosstrainer, steady'
   };
 
+  // Six-day rotation: legs twice, not once. The old Day 6 was a standalone core
+  // session; core now rides along with leg days, freeing that slot for the
+  // second Legs day — the fix for the only muscle group that was regressing.
   const split: { day: string; focus: Focus; detail: string }[] = [
     { day: 'Day 1', focus: 'Push', detail: 'chest / shoulders / triceps' },
-    { day: 'Day 2', focus: 'Pull', detail: 'back / biceps' },
-    { day: 'Day 3', focus: 'Legs', detail: 'quads / hamstrings / abs' },
+    { day: 'Day 2', focus: 'Pull', detail: 'back / rear delts / biceps' },
+    { day: 'Day 3', focus: 'Legs', detail: 'quads / hamstrings / calves / core' },
     { day: 'Day 4', focus: 'Push', detail: 'chest / shoulders / triceps' },
-    { day: 'Day 5', focus: 'Pull', detail: 'back / biceps' },
-    { day: 'Day 6', focus: 'Core', detail: 'core / abs + extra cardio (optional)' }
+    { day: 'Day 5', focus: 'Pull', detail: 'back / rear delts / biceps' },
+    { day: 'Day 6', focus: 'Legs', detail: 'quads / hamstrings / calves / core' }
   ];
 
   // ---- state ---------------------------------------------------------------
@@ -95,6 +98,8 @@
     scheme: string;
     kind: ExerciseKind;
     equipment: Equipment;
+    /** Compound / previously-neglected lift — progress these first. */
+    priority: boolean;
     sets: SetRow[];
   };
   let exercises: ExerciseRow[] = [];
@@ -163,6 +168,7 @@
       scheme: ex.scheme,
       kind: ex.kind,
       equipment: ex.equipment ?? '',
+      priority: ex.priority ?? false,
       sets: Array.from({ length: setsFromScheme(ex.scheme) }, blankSet)
     }));
   }
@@ -331,6 +337,7 @@
           scheme: '',
           kind: exerciseKind(g.exercise),
           equipment: g.equipment || exerciseEquipment(g.exercise),
+          priority: false,
           sets: []
         };
         rows.push(row);
@@ -381,7 +388,7 @@
   function addExercise() {
     exercises = [
       ...exercises,
-      { name: '', scheme: '', kind: 'weighted', equipment: '', sets: [blankSet()] }
+      { name: '', scheme: '', kind: 'weighted', equipment: '', priority: false, sets: [blankSet()] }
     ];
   }
 
@@ -860,18 +867,23 @@
       <!-- read-only plan view -->
       <ul class="exercise-list">
         {#each exercises as ex, i}
-          <li>
+          <li class:key-lift={ex.priority}>
             <span class="ex-num">{i + 1}</span>
             <span class="ex-name">{ex.name}</span>
+            {#if ex.priority}<span class="key-tag" title="Priority lift — progress this first">key</span>{/if}
             <span class="ex-scheme">{ex.scheme}</span>
           </li>
         {/each}
       </ul>
+      <p class="key-legend">
+        <span class="key-tag">key</span> — the lifts that drive the result. Progress these first;
+        the rest are accessories and are what to cut when you're short on time.
+      </p>
     {:else}
       <!-- interactive logging view -->
       <div class="log-list">
         {#each exercises as ex, i}
-          <div class="log-ex" class:open={expanded[rowKey(ex, i)]}>
+          <div class="log-ex" class:open={expanded[rowKey(ex, i)]} class:key-lift={ex.priority}>
             <button
               type="button"
               class="log-ex-head"
@@ -880,6 +892,9 @@
               <span class="ex-num">{i + 1}</span>
               {#if ex.scheme}
                 <span class="ex-name">{ex.name}</span>
+                {#if ex.priority}
+                  <span class="key-tag" title="Priority lift — progress this first">key</span>
+                {/if}
                 <span class="ex-target">{ex.scheme}</span>
               {:else}
                 <input
@@ -974,6 +989,12 @@
         {#each cardioRows as c, i}
           <div class="cardio-row">
             <select class="cardio-kind" bind:value={c.kind} on:change={() => onCardioChange(c)}>
+              <!-- A restored bout may name a machine no longer on the list
+                   (the gym only has three). Keep its own value selectable so
+                   editing an old session doesn't silently retype it. -->
+              {#if c.kind && !CARDIO_OPTIONS.some((o) => o.value === c.kind)}
+                <option value={c.kind}>{c.kind}</option>
+              {/if}
               {#each CARDIO_OPTIONS as o}
                 <option value={o.value}>{o.value}</option>
               {/each}
@@ -1402,14 +1423,19 @@
 
   /* read-only plan list */
   .exercise-list { display: flex; flex-direction: column; list-style: none; padding: 0; margin: 0; }
+  /* Flex, not a fixed grid: the key tag and scheme are both optional, and a
+     fixed column count pushes later children onto a second row when one is
+     absent. */
   .exercise-list li {
-    display: grid;
-    grid-template-columns: 1.5rem 1fr auto;
+    display: flex;
     align-items: baseline;
     gap: 0.75rem;
     padding: 0.7rem 1rem;
     border-bottom: 1px solid var(--border-subtle);
+    border-left: 2px solid transparent;
   }
+  .exercise-list li .ex-num { flex: none; width: 1.5rem; }
+  .exercise-list li .ex-name { flex: 1; min-width: 0; }
   .exercise-list li:last-child { border-bottom: none; }
   .ex-num { font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-tertiary); }
   .ex-name { font-size: 0.9375rem; line-height: 1.4; color: var(--text-secondary); }
@@ -1426,11 +1452,16 @@
 
   /* interactive log list */
   .log-list { display: flex; flex-direction: column; }
-  .log-ex { border-bottom: 1px solid var(--border-subtle); }
+  .log-ex { border-bottom: 1px solid var(--border-subtle); border-left: 2px solid transparent; }
   .log-ex:last-of-type { border-bottom: none; }
+  .log-ex-head .ex-num { flex: none; width: 1.5rem; }
+  .log-ex-head .ex-name { flex: 1; min-width: 0; }
+  .log-ex-head .chevron { margin-left: auto; }
+  /* Flex for the same reason as the plan list — the target, equipment picker
+     and key tag are each conditional, so a fixed column count wrapped the
+     chevron onto its own row whenever one was missing. */
   .log-ex-head {
-    display: grid;
-    grid-template-columns: 1.5rem 1fr auto auto;
+    display: flex;
     align-items: center;
     gap: 0.75rem;
     width: 100%;
@@ -1448,6 +1479,34 @@
     color: var(--text-tertiary);
   }
   .ex-name-input { font-weight: 600; }
+
+  /* Priority lifts — the compounds that carry the session. Marked with an
+     accent rail rather than a colour swap, so the list still scans as one
+     group and the tag stays readable next to the exercise name. */
+  .key-tag {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--blueprint);
+    border: 1px solid var(--blueprint);
+    border-radius: 999px;
+    padding: 0.05rem 0.35rem;
+    flex: none;
+  }
+  .log-ex.key-lift,
+  .exercise-list li.key-lift { border-left-color: var(--blueprint); }
+  .exercise-list li.key-lift .ex-name { color: var(--text-primary); }
+  .key-legend {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    margin: 0.75rem 0 0;
+    font-size: 0.75rem;
+    line-height: 1.5;
+    color: var(--text-tertiary);
+  }
   /* Implement picker — quiet until set, since loads only compare within one. */
   .ex-equip {
     font-family: var(--font-mono);
@@ -1723,6 +1782,13 @@
     .chevron { order: 2; }
     .ex-equip { order: 1; }
     .ex-target { order: 3; flex-basis: 100%; padding-left: 2rem; }
+
+    /* Cardio: the machine name shares a row with two number fields and a
+       delete button, which crushes the select to a bare chevron at this width
+       — and the names are long ("Crosstrainer (intervals)"). Give it its own
+       line and let the numbers share the next. */
+    .cardio-row { flex-wrap: wrap; }
+    .cardio-kind { flex-basis: 100%; }
     .day-card-head { padding: 0.75rem 0.75rem; }
     .sets { padding: 0.5rem 0.75rem 0.9rem; }
     .set-row { gap: 0.4rem; }

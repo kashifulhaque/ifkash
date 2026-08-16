@@ -2,7 +2,7 @@
   <title>Snake RL — DQN</title>
   <meta
     name="description"
-    content="A snake agent trained from scratch with DQN: experience replay, a 256-unit network, and an 11-dim state. Best score 44."
+    content="A snake agent trained from scratch with Dueling Double DQN: a 28-dim egocentric state, a target network, and a 256-unit network. Greedy eval mean 102."
   />
 </svelte:head>
 
@@ -15,9 +15,9 @@
     </div>
     <h1 class="page-title">Snake RL</h1>
     <p class="page-desc">
-      A snake agent trained from scratch with Deep Q-Networks (DQN) in PyTorch.
-      The policy learns to survive, chase food, and avoid its own tail from raw
-      game state — no hand-coded heuristics.
+      A snake agent trained from scratch with Dueling Double Deep Q-Networks
+      (DDQN) in PyTorch. The policy learns to survive, chase food, and avoid
+      its own tail from raw game state — no hand-coded heuristics.
     </p>
     <div class="project-links">
       <a href="/rl/snake-dqn/play" class="project-link">Play in browser</a>
@@ -40,19 +40,26 @@
         (<code>snake_env.py</code>): a 640×480 grid with a discrete action
         space of three relative moves — <em>straight</em>, <em>turn
         right</em>, <em>turn left</em> — and rewards of +10 for food,
-        −10 for dying, and 0 otherwise. A frame cap of <code>100 ×
-        snake length</code> per episode stops the agent from looping forever
-        once the snake gets long.
+        −10 for dying, and 0 otherwise. Moving into the tail cell is legal
+        (it vacates on the same tick), and an idle cap of <code>100 ×
+        snake length</code> steps since the last food truncates the episode
+        instead of looping forever.
       </p>
       <p>
-        The agent (<code>model.py</code>) is a plain
-        <code>Linear_QNet</code>: <code>11 → 256 → 3</code> with ReLU,
-        trained with MSELoss against a one-step bootstrap target
-        (<code>r + γ·max Q(s′)</code>, γ = 0.9). Training uses two memories —
-        a short-memory update after every step plus a replay-buffer update of
-        1000 random samples each game (replay capacity 100k) — and an
-        ε-greedy schedule that decays from 80/200 to a floor of 5/200 as
-        games go on.
+        The agent (<code>model.py</code>) is a dueling Double DQN: a
+        <code>28 → 256 → 256</code> ReLU body, then separate value and
+        advantage heads summed dueling-style. It trains against a frozen
+        target network (hard update every 1000 steps) with 3-step returns,
+        Huber loss, and an ε-greedy schedule decaying from 1.0 to 0.005 over
+        150k steps.
+      </p>
+      <p>
+        The state (<code>state.py</code>) encodes 28 egocentric features: a
+        full obstacle ray per move direction, flood-fill free space per
+        candidate move (what lets the agent avoid sealing itself into a dead
+        end), food and tail position in the snake's own frame, and board
+        occupancy. The v1 state was an 11-feature encoding that could not see
+        its own body shape and plateaued at a mean of ~18.
       </p>
     </div>
 
@@ -60,16 +67,16 @@
       <h2>Results</h2>
       <div class="stats-grid">
         <div class="stat">
-          <div class="stat-value">44</div>
+          <div class="stat-value">102</div>
+          <div class="stat-label">Greedy eval mean</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value">143</div>
           <div class="stat-label">Record score</div>
         </div>
         <div class="stat">
-          <div class="stat-value">11</div>
+          <div class="stat-value">28</div>
           <div class="stat-label">State dims</div>
-        </div>
-        <div class="stat">
-          <div class="stat-value">3</div>
-          <div class="stat-label">Actions</div>
         </div>
         <div class="stat">
           <div class="stat-value">256</div>
@@ -77,18 +84,18 @@
         </div>
       </div>
       <p>
-        The final weights are saved to <code>model.pth</code> (the checkpoint
-        is re-saved every time a new record is set), and
-        <code>play.py</code> loads it back to run evaluation games with
-        <code>torch.no_grad()</code>. The training loop (<code>train.py</code>)
-        also plots score and mean score live with matplotlib.
+        Measured on the same 32×24 board: greedy evaluation of
+        <code>runs/v2/best.pth</code> averages 102 per game (max 143 in 20
+        eval games, 173 in a 50-game run) — roughly a 5× jump over the v1
+        mean of ~18. The checkpoint is saved whenever the greedy eval mean
+        improves, so it is protected against a late-training dip.
       </p>
       <p>
         The trained weights are also exported to
         <code>src/lib/rl/snake-dqn-weights.json</code> so the same agent can
-        play in the browser — a TypeScript port of the env and forward pass
-        (no training). <a href="/rl/snake-dqn/play" class="inline-link"
-          >Watch it play live</a
+        play in the browser — a TypeScript port of the env, state encoding,
+        and dueling forward pass (no training). <a href="/rl/snake-dqn/play"
+          class="inline-link">Watch it play live</a
         >.
       </p>
     </div>
@@ -96,13 +103,15 @@
     <div class="section">
       <h2>Run it yourself</h2>
       <div class="code-block">
-        <pre><code>uv run train.py   # train a new agent (renders the game live)
-uv run play.py    # watch the saved model play 10 games</code></pre>
+        <pre><code>uv run train.py   # train a new agent headless (~1500 steps/s)
+uv run play.py    # watch the saved best.pth play
+uv run plot.py    # render checkpoints/log.csv -&gt; progress.png</code></pre>
       </div>
       <p>
         Dependencies: <code>torch</code>, <code>pygame</code>,
-        <code>numpy</code>, <code>matplotlib</code> — pinned in
-        <code>pyproject.toml</code> (Python ≥ 3.12, managed with uv).
+        <code>numpy</code> — pinned in <code>pyproject.toml</code> (Python
+        ≥ 3.12, managed with uv). Training is headless by default; add
+        <code>--render</code> to watch it learn.
       </p>
     </div>
 
@@ -110,21 +119,25 @@ uv run play.py    # watch the saved model play 10 games</code></pre>
       <h2>Notes &amp; next steps</h2>
       <ul class="feature-list">
         <li>
-          <strong>Double DQN / target network:</strong> the current bootstrap
-          target uses the same network being trained, which can overestimate
-          Q-values. A frozen target network updated every N steps is the
-          standard fix.
+          <strong>v1 → v2:</strong> the original 11-feature state could only
+          see the three cells touching the head, so a long snake had no way
+          to perceive that it was sealing itself in — the state was not
+          Markov enough to support scores past ~30 no matter how long you
+          trained. The 28-feature encoding (rays, flood-fill free space,
+          egocentric food/tail geometry) is what unlocks the ~5× jump.
         </li>
         <li>
-          <strong>Richer state:</strong> the 11-dim vector encodes danger in
-          the three facing directions, the current direction, and food
-          position relative to the head. Adding a vision grid or a full-board
-          occupancy view would help it avoid dead ends.
+          <strong>Algorithm fixes:</strong> the v1 update never detached its
+          bootstrap target, so gradients flowed into it and the net regressed
+          onto itself. v2 uses a frozen target network (hard update every
+          1000 steps), Double DQN action selection, a dueling head, 3-step
+          returns, and Huber loss with grad clipping.
         </li>
         <li>
-          <strong>No render for training:</strong> the env supports
-          <code>render=False</code>, so training can be run headless and
-          batched up for faster iteration.
+          <strong>Next step:</strong> the current encoding is hand-designed.
+          The real jump is a convolutional net over a stacked grid
+          representation, which removes feature engineering entirely — or a
+          Hamiltonian-cycle solver for near-perfect play.
         </li>
       </ul>
     </div>

@@ -2,7 +2,7 @@
   <title>Snake RL — Watch the Agent Play</title>
   <meta
     name="description"
-    content="Watch the trained DQN agent play snake in the browser — the model.pth weights running as a TypeScript port on canvas."
+    content="Watch the trained dueling Double DQN agent play snake in the browser — the best.pth weights running as a TypeScript port on canvas."
   />
 </svelte:head>
 
@@ -13,7 +13,7 @@
 
   const GAME_W = 640;
   const GAME_H = 480;
-  const BASE_STEPS_PER_SEC = 10; // the trained agent acts ~10x/sec (SPEED=40 at 4px/frame)
+  const BASE_STEPS_PER_SEC = 10; // the trained agent acts ~10x/sec
 
   let canvas: HTMLCanvasElement;
   let ctx: CanvasRenderingContext2D;
@@ -150,9 +150,9 @@
     </div>
     <h1 class="page-title">Watch the Agent Play</h1>
     <p class="page-desc">
-      The trained DQN weights running live in your browser — a faithful
-      TypeScript port of the Python experiment, greedy action selection,
-      no exploration.
+      The trained dueling Double DQN weights running live in your browser — a
+      faithful TypeScript port of the Python experiment, greedy action
+      selection, no exploration.
     </p>
   </header>
 
@@ -203,11 +203,12 @@
 
   <section class="note">
     <p>
-      The agent runs fully client-side: the exported <code>model.pth</code>
-      weights (a 11 → 256 → 3 MLP) are loaded from
-      <code>src/lib/rl/snake-dqn-weights.json</code> and stepped at ~10
-      actions/sec. The game rules, state encoding, and greedy action selection
-      mirror <code>snake_env.py</code> / <code>play.py</code> exactly.
+      The agent runs fully client-side: the exported
+      <code>best.pth</code> weights (a 28 → 256 → 256 dueling MLP) are loaded
+      from <code>src/lib/rl/snake-dqn-weights.json</code> and stepped at ~10
+      actions/sec. The game rules, 28-feature state encoding, and greedy
+      action selection mirror <code>snake_env.py</code> / <code>state.py</code>
+      / <code>play.py</code> exactly.
     </p>
   </section>
 </div>

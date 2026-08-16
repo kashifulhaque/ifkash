@@ -1,13 +1,15 @@
 /**
- * Snake RL — browser port of the trained DQN agent.
+ * Snake RL — browser port of the trained dueling Double DQN agent.
  *
  * A faithful TypeScript port of the Python experiment in the `snake-rl` repo:
- * `snake_env.py` (environment + rules) and `model.py` (forward pass only, no
- * training) with the weights from the trained `model.pth` checkpoint.
+ * `snake_env.py` (environment + rules) and `state.py` (28-feature egocentric
+ * encoding) with the forward pass from `model.py` (DuelingQNet) and the
+ * weights from the trained `runs/v2/best.pth` checkpoint.
  *
- * The network is a small MLP: 11 inputs → 256 ReLU → 3 outputs. Weights are
- * stored in `snake-dqn-weights.json` (flattened row-major) and reshaped at
- * load time so the shapes match the PyTorch state dict.
+ * The network is an MLP: 28 inputs → 256 ReLU → 256 ReLU, then separate
+ * value/advantage heads summed dueling-style. Weights are stored in
+ * `snake-dqn-weights.json` (flattened row-major) and reshaped at load time so
+ * the shapes match the PyTorch state dict.
  */
 
 import weights from './snake-dqn-weights.json';
@@ -15,23 +17,26 @@ import weights from './snake-dqn-weights.json';
 export const BLOCK_SIZE = 20;
 export const BOARD_W = 32; // 640 / BLOCK_SIZE
 export const BOARD_H = 24; // 480 / BLOCK_SIZE
-
-const MAX_MEMORY = 100_000;
-const BATCH_SIZE = 1000;
-const LR = 0.001;
+const GRID_W = BOARD_W;
+const GRID_H = BOARD_H;
 
 export type Direction = 'up' | 'down' | 'left' | 'right';
 export type Action = [number, number, number]; // [straight, right, left]
 
-const DIRECTIONS = ['up', 'right', 'down', 'left'] as const;
 const CLOCKWISE: Direction[] = ['up', 'right', 'down', 'left'];
+// heading-relative moves: 0 = straight, +1 = right, -1 = left
+const MOVES = [0, 1, -1] as const;
 
-/** Flattened row-major weights for the two Linear layers (input → 256 → 3). */
+/** Flattened row-major weights for the dueling network. */
 export type SnakeWeights = {
-  'net.0.weight': number[];
-  'net.0.bias': number[];
-  'net.2.weight': number[];
-  'net.2.bias': number[];
+  'body.0.weight': number[];
+  'body.0.bias': number[];
+  'body.2.weight': number[];
+  'body.2.bias': number[];
+  'value.weight': number[];
+  'value.bias': number[];
+  'advantage.weight': number[];
+  'advantage.bias': number[];
 };
 
 const W = weights as SnakeWeights;
@@ -52,10 +57,17 @@ function relu(v: number[]): number[] {
   return v;
 }
 
-/** Forward pass through Linear(11→256) → ReLU → Linear(256→3). */
+/**
+ * Dueling forward pass: body(28→256→256) then V(s) + A(s,a) − mean A(s,a).
+ * Matches `DuelingQNet.forward` in `model.py` exactly.
+ */
 function predict(state: number[]): number[] {
-  const h = relu(matvec(W['net.0.weight'], W['net.0.bias'], state, 11));
-  return matvec(W['net.2.weight'], W['net.2.bias'], h, 256);
+  const h1 = relu(matvec(W['body.0.weight'], W['body.0.bias'], state, 28));
+  const h2 = relu(matvec(W['body.2.weight'], W['body.2.bias'], h1, 256));
+  const v = matvec(W['value.weight'], W['value.bias'], h2, 256)[0];
+  const a = matvec(W['advantage.weight'], W['advantage.bias'], h2, 256);
+  const aMean = (a[0] + a[1] + a[2]) / 3;
+  return [v + a[0] - aMean, v + a[1] - aMean, v + a[2] - aMean];
 }
 
 export type Point = { x: number; y: number };
@@ -75,6 +87,7 @@ export class SnakeGame {
   score = 0;
   food: Point = { x: 0, y: 0 };
   frameIteration = 0;
+  stepsSinceFood = 0;
 
   private rng: () => number;
 
@@ -95,32 +108,52 @@ export class SnakeGame {
     ];
     this.score = 0;
     this.frameIteration = 0;
+    this.stepsSinceFood = 0;
     this._placeFood();
   }
 
+  /**
+   * One env step, mirroring `snake_env.py::step` exactly: turn, compute the
+   * new head, death-check (tail-vacate rule included), idle-cap truncation,
+   * then move. Returns (reward, done, score).
+   */
   playStep(action: Action): { reward: number; done: boolean; score: number } {
     this.frameIteration += 1;
-    this._move(action);
-    this.snake.unshift({ ...this.head });
+    this.stepsSinceFood += 1;
 
-    let reward = 0;
-    let done = false;
-    // Frame cap stops the agent looping forever once the snake gets long.
-    if (this.isCollision() || this.frameIteration > 100 * this.snake.length) {
-      done = true;
-      reward = -10;
-      return { reward, done, score: this.score };
+    // action is relative to current heading: [straight, right turn, left turn]
+    const idx = CLOCKWISE.indexOf(this.direction);
+    let newIdx = idx;
+    if (action[0] === 1) newIdx = idx;
+    else if (action[1] === 1) newIdx = (idx + 1) % 4;
+    else newIdx = (idx - 1 + 4) % 4;
+    this.direction = CLOCKWISE[newIdx];
+
+    const d = DELTA[this.direction];
+    const newHead = { x: this.head.x + d.x * BLOCK_SIZE, y: this.head.y + d.y * BLOCK_SIZE };
+
+    if (this.blocked(newHead)) {
+      return { reward: -10, done: true, score: this.score };
     }
+
+    // Frame cap (idle truncation) stops the agent looping forever once the
+    // snake gets long — counted from the last food, like the Python env.
+    if (this.stepsSinceFood > 100 * this.snake.length) {
+      return { reward: 0, done: true, score: this.score };
+    }
+
+    this.head = newHead;
+    this.snake.unshift({ ...this.head });
 
     if (this.head.x === this.food.x && this.head.y === this.food.y) {
       this.score += 1;
-      reward = 10;
+      this.stepsSinceFood = 0;
       this._placeFood();
-    } else {
-      this.snake.pop();
+      return { reward: 10, done: false, score: this.score };
     }
 
-    return { reward, done, score: this.score };
+    this.snake.pop();
+    return { reward: 0, done: false, score: this.score };
   }
 
   isCollision(pt: Point | null = null): boolean {
@@ -129,6 +162,30 @@ export class SnakeGame {
       return true;
     }
     return this.snake.slice(1).some((s) => s.x === p.x && s.y === p.y);
+  }
+
+  /**
+   * True if `p` is off the board or on any part of the snake (head included) —
+   * matches `snake_env.py::is_collision`.
+   */
+  occupied(p: Point): boolean {
+    if (p.x < 0 || p.y < 0 || p.x > this.w - BLOCK_SIZE || p.y > this.h - BLOCK_SIZE) return true;
+    return this.snake.some((s) => s.x === p.x && s.y === p.y);
+  }
+
+  /**
+   * True if moving into `p` on this tick would kill the snake. Moving into
+   * the current tail cell is legal — it vacates as the snake advances —
+   * unless the snake is about to eat, which keeps the tail put.
+   */
+  blocked(pt: Point): boolean {
+    if (this.occupied(pt)) {
+      const tail = this.snake[this.snake.length - 1];
+      const isTail = pt.x === tail.x && pt.y === tail.y;
+      const eating = pt.x === this.food.x && pt.y === this.food.y;
+      return !(isTail && !eating);
+    }
+    return false;
   }
 
   private _placeFood(): void {
@@ -143,61 +200,132 @@ export class SnakeGame {
       }
     }
   }
-
-  private _move(action: Action): void {
-    // action is relative to current heading: [straight, right turn, left turn]
-    const idx = CLOCKWISE.indexOf(this.direction);
-    let newIdx = idx;
-    if (action[0] === 1) newIdx = idx;
-    else if (action[1] === 1) newIdx = (idx + 1) % 4;
-    else newIdx = (idx - 1 + 4) % 4;
-    this.direction = CLOCKWISE[newIdx];
-
-    let x = this.head.x;
-    let y = this.head.y;
-    switch (this.direction) {
-      case 'right':
-        x += BLOCK_SIZE;
-        break;
-      case 'left':
-        x -= BLOCK_SIZE;
-        break;
-      case 'down':
-        y += BLOCK_SIZE;
-        break;
-      case 'up':
-        y -= BLOCK_SIZE;
-        break;
-    }
-    this.head = { x, y };
-  }
 }
 
-/** The 11-dim state vector used at training time (see `train.py::get_state`). */
+// --------------------------------------------------------------------------
+// 28-feature egocentric state encoding — a line-for-line port of `state.py`.
+// --------------------------------------------------------------------------
+
+const DELTA: Record<Direction, Point> = {
+  right: { x: 1, y: 0 },
+  down: { x: 0, y: 1 },
+  left: { x: -1, y: 0 },
+  up: { x: 0, y: -1 }
+};
+
+/** Unit vectors for 'forward' and 'right' given the current heading. */
+function rot(direction: Direction): [Point, Point] {
+  const f = DELTA[direction];
+  const r = DELTA[CLOCKWISE[(CLOCKWISE.indexOf(direction) + 1) % 4]];
+  return [f, r];
+}
+
+/** Free cells ahead in direction `d` before hitting something, normalised. */
+function ray(game: SnakeGame, start: Point, d: Point, limit: number): number {
+  let x = start.x;
+  let y = start.y;
+  let n = 0;
+  while (n < limit) {
+    x += d.x * BLOCK_SIZE;
+    y += d.y * BLOCK_SIZE;
+    if (game.occupied({ x, y })) break;
+    n += 1;
+  }
+  return n / limit;
+}
+
+/**
+ * Flood-fill reachable free cells from `start`, stopping at `cap`. The tail
+ * cell is treated as free because it vacates as the snake moves.
+ */
+function freeSpace(game: SnakeGame, start: Point, cap: number): number {
+  const tail = game.snake[game.snake.length - 1];
+  const isTail = (p: Point) => p.x === tail.x && p.y === tail.y;
+  if (game.occupied(start) && !isTail(start)) return 0;
+
+  const seen = new Set<string>([`${start.x},${start.y}`]);
+  const stack: Point[] = [{ ...start }];
+  let count = 0;
+  while (stack.length) {
+    const p = stack.pop()!;
+    count += 1;
+    if (count >= cap) return cap;
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]] as const) {
+      const np = { x: p.x + dx * BLOCK_SIZE, y: p.y + dy * BLOCK_SIZE };
+      const key = `${np.x},${np.y}`;
+      if (seen.has(key)) continue;
+      if (game.occupied(np) && !isTail(np)) continue;
+      seen.add(key);
+      stack.push(np);
+    }
+  }
+  return count;
+}
+
+/**
+ * The 28-dim state vector used at training time (see `state.py::get_state`).
+ * Danger, rays and free space per candidate move; absolute heading; food and
+ * tail in egocentric (forward/right) frame; board occupancy.
+ */
 export function getState(game: SnakeGame): number[] {
   const head = game.head;
-  const pointL = { x: head.x - BLOCK_SIZE, y: head.y };
-  const pointR = { x: head.x + BLOCK_SIZE, y: head.y };
-  const pointU = { x: head.x, y: head.y - BLOCK_SIZE };
-  const pointD = { x: head.x, y: head.y + BLOCK_SIZE };
+  const [fwd, right] = rot(game.direction);
+  const nSnake = game.snake.length;
+  const diag = GRID_W + GRID_H;
+  const limit = Math.max(GRID_W, GRID_H);
+  // a pocket bigger than the snake is escapable, so exact size stops mattering
+  const cap = nSnake + 1;
 
-  const dirL = game.direction === 'left';
-  const dirR = game.direction === 'right';
-  const dirU = game.direction === 'up';
-  const dirD = game.direction === 'down';
+  const dirs: Point[] = [];
+  for (const off of MOVES) {
+    dirs.push(DELTA[CLOCKWISE[(CLOCKWISE.indexOf(game.direction) + off + 4) % 4]]);
+  }
+
+  const danger1: number[] = [];
+  const danger2: number[] = [];
+  const rays: number[] = [];
+  const space: number[] = [];
+  for (const d of dirs) {
+    const p1 = { x: head.x + d.x * BLOCK_SIZE, y: head.y + d.y * BLOCK_SIZE };
+    const blocked1 = game.blocked(p1);
+    danger1.push(blocked1 ? 1 : 0);
+    danger2.push(blocked1 || game.occupied({ x: head.x + 2 * d.x * BLOCK_SIZE, y: head.y + 2 * d.y * BLOCK_SIZE }) ? 1 : 0);
+    rays.push(ray(game, head, d, limit));
+    // how much room is left after committing to this move -- the signal
+    // that distinguishes "turn into a dead end" from "turn into open board"
+    space.push(blocked1 ? 0 : freeSpace(game, p1, cap) / cap);
+  }
+
+  // Python's Direction enum: RIGHT=0, DOWN=1, LEFT=2, UP=3 (see state.py)
+  const HEADING_IDX: Record<Direction, number> = { right: 0, down: 1, left: 2, up: 3 };
+  const heading = [0, 0, 0, 0];
+  heading[HEADING_IDX[game.direction]] = 1;
+
+  function egocentric(target: Point): [number, number] {
+    const vx = target.x - head.x;
+    const vy = target.y - head.y;
+    const ahead = (vx * fwd.x + vy * fwd.y) / BLOCK_SIZE;
+    const side = (vx * right.x + vy * right.y) / BLOCK_SIZE;
+    return [ahead, side];
+  }
+
+  const [fAhead, fSide] = egocentric(game.food);
+  const tail = game.snake[game.snake.length - 1];
+  const [tAhead, tSide] = egocentric(tail);
 
   return [
-    (dirR && game.isCollision(pointR)) || (dirL && game.isCollision(pointL)) || (dirU && game.isCollision(pointU)) || (dirD && game.isCollision(pointD)) ? 1 : 0,
-    (dirU && game.isCollision(pointR)) || (dirD && game.isCollision(pointL)) || (dirL && game.isCollision(pointU)) || (dirR && game.isCollision(pointD)) ? 1 : 0,
-    (dirD && game.isCollision(pointR)) || (dirU && game.isCollision(pointL)) || (dirR && game.isCollision(pointU)) || (dirL && game.isCollision(pointD)) ? 1 : 0,
-    dirL ? 1 : 0,
-    dirR ? 1 : 0,
-    dirU ? 1 : 0,
-    dirD ? 1 : 0,
-    game.food.x < game.head.x ? 1 : 0,
-    game.food.x > game.head.x ? 1 : 0,
-    game.food.y < game.head.y ? 1 : 0,
-    game.food.y > game.head.y ? 1 : 0
+    ...danger1, // 3 immediate death
+    ...danger2, // 3 death in two steps
+    ...rays, // 3 clear distance ahead
+    ...space, // 3 reachable room per move
+    ...heading, // 4 absolute heading
+    fAhead > 0 ? 1 : 0, fAhead < 0 ? 1 : 0, // 2 food quadrant, ego frame
+    fSide > 0 ? 1 : 0, fSide < 0 ? 1 : 0, // 2
+    fAhead / limit, fSide / limit, // 2 signed food offset
+    (Math.abs(fAhead) + Math.abs(fSide)) / diag, // 1 food distance
+    tAhead > 0 ? 1 : 0, tSide > 0 ? 1 : 0, // 2 tail quadrant
+    tAhead / limit, tSide / limit, // 2 signed tail offset
+    nSnake / (GRID_W * GRID_H) // 1 how full the board is
   ];
 }
 
@@ -220,9 +348,3 @@ function seededRng(seed: number): () => number {
     return s / 0x100000000;
   };
 }
-
-// Keep the training constants referenced so the port stays honest to the original.
-void MAX_MEMORY;
-void BATCH_SIZE;
-void LR;
-void DIRECTIONS;

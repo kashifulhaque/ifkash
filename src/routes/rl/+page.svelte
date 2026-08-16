@@ -15,7 +15,7 @@
   const experiments: Experiment[] = [
     {
       name: 'Snake RL',
-      desc: 'A snake agent trained from scratch with DQN. PyTorch, 11-dim state, experience replay, 256-unit network. Record: 44.',
+      desc: 'A snake agent trained from scratch with Dueling Double DQN. PyTorch, 28-dim egocentric state, target network, 256-unit network. Greedy eval mean: 102.',
       page: '/rl/snake-dqn',
       status: 'active',
       links: [

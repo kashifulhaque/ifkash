@@ -20,8 +20,8 @@
     Download,
     FolderOpen,
     ChevronLeft,
-    Loader2,
   } from "lucide-svelte";
+  import LoadingState from "$lib/components/LoadingState.svelte";
   import {
     RENDER_SCALE,
     loadPdfDocument,
@@ -752,11 +752,11 @@
           title="Download annotated PDF"
         >
           {#if exporting}
-            <Loader2 size={16} class="spin" />
+            <LoadingState label="Exporting" />
           {:else}
             <Download size={16} />
+            <span class="tb-text">Download</span>
           {/if}
-          <span class="tb-text">Download</span>
         </button>
       </div>
     {/if}
@@ -774,8 +774,7 @@
       on:drop={onDrop}
     >
       {#if loadingPdf}
-        <Loader2 size={28} class="spin" />
-        <p>Loading PDF…</p>
+        <LoadingState label="Loading PDF" />
       {:else}
         <div class="empty-card">
           <h2>Annotate a PDF</h2>
@@ -1228,16 +1227,6 @@
     inset: 0;
     z-index: 5;
     touch-action: none;
-  }
-
-  :global(.spin) {
-    animation: spin 0.8s linear infinite;
-  }
-
-  @keyframes spin {
-    to {
-      transform: rotate(360deg);
-    }
   }
 
   @media (max-width: 768px) {

@@ -7,6 +7,7 @@
   import { onMount } from 'svelte';
   import { env } from '$env/dynamic/public';
   import { Plus, Trash2, Users, Receipt, Scale, LogOut } from 'lucide-svelte';
+  import LoadingState from '$lib/components/LoadingState.svelte';
   import {
     splitterApi,
     setToken,
@@ -339,7 +340,7 @@
       <!-- group detail -->
       <main class="detail">
         {#if loadingDetail}
-          <p class="note">Loading…</p>
+          <div class="note"><LoadingState label="Loading group" /></div>
         {:else if !detail}
           <p class="note">Select or create a group to get started.</p>
         {:else}

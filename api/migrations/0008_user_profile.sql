@@ -1,5 +1,5 @@
--- Per-user body profile for the fitness metrics (BMI / BMR / TDEE / targets).
--- One row per user; the workout and meals pages both read/write it via /api/profile.
+-- Per-user body profile for fitness metrics (BMI / BMR / TDEE / targets).
+-- The workout page reads and writes it through /api/profile.
 CREATE TABLE IF NOT EXISTS user_profile (
   owner_id   INTEGER PRIMARY KEY REFERENCES game_users(id),
   height_cm  INTEGER NOT NULL DEFAULT 179,

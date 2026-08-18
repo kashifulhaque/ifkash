@@ -14,8 +14,8 @@ deployables in one repo:**
 - **API** (`/api`) — a **Rust** Cloudflare **Worker** (compiled to WASM via
   `worker-build`) mounted at `ifkash.dev/api/*`.
 
-Beyond the résumé editor the README centers on, the app has grown several
-Google-authenticated mini-apps: `/fitness` (workout + meal + cardio tracker), `/tools/splitter`
+Beyond the résumé editor the README centers on, the app has several
+Google-authenticated mini-apps: `/fitness` (workout and cardio tracker), `/tools/splitter`
 (expense splitter), and `/game` (a browser FPS with a leaderboard).
 
 ## Toolchain & commands
@@ -71,7 +71,7 @@ cd api && npx wrangler d1 migrations apply ifkash --local
    checks it equals `OWNER_EMAIL` (`handlers/access.rs`). Bypassed locally via
    `LOCAL_DEV="1"` in `api/.dev.vars`.
 2. **Google ID token (per-user)** — used by `/game`, `/tools/splitter`, and `/fitness`
-   (workout/meals/profile). The browser sends `Authorization: Bearer <google_id_token>`;
+   (workout/profile). The browser sends `Authorization: Bearer <google_id_token>`;
    the Worker verifies it against `GOOGLE_CLIENT_ID` in `handlers/google_auth.rs` and scopes
    rows to that user (`game_users`). On the frontend the token is stored in `localStorage`
    and shared across the splitter and fitness tools via `setToken`/`loadToken`/`AuthError`

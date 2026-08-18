@@ -1,10 +1,8 @@
 import { getApiBase } from '$lib/apiBase';
 import type { Profile } from '$lib/fitnessMetrics';
 
-// Client for the /api/profile endpoint. The token is passed in (not read from a
-// fixed key) so each page can use its own Google credential — the workout page's
-// splitter token or the meals page's meals token — both resolving the same user
-// server-side.
+// Client for the /api/profile endpoint. The token is passed in rather than read
+// from a fixed key so fitness pages can use their own credential storage.
 
 /** Thrown on a 401 so the caller can drop the token and re-show sign-in. */
 export class ProfileAuthError extends Error {}

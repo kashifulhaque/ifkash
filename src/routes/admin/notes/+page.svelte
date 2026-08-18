@@ -5,6 +5,7 @@
   import "katex/dist/katex.min.css";
   import DOMPurify from "dompurify";
   import TreeDir from "./TreeDir.svelte";
+  import LoadingState from "$lib/components/LoadingState.svelte";
   import {
     FileText,
     File,
@@ -16,7 +17,6 @@
     Upload,
     Download,
     Trash2,
-    Loader2,
     AlertTriangle,
   } from "lucide-svelte";
   import type { PageData } from "./$types";
@@ -451,8 +451,7 @@
         disabled={uploading}
         title="Upload a file (image, PDF, …) to the vault"
       >
-        {#if uploading}<Loader2 size={14} class="spin" />{:else}<Upload size={14} />{/if}
-        Upload
+        {#if uploading}<LoadingState label="Uploading" />{:else}<Upload size={14} /> Upload{/if}
       </button>
       <button class="btn" on:click={loadTree} disabled={loadingTree} title="Re-fetch the file tree from GitHub">
         <RefreshCw size={14} /> Refresh
@@ -478,8 +477,7 @@
         on:click={saveFile}
         disabled={!currentPath || binary || !dirty || saving}
       >
-        {#if saving}<Loader2 size={14} class="spin" />{:else}<Save size={14} />{/if}
-        Save &amp; push
+        {#if saving}<LoadingState label="Saving" />{:else}<Save size={14} /> Save &amp; push{/if}
       </button>
     </div>
     <input
@@ -499,7 +497,7 @@
   <div class="notes-body">
     <aside class="file-tree">
       {#if loadingTree}
-        <p class="tree-hint">Loading vault…</p>
+        <div class="tree-hint"><LoadingState label="Loading vault" /></div>
       {:else if root}
         <ul class="tree-root">
           {#each sortedDirs(root) as dir (dir.path)}
@@ -525,7 +523,7 @@
       {#if !currentPath}
         <div class="empty-state">Select a note from the vault, or create a new one.</div>
       {:else if loadingFile}
-        <div class="empty-state"><Loader2 size={18} class="spin" /></div>
+        <div class="empty-state"><LoadingState label="Loading file" /></div>
       {:else if binary}
         <div class="doc-title">{currentPath}</div>
         <div class="binary-pane">
@@ -950,18 +948,6 @@
     font-weight: 600;
   }
 
-  :global(.spin) {
-    animation: spin 1s linear infinite;
-  }
-
-  @keyframes spin {
-    from {
-      transform: rotate(0deg);
-    }
-    to {
-      transform: rotate(360deg);
-    }
-  }
 
   @media (max-width: 768px) {
     .notes-body {

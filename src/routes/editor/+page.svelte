@@ -1,5 +1,6 @@
 <script lang="ts">
   import MonacoEditor from "$lib/components/MonacoEditor.svelte";
+  import LoadingState from "$lib/components/LoadingState.svelte";
   import { compileTypstToPdf } from "$lib/typst";
   import type { PageData } from "./$types";
   import {
@@ -11,7 +12,6 @@
     CheckCircle,
     AlertTriangle,
     Play,
-    Loader2,
   } from "lucide-svelte";
 
   export let data: PageData;
@@ -166,9 +166,9 @@
       </div>
       <div class="status">
         {#if uploading}
-          <Loader2 size={12} class="spin" /><span>Uploading</span>
+          <LoadingState label="Uploading" />
         {:else if compiling}
-          <Loader2 size={12} class="spin" /><span>Compiling</span>
+          <LoadingState label="Compiling" />
         {:else if hasUnsavedChanges}
           <AlertTriangle size={12} /><span>Unsaved</span>
         {:else}
@@ -196,7 +196,7 @@
         {/if}
       </div>
       <button on:click={handleUpload} disabled={uploading || compiling} class="tb-btn primary">
-        {#if uploading}<Loader2 size={14} class="spin" />{:else}<UploadCloud size={14} />{/if}
+        <UploadCloud size={14} />
         <span class="tb-label">Upload</span>
       </button>
       <div class="tb-divider"></div>
@@ -218,13 +218,13 @@
   <div class="main">
     <div class="editor-pane">
       {#if loading}
-        <div class="loading"><Loader2 size={20} class="spin" /> Loading...</div>
+        <div class="loading"><LoadingState label="Loading" /></div>
       {/if}
       <MonacoEditor bind:value={typstContent} language="plaintext" theme="vs-dark" onChange={handleEditorChange} />
     </div>
     <div class="preview-pane">
       {#if compiling}
-        <div class="compiling"><Loader2 size={20} class="spin" /> Compiling...</div>
+        <div class="compiling"><LoadingState label="Compiling" /></div>
       {/if}
       {#if pdfUrl}
         <iframe src={pdfUrl} title="PDF"></iframe>
@@ -460,13 +460,5 @@
     color: var(--text-tertiary);
     background: var(--surface-raised);
     z-index: 10;
-  }
-
-  :global(.spin) {
-    animation: spin 1s linear infinite;
-  }
-
-  @keyframes spin {
-    to { transform: rotate(360deg); }
   }
 </style>

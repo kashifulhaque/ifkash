@@ -1,11 +1,11 @@
 <svelte:head>
   <title>Fitness — Kashif</title>
-  <meta name="description" content="Private fitness hub — workout plan, training log and meal tracker." />
+  <meta name="description" content="Private fitness hub — workout plan and training log." />
   <meta name="robots" content="noindex, nofollow" />
 </svelte:head>
 
 <script lang="ts">
-  import { Dumbbell, UtensilsCrossed } from "lucide-svelte";
+  import { Dumbbell } from "lucide-svelte";
 
   type Card = {
     name: string;
@@ -20,19 +20,13 @@
       icon: Dumbbell,
       desc: 'The push/pull/legs split, the cardio rules and the numbers — plus a log to track every session and progressive overload.',
       href: '/fitness/workout'
-    },
-    {
-      name: 'Meals',
-      icon: UtensilsCrossed,
-      desc: 'Snap a photo of a meal and get an estimated nutrition breakdown — calories and macros, logged by day with running totals.',
-      href: '/fitness/meals'
     }
   ];
 </script>
 
 <header class="page-header">
   <h1 class="section-title">Fitness</h1>
-  <p class="section-subtitle">Training and nutrition in one place. Sign in with Google on each.</p>
+  <p class="section-subtitle">Training in one place. Sign in with Google to log your sessions.</p>
 </header>
 
 <section class="cards">

@@ -6,7 +6,8 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { env } from '$env/dynamic/public';
-  import { LogOut, Check, Loader, Plus, Trash2 } from 'lucide-svelte';
+  import { LogOut, Check, Plus, Trash2 } from 'lucide-svelte';
+  import LoadingState from '$lib/components/LoadingState.svelte';
   import { setToken, loadToken, AuthError } from '$lib/splitterApi';
   import { isLocalDev } from '$lib/apiBase';
   import { scheduleTokenRefresh } from '$lib/fitnessAuth';
@@ -51,20 +52,16 @@
   const cardio: Record<Focus, string> = {
     Push: '20 min crosstrainer, steady',
     Pull: '20 min crosstrainer intervals — 30s hard / 90s easy × 10',
-    Legs: '15 min easy cycle (legs are already done)',
-    Core: '20 min crosstrainer, steady'
+    Legs: '15 min easy cycle (legs are already done)'
   };
 
-  // Six-day rotation: legs twice, not once. The old Day 6 was a standalone core
-  // session; core now rides along with leg days, freeing that slot for the
-  // second Legs day — the fix for the only muscle group that was regressing.
   const split: { day: string; focus: Focus; detail: string }[] = [
-    { day: 'Day 1', focus: 'Push', detail: 'chest / shoulders / triceps' },
-    { day: 'Day 2', focus: 'Pull', detail: 'back / rear delts / biceps' },
-    { day: 'Day 3', focus: 'Legs', detail: 'quads / hamstrings / calves / core' },
-    { day: 'Day 4', focus: 'Push', detail: 'chest / shoulders / triceps' },
-    { day: 'Day 5', focus: 'Pull', detail: 'back / rear delts / biceps' },
-    { day: 'Day 6', focus: 'Legs', detail: 'quads / hamstrings / calves / core' }
+    { day: 'Day 1', focus: 'Push', detail: 'chest / shoulders / triceps / abs' },
+    { day: 'Day 2', focus: 'Pull', detail: 'back / rear delts / biceps / core' },
+    { day: 'Day 3', focus: 'Legs', detail: 'quads / hamstrings / calves' },
+    { day: 'Day 4', focus: 'Push', detail: 'chest / shoulders / triceps / abs' },
+    { day: 'Day 5', focus: 'Pull', detail: 'back / rear delts / biceps / core' },
+    { day: 'Day 6', focus: 'Legs', detail: 'quads / hamstrings / calves' }
   ];
 
   // ---- state ---------------------------------------------------------------
@@ -74,7 +71,7 @@
   let errorMsg = '';
 
   let active: Focus = 'Push';
-  const FOCUSES: Focus[] = ['Push', 'Pull', 'Legs', 'Core'];
+  const FOCUSES: Focus[] = ['Push', 'Pull', 'Legs'];
   let expanded: Record<string, boolean> = {};
 
   function today(): string {
@@ -702,7 +699,7 @@
         {#if signedIn}
           <span class="save-pill" class:on={saveStatus !== 'idle'} data-status={saveStatus}>
             {#if saveStatus === 'saving'}
-              <Loader size={13} /> Saving…
+              <LoadingState label="Saving" />
             {:else if saveStatus === 'saved'}
               <Check size={13} /> Saved
             {:else if saveStatus === 'error'}
@@ -1113,7 +1110,7 @@
                 {#if openId === s.id}
                   <div class="history-detail">
                     {#if loadingDetail}
-                      <p class="hint">Loading…</p>
+                      <div class="hint"><LoadingState label="Loading session" /></div>
                     {:else if openDetail}
                       {#each groupSets(openDetail) as g}
                         <div class="detail-ex">
@@ -1209,8 +1206,6 @@
   .save-pill.on { opacity: 1; }
   .save-pill[data-status='saved'] { color: var(--blueprint); }
   .save-pill[data-status='error'] { color: #e74c3c; }
-  .save-pill :global(svg) { animation: none; }
-  .save-pill[data-status='saving'] :global(svg) { animation: spin 0.9s linear infinite; }
 
   .ghost-btn {
     display: inline-flex;
@@ -1756,7 +1751,6 @@
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
   }
-  @keyframes spin { to { transform: rotate(360deg); } }
 
   @media (max-width: 640px) {
     .page { gap: 1.15rem; }

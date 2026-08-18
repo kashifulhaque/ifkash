@@ -2,6 +2,7 @@
   import { onMount, createEventDispatcher } from 'svelte';
   import { env } from '$env/dynamic/public';
   import { getApiBase } from '$lib/apiBase';
+  import LoadingState from '$lib/components/LoadingState.svelte';
 
   export let finalScore = 0;
   export let allSectionsCleared = false;
@@ -136,7 +137,7 @@
       {#if !clientId}
         <p class="note">set PUBLIC_GOOGLE_CLIENT_ID to enable the leaderboard</p>
       {:else if submitState === 'submitting'}
-        <p class="note">SAVING SCORE…</p>
+        <LoadingState label="Saving score" />
       {:else if submitState === 'done'}
         <p class="note saved">
           SAVED{playerName ? ` · ${playerName.toUpperCase()}` : ''} — BEST {best} · RANK #{rank}

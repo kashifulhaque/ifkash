@@ -1,7 +1,6 @@
 // Shared workout data + helpers. The day templates live here so the static plan
 // page (/workout) and the tracker (/workout/log) read from one source of truth.
 
-import { strengthKcal, metKcal } from './fitnessMetrics';
 
 // `kind` drives how the set-row UI renders:
 //  - 'weighted'   → weight × reps inputs (e.g. bench press)
@@ -58,6 +57,8 @@ export const PUSH: Exercise[] = [
   // Side delts widen the shoulder line — the V-taper does more for an athletic
   // read than arm size does. Moved here from Pull, where it sat unused.
   { name: 'Lateral raises', scheme: '3×12-15', kind: 'weighted', equipment: 'Dumbbell' },
+  { name: 'Hanging leg raise', scheme: '3×12', kind: 'bodyweight', equipment: 'Bodyweight' },
+  { name: 'Crunches', scheme: '3×15', kind: 'bodyweight', equipment: 'Bodyweight' },
   { name: 'Pec fly', scheme: '2×12-15', kind: 'weighted', equipment: 'Machine' },
   { name: 'Cable tricep pushdown', scheme: '2×12-15', kind: 'weighted', equipment: 'Cable' }
 ];
@@ -77,7 +78,10 @@ export const PULL: Exercise[] = [
   // Posture + rear delts. Cheap to do, disproportionate effect on how the
   // upper body reads standing still.
   { name: 'Face pulls', scheme: '3×15', kind: 'weighted', equipment: 'Cable', priority: true },
-  { name: 'Bicep curls', scheme: '2×12', kind: 'weighted', equipment: 'Dumbbell' }
+  { name: 'Bicep curls', scheme: '2×12', kind: 'weighted', equipment: 'Dumbbell' },
+  { name: 'Plank', scheme: '3×60s', kind: 'time', equipment: 'Bodyweight' },
+  { name: 'Russian twists', scheme: '3×20', kind: 'bodyweight', equipment: 'Bodyweight' },
+  { name: 'Back extension', scheme: '3×15', kind: 'bodyweight', equipment: 'Bodyweight' }
 ];
 
 // Run twice a week now, not once. Legs were the only muscle group going
@@ -103,27 +107,15 @@ export const LEGS: Exercise[] = [
   { name: 'Leg curls', scheme: '3×12', kind: 'weighted', equipment: 'Machine' },
   { name: 'Calf raises', scheme: '4×12-15', kind: 'weighted', equipment: 'Machine' },
   { name: 'Leg extension', scheme: '2×12-15', kind: 'weighted', equipment: 'Machine' },
-  // Core folded in here so it stops needing a session of its own.
-  { name: 'Hanging leg raise', scheme: '3×12', kind: 'bodyweight', equipment: 'Bodyweight' }
 ];
 
-// Optional standalone session — a spare day or a deload, not part of the
-// six-day rotation any more (that slot became the second Legs day).
-export const CORE: Exercise[] = [
-  { name: 'Plank', scheme: '3×60s', kind: 'time', equipment: 'Bodyweight' },
-  { name: 'Hanging leg raise', scheme: '3×12', kind: 'bodyweight', equipment: 'Bodyweight' },
-  { name: 'Crunches', scheme: '3×15', kind: 'bodyweight', equipment: 'Bodyweight' },
-  { name: 'Russian twists', scheme: '3×20', kind: 'bodyweight', equipment: 'Bodyweight' },
-  { name: 'Back extension', scheme: '3×15', kind: 'bodyweight', equipment: 'Bodyweight' }
-];
 
-export type DayLabel = 'Push' | 'Pull' | 'Legs' | 'Core';
+export type DayLabel = 'Push' | 'Pull' | 'Legs';
 
 export const DAY_TEMPLATES: Record<DayLabel, Exercise[]> = {
   Push: PUSH,
   Pull: PULL,
-  Legs: LEGS,
-  Core: CORE
+  Legs: LEGS
 };
 
 // Name → kind lookup across every template, so history / restored off-template
@@ -211,8 +203,7 @@ export function cardioMet(kind: string): number {
 export const CARDIO_DEFAULTS: Record<DayLabel, { kind: string; minutes: number }> = {
   Push: { kind: 'Crosstrainer', minutes: 20 },
   Pull: { kind: 'Crosstrainer (intervals)', minutes: 20 },
-  Legs: { kind: 'Cycle', minutes: 15 },
-  Core: { kind: 'Crosstrainer', minutes: 20 }
+  Legs: { kind: 'Cycle', minutes: 15 }
 };
 
 // ---- API types -------------------------------------------------------------
@@ -304,29 +295,3 @@ export function weeklyAverages(entries: BodyweightEntry[]): WeeklyAverage[] {
     }));
 }
 
-// ---- energy burn (MET-based, mirrors the workout page's live estimate) ------
-
-/**
- * Calories burnt in a single saved session: lifting (strengthKcal per logged
- * set) + cardio (stored kcal, falling back to a MET estimate from kind +
- * minutes at `weightKg` when the row has no kcal). Mirrors the per-session calc
- * on /fitness/workout so the meals page can reuse the same number.
- */
-export function sessionBurnKcal(weightKg: number, detail: SessionDetail): number {
-  const lift = strengthKcal(weightKg, detail.sets.length);
-  const card = (detail.cardio ?? []).reduce((n, c) => {
-    if (c.kcal > 0) return n + c.kcal;
-    if (c.minutes > 0) return n + metKcal(cardioMet(c.kind), weightKg, c.minutes);
-    return n;
-  }, 0);
-  return lift + card;
-}
-
-/**
- * Total calories burnt across every session on a given date — sum of
- * `sessionBurnKcal` over `sessions`. Used by the meals page to show today's
- * logged workout burn alongside the TDEE whole-day estimate.
- */
-export function dayBurnKcal(weightKg: number, sessions: SessionDetail[]): number {
-  return sessions.reduce((n, s) => n + sessionBurnKcal(weightKg, s), 0);
-}

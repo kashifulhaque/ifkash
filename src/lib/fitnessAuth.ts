@@ -1,5 +1,4 @@
-// Shared Google Identity helpers for the fitness pages (workout + meals).
-//
+// Shared Google Identity helpers for the fitness pages.
 // The app authenticates with a Google ID token (a JWT) used directly as the
 // bearer. Those tokens expire ~1 hour after issue, and there is no refresh
 // token, so sessions silently die mid-use. To soften that, we read the token's

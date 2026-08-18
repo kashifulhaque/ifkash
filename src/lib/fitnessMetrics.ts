@@ -1,5 +1,5 @@
-// Pure body-metric math shared by the workout and meals pages. No auth, no I/O —
-// just the profile shape plus BMI / BMR / TDEE and daily nutrition targets.
+// Pure body-metric math shared by the fitness pages. No auth, no I/O — just the
+// profile shape plus BMI / BMR / TDEE and daily nutrition targets.
 
 export type Sex = 'male' | 'female';
 export type Goal = 'cut_moderate' | 'cut_aggressive' | 'maintain';

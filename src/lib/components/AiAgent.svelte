@@ -3,6 +3,7 @@
   import { goto } from "$app/navigation";
   import { marked } from "marked";
   import DOMPurify from "dompurify";
+  import LoadingState from "$lib/components/LoadingState.svelte";
   import { NAVIGATION_MAP } from "$lib/agent/context";
   import type {
     ChatMessage,
@@ -336,14 +337,16 @@
             </svg>
           </div>
           <div class="progress-section">
-            <div class="progress-bar-track">
-              <div class="progress-bar-fill" style="width: {agentState.progress ?? 0}%"></div>
-            </div>
-            <span class="progress-label">
-              {agentState.status === "downloading"
-                ? `Downloading... ${agentState.progress ?? 0}%`
-                : "Initializing model..."}
-            </span>
+            <LoadingState
+              label={agentState.status === "downloading"
+                ? `Downloading model ${agentState.progress ?? 0}%`
+                : "Initializing model"}
+            />
+            {#if agentState.status === "downloading"}
+              <div class="progress-bar-track">
+                <div class="progress-bar-fill" style="width: {agentState.progress ?? 0}%"></div>
+              </div>
+            {/if}
           </div>
         </div>
       {:else if agentState.status === "error"}
@@ -630,11 +633,6 @@
     background: var(--agent-progress-fill);
     border-radius: 2px;
     transition: width 0.3s ease-out;
-  }
-
-  .progress-label {
-    font-size: 0.75rem;
-    color: var(--agent-text-secondary);
   }
 
   .error-text {

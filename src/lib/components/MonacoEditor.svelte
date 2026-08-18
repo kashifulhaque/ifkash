@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
 	import { browser } from '$app/environment';
+	import LoadingState from '$lib/components/LoadingState.svelte';
 
 	export let value: string = '';
 	export let language: string = 'plaintext';
@@ -80,7 +81,7 @@
 	
 	{#if loading}
 		<div class="overlay loading">
-			<div class="message">Loading editor...</div>
+			<LoadingState label="Loading editor" />
 		</div>
 	{:else if error}
 		<div class="overlay error">

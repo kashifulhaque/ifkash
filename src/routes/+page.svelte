@@ -51,7 +51,9 @@
 
 <section class="intro">
   <p class="intro-label">ML Engineer · Bangalore, India</p>
-  <h1>Kashiful Haque<span class="period">.</span></h1>
+  <h1>
+    Kashiful Haque<a href="/fitness" class="period" aria-label="Fitness dashboard">.</a>
+  </h1>
   <p class="intro-copy">
     I build pre-training and post-training systems for large language models,
     reinforcement learning pipelines, and high-performance inference software
@@ -118,6 +120,10 @@
 
   .period {
     color: var(--ink-3);
+  }
+
+  .period:hover {
+    color: var(--foreground);
   }
 
   .intro-copy {

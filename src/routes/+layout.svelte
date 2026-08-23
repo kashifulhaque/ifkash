@@ -22,8 +22,8 @@
     { href: "/blog", label: "Blog" },
   ];
 
-  function isActive(href: string) {
-    return href === "/" ? currentPath === "/" : currentPath.startsWith(href);
+  function isActive(href: string, path: string) {
+    return href === "/" ? path === "/" : path.startsWith(href);
   }
 </script>
 
@@ -73,7 +73,7 @@
             <li>
               <a
                 href={item.href}
-                aria-current={isActive(item.href) ? "page" : undefined}
+                aria-current={isActive(item.href, currentPath) ? "page" : undefined}
               >
                 {item.label}
               </a>

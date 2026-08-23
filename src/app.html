@@ -12,6 +12,9 @@
           var s = localStorage.getItem(k);
           var t = s === "light" || s === "dark" ? s : "dark";
           document.documentElement.setAttribute("data-theme", t);
+          document
+            .querySelector('meta[name="theme-color"]')
+            ?.setAttribute("content", t === "dark" ? "#0a0a0a" : "#ffffff");
         } catch (e) {
           document.documentElement.setAttribute("data-theme", "dark");
         }

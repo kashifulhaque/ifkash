@@ -1,31 +1,16 @@
 <script>
   import { dev } from "$app/environment";
 
-  // Public, unauthenticated resume PDF. Served from `/api/cv` (not `/api/resume`,
-  // which is behind Cloudflare Access for the editor) so no login is required.
   const resumeUrl = dev
     ? "http://localhost:8787/api/cv?format=view"
     : "/api/cv?format=view";
-
-  const tickerItems = [
-    "LLM pre-training",
-    "RL pipelines",
-    "inference systems",
-    "C++",
-    "Rust",
-    "Python",
-    "Typst",
-    "Svelte",
-    "Cloudflare Workers",
-    "WASM",
-  ];
 
   const indexRows = [
     { n: "01", name: "Work", desc: "Roles and companies", href: "/work" },
     {
       n: "02",
       name: "Projects",
-      desc: "Side projects and open source",
+      desc: "Open source and independent work",
       href: "/projects",
     },
     {
@@ -37,7 +22,7 @@
     {
       n: "04",
       name: "Tools",
-      desc: "Small in-browser utilities",
+      desc: "Useful in-browser utilities",
       href: "/tools",
     },
     {
@@ -49,7 +34,7 @@
     {
       n: "06",
       name: "Blog",
-      desc: "Writing on blog.ifkash.dev",
+      desc: "Notes on engineering and ML",
       href: "/blog",
     },
     { n: "07", name: "Game", desc: "A browser FPS", href: "/game" },
@@ -60,202 +45,213 @@
   <title>Kashiful Haque</title>
   <meta
     name="description"
-    content="Personal website of Kashiful Haque, ML Engineer."
+    content="Personal website of Kashiful Haque, an ML engineer in Bangalore."
   />
 </svelte:head>
 
-<section class="hero">
-  <p class="eyebrow hero-eyebrow">ML Engineer · Bangalore, IN</p>
-
-  <h1 class="display hero-title power-on">
-    <span class="block">
-      <em class="headline-italic accent-em">Kashiful</em>
-    </span>
-    <span class="block">
-      Haque<a href="/fitness" class="dot" aria-label="." rel="nofollow">.</a>
-    </span>
-  </h1>
-
-  <p class="lead hero-tagline">
-    ML Engineer with 4 YOE pre-training and post-training LLMs with RL
-    pipelines, and building high-performance inference systems in C++ and
-    Rust. Also building LLM apps on the day job.
+<section class="intro">
+  <p class="intro-label">ML Engineer · Bangalore, India</p>
+  <h1>Kashiful Haque<span class="period">.</span></h1>
+  <p class="intro-copy">
+    I build pre-training and post-training systems for large language models,
+    reinforcement learning pipelines, and high-performance inference software
+    in C++ and Rust.
   </p>
 
-  <div class="btn-row quick-actions">
-    <a href={resumeUrl} class="btn btn-primary">Read Resume</a>
-    <a href="/game" class="btn btn-gradient-ring">
-      <span class="btn-gradient-text">Enter Game Mode</span>
-    </a>
+  <div class="actions">
+    <a href={resumeUrl} class="btn btn-primary">Read resume</a>
+    <a href="/game" class="btn btn--outline">Enter game mode</a>
   </div>
 
-  <div class="status-row">
-    <span class="label label--accent">Online</span>
-    <span class="label">Exp · 4+ yrs</span>
-    <span class="label">Stack · C++ / Rust / Py</span>
-    <span class="label">Focus · LLM systems</span>
-  </div>
+  <dl class="profile-facts">
+    <div>
+      <dt>Focus</dt>
+      <dd>LLM systems</dd>
+    </div>
+    <div>
+      <dt>Experience</dt>
+      <dd>4+ years</dd>
+    </div>
+    <div>
+      <dt>Core stack</dt>
+      <dd>C++, Rust, and Python</dd>
+    </div>
+  </dl>
 </section>
 
-<div class="ticker" aria-hidden="true">
-  <div class="ticker-track">
-    {#each [...tickerItems, ...tickerItems] as item}
-      <span class="ticker-item">{item}</span>
-      <span class="ticker-sep" aria-hidden="true">▪</span>
-    {/each}
+<section class="index-section" aria-labelledby="explore-heading">
+  <div class="section-heading">
+    <h2 id="explore-heading">Explore</h2>
+    <p>Selected work, experiments, and tools.</p>
   </div>
-</div>
 
-<section class="index-section">
-  <p class="eyebrow index-label">Site index</p>
-  <div class="index-list">
-    {#each indexRows as row, i}
-      <a href={row.href} class="index-row stagger" style="--i: {i}">
-        <span class="index-n label label--accent">{row.n}</span>
-        <span class="index-name">{row.name}</span>
-        <span class="index-desc label">{row.desc}</span>
-        <span class="index-arrow" aria-hidden="true">→</span>
-      </a>
+  <ol class="index-list">
+    {#each indexRows as row}
+      <li>
+        <a href={row.href} class="index-row">
+          <span class="index-n">{row.n}</span>
+          <span class="index-name">{row.name}</span>
+          <span class="index-desc">{row.desc}</span>
+          <span class="index-arrow" aria-hidden="true">↗</span>
+        </a>
+      </li>
     {/each}
-  </div>
+  </ol>
 </section>
 
 <style>
-  .hero {
-    min-height: 70vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: var(--spacing-hero-top, 48px) 0 40px;
+  .intro {
+    max-width: 800px;
+    padding: 72px 0 40px;
   }
 
-  .hero-eyebrow {
-    margin-bottom: 24px;
+  .intro-label {
+    margin: 0 0 24px;
+    color: var(--ink-3);
+    font-size: 13px;
+    font-weight: 500;
   }
 
-  .hero-title {
-    margin: 0;
+  h1 {
+    max-width: 12ch;
   }
 
-  /* Trailing period → hidden fitness hub link */
-  .dot {
-    color: var(--accent);
-    border-bottom: none;
-    cursor: var(--cursor-pointer);
-    text-shadow: var(--accent-text-glow);
-    transition: color 0.15s var(--ease-inout);
-    font-style: normal;
+  .period {
+    color: var(--ink-3);
   }
 
-  .dot:hover {
-    color: var(--accent-2);
-    border-bottom: none;
-  }
-
-  .hero-tagline {
-    max-width: 36em;
+  .intro-copy {
+    max-width: 62ch;
     margin: 28px 0 0;
+    color: var(--ink-2);
+    font-size: 18px;
+    line-height: 1.6;
   }
 
-  .quick-actions {
-    margin-top: 36px;
-  }
-
-  .status-row {
+  .actions {
     display: flex;
     flex-wrap: wrap;
-    gap: 16px 24px;
+    gap: 8px;
     margin-top: 32px;
-    padding-top: 24px;
-    border-top: 1px solid var(--border);
   }
 
-  .ticker {
-    margin: 8px 0 0;
-    border-top: 1px solid var(--border);
+  .profile-facts {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px;
+    margin: 64px 0 0;
   }
 
-  .ticker-sep {
-    color: var(--muted-foreground);
-    opacity: 0.5;
-    font-size: 8px;
-    align-self: center;
+  .profile-facts div {
+    min-width: 0;
+  }
+
+  .profile-facts dt {
+    margin-bottom: 4px;
+    color: var(--ink-3);
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  .profile-facts dd {
+    margin: 0;
+    color: var(--foreground);
+    font-size: 14px;
   }
 
   .index-section {
-    padding: var(--section-pt) 0 24px;
+    padding: 96px 0 24px;
   }
 
-  .index-label {
-    margin-bottom: 8px;
+  .section-heading {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    gap: 24px;
+    margin-bottom: 32px;
+  }
+
+  .section-heading h2 {
+    font-size: 28px;
+  }
+
+  .section-heading p {
+    margin: 0;
+    color: var(--ink-3);
+    font-size: 13px;
   }
 
   .index-list {
-    display: flex;
-    flex-direction: column;
+    margin: 0;
+    padding: 0;
     border-top: 1px solid var(--border);
+    list-style: none;
   }
 
   .index-row {
     display: grid;
-    grid-template-columns: 48px minmax(0, 1fr) auto;
+    grid-template-columns: 48px minmax(0, 1fr) minmax(180px, 0.8fr) 20px;
     align-items: baseline;
-    gap: 16px;
-    padding-block: 20px;
+    gap: 24px;
+    padding: 20px 0;
     border-bottom: 1px solid var(--border);
     color: var(--foreground);
-    transition: color 0.15s var(--ease-inout);
   }
 
-  .index-row:hover .index-name {
-    color: var(--accent-2);
-  }
-
+  .index-row:hover .index-name,
   .index-row:hover .index-arrow {
-    color: var(--accent);
-    transform: translateX(2px);
+    color: var(--foreground);
   }
 
-  .index-n {
-    align-self: baseline;
+  .index-n,
+  .index-desc,
+  .index-arrow {
+    color: var(--ink-3);
+    font-size: 13px;
   }
 
   .index-name {
-    font-family: var(--font-serif);
-    font-size: 24px;
-    line-height: 1.2;
-    letter-spacing: -0.025em;
-    color: var(--foreground);
-  }
-
-  .index-desc {
-    display: none;
-    color: var(--muted-foreground);
+    font-size: 18px;
+    font-weight: 500;
   }
 
   .index-arrow {
-    color: var(--muted-foreground);
-    transition:
-      transform 0.15s var(--ease-inout),
-      color 0.15s var(--ease-inout);
+    justify-self: end;
+    transition: transform 160ms var(--ease-inout);
   }
 
-  @media (min-width: 1024px) {
+  .index-row:hover .index-arrow {
+    transform: translate(2px, -2px);
+  }
+
+  @media (max-width: 720px) {
+    .intro {
+      padding-top: 32px;
+    }
+
+    .profile-facts {
+      grid-template-columns: 1fr;
+      gap: 20px;
+      margin-top: 48px;
+    }
+
+    .index-section {
+      padding-top: 72px;
+    }
+
+    .section-heading {
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+
     .index-row {
-      grid-template-columns: 80px minmax(0, 1fr) auto auto;
-      gap: 24px;
+      grid-template-columns: 36px minmax(0, 1fr) 20px;
+      gap: 12px;
+      padding: 18px 0;
     }
 
     .index-desc {
-      display: inline;
-      justify-self: end;
-    }
-  }
-
-  @media (max-width: 900px) {
-    .hero {
-      min-height: 0;
-      padding: 32px 0 28px;
+      display: none;
     }
   }
 </style>

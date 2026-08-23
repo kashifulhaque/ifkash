@@ -3,11 +3,9 @@
   import { page } from "$app/stores";
   import AiAgent from "$lib/components/AiAgent.svelte";
   import WeatherHeadsUp from "$lib/components/WeatherHeadsUp.svelte";
-  import { toggleTheme } from "$lib/stores/theme";
+  import { theme, toggleTheme } from "$lib/stores/theme";
 
   $: currentPath = $page.url.pathname;
-  // Tool sub-pages (e.g. /tools/pdf-annotator) render full-width like the editor;
-  // the /tools listing stays in the normal container.
   $: isFullWidth =
     currentPath === "/game" ||
     currentPath === "/editor" ||
@@ -24,18 +22,8 @@
     { href: "/blog", label: "Blog" },
   ];
 
-  let mobileMenuOpen = false;
-
   function isActive(href: string) {
     return href === "/" ? currentPath === "/" : currentPath.startsWith(href);
-  }
-
-  function toggleMenu() {
-    mobileMenuOpen = !mobileMenuOpen;
-  }
-
-  function closeMenu() {
-    mobileMenuOpen = false;
   }
 </script>
 
@@ -43,177 +31,84 @@
   <slot />
 {:else}
   <div class="site-wrapper">
-    <header class="site-header">
-      <div class="header-inner frame">
-        <a href="/" class="logo" aria-label="ifkash.dev home">
-          <span class="logo-word">ifkash</span><span class="logo-tld">.dev</span>
-        </a>
+    <header class="masthead" id="top">
+      <div class="masthead-brand">
+        <a href="/" class="site-name" aria-label="ifkash.dev home">/ifkash.dev</a>
+        <p>ML systems, open source, and useful tools.</p>
+      </div>
 
-        <nav class="nav-desktop" aria-label="Primary">
-          {#each navItems as item}
-            <a
-              href={item.href}
-              class="nav-link"
-              class:active={isActive(item.href)}
-            >
-              {item.label}
-            </a>
-          {/each}
-        </nav>
-
-        <div class="header-actions">
-          <button
-            class="theme-toggle"
-            on:click={toggleTheme}
-            aria-label="Toggle color theme"
-            title="Toggle theme"
-          >
-            <svg
-              class="icon-moon"
-              viewBox="0 0 24 24"
-              width="14"
-              height="14"
-              aria-hidden="true"
-            >
-              <path
-                d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
+      <div class="masthead-actions">
+        <a
+          href="https://github.com/kashifulhaque"
+          target="_blank"
+          rel="noopener noreferrer">GitHub</a
+        >
+        <a href="/api/cv?format=view">Resume</a>
+        <button
+          type="button"
+          class="theme-toggle"
+          on:click={toggleTheme}
+          aria-label={$theme === "dark" ? "Use light theme" : "Use dark theme"}
+          title={$theme === "dark" ? "Use light theme" : "Use dark theme"}
+        >
+          {#if $theme === "dark"}
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="12" cy="12" r="4" />
+              <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
             </svg>
-            <svg
-              class="icon-sun"
-              viewBox="0 0 24 24"
-              width="14"
-              height="14"
-              aria-hidden="true"
-            >
-              <circle
-                cx="12"
-                cy="12"
-                r="4"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              />
-              <path
-                d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-              />
+          {:else}
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
             </svg>
-          </button>
-
-          <a href="/api/cv?format=view" class="btn btn--header header-cta"
-            >Resume</a
-          >
-
-          <button
-            class="nav-toggle"
-            on:click={toggleMenu}
-            aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
-            aria-expanded={mobileMenuOpen}
-          >
-            {#if mobileMenuOpen}
-              <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
-                <path
-                  d="M6 6l12 12M18 6L6 18"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.5"
-                  stroke-linecap="round"
-                />
-              </svg>
-            {:else}
-              <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
-                <path
-                  d="M4 7h16M4 12h16M4 17h16"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.5"
-                  stroke-linecap="round"
-                />
-              </svg>
-            {/if}
-          </button>
-        </div>
+          {/if}
+        </button>
       </div>
     </header>
 
-    {#if mobileMenuOpen}
-      <div class="mobile-menu">
-        <ul class="mobile-menu__list">
+    <div class="shell">
+      <nav class="sites" aria-label="Primary">
+        <p class="nav-label">Pages</p>
+        <ol>
           {#each navItems as item}
             <li>
               <a
                 href={item.href}
-                class="mobile-menu__item"
-                class:active={isActive(item.href)}
-                on:click={closeMenu}
+                aria-current={isActive(item.href) ? "page" : undefined}
               >
-                <span class="mobile-menu__label">{item.label}</span>
+                {item.label}
               </a>
             </li>
           {/each}
-        </ul>
-        <a
-          href="https://github.com/kashifulhaque"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="mobile-menu__cta"
-          on:click={closeMenu}>GitHub</a
-        >
-        <div class="mobile-menu__foot">
-          <a href="/admin" on:click={closeMenu}>Admin</a>
-        </div>
-      </div>
-    {/if}
+        </ol>
+      </nav>
 
-    <main class="main-content">
-      <div class="container">
-        <slot />
-      </div>
-    </main>
+      <main class="stage">
+        <div class="stage-inner">
+          <slot />
+        </div>
 
-    <footer class="site-footer">
-      <div class="frame site-footer__inner">
-        <div class="site-footer__brand">
-          <p class="label col-heading">ifkash.dev</p>
-          <p class="site-footer__mission">
-            ML systems, open source, and small tools — built in Bangalore.
-          </p>
-          <p class="label">Est. 2023</p>
-        </div>
-        <div class="site-footer__links">
-          <p class="label col-heading">Elsewhere</p>
-          <a
-            href="https://github.com/kashifulhaque"
-            target="_blank"
-            rel="noopener noreferrer">GitHub</a
-          >
-          <a
-            href="https://hf.co/ifkash"
-            target="_blank"
-            rel="noopener noreferrer">Hugging Face</a
-          >
-          <a
-            href="https://linkedin.com/in/kashifulhaque"
-            target="_blank"
-            rel="noopener noreferrer">LinkedIn</a
-          >
-          <a href="/admin">Admin</a>
-        </div>
-      </div>
-      <div class="frame site-footer__bottom">
-        <span>© {new Date().getFullYear()} Kashiful Haque</span>
-        <span class="label">Bangalore, IN</span>
-      </div>
-    </footer>
+        <footer class="site-footer">
+          <div>
+            <p class="footer-heading">ifkash.dev</p>
+            <p>Built in Bangalore by Kashiful Haque.</p>
+          </div>
+          <div class="footer-links">
+            <a
+              href="https://hf.co/ifkash"
+              target="_blank"
+              rel="noopener noreferrer">Hugging Face</a
+            >
+            <a
+              href="https://linkedin.com/in/kashifulhaque"
+              target="_blank"
+              rel="noopener noreferrer">LinkedIn</a
+            >
+            <a href="/admin">Admin</a>
+          </div>
+          <p class="copyright">© {new Date().getFullYear()} Kashiful Haque</p>
+        </footer>
+      </main>
+    </div>
 
     <AiAgent />
     <WeatherHeadsUp />
@@ -223,360 +118,266 @@
 <style>
   .site-wrapper {
     min-height: 100vh;
-    display: flex;
-    flex-direction: column;
   }
 
-  /* ─── Header ───────────────────────────────────────────────── */
-
-  .site-header {
-    position: sticky;
-    top: 0;
-    z-index: 50;
-    isolation: isolate;
-    height: 69px;
+  .masthead {
     display: flex;
-    align-items: center;
-    border-bottom: 1px solid var(--border);
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px 48px;
+    padding: 40px 48px 32px;
+    background: var(--background);
   }
 
-  .site-header::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: -10;
-    background: var(--header-bg);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+  .masthead-brand {
+    min-width: 0;
   }
 
-  .header-inner {
-    width: 100%;
-    height: 69px;
-    display: flex;
-    align-items: center;
-    gap: var(--content-sm);
-  }
-
-  .logo {
-    display: flex;
-    align-items: baseline;
-    gap: 0;
-    border-bottom: none;
-    white-space: nowrap;
-    margin-right: auto;
+  .site-name {
+    display: inline-block;
     color: var(--foreground);
-  }
-
-  .logo:hover {
-    border-bottom: none;
-    color: var(--foreground);
-  }
-
-  .logo-word {
-    font-family: var(--font-serif);
-    font-size: 1.35rem;
+    font-size: 22px;
     font-weight: 400;
-    letter-spacing: -0.03em;
-    line-height: 1;
-    color: var(--foreground);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
   }
 
-  .logo-tld {
-    font-family: var(--font-label);
-    font-size: 11px;
+  .masthead-brand p {
+    margin: 5px 0 0;
+    color: var(--ink-3);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .masthead-actions {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .masthead-actions a,
+  .theme-toggle {
+    color: var(--ink-2);
+    font-size: 13px;
     font-weight: 500;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--muted-foreground);
-    margin-left: 2px;
   }
 
-  .logo:hover .logo-word {
-    color: var(--accent-2);
-  }
-
-  .nav-desktop {
-    display: none;
-    align-items: center;
-    gap: 4px;
-  }
-
-  .nav-link {
-    display: inline-flex;
-    align-items: center;
-    height: 36px;
-    padding-inline: 16px;
-    border-radius: var(--radius-sm);
-    font-family: var(--font-sans);
-    font-size: 14px;
-    font-weight: 400;
-    letter-spacing: normal;
-    text-transform: none;
+  .masthead-actions a:hover,
+  .theme-toggle:hover {
     color: var(--foreground);
-    border-bottom: none;
-    transition:
-      color 0.15s var(--ease-inout),
-      background-color 0.15s var(--ease-inout);
   }
 
-  .nav-link:hover {
-    background: var(--input);
-    color: var(--foreground);
-    border-bottom: none;
-  }
-
-  .nav-link.active {
-    color: var(--accent);
-  }
-
-  .header-actions {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-left: auto;
-  }
-
-  .header-cta {
-    display: none;
-  }
-
-  .theme-toggle,
-  .nav-toggle {
+  .theme-toggle {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 36px;
-    height: 36px;
+    width: 28px;
+    height: 28px;
+    margin-left: -4px;
     padding: 0;
-    background: transparent;
     border: 0;
-    border-radius: var(--radius-md);
-    color: var(--foreground);
-    cursor: var(--cursor-pointer);
-    transition:
-      color 0.15s var(--ease-inout),
-      background-color 0.15s var(--ease-inout);
+    border-radius: 6px;
+    background: transparent;
   }
 
-  .theme-toggle:hover,
-  .nav-toggle:hover {
-    background: var(--input);
-    color: var(--foreground);
+  .theme-toggle:hover {
+    background: var(--hover);
   }
 
-  .theme-toggle .icon-sun {
-    display: none;
-  }
-  .theme-toggle .icon-moon {
-    display: inline-flex;
-  }
-  :global(html[data-theme="light"]) .theme-toggle .icon-moon {
-    display: none;
-  }
-  :global(html[data-theme="light"]) .theme-toggle .icon-sun {
-    display: inline-flex;
+  .theme-toggle svg {
+    width: 14px;
+    height: 14px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
   }
 
-  /* ─── Mobile menu ──────────────────────────────────────────── */
+  .shell {
+    display: grid;
+    grid-template-columns: 220px minmax(0, 1fr);
+    align-items: start;
+    width: 100%;
+    min-width: 0;
+  }
 
-  .mobile-menu {
-    position: fixed;
-    inset: 69px 0 0;
-    z-index: 40;
+  .sites {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    width: 100%;
+    min-width: 0;
+    max-height: 100vh;
+    padding: 24px 24px 48px 48px;
+    overflow: auto;
     background: var(--background);
-    overflow-y: auto;
-    overscroll-behavior: contain;
   }
 
-  .mobile-menu__list {
-    list-style: none;
+  .nav-label {
+    margin: 0 0 16px;
+    color: var(--ink-3);
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  .sites ol {
     margin: 0;
     padding: 0;
+    list-style: none;
   }
 
-  .mobile-menu__list > li + li {
-    border-top: 1px solid var(--rule);
+  .sites li + li {
+    margin-top: 8px;
   }
 
-  .mobile-menu__item {
-    display: flex;
-    width: 100%;
-    align-items: center;
-    justify-content: space-between;
-    gap: 24px;
-    min-height: 60px;
-    padding: 16px;
-    color: var(--foreground);
-    border-bottom: none;
-  }
-
-  .mobile-menu__item:hover {
-    border-bottom: none;
-    color: var(--foreground);
-  }
-
-  .mobile-menu__item:hover .mobile-menu__label {
-    text-decoration: underline;
-  }
-
-  .mobile-menu__item.active .mobile-menu__label {
-    color: var(--accent);
-  }
-
-  .mobile-menu__label {
-    font-family: var(--font-serif);
-    font-size: 20px;
-    line-height: 28px;
-    font-weight: 400;
-  }
-
-  .mobile-menu__cta {
+  .sites a {
     display: block;
-    margin: 24px 16px;
-    padding: 10px 16px;
-    border-radius: var(--radius-sm);
-    background: var(--foreground);
-    color: var(--background);
-    font-size: 14px;
-    text-align: center;
-    border-bottom: none;
+    color: var(--ink-2);
+    font-size: 16px;
+    font-weight: 500;
   }
 
-  .mobile-menu__cta:hover {
-    background: var(--accent-2);
-    color: var(--background);
-    border-bottom: none;
-  }
-
-  .mobile-menu__foot {
-    padding: 0 16px 32px;
-  }
-
-  .mobile-menu__foot a {
-    font-family: var(--font-label);
-    font-size: 11px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--muted-foreground);
-    border-bottom: none;
-  }
-
-  .mobile-menu__foot a:hover {
+  .sites a:hover,
+  .sites a[aria-current="page"] {
     color: var(--foreground);
-    border-bottom: none;
   }
 
-  /* ─── Main ─────────────────────────────────────────────────── */
-
-  .main-content {
-    flex: 1;
+  .stage {
     width: 100%;
+    min-width: 0;
+    padding: 24px 48px 56px 0;
   }
 
-  .main-content :global(.container) {
-    padding-top: 40px;
-    padding-bottom: var(--section-pb);
-    animation: enter var(--dur-slow) var(--ease-out-expo);
+  .stage-inner,
+  .site-footer {
+    width: min(100%, 1120px);
   }
-
-  /* ─── Footer ───────────────────────────────────────────────── */
 
   .site-footer {
-    border-top: 1px solid var(--border);
-    padding-top: var(--section-pt);
-  }
-
-  .site-footer__inner {
     display: grid;
-    grid-template-columns: 1fr;
-    gap: 64px;
-    padding-bottom: var(--section-gap-sm);
-  }
-
-  .site-footer__mission {
-    max-width: 36ch;
-    margin: 0 0 16px;
-    font-size: 16px;
-    color: var(--muted-foreground);
-  }
-
-  .site-footer .col-heading {
-    margin-bottom: 16px;
-  }
-
-  .site-footer__links {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .site-footer__links a {
-    font-size: 16px;
-    color: var(--foreground);
-    border-bottom: none;
-  }
-
-  .site-footer__links a:hover {
-    color: var(--accent-2);
-    border-bottom: none;
-  }
-
-  .site-footer__bottom {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 32px 64px;
+    margin-top: 112px;
+    padding-top: 32px;
     border-top: 1px solid var(--border);
-    padding-block: 20px;
+  }
+
+  .footer-heading {
+    margin-bottom: 4px;
+    color: var(--foreground);
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .site-footer p,
+  .footer-links a {
+    margin: 0;
+    color: var(--ink-2);
     font-size: 13px;
-    color: var(--muted-foreground);
+  }
+
+  .footer-links {
     display: flex;
-    flex-direction: column;
-    gap: 12px;
-    text-align: center;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px 16px;
   }
 
-  /* Desktop nav at xl (1280), not lg */
-  @media (min-width: 1280px) {
-    .site-header {
-      border-bottom: 0;
+  .footer-links a:hover {
+    color: var(--foreground);
+  }
+
+  .copyright {
+    grid-column: 1 / -1;
+    padding-top: 32px;
+    color: var(--ink-3) !important;
+  }
+
+  @media (max-width: 960px) {
+    .masthead {
+      flex-direction: column;
+      gap: 20px;
+      padding: 24px 24px 16px;
     }
 
-    .nav-desktop {
+    .shell {
+      grid-template-columns: 1fr;
+    }
+
+    .sites {
+      top: 0;
+      max-height: none;
+      padding: 8px 0 12px;
+      overflow: visible;
+      border-bottom: 1px solid var(--border);
+      background: var(--header-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+
+    .nav-label {
+      display: none;
+    }
+
+    .sites ol {
+      width: 100%;
+      min-width: 0;
+      max-width: 100%;
       display: flex;
+      gap: 4px;
+      padding: 0 12px;
+      overflow-x: auto;
+      overscroll-behavior-x: contain;
+      scrollbar-width: none;
     }
 
-    .nav-toggle {
+    .sites ol::-webkit-scrollbar {
       display: none;
     }
 
-    .header-cta {
-      display: inline-flex;
+    .sites li,
+    .sites li + li {
+      flex: 0 0 auto;
+      margin: 0;
     }
 
-    .mobile-menu {
-      display: none;
+    .sites a {
+      min-height: 40px;
+      padding: 8px 12px;
+      white-space: nowrap;
     }
 
-    .site-footer__inner {
-      grid-template-columns: 2fr 1fr;
-      gap: 32px;
+    .stage {
+      padding: 32px 24px 48px;
     }
 
-    .site-footer__bottom {
-      flex-direction: row;
-      justify-content: space-between;
-      text-align: left;
+    .site-footer {
+      margin-top: 80px;
     }
   }
 
-  @media (min-width: 1024px) {
-    .site-footer__inner {
-      grid-template-columns: 2fr 1fr;
-      gap: 32px;
+  @media (max-width: 560px) {
+    .masthead-actions {
+      width: 100%;
     }
 
-    .site-footer__bottom {
-      flex-direction: row;
-      justify-content: space-between;
-      text-align: left;
+    .theme-toggle {
+      margin-left: auto;
+    }
+
+    .site-footer {
+      grid-template-columns: 1fr;
+      gap: 24px;
+    }
+
+    .footer-links {
+      justify-content: flex-start;
+    }
+
+    .copyright {
+      grid-column: 1;
     }
   }
 </style>

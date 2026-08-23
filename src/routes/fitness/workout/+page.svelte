@@ -1173,7 +1173,7 @@
 
   .header-top {
     display: flex;
-    align-items: baseline;
+    align-items: center;
     justify-content: space-between;
     gap: 1rem;
     flex-wrap: wrap;
@@ -1194,7 +1194,10 @@
   .save-pill {
     display: inline-flex;
     align-items: center;
+    justify-content: flex-start;
     gap: 0.3rem;
+    width: 5.75rem;
+    height: 1.125rem;
     font-family: var(--font-mono);
     font-size: 0.7rem;
     letter-spacing: 0.04em;
@@ -1204,6 +1207,10 @@
     transition: opacity 0.2s;
   }
   .save-pill.on { opacity: 1; }
+  .save-pill :global(.loader) {
+    transform: scale(0.78);
+    transform-origin: left center;
+  }
   .save-pill[data-status='saved'] { color: var(--blueprint); }
   .save-pill[data-status='error'] { color: #e74c3c; }
 

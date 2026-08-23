@@ -173,19 +173,27 @@
   function getLabelForPath(path: string): string {
     const labels: Record<string, string> = {
       "/": "Home",
-      "/work": "Work Experience",
+      "/work": "Work",
       "/projects": "Projects",
+      "/projects/polite-orpo": "PoliteLlama",
       "/projects/banana-cpp": "banana.cpp",
       "/projects/smol-llama": "smol-llama",
+      "/projects/vicharak": "Vicharak Micro-Llama",
       "/projects/smoltorch": "smoltorch",
       "/projects/nopokedb": "NoPokeDB",
       "/projects/boo": "Boo",
       "/projects/ferray": "ferray",
+      "/rl": "Reinforcement learning",
+      "/rl/snake-dqn": "Snake DQN",
+      "/tools": "Tools",
+      "/tools/pdf-annotator": "PDF Annotator",
+      "/tools/splitter": "Expense Splitter",
       "/education": "Education",
       "/blog": "Blog",
-      "/api/resume?format=view": "View Resume",
-      "/leetcode": "LeetCode",
-      "/news": "Hacker News",
+      "/fitness": "Fitness",
+      "/fitness/workout": "Workout",
+      "/game": "Game",
+      "/api/cv?format=view": "View resume",
     };
     return labels[path] || path;
   }
@@ -221,19 +229,19 @@
   function getPlaceholder(): string {
     switch (agentState.status) {
       case "idle":
-        return "Load the model first...";
+        return "Load the local model first";
       case "downloading":
-        return "Downloading model...";
+        return "Downloading the model";
       case "loading":
-        return "Loading model...";
+        return "Loading the model";
       case "generating":
-        return "Thinking...";
+        return "Writing a response";
       case "error":
-        return "An error occurred";
+        return "The model isn't available";
       case "ready":
-        return "Ask me anything...";
+        return "Ask about work or projects";
       default:
-        return "Ask me anything...";
+        return "Ask about work or projects";
     }
   }
 
@@ -257,47 +265,58 @@
 <button
   class="agent-fab"
   class:active={isOpen}
-  class:pulse={agentState.status === "ready" && !isOpen}
   on:click={togglePanel}
-  aria-label="AI Assistant"
+  aria-label={isOpen ? "Close site guide" : "Open site guide"}
+  aria-expanded={isOpen}
+  aria-controls="site-guide"
 >
   {#if isOpen}
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
       <line x1="18" y1="6" x2="6" y2="18"></line>
       <line x1="6" y1="6" x2="18" y2="18"></line>
     </svg>
   {:else}
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
       <path d="M12 8V4H8"></path>
       <rect width="16" height="12" x="4" y="8" rx="2"></rect>
-      <path d="M2 14h2"></path>
-      <path d="M20 14h2"></path>
-      <path d="M15 13v2"></path>
-      <path d="M9 13v2"></path>
+      <path d="M2 14h2M20 14h2M15 13v2M9 13v2"></path>
     </svg>
   {/if}
+  <span>{isOpen ? "Close" : "Ask"}</span>
 </button>
 
 {#if isOpen}
-  <div class="agent-panel" role="dialog" aria-label="AI Assistant Chat">
+  <div id="site-guide" class="agent-panel" role="dialog" aria-label="Site guide">
     <div class="agent-header">
       <div class="agent-header-left">
-        <span class="agent-title">AI Assistant</span>
+        <span class="agent-title">Site guide</span>
         {#if agentState.backend}
           <span class="agent-badge">{agentState.backend === "webgpu" ? "WebGPU" : "WASM"}</span>
         {/if}
       </div>
       <div class="agent-header-right">
         {#if isModelLoaded}
-          <button class="agent-btn-sm" on:click={unloadModel} title="Unload model">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <button
+            type="button"
+            class="agent-btn-sm"
+            on:click={unloadModel}
+            title="Unload model"
+            aria-label="Unload model"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
               <path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path>
               <line x1="12" y1="2" x2="12" y2="12"></line>
             </svg>
           </button>
         {/if}
-        <button class="agent-btn-sm" on:click={closePanel} title="Close">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <button
+          type="button"
+          class="agent-btn-sm"
+          on:click={closePanel}
+          title="Close"
+          aria-label="Close site guide"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
             <line x1="18" y1="6" x2="6" y2="18"></line>
             <line x1="6" y1="6" x2="18" y2="18"></line>
           </svg>
@@ -308,21 +327,15 @@
     <div class="agent-body" bind:this={messagesContainer}>
       {#if agentState.status === "idle"}
         <div class="agent-welcome">
-          <div class="welcome-icon">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 8V4H8"></path>
-              <rect width="16" height="12" x="4" y="8" rx="2"></rect>
-              <path d="M2 14h2"></path>
-              <path d="M20 14h2"></path>
-              <path d="M15 13v2"></path>
-              <path d="M9 13v2"></path>
-            </svg>
-          </div>
+          <p class="welcome-kicker">Runs on your device</p>
+          <h2>Ask about Kashif</h2>
           <p class="welcome-text">
-            This loads a ~300 MB language model that runs entirely in your
-            browser. No data is sent to any server.
+            Load a 300 MB local model to ask about my work, projects, and
+            experience. Your messages stay in this browser.
           </p>
-          <button class="agent-btn-load" on:click={loadModel}>Load Model</button>
+          <button class="agent-btn-load" on:click={loadModel}
+            >Load local model</button
+          >
         </div>
       {:else if isLoading}
         <div class="agent-welcome">
@@ -357,7 +370,9 @@
       {:else}
         {#if messages.length === 0 && !currentStreamingText}
           <div class="agent-empty">
-            <p>Ask me about Kashif's work, projects, education, or skills.</p>
+            <p class="welcome-kicker">Local model ready</p>
+            <h2>What would you like to know?</h2>
+            <p>Ask about Kashif's work, projects, education, or skills.</p>
           </div>
         {/if}
 
@@ -411,6 +426,7 @@
         on:click={sendMessage}
         disabled={!canSend}
         title="Send message"
+        aria-label="Send message"
       >
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <line x1="22" y1="2" x2="11" y2="13"></line>
@@ -424,77 +440,77 @@
 <style>
   .agent-fab {
     position: fixed;
-    bottom: 1rem;
-    right: 1rem;
-    z-index: 50;
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    border: 1px solid var(--agent-fab-border);
-    background: var(--agent-fab-bg);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    color: var(--agent-fab-color);
-    cursor: var(--cursor-pointer);
-    display: flex;
+    right: 24px;
+    bottom: 24px;
+    z-index: 70;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    transition: all var(--dur-fast) var(--ease-out-quart);
-    box-shadow: 0 4px 24px var(--agent-fab-shadow);
+    gap: 7px;
+    height: 40px;
+    padding: 0 12px;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-md);
+    background: var(--agent-bg);
+    color: var(--ink-2);
+    font-family: var(--font-sans);
+    font-size: 13px;
+    font-weight: 500;
+    box-shadow: 0 8px 28px var(--agent-shadow);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    transition:
+      color 160ms var(--ease-inout),
+      border-color 160ms var(--ease-inout),
+      background-color 160ms var(--ease-inout);
   }
 
-  .agent-fab:hover {
-    color: var(--agent-fab-hover-color);
-    border-color: var(--agent-fab-hover-border);
-    transform: scale(1.05);
-  }
-
+  .agent-fab:hover,
   .agent-fab.active {
-    color: var(--agent-fab-hover-color);
-    border-color: var(--agent-fab-hover-border);
+    border-color: var(--foreground);
+    background: var(--background);
+    color: var(--foreground);
   }
 
-  .agent-fab.pulse {
-    animation: fab-pulse 3s ease-in-out infinite;
-  }
-
-  @keyframes fab-pulse {
-    0%, 100% { box-shadow: 0 4px 24px var(--agent-fab-shadow); }
-    50% { box-shadow: 0 4px 24px var(--agent-fab-pulse-shadow); }
+  .agent-fab svg,
+  .agent-btn-sm svg {
+    width: 15px;
+    height: 15px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
   }
 
   .agent-panel {
     position: fixed;
-    bottom: 4.5rem;
-    right: 1rem;
-    z-index: 50;
-    width: 380px;
-    height: 500px;
-    max-height: calc(100vh - 6rem);
+    right: 24px;
+    bottom: 76px;
+    z-index: 70;
     display: flex;
     flex-direction: column;
-    background: var(--agent-bg);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid var(--agent-border);
-    border-radius: var(--radius-lg);
-    box-shadow: 0 8px 48px var(--agent-shadow);
-    animation: panel-enter var(--dur-fast) var(--ease-out-quart);
+    width: 400px;
+    height: min(540px, calc(100vh - 112px));
     overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--agent-bg);
+    color: var(--foreground);
+    box-shadow: 0 20px 60px var(--agent-shadow);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    animation: panel-enter 160ms var(--ease-out);
   }
 
   @keyframes panel-enter {
-    from { opacity: 0; transform: translateY(12px) scale(0.97); }
-    to { opacity: 1; transform: translateY(0) scale(1); }
-  }
-
-  @media (max-width: 480px) {
-    .agent-panel {
-      width: calc(100vw - 2rem);
-      right: 1rem;
-      left: 1rem;
-      height: calc(100vh - 6rem);
-      max-height: calc(100vh - 6rem);
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
     }
   }
 
@@ -502,81 +518,118 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0.75rem 1rem;
-    border-bottom: 1px solid var(--agent-border);
-    flex-shrink: 0;
+    flex: 0 0 auto;
+    min-height: 56px;
+    padding: 12px 14px 12px 18px;
+    border-bottom: 1px solid var(--border);
   }
 
-  .agent-header-left {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  .agent-title {
-    font-size: 0.8125rem;
-    font-weight: 600;
-    color: var(--agent-text);
-  }
-
-  .agent-badge {
-    font-size: 0.625rem;
-    font-weight: 600;
-    padding: 0.125rem 0.375rem;
-    border-radius: 4px;
-    background: var(--agent-badge-bg);
-    color: var(--agent-badge-text);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-
+  .agent-header-left,
   .agent-header-right {
     display: flex;
     align-items: center;
-    gap: 0.25rem;
+  }
+
+  .agent-header-left {
+    gap: 8px;
+  }
+
+  .agent-header-right {
+    gap: 2px;
+  }
+
+  .agent-title {
+    color: var(--foreground);
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .agent-badge {
+    color: var(--ink-3);
+    font-size: 11px;
+    font-weight: 500;
   }
 
   .agent-btn-sm {
-    width: 28px;
-    height: 28px;
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    border: none;
-    background: transparent;
-    color: var(--agent-text-faint);
-    cursor: var(--cursor-pointer);
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    border: 0;
     border-radius: var(--radius-sm);
-    transition: all var(--dur-instant) var(--ease-out-quart);
+    background: transparent;
+    color: var(--ink-3);
+    transition:
+      color 160ms var(--ease-inout),
+      background-color 160ms var(--ease-inout);
   }
 
   .agent-btn-sm:hover {
-    color: var(--agent-text);
-    background: var(--agent-surface);
+    background: var(--hover);
+    color: var(--foreground);
   }
 
   .agent-body {
-    flex: 1;
-    overflow-y: auto;
-    padding: 1rem;
     display: flex;
+    flex: 1;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: 14px;
+    min-height: 0;
+    padding: 18px;
+    overflow-y: auto;
+  }
+
+  .agent-welcome,
+  .agent-empty {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    min-height: 100%;
+    text-align: left;
   }
 
   .agent-welcome {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    gap: 1rem;
-    padding: 2rem 1rem;
-    height: 100%;
+    gap: 0;
+    padding: 24px 6px;
+  }
+
+  .agent-empty {
+    padding: 24px 6px;
+  }
+
+  .welcome-kicker {
+    margin: 0 0 8px;
+    color: var(--ink-3);
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  .agent-welcome h2,
+  .agent-empty h2 {
+    margin: 0;
+    color: var(--foreground);
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 1.15;
+    letter-spacing: -0.025em;
+  }
+
+  .welcome-text,
+  .agent-empty > p:last-child {
+    max-width: 34ch;
+    margin: 14px 0 0;
+    color: var(--ink-2);
+    font-size: 14px;
+    line-height: 1.55;
   }
 
   .welcome-icon {
-    color: var(--agent-text-faint);
+    margin-bottom: 16px;
+    color: var(--ink-3);
   }
 
   .welcome-icon.loading {
@@ -584,75 +637,61 @@
   }
 
   @keyframes icon-pulse {
-    0%, 100% { opacity: 0.5; }
-    50% { opacity: 1; }
-  }
-
-  .welcome-text {
-    font-size: 0.8125rem;
-    color: var(--agent-text-secondary);
-    line-height: 1.5;
-    max-width: 280px;
+    0%,
+    100% {
+      opacity: 0.45;
+    }
+    50% {
+      opacity: 1;
+    }
   }
 
   .agent-btn-load {
-    padding: 0.5rem 1.25rem;
-    font-size: 0.8125rem;
+    min-height: 40px;
+    margin-top: 24px;
+    padding: 9px 15px;
+    border: 1px solid var(--foreground);
+    border-radius: var(--radius-sm);
+    background: var(--foreground);
+    color: var(--background);
+    font-size: 13px;
     font-weight: 500;
-    color: var(--agent-text);
-    background: var(--agent-surface);
-    border: 1px solid var(--agent-border);
-    border-radius: var(--radius-md);
-    cursor: var(--cursor-pointer);
-    transition: all var(--dur-instant) var(--ease-out-quart);
+    transition:
+      background-color 160ms var(--ease-inout),
+      border-color 160ms var(--ease-inout);
   }
 
   .agent-btn-load:hover {
-    background: var(--agent-surface-hover);
-    border-color: var(--agent-fab-hover-border);
+    border-color: var(--accent-2);
+    background: var(--accent-2);
   }
 
   .progress-section {
-    width: 100%;
-    max-width: 240px;
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 8px;
+    width: 100%;
+    max-width: 280px;
   }
 
   .progress-bar-track {
     width: 100%;
-    height: 4px;
-    background: var(--agent-progress-track);
-    border-radius: 2px;
+    height: 2px;
     overflow: hidden;
+    background: var(--pressed);
   }
 
   .progress-bar-fill {
     height: 100%;
-    background: var(--agent-progress-fill);
-    border-radius: 2px;
-    transition: width 0.3s ease-out;
+    background: var(--foreground);
+    transition: width 300ms ease-out;
   }
 
   .error-text {
-    font-size: 0.8125rem;
-    color: #ef4444;
+    margin: 0;
+    color: var(--destructive);
+    font-size: 13px;
     line-height: 1.5;
-  }
-
-  .agent-empty {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    text-align: center;
-  }
-
-  .agent-empty p {
-    font-size: 0.8125rem;
-    color: var(--agent-text-faint);
-    max-width: 240px;
   }
 
   .msg {
@@ -669,29 +708,31 @@
   }
 
   .msg-bubble {
-    max-width: 85%;
-    padding: 0.625rem 0.875rem;
-    border-radius: var(--radius-md);
-    font-size: 0.8125rem;
+    max-width: 88%;
+    padding: 10px 12px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
     line-height: 1.55;
-    word-break: break-word;
+    overflow-wrap: anywhere;
   }
 
   .msg-bubble-user {
-    background: var(--agent-bubble-user);
-    color: var(--agent-bubble-user-text);
-    border-bottom-right-radius: var(--radius-sm);
+    background: var(--pressed);
+    color: var(--foreground);
   }
 
   .msg-bubble-assistant {
-    background: var(--agent-bubble-assistant);
-    border: 1px solid var(--agent-bubble-assistant-border);
-    color: var(--agent-bubble-assistant-text);
-    border-bottom-left-radius: var(--radius-sm);
+    max-width: 100%;
+    padding: 2px 0;
+    background: transparent;
+    color: var(--ink-2);
   }
 
   .msg-bubble-assistant :global(p) {
-    margin: 0 0 0.5rem;
+    margin: 0 0 8px;
+    color: inherit;
+    font-size: inherit;
+    line-height: inherit;
   }
 
   .msg-bubble-assistant :global(p:last-child) {
@@ -699,133 +740,151 @@
   }
 
   .msg-bubble-assistant :global(strong) {
-    color: var(--agent-text);
+    color: var(--foreground);
     font-weight: 600;
   }
 
   .msg-bubble-assistant :global(code) {
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    padding: 0.125rem 0.25rem;
-    background: var(--agent-code-bg);
+    padding: 1px 4px;
+    border: 1px solid var(--border);
     border-radius: 3px;
+    background: var(--popover);
+    font-family: var(--font-mono);
+    font-size: 12px;
   }
 
   .msg-bubble-assistant :global(ul),
   .msg-bubble-assistant :global(ol) {
-    margin: 0.25rem 0;
-    padding-left: 1.25rem;
+    margin: 6px 0;
+    padding-left: 18px;
   }
 
   .msg-bubble-assistant :global(li) {
-    margin-bottom: 0.125rem;
+    margin-bottom: 2px;
   }
 
   .msg-speed {
-    font-size: 0.7rem;
-    color: var(--agent-text-secondary);
-    margin-top: 0.25rem;
-    margin-left: 0.25rem;
+    margin: 4px 0 0;
+    color: var(--ink-3);
     font-family: var(--font-mono);
-    opacity: 0.7;
+    font-size: 10px;
   }
 
   .cursor-blink {
-    animation: blink 0.8s step-end infinite;
-    color: var(--agent-text-secondary);
+    color: var(--ink-3);
+    animation: blink 800ms step-end infinite;
   }
 
   @keyframes blink {
-    50% { opacity: 0; }
+    50% {
+      opacity: 0;
+    }
   }
 
   .nav-pills {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.375rem;
-    margin-top: 0.375rem;
+    gap: 6px;
+    margin-top: 8px;
   }
 
   .nav-pill {
-    padding: 0.25rem 0.625rem;
-    font-size: 0.6875rem;
+    min-height: 30px;
+    padding: 5px 9px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--ink-2);
+    font-size: 12px;
     font-weight: 500;
-    color: var(--agent-pill-text);
-    background: var(--agent-pill-bg);
-    border: 1px solid var(--agent-pill-border);
-    border-radius: 999px;
-    cursor: var(--cursor-pointer);
-    transition: all var(--dur-instant) var(--ease-out-quart);
+    transition:
+      color 160ms var(--ease-inout),
+      border-color 160ms var(--ease-inout),
+      background-color 160ms var(--ease-inout);
   }
 
   .nav-pill:hover {
-    color: var(--agent-pill-hover-text);
-    border-color: var(--agent-pill-hover-border);
-    background: var(--agent-pill-hover-bg);
+    border-color: var(--border-strong);
+    background: var(--hover);
+    color: var(--foreground);
   }
 
   .agent-input-area {
     display: flex;
     align-items: flex-end;
-    gap: 0.5rem;
-    padding: 0.75rem;
-    border-top: 1px solid var(--agent-border);
-    flex-shrink: 0;
+    flex: 0 0 auto;
+    gap: 8px;
+    padding: 14px;
+    border-top: 1px solid var(--border);
   }
 
   .agent-input {
     flex: 1;
-    background: var(--agent-input-bg);
-    border: 1px solid var(--agent-input-border);
-    border-radius: var(--radius-md);
-    padding: 0.5rem 0.75rem;
-    color: var(--agent-text);
-    font-family: var(--font-sans);
-    font-size: 0.8125rem;
-    line-height: 1.4;
+    min-height: 40px;
+    max-height: 88px;
+    padding: 9px 11px;
     resize: none;
-    min-height: 36px;
-    max-height: 80px;
-    transition: border-color var(--dur-instant) var(--ease-out-quart);
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    background: var(--popover);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    font-size: 13px;
+    line-height: 20px;
+    transition: border-color 160ms var(--ease-inout);
   }
 
   .agent-input::placeholder {
-    color: var(--agent-text-faint);
+    color: var(--ink-3);
   }
 
   .agent-input:focus {
+    border-color: var(--border-strong);
     outline: none;
-    border-color: var(--agent-input-focus);
   }
 
   .agent-input:disabled {
-    opacity: 0.5;
     cursor: not-allowed;
   }
 
   .agent-send-btn {
-    width: 36px;
-    height: 36px;
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid var(--agent-border);
-    background: var(--agent-surface);
-    color: var(--agent-text-secondary);
-    border-radius: var(--radius-md);
-    cursor: var(--cursor-pointer);
-    transition: all var(--dur-instant) var(--ease-out-quart);
-    flex-shrink: 0;
+    flex: 0 0 auto;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border: 1px solid var(--foreground);
+    border-radius: var(--radius-sm);
+    background: var(--foreground);
+    color: var(--background);
+    transition:
+      opacity 160ms var(--ease-inout),
+      background-color 160ms var(--ease-inout);
   }
 
   .agent-send-btn:hover:not(:disabled) {
-    color: var(--agent-text);
-    background: var(--agent-surface-hover);
-    border-color: var(--agent-fab-hover-border);
+    background: var(--accent-2);
   }
 
   .agent-send-btn:disabled {
-    opacity: 0.3;
     cursor: not-allowed;
+    opacity: 0.28;
+  }
+
+  @media (max-width: 560px) {
+    .agent-fab {
+      right: 16px;
+      bottom: 16px;
+    }
+
+    .agent-panel {
+      right: 16px;
+      bottom: 68px;
+      left: 16px;
+      width: auto;
+      height: min(560px, calc(100dvh - 96px));
+    }
   }
 </style>

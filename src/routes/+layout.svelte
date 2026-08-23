@@ -62,6 +62,7 @@
             </svg>
           {/if}
         </button>
+        <WeatherHeadsUp />
       </div>
     </header>
 
@@ -111,7 +112,6 @@
     </div>
 
     <AiAgent />
-    <WeatherHeadsUp />
   </div>
 {/if}
 

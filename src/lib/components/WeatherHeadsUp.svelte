@@ -107,77 +107,25 @@
 
 {#if loaded && roundedTemp != null}
   <div class="weather-wrap" bind:this={containerEl}>
-    {#if isOpen}
-      <div class="weather-panel" role="dialog" aria-label="Local weather details">
-        <div class="weather-panel-header">
-          <span class="weather-title">weather @ kashif's place</span>
-          <button class="weather-close" on:click={close} aria-label="Close">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
-          </button>
-        </div>
-        <dl class="weather-stats">
-          <div class="weather-row">
-            <dt>temp</dt>
-            <dd>{fmt(temp, 1)} °C</dd>
-          </div>
-          <div class="weather-row">
-            <dt>humidity</dt>
-            <dd>{fmt(humidity, 0)}%</dd>
-          </div>
-          <div class="weather-row">
-            <dt>wind</dt>
-            <dd>
-              {fmt(windSpeed, 1)} m/s
-              {#if windDir != null}
-                <span class="weather-faint">{bearingLabel(windDir)}</span>
-              {/if}
-            </dd>
-          </div>
-          <div class="weather-row">
-            <dt>rain</dt>
-            <dd>
-              {fmt(rainIntensity, 2)} mm/h
-              {#if rainAcc != null && rainAcc > 0}
-                <span class="weather-faint">+{fmt(rainAcc, 1)} mm</span>
-              {/if}
-            </dd>
-          </div>
-          {#if aqi25 != null || aqi10 != null}
-            <div class="weather-row">
-              <dt>aqi</dt>
-              <dd>
-                {#if aqi25 != null}
-                  <span>pm2.5 {fmt(aqi25, 0)}</span>
-                {/if}
-                {#if aqi10 != null}
-                  <span class="weather-faint">pm10 {fmt(aqi10, 0)}</span>
-                {/if}
-              </dd>
-            </div>
-          {/if}
-        </dl>
-      </div>
-    {/if}
-
     <button
-      class="weather-pill"
+      type="button"
+      class="weather-trigger"
       class:active={isOpen}
       on:click={toggle}
-      aria-label="Local weather"
-      title={`${fmt(temp, 1)}°C · ${fmt(humidity, 0)}% humidity`}
+      aria-label={`Local weather: ${fmt(temp, 1)} degrees Celsius`}
+      aria-expanded={isOpen}
+      aria-controls="local-weather-panel"
+      title={`${fmt(temp, 1)} °C · ${fmt(humidity, 0)}% humidity`}
     >
       {#if isRaining}
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
           <path d="M20 16.2A4.5 4.5 0 0 0 17.5 8h-1.8A7 7 0 1 0 4 14.9"></path>
           <line x1="8" y1="19" x2="8" y2="21"></line>
           <line x1="12" y1="20" x2="12" y2="22"></line>
           <line x1="16" y1="19" x2="16" y2="21"></line>
         </svg>
       {:else}
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
           <circle cx="12" cy="12" r="4"></circle>
           <line x1="12" y1="2" x2="12" y2="4"></line>
           <line x1="12" y1="20" x2="12" y2="22"></line>
@@ -189,151 +137,252 @@
           <line x1="17.66" y1="6.34" x2="19.07" y2="4.93"></line>
         </svg>
       {/if}
-      <span class="weather-temp">{roundedTemp}°</span>
+      <span>{roundedTemp}°</span>
     </button>
+
+    {#if isOpen}
+      <section
+        id="local-weather-panel"
+        class="weather-panel"
+        aria-label="Local weather details"
+      >
+        <header class="weather-panel-header">
+          <div>
+            <p class="weather-kicker">Live conditions</p>
+            <h2>Weather at home</h2>
+          </div>
+          <button
+            type="button"
+            class="weather-close"
+            on:click={close}
+            aria-label="Close weather details"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </header>
+
+        <div class="weather-reading">
+          <strong>{fmt(temp, 1)} °C</strong>
+          <span>{isRaining ? "Rain detected" : "No rain detected"}</span>
+        </div>
+
+        <dl class="weather-stats">
+          <div>
+            <dt>Humidity</dt>
+            <dd>{fmt(humidity, 0)}%</dd>
+          </div>
+          <div>
+            <dt>Wind</dt>
+            <dd>
+              {fmt(windSpeed, 1)} m/s
+              {#if windDir != null}
+                <span>{bearingLabel(windDir)}</span>
+              {/if}
+            </dd>
+          </div>
+          <div>
+            <dt>Rain</dt>
+            <dd>
+              {fmt(rainIntensity, 2)} mm/h
+              {#if rainAcc != null && rainAcc > 0}
+                <span>+{fmt(rainAcc, 1)} mm</span>
+              {/if}
+            </dd>
+          </div>
+          {#if aqi25 != null || aqi10 != null}
+            <div>
+              <dt>Air quality</dt>
+              <dd>
+                {#if aqi25 != null}
+                  PM2.5 {fmt(aqi25, 0)}
+                {:else}
+                  PM10 {fmt(aqi10, 0)}
+                {/if}
+              </dd>
+            </div>
+          {/if}
+        </dl>
+      </section>
+    {/if}
   </div>
 {/if}
 
 <style>
   .weather-wrap {
-    position: fixed;
-    bottom: 1rem;
-    left: 1rem;
-    z-index: 50;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.5rem;
-  }
-
-  .weather-pill {
+    position: relative;
+    z-index: 60;
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
-    height: 32px;
-    padding: 0 0.625rem;
-    border-radius: 999px;
-    border: 1px solid var(--agent-fab-border);
-    background: var(--agent-fab-bg);
-    color: var(--agent-fab-color);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    cursor: var(--cursor-pointer);
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    font-weight: 600;
+  }
+
+  .weather-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    min-width: 42px;
+    height: 28px;
+    padding: 0 6px;
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--ink-2);
+    font-family: var(--font-sans);
+    font-size: 13px;
+    font-weight: 500;
     line-height: 1;
-    box-shadow: 0 4px 18px var(--agent-fab-shadow);
-    transition: color var(--dur-instant) var(--ease-out-quart),
-      border-color var(--dur-instant) var(--ease-out-quart),
-      transform var(--dur-fast) var(--ease-out-quart);
+    transition:
+      color 160ms var(--ease-inout),
+      background-color 160ms var(--ease-inout);
   }
 
-  .weather-pill:hover,
-  .weather-pill.active {
-    color: var(--agent-fab-hover-color);
-    border-color: var(--agent-fab-hover-border);
-    transform: translateY(-1px);
+  .weather-trigger:hover,
+  .weather-trigger.active {
+    background: var(--hover);
+    color: var(--foreground);
   }
 
-  .weather-temp {
-    letter-spacing: -0.02em;
+  .weather-trigger svg,
+  .weather-close svg {
+    width: 13px;
+    height: 13px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
   }
 
   .weather-panel {
-    width: 220px;
-    background: var(--agent-bg);
-    border: 1px solid var(--agent-border);
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    width: 280px;
+    padding: 20px;
+    border: 1px solid var(--border);
     border-radius: var(--radius-md);
-    box-shadow: 0 8px 32px var(--agent-shadow);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    overflow: hidden;
-    animation: weather-enter var(--dur-fast) var(--ease-out-quart);
+    background: var(--agent-bg);
+    color: var(--foreground);
+    box-shadow: 0 16px 40px var(--agent-shadow);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    animation: weather-enter 160ms var(--ease-out);
   }
 
   @keyframes weather-enter {
     from {
       opacity: 0;
-      transform: translateY(6px) scale(0.97);
+      transform: translateY(-4px);
     }
     to {
       opacity: 1;
-      transform: translateY(0) scale(1);
+      transform: translateY(0);
     }
   }
 
   .weather-panel-header {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
-    padding: 0.5rem 0.75rem;
-    border-bottom: 1px solid var(--agent-border);
+    gap: 16px;
   }
 
-  .weather-title {
-    font-size: 0.75rem;
+  .weather-kicker {
+    margin: 0 0 4px;
+    color: var(--ink-3);
+    font-size: 12px;
+    line-height: 1.4;
+  }
+
+  .weather-panel h2 {
+    margin: 0;
+    font-size: 16px;
     font-weight: 600;
-    color: var(--agent-text);
-    letter-spacing: 0;
+    line-height: 1.3;
+    letter-spacing: -0.015em;
   }
 
   .weather-close {
-    width: 22px;
-    height: 22px;
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    background: transparent;
-    border: none;
-    color: var(--agent-text-faint);
-    cursor: var(--cursor-pointer);
+    flex: 0 0 auto;
+    width: 28px;
+    height: 28px;
+    margin: -6px -6px 0 0;
+    border: 0;
     border-radius: var(--radius-sm);
-    transition: color var(--dur-instant) var(--ease-out-quart),
-      background var(--dur-instant) var(--ease-out-quart);
+    background: transparent;
+    color: var(--ink-3);
   }
 
   .weather-close:hover {
-    color: var(--agent-text);
-    background: var(--agent-surface);
+    background: var(--hover);
+    color: var(--foreground);
   }
 
-  .weather-stats {
-    margin: 0;
-    padding: 0.5rem 0.75rem 0.625rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-  }
-
-  .weather-row {
+  .weather-reading {
     display: flex;
     align-items: baseline;
     justify-content: space-between;
-    gap: 0.5rem;
-    font-size: 0.75rem;
+    gap: 16px;
+    margin-top: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
   }
 
-  .weather-row dt {
-    color: var(--agent-text-faint);
-    text-transform: lowercase;
-    letter-spacing: 0;
+  .weather-reading strong {
+    color: var(--foreground);
+    font-size: 24px;
+    font-weight: 500;
+    letter-spacing: -0.03em;
   }
 
-  .weather-row dd {
+  .weather-reading span {
+    color: var(--ink-3);
+    font-size: 12px;
+  }
+
+  .weather-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px 20px;
+    margin: 16px 0 0;
+  }
+
+  .weather-stats div {
+    min-width: 0;
+  }
+
+  .weather-stats dt {
+    margin-bottom: 3px;
+    color: var(--ink-3);
+    font-size: 12px;
+  }
+
+  .weather-stats dd {
     margin: 0;
-    color: var(--agent-text);
-    font-family: var(--font-mono);
-    font-weight: 600;
-    text-align: right;
-    display: inline-flex;
-    align-items: baseline;
-    gap: 0.375rem;
+    color: var(--foreground);
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
   }
 
-  .weather-faint {
-    color: var(--agent-text-faint);
+  .weather-stats dd span {
+    margin-left: 3px;
+    color: var(--ink-3);
     font-weight: 400;
-    font-size: 0.6875rem;
+  }
+
+  @media (max-width: 560px) {
+    .weather-panel {
+      position: fixed;
+      top: 132px;
+      right: 24px;
+      left: 24px;
+      width: auto;
+    }
   }
 </style>

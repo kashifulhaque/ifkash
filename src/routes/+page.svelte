@@ -1,5 +1,6 @@
 <script>
   import { dev } from "$app/environment";
+  import EdgeField from "$lib/components/EdgeField.svelte";
 
   const resumeUrl = dev
     ? "http://localhost:8787/api/cv?format=view"
@@ -80,6 +81,8 @@
     </div>
   </dl>
 </section>
+
+<EdgeField />
 
 <section class="index-section" aria-labelledby="explore-heading">
   <div class="section-heading">

@@ -3,6 +3,7 @@ pub mod swagger_ui;
 pub mod resume;
 pub mod resume_api;
 pub mod home_weather;
+pub mod edge_signal;
 pub mod whoami;
 pub mod game;
 pub mod splitter;
@@ -28,6 +29,7 @@ pub fn register_routes(router: Router<'_, ()>) -> Router<'_, ()> {
     .get_async("/api/resume/record/:id", resume_api::get_by_id)
     .post_async("/api/resume/upload", resume_api::upload)
     .get_async("/api/home_weather", home_weather::route)
+    .get_async("/api/edge-signal", edge_signal::route)
     .get_async("/api/whoami", whoami::route)
     .post_async("/api/game/score", game::submit_score)
     .get_async("/api/game/leaderboard", game::leaderboard)

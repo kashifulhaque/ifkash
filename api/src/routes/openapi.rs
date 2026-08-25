@@ -14,6 +14,7 @@ use crate::handlers;
         handlers::resume_api::get_by_id,
         handlers::resume_api::upload,
         handlers::home_weather::handle,
+        handlers::edge_signal::handle,
     ),
     components(
         schemas(
@@ -23,6 +24,7 @@ use crate::handlers;
             handlers::resume_api::ResumeHistoryItem,
             handlers::resume_api::UploadResponse,
             handlers::home_weather::HomeWeatherResponse,
+            handlers::edge_signal::EdgeSignalResponse,
             handlers::home_weather::LocalityWeatherData,
         )
     ),
@@ -30,6 +32,7 @@ use crate::handlers;
         (name = "Resume", description = "Resume endpoints"),
         (name = "Resume API", description = "Resume API endpoints"),
         (name = "Weather", description = "Local weather endpoints"),
+        (name = "Edge", description = "Cloudflare edge telemetry endpoints"),
     ),
     modifiers(&SecurityAddon),
     info(

@@ -429,8 +429,8 @@ h5,
 h6 {
   margin: 0;
   color: var(--foreground);
-  font-family: var(--font-sans);
-  font-weight: 600;
+  font-family: var(--hand);
+  font-weight: 400;
   font-optical-sizing: auto;
   text-transform: none;
 }

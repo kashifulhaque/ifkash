@@ -119,6 +119,10 @@
 
   h1 {
     max-width: 12ch;
+    font-family: var(--hand);
+    font-weight: 400;
+    letter-spacing: 0;
+    line-height: 1.2;
   }
 
   .period {

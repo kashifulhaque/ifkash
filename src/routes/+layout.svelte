@@ -293,6 +293,8 @@
     grid-column: 1 / -1;
     padding-top: 32px;
     color: var(--ink-3) !important;
+    font-family: var(--hand);
+    font-size: 20px;
   }
 
   @media (max-width: 960px) {

@@ -89,7 +89,7 @@
   $: aqi10 = lwd?.aqi_pm_10 ?? null;
   $: aqi25 = lwd?.aqi_pm_2_point_5 ?? null;
   $: isRaining = (rainIntensity ?? 0) > 0;
-  $: roundedTemp = temp == null || Number.isNaN(temp) ? null : temp;
+  $: roundedTemp = temp == null || Number.isNaN(temp) ? null : Math.round(temp);
 
   onMount(() => {
     refresh();

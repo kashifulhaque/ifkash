@@ -3,48 +3,68 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
+/* Drawably Pen — drawably's own pen strokes as a typeface. Loaded globally so
+   headings can be set in the same hand as the sketchy chrome. */
+@font-face {
+  font-family: "Drawably Pen";
+  src: url("/fonts/DrawablyPen.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* ────────────────────────────────────────────────────────────────
-   Liquid — near-black editorial canvas. Hairline rules, Newsreader
-   headlines, Inter body, Chakra Petch labels, one periwinkle accent.
-   Canonical Liquid tokens first; legacy GLYPH names remapped so
-   scoped page styles inherit the new look untouched.
+   Drawably — pen-on-paper. White paper (dark: midnight sketchbook),
+   pen-blue ink (#2724d1), warm neutral notes, hand-drawn boiling
+   outlines sketched in Drawably Pen headings. Canonical tokens first;
+   legacy GLYPH names remapped so scoped page styles inherit the look
+   untouched.
    ──────────────────────────────────────────────────────────────── */
 
 :root {
-  --background: #0a0a0a;
-  --card: #0a0a0a;
-  --popover: rgb(255 255 255 / 5%);
-  --muted-surface: rgb(255 255 255 / 12%);
+  --r-frame-1: 255px 18px 225px 18px / 18px 225px 18px 255px;
+  --r-frame-2: 18px 225px 18px 255px / 225px 18px 255px 18px;
+  --r-frame-3: 225px 16px 255px 18px / 18px 255px 18px 225px;
+  --squig-1: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 220 8' preserveAspectRatio='none'%3E%3Cpath d='M1 4.5 C 20 3 36 6.2 56 4.5 S 92 2.6 112 4.4 S 150 6.6 172 4 S 205 2.8 219 4.6' fill='none' stroke='black' stroke-width='2.6' stroke-linecap='round'/%3E%3C/svg%3E");
+  --squig-2: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 220 8' preserveAspectRatio='none'%3E%3Cpath d='M1 4 C 18 6.2 38 2.4 58 4.6 S 96 6.6 116 4.2 S 148 2.4 170 4.6 S 204 6.2 219 3.8' fill='none' stroke='black' stroke-width='2.6' stroke-linecap='round'/%3E%3C/svg%3E");
+  --squig-3: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 220 8' preserveAspectRatio='none'%3E%3Cpath d='M1 4.6 C 22 2.4 40 6.4 60 4 S 94 2.8 114 4.6 S 152 6.2 174 4.4 S 204 2.6 219 4.4' fill='none' stroke='black' stroke-width='2.6' stroke-linecap='round'/%3E%3C/svg%3E");
+}
 
-  --foreground: #ffffff;
-  --muted-foreground: rgb(255 255 255 / 56%);
-  --ink-2: rgb(255 255 255 / 56%);
-  --ink-3: rgb(255 255 255 / 46%);
-  --ink-mute: rgb(255 255 255 / 46%);
+:root {
+  --background: #15132b;
+  --card: #15132b;
+  --popover: rgb(198 196 255 / 6%);
+  --muted-surface: rgb(198 196 255 / 13%);
 
-  --border: rgb(255 255 255 / 11%);
-  --border-strong: rgb(255 255 255 / 18%);
-  --input: rgb(255 255 255 / 9%);
-  --rule: rgb(255 255 255 / 11%);
-  --hover: rgb(255 255 255 / 9%);
-  --pressed: rgb(255 255 255 / 14%);
-  --fill: rgb(255 255 255 / 5%);
+  --foreground: #f2efe6;
+  --muted-foreground: rgb(242 239 230 / 58%);
+  --ink-2: rgb(242 239 230 / 58%);
+  --ink-3: rgb(242 239 230 / 42%);
+  --ink-mute: rgb(242 239 230 / 42%);
 
-  --accent: #ffffff;
-  --accent-2: rgb(255 255 255 / 78%);
-  --accent-wash: rgb(255 255 255 / 9%);
-  --accent-orchid: #ffffff;
-  --ring: #ffffff;
-  --destructive: #ef4444;
-  --ok: #3ddc84;
+  --border: rgb(198 196 255 / 14%);
+  --border-strong: rgb(198 196 255 / 28%);
+  --input: rgb(198 196 255 / 10%);
+  --rule: rgb(198 196 255 / 14%);
+  --hover: rgb(165 163 255 / 9%);
+  --pressed: rgb(165 163 255 / 15%);
+  --fill: rgb(165 163 255 / 5%);
 
-  --gradient-purple-base: linear-gradient(90deg, #ffffff, #ffffff);
-  --gradient-purple-lifted: linear-gradient(90deg, #ffffff, #ffffff);
+  --accent: #a5a3ff;
+  --accent-2: #c7c5ff;
+  --accent-wash: rgb(165 163 255 / 12%);
+  --accent-orchid: #a5a3ff;
+  --ring: #a5a3ff;
+  --destructive: #ff6d66;
+  --ok: #44d288;
+
+  --gradient-purple-base: linear-gradient(90deg, #a5a3ff, #c7c5ff);
+  --gradient-purple-lifted: linear-gradient(90deg, #c7c5ff, #a5a3ff);
   --gradient-accent: var(--gradient-purple-lifted);
   --accent-glow: none;
   --accent-text-glow: none;
 
-  --font-serif: "Inter Variable", Inter, ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Drawably Pen", "Inter Variable", Inter, ui-sans-serif, system-ui, sans-serif;
   --font-sans: "Inter Variable", Inter, ui-sans-serif, system-ui, sans-serif;
   --font-label: "Inter Variable", Inter, ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono Variable", "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
@@ -96,21 +116,21 @@
   --signal-glow: transparent;
   --line: var(--border);
   --line-soft: var(--input);
-  --dots: rgb(255 255 255 / 4%);
+  --dots: rgb(165 163 255 / 6%);
 
   --font-dots: var(--font-sans);
   --font-sans-g: var(--font-sans);
   --font-mono-g: var(--font-mono);
   --cell: 22px;
   --maxw: var(--page-max-w);
-  --font-display: var(--font-sans);
-  --font-heading: var(--font-sans);
+  --font-display: var(--font-serif);
+  --font-heading: var(--font-serif);
   --font-body: var(--font-sans);
   --font-grotesk: var(--font-sans);
   --grotesk: var(--font-sans);
   --mono: var(--font-mono);
-  --serif: var(--font-sans);
-  --hand: var(--font-sans);
+  --serif: var(--font-serif);
+  --hand: var(--font-serif);
   --math: "STIX Two Text", "Cambria Math", "Times New Roman", serif;
 
   --ground: var(--background);
@@ -155,23 +175,23 @@
   --complete: var(--ok);
   --planned: var(--ink-mute);
 
-  --code-bg: #111111;
-  --overlay-bg: rgb(0 0 0 / 72%);
-  --header-bg: rgb(10 10 10 / 88%);
+  --code-bg: #0f0e21;
+  --overlay-bg: rgb(15 14 33 / 78%);
+  --header-bg: rgb(21 19 43 / 88%);
   --nav-bg: var(--header-bg);
   --header-offset: 69px;
   --page-glow: transparent;
   --dot-color: var(--dots);
-  --selection-bg: var(--foreground);
-  --selection-fg: var(--background);
-  --btn-primary-bg: var(--foreground);
+  --selection-bg: color-mix(in srgb, var(--accent) 30%, transparent);
+  --selection-fg: var(--foreground);
+  --btn-primary-bg: var(--accent);
   --btn-primary-fg: var(--background);
-  --btn-primary-hover: rgb(255 255 255 / 78%);
+  --btn-primary-hover: var(--accent-2);
   --shadow-color: rgb(0 0 0 / 60%);
   --shadow-hard: none;
   --shadow-hard-lg: none;
 
-  --agent-bg: rgb(10 10 10 / 96%);
+  --agent-bg: rgb(21 19 43 / 96%);
   --agent-border: var(--border);
   --agent-shadow: rgb(0 0 0 / 60%);
   --agent-text: var(--foreground);
@@ -198,7 +218,7 @@
   --agent-pill-hover-text: var(--foreground);
   --agent-progress-track: var(--popover);
   --agent-progress-fill: var(--foreground);
-  --agent-fab-bg: rgb(10 10 10 / 90%);
+  --agent-fab-bg: rgb(21 19 43 / 92%);
   --agent-fab-border: var(--border);
   --agent-fab-color: var(--muted-foreground);
   --agent-fab-hover-color: var(--foreground);
@@ -244,57 +264,60 @@
 
 @theme {
   --font-sans: "Inter Variable", Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
-  --font-serif: "Inter Variable", Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-serif: "Drawably Pen", "Inter Variable", Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-mono: "JetBrains Mono Variable", "JetBrains Mono", ui-monospace, monospace;
-  --font-display: "Inter Variable", Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-display: "Drawably Pen", "Inter Variable", Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
 }
 
-/* Light theme */
+/* Light theme — drawably's canonical pen on white paper */
 [data-theme="light"] {
-  --background: #ffffff;
-  --card: #ffffff;
-  --popover: rgb(0 0 0 / 4%);
-  --muted-surface: rgb(0 0 0 / 10%);
+  --background: #fdfcf8;
+  --card: #fdfcf8;
+  --popover: rgb(39 36 209 / 4%);
+  --muted-surface: rgb(39 36 209 / 10%);
 
-  --foreground: #000000;
-  --muted-foreground: rgb(0 0 0 / 64%);
-  --ink-2: rgb(0 0 0 / 64%);
-  --ink-3: rgb(0 0 0 / 44%);
-  --ink-mute: rgb(0 0 0 / 44%);
+  --foreground: #241f1a;
+  --muted-foreground: #6e675f;
+  --ink-2: rgb(36 31 26 / 62%);
+  --ink-3: rgb(36 31 26 / 42%);
+  --ink-mute: rgb(36 31 26 / 42%);
 
-  --border: rgb(0 0 0 / 10%);
-  --border-strong: rgb(0 0 0 / 18%);
-  --input: rgb(0 0 0 / 8%);
-  --rule: rgb(0 0 0 / 10%);
-  --hover: rgb(0 0 0 / 5%);
-  --pressed: rgb(0 0 0 / 9%);
-  --fill: rgb(0 0 0 / 4%);
+  --border: rgb(39 36 209 / 16%);
+  --border-strong: rgb(39 36 209 / 32%);
+  --input: rgb(39 36 209 / 10%);
+  --rule: rgb(39 36 209 / 14%);
+  --hover: rgb(39 36 209 / 7%);
+  --pressed: rgb(39 36 209 / 11%);
+  --fill: rgb(39 36 209 / 4%);
 
-  --accent: #000000;
-  --accent-2: rgb(0 0 0 / 72%);
-  --accent-wash: rgb(0 0 0 / 5%);
-  --accent-orchid: #000000;
-  --ring: #000000;
-  --gradient-purple-base: linear-gradient(90deg, #000000, #000000);
-  --gradient-purple-lifted: linear-gradient(90deg, #000000, #000000);
+  --accent: #2724d1;
+  --accent-2: #4542e8;
+  --accent-wash: rgb(39 36 209 / 9%);
+  --accent-orchid: #2724d1;
+  --ring: #2724d1;
+  --destructive: #d12724;
+  --ok: #188a42;
+  --gradient-purple-base: linear-gradient(90deg, #2724d1, #4542e8);
+  --gradient-purple-lifted: linear-gradient(90deg, #4542e8, #2724d1);
   --gradient-accent: var(--gradient-purple-lifted);
-  --dots: rgb(0 0 0 / 4%);
+  --dots: rgb(39 36 209 / 7%);
   --bg-surface-hover: var(--hover);
   --accent-faint: var(--fill);
   --blueprint-tint: var(--fill);
   --blueprint-tint-strong: var(--pressed);
-  --code-bg: #111111;
-  --overlay-bg: rgb(255 255 255 / 72%);
-  --header-bg: rgb(255 255 255 / 88%);
-  --selection-fg: #ffffff;
-  --btn-primary-fg: #ffffff;
-  --btn-primary-hover: rgb(0 0 0 / 72%);
+  --code-bg: #f4f2ea;
+  --overlay-bg: rgb(253 252 248 / 78%);
+  --header-bg: rgb(253 252 248 / 90%);
+  --selection-bg: color-mix(in srgb, var(--accent) 22%, transparent);
+  --selection-fg: #241f1a;
+  --btn-primary-fg: #fdfcf8;
+  --btn-primary-hover: var(--accent-2);
 
-  --shadow-color: rgb(0 0 0 / 20%);
-  --agent-bg: rgb(255 255 255 / 96%);
-  --agent-shadow: rgb(0 0 0 / 20%);
-  --agent-fab-bg: rgb(255 255 255 / 90%);
-  --agent-fab-shadow: rgb(0 0 0 / 15%);
+  --shadow-color: rgb(36 31 26 / 20%);
+  --agent-bg: rgb(253 252 248 / 96%);
+  --agent-shadow: rgb(36 31 26 / 22%);
+  --agent-fab-bg: rgb(253 252 248 / 92%);
+  --agent-fab-shadow: rgb(36 31 26 / 15%);
   --agent-surface-hover: var(--hover);
   --agent-input-bg: var(--background);
 }
@@ -421,8 +444,8 @@ h5,
 h6 {
   margin: 0;
   color: var(--foreground);
-  font-family: var(--font-sans);
-  font-weight: 600;
+  font-family: var(--font-display);
+  font-weight: 400;
   font-optical-sizing: auto;
   text-transform: none;
 }
@@ -430,23 +453,23 @@ h6 {
 h1,
 .display {
   font-size: 48px;
-  line-height: 1.08;
-  letter-spacing: -0.035em;
+  line-height: 1.12;
+  letter-spacing: 0.005em;
 }
 h2 {
   font-size: 28px;
-  line-height: 1.15;
-  letter-spacing: -0.025em;
+  line-height: 1.18;
+  letter-spacing: 0.005em;
 }
 h3 {
   font-size: 24px;
-  line-height: 1.2;
-  letter-spacing: -0.02em;
+  line-height: 1.22;
+  letter-spacing: 0.005em;
 }
 h4 {
   font-size: 20px;
   line-height: 1.3;
-  letter-spacing: -0.015em;
+  letter-spacing: 0.005em;
 }
 h5 {
   font-size: 1.1rem;
@@ -516,6 +539,22 @@ a:hover {
   color: var(--accent-2);
 }
 
+/* prose links read as pen annotations */
+p a,
+li a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-decoration-style: wavy;
+  text-decoration-color: color-mix(in srgb, var(--accent) 55%, transparent);
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 3px;
+}
+p a:hover,
+li a:hover {
+  color: var(--accent-2);
+  text-decoration-color: var(--accent);
+}
+
 code,
 pre,
 kbd,
@@ -562,15 +601,44 @@ pre code {
 }
 
 .section-title {
+  position: relative;
+  width: fit-content;
+  max-width: 100%;
   margin-bottom: 8px;
   color: var(--foreground);
-  font-family: var(--font-sans);
+  font-family: var(--font-display);
   font-size: 40px;
-  font-weight: 600;
+  font-weight: 400;
   line-height: 1.1;
-  letter-spacing: -0.03em;
+  letter-spacing: 0.005em;
   text-align: left;
   text-transform: none;
+}
+
+/* sketched pen underline, boiling between three frames */
+.section-title::after,
+.display::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: -10px;
+  left: 0;
+  height: 8px;
+  background: var(--accent);
+  -webkit-mask-image: var(--squig-1);
+  mask-image: var(--squig-1);
+  -webkit-mask-repeat: repeat-x;
+  mask-repeat: repeat-x;
+  -webkit-mask-position: 0 50%;
+  mask-position: 0 50%;
+  -webkit-mask-size: 220px 8px;
+  mask-size: 220px 8px;
+  animation: sketch-boil-underline 1200ms step-end infinite;
+  pointer-events: none;
+}
+.display {
+  position: relative;
+  width: fit-content;
 }
 @media (min-width: 768px) {
   .section-title {
@@ -737,23 +805,32 @@ pre code {
 .ascii-rule {
   display: block;
   width: 100%;
-  height: 1px;
-  margin: 32px 0;
-  background: var(--border);
+  height: 8px;
+  margin: 28px 0;
+  background: var(--ink-mute);
+  -webkit-mask-image: var(--squig-1);
+  mask-image: var(--squig-1);
+  -webkit-mask-repeat: repeat-x;
+  mask-repeat: repeat-x;
+  -webkit-mask-position: 0 50%;
+  mask-position: 0 50%;
+  -webkit-mask-size: 220px 8px;
+  mask-size: 220px 8px;
+  animation: sketch-boil-underline 1200ms step-end infinite;
   user-select: none;
 }
 
-/* Accent marker (replaces red LED) */
+/* Accent marker — a dab of pen ink */
 .led {
   display: inline-block;
-  width: 6px;
-  height: 6px;
-  border-radius: 0;
+  width: 7px;
+  height: 7px;
+  border-radius: 50% 46% 52% 48% / 48% 52% 46% 54%;
   background: var(--accent);
   box-shadow: none;
   flex-shrink: 0;
   animation: none;
-  opacity: 0.85;
+  opacity: 0.9;
 }
 .led-hollow {
   background: transparent;
@@ -783,7 +860,7 @@ p.dropcap::first-letter {
   font-weight: 400;
 }
 
-/* Buttons */
+/* Buttons — hand-drawn pen outlines, boiling gently (drawably) */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -791,10 +868,10 @@ p.dropcap::first-letter {
   gap: 8px;
   min-height: 40px;
   padding: 9px 15px;
-  border: 1px solid transparent;
-  border-radius: var(--radius-sm);
+  border: 2px solid var(--accent);
+  border-radius: var(--r-frame-1);
   background: transparent;
-  color: var(--foreground);
+  color: var(--accent);
   font-family: var(--font-sans);
   font-size: 14px;
   font-weight: 500;
@@ -802,21 +879,38 @@ p.dropcap::first-letter {
   letter-spacing: 0;
   text-align: center;
   text-transform: none;
+  animation: sketch-boil-radius 1200ms step-end infinite;
   transition:
     color 160ms var(--ease-inout),
     background-color 160ms var(--ease-inout),
-    border-color 160ms var(--ease-inout);
+    border-color 160ms var(--ease-inout),
+    border-width 120ms ease,
+    transform 120ms ease;
 }
 
-.btn:hover {
-  background: var(--hover);
-  color: var(--foreground);
+@media (hover: hover) {
+  .btn:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
+    color: var(--accent);
+    transform: translateY(-1px);
+  }
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(1px) scale(0.98);
+  border-width: 2.5px;
+}
+
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+  transform: none;
 }
 
 .btn-primary,
 .btn--primary {
-  border-color: var(--foreground);
-  background: var(--btn-primary-bg);
+  border-color: var(--accent);
+  background: var(--accent);
   color: var(--btn-primary-fg);
 }
 .btn-primary:hover,
@@ -826,35 +920,35 @@ p.dropcap::first-letter {
   color: var(--btn-primary-fg);
 }
 
+/* quiet actions sketched in pencil rather than ink */
 .btn-secondary,
 .btn--ghost {
+  border-color: var(--border-strong);
   background: transparent;
+  color: var(--ink-2);
+}
+.btn-secondary:hover,
+.btn--ghost:hover {
   color: var(--foreground);
 }
 
 .btn--header {
   min-height: 36px;
   padding: 7px 14px;
-  border-radius: var(--radius-sm);
-  background: var(--foreground);
-  color: var(--background);
+  background: var(--accent);
+  color: var(--btn-primary-fg);
 }
 .btn--header:hover {
-  background: var(--accent-2);
-  color: var(--background);
+  background: var(--btn-primary-hover);
+  color: var(--btn-primary-fg);
 }
 
 .btn--outline {
   min-height: 40px;
   padding: 9px 15px;
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius-sm);
-  background: transparent;
-  color: var(--foreground);
 }
 .btn--outline:hover {
-  border-color: var(--foreground);
-  background: var(--hover);
+  border-color: var(--accent-2);
 }
 
 .btn-row {
@@ -875,7 +969,7 @@ p.dropcap::first-letter {
   -webkit-text-fill-color: currentColor;
 }
 .btn-gradient-ring {
-  border: 1px solid var(--border-strong);
+  border-color: var(--border-strong);
 }
 .btn-gradient-ring::after {
   display: none;
@@ -885,6 +979,10 @@ p.dropcap::first-letter {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  color: var(--accent);
+}
+.link-arrow:hover {
+  color: var(--accent-2);
 }
 .link-arrow::after {
   content: "→";
@@ -996,6 +1094,37 @@ p.dropcap::first-letter {
 }
 
 /* Anims */
+/* drawably boil: three frames of the same sketch, micro-wobbled, cycled in
+   discrete steps at 1200ms — the pen re-draws the shape every frame */
+@keyframes sketch-boil-radius {
+  0%,
+  100% {
+    border-radius: var(--r-frame-1);
+  }
+  33.33% {
+    border-radius: var(--r-frame-2);
+  }
+  66.67% {
+    border-radius: var(--r-frame-3);
+  }
+}
+
+@keyframes sketch-boil-underline {
+  0%,
+  100% {
+    -webkit-mask-image: var(--squig-1);
+    mask-image: var(--squig-1);
+  }
+  33.33% {
+    -webkit-mask-image: var(--squig-2);
+    mask-image: var(--squig-2);
+  }
+  66.67% {
+    -webkit-mask-image: var(--squig-3);
+    mask-image: var(--squig-3);
+  }
+}
+
 @keyframes enter {
   from {
     opacity: 0;

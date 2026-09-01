@@ -413,6 +413,22 @@
     loadDayData();
   }
 
+  /**
+   * The day to open on boot, read off the history: if today is already logged,
+   * that's the current day — reopen it; otherwise continue the Push → Pull →
+   * Legs rotation from the most recent session (so a fresh visit lands on the
+   * right day instead of always defaulting to Push). No history → Day 1.
+   */
+  function pickDay(): Focus {
+    const todayStr = today();
+    const todays = sessions.find((s) => s.date === todayStr && s.day_label);
+    if (todays) return todays.day_label as Focus;
+    const last = sessions.find((s) => s.date < todayStr && s.day_label);
+    if (!last) return 'Push';
+    const i = FOCUSES.indexOf(last.day_label as Focus);
+    return i >= 0 ? FOCUSES[(i + 1) % FOCUSES.length] : 'Push';
+  }
+
   function onDateChange() {
     loadDayData();
   }
@@ -522,25 +538,87 @@
   // date → bodyweight grams, so each history row can show that day's weight.
   $: bwByDate = new Map(bodyweight.map((b) => [b.date, b.weight_g]));
 
-  $: sparkPoints = (() => {
-    if (weekly.length < 2) return '';
-    const w = 320, h = 64, pad = 6;
+  // History grouped by month (newest first), each row carrying display-ready
+  // date parts and that day's bodyweight — the list renders from this directly.
+  type HistRow = SessionSummary & { dom: string; wd: string; mon: string; bw: number | undefined };
+  $: historyGroups = (() => {
+    const groups: { key: string; label: string; rows: HistRow[] }[] = [];
+    for (const s of sessions) {
+      const d = new Date(s.date + 'T00:00:00');
+      const row: HistRow = {
+        ...s,
+        dom: String(d.getDate()),
+        wd: d.toLocaleDateString('en-GB', { weekday: 'short' }),
+        mon: d.toLocaleDateString('en-GB', { month: 'short' }),
+        bw: bwByDate.get(s.date)
+      };
+      const key = s.date.slice(0, 7);
+      let grp = groups.find((x) => x.key === key);
+      if (!grp) {
+        grp = {
+          key,
+          label: d.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }),
+          rows: []
+        };
+        groups.push(grp);
+      }
+      grp.rows.push(row);
+    }
+    return groups;
+  })();
+
+  // Chart geometry for the weekly-average sparkline. Flat data gets a fake
+  // span so the line sits mid-chart instead of degenerating to NaN.
+  const SPARK_W = 320;
+  const SPARK_H = 96;
+  const SPARK_PAD = 8;
+  $: sparkGeo = (() => {
+    if (weekly.length < 2) return null;
     const vals = weekly.map((p) => p.avgKg);
     const min = Math.min(...vals);
     const max = Math.max(...vals);
     const span = max - min || 1;
-    return weekly
-      .map((p, i) => {
-        const x = pad + (i / (weekly.length - 1)) * (w - 2 * pad);
-        const y = pad + (1 - (p.avgKg - min) / span) * (h - 2 * pad);
-        return `${x.toFixed(1)},${y.toFixed(1)}`;
-      })
-      .join(' ');
+    const pts = weekly.map((p, i) => ({
+      x: SPARK_PAD + (i / (weekly.length - 1)) * (SPARK_W - 2 * SPARK_PAD),
+      y: SPARK_PAD + (1 - (p.avgKg - min) / span) * (SPARK_H - 2 * SPARK_PAD)
+    }));
+    const line = pts.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+    const area = `${SPARK_PAD},${SPARK_H - SPARK_PAD} ${line} ${SPARK_W - SPARK_PAD},${SPARK_H - SPARK_PAD}`;
+    return { line, area, last: pts[pts.length - 1], min, max };
   })();
+
+  // Newest first, each week annotated with its change vs the week before.
+  $: weeklyWithDelta = [...weekly]
+    .map((w, i) => ({
+      ...w,
+      delta: i > 0 ? Math.round((w.avgKg - weekly[i - 1].avgKg) * 10) / 10 : null
+    }))
+    .reverse();
+
+  $: latestWeek = weekly.length ? weekly[weekly.length - 1] : null;
+  $: weekDelta =
+    weekly.length > 1
+      ? Math.round((weekly[weekly.length - 1].avgKg - weekly[weekly.length - 2].avgKg) * 10) / 10
+      : null;
+  $: totalDelta =
+    weekly.length > 1
+      ? Math.round((weekly[weekly.length - 1].avgKg - weekly[0].avgKg) * 10) / 10
+      : null;
+
+  const fmtDelta = (d: number | null): string => (d === null ? '—' : (d > 0 ? '+' : '') + d.toFixed(1));
 
   let openId: number | null = null;
   let openDetail: SessionDetail | null = null;
   let loadingDetail = false;
+
+  // One-line stats for the currently expanded history row.
+  $: openStats = openDetail
+    ? {
+        exercises: new Set(openDetail.sets.map((x) => x.exercise)).size,
+        sets: openDetail.sets.length,
+        cardio: openDetail.cardio?.length ?? 0
+      }
+    : null;
 
   async function toggleSession(id: number) {
     if (openId === id) {
@@ -660,6 +738,7 @@
 
   async function bootSignedIn() {
     await refreshLists();
+    active = pickDay();
     await loadProfile();
     await loadDayData();
   }
@@ -732,21 +811,6 @@
       >
         <span class="chip-day">{row.day}</span>
         <span class="chip-focus">{row.focus}</span>
-      </button>
-    {/each}
-  </div>
-
-  <!-- Focus tabs -->
-  <div class="tabs" role="tablist">
-    {#each FOCUSES as f}
-      <button
-        class="tab"
-        class:active={f === active}
-        role="tab"
-        aria-selected={f === active}
-        on:click={() => selectDay(f)}
-      >
-        {f}
       </button>
     {/each}
   </div>
@@ -1063,21 +1127,58 @@
   {#if signedIn}
     <!-- Bodyweight trend -->
     <details class="fold">
-      <summary>Bodyweight trend</summary>
+      <summary>
+        <span class="fold-title">Bodyweight trend</span>
+        {#if latestWeek}<span class="fold-meta">{latestWeek.avgKg} kg avg</span>{/if}
+      </summary>
       <div class="fold-body">
         {#if weekly.length}
-          {#if sparkPoints}
-            <svg class="spark" viewBox="0 0 320 64" preserveAspectRatio="none">
-              <polyline points={sparkPoints} />
-            </svg>
+          <div class="trend-stats">
+            <div class="trend-stat">
+              <span class="ts-val">{latestWeek?.avgKg}<small> kg</small></span>
+              <span class="ts-label">latest weekly avg</span>
+            </div>
+            <div class="trend-stat" class:down={(weekDelta ?? 0) < 0} class:up={(weekDelta ?? 0) > 0}>
+              <span class="ts-val">{fmtDelta(weekDelta)}<small> kg</small></span>
+              <span class="ts-label">vs last week</span>
+            </div>
+            <div class="trend-stat" class:down={(totalDelta ?? 0) < 0} class:up={(totalDelta ?? 0) > 0}>
+              <span class="ts-val">{fmtDelta(totalDelta)}<small> kg</small></span>
+              <span class="ts-label">since start</span>
+            </div>
+          </div>
+
+          {#if sparkGeo}
+            <div class="spark-wrap">
+              <svg class="spark" viewBox="0 0 320 96" preserveAspectRatio="none" aria-hidden="true">
+                <defs>
+                  <linearGradient id="bw-grad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" style="stop-color: var(--blueprint, #6ea8fe); stop-opacity: 0.25" />
+                    <stop offset="1" style="stop-color: var(--blueprint, #6ea8fe); stop-opacity: 0" />
+                  </linearGradient>
+                </defs>
+                <polygon points={sparkGeo.area} fill="url(#bw-grad)" />
+                <polyline points={sparkGeo.line} />
+              </svg>
+              <span
+                class="spark-dot"
+                style="left: {(sparkGeo.last.x / SPARK_W) * 100}%; top: {(sparkGeo.last.y / SPARK_H) * 100}%"
+              ></span>
+              <span class="spark-tag max">{sparkGeo.max} kg</span>
+              <span class="spark-tag min">{sparkGeo.min} kg</span>
+            </div>
           {/if}
-          <p class="hint">Weekly averages (track this, ignore daily swings):</p>
+
+          <p class="hint">Weekly averages — track this, ignore daily swings.</p>
           <div class="weekly-list">
-            {#each [...weekly].reverse() as w}
+            {#each weeklyWithDelta as w}
               <div class="weekly-row">
                 <span class="weekly-week">week of {w.weekStart}</span>
-                <span class="weekly-avg">{w.avgKg} kg</span>
                 <span class="weekly-count">{w.count} {w.count === 1 ? 'entry' : 'entries'}</span>
+                <span class="weekly-delta" class:down={(w.delta ?? 0) < 0} class:up={(w.delta ?? 0) > 0}>
+                  {#if w.delta === null}—{:else}{w.delta < 0 ? '▼' : '▲'} {Math.abs(w.delta).toFixed(1)}{/if}
+                </span>
+                <span class="weekly-avg">{w.avgKg} kg</span>
               </div>
             {/each}
           </div>
@@ -1089,58 +1190,81 @@
 
     <!-- History -->
     <details class="fold">
-      <summary>History</summary>
+      <summary>
+        <span class="fold-title">History</span>
+        {#if sessions.length}
+          <span class="fold-meta">{sessions.length} {sessions.length === 1 ? 'session' : 'sessions'}</span>
+        {/if}
+      </summary>
       <div class="fold-body">
         {#if sessions.length === 0}
           <p class="hint">No sessions logged yet.</p>
         {:else}
           <div class="history-list">
-            {#each sessions as s}
-              <div class="history-item">
-                <button class="history-head" on:click={() => toggleSession(s.id)}>
-                  <span class="hist-date">{s.date}</span>
-                  {#if s.day_label}<span class="hist-day">{s.day_label}</span>{/if}
-                  {#if bwByDate.get(s.date) !== undefined}
-                    <span class="hist-bw">{gramsToKg(bwByDate.get(s.date) ?? 0)} kg</span>
-                  {/if}
-                </button>
-                <button class="icon-btn" on:click={() => deleteSession(s.id)} title="Delete session + bodyweight">
-                  <Trash2 size={15} />
-                </button>
-                {#if openId === s.id}
-                  <div class="history-detail">
-                    {#if loadingDetail}
-                      <div class="hint"><LoadingState label="Loading session" /></div>
-                    {:else if openDetail}
-                      {#each groupSets(openDetail) as g}
-                        <div class="detail-ex">
-                          <span class="detail-ex-name">
-                            {g.exercise}
-                            {#if g.equipment}<span class="detail-ex-equip">{g.equipment}</span>{/if}
-                          </span>
-                          <div class="detail-sets">
-                            {#each g.sets as st}
-                              <span class="set-badge">{setLabel(st.reps, st.weight_g, g.exercise)}</span>
-                            {/each}
-                          </div>
-                        </div>
-                      {/each}
-                      {#if openDetail.cardio && openDetail.cardio.length}
-                        <div class="detail-ex">
-                          <span class="detail-ex-name">🚴 Cardio</span>
-                          <div class="detail-sets">
-                            {#each openDetail.cardio as c}
-                              <span class="set-badge">
-                                {c.kind}{c.minutes > 0 ? ` · ${c.minutes} min` : ''} · {c.kcal} kcal
-                              </span>
-                            {/each}
-                          </div>
-                        </div>
-                      {/if}
+            {#each historyGroups as grp}
+              <div class="history-month">{grp.label}</div>
+              {#each grp.rows as s (s.id)}
+                <div class="history-item" class:open={openId === s.id} class:today={s.date === today()}>
+                  <button
+                    class="history-head"
+                    on:click={() => toggleSession(s.id)}
+                    aria-expanded={openId === s.id}
+                  >
+                    <span class="hist-date">
+                      <span class="hist-dom">{s.dom}</span>
+                      <span class="hist-sub">{s.wd} {s.mon}</span>
+                    </span>
+                    {#if s.day_label}<span class="hist-day">{s.day_label}</span>{/if}
+                    {#if s.bw !== undefined}
+                      <span class="hist-bw">{gramsToKg(s.bw)}<small> kg</small></span>
                     {/if}
-                  </div>
-                {/if}
-              </div>
+                    <span class="hist-chevron" aria-hidden="true">{openId === s.id ? '−' : '+'}</span>
+                  </button>
+                  <button class="icon-btn" on:click={() => deleteSession(s.id)} title="Delete session + bodyweight">
+                    <Trash2 size={15} />
+                  </button>
+                  {#if openId === s.id}
+                    <div class="history-detail">
+                      {#if loadingDetail}
+                        <div class="hint"><LoadingState label="Loading session" /></div>
+                      {:else if openDetail}
+                        {#if openStats}
+                          <div class="detail-stats">
+                            {openStats.exercises} {openStats.exercises === 1 ? 'exercise' : 'exercises'} ·
+                            {openStats.sets} {openStats.sets === 1 ? 'set' : 'sets'}
+                            {#if openStats.cardio}&nbsp;· {openStats.cardio} cardio{/if}
+                          </div>
+                        {/if}
+                        {#each groupSets(openDetail) as g}
+                          <div class="detail-ex">
+                            <span class="detail-ex-name">
+                              {g.exercise}
+                              {#if g.equipment}<span class="detail-ex-equip">{g.equipment}</span>{/if}
+                            </span>
+                            <div class="detail-sets">
+                              {#each g.sets as st}
+                                <span class="set-badge">{setLabel(st.reps, st.weight_g, g.exercise)}</span>
+                              {/each}
+                            </div>
+                          </div>
+                        {/each}
+                        {#if openDetail.cardio && openDetail.cardio.length}
+                          <div class="detail-ex">
+                            <span class="detail-ex-name">🚴 Cardio</span>
+                            <div class="detail-sets">
+                              {#each openDetail.cardio as c}
+                                <span class="set-badge">
+                                  {c.kind}{c.minutes > 0 ? ` · ${c.minutes} min` : ''} · {c.kcal} kcal
+                                </span>
+                              {/each}
+                            </div>
+                          </div>
+                        {/if}
+                      {/if}
+                    </div>
+                  {/if}
+                </div>
+              {/each}
             {/each}
           </div>
         {/if}
@@ -1274,33 +1398,6 @@
   }
   .chip-focus { font-size: 0.85rem; font-weight: 600; color: var(--text-primary); }
   .day-chip.active .chip-focus { color: var(--blueprint); }
-
-  /* ── Tabs ───────────────────────────────────────────────── */
-  .tabs {
-    display: flex;
-    gap: 0.25rem;
-    padding: 0.25rem;
-    background: var(--blueprint-tint);
-    border: 1px solid var(--border);
-    border-radius: 0.5rem;
-  }
-  .tab {
-    flex: 1;
-    padding: 0.55rem;
-    background: transparent;
-    border: none;
-    border-radius: 0.375rem;
-    font-family: var(--font-mono);
-    font-size: 0.8rem;
-    font-weight: 600;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--text-secondary);
-    cursor: var(--cursor-pointer);
-    transition: color 0.15s, background 0.15s;
-  }
-  .tab:hover { color: var(--text-primary); }
-  .tab.active { color: var(--bg, #111); background: var(--blueprint); }
 
   /* ── Sign-in ────────────────────────────────────────────── */
   .signin-card {
@@ -1656,6 +1753,9 @@
   /* ── Folds (notes / history / trend) ────────────────────── */
   .fold { border: 1px solid var(--border); border-radius: 0.625rem; }
   .fold summary {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
     padding: 0.85rem 1rem;
     font-family: var(--font-mono);
     font-size: 0.78rem;
@@ -1667,71 +1767,189 @@
     list-style: none;
   }
   .fold summary::-webkit-details-marker { display: none; }
-  .fold summary::before { content: '+ '; color: var(--text-tertiary); }
-  .fold[open] summary::before { content: '– '; }
+  .fold-title { flex: none; }
+  .fold-meta {
+    margin-left: auto;
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    text-transform: none;
+    color: var(--text-tertiary);
+  }
+  .fold summary::after { content: '+'; color: var(--text-tertiary); font-weight: 400; }
+  .fold[open] summary::after { content: '–'; }
   .fold[open] summary { color: var(--text-primary); border-bottom: 1px solid var(--border-subtle); }
 
   .fold-body { padding: 1.25rem 1rem; }
 
-  .spark { width: 100%; height: 64px; }
-  .spark polyline { fill: none; stroke: var(--blueprint, #6ea8fe); stroke-width: 2; vector-effect: non-scaling-stroke; }
+  /* ── Bodyweight trend ───────────────────────────────────── */
+  .trend-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+  .trend-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.15rem;
+    padding: 0.75rem 0.4rem;
+    border: 1px solid var(--border-subtle);
+    border-radius: 0.5rem;
+  }
+  .ts-val { font-family: var(--font-mono); font-size: 1.15rem; font-weight: 700; color: var(--text-primary); }
+  .ts-val small { font-size: 0.68rem; font-weight: 500; color: var(--text-tertiary); }
+  .ts-label { font-size: 0.64rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-tertiary); }
+  .trend-stat.down .ts-val { color: var(--blueprint, #6ea8fe); }
+  .trend-stat.up .ts-val { color: #e67e22; }
+
+  .spark-wrap { position: relative; margin: 0 0 1rem; }
+  .spark { display: block; width: 100%; height: 96px; }
+  .spark polyline {
+    fill: none;
+    stroke: var(--blueprint, #6ea8fe);
+    stroke-width: 2;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+    vector-effect: non-scaling-stroke;
+  }
+  .spark-dot {
+    position: absolute;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--blueprint, #6ea8fe);
+    box-shadow: 0 0 0 3px var(--bg, #111);
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+  .spark-tag {
+    position: absolute;
+    right: 0;
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    color: var(--text-tertiary);
+    background: var(--bg, #111);
+    padding: 0.05rem 0.3rem;
+    border-radius: 0.25rem;
+  }
+  .spark-tag.max { top: -0.3rem; }
+  .spark-tag.min { bottom: -0.3rem; }
 
   .hint { font-size: 0.8125rem; color: var(--text-tertiary); margin: 0 0 0.75rem; }
 
   .weekly-list { display: flex; flex-direction: column; }
   .weekly-row {
     display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 0.5rem 0;
+    align-items: baseline;
+    gap: 0.85rem;
+    padding: 0.45rem 0;
     border-bottom: 1px solid var(--border-subtle);
     font-size: 0.875rem;
   }
   .weekly-row:last-child { border-bottom: none; }
   .weekly-week { color: var(--text-secondary); flex: 1; }
-  .weekly-avg { font-family: var(--font-mono); font-weight: 600; color: var(--text-primary); }
-  .weekly-count { color: var(--text-faint); font-size: 0.75rem; }
+  .weekly-count { color: var(--text-faint); font-size: 0.72rem; }
+  .weekly-delta {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--text-tertiary);
+    min-width: 3rem;
+    text-align: right;
+  }
+  .weekly-delta.down { color: var(--blueprint, #6ea8fe); }
+  .weekly-delta.up { color: #e67e22; }
+  .weekly-avg {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    color: var(--text-primary);
+    min-width: 4.25rem;
+    text-align: right;
+  }
 
-  .history-list { display: flex; flex-direction: column; gap: 0.5rem; }
+  .history-list { display: flex; flex-direction: column; gap: 0.4rem; }
+  .history-month {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+    padding: 0.85rem 0.25rem 0.3rem;
+    margin-top: 0.4rem;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .history-month:first-child { margin-top: 0; padding-top: 0; }
   .history-item {
     display: grid;
     grid-template-columns: 1fr auto;
     gap: 0.5rem 0.75rem;
     align-items: center;
-    padding: 0.75rem;
+    padding: 0.6rem 0.75rem;
     border: 1px solid var(--border-subtle);
     border-radius: 0.5rem;
+    transition: border-color 0.15s, background 0.15s;
   }
+  .history-item:hover { border-color: var(--border-strong); }
+  .history-item.open { border-color: var(--blueprint); background: var(--blueprint-tint); }
   .history-head {
     display: flex;
-    align-items: baseline;
-    gap: 0.75rem;
-    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.85rem;
+    min-width: 0;
     background: transparent;
     border: none;
     cursor: var(--cursor-pointer);
     text-align: left;
     padding: 0;
   }
-  .hist-date { font-family: var(--font-mono); font-size: 0.875rem; color: var(--text-primary); }
+  .hist-date {
+    display: flex;
+    align-items: baseline;
+    gap: 0.35rem;
+    flex: none;
+    font-family: var(--font-mono);
+  }
+  .hist-dom { font-size: 1.05rem; font-weight: 700; color: var(--text-primary); min-width: 1.1rem; }
+  .hist-sub { font-size: 0.68rem; color: var(--text-tertiary); }
+  .history-item.today .hist-dom { color: var(--blueprint, #6ea8fe); }
   .hist-day {
-    font-size: 0.7rem;
+    flex: none;
+    font-size: 0.68rem;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.06em;
     color: var(--blueprint, #6ea8fe);
   }
   .hist-bw {
+    margin-left: auto;
     font-family: var(--font-mono);
-    font-size: 0.75rem;
+    font-size: 0.78rem;
     color: var(--text-tertiary);
+    white-space: nowrap;
   }
+  .hist-bw small { font-size: 0.66rem; }
+  .hist-chevron {
+    flex: none;
+    width: 1.1rem;
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 1rem;
+    color: var(--text-faint);
+  }
+  .history-item.open .hist-chevron { color: var(--blueprint, #6ea8fe); }
   .history-detail {
     grid-column: 1 / -1;
     display: flex;
     flex-direction: column;
     gap: 0.625rem;
-    padding-top: 0.5rem;
+    padding-top: 0.6rem;
     border-top: 1px solid var(--border-subtle);
+  }
+  .detail-stats {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.02em;
+    color: var(--text-tertiary);
   }
   .detail-ex { display: flex; flex-direction: column; gap: 0.375rem; }
   .detail-ex-name { font-size: 0.875rem; color: var(--text-secondary); }

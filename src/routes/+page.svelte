@@ -113,6 +113,7 @@
   .intro-label {
     margin: 0 0 24px;
     color: var(--ink-3);
+    font-family: var(--font-label);
     font-size: 13px;
     font-weight: 500;
   }
@@ -217,6 +218,10 @@
   .index-arrow {
     color: var(--ink-3);
     font-size: 13px;
+  }
+
+  .index-n {
+    font-family: var(--font-label);
   }
 
   .index-name {

@@ -39,6 +39,7 @@
 				language,
 				theme,
 				automaticLayout: true,
+				fontFamily: '"JetBrains Mono Variable", "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace',
 				fontSize: 14,
 				lineNumbers: 'on',
 				minimap: { enabled: true },

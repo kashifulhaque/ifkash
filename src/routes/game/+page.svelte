@@ -330,7 +330,7 @@
 
   .noscript {
     padding: 40px;
-    font-family: monospace;
+    font-family: var(--font-mono);
     color: #111;
   }
 </style>

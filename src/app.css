@@ -8,9 +8,12 @@
 @font-face {
   font-family: "Drawably Pen";
   src: url("/fonts/DrawablyPen.ttf") format("truetype");
-  font-weight: 400;
+  /* single-weight pen font registered across the whole range, so a bold
+     request (legacy 600/700 rules) resolves to the real pen glyphs instead
+     of the browser smearing them into synthetic bold */
+  font-weight: 100 900;
   font-style: normal;
-  font-display: swap;
+  font-display: block;
 }
 
 /* ────────────────────────────────────────────────────────────────
@@ -66,7 +69,8 @@
 
   --font-serif: "Drawably Pen", "Inter Variable", Inter, ui-sans-serif, system-ui, sans-serif;
   --font-sans: "Inter Variable", Inter, ui-sans-serif, system-ui, sans-serif;
-  --font-label: "Inter Variable", Inter, ui-sans-serif, system-ui, sans-serif;
+  /* drawably badges/labels are set in mono — labels read as sketch-note tags */
+  --font-label: "JetBrains Mono Variable", "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
   --font-mono: "JetBrains Mono Variable", "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
 
   --page-x: 0px;
@@ -118,7 +122,7 @@
   --line-soft: var(--input);
   --dots: rgb(165 163 255 / 6%);
 
-  --font-dots: var(--font-sans);
+  --font-dots: var(--font-serif);
   --font-sans-g: var(--font-sans);
   --font-mono-g: var(--font-mono);
   --cell: 22px;
@@ -778,7 +782,7 @@ pre code {
 .label,
 .eyebrow {
   color: var(--ink-2);
-  font-family: var(--font-sans);
+  font-family: var(--font-label);
   font-size: 13px;
   font-weight: 500;
   line-height: 1.5;
@@ -795,7 +799,7 @@ pre code {
 
 .fig-label {
   color: var(--ink-2);
-  font-family: var(--font-sans);
+  font-family: var(--font-label);
   font-size: 13px;
   font-weight: 500;
   letter-spacing: 0;

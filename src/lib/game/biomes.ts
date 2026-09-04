@@ -1,7 +1,16 @@
 import * as THREE from 'three';
 import { deriveSeed, fbm3, seededRng } from './noise';
 
-export type BiomeId = 'forest' | 'farm' | 'shore' | 'ember' | 'arctic' | 'ocean';
+export type BiomeId =
+  | 'forest'
+  | 'farm'
+  | 'shore'
+  | 'ember'
+  | 'arctic'
+  | 'desert'
+  | 'marsh'
+  | 'grove'
+  | 'ocean';
 
 export type Biome = {
   id: BiomeId;
@@ -74,6 +83,36 @@ export const BIOMES: Biome[] = [
     center: dir(0.05, 1, -0.05),
     ground: [0xe8f0f2, 0xf4f8f9, 0xd6e4e8],
     beach: 0xcfe3e8
+  },
+  {
+    id: 'desert',
+    name: 'Dune Reach',
+    kind: 'DESERT',
+    index: '06',
+    tagline: 'Follow the ridge and the ridge will follow you.',
+    center: dir(-0.9, -0.1, 0.4),
+    ground: [0xc9793f, 0xd88b4c, 0xb26834],
+    beach: 0xe8bf7e
+  },
+  {
+    id: 'marsh',
+    name: 'Willowmere',
+    kind: 'WETLAND',
+    index: '07',
+    tagline: 'Slow water keeps the best company.',
+    center: dir(0.3, -0.85, 0.42),
+    ground: [0x5d9c7a, 0x6cad89, 0x4f8a6b],
+    beach: 0x7f9a63
+  },
+  {
+    id: 'grove',
+    name: 'Amberfall',
+    kind: 'GROVE',
+    index: '08',
+    tagline: 'Every leaf lets go exactly when it is ready.',
+    center: dir(-0.4, 0.35, -0.85),
+    ground: [0x9c7c3c, 0xb08e49, 0x876a33],
+    beach: 0xd9be80
   }
 ];
 
@@ -99,10 +138,10 @@ function randomDir(rng: () => number, out: THREE.Vector3): THREE.Vector3 {
 }
 
 /**
- * Move the five land biome centres to seed-derived directions, in place, so
+ * Move the eight land biome centres to seed-derived directions, in place, so
  * every module that reads `BIOMES[i].center` (wonders, landmarks, critters,
  * the aurora) follows. Centres are chosen by best-candidate sampling and then
- * pushed apart, which keeps them at least about 70 degrees from each other so
+ * pushed apart, which keeps them at least about 55 degrees from each other so
  * landmark clusters never overlap. Call before generating anything.
  */
 export function layoutBiomes(seed: number): void {
@@ -111,7 +150,7 @@ export function layoutBiomes(seed: number): void {
   const cand = new THREE.Vector3();
   for (let i = 0; i < centers.length; i++) {
     let bestScore = -1;
-    const tries = i === 0 ? 1 : 48;
+    const tries = i === 0 ? 1 : 64;
     for (let k = 0; k < tries; k++) {
       randomDir(rng, cand);
       let score = 0;
@@ -174,10 +213,14 @@ export function nearestCenterAngle(d: THREE.Vector3): number {
  */
 export function oceanField(d: THREE.Vector3): number {
   const n = fbm3(d.x * 1.7 + 11, d.y * 1.7 - 2, d.z * 1.7 + 7, 4);
-  const keep = THREE.MathUtils.smoothstep(nearestCenterAngle(d), 0.42, 0.7); // 0 near centres
+  const keep = THREE.MathUtils.smoothstep(nearestCenterAngle(d), 0.34, 0.78); // 0 near centres
   // Southern belt bias: below the equator the sea wins more often.
   const south = THREE.MathUtils.smoothstep(-d.y, 0.1, 0.9) * 0.35;
-  return n + 0.22 - (keep * 0.55 + south * keep);
+  // Near a centre the noise is damped and a strong land bias added, so the
+  // heart of a biome is dry whatever the seed — landmarks and wonders are
+  // placed relative to it and cannot be allowed to fall in the sea. Far from
+  // every centre the bias reverses and the noise carves the coastlines.
+  return n * (0.35 + 0.65 * keep) + 0.6 * (1 - keep) - keep * (0.22 + south);
 }
 
 export function isOcean(d: THREE.Vector3): boolean {

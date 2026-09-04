@@ -16,7 +16,7 @@ deployables in one repo:**
 
 Beyond the résumé editor the README centers on, the app has several
 Google-authenticated mini-apps: `/fitness` (workout and cardio tracker), `/tools/splitter`
-(expense splitter), and `/game` (a browser FPS with a leaderboard).
+(expense splitter), and `/game` (a cozy low-poly tiny-planet explorer whose seven "small wonders" open portfolio sections; built on Three.js in `src/lib/game`).
 
 ## Toolchain & commands
 

@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { PLANET_RADIUS, isOcean, tangentBasis, walkRadius } from './planet';
+import type { AnimalData, Gait } from './character';
 import type { ColliderGrid } from './collision';
 
 /** Footprint radius of a critter, in surface units. */
@@ -37,6 +38,11 @@ export class Critter {
   private happy = 0;
   private lift = 0;
   private legs: THREE.Object3D[] = [];
+  /** How this animal carries itself, and how far one cycle of it covers. */
+  private gait: Gait = 'walk';
+  private cycle = 0.6;
+  /** Everything above the ground: rocked, bounced, and pitched by the gait. */
+  private pivot: THREE.Object3D;
 
   constructor(
     model: THREE.Group,
@@ -57,10 +63,13 @@ export class Critter {
     tangentBasis(this.dir, seed * 2.1, _right, _fwd);
     this.heading.copy(_fwd);
     this.wait = seed % 3;
-    // Legs are the short boxes near the ground; wiggle them while walking.
-    model.traverse((o) => {
-      if (o instanceof THREE.Mesh && o.position.y < 0.2 && o.position.y > 0) this.legs.push(o);
-    });
+    // Builders in `character.ts` hand over their gait, their stride, the leg
+    // pivots, and the group everything above the ground hangs from.
+    const data = model.userData as Partial<AnimalData>;
+    this.gait = data.gait ?? 'walk';
+    this.cycle = data.cycle ?? 0.6;
+    this.legs = data.legs ?? [];
+    this.pivot = data.pivot ?? model;
     this.place();
   }
 
@@ -90,6 +99,7 @@ export class Critter {
       // Settle back onto four feet before wandering off again.
       this.lift = 0;
       this.group.scale.set(1, 1, 1);
+      this.pivot.rotation.set(0, 0, 0);
       this.place();
     }
     if (this.wait > 0) {
@@ -138,15 +148,47 @@ export class Critter {
       this.stuck = 0;
     }
     this.heading.addScaledVector(this.dir, -this.heading.dot(this.dir)).normalize();
-    this.phase += dt * 9;
-    this.legs.forEach((l, i) => {
-      l.rotation.x = Math.sin(this.phase + (i % 2) * Math.PI) * 0.5;
-    });
+    // Distance, not time: one cycle of the gait covers `cycle` surface units,
+    // so feet stay planted and hops land where they push off from.
+    this.phase += ((this.speed * dt) / this.cycle) * Math.PI * 2;
+    this.animate();
     this.place();
+  }
+
+  /** Move the parts that the gait moves. Everything else is placement. */
+  private animate(): void {
+    const p = this.phase;
+    switch (this.gait) {
+      case 'hop': {
+        // A hop per cycle: a rounded arc up, a pitch forward over the top.
+        const arc = Math.max(0, Math.sin(p));
+        this.pivot.position.y = arc * 0.34;
+        this.pivot.rotation.x = -Math.cos(p) * 0.3 * arc;
+        break;
+      }
+      case 'waddle':
+        this.pivot.rotation.z = Math.sin(p) * 0.24;
+        this.pivot.position.y = Math.abs(Math.sin(p)) * 0.04;
+        break;
+      case 'scuttle':
+        this.pivot.rotation.z = Math.sin(p * 2) * 0.1;
+        this.pivot.position.y = Math.abs(Math.sin(p * 2)) * 0.03;
+        break;
+      default:
+        // One pivot per diagonal pair, half a cycle apart, the way a quadruped
+        // actually walks.
+        this.legs.forEach((l, i) => {
+          l.rotation.x = Math.sin(p + (i % 2) * Math.PI) * 0.55;
+        });
+        this.pivot.position.y = Math.abs(Math.sin(p)) * 0.03;
+        break;
+    }
   }
 
   private idle(time: number): void {
     this.legs.forEach((l) => (l.rotation.x = 0));
+    this.pivot.position.y = 0;
+    this.pivot.rotation.set(0, 0, 0);
     this.group.scale.y = 1 + Math.sin(time * 2 + this.phase) * 0.015;
   }
 
@@ -156,6 +198,8 @@ export class Critter {
     const bounce = Math.abs(Math.sin(time * 6.5));
     this.lift = bounce * 0.32;
     this.group.scale.set(1 + (1 - bounce) * 0.07, 1 - (1 - bounce) * 0.09, 1 + (1 - bounce) * 0.07);
+    this.pivot.position.y = 0;
+    this.pivot.rotation.set(0, 0, Math.sin(time * 6.5) * 0.1);
     this.legs.forEach((l, i) => {
       l.rotation.x = Math.sin(this.phase + (i % 2) * Math.PI) * 0.3;
     });

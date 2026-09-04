@@ -6,18 +6,58 @@ export const PLANET_RADIUS = 42;
 /** Radius of the translucent water sphere. */
 export const SEA_LEVEL = PLANET_RADIUS + 0.4;
 
-/** Distance from the planet centre to the ground along unit direction `d`. */
+/**
+ * Distance from the planet centre to the ground along unit direction `d`.
+ *
+ * Land is three layers of noise on top of each other: a broad swell that makes
+ * the difference between a valley and a plateau, a ridged term gated by a
+ * "ruggedness" field so some regions crumple into hills while others stay open,
+ * and a fine roll for texture. Every layer's amplitude is kept in proportion to
+ * its wavelength, because the props stand on this ground and a slope steep
+ * enough to leave them hanging in the air is worse than a flat world.
+ */
 export function surfaceRadius(d: THREE.Vector3): number {
   const f = oceanField(d);
-  const relief = fbm3(d.x * 6 + 3, d.y * 6, d.z * 6 - 1, 3) * 0.45;
   if (f < 0) {
     // Seabed: falls away from the coast so the water reads as deeper offshore.
     const depth = Math.min(1, -f * 4);
+    const relief = fbm3(d.x * 6 + 3, d.y * 6, d.z * 6 - 1, 3) * 0.45;
     return PLANET_RADIUS - 0.25 - depth * 1.6 + relief * 0.3;
   }
-  // Land: a short cliff at the waterline, then gentle rolling ground.
+  // A short cliff at the waterline, then the relief eases in over the shore so
+  // the beaches stay walkable and the coastline keeps its shape.
   const rise = Math.min(1, f * 5);
-  return PLANET_RADIUS + 0.7 + rise * 0.5 + relief * rise;
+  const swell = fbm3(d.x * 1.9 - 7, d.y * 1.9 + 4, d.z * 1.9 + 9, 3) * 2.2;
+  const roll = fbm3(d.x * 6 + 3, d.y * 6, d.z * 6 - 1, 3) * 0.55;
+  const rugged = Math.max(0, fbm3(d.x * 1.4 + 21, d.y * 1.4 - 8, d.z * 1.4 + 3, 2));
+  // A ridged fBm: folding the noise about zero turns its valleys into creases.
+  const crease = 1 - Math.abs(fbm3(d.x * 3.2 - 12, d.y * 3.2 + 6, d.z * 3.2 - 2, 4));
+  const h = 0.5 + swell + roll + rugged * crease * crease * 2.8;
+  // Dips are squashed and floored. Land is decided by `oceanField`, not by
+  // height, so a valley deep enough to fall under `SEA_LEVEL` would leave dry
+  // ground — and any prop or wonder standing on it — hidden under the water
+  // sphere. The floor keeps every land point just clear of the waterline.
+  const shaped = h >= 0 ? h : Math.max(-0.25, h * 0.15);
+  return PLANET_RADIUS + 0.7 + rise * shaped;
+}
+
+const _na = new THREE.Vector3();
+const _nb = new THREE.Vector3();
+const _nr = new THREE.Vector3();
+const _nf = new THREE.Vector3();
+
+/**
+ * Unit normal of the terrain at `d`, found by sampling the height a step east
+ * and a step north. Props stand along this rather than along the radius, so a
+ * tree on a hillside leans with the hill instead of hovering over it.
+ */
+export function surfaceNormal(d: THREE.Vector3, out = new THREE.Vector3()): THREE.Vector3 {
+  tangentBasis(d, 0, _nr, _nf);
+  const step = 0.6;
+  const h = surfaceRadius(d);
+  const east = (surfaceRadius(offsetDir(_na.copy(d), step, 0)) - h) / step;
+  const north = (surfaceRadius(offsetDir(_nb.copy(d), 0, step)) - h) / step;
+  return out.copy(d).addScaledVector(_nr, -east).addScaledVector(_nf, -north).normalize();
 }
 
 /** Radius a walker stands at: ground on land, the water surface at sea. */
@@ -30,6 +70,7 @@ export function surfacePoint(d: THREE.Vector3, out = new THREE.Vector3()): THREE
 }
 
 const _ref = new THREE.Vector3();
+const _up = new THREE.Vector3();
 const _right = new THREE.Vector3();
 const _fwd = new THREE.Vector3();
 const _q = new THREE.Quaternion();
@@ -60,8 +101,9 @@ export function tangentBasis(up: THREE.Vector3, yaw: number, right: THREE.Vector
  * Local +Y is the surface normal and local +Z faces `yaw` radians from north.
  */
 export function surfaceFrame(d: THREE.Vector3, yaw: number, out: THREE.Matrix4, lift = 0): THREE.Matrix4 {
-  tangentBasis(d, yaw, _right, _fwd);
-  out.makeBasis(_right, d, _fwd);
+  const up = surfaceNormal(d, _up);
+  tangentBasis(up, yaw, _right, _fwd);
+  out.makeBasis(_right, up, _fwd);
   const r = surfaceRadius(d) + lift;
   out.setPosition(d.x * r, d.y * r, d.z * r);
   return out;
@@ -140,18 +182,131 @@ export function buildGround(): THREE.Mesh {
   return mesh;
 }
 
+/** Water depth, in world units, at which the sea reads as fully deep. */
+const SHALLOW = 2.6;
+
+/**
+ * The sea. A plain sphere, but the shader on it does three things a flat
+ * translucent ball cannot: it rolls a low swell through the surface, it darkens
+ * with depth, and it breaks into foam where the seabed comes up to meet it.
+ *
+ * Depth is baked into a `aShore` attribute at build time rather than sampled in
+ * the shader, because the seabed lives in noise the GPU has no access to. The
+ * Game drives `uTime` through `mesh.userData.uniforms`.
+ */
 export function buildWater(): THREE.Mesh {
-  const geo = new THREE.SphereGeometry(SEA_LEVEL, 72, 48);
+  const geo = new THREE.SphereGeometry(SEA_LEVEL, 96, 64);
+  const pos = geo.attributes.position as THREE.BufferAttribute;
+  const shore = new Float32Array(pos.count);
+  const d = new THREE.Vector3();
+  for (let i = 0; i < pos.count; i++) {
+    d.fromBufferAttribute(pos, i).normalize();
+    const depth = SEA_LEVEL - surfaceRadius(d);
+    shore[i] = 1 - THREE.MathUtils.clamp(depth / SHALLOW, 0, 1);
+  }
+  geo.setAttribute('aShore', new THREE.BufferAttribute(shore, 1));
+
+  const uniforms = {
+    uTime: { value: 0 },
+    uDeep: { value: new THREE.Color(0x1b5c80) },
+    uFoam: { value: new THREE.Color(0xdff2fb) }
+  };
   const mat = new THREE.MeshStandardMaterial({
     color: 0x3fb3d3,
     transparent: true,
-    opacity: 0.8,
-    roughness: 0.3,
+    opacity: 0.86,
+    roughness: 0.22,
     metalness: 0.05
   });
+  mat.onBeforeCompile = (shader) => {
+    Object.assign(shader.uniforms, uniforms);
+    shader.vertexShader =
+      `uniform float uTime;
+attribute float aShore;
+varying float vShore;
+varying vec3 vWave;
+` +
+      shader.vertexShader.replace(
+        '#include <begin_vertex>',
+        `#include <begin_vertex>
+  vShore = aShore;
+  vec3 sphereN = normalize(transformed);
+  // Two crossed swells, damped to nothing in the shallows so the surface does
+  // not saw through the beaches.
+  float open = 1.0 - vShore;
+  float w1 = sin(transformed.x * 0.7 + transformed.z * 0.4 + uTime * 1.1);
+  float w2 = sin(transformed.z * 0.9 - transformed.y * 0.5 + uTime * 1.7);
+  transformed += sphereN * (w1 * 0.06 + w2 * 0.04) * open;
+  // The slope of those swells, handed to the fragment stage as a fake normal.
+  vWave = vec3(cos(transformed.x * 0.7 + uTime * 1.1), 0.0, cos(transformed.z * 0.9 + uTime * 1.7)) * 0.12 * open;`
+      );
+    shader.fragmentShader =
+      `uniform float uTime;
+uniform vec3 uDeep;
+uniform vec3 uFoam;
+varying float vShore;
+varying vec3 vWave;
+` +
+      shader.fragmentShader
+        .replace(
+          '#include <color_fragment>',
+          `#include <color_fragment>
+  // Open water is darker and colder than the shallows.
+  diffuseColor.rgb = mix(uDeep, diffuseColor.rgb, 0.45 + 0.55 * vShore);
+  // Foam: a band that follows the waterline, banded so it reads as surf rather
+  // than a flat rim, and pulsed so it breathes with the swell.
+  float band = sin(vShore * 34.0 - uTime * 2.2) * 0.5 + 0.5;
+  float surf = smoothstep(0.62, 0.99, vShore) * (0.35 + 0.65 * band);
+  diffuseColor.rgb = mix(diffuseColor.rgb, uFoam, surf * 0.85);
+  diffuseColor.a = mix(diffuseColor.a, 1.0, surf);`
+        )
+        .replace(
+          '#include <normal_fragment_maps>',
+          `#include <normal_fragment_maps>
+  normal = normalize(normal + vWave);`
+        );
+  };
+  mat.customProgramCacheKey = () => 'water-fx';
   const mesh = new THREE.Mesh(geo, mat);
   mesh.receiveShadow = true;
   mesh.name = 'water';
+  mesh.userData.uniforms = uniforms;
+  return mesh;
+}
+
+/**
+ * A thin shell of air around the planet. Rendered from the inside, so only the
+ * far side shows, which puts a soft halo on the limb — the one cue that tells a
+ * ball of rock from a planet with a sky.
+ */
+export function buildAtmosphere(color: THREE.Color): THREE.Mesh {
+  const mat = new THREE.ShaderMaterial({
+    uniforms: { uColor: { value: color.clone() } },
+    side: THREE.BackSide,
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+    toneMapped: false,
+    vertexShader: `varying vec3 vN;
+varying vec3 vP;
+void main() {
+  vN = normalize(mat3(modelMatrix) * normal);
+  vP = (modelMatrix * vec4(position, 1.0)).xyz;
+  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+}`,
+    fragmentShader: `uniform vec3 uColor;
+varying vec3 vN;
+varying vec3 vP;
+void main() {
+  vec3 view = normalize(cameraPosition - vP);
+  // Strongest where the shell is edge on to the camera: the limb.
+  float rim = pow(clamp(1.0 - abs(dot(normalize(vN), view)), 0.0, 1.0), 3.0);
+  gl_FragColor = vec4(uColor * rim * 0.9, rim);
+}`
+  });
+  const mesh = new THREE.Mesh(new THREE.SphereGeometry(PLANET_RADIUS * 1.05, 64, 40), mat);
+  mesh.name = 'atmosphere';
+  mesh.renderOrder = -1;
   return mesh;
 }
 

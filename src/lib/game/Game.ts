@@ -1,15 +1,28 @@
 import * as THREE from 'three';
 import { Input } from './input';
 import { Ambience } from './audio';
-import { biomeAt, biomeById, isOcean, layoutBiomes } from './biomes';
+import { biomeAt, biomeById, isOcean, layoutBiomes, type BiomeId } from './biomes';
 import { setNoiseSeed } from './noise';
 import { dailySeedLabel, hashSeed } from './seed';
-import { PLANET_RADIUS, SEA_LEVEL, buildGround, buildStars, buildWater, tangentBasis, walkRadius, offsetDir } from './planet';
+import { PLANET_RADIUS, SEA_LEVEL, buildAtmosphere, buildGround, buildStars, buildWater, tangentBasis, walkRadius, offsetDir } from './planet';
 import { NIGHT } from './night';
 import { LightPool, emitter, type Emitter } from './lights';
 import { BOAT_SEAT, LAUNCH_RANGE, Wake, buildBoat, findLaunchPoint } from './boat';
 import { buildFlame, buildWindmillBlades, buildWorldProps } from './props';
-import { Character, buildBear, buildFox, buildSheep } from './character';
+import {
+  Character,
+  buildBear,
+  buildCrab,
+  buildDeer,
+  buildDuck,
+  buildFox,
+  buildFrog,
+  buildGoat,
+  buildPenguin,
+  buildRabbit,
+  buildSheep,
+  buildTurtle
+} from './character';
 import { Critter, Hearts } from './critters';
 import { Clouds } from './clouds';
 import { Aurora, SkyAurora } from './aurora';
@@ -42,8 +55,11 @@ export type GameCallbacks = {
   onPhoto: (photo: boolean) => void;
 };
 
-const WALK_SPEED = 5.4;
-const RUN_SPEED = 9.8;
+// Tuned against the explorer's stride: `character.ts` solves the walk cycle
+// from the ground actually covered, so these set the cadence the legs run at.
+// Much above `RUN_SPEED` and the scamper stops reading as a run.
+const WALK_SPEED = 4.6;
+const RUN_SPEED = 8.2;
 const TURN_RATE = 11;
 const GRAVITY = 24;
 const HOP_VELOCITY = 7.5;
@@ -108,13 +124,15 @@ export class Game {
   private hemi: THREE.HemisphereLight;
   private ground: THREE.Mesh;
   private water: THREE.Mesh;
+  /** Halo on the planet's limb; see `buildAtmosphere`. */
+  private atmosphere: THREE.Mesh;
   private stars: THREE.Points;
   private constellations: Constellations;
   private meteors: Meteors;
   private moon: Moon;
   private planets: Planets;
   /** Point lights lent to whichever light sources are nearest the player. */
-  private lights = new LightPool(6);
+  private lights = new LightPool(8);
   private glowMat: THREE.MeshBasicMaterial | null = null;
   private raycaster = new THREE.Raycaster();
   private callbacks: GameCallbacks;
@@ -225,12 +243,13 @@ export class Game {
 
     this.ground = buildGround();
     this.water = buildWater();
+    this.atmosphere = buildAtmosphere(NIGHT.rim);
     this.stars = buildStars(seed);
     this.constellations = new Constellations(seed);
     this.meteors = new Meteors(seed);
     this.moon = new Moon(seed);
     this.planets = new Planets(seed);
-    this.scene.add(this.ground, this.water, this.stars, this.constellations.group, this.meteors.group);
+    this.scene.add(this.ground, this.water, this.atmosphere, this.stars, this.constellations.group, this.meteors.group);
     this.scene.add(this.moon.group, this.planets.group);
 
     const props = buildWorldProps(seed);
@@ -243,7 +262,7 @@ export class Game {
     for (const e of props.lights) this.lights.add(e);
     this.colliders = new ColliderGrid(props.colliders);
     // Snow and rain land on the ground and the props through the same patch.
-    this.fx = patchSurface([this.ground.material as THREE.Material, ...(props.solid ? [props.solid.material as THREE.Material] : [])]);
+    this.fx = patchSurface([this.ground.material as THREE.Material, ...(props.solid ? [props.solid.material as THREE.Material] : [])], NIGHT.rim);
 
     // Windmill rotor.
     const hubPivot = new THREE.Group();
@@ -312,7 +331,7 @@ export class Game {
     const spawn = (
       model: THREE.Group,
       name: string,
-      biome: 'farm' | 'arctic' | 'forest' | 'shore',
+      biome: Exclude<BiomeId, 'ocean'>,
       e: number,
       n: number,
       roam: number,
@@ -330,12 +349,34 @@ export class Game {
     spawn(buildSheep(), 'sheep', 'farm', -2.5, -3.5, 3.5, 1.1, 1);
     spawn(buildSheep(), 'sheep', 'farm', -1.0, -4.5, 3.5, 1.0, 2);
     spawn(buildSheep(), 'sheep', 'farm', 1.5, -5.5, 3.0, 1.2, 3);
-    spawn(buildSheep(), 'sheep', 'farm', 6, 3, 3.0, 0.9, 4);
-    spawn(buildBear(), 'polar bear', 'arctic', -4, 5, 5, 1.3, 5);
-    spawn(buildBear(), 'polar bear', 'arctic', 5, -5, 5, 1.1, 6);
-    spawn(buildBear(), 'polar bear', 'arctic', -6, -4, 4, 1.0, 7);
-    spawn(buildFox(), 'fox', 'forest', 4, 3, 5, 2.2, 8);
-    spawn(buildFox(), 'fox', 'shore', -4, 4, 6, 2.4, 9);
+    spawn(buildGoat(), 'goat', 'farm', 6, 3, 3.0, 1.3, 4);
+    spawn(buildGoat(), 'goat', 'farm', 4.5, -2.0, 3.0, 1.2, 5);
+    spawn(buildBear(), 'polar bear', 'arctic', -4, 5, 5, 1.3, 6);
+    spawn(buildBear(), 'polar bear', 'arctic', 5, -5, 5, 1.1, 7);
+    spawn(buildPenguin(), 'penguin', 'arctic', -6, -4, 3, 0.9, 8);
+    spawn(buildPenguin(), 'penguin', 'arctic', -5.2, -3.2, 3, 0.8, 9);
+    spawn(buildPenguin(), 'penguin', 'arctic', -6.5, -2.4, 3, 1.0, 10);
+    spawn(buildFox(), 'fox', 'forest', 4, 3, 5, 2.2, 11);
+    spawn(buildFox(), 'fox', 'forest', -5, -3, 5, 2.0, 12);
+    spawn(buildRabbit(), 'rabbit', 'forest', 2, -4, 4, 2.6, 13);
+    spawn(buildRabbit(), 'rabbit', 'forest', -3, 5, 4, 2.4, 14);
+    spawn(buildDeer(), 'deer', 'forest', 7, -2, 6, 1.8, 15);
+    spawn(buildCrab(), 'crab', 'shore', -4, 4, 4, 1.4, 16);
+    spawn(buildCrab(), 'crab', 'shore', 3, 5, 4, 1.5, 17);
+    spawn(buildTurtle(), 'turtle', 'shore', -2, -4, 3, 0.7, 18);
+    spawn(buildDuck(), 'duck', 'marsh', -3, 2, 4, 1.2, 19);
+    spawn(buildDuck(), 'duck', 'marsh', -2.2, 2.8, 4, 1.1, 20);
+    spawn(buildDuck(), 'duck', 'marsh', -3.6, 3.4, 4, 1.3, 21);
+    spawn(buildFrog(), 'frog', 'marsh', 4, -3, 3, 1.6, 22);
+    spawn(buildFrog(), 'frog', 'marsh', 1.5, -5, 3, 1.5, 23);
+    spawn(buildDeer(), 'deer', 'grove', -5, 2, 6, 1.9, 24);
+    spawn(buildDeer(), 'deer', 'grove', 4, -3, 6, 1.7, 25);
+    spawn(buildRabbit(0xa08a72), 'rabbit', 'grove', 2, 4, 4, 2.5, 26);
+    spawn(buildRabbit(0xa08a72), 'rabbit', 'grove', -2.5, -4.5, 4, 2.3, 27);
+    // Fennecs: the same fox, bleached by the sun.
+    spawn(buildFox(0xe6c48a), 'fennec fox', 'desert', 5, 2, 7, 2.4, 28);
+    spawn(buildFox(0xe6c48a), 'fennec fox', 'desert', -4, -4, 7, 2.2, 29);
+    spawn(buildRabbit(0xd8c3a0), 'jackrabbit', 'desert', 2, -6, 5, 2.8, 30);
 
     this.scene.add(this.clouds.group, this.weather.group, this.hearts.group);
     this.aurora = new Aurora(biomeById('arctic').center, PLANET_RADIUS);
@@ -353,6 +394,9 @@ export class Game {
     this.colliders.resolve(this.dir, PLAYER_RADIUS);
     this.heading.copy(fire).addScaledVector(this.dir, -fire.dot(this.dir)).normalize();
     this.camForward.copy(this.heading);
+    // The gait solves its stride from real ground speed, so it needs to know
+    // what a full run is worth.
+    this.character.topSpeed = RUN_SPEED;
     this.character.group.traverse((o) => {
       if (o instanceof THREE.Mesh) o.castShadow = true;
     });
@@ -681,7 +725,6 @@ export class Game {
         up.copy(_v2);
         this.heading.addScaledVector(up, -this.heading.dot(up)).normalize();
         this.camForward.addScaledVector(up, -this.camForward.dot(up)).normalize();
-        if (!this.airborne) this.audio.step(speed > WALK_SPEED + 0.1);
         if (this.walkTarget) {
           // Give up on a click target that an obstacle keeps us from reaching.
           const progress = before - up.angleTo(this.walkTarget);
@@ -715,6 +758,8 @@ export class Game {
     }
 
     this.character.update(dt, this.animSpeed, this.airborne, this.time, false, this.petTime > 0);
+    // One footstep per foot landing, so the sound lands with the boot.
+    if (this.character.footStrike && !this.airborne) this.audio.step(this.animSpeed > 0.75);
     this.placeCharacter();
     this.updateBiome(dt);
   }
@@ -731,7 +776,8 @@ export class Game {
       this.audio.setMood(b.id);
       const weather = weatherFor(b.id);
       this.weather.set(weather);
-      this.audio.setWeather(weather === 'rain' ? 'rain' : weather === 'snow' ? 'wind' : weather === 'embers' ? 'ember' : null);
+      this.weather.setFireflies(b.id === 'forest' || b.id === 'marsh' || b.id === 'grove' || b.id === 'farm');
+      this.audio.setWeather(weather === 'rain' ? 'rain' : weather === 'snow' || weather === 'leaves' ? 'wind' : weather === 'embers' ? 'ember' : null);
     }
     this.launchDir = this.boating || this.globe ? null : findLaunchPoint(this.dir);
   }
@@ -934,6 +980,8 @@ export class Game {
     const t = this.time;
 
     this.blades.rotation.z += dt * 1.1;
+    // Swell and surf on the sea.
+    (this.water.userData.uniforms as { uTime: { value: number } }).uTime.value = t;
     this.flame.scale.set(1 + Math.sin(t * 13) * 0.1, 1 + Math.sin(t * 17.3) * 0.18 + Math.sin(t * 5) * 0.06, 1 + Math.cos(t * 11) * 0.1);
     this.flame.rotation.y = t * 0.8;
     // The lighthouse eases up rather than snapping on when the wonder is found.

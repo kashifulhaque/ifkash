@@ -41,6 +41,12 @@ const MOODS: Record<BiomeId, Mood> = {
   ember: { root: 62, scale: [0, 3, 5, 7, 10], chord: [-24, -17, -12, -9, -5], beat: 1.0, density: 0.32, octaves: [-1, 1], padTone: 600 },
   // Northlight: suspended F#, sparse and high.
   arctic: { root: 66, scale: [0, 2, 5, 7, 9], chord: [-24, -19, -12, -7, -5], beat: 0.95, density: 0.3, octaves: [1, 2], padTone: 1300 },
+  // Dune Reach: C with a flattened second, wide and dry.
+  desert: { root: 60, scale: [0, 1, 5, 7, 10], chord: [-24, -17, -12, -11, -5], beat: 1.1, density: 0.26, octaves: [0, 2], padTone: 700 },
+  // Willowmere: A minor ninth, damp and close.
+  marsh: { root: 57, scale: [0, 3, 5, 7, 10], chord: [-24, -17, -12, -10, -5], beat: 0.9, density: 0.34, octaves: [0, 1], padTone: 620 },
+  // Amberfall: B flat major, mellow and round.
+  grove: { root: 58, scale: [0, 2, 4, 7, 9], chord: [-24, -17, -13, -12, -8], beat: 0.78, density: 0.4, octaves: [0, 2], padTone: 850 },
   // The Shallows: floating E pentatonic.
   ocean: { root: 64, scale: [0, 2, 4, 7, 9], chord: [-24, -17, -12, -10, -5], beat: 0.85, density: 0.36, octaves: [0, 1], padTone: 800 }
 };
@@ -437,7 +443,9 @@ export class Ambience {
     const ctx = this.ctx;
     if (!ctx || !this.master || this.muted) return;
     const now = ctx.currentTime;
-    if (now - this.lastStep < (running ? 0.22 : 0.34)) return;
+    // The Game books one of these per foot landing, so this is only a floor
+    // against a burst, not the cadence itself.
+    if (now - this.lastStep < (running ? 0.1 : 0.14)) return;
     this.lastStep = now;
     const len = 0.08;
     const buf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * len), ctx.sampleRate);

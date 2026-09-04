@@ -19,6 +19,8 @@ export type NightLighting = {
   /** Elevation of the key light, 0 at the horizon and 1 overhead. Sets the shadow angle. */
   moonHeight: number;
   water: THREE.Color;
+  /** Halo on the planet's limb, and the sky bounce that lights upward faces. */
+  rim: THREE.Color;
 };
 
 /**
@@ -34,5 +36,6 @@ export const NIGHT: NightLighting = {
   moon: new THREE.Color(0xaecbf5),
   moonIntensity: 1.15,
   moonHeight: 0.62,
-  water: new THREE.Color(0x256a8c)
+  water: new THREE.Color(0x256a8c),
+  rim: new THREE.Color(0x6f9ad9)
 };

@@ -1,6 +1,9 @@
+// Two passes over the lit materials that no amount of extra geometry would buy.
+//
 // Weather that lands on the world instead of falling through it: snow that
 // settles on upward-facing surfaces, and rain that darkens the ground and puts
-// a sheen on it.
+// a sheen on it. And a rim of sky light along every silhouette, which is what
+// separates one dark shape from the dark shape behind it.
 //
 // Both are one small patch to the lit materials rather than extra geometry. The
 // effect is strongest at the player and falls off with distance, so a snowfall
@@ -26,12 +29,13 @@ const FALLOFF = 34;
  * rained on. All the materials share one set of uniforms, so one call drives
  * the ground and the props together.
  */
-export function patchSurface(materials: THREE.Material[]): SurfaceFx {
+export function patchSurface(materials: THREE.Material[], rim: THREE.Color): SurfaceFx {
   const uniforms = {
     uFxCenter: { value: new THREE.Vector3(0, 1e6, 0) },
     uFxRadius: { value: FALLOFF },
     uFxSnow: { value: 0 },
-    uFxWet: { value: 0 }
+    uFxWet: { value: 0 },
+    uFxRim: { value: rim.clone() }
   };
 
   for (const material of materials) {
@@ -50,9 +54,11 @@ export function patchSurface(materials: THREE.Material[]): SurfaceFx {
 uniform float uFxRadius;
 uniform float uFxSnow;
 uniform float uFxWet;
+uniform vec3 uFxRim;
 varying vec3 vFxPos;
 varying vec3 vFxNrm;
 float fxWet;
+float fxSky;
 ` +
         shader.fragmentShader
           .replace(
@@ -61,6 +67,7 @@ float fxWet;
   // Near the player, and only where the surface faces the sky.
   float fxNear = 1.0 - smoothstep(uFxRadius * 0.55, uFxRadius, distance(vFxPos, uFxCenter));
   float fxUp = smoothstep(0.15, 0.70, dot(normalize(vFxNrm), normalize(vFxPos)));
+  fxSky = dot(normalize(vFxNrm), normalize(vFxPos));
   float fxSnow = uFxSnow * fxNear * fxUp;
   fxWet = uFxWet * fxNear * (0.4 + 0.6 * fxUp);
   diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.92, 0.95, 0.99), fxSnow);
@@ -70,6 +77,18 @@ float fxWet;
             '#include <roughnessmap_fragment>',
             `#include <roughnessmap_fragment>
   roughnessFactor = mix(roughnessFactor, 0.12, fxWet * 0.85);`
+          )
+          .replace(
+            '#include <opaque_fragment>',
+            `// Sky bounce along the silhouette. Under one dim key light every
+  // unlit shape flattens into the same near-black; a cool rim where a
+  // surface turns away from the camera gives each one its edge back.
+  {
+    vec3 fxView = normalize(cameraPosition - vFxPos);
+    float fxRim = pow(1.0 - clamp(dot(normalize(vFxNrm), fxView), 0.0, 1.0), 3.0);
+    outgoingLight += uFxRim * fxRim * (0.35 + 0.35 * clamp(fxSky, 0.0, 1.0));
+  }
+#include <opaque_fragment>`
           );
     };
     // Without a distinct cache key three can hand this material a program

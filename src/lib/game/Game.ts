@@ -73,6 +73,10 @@ const _e = new THREE.Euler();
 const _v1 = new THREE.Vector3();
 const _v2 = new THREE.Vector3();
 const _v3 = new THREE.Vector3();
+const _v4 = new THREE.Vector3();
+// Light-space axes, used to quantise the shadow camera; see `snapShadowFocus`.
+const _lx = new THREE.Vector3();
+const _ly = new THREE.Vector3();
 const _m = new THREE.Matrix4();
 const _q = new THREE.Quaternion();
 const _size = new THREE.Vector2();
@@ -214,7 +218,8 @@ export class Game {
     this.moonLight.shadow.camera.near = 1;
     this.moonLight.shadow.camera.far = 320;
     this.moonLight.shadow.bias = -0.0005;
-    this.moonLight.shadow.normalBias = 0.03;
+    // `setShadowBounds` sets `normalBias` too: it depends on the texel size,
+    // which changes between walking and globe view.
     this.setShadowBounds(PLANET_RADIUS + 14);
     this.scene.add(this.moonLight, this.moonLight.target, this.lights.group);
 
@@ -494,12 +499,46 @@ export class Game {
   }
 
   private setShadowBounds(extent: number): void {
-    const cam = this.moonLight.shadow.camera;
+    const shadow = this.moonLight.shadow;
+    const cam = shadow.camera;
     cam.left = -extent;
     cam.right = extent;
     cam.top = extent;
     cam.bottom = -extent;
     cam.updateProjectionMatrix();
+    // Globe view spreads the same shadow map over the whole planet, so a texel
+    // there covers roughly twice the ground it does while walking. Offsetting
+    // the lookup by one texel's worth along the normal is what keeps a
+    // flat-shaded slope from shadowing itself into serrated black edges; tying
+    // it to the texel size keeps both views equally clean.
+    shadow.normalBias = this.shadowTexel();
+  }
+
+  /** Ground covered by one shadow-map texel, in world units. */
+  private shadowTexel(): number {
+    const shadow = this.moonLight.shadow;
+    return (shadow.camera.right * 2) / shadow.mapSize.x;
+  }
+
+  /**
+   * Quantise the shadow camera's focus to its own texel grid. The camera
+   * follows the player, so without this the map re-rasterises at a slightly
+   * different sub-texel offset every frame and every shadow edge in the world
+   * crawls and shimmers as you walk.
+   */
+  private snapShadowFocus(focus: THREE.Vector3, lightDir: THREE.Vector3): void {
+    const texel = this.shadowTexel();
+    // `LightShadow` points the shadow camera from the light back at the target,
+    // so its local axes follow from `lightDir` and the camera's own up vector.
+    const up = this.moonLight.shadow.camera.up;
+    _lx.crossVectors(up, lightDir);
+    if (_lx.lengthSq() < 1e-6) _lx.set(1, 0, 0); // light straight along `up`
+    _lx.normalize();
+    _ly.crossVectors(lightDir, _lx).normalize();
+    const x = focus.dot(_lx);
+    const y = focus.dot(_ly);
+    focus.addScaledVector(_lx, Math.round(x / texel) * texel - x);
+    focus.addScaledVector(_ly, Math.round(y / texel) * texel - y);
   }
 
   /** Camera distance at which the whole planet fits the viewport, in either orientation. */
@@ -881,8 +920,9 @@ export class Game {
     const back = _v3.setFromMatrixColumn(this.camera.matrixWorld, 2);
     const lift = 0.3 + NIGHT.moonHeight * 0.65;
     const moonDir = right.multiplyScalar(-1.15).addScaledVector(camUp, lift).addScaledVector(back, 0.6).normalize();
-    const target = this.moonLight.target.position;
-    const focus = this.globe ? target.set(0, 0, 0) : target.copy(this.character.group.position);
+    const focus = this.globe ? _v4.set(0, 0, 0) : _v4.copy(this.character.group.position);
+    this.snapShadowFocus(focus, moonDir);
+    this.moonLight.target.position.copy(focus);
     this.moonLight.position.copy(focus).addScaledVector(moonDir, 140);
     this.moonLight.target.updateMatrixWorld();
     this.moon.update(this.camera);

@@ -26,6 +26,12 @@ export class PropBatch {
   add(geo: THREE.BufferGeometry, hex: number, matrix: THREE.Matrix4): void {
     const g = geo.index ? geo.toNonIndexed() : geo.clone();
     g.applyMatrix4(matrix);
+    // A mirrored placement — a negative scale, or a left-handed frame — reverses
+    // triangle winding. Because the batch bakes the matrix into the vertices,
+    // the renderer cannot flip the cull face for us the way it does for a mesh
+    // with a mirrored world matrix, so the prop would render inside out: front
+    // faces culled, normals pointing in, and shadows cast off its far side.
+    if (matrix.determinant() < 0) reverseWinding(g);
     for (const name of Object.keys(g.attributes)) if (name !== 'position') g.deleteAttribute(name);
     const n = g.attributes.position.count;
     const arr = new Float32Array(n * 3);
@@ -47,6 +53,24 @@ export class PropBatch {
     for (const p of this.parts) p.dispose();
     this.parts = [];
     return new THREE.Mesh(merged, material);
+  }
+}
+
+/** Swap two corners of every triangle, flipping the geometry's facing. */
+function reverseWinding(g: THREE.BufferGeometry): void {
+  for (const attribute of Object.values(g.attributes)) {
+    const array = attribute.array as Float32Array;
+    const size = attribute.itemSize;
+    for (let i = 0; i < attribute.count; i += 3) {
+      for (let k = 0; k < size; k++) {
+        const a = (i + 1) * size + k;
+        const b = (i + 2) * size + k;
+        const t = array[a];
+        array[a] = array[b];
+        array[b] = t;
+      }
+    }
+    attribute.needsUpdate = true;
   }
 }
 

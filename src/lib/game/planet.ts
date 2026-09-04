@@ -37,12 +37,17 @@ const _q = new THREE.Quaternion();
 /**
  * Tangent basis at `up`: `right` points roughly east and `fwd` roughly north,
  * rotated about `up` by `yaw`.
+ *
+ * The three axes are ordered so that `right x up = fwd`, which makes
+ * `makeBasis(right, up, fwd)` a right-handed rotation. Getting this backwards
+ * mirrors every frame built on it: triangle winding reverses, so baked geometry
+ * turns inside out and `setFromRotationMatrix` reads a reflection as a rotation.
  */
 export function tangentBasis(up: THREE.Vector3, yaw: number, right: THREE.Vector3, fwd: THREE.Vector3): void {
   _ref.set(0, 1, 0);
   if (Math.abs(up.y) > 0.98) _ref.set(1, 0, 0);
-  right.crossVectors(_ref, up).normalize();
-  fwd.crossVectors(up, right).normalize();
+  right.crossVectors(up, _ref).normalize();
+  fwd.crossVectors(right, up).normalize();
   if (yaw !== 0) {
     _q.setFromAxisAngle(up, yaw);
     right.applyQuaternion(_q);

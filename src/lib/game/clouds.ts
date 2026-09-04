@@ -45,7 +45,10 @@ export class Clouds {
       up.copy(c.base).applyQuaternion(q);
       c.mesh.position.copy(up).multiplyScalar(PLANET_RADIUS + 9);
       right.crossVectors(c.axis, up).normalize();
-      fwd.crossVectors(up, right);
+      // right x up = fwd keeps the basis right-handed; a mirrored one makes
+      // setFromRotationMatrix read a reflection as a rotation, and the cloud
+      // snaps to a new orientation as it drifts.
+      fwd.crossVectors(right, up);
       m.makeBasis(right, up, fwd);
       c.mesh.quaternion.setFromRotationMatrix(m);
     }

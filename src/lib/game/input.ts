@@ -29,6 +29,7 @@ export class Input {
   private globeQueued = false;
   private helpQueued = false;
   private clockQueued = false;
+  private photoQueued = false;
   private escapeQueued = false;
   private orbitDx = 0;
   private orbitDy = 0;
@@ -97,6 +98,9 @@ export class Input {
   queueGlobe(): void {
     this.globeQueued = true;
   }
+  queuePhoto(): void {
+    this.photoQueued = true;
+  }
   /** Touch joystick moved: counts as the first gesture. */
   notifyTouchMove(): void {
     this.fireAny();
@@ -115,6 +119,11 @@ export class Input {
   consumeGlobe(): boolean {
     const v = this.globeQueued;
     this.globeQueued = false;
+    return v;
+  }
+  consumePhoto(): boolean {
+    const v = this.photoQueued;
+    this.photoQueued = false;
     return v;
   }
   consumeClock(): boolean {
@@ -185,6 +194,9 @@ export class Input {
         break;
       case 'KeyT':
         if (!e.repeat) this.clockQueued = true;
+        break;
+      case 'KeyP':
+        if (!e.repeat) this.photoQueued = true;
         break;
     }
   };

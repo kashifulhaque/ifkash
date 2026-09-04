@@ -78,6 +78,12 @@
         </svg>
       {/if}
     </button>
+    <button class="round" on:click={() => dispatch('photo')} aria-label="Photo mode" title="Photo mode (P)">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4 8.5A1.5 1.5 0 0 1 5.5 7H8l1.5-2h5L16 7h2.5A1.5 1.5 0 0 1 20 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 17.5z" />
+        <circle cx="12" cy="13" r="3.2" />
+      </svg>
+    </button>
     <button class="round" on:click={() => dispatch('help')} aria-label="Help" title="Help (H)">
       <svg viewBox="0 0 24 24" aria-hidden="true">
         <circle cx="12" cy="12" r="9" />

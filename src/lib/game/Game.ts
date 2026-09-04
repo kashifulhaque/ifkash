@@ -13,7 +13,9 @@ import { Critter } from './critters';
 import { Clouds } from './clouds';
 import { Aurora } from './aurora';
 import { ColliderGrid } from './collision';
-import { WONDERS, loadFound, saveFound, wonderDir, type Wonder } from './wonders';
+import { WONDERS, wonderDir, type Wonder } from './wonders';
+import { loadFound, saveFound } from './progress';
+import { Weather, weatherFor } from './weather';
 import type { BiomeCaption, ClockState } from './store';
 
 /** Interaction card. `kicker` overrides the wonder wording, for example for the boat. */
@@ -34,6 +36,8 @@ export type GameCallbacks = {
   onIntroEnd: () => void;
   onHelp: () => void;
   onEscape: () => void;
+  /** Photo mode entered or left; the page hides the HUD while it is on. */
+  onPhoto: (photo: boolean) => void;
 };
 
 const WALK_SPEED = 5.4;
@@ -140,12 +144,14 @@ export class Game {
   private critters: Critter[] = [];
   private clouds: Clouds;
   private aurora: Aurora;
+  private weather = new Weather();
   private gems: Gem[] = [];
 
   private promptId: string | null = null;
   private biomeId: string | null = null;
   private biomeTimer = 0;
   private overlayOpen = false;
+  private photo = false;
   private raf = 0;
   private last = 0;
   private time = 0;
@@ -282,7 +288,7 @@ export class Game {
     spawn(buildFox(), 'forest', 4, 3, 5, 2.2, 8);
     spawn(buildFox(), 'shore', -4, 4, 6, 2.4, 9);
 
-    this.scene.add(this.clouds.group);
+    this.scene.add(this.clouds.group, this.weather.group);
     this.aurora = new Aurora(biomeById('arctic').center, PLANET_RADIUS);
     this.scene.add(this.aurora.group);
     if (this.found.includes('education')) this.aurora.setActive(true);
@@ -363,6 +369,33 @@ export class Game {
     this.audio.start();
   }
 
+  /** True while photo mode hides the HUD, the click marker, and prompts. */
+  get photoMode(): boolean {
+    return this.photo;
+  }
+
+  togglePhoto(): void {
+    this.setPhoto(!this.photo);
+  }
+
+  setPhoto(on: boolean): void {
+    if (this.photo === on) return;
+    this.photo = on;
+    this.exitIntro();
+    if (on) this.targetRing.visible = false;
+    else this.targetRing.visible = this.walkTarget !== null;
+    this.callbacks.onPhoto(on);
+  }
+
+  /**
+   * Capture the current view as a PNG. Renders a frame and reads the canvas in
+   * the same tick, because the drawing buffer is not preserved between frames.
+   */
+  snapshot(): Promise<Blob | null> {
+    this.renderer.render(this.scene, this.camera);
+    return new Promise((resolve) => this.canvas.toBlob((blob) => resolve(blob), 'image/png'));
+  }
+
   dispose(): void {
     this.disposed = true;
     cancelAnimationFrame(this.raf);
@@ -383,7 +416,8 @@ export class Game {
   private frame = (now: number) => {
     if (this.disposed) return;
     this.raf = requestAnimationFrame(this.frame);
-    const dt = Math.min(0.05, (now - this.last) / 1000);
+    // Clamp below as well: a frame stepped from the console can run ahead of the clock.
+    const dt = THREE.MathUtils.clamp((now - this.last) / 1000, 0, 0.05);
     this.last = now;
     this.time += dt;
     this.resize();
@@ -410,6 +444,8 @@ export class Game {
   private exitIntro(): void {
     if (!this.intro) return;
     this.intro = false;
+    // The first gesture is also the first chance to start the soundtrack.
+    this.audio.start();
     this.callbacks.onIntroEnd();
     this.setGlobe(false);
   }
@@ -459,6 +495,7 @@ export class Game {
     if (input.consumeEscape()) this.callbacks.onEscape();
     if (input.consumeHelp()) this.callbacks.onHelp();
     if (input.consumeClock() && !this.overlayOpen) this.toggleClock();
+    if (input.consumePhoto() && !this.overlayOpen) this.togglePhoto();
     if (input.consumeGlobe() && !this.overlayOpen) {
       this.exitIntro();
       this.toggleGlobe();
@@ -490,7 +527,7 @@ export class Game {
       if (hits.length > 0) {
         this.audio.start();
         this.walkTarget = hits[0].point.clone().normalize();
-        this.targetRing.visible = true;
+        this.targetRing.visible = !this.photo;
         const r = walkRadius(this.walkTarget) + 0.1;
         this.targetRing.position.copy(this.walkTarget).multiplyScalar(r);
         tangentBasis(this.walkTarget, 0, _v1, _v3);
@@ -621,6 +658,10 @@ export class Game {
     if (b.id !== this.biomeId) {
       this.biomeId = b.id;
       this.callbacks.onBiome({ name: b.name, kind: b.kind, index: b.index, tagline: b.tagline });
+      this.audio.setMood(b.id);
+      const weather = weatherFor(b.id);
+      this.weather.set(weather);
+      this.audio.setWeather(weather === 'rain' ? 'rain' : weather === 'snow' ? 'wind' : null);
     }
     this.launchDir = this.boating || this.globe ? null : findLaunchPoint(this.dir);
   }
@@ -672,7 +713,6 @@ export class Game {
     this.walkTarget = null;
     this.targetRing.visible = false;
     this.launchDir = null;
-    this.promptId = null;
     this.audio.hop();
     this.placeBoat();
     this.placeCharacter();
@@ -687,7 +727,6 @@ export class Game {
     this.boating = false;
     this.boatSpeed = 0;
     this.stuckTime = 0;
-    this.promptId = null;
     this.biomeTimer = 0;
     this.audio.hop();
   }
@@ -831,6 +870,8 @@ export class Game {
 
     for (const c of this.critters) c.update(dt, t);
     this.clouds.update(dt);
+    this.weather.setHidden(this.globe);
+    this.weather.update(dt, t, this.dir);
     this.aurora.night = night;
     this.aurora.update(dt, t);
     if (this.boatPlaced) {
@@ -901,7 +942,7 @@ export class Game {
   }
 
   private updatePrompt(): void {
-    const idle = this.globe || this.overlayOpen;
+    const idle = this.globe || this.overlayOpen || this.photo;
     const gem = idle ? null : this.nearestGem();
     let prompt: Prompt | null = null;
     if (gem) prompt = { id: gem.wonder.id, action: gem.wonder.action, found: this.found.includes(gem.wonder.id) };
@@ -920,7 +961,7 @@ export class Game {
     this.audio.start();
     if (!this.found.includes(w.id)) {
       this.found = [...this.found, w.id];
-      saveFound(this.found);
+      saveFound(this.found, this.seed);
       this.callbacks.onFound(this.found);
       this.audio.chime();
       const mat = gem.mesh.material as THREE.MeshStandardMaterial;

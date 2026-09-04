@@ -11,11 +11,16 @@
   import WonderPanel from '$lib/game/ui/WonderPanel.svelte';
   import HelpOverlay from '$lib/game/ui/HelpOverlay.svelte';
   import TouchControls from '$lib/game/ui/TouchControls.svelte';
+  import PhotoBar from '$lib/game/ui/PhotoBar.svelte';
 
   let canvas: HTMLCanvasElement;
   let game: Game | null = null;
   let destroyed = false;
   let justFound = false;
+  let saving = false;
+  /** Toast to show once the wonder panel closes, for example after the seventh find. */
+  let pendingToast: string | null = null;
+  let toastTimer: ReturnType<typeof setTimeout> | undefined;
 
   function makeCallbacks(): GameCallbacks {
     return {
@@ -24,6 +29,7 @@
       onFound: (found) => {
         justFound = true;
         gameState.update((s) => ({ ...s, found }));
+        if (found.length >= WONDERS.length) pendingToast = 'Every small wonder found. A badge now waits on the home page.';
       },
       onOpenWonder: (wonder) => {
         game?.setOverlayOpen(true);
@@ -35,7 +41,9 @@
       onHelp: () => toggleHelp(),
       onEscape: () => {
         if ($gameState.openWonder || $gameState.help) closeOverlays();
-      }
+        else if ($gameState.photo) game?.setPhoto(false);
+      },
+      onPhoto: (photo) => gameState.update((s) => ({ ...s, photo }))
     };
   }
 
@@ -61,6 +69,7 @@
 
   onDestroy(() => {
     destroyed = true;
+    clearTimeout(toastTimer);
     game?.dispose();
     game = null;
     gameState.set({ ...initialState });
@@ -70,6 +79,35 @@
     justFound = false;
     gameState.update((s) => ({ ...s, openWonder: null, help: false }));
     game?.setOverlayOpen(false);
+    if (pendingToast) {
+      showToast(pendingToast);
+      pendingToast = null;
+    }
+  }
+
+  function showToast(text: string) {
+    clearTimeout(toastTimer);
+    const id = Date.now();
+    gameState.update((s) => ({ ...s, toast: { id, text } }));
+    toastTimer = setTimeout(() => gameState.update((s) => (s.toast?.id === id ? { ...s, toast: null } : s)), 7000);
+  }
+
+  /** Photo mode: render a frame and download it as a PNG named after the seed. */
+  async function savePhoto() {
+    if (!game || saving) return;
+    saving = true;
+    try {
+      const blob = await game.snapshot();
+      if (!blob) return;
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `tiny-planet-${game.seed}.png`;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 2000);
+    } finally {
+      saving = false;
+    }
   }
 
   function toggleHelp() {
@@ -113,7 +151,7 @@
       </div>
     {/if}
 
-    {#if $gameState.ready}
+    {#if $gameState.ready && !$gameState.photo}
       <Hud
         found={$gameState.found.length}
         total={$gameState.total}
@@ -128,11 +166,26 @@
         on:clock={() => game?.toggleClock()}
         on:mute={toggleMute}
         on:help={toggleHelp}
+        on:photo={() => game?.togglePhoto()}
         on:interact={interactFromHud}
       />
     {/if}
 
-    {#if $gameState.ready && $gameState.isTouch && !$gameState.openWonder && !$gameState.help}
+    {#if $gameState.ready && $gameState.photo}
+      <PhotoBar isTouch={$gameState.isTouch} {saving} on:exit={() => game?.setPhoto(false)} on:save={savePhoto} />
+    {/if}
+
+    {#if $gameState.toast}
+      {#key $gameState.toast.id}
+        <div class="toast" role="status">
+          <span class="spark">✦</span>
+          <span>{$gameState.toast.text}</span>
+          <a href="/">See it</a>
+        </div>
+      {/key}
+    {/if}
+
+    {#if $gameState.ready && $gameState.isTouch && !$gameState.openWonder && !$gameState.help && !$gameState.photo}
       <TouchControls
         on:move={(e) => {
           if (!game) return;
@@ -234,6 +287,52 @@
   @keyframes spin {
     to {
       transform: rotate(360deg);
+    }
+  }
+
+  .toast {
+    position: absolute;
+    top: 68px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 25;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    max-width: calc(100% - 32px);
+    padding: 10px 16px;
+    border-radius: 12px;
+    background: rgba(18, 40, 46, 0.82);
+    border: 1px solid rgba(233, 196, 106, 0.4);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    color: #f2efe6;
+    font-family: var(--planet-sans);
+    font-size: 0.8rem;
+    animation: toast-in 0.4s ease-out, toast-out 0.6s ease-in 6.4s forwards;
+  }
+  .toast .spark {
+    color: #e9c46a;
+  }
+  .toast a {
+    color: #e9c46a;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    white-space: nowrap;
+  }
+  @keyframes toast-in {
+    from {
+      opacity: 0;
+      transform: translate(-50%, -8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(-50%);
+    }
+  }
+  @keyframes toast-out {
+    to {
+      opacity: 0;
     }
   }
 

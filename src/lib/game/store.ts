@@ -20,6 +20,8 @@ export type GameState = {
   total: number;
   openWonder: Wonder | null;
   help: boolean;
+  /** Photo mode: the HUD and touch controls are hidden so the planet can be captured. */
+  photo: boolean;
   muted: boolean;
   /** Short fading notice, for example after finding a wonder. */
   toast: { id: number; text: string } | null;
@@ -40,6 +42,7 @@ export const initialState: GameState = {
   total: 0,
   openWonder: null,
   help: false,
+  photo: false,
   muted: false,
   toast: null,
   seed: '',

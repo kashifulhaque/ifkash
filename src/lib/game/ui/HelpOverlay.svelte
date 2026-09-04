@@ -47,6 +47,7 @@
         <div><dt>Open a wonder</dt><dd>Walk up to a marker and tap the card that appears.</dd></div>
         <div><dt>Boats</dt><dd>Stand at the shore and tap the card to launch a boat. Steer with the stick. Reach land to dock.</dd></div>
         <div><dt>Day and night</dt><dd>A full day passes every four minutes. Tap the sun or moon button to pause it.</dd></div>
+        <div><dt>Photo mode</dt><dd>Tap the camera button to hide the interface. Save a picture or leave from the corner buttons.</dd></div>
       {:else}
         <div><dt><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></dt><dd>Walk. Arrow keys work too.</dd></div>
         <div><dt><kbd>Shift</kbd></dt><dd>Run.</dd></div>
@@ -54,6 +55,7 @@
         <div><dt><kbd>E</kbd></dt><dd>Open the wonder you are standing next to.</dd></div>
         <div><dt><kbd>M</kbd></dt><dd>Pull back to see the whole planet. Click a spot to walk there.</dd></div>
         <div><dt><kbd>T</kbd></dt><dd>Pause or resume the day. A full day passes every four minutes.</dd></div>
+        <div><dt><kbd>P</kbd></dt><dd>Photo mode: hides the interface. Press again or <kbd>Esc</kbd> to leave, or save a picture from the corner.</dd></div>
         <div><dt>Mouse</dt><dd>Drag to orbit the camera, scroll to zoom, click the ground to walk.</dd></div>
         <div><dt>Boats</dt><dd>Stand at the shore and press <kbd>E</kbd> to launch a boat. Steer with the walk keys. Reach land to dock.</dd></div>
       {/if}

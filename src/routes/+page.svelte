@@ -1,6 +1,22 @@
 <script>
+  import { onMount } from "svelte";
   import { dev } from "$app/environment";
   import EdgeField from "$lib/components/EdgeField.svelte";
+  import { loadProgress, WONDER_COUNT } from "$lib/game/progress";
+  import { seedLink } from "$lib/game/seed";
+
+  // Progress from the tiny-planet game lives in localStorage, so it is read
+  // after mount; the server render never shows the badge.
+  /** @type {{ text: string, href: string } | null} */
+  let badge = null;
+  onMount(() => {
+    const progress = loadProgress();
+    if (!progress.complete) return;
+    badge = {
+      text: `${progress.found.length} of ${WONDER_COUNT} small wonders`,
+      href: progress.seed ? seedLink(progress.seed, "") : "/game",
+    };
+  });
 
   const resumeUrl = dev
     ? "http://localhost:8787/api/cv?format=view"
@@ -64,6 +80,12 @@
   <div class="actions">
     <a href={resumeUrl} class="btn btn-primary">Read resume</a>
     <a href="/game" class="btn btn--outline">Enter game mode</a>
+    {#if badge}
+      <a href={badge.href} class="wonder-badge" title="Every small wonder on the tiny planet has been found">
+        <span class="wonder-badge-spark" aria-hidden="true">✦</span>
+        {badge.text}
+      </a>
+    {/if}
   </div>
 
   <dl class="profile-facts">
@@ -143,6 +165,30 @@
     flex-wrap: wrap;
     gap: 8px;
     margin-top: 32px;
+  }
+
+  .wonder-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 40px;
+    padding: 0 14px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    color: var(--ink-2);
+    font-family: var(--font-label);
+    font-size: 13px;
+    text-decoration: none;
+    transition: border-color 160ms var(--ease-inout), color 160ms var(--ease-inout);
+  }
+
+  .wonder-badge:hover {
+    border-color: var(--blueprint);
+    color: var(--foreground);
+  }
+
+  .wonder-badge-spark {
+    color: var(--blueprint);
   }
 
   .profile-facts {

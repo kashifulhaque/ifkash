@@ -2,11 +2,12 @@ import * as THREE from 'three';
 import { sections, name, tagline, type LootItem } from '$lib/content';
 import { biomeById, type BiomeId } from './biomes';
 import { offsetDir } from './planet';
+import { type WonderId } from './progress';
 
 export type WonderMarker = 'campfire' | 'cabin' | 'mailbox' | 'signpost' | 'lighthouse' | 'forge' | 'aurora';
 
 export type Wonder = {
-  id: string;
+  id: WonderId;
   /** Verb phrase shown on the interaction card, for example "Tend the fire". */
   action: string;
   biome: BiomeId;
@@ -120,25 +121,4 @@ export const WONDERS: Wonder[] = [
 export function wonderDir(w: Wonder, out = new THREE.Vector3()): THREE.Vector3 {
   out.copy(biomeById(w.biome).center);
   return offsetDir(out, w.offset[0], w.offset[1]);
-}
-
-const FOUND_KEY = 'planet_found';
-
-export function loadFound(): string[] {
-  try {
-    const raw = localStorage.getItem(FOUND_KEY);
-    if (!raw) return [];
-    const ids = new Set(WONDERS.map((w) => w.id));
-    return (JSON.parse(raw) as string[]).filter((id) => ids.has(id));
-  } catch {
-    return [];
-  }
-}
-
-export function saveFound(found: string[]): void {
-  try {
-    localStorage.setItem(FOUND_KEY, JSON.stringify(found));
-  } catch {
-    /* storage unavailable */
-  }
 }

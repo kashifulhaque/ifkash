@@ -3,6 +3,16 @@
   <head>
     <meta charset="utf-8" />
     <link rel="icon" href="%sveltekit.assets%/favicon.png" />
+    <!-- Drawably Pen is the body face and is declared font-display: block, so the
+         page holds its text until the file lands. Preloading the 31 KB TTF keeps
+         that hold to a frame or two instead of a visible blank. -->
+    <link
+      rel="preload"
+      href="%sveltekit.assets%/fonts/DrawablyPen.ttf"
+      as="font"
+      type="font/ttf"
+      crossorigin
+    />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#15132b" />
     <script>

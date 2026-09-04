@@ -482,16 +482,6 @@ The colors of the rainbow are red, orange, yellow, green, blue, indigo, and viol
         margin: 0 0.5rem;
     }
 
-    .page-title {
-        font-family: var(--font-dots);
-        font-size: clamp(2.4rem, 6vw, 4rem);
-        font-weight: 600;
-        letter-spacing: 0.02em;
-        text-transform: uppercase;
-        color: var(--ink);
-        margin: 0;
-    }
-
     .page-desc {
         font-size: 1.0625rem;
         line-height: 1.6;

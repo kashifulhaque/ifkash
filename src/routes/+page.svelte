@@ -68,7 +68,7 @@
 
 <section class="intro">
   <p class="intro-label">ML Engineer · Bangalore, India</p>
-  <h1>
+  <h1 class="display">
     Kashiful Haque<a href="/fitness" class="period" aria-label="Fitness dashboard">.</a>
   </h1>
   <p class="intro-copy">
@@ -108,7 +108,7 @@
 
 <section class="index-section" aria-labelledby="explore-heading">
   <div class="section-heading">
-    <h2 id="explore-heading">Explore</h2>
+    <h2 id="explore-heading" class="section-title">Explore</h2>
     <p>Selected work, experiments, and tools.</p>
   </div>
 
@@ -174,7 +174,10 @@
     min-height: 40px;
     padding: 0 14px;
     border: 1px solid var(--border);
-    border-radius: 999px;
+    /* sketched frame rather than a geometric pill, so the badge sits in the
+       same hand as the buttons beside it */
+    border-radius: var(--r-frame-1);
+    animation: sketch-boil-radius 1200ms step-end infinite;
     color: var(--ink-2);
     font-family: var(--font-label);
     font-size: 13px;

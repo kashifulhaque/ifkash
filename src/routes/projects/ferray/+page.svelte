@@ -343,16 +343,6 @@ print(np.allclose(a_np, a_back))  # True</code></pre>
     margin: 0 0.5rem;
   }
 
-  .page-title {
-    font-family: var(--font-dots);
-    font-size: clamp(2.4rem, 6vw, 4rem);
-    font-weight: 600;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
-    color: var(--text-primary);
-    margin: 0;
-  }
-
   .page-desc {
     font-size: 1.0625rem;
     line-height: 1.6;

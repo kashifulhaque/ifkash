@@ -1307,12 +1307,10 @@
     align-items: center;
     gap: 0.625rem;
   }
+  /* Shares the global .page-title pen treatment; only the size is trimmed so
+     the title sits level with the save pill beside it. */
   .page-title {
     font-size: 2.25rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    color: var(--text-primary);
-    margin: 0;
   }
 
   .save-pill {

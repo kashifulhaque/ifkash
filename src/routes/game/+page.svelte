@@ -229,6 +229,24 @@
     background: #0d1c28;
     --planet-serif: 'Cardo', Georgia, 'Times New Roman', serif;
     --planet-sans: 'Inter Variable', Inter, ui-sans-serif, system-ui, sans-serif;
+    /* The rest of the site inherits Drawably Pen from <body>; the planet keeps
+       its own type system, so re-anchor inheritance here rather than relying on
+       every descendant to set a font. */
+    font-family: var(--planet-sans);
+  }
+
+  /* app.css sets a font-family on p and h1–h6 by element, which outranks plain
+     inheritance from .game-root — so the planet has to claim those tags back or
+     its copy renders in the site's pen face. Components that ask for
+     --planet-serif or mono still win on specificity. */
+  .game-root :global(p),
+  .game-root :global(h1),
+  .game-root :global(h2),
+  .game-root :global(h3),
+  .game-root :global(h4),
+  .game-root :global(h5),
+  .game-root :global(h6) {
+    font-family: var(--planet-sans);
   }
 
   .game-root :global(button) {

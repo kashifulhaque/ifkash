@@ -1,164 +1,133 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
-  import { sections } from '$lib/content';
-  import type { SectionId } from '$lib/content';
+  import type { BiomeCaption, ClockState } from '../store';
 
-  export let pointerLocked: boolean;
-  export let isTouch: boolean;
-  export let interactPrompt: string | null = null;
-  export let health = 100;
-  export let hitCount = 0;
-  export let deathCount = 0;
+  export let found = 0;
+  export let total = 7;
+  export let biome: BiomeCaption | null = null;
+  export let prompt: { id: string; action: string; found: boolean; kicker?: string } | null = null;
+  export let clock: ClockState = { paused: false, night: false };
   export let muted = false;
-  export let ammo = 12;
-  export let reserve = 24;
-  export let reloading = false;
-  export let score = 0;
-  export let combo = 0;
-  export let comboMult = 1;
-  export let comboTimer = 0; // 0..1 remaining fraction of the combo window
-  export let wave = 1;
-  export let waveKills = 0;
-  export let waveQuota = 8;
-  export let waveBanner: { id: number; wave: number } | null = null;
-  export let scorePopups: { id: number; amount: number; mult: number; headshot: boolean }[] = [];
-  export let aiming = false;
-  export let yaw = 0;
-  export let hitMarker: { id: number; headshot: boolean; killed: boolean } | null = null;
-  export let sectionsOpened: SectionId[] = [];
+  export let globeView = false;
+  export let intro = true;
+  export let isTouch = false;
 
   const dispatch = createEventDispatcher();
-
-  $: openedSet = new Set(sectionsOpened);
-
-  const COMPASS_POINTS = [
-    { label: 'N', angle: 0 },
-    { label: 'NE', angle: 45 },
-    { label: 'E', angle: 90 },
-    { label: 'SE', angle: 135 },
-    { label: 'S', angle: 180 },
-    { label: 'SW', angle: 225 },
-    { label: 'W', angle: 270 },
-    { label: 'NW', angle: 315 }
-  ];
-
-  // Camera yaw → compass heading in degrees (0 = north = -z)
-  $: heading = ((-yaw * 180) / Math.PI + 360 * 10) % 360;
-
-  function compassOffset(angle: number, head: number): number {
-    let d = angle - head;
-    if (d > 180) d -= 360;
-    if (d < -180) d += 360;
-    return d;
-  }
 </script>
 
-<div class="hud" aria-hidden="true">
-  {#if !aiming}
-    <div class="crosshair"></div>
-  {/if}
+<div class="hud" aria-live="polite">
+  <div class="brand">
+    <svg viewBox="0 0 32 32" aria-hidden="true">
+      <circle cx="16" cy="16" r="7" />
+      <ellipse cx="16" cy="16" rx="14" ry="4.5" transform="rotate(-25 16 16)" />
+      <circle cx="26.5" cy="9" r="1.4" class="dot" />
+    </svg>
+    <div>
+      <p class="brand-name">Tiny Planet</p>
+      <p class="brand-sub">A pocket portfolio</p>
+    </div>
+  </div>
 
-  {#key hitMarker?.id}
-    {#if hitMarker}
-      <div
-        class="hit-marker"
-        class:headshot={hitMarker.headshot}
-        class:killed={hitMarker.killed}
-      >
-        <span></span><span></span><span></span><span></span>
-      </div>
-    {/if}
-  {/key}
+  <div class="counter" class:complete={found >= total}>
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H11v16H5.5A1.5 1.5 0 0 1 4 18.5z" />
+      <path d="M13 4h5.5A1.5 1.5 0 0 1 20 5.5v13a1.5 1.5 0 0 1-1.5 1.5H13z" />
+    </svg>
+    {#key found}
+      <strong class="count">{found}</strong>
+    {/key}
+    <span class="of">/ {total}</span>
+    <span class="label">small wonders</span>
+  </div>
 
-  <div class="compass">
-    {#each COMPASS_POINTS as p}
-      {@const off = compassOffset(p.angle, heading)}
-      {#if Math.abs(off) < 60}
-        <span class="compass-point" class:cardinal={p.label.length === 1} style="left: calc(50% + {off * 2.2}px)">{p.label}</span>
+  <div class="actions">
+    <button class="round" class:active={globeView} on:click={() => dispatch('globe')} aria-label={globeView ? 'Return to the ground' : 'View the whole planet'} title="Globe view (M)">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="12" r="9" />
+        <path d="M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18" />
+      </svg>
+    </button>
+    <button class="round" on:click={() => dispatch('mute')} aria-label={muted ? 'Unmute' : 'Mute'} title={muted ? 'Unmute' : 'Mute'}>
+      {#if muted}
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 9v6h4l5 4V5L8 9z" />
+          <path d="M17 9l4 6M21 9l-4 6" />
+        </svg>
+      {:else}
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 9v6h4l5 4V5L8 9z" />
+          <path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12" />
+        </svg>
       {/if}
-    {/each}
-    <div class="compass-tick"></div>
+    </button>
+    <button
+      class="round"
+      class:active={clock.paused}
+      on:click={() => dispatch('clock')}
+      aria-label={clock.paused ? 'Resume the day' : 'Pause the day'}
+      title={clock.paused ? 'Resume the day (T)' : 'Pause the day (T)'}
+    >
+      {#if clock.night}
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M14.5 3.5a8.5 8.5 0 1 0 6 14.3A9 9 0 0 1 14.5 3.5z" />
+        </svg>
+      {:else}
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="4" />
+          <path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8" />
+        </svg>
+      {/if}
+    </button>
+    <button class="round" on:click={() => dispatch('help')} aria-label="Help" title="Help (H)">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="12" r="9" />
+        <path d="M9.5 9.5a2.5 2.5 0 1 1 3.6 2.2c-.8.5-1.1 1-1.1 1.8M12 17h.01" />
+      </svg>
+    </button>
   </div>
 
-  <!-- Floating +N / ×M popups near the crosshair on each kill -->
-  <div class="popups">
-    {#each scorePopups as p (p.id)}
-      <div class="popup" class:headshot={p.headshot} class:big={p.mult >= 3}>
-        +{p.amount}{#if p.mult > 1}<span class="popup-mult">×{p.mult}</span>{/if}
+  {#if biome && !intro}
+    {#key biome.name}
+      <div class="caption">
+        <p class="kicker">{biome.kind} · {biome.index}</p>
+        <h2>{biome.name}</h2>
+        <p class="tagline">{biome.tagline}</p>
       </div>
-    {/each}
-  </div>
-
-  <div class="score">
-    <div class="score-value">{score}</div>
-    {#if combo >= 2}
-      <div class="combo" class:hot={comboMult >= 3}>
-        <span class="combo-mult">×{comboMult}</span>
-        <span class="combo-count">{combo} COMBO</span>
-        <div class="combo-bar"><div class="combo-fill" style="width: {Math.max(0, Math.min(1, comboTimer)) * 100}%"></div></div>
-      </div>
-    {/if}
-  </div>
-
-  <div class="sections">
-    <span class="sections-label">PORTFOLIO {openedSet.size}/{sections.length}</span>
-    <div class="sections-list">
-      {#each sections as s}
-        <span class="sec" class:found={openedSet.has(s.id)}>{s.label}</span>
-      {/each}
-    </div>
-  </div>
-
-  <div class="wave">
-    <span class="wave-label">WAVE {wave}</span>
-    <div class="wave-pips">
-      {#each Array(Math.min(waveQuota, 16)) as _, i}
-        <span class="pip" class:filled={i < waveKills}></span>
-      {/each}
-    </div>
-  </div>
-
-  {#key waveBanner?.id}
-    {#if waveBanner}
-      <div class="wave-banner"><span>WAVE {waveBanner.wave}</span></div>
-    {/if}
-  {/key}
-
-  <div class="ammo" class:reloading class:empty={!reloading && ammo === 0 && reserve === 0}>
-    {#if reloading}RELOADING…{:else}{ammo} / {reserve}{/if}
-  </div>
-
-  {#key hitCount}
-    {#if hitCount > 0}<div class="damage-flash"></div>{/if}
-  {/key}
-
-  {#key deathCount}
-    {#if deathCount > 0}<div class="death-flash"><span>WASTED</span></div>{/if}
-  {/key}
-
-  <div class="health">
-    <span class="health-label">HP</span>
-    <div class="health-bar">
-      <div
-        class="health-fill"
-        class:low={health < 35}
-        style="width: {Math.max(0, health)}%"
-      ></div>
-    </div>
-  </div>
-
-  <button class="mute" on:click={() => dispatch('mute')}>
-    {muted ? '🔇' : '🔊'}
-  </button>
-
-  {#if interactPrompt}
-    <div class="interact">
-      {#if isTouch}TAP <span class="key">USE</span>{:else}PRESS <span class="key">E</span>{/if}
-      TO {interactPrompt}
-    </div>
-  {:else if pointerLocked || isTouch}
-    <div class="hint">SHOOT A TARGET · LOOT THE CRATE · THEY SHOOT BACK</div>
+    {/key}
   {/if}
+
+  <div class="bottom">
+    {#if prompt}
+      <button class="prompt" on:click={() => dispatch('interact')}>
+        <span class="key">E</span>
+        <span class="prompt-text">
+          <span class="kicker">{prompt.kicker ?? (prompt.found ? 'Found · visit again' : 'A small wonder')}</span>
+          <span class="action">{prompt.action}</span>
+        </span>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
+      </button>
+    {/if}
+
+    {#if intro}
+      {#if isTouch}
+        <p class="hint-line"><span class="spark">✦</span> Tap to wander <span class="sep">·</span> drag to orbit <span class="sep">·</span> pinch to zoom</p>
+      {:else}
+        <p class="hint-line"><span class="spark">✦</span> Click anywhere to wander <span class="sep">|</span> Drag to orbit <span class="sep">·</span> Scroll to zoom</p>
+      {/if}
+    {/if}
+
+    {#if !isTouch}
+      <div class="hints">
+        <span class="group"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> walk</span>
+        <span class="group"><kbd>⇧</kbd> run</span>
+        <span class="group"><kbd>space</kbd> hop</span>
+        <span class="group"><kbd>E</kbd> interact</span>
+        <span class="group"><kbd>M</kbd> globe</span>
+      </div>
+    {:else if !intro}
+      <p class="hint-line small">Tap a spot to wander · drag to look around</p>
+    {/if}
+  </div>
 </div>
 
 <style>
@@ -166,474 +135,333 @@
     position: absolute;
     inset: 0;
     pointer-events: none;
-    z-index: 10;
+    color: #f2efe6;
+    font-family: var(--planet-sans);
+    --glass: rgba(10, 24, 34, 0.55);
+    --glass-border: rgba(255, 255, 255, 0.12);
   }
 
-  .crosshair {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 18px;
-    height: 18px;
-    transform: translate(-50%, -50%);
+  .hud > * {
+    pointer-events: auto;
   }
 
-  .crosshair::before,
-  .crosshair::after {
-    content: '';
-    position: absolute;
-    background: rgba(255, 255, 255, 0.9);
-    box-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
+  .kicker {
+    font-size: 0.62rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(242, 239, 230, 0.6);
+    margin: 0;
   }
 
-  .crosshair::before {
-    left: 50%;
-    top: 0;
-    bottom: 0;
-    width: 2px;
-    transform: translateX(-50%);
-  }
-
-  .crosshair::after {
-    top: 50%;
-    left: 0;
-    right: 0;
-    height: 2px;
-    transform: translateY(-50%);
-  }
-
-  .hit-marker {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 26px;
-    height: 26px;
-    transform: translate(-50%, -50%) rotate(45deg);
-    animation: marker-fade 0.3s ease-out forwards;
-  }
-
-  .hit-marker span {
-    position: absolute;
-    background: rgba(255, 255, 255, 0.95);
-    width: 2px;
-    height: 8px;
-  }
-
-  .hit-marker span:nth-child(1) { left: 12px; top: 0; }
-  .hit-marker span:nth-child(2) { left: 12px; bottom: 0; }
-  .hit-marker span:nth-child(3) { top: 12px; left: 0; width: 8px; height: 2px; }
-  .hit-marker span:nth-child(4) { top: 12px; right: 0; width: 8px; height: 2px; }
-
-  .hit-marker.headshot span { background: #ffd23f; }
-  .hit-marker.killed { width: 34px; height: 34px; }
-  .hit-marker.killed span { background: #ff4d4d; height: 11px; }
-  .hit-marker.killed span:nth-child(1) { left: 16px; }
-  .hit-marker.killed span:nth-child(2) { left: 16px; }
-  .hit-marker.killed span:nth-child(3) { top: 16px; width: 11px; height: 2px; }
-  .hit-marker.killed span:nth-child(4) { top: 16px; width: 11px; height: 2px; }
-
-  @keyframes marker-fade {
-    0% { opacity: 1; }
-    70% { opacity: 1; }
-    100% { opacity: 0; }
-  }
-
-  .compass {
-    position: absolute;
-    top: 14px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 280px;
-    height: 28px;
-    overflow: hidden;
-    background: rgba(0, 0, 0, 0.25);
-    border-radius: 4px;
-    mask-image: linear-gradient(to right, transparent, #000 20%, #000 80%, transparent);
-    -webkit-mask-image: linear-gradient(to right, transparent, #000 20%, #000 80%, transparent);
-  }
-
-  .compass-point {
-    position: absolute;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    font-family: var(--font-display, monospace);
-    font-size: 0.85rem;
-    color: rgba(255, 255, 255, 0.7);
-  }
-
-  .compass-point.cardinal {
-    font-size: 1.05rem;
-    color: #fff;
-  }
-
-  .compass-tick {
-    position: absolute;
-    left: 50%;
-    bottom: 0;
-    width: 2px;
-    height: 7px;
-    transform: translateX(-50%);
-    background: #ffd23f;
-  }
-
-  .score {
+  /* Brand */
+  .brand {
     position: absolute;
     top: 18px;
-    right: 76px;
-    text-align: right;
-    font-family: var(--font-display, monospace);
-    color: #fff;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
-  }
-
-  .score-value {
-    font-size: 1.5rem;
-  }
-
-  .combo {
-    margin-top: 2px;
-    display: inline-flex;
-    flex-direction: column;
-    align-items: flex-end;
-  }
-
-  .combo-mult {
-    font-size: 1.5rem;
-    color: #ffd23f;
-    line-height: 1;
-  }
-
-  .combo.hot .combo-mult {
-    color: #ff7a3f;
-    animation: pulse 0.6s ease-in-out infinite;
-  }
-
-  .combo-count {
-    font-size: 0.7rem;
-    letter-spacing: 0.12em;
-    color: rgba(255, 255, 255, 0.75);
-  }
-
-  .combo-bar {
-    margin-top: 3px;
-    width: 84px;
-    height: 4px;
-    background: rgba(0, 0, 0, 0.45);
-    border-radius: 2px;
-    overflow: hidden;
-  }
-
-  .combo-fill {
-    height: 100%;
-    background: #ffd23f;
-    /* drains continuously; the engine pushes a fresh fraction each frame */
-  }
-
-  .combo.hot .combo-fill {
-    background: #ff7a3f;
-  }
-
-  /* ── Floating score popups ── */
-  .popups {
-    position: absolute;
-    top: calc(50% - 60px);
-    left: 50%;
-    transform: translateX(-50%);
-    pointer-events: none;
-    display: flex;
-    flex-direction: column-reverse;
-    align-items: center;
-    gap: 2px;
-  }
-
-  .popup {
-    font-family: var(--font-display, monospace);
-    font-size: 1.5rem;
-    color: #fff;
-    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.7);
-    animation: popup-rise 0.9s ease-out forwards;
-    white-space: nowrap;
-  }
-
-  .popup.headshot {
-    color: #ffd23f;
-  }
-
-  .popup.big {
-    font-size: 2rem;
-    color: #ff7a3f;
-  }
-
-  .popup-mult {
-    margin-left: 4px;
-    font-size: 0.8em;
-    opacity: 0.9;
-  }
-
-  @keyframes popup-rise {
-    0% { opacity: 0; transform: translateY(8px) scale(0.8); }
-    20% { opacity: 1; transform: translateY(0) scale(1.1); }
-    35% { transform: translateY(0) scale(1); }
-    100% { opacity: 0; transform: translateY(-28px) scale(1); }
-  }
-
-  /* ── Section-completion tracker (top-left) ── */
-  .sections {
-    position: absolute;
-    top: 14px;
-    left: 18px;
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-  }
-
-  .sections-label {
-    font-family: var(--font-display, monospace);
-    font-size: 0.85rem;
-    letter-spacing: 0.12em;
-    color: #ffd23f;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
-  }
-
-  .sections-list {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
-
-  .sec {
-    font-family: var(--font-mono, monospace);
-    font-size: 0.62rem;
-    letter-spacing: 0.1em;
-    color: rgba(255, 255, 255, 0.35);
-  }
-
-  .sec::before {
-    content: '○ ';
-  }
-
-  .sec.found {
-    color: #9ccc65;
-  }
-
-  .sec.found::before {
-    content: '● ';
-  }
-
-  /* ── Wave indicator + banner ── */
-  .wave {
-    position: absolute;
-    top: 48px;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-  }
-
-  .wave-label {
-    font-family: var(--font-display, monospace);
-    font-size: 1rem;
-    letter-spacing: 0.14em;
-    color: #ffd23f;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
-  }
-
-  .wave-pips {
-    display: flex;
-    gap: 3px;
-  }
-
-  .pip {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.25);
-  }
-
-  .pip.filled {
-    background: #ffd23f;
-    box-shadow: 0 0 4px rgba(255, 210, 63, 0.7);
-  }
-
-  .wave-banner {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    animation: fade-out 1.8s ease-out forwards;
-  }
-
-  .wave-banner span {
-    font-family: var(--font-display, monospace);
-    font-size: clamp(2.5rem, 8vw, 5rem);
-    letter-spacing: 0.18em;
-    color: #ffd23f;
-    text-shadow: 0 0 24px rgba(255, 170, 40, 0.8), 0 4px 12px rgba(0, 0, 0, 0.8);
-    animation: banner-pop 1.8s ease-out forwards;
-  }
-
-  @keyframes banner-pop {
-    0% { transform: scale(0.6); opacity: 0; }
-    15% { transform: scale(1.1); opacity: 1; }
-    30% { transform: scale(1); }
-    100% { transform: scale(1); opacity: 1; }
-  }
-
-  .ammo {
-    position: absolute;
-    right: 24px;
-    bottom: 24px;
-    font-family: var(--font-display, monospace);
-    font-size: 1.6rem;
-    color: #fff;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
-  }
-
-  .ammo.reloading {
-    font-size: 1.1rem;
-    color: #ffd23f;
-    animation: blink 0.7s ease-in-out infinite;
-  }
-
-  .ammo.empty {
-    color: #ff5252;
-  }
-
-  .damage-flash {
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(ellipse at center, transparent 40%, rgba(255, 30, 30, 0.45) 100%);
-    animation: fade-out 0.5s ease-out forwards;
-  }
-
-  .death-flash {
-    position: absolute;
-    inset: 0;
-    background: rgba(120, 0, 0, 0.55);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    animation: fade-out 1.6s ease-out forwards;
-  }
-
-  .death-flash span {
-    font-family: var(--font-display, monospace);
-    font-size: clamp(3rem, 10vw, 6rem);
-    letter-spacing: 0.15em;
-    color: #fff;
-    text-shadow: 0 4px 12px rgba(0, 0, 0, 0.8);
-  }
-
-  @keyframes fade-out {
-    from { opacity: 1; }
-    to { opacity: 0; }
-  }
-
-  .health {
-    position: absolute;
-    left: 24px;
-    bottom: 24px;
+    left: 22px;
     display: flex;
     align-items: center;
     gap: 10px;
   }
-
-  .health-label {
-    font-family: var(--font-display, monospace);
-    font-size: 1.2rem;
-    color: #fff;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+  .brand svg {
+    width: 34px;
+    height: 34px;
+    fill: none;
+    stroke: rgba(242, 239, 230, 0.9);
+    stroke-width: 1.4;
+  }
+  .brand svg .dot {
+    fill: #e9c46a;
+    stroke: none;
+  }
+  .brand-name {
+    margin: 0;
+    font-size: 0.72rem;
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+  .brand-sub {
+    margin: 2px 0 0;
+    font-size: 0.58rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(242, 239, 230, 0.55);
   }
 
-  .health-bar {
-    width: 180px;
-    height: 14px;
-    border: 2px solid rgba(255, 255, 255, 0.8);
-    background: rgba(0, 0, 0, 0.4);
-  }
-
-  .health-fill {
-    height: 100%;
-    background: #5be36b;
-    transition: width 0.2s ease-out;
-  }
-
-  .health-fill.low {
-    background: #ff4d4d;
-    animation: blink 0.7s ease-in-out infinite;
-  }
-
-  @keyframes blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
-  }
-
-  .mute {
+  /* Counter */
+  .counter {
     position: absolute;
     top: 18px;
-    right: 18px;
-    pointer-events: auto;
-    background: rgba(0, 0, 0, 0.35);
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    font-size: 1.1rem;
-    width: 42px;
-    height: 42px;
-    cursor: var(--cursor-pointer);
-    border-radius: 4px;
-  }
-
-  .hint,
-  .interact {
-    position: absolute;
-    bottom: 48px;
     left: 50%;
     transform: translateX(-50%);
-    font-family: var(--font-display, monospace);
-    font-size: 1.3rem;
-    letter-spacing: 0.08em;
-    color: #fff;
-    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
-    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    border-radius: 999px;
+    backdrop-filter: blur(10px);
+    font-size: 0.8rem;
   }
-
-  .interact {
-    font-size: 1.6rem;
-    animation: pulse 1.2s ease-in-out infinite;
+  .counter svg {
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: rgba(242, 239, 230, 0.75);
+    stroke-width: 1.5;
   }
-
-  .key {
+  .counter .count {
+    font-weight: 600;
+    animation: pop 0.5s ease-out;
     display: inline-block;
-    padding: 0 10px;
-    border: 2px solid #fff;
+  }
+  .counter .of {
+    color: rgba(242, 239, 230, 0.6);
+  }
+  .counter .label {
+    color: rgba(242, 239, 230, 0.6);
+    font-size: 0.72rem;
+    margin-left: 2px;
+  }
+  .counter.complete {
+    border-color: rgba(233, 196, 106, 0.6);
+  }
+  .counter.complete .count {
+    color: #e9c46a;
+  }
+
+  /* Round buttons */
+  .actions {
+    position: absolute;
+    top: 18px;
+    right: 22px;
+    display: flex;
+    gap: 8px;
+  }
+  .round {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(10px);
+    display: grid;
+    place-items: center;
+    color: rgba(242, 239, 230, 0.85);
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .round:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.28);
+  }
+  .round.active {
+    border-color: rgba(233, 196, 106, 0.7);
+    color: #e9c46a;
+  }
+  .round svg {
+    width: 17px;
+    height: 17px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* Biome caption */
+  .caption {
+    position: absolute;
+    left: 24px;
+    bottom: 26px;
+    max-width: 260px;
+    animation: rise 0.6s ease-out;
+  }
+  .caption h2 {
+    margin: 4px 0 6px;
+    font-family: var(--planet-serif);
+    font-weight: 400;
+    font-size: 1.9rem;
+    letter-spacing: 0.01em;
+    line-height: 1.1;
+    color: #fbf8f0;
+    text-shadow: 0 2px 14px rgba(0, 0, 0, 0.35);
+  }
+  .caption .tagline {
+    margin: 0;
+    font-size: 0.74rem;
+    line-height: 1.45;
+    color: rgba(242, 239, 230, 0.66);
+  }
+
+  /* Bottom stack */
+  .bottom {
+    position: absolute;
+    left: 50%;
+    bottom: 22px;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .prompt {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 16px 10px 12px;
+    background: rgba(18, 40, 46, 0.72);
+    border: 1px solid rgba(233, 196, 106, 0.35);
+    border-radius: 12px;
+    backdrop-filter: blur(10px);
+    color: #f2efe6;
+    text-align: left;
+    animation: rise 0.35s ease-out;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  }
+  .prompt:hover {
+    border-color: rgba(233, 196, 106, 0.7);
+  }
+  .prompt .key {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    display: grid;
+    place-items: center;
+    border: 1px solid rgba(233, 196, 106, 0.7);
+    color: #e9c46a;
+    font-weight: 600;
+    font-size: 0.85rem;
+  }
+  .prompt-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .prompt .action {
+    font-size: 0.95rem;
+    font-weight: 500;
+  }
+  .prompt svg {
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: rgba(242, 239, 230, 0.6);
+    stroke-width: 1.6;
+  }
+
+  .hint-line {
+    margin: 0;
+    font-size: 0.72rem;
+    color: rgba(242, 239, 230, 0.7);
+    letter-spacing: 0.02em;
+    text-shadow: 0 1px 8px rgba(0, 0, 0, 0.5);
+    animation: rise 0.6s ease-out;
+    text-align: center;
+  }
+  .hint-line.small {
+    font-size: 0.66rem;
+    color: rgba(242, 239, 230, 0.5);
+  }
+  .hint-line .spark {
+    color: #e9c46a;
+  }
+  .hint-line .sep {
+    margin: 0 6px;
+    color: rgba(242, 239, 230, 0.35);
+  }
+
+  .hints {
+    display: flex;
+    gap: 14px;
+    padding: 7px 14px;
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    border-radius: 999px;
+    backdrop-filter: blur(10px);
+    font-size: 0.66rem;
+    color: rgba(242, 239, 230, 0.6);
+  }
+  .hints .group {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  kbd {
+    font-family: var(--planet-sans);
+    font-size: 0.6rem;
+    line-height: 1;
+    padding: 4px 5px;
+    min-width: 18px;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.22);
     border-radius: 4px;
-    margin: 0 4px;
+    color: rgba(242, 239, 230, 0.85);
+    background: rgba(255, 255, 255, 0.04);
   }
 
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.6; }
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes pop {
+    0% {
+      transform: scale(1);
+    }
+    40% {
+      transform: scale(1.35);
+      color: #e9c46a;
+    }
+    100% {
+      transform: scale(1);
+    }
   }
 
-  @media (max-width: 600px) {
-    .hint { font-size: 0.9rem; bottom: 150px; }
-    .interact { font-size: 1.1rem; bottom: 150px; }
-    .health { left: 14px; bottom: 14px; }
-    .health-bar { width: 120px; }
-    .ammo { right: auto; left: 14px; bottom: 44px; font-size: 1.2rem; }
-    .compass { width: 200px; }
-    .score { right: 70px; top: 14px; }
-    .score-value { font-size: 1.2rem; }
-    .combo-mult { font-size: 1.1rem; }
-    .combo-bar { width: 64px; }
-    .wave { top: 42px; }
-    .wave-label { font-size: 0.8rem; }
-    .sections { top: 10px; left: 10px; }
-    .sections-label { font-size: 0.62rem; }
-    .sec { font-size: 0.52rem; }
-    .popup { font-size: 1.1rem; }
-    .popup.big { font-size: 1.5rem; }
+  @media (max-width: 640px) {
+    .brand-name,
+    .brand-sub,
+    .counter .label {
+      display: none;
+    }
+    .brand {
+      top: 12px;
+      left: 12px;
+    }
+    .brand svg {
+      width: 26px;
+      height: 26px;
+    }
+    .counter {
+      top: 12px;
+      padding: 6px 12px;
+    }
+    .actions {
+      top: 12px;
+      right: 12px;
+    }
+    .round {
+      width: 32px;
+      height: 32px;
+    }
+    .caption {
+      left: 14px;
+      top: 58px;
+      bottom: auto;
+      max-width: 220px;
+    }
+    .caption h2 {
+      font-size: 1.4rem;
+    }
+    .bottom {
+      bottom: 172px;
+      width: calc(100% - 28px);
+    }
   }
 </style>

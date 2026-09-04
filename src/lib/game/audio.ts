@@ -1,213 +1,150 @@
-// All audio is synthesized with WebAudio — no asset downloads.
-// A laid-back chiptune loop plus gunshot / hit / hurt effects.
+// Tiny procedural soundscape: a soft ambient pad, footsteps, and a chime when
+// a wonder is found. Everything is synthesised so there are no audio assets.
 
-const STORAGE_KEY = 'ifkash-game-muted';
+const MUTE_KEY = 'planet_muted';
 
-export class GameAudio {
-  private ctx: AudioContext | null = null;
-  private musicGain: GainNode | null = null;
-  private sfxGain: GainNode | null = null;
-  private nextBarTime = 0;
-  private bar = 0;
-  private schedulerId: ReturnType<typeof setInterval> | null = null;
+export class Ambience {
   muted = false;
+  private ctx: AudioContext | null = null;
+  private master: GainNode | null = null;
+  private padGain: GainNode | null = null;
+  private started = false;
+  private lastStep = 0;
 
   constructor() {
     try {
-      this.muted = localStorage.getItem(STORAGE_KEY) === '1';
+      this.muted = localStorage.getItem(MUTE_KEY) === '1';
     } catch {
-      /* private mode */
+      /* storage unavailable */
     }
   }
 
-  // Must be called from a user gesture.
-  start() {
-    if (this.ctx) {
-      this.ctx.resume();
+  /** Create the context on the first user gesture (browsers require it). */
+  start(): void {
+    if (this.started) {
+      this.ctx?.resume();
       return;
     }
-    this.ctx = new AudioContext();
-    this.musicGain = this.ctx.createGain();
-    this.musicGain.gain.value = this.muted ? 0 : 0.16;
-    this.musicGain.connect(this.ctx.destination);
-    this.sfxGain = this.ctx.createGain();
-    this.sfxGain.gain.value = this.muted ? 0 : 0.5;
-    this.sfxGain.connect(this.ctx.destination);
+    this.started = true;
+    try {
+      const Ctx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      this.ctx = new Ctx();
+    } catch {
+      this.ctx = null;
+      return;
+    }
+    const ctx = this.ctx;
+    this.master = ctx.createGain();
+    this.master.gain.value = this.muted ? 0 : 1;
+    this.master.connect(ctx.destination);
 
-    this.nextBarTime = this.ctx.currentTime + 0.1;
-    this.schedulerId = setInterval(() => this.schedule(), 200);
+    // Ambient pad: two detuned triangles through a slow-breathing low-pass.
+    this.padGain = ctx.createGain();
+    this.padGain.gain.value = 0.045;
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.value = 520;
+    const lfo = ctx.createOscillator();
+    lfo.frequency.value = 0.07;
+    const lfoGain = ctx.createGain();
+    lfoGain.gain.value = 180;
+    lfo.connect(lfoGain).connect(filter.frequency);
+    lfo.start();
+    for (const [freq, detune] of [
+      [110, 0],
+      [165, 4],
+      [220, -3]
+    ]) {
+      const osc = ctx.createOscillator();
+      osc.type = 'triangle';
+      osc.frequency.value = freq;
+      osc.detune.value = detune;
+      osc.connect(filter);
+      osc.start();
+    }
+    filter.connect(this.padGain).connect(this.master);
   }
 
-  toggleMute(): boolean {
+  toggle(): boolean {
     this.muted = !this.muted;
-    if (this.musicGain) this.musicGain.gain.value = this.muted ? 0 : 0.16;
-    if (this.sfxGain) this.sfxGain.gain.value = this.muted ? 0 : 0.5;
     try {
-      localStorage.setItem(STORAGE_KEY, this.muted ? '1' : '0');
+      localStorage.setItem(MUTE_KEY, this.muted ? '1' : '0');
     } catch {
       /* ignore */
+    }
+    if (this.master && this.ctx) {
+      this.master.gain.setTargetAtTime(this.muted ? 0 : 1, this.ctx.currentTime, 0.05);
     }
     return this.muted;
   }
 
-  // ── Music: 2-bar lookahead scheduler, I–VI–IV–V progression ──
-  private schedule() {
-    if (!this.ctx || !this.musicGain) return;
-    const BPM = 96;
-    const barLen = (60 / BPM) * 4;
-    while (this.nextBarTime < this.ctx.currentTime + barLen * 1.5) {
-      this.scheduleBar(this.nextBarTime, this.bar);
-      this.nextBarTime += barLen;
-      this.bar++;
-    }
-  }
-
-  private note(
-    freq: number,
-    time: number,
-    dur: number,
-    type: OscillatorType,
-    gain: number,
-    dest: AudioNode
-  ) {
-    const ctx = this.ctx!;
-    const osc = ctx.createOscillator();
-    const g = ctx.createGain();
-    osc.type = type;
-    osc.frequency.value = freq;
-    g.gain.setValueAtTime(0, time);
-    g.gain.linearRampToValueAtTime(gain, time + 0.02);
-    g.gain.exponentialRampToValueAtTime(0.001, time + dur);
-    osc.connect(g).connect(dest);
-    osc.start(time);
-    osc.stop(time + dur + 0.05);
-  }
-
-  private scheduleBar(t0: number, bar: number) {
-    const dest = this.musicGain!;
-    const beat = 60 / 96;
-    // C maj pentatonic-ish progression: C, Am, F, G (roots in Hz)
-    const roots = [130.81, 110.0, 87.31, 98.0];
-    const root = roots[bar % 4];
-    // Bass: root on 1 and 3
-    this.note(root, t0, beat * 0.9, 'triangle', 0.5, dest);
-    this.note(root, t0 + beat * 2, beat * 0.9, 'triangle', 0.4, dest);
-    // Pad: fifth + octave, soft
-    this.note(root * 1.5, t0, beat * 4, 'sine', 0.12, dest);
-    this.note(root * 2, t0, beat * 4, 'sine', 0.1, dest);
-    // Lead: sparse pentatonic noodling, deterministic per bar
-    const penta = [1, 9 / 8, 5 / 4, 3 / 2, 5 / 3, 2];
-    for (let i = 0; i < 4; i++) {
-      const step = (bar * 7 + i * 3) % penta.length;
-      if ((bar + i) % 3 === 0) continue; // leave gaps
-      this.note(root * 2 * penta[step], t0 + beat * i, beat * 0.5, 'square', 0.07, dest);
-    }
-  }
-
-  // ── SFX ──
-  private noiseBurst(dur: number, filterFreq: number, gain: number) {
-    if (!this.ctx || !this.sfxGain) return;
+  /** Soft footstep; rate-limited so running does not machine-gun. */
+  step(running: boolean): void {
     const ctx = this.ctx;
-    const len = Math.floor(ctx.sampleRate * dur);
-    const buffer = ctx.createBuffer(1, len, ctx.sampleRate);
-    const data = buffer.getChannelData(0);
-    for (let i = 0; i < len; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / len);
+    if (!ctx || !this.master || this.muted) return;
+    const now = ctx.currentTime;
+    if (now - this.lastStep < (running ? 0.22 : 0.34)) return;
+    this.lastStep = now;
+    const len = 0.08;
+    const buf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * len), ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < data.length; i++) {
+      const t = i / data.length;
+      data[i] = (Math.random() * 2 - 1) * (1 - t) * (1 - t);
+    }
     const src = ctx.createBufferSource();
-    src.buffer = buffer;
+    src.buffer = buf;
     const filter = ctx.createBiquadFilter();
     filter.type = 'lowpass';
-    filter.frequency.value = filterFreq;
+    filter.frequency.value = 700 + Math.random() * 300;
     const g = ctx.createGain();
-    g.gain.value = gain;
-    src.connect(filter).connect(g).connect(this.sfxGain);
-    src.start();
+    g.gain.value = 0.12;
+    src.connect(filter).connect(g).connect(this.master);
+    src.start(now);
   }
 
-  gunshot() {
-    this.noiseBurst(0.12, 1800, 0.7);
+  /** Three-note chime for a found wonder. */
+  chime(): void {
+    const ctx = this.ctx;
+    if (!ctx || !this.master || this.muted) return;
+    const now = ctx.currentTime;
+    const notes = [523.25, 659.25, 783.99, 1046.5];
+    notes.forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      const g = ctx.createGain();
+      const t0 = now + i * 0.11;
+      g.gain.setValueAtTime(0, t0);
+      g.gain.linearRampToValueAtTime(0.16, t0 + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0008, t0 + 1.1);
+      osc.connect(g).connect(this.master!);
+      osc.start(t0);
+      osc.stop(t0 + 1.2);
+    });
   }
 
-  enemyShot() {
-    this.noiseBurst(0.1, 900, 0.4);
+  /** Short hop blip. */
+  hop(): void {
+    const ctx = this.ctx;
+    if (!ctx || !this.master || this.muted) return;
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(320, now);
+    osc.frequency.exponentialRampToValueAtTime(620, now + 0.12);
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.08, now);
+    g.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+    osc.connect(g).connect(this.master);
+    osc.start(now);
+    osc.stop(now + 0.2);
   }
 
-  hitConfirm() {
-    if (!this.ctx || !this.sfxGain) return;
-    this.note(880, this.ctx.currentTime, 0.08, 'square', 0.25, this.sfxGain);
-    this.note(1320, this.ctx.currentTime + 0.06, 0.1, 'square', 0.2, this.sfxGain);
-  }
-
-  headshotConfirm() {
-    if (!this.ctx || !this.sfxGain) return;
-    this.note(1320, this.ctx.currentTime, 0.06, 'square', 0.25, this.sfxGain);
-    this.note(1760, this.ctx.currentTime + 0.05, 0.1, 'square', 0.22, this.sfxGain);
-  }
-
-  reload() {
-    if (!this.ctx || !this.sfxGain) return;
-    const t = this.ctx.currentTime;
-    // mag out, mag in, bolt
-    this.note(220, t, 0.05, 'square', 0.18, this.sfxGain);
-    this.note(180, t + 0.45, 0.05, 'square', 0.2, this.sfxGain);
-    this.note(330, t + 0.95, 0.04, 'square', 0.22, this.sfxGain);
-  }
-
-  dryFire() {
-    if (!this.ctx || !this.sfxGain) return;
-    this.note(700, this.ctx.currentTime, 0.03, 'square', 0.15, this.sfxGain);
-  }
-
-  footstep(running: boolean) {
-    this.noiseBurst(0.04, running ? 500 : 350, running ? 0.16 : 0.1);
-  }
-
-  streak(count: number) {
-    if (!this.ctx || !this.sfxGain) return;
-    const base = 440 * Math.pow(1.12, Math.min(count, 10));
-    this.note(base, this.ctx.currentTime, 0.1, 'triangle', 0.25, this.sfxGain);
-    this.note(base * 1.5, this.ctx.currentTime + 0.08, 0.12, 'triangle', 0.22, this.sfxGain);
-  }
-
-  playerHurt() {
-    if (!this.ctx || !this.sfxGain) return;
-    this.note(160, this.ctx.currentTime, 0.18, 'sawtooth', 0.3, this.sfxGain);
-  }
-
-  // A close-range claw/melee swipe — gritty noise thump, no tonal hit.
-  melee() {
-    this.noiseBurst(0.16, 600, 0.5);
-    if (this.ctx && this.sfxGain)
-      this.note(90, this.ctx.currentTime, 0.14, 'sawtooth', 0.28, this.sfxGain);
-  }
-
-  // Combo multiplier climbed a tier: a bright rising two-note stab, pitched up
-  // with the tier so x5 sings higher than x2.
-  comboTier(mult: number) {
-    if (!this.ctx || !this.sfxGain) return;
-    const base = 520 * Math.pow(1.18, Math.max(0, mult - 1));
-    const t = this.ctx.currentTime;
-    this.note(base, t, 0.08, 'square', 0.26, this.sfxGain);
-    this.note(base * 1.5, t + 0.06, 0.12, 'square', 0.24, this.sfxGain);
-  }
-
-  // New wave begins: short ascending fanfare arpeggio.
-  waveStart() {
-    if (!this.ctx || !this.sfxGain) return;
-    const t = this.ctx.currentTime;
-    [392, 523, 659, 784, 1046].forEach((f, i) =>
-      this.note(f, t + i * 0.09, 0.22, 'triangle', 0.28, this.sfxGain!)
-    );
-  }
-
-  crateOpen() {
-    if (!this.ctx || !this.sfxGain) return;
-    const t = this.ctx.currentTime;
-    [523, 659, 784, 1046].forEach((f, i) => this.note(f, t + i * 0.07, 0.18, 'triangle', 0.25, this.sfxGain!));
-  }
-
-  dispose() {
-    if (this.schedulerId) clearInterval(this.schedulerId);
-    this.ctx?.close();
+  dispose(): void {
+    this.ctx?.close().catch(() => {});
     this.ctx = null;
+    this.master = null;
+    this.started = false;
   }
 }

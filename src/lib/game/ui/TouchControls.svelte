@@ -1,211 +1,160 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
 
-  export let interactPrompt: string | null = null;
+  const dispatch = createEventDispatcher<{ move: { x: number; y: number }; hop: void; run: { active: boolean } }>();
 
-  // (dx, dy) look deltas and (x, y) move vector are pushed up to the Game's InputManager
-  const dispatch = createEventDispatcher<{
-    move: { x: number; y: number };
-    look: { dx: number; dy: number };
-    fire: void;
-    interact: void;
-    jump: void;
-    crouch: { active: boolean };
-    aim: { active: boolean };
-    reload: void;
-  }>();
+  const RADIUS = 44;
+  let zone: HTMLDivElement;
+  let active = false;
+  let knobX = 0;
+  let knobY = 0;
+  let originX = 0;
+  let originY = 0;
+  let pointerId: number | null = null;
+  let running = false;
 
-  let crouched = false;
-  let aiming = false;
-
-  function toggleCrouch() {
-    crouched = !crouched;
-    dispatch('crouch', { active: crouched });
+  function onDown(e: PointerEvent) {
+    if (pointerId !== null) return;
+    pointerId = e.pointerId;
+    zone.setPointerCapture(e.pointerId);
+    const rect = zone.getBoundingClientRect();
+    originX = rect.left + rect.width / 2;
+    originY = rect.top + rect.height / 2;
+    active = true;
+    onMove(e);
   }
 
-  function toggleAim() {
-    aiming = !aiming;
-    dispatch('aim', { active: aiming });
-  }
-
-  const LOOK_SENSITIVITY = 2.2;
-  const STICK_RADIUS = 50;
-
-  let joyTouchId: number | null = null;
-  let lookTouchId: number | null = null;
-  let joyOrigin = { x: 0, y: 0 };
-  let knob = { x: 0, y: 0 };
-  let lastLook = { x: 0, y: 0 };
-  let joyActive = false;
-
-  function onZoneTouchStart(e: TouchEvent) {
-    e.preventDefault();
-    for (const t of Array.from(e.changedTouches)) {
-      const isLeft = t.clientX < window.innerWidth / 2;
-      if (isLeft && joyTouchId === null) {
-        joyTouchId = t.identifier;
-        joyOrigin = { x: t.clientX, y: t.clientY };
-        knob = { x: 0, y: 0 };
-        joyActive = true;
-      } else if (!isLeft && lookTouchId === null) {
-        lookTouchId = t.identifier;
-        lastLook = { x: t.clientX, y: t.clientY };
-      }
+  function onMove(e: PointerEvent) {
+    if (e.pointerId !== pointerId) return;
+    let dx = e.clientX - originX;
+    let dy = e.clientY - originY;
+    const len = Math.hypot(dx, dy);
+    if (len > RADIUS) {
+      dx = (dx / len) * RADIUS;
+      dy = (dy / len) * RADIUS;
     }
+    knobX = dx;
+    knobY = dy;
+    dispatch('move', { x: dx / RADIUS, y: -dy / RADIUS });
   }
 
-  function onZoneTouchMove(e: TouchEvent) {
-    e.preventDefault();
-    for (const t of Array.from(e.changedTouches)) {
-      if (t.identifier === joyTouchId) {
-        let dx = t.clientX - joyOrigin.x;
-        let dy = t.clientY - joyOrigin.y;
-        const len = Math.hypot(dx, dy);
-        if (len > STICK_RADIUS) {
-          dx = (dx / len) * STICK_RADIUS;
-          dy = (dy / len) * STICK_RADIUS;
-        }
-        knob = { x: dx, y: dy };
-        dispatch('move', { x: dx / STICK_RADIUS, y: -dy / STICK_RADIUS });
-      } else if (t.identifier === lookTouchId) {
-        dispatch('look', {
-          dx: (t.clientX - lastLook.x) * LOOK_SENSITIVITY,
-          dy: (t.clientY - lastLook.y) * LOOK_SENSITIVITY
-        });
-        lastLook = { x: t.clientX, y: t.clientY };
-      }
-    }
+  function onUp(e: PointerEvent) {
+    if (e.pointerId !== pointerId) return;
+    pointerId = null;
+    active = false;
+    knobX = 0;
+    knobY = 0;
+    dispatch('move', { x: 0, y: 0 });
   }
 
-  function onZoneTouchEnd(e: TouchEvent) {
-    for (const t of Array.from(e.changedTouches)) {
-      if (t.identifier === joyTouchId) {
-        joyTouchId = null;
-        joyActive = false;
-        knob = { x: 0, y: 0 };
-        dispatch('move', { x: 0, y: 0 });
-      } else if (t.identifier === lookTouchId) {
-        lookTouchId = null;
-      }
-    }
+  function toggleRun() {
+    running = !running;
+    dispatch('run', { active: running });
   }
 </script>
 
-<div
-  class="touch-zone"
-  on:touchstart={onZoneTouchStart}
-  on:touchmove={onZoneTouchMove}
-  on:touchend={onZoneTouchEnd}
-  on:touchcancel={onZoneTouchEnd}
->
-  {#if joyActive}
-    <div class="stick-base" style="left: {joyOrigin.x}px; top: {joyOrigin.y}px">
-      <div class="stick-knob" style="transform: translate({knob.x}px, {knob.y}px)"></div>
-    </div>
-  {/if}
-</div>
-
-<div class="buttons">
-  {#if interactPrompt}
-    <button class="btn use" on:touchstart|preventDefault={() => dispatch('interact')}>USE</button>
-  {/if}
-  <button class="btn fire" on:touchstart|preventDefault={() => dispatch('fire')}>FIRE</button>
-  <div class="btn-row">
-    <button class="btn small" class:on={aiming} on:touchstart|preventDefault={toggleAim}>AIM</button>
-    <button class="btn small" on:touchstart|preventDefault={() => dispatch('reload')}>LOAD</button>
+<div class="touch">
+  <div
+    class="stick"
+    class:active
+    bind:this={zone}
+    on:pointerdown={onDown}
+    on:pointermove={onMove}
+    on:pointerup={onUp}
+    on:pointercancel={onUp}
+    role="presentation"
+  >
+    <div class="knob" style="transform: translate({knobX}px, {knobY}px)"></div>
   </div>
-  <div class="btn-row">
-    <button class="btn small" on:touchstart|preventDefault={() => dispatch('jump')}>JUMP</button>
-    <button class="btn small" class:on={crouched} on:touchstart|preventDefault={toggleCrouch}>DUCK</button>
+
+  <div class="buttons">
+    <button class="btn" class:on={running} on:click={toggleRun} aria-label="Toggle run" aria-pressed={running}>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 4l-1 5 4 2-2 5-3-1-3 5M14 3.5a1 1 0 1 0 2 0 1 1 0 1 0-2 0" /></svg>
+      <span>run</span>
+    </button>
+    <button class="btn big" on:pointerdown|preventDefault={() => dispatch('hop')} aria-label="Hop">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V6M6 12l6-6 6 6" /></svg>
+      <span>hop</span>
+    </button>
   </div>
 </div>
 
 <style>
-  .touch-zone {
+  .touch {
     position: absolute;
     inset: 0;
-    z-index: 15;
-    touch-action: none;
-  }
-
-  .stick-base {
-    position: fixed;
-    width: 100px;
-    height: 100px;
-    margin: -50px 0 0 -50px;
-    border: 2px solid rgba(255, 255, 255, 0.4);
-    border-radius: 50%;
     pointer-events: none;
+    z-index: 20;
+    font-family: var(--planet-sans);
   }
-
-  .stick-knob {
+  .stick {
     position: absolute;
-    left: 50%;
-    top: 50%;
-    width: 44px;
-    height: 44px;
-    margin: -22px 0 0 -22px;
-    background: rgba(255, 255, 255, 0.5);
+    left: 24px;
+    bottom: 26px;
+    width: 120px;
+    height: 120px;
     border-radius: 50%;
+    background: rgba(10, 24, 34, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    backdrop-filter: blur(6px);
+    pointer-events: auto;
+    touch-action: none;
+    display: grid;
+    place-items: center;
+    transition: background 0.15s;
   }
-
+  .stick.active {
+    background: rgba(10, 24, 34, 0.5);
+  }
+  .knob {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: rgba(242, 239, 230, 0.85);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+  }
   .buttons {
     position: absolute;
-    right: 20px;
-    bottom: 28px;
-    z-index: 20;
+    right: 22px;
+    bottom: 30px;
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+    pointer-events: auto;
+  }
+  .btn {
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    background: rgba(10, 24, 34, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    backdrop-filter: blur(6px);
+    color: rgba(242, 239, 230, 0.9);
     display: flex;
     flex-direction: column;
-    gap: 14px;
     align-items: center;
+    justify-content: center;
+    gap: 2px;
+    font-size: 0.55rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    touch-action: manipulation;
   }
-
-  .btn {
-    font-family: var(--font-display, monospace);
-    font-size: 1.1rem;
-    letter-spacing: 0.08em;
-    color: #fff;
-    border-radius: 50%;
-    cursor: var(--cursor-pointer);
-    touch-action: none;
-    -webkit-user-select: none;
-    user-select: none;
+  .btn.big {
+    width: 70px;
+    height: 70px;
   }
-
-  .fire {
-    width: 84px;
-    height: 84px;
-    background: rgba(255, 77, 77, 0.55);
-    border: 3px solid rgba(255, 255, 255, 0.7);
+  .btn.on {
+    border-color: rgba(233, 196, 106, 0.7);
+    color: #e9c46a;
   }
-
-  .use {
-    width: 64px;
-    height: 64px;
-    background: rgba(80, 200, 120, 0.55);
-    border: 3px solid rgba(255, 255, 255, 0.7);
-    animation: pulse 1.2s ease-in-out infinite;
-  }
-
-  .btn-row {
-    display: flex;
-    gap: 10px;
-  }
-
-  .small {
-    width: 56px;
-    height: 56px;
-    font-size: 0.8rem;
-    background: rgba(70, 130, 220, 0.5);
-    border: 2px solid rgba(255, 255, 255, 0.6);
-  }
-
-  .small.on {
-    background: rgba(255, 210, 63, 0.6);
-  }
-
-  @keyframes pulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.08); }
+  .btn svg {
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
   }
 </style>

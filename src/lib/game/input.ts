@@ -1,154 +1,280 @@
-// Unified input state shared by desktop listeners and mobile touch UI.
-export type InputState = {
-  moveX: number; // -1..1 strafe
-  moveY: number; // -1..1 forward
-  lookDX: number; // accumulated, consumed each frame
-  lookDY: number;
-  fireQueued: boolean;
-  interactQueued: boolean;
-  jumpQueued: boolean;
-  reloadQueued: boolean;
-  run: boolean;
-  crouch: boolean;
-  aim: boolean; // hold right mouse button (or touch toggle) to aim down sights
+// Keyboard, pointer, wheel, and touch input for the planet walker. The Game
+// polls this each frame; one-shot actions are queued and consumed once.
+
+export type Click = { x: number; y: number };
+
+const MOVE_KEYS: Record<string, [number, number]> = {
+  KeyW: [0, 1],
+  ArrowUp: [0, 1],
+  KeyS: [0, -1],
+  ArrowDown: [0, -1],
+  KeyA: [-1, 0],
+  ArrowLeft: [-1, 0],
+  KeyD: [1, 0],
+  ArrowRight: [1, 0]
 };
 
-export class InputManager {
-  state: InputState = {
-    moveX: 0,
-    moveY: 0,
-    lookDX: 0,
-    lookDY: 0,
-    fireQueued: false,
-    interactQueued: false,
-    jumpQueued: false,
-    reloadQueued: false,
-    run: false,
-    crouch: false,
-    aim: false
-  };
+const DRAG_THRESHOLD = 5;
 
-  // Touch joystick writes here; merged with keys in read()
+export class Input {
+  /** Virtual joystick vector from the touch controls, each axis in [-1, 1]. */
   touchMove = { x: 0, y: 0 };
-  touchCrouch = false;
-  touchAim = false;
-
-  private keys = new Set<string>();
-  private canvas: HTMLCanvasElement;
-  private onLockChange: (locked: boolean) => void;
+  touchRun = false;
+  /** When false, keys and clicks are ignored (an overlay is open). */
   enabled = true;
 
-  constructor(canvas: HTMLCanvasElement, onLockChange: (locked: boolean) => void) {
+  private keys = new Set<string>();
+  private hopQueued = false;
+  private interactQueued = false;
+  private globeQueued = false;
+  private helpQueued = false;
+  private clockQueued = false;
+  private escapeQueued = false;
+  private orbitDx = 0;
+  private orbitDy = 0;
+  private zoom = 0;
+  private click: Click | null = null;
+  private pointers = new Map<number, { x: number; y: number }>();
+  private dragStart: { x: number; y: number } | null = null;
+  private dragged = false;
+  private pinchDist = 0;
+  private canvas: HTMLCanvasElement;
+  private onAny: (() => void) | null = null;
+
+  constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
-    this.onLockChange = onLockChange;
-    document.addEventListener('keydown', this.onKeyDown);
-    document.addEventListener('keyup', this.onKeyUp);
-    document.addEventListener('mousemove', this.onMouseMove);
-    document.addEventListener('mousedown', this.onMouseDown);
-    document.addEventListener('mouseup', this.onMouseUp);
-    document.addEventListener('contextmenu', this.onContextMenu);
-    document.addEventListener('pointerlockchange', this.onPointerLockChange);
+    window.addEventListener('keydown', this.onKeyDown);
+    window.addEventListener('keyup', this.onKeyUp);
+    window.addEventListener('blur', this.onBlur);
+    canvas.addEventListener('pointerdown', this.onPointerDown);
+    canvas.addEventListener('pointermove', this.onPointerMove);
+    canvas.addEventListener('pointerup', this.onPointerUp);
+    canvas.addEventListener('pointercancel', this.onPointerUp);
+    canvas.addEventListener('wheel', this.onWheel, { passive: false });
+    canvas.addEventListener('contextmenu', this.onContext);
   }
 
-  get locked(): boolean {
-    return document.pointerLockElement === this.canvas;
+  /** Called once on the first movement key, hop, or click (used to leave the intro). */
+  onFirstGesture(cb: () => void): void {
+    this.onAny = cb;
   }
 
-  requestLock() {
-    this.canvas.requestPointerLock?.();
+  private fireAny(): void {
+    if (this.onAny) {
+      const cb = this.onAny;
+      this.onAny = null;
+      cb();
+    }
   }
 
-  exitLock() {
-    if (this.locked) document.exitPointerLock();
+  get moveX(): number {
+    let x = this.touchMove.x;
+    if (this.enabled) for (const k of this.keys) x += MOVE_KEYS[k]?.[0] ?? 0;
+    return Math.max(-1, Math.min(1, x));
   }
 
-  // Touch UI hooks
-  addLook(dx: number, dy: number) {
-    this.state.lookDX += dx;
-    this.state.lookDY += dy;
+  get moveY(): number {
+    let y = this.touchMove.y;
+    if (this.enabled) for (const k of this.keys) y += MOVE_KEYS[k]?.[1] ?? 0;
+    return Math.max(-1, Math.min(1, y));
   }
-  queueFire() {
-    if (this.enabled) this.state.fireQueued = true;
+
+  get run(): boolean {
+    return this.touchRun || (this.enabled && (this.keys.has('ShiftLeft') || this.keys.has('ShiftRight')));
   }
-  queueInteract() {
-    this.state.interactQueued = true;
+
+  get dragging(): boolean {
+    return this.dragged;
   }
-  queueJump() {
-    this.state.jumpQueued = true;
+
+  queueHop(): void {
+    this.hopQueued = true;
+    this.fireAny();
   }
-  queueReload() {
-    this.state.reloadQueued = true;
+  queueInteract(): void {
+    this.interactQueued = true;
+  }
+  queueGlobe(): void {
+    this.globeQueued = true;
+  }
+  /** Touch joystick moved: counts as the first gesture. */
+  notifyTouchMove(): void {
+    this.fireAny();
+  }
+
+  consumeHop(): boolean {
+    const v = this.hopQueued;
+    this.hopQueued = false;
+    return v;
+  }
+  consumeInteract(): boolean {
+    const v = this.interactQueued;
+    this.interactQueued = false;
+    return v;
+  }
+  consumeGlobe(): boolean {
+    const v = this.globeQueued;
+    this.globeQueued = false;
+    return v;
+  }
+  consumeClock(): boolean {
+    const v = this.clockQueued;
+    this.clockQueued = false;
+    return v;
+  }
+  consumeHelp(): boolean {
+    const v = this.helpQueued;
+    this.helpQueued = false;
+    return v;
+  }
+  consumeEscape(): boolean {
+    const v = this.escapeQueued;
+    this.escapeQueued = false;
+    return v;
+  }
+  consumeOrbit(): { dx: number; dy: number } {
+    const r = { dx: this.orbitDx, dy: this.orbitDy };
+    this.orbitDx = 0;
+    this.orbitDy = 0;
+    return r;
+  }
+  consumeZoom(): number {
+    const z = this.zoom;
+    this.zoom = 0;
+    return z;
+  }
+  consumeClick(): Click | null {
+    const c = this.click;
+    this.click = null;
+    return c;
   }
 
   private onKeyDown = (e: KeyboardEvent) => {
-    if (e.repeat) return;
-    this.keys.add(e.code);
-    if (e.code === 'KeyE') this.state.interactQueued = true;
-    if (e.code === 'Space') this.state.jumpQueued = true;
-    if (e.code === 'KeyR') this.state.reloadQueued = true;
+    const target = e.target as HTMLElement | null;
+    if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) return;
+    if (e.code === 'Escape') {
+      this.escapeQueued = true;
+      return;
+    }
+    if (!this.enabled) return;
+    if (e.code in MOVE_KEYS) {
+      e.preventDefault();
+      this.keys.add(e.code);
+      this.fireAny();
+      return;
+    }
+    switch (e.code) {
+      case 'ShiftLeft':
+      case 'ShiftRight':
+        this.keys.add(e.code);
+        break;
+      case 'Space':
+        e.preventDefault();
+        if (!e.repeat) this.queueHop();
+        break;
+      case 'KeyE':
+      case 'Enter':
+        if (!e.repeat) this.interactQueued = true;
+        break;
+      case 'KeyM':
+        if (!e.repeat) this.globeQueued = true;
+        break;
+      case 'KeyH':
+      case 'Slash':
+        if (!e.repeat) this.helpQueued = true;
+        break;
+      case 'KeyT':
+        if (!e.repeat) this.clockQueued = true;
+        break;
+    }
   };
+
   private onKeyUp = (e: KeyboardEvent) => {
     this.keys.delete(e.code);
   };
-  private onMouseMove = (e: MouseEvent) => {
-    if (!this.locked) return;
-    this.state.lookDX += e.movementX;
-    this.state.lookDY += e.movementY;
-  };
-  private onMouseDown = (e: MouseEvent) => {
-    if (!this.locked || !this.enabled) return;
-    if (e.button === 0) this.state.fireQueued = true;
-    if (e.button === 2) this.state.aim = true;
-  };
-  private onMouseUp = (e: MouseEvent) => {
-    if (e.button === 2) this.state.aim = false;
-  };
-  private onContextMenu = (e: Event) => {
-    if (this.locked) e.preventDefault();
-  };
-  private onPointerLockChange = () => {
-    this.onLockChange(this.locked);
+
+  private onBlur = () => {
+    this.keys.clear();
+    this.pointers.clear();
+    this.dragStart = null;
+    this.dragged = false;
   };
 
-  // Snapshot movement from keys + touch, return state; caller zeroes deltas after use.
-  read(): InputState {
-    let kx = 0;
-    let ky = 0;
-    if (this.keys.has('KeyW') || this.keys.has('ArrowUp')) ky += 1;
-    if (this.keys.has('KeyS') || this.keys.has('ArrowDown')) ky -= 1;
-    if (this.keys.has('KeyD') || this.keys.has('ArrowRight')) kx += 1;
-    if (this.keys.has('KeyA') || this.keys.has('ArrowLeft')) kx -= 1;
-    this.state.moveX = Math.max(-1, Math.min(1, kx + this.touchMove.x));
-    this.state.moveY = Math.max(-1, Math.min(1, ky + this.touchMove.y));
-    this.state.run =
-      this.keys.has('ShiftLeft') ||
-      this.keys.has('ShiftRight') ||
-      // Touch: pushing the stick to its edge sprints
-      Math.hypot(this.touchMove.x, this.touchMove.y) > 0.95;
-    this.state.crouch =
-      this.keys.has('KeyC') || this.keys.has('ControlLeft') || this.touchCrouch;
-    if (this.touchAim) this.state.aim = true;
-    else if (!this.locked) this.state.aim = false;
-    return this.state;
+  private onPointerDown = (e: PointerEvent) => {
+    this.canvas.setPointerCapture(e.pointerId);
+    this.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (this.pointers.size === 1) {
+      this.dragStart = { x: e.clientX, y: e.clientY };
+      this.dragged = false;
+    } else if (this.pointers.size === 2) {
+      this.pinchDist = this.pointerDistance();
+      this.dragged = true; // a pinch is never a click
+    }
+  };
+
+  private onPointerMove = (e: PointerEvent) => {
+    const prev = this.pointers.get(e.pointerId);
+    if (!prev) return;
+    const dx = e.clientX - prev.x;
+    const dy = e.clientY - prev.y;
+    this.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+    if (this.pointers.size === 1) {
+      if (this.dragStart && !this.dragged) {
+        const mx = e.clientX - this.dragStart.x;
+        const my = e.clientY - this.dragStart.y;
+        if (Math.hypot(mx, my) > DRAG_THRESHOLD) this.dragged = true;
+      }
+      if (this.dragged) {
+        this.orbitDx += dx;
+        this.orbitDy += dy;
+      }
+    } else if (this.pointers.size === 2) {
+      const d = this.pointerDistance();
+      if (this.pinchDist > 0) this.zoom += (this.pinchDist - d) * 0.02;
+      this.pinchDist = d;
+    }
+  };
+
+  private onPointerUp = (e: PointerEvent) => {
+    const had = this.pointers.delete(e.pointerId);
+    if (!had) return;
+    if (this.pointers.size === 0) {
+      if (!this.dragged && this.dragStart && this.enabled) {
+        const rect = this.canvas.getBoundingClientRect();
+        this.click = {
+          x: ((e.clientX - rect.left) / rect.width) * 2 - 1,
+          y: -((e.clientY - rect.top) / rect.height) * 2 + 1
+        };
+        this.fireAny();
+      }
+      this.dragStart = null;
+      this.dragged = false;
+    }
+  };
+
+  private onWheel = (e: WheelEvent) => {
+    e.preventDefault();
+    this.zoom += Math.sign(e.deltaY) * Math.min(1.5, Math.abs(e.deltaY) * 0.01);
+  };
+
+  private onContext = (e: Event) => e.preventDefault();
+
+  private pointerDistance(): number {
+    const pts = [...this.pointers.values()];
+    if (pts.length < 2) return 0;
+    return Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
   }
 
-  consumeFrame() {
-    this.state.lookDX = 0;
-    this.state.lookDY = 0;
-    this.state.fireQueued = false;
-    this.state.interactQueued = false;
-    this.state.jumpQueued = false;
-    this.state.reloadQueued = false;
-  }
-
-  dispose() {
-    document.removeEventListener('keydown', this.onKeyDown);
-    document.removeEventListener('keyup', this.onKeyUp);
-    document.removeEventListener('mousemove', this.onMouseMove);
-    document.removeEventListener('mousedown', this.onMouseDown);
-    document.removeEventListener('mouseup', this.onMouseUp);
-    document.removeEventListener('contextmenu', this.onContextMenu);
-    document.removeEventListener('pointerlockchange', this.onPointerLockChange);
-    this.exitLock();
+  dispose(): void {
+    window.removeEventListener('keydown', this.onKeyDown);
+    window.removeEventListener('keyup', this.onKeyUp);
+    window.removeEventListener('blur', this.onBlur);
+    this.canvas.removeEventListener('pointerdown', this.onPointerDown);
+    this.canvas.removeEventListener('pointermove', this.onPointerMove);
+    this.canvas.removeEventListener('pointerup', this.onPointerUp);
+    this.canvas.removeEventListener('pointercancel', this.onPointerUp);
+    this.canvas.removeEventListener('wheel', this.onWheel);
+    this.canvas.removeEventListener('contextmenu', this.onContext);
   }
 }

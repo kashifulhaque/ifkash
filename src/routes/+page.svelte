@@ -38,7 +38,7 @@
       desc: "Notes on engineering and ML",
       href: "/blog",
     },
-    { n: "07", name: "Game", desc: "A browser FPS", href: "/game" },
+    { n: "07", name: "Game", desc: "A tiny planet to wander", href: "/game" },
   ];
 </script>
 

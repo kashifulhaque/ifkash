@@ -74,7 +74,7 @@ Python, C++, Rust, Go, PyTorch, transformer training, reinforcement learning, Fl
 - /education: Academic background.
 - /blog: Engineering notes and experiments hosted on Hashnode.
 - /fitness: Fitness dashboard.
-- /game: Browser FPS.
+- /game: Tiny-planet explorer that presents the portfolio as collectible wonders.
 - /api/cv?format=view: Resume.
 `.trim();
 

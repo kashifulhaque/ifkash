@@ -1,87 +1,49 @@
 import { writable } from 'svelte/store';
-import type { Section, SectionId } from '$lib/content';
-import type { Perk } from './perks';
-import type { Mutator } from './mutators';
+import type { Wonder } from './wonders';
+
+export type BiomeCaption = { name: string; kind: string; index: string; tagline: string };
+
+/** Day-night clock as shown in the HUD. */
+export type ClockState = { paused: boolean; night: boolean };
 
 export type GameState = {
-  started: boolean;
-  pointerLocked: boolean;
-  interactPrompt: string | null;
-  openSection: Section | null;
+  ready: boolean;
   webglFailed: boolean;
   isTouch: boolean;
-  textMode: boolean;
-  health: number;
-  hitCount: number; // increments on damage; drives the red flash
-  deathCount: number; // increments on death; drives the death flash
+  /** True before the player's first move, while the camera shows the whole planet. */
+  intro: boolean;
+  globeView: boolean;
+  biome: BiomeCaption | null;
+  /** Nearby wonder or boat the player can interact with. */
+  prompt: { id: string; action: string; found: boolean; kicker?: string } | null;
+  found: string[];
+  total: number;
+  openWonder: Wonder | null;
+  help: boolean;
   muted: boolean;
-  dayNightCycle: boolean;
-  ammo: number;
-  reserve: number;
-  reloading: boolean;
-  score: number;
-  streak: number;
-  combo: number; // consecutive kills inside the combo window
-  comboMult: number; // current points multiplier (1..5)
-  comboTimer: number; // 0..1 remaining fraction of the combo window (drives the bar)
-  wave: number;
-  waveKills: number;
-  waveQuota: number;
-  waveBanner: { id: number; wave: number } | null; // increments on wave start → banner flash
-  scorePopups: { id: number; amount: number; mult: number; headshot: boolean }[];
-  aiming: boolean;
-  yaw: number;
-  hitMarker: { id: number; headshot: boolean; killed: boolean } | null;
-  dead: boolean;
-  finalScore: number;
-  // Feature 1 — section-completion objective
-  sectionsOpened: SectionId[];
-  allSectionsCleared: boolean;
-  // Feature 2 — daily challenge
-  daily: boolean;
-  dailyDay: string | null; // YYYY-MM-DD of the active daily run
-  mutators: Mutator[];
-  // Feature 3 — between-wave perk picks
-  perkOffer: Perk[] | null;
-  perksTaken: string[];
+  /** Short fading notice, for example after finding a wonder. */
+  toast: { id: number; text: string } | null;
+  /** Label of the world seed, for example "2026-09-04" or "quiet-fox-73". */
+  seed: string;
+  clock: ClockState;
 };
 
-export const gameState = writable<GameState>({
-  started: false,
-  pointerLocked: false,
-  interactPrompt: null,
-  openSection: null,
+export const initialState: GameState = {
+  ready: false,
   webglFailed: false,
   isTouch: false,
-  textMode: false,
-  health: 100,
-  hitCount: 0,
-  deathCount: 0,
+  intro: true,
+  globeView: true,
+  biome: null,
+  prompt: null,
+  found: [],
+  total: 0,
+  openWonder: null,
+  help: false,
   muted: false,
-  dayNightCycle: false,
-  ammo: 12,
-  reserve: 24,
-  reloading: false,
-  score: 0,
-  streak: 0,
-  combo: 0,
-  comboMult: 1,
-  comboTimer: 0,
-  wave: 1,
-  waveKills: 0,
-  waveQuota: 8,
-  waveBanner: null,
-  scorePopups: [],
-  aiming: false,
-  yaw: 0,
-  hitMarker: null,
-  dead: false,
-  finalScore: 0,
-  sectionsOpened: [],
-  allSectionsCleared: false,
-  daily: false,
-  dailyDay: null,
-  mutators: [],
-  perkOffer: null,
-  perksTaken: []
-});
+  toast: null,
+  seed: '',
+  clock: { paused: false, night: false }
+};
+
+export const gameState = writable<GameState>({ ...initialState });

@@ -48,7 +48,7 @@ abstract class Layer {
   protected abstract material: THREE.Material & { opacity: number };
   protected abstract maxOpacity: number;
   /** Normalised fade level in [0, 1]. */
-  private level = 0;
+  level = 0;
   target = 0;
 
   fade(dt: number): boolean {
@@ -212,6 +212,16 @@ export class Weather {
       embers: new Flakes(EMBER_COUNT, 0xffa040, 0.26, 0.95, true, true)
     };
     for (const l of Object.values(this.layers)) this.group.add(l.object);
+  }
+
+  /** How far the rain has faded in, for the wet ground tint. */
+  get rainLevel(): number {
+    return this.layers.rain.level;
+  }
+
+  /** How far the snow has faded in, for the snow settling on roofs. */
+  get snowLevel(): number {
+    return this.layers.snow.level;
   }
 
   /** Weather to fade toward. The change takes about two seconds. */

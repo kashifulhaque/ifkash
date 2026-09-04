@@ -10,7 +10,7 @@ import type { BiomeId } from './biomes';
 
 const MUTE_KEY = 'planet_muted';
 
-export type WeatherSound = 'rain' | 'wind' | null;
+export type WeatherSound = 'rain' | 'wind' | 'ember' | null;
 
 /** Musical character of a biome: a pad chord plus a scale for the mallet line. */
 type Mood = {
@@ -79,6 +79,8 @@ export class Ambience {
   private weather: WeatherSound = null;
   private rainGain: GainNode | null = null;
   private windGain: GainNode | null = null;
+  private emberGain: GainNode | null = null;
+  private nextCrackle = 0;
 
   constructor() {
     try {
@@ -216,8 +218,10 @@ export class Ambience {
   /** Books mallet notes a little ahead of the clock. */
   private tick = () => {
     const ctx = this.ctx;
+    if (!ctx || ctx.state !== 'running') return;
+    this.scheduleCrackle(ctx);
     const mood = this.mood;
-    if (!ctx || !mood || ctx.state !== 'running') return;
+    if (!mood) return;
     const horizon = ctx.currentTime + LOOKAHEAD;
     while (this.nextSlot < horizon) {
       if (this.nextSlot >= ctx.currentTime && Math.random() < mood.density) this.playSlot(mood, this.nextSlot);
@@ -307,14 +311,61 @@ export class Ambience {
 
   // ---------------------------------------------------------------- weather
 
-  /** Fade a rain patter or wind bed in or out. Safe to call before `start`. */
+  /** Fade a rain patter, wind bed, or ember hush in or out. Safe to call before `start`. */
   setWeather(kind: WeatherSound): void {
     this.weather = kind;
     const ctx = this.ctx;
-    if (!ctx || !this.rainGain || !this.windGain) return;
+    if (!ctx || !this.rainGain || !this.windGain || !this.emberGain) return;
     const now = ctx.currentTime;
     this.rainGain.gain.setTargetAtTime(kind === 'rain' ? 0.05 : 0, now, 0.8);
     this.windGain.gain.setTargetAtTime(kind === 'wind' ? 0.045 : 0, now, 0.8);
+    this.emberGain.gain.setTargetAtTime(kind === 'ember' ? 0.05 : 0, now, 1.2);
+    if (kind === 'ember' && this.nextCrackle < now) this.nextCrackle = now + 0.4;
+  }
+
+  /**
+   * Book the next few ember pops. Crackles are sparse and irregular, so the
+   * gaps are drawn fresh each time rather than run off a beat.
+   */
+  private scheduleCrackle(ctx: AudioContext): void {
+    if (this.weather !== 'ember') return;
+    const horizon = ctx.currentTime + LOOKAHEAD;
+    if (this.nextCrackle < ctx.currentTime) this.nextCrackle = ctx.currentTime + 0.1;
+    while (this.nextCrackle < horizon) {
+      this.crackle(this.nextCrackle);
+      this.nextCrackle += 0.12 + Math.random() * Math.random() * 1.4;
+    }
+  }
+
+  /** One tiny pop of a burning ember: a filtered noise tick with a wooden knock. */
+  private crackle(t: number): void {
+    const ctx = this.ctx!;
+    if (!this.master) return;
+    const len = 0.05;
+    const buf = ctx.createBuffer(1, Math.ceil(ctx.sampleRate * len), ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < data.length; i++) {
+      const u = i / data.length;
+      data[i] = (Math.random() * 2 - 1) * Math.pow(1 - u, 6);
+    }
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    const band = ctx.createBiquadFilter();
+    band.type = 'bandpass';
+    band.frequency.value = 900 + Math.random() * 2200;
+    band.Q.value = 1.6;
+    const g = ctx.createGain();
+    g.gain.value = 0.02 + Math.random() * 0.05;
+    let sink: AudioNode = g;
+    src.connect(band).connect(g);
+    if (typeof ctx.createStereoPanner === 'function') {
+      const pan = ctx.createStereoPanner();
+      pan.pan.value = (Math.random() * 2 - 1) * 0.7;
+      g.connect(pan);
+      sink = pan;
+    }
+    sink.connect(this.master);
+    src.start(t);
   }
 
   private buildWeatherBeds(): void {
@@ -358,6 +409,25 @@ export class Ambience {
     this.windGain.gain.value = 0;
     windSrc.connect(windLow).connect(this.windGain).connect(this.master!);
     windSrc.start();
+
+    // Embers: a low hush under the crackles, like heat moving through a vent.
+    const emberSrc = ctx.createBufferSource();
+    emberSrc.buffer = noise;
+    emberSrc.loop = true;
+    emberSrc.playbackRate.value = 0.45;
+    const emberLow = ctx.createBiquadFilter();
+    emberLow.type = 'lowpass';
+    emberLow.frequency.value = 260;
+    const emberLfo = ctx.createOscillator();
+    emberLfo.frequency.value = 0.08;
+    const emberLfoGain = ctx.createGain();
+    emberLfoGain.gain.value = 120;
+    emberLfo.connect(emberLfoGain).connect(emberLow.frequency);
+    emberLfo.start();
+    this.emberGain = ctx.createGain();
+    this.emberGain.gain.value = 0;
+    emberSrc.connect(emberLow).connect(this.emberGain).connect(this.master!);
+    emberSrc.start();
   }
 
   // ---------------------------------------------------------------- effects
@@ -410,6 +480,28 @@ export class Ambience {
     });
   }
 
+  /** Warm two-note chirp when an animal is petted. */
+  pet(): void {
+    const ctx = this.ctx;
+    if (!ctx || !this.master || this.muted) return;
+    const now = ctx.currentTime;
+    const root = this.mood ? this.mood.root : 60;
+    [0, 7].forEach((semis, i) => {
+      const osc = ctx.createOscillator();
+      osc.type = 'triangle';
+      osc.frequency.value = midiToHz(root + semis + 12);
+      const g = ctx.createGain();
+      const t0 = now + i * 0.09;
+      g.gain.setValueAtTime(0, t0);
+      g.gain.linearRampToValueAtTime(0.07, t0 + 0.015);
+      g.gain.exponentialRampToValueAtTime(0.0008, t0 + 0.5);
+      osc.connect(g).connect(this.master!);
+      if (this.reverbSend) g.connect(this.reverbSend);
+      osc.start(t0);
+      osc.stop(t0 + 0.55);
+    });
+  }
+
   /** Short hop blip. */
   hop(): void {
     const ctx = this.ctx;
@@ -440,6 +532,7 @@ export class Ambience {
     this.reverbSend = null;
     this.rainGain = null;
     this.windGain = null;
+    this.emberGain = null;
     this.started = false;
   }
 }

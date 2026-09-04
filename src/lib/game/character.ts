@@ -93,9 +93,20 @@ export class Character {
   /**
    * Animate limbs. `speed01` is 0 when idle and 1 at full run;
    * `airborne` freezes the legs in a tuck; `seated` folds the explorer onto a
-   * bench with the legs forward and the hands out, as if holding oars.
+   * bench with the legs forward and the hands out, as if holding oars;
+   * `petting` crouches with a hand out to an animal.
    */
-  update(dt: number, speed01: number, airborne: boolean, time: number, seated = false): void {
+  update(dt: number, speed01: number, airborne: boolean, time: number, seated = false, petting = false): void {
+    if (petting && !seated) {
+      const pat = Math.sin(time * 7) * 0.18;
+      this.legL.rotation.x = -0.45;
+      this.legR.rotation.x = 0.2;
+      this.armL.rotation.x = -1.15 + pat;
+      this.armR.rotation.x = -1.55 + pat * 1.4;
+      this.torso.position.y = 0.32;
+      this.torso.rotation.x = 0.34;
+      return;
+    }
     if (seated) {
       this.legL.rotation.x = -1.42;
       this.legR.rotation.x = -1.42;

@@ -9,9 +9,11 @@ import { DayNight } from './daynight';
 import { BOAT_SEAT, LAUNCH_RANGE, Wake, buildBoat, findLaunchPoint } from './boat';
 import { buildFlame, buildWindmillBlades, buildWorldProps } from './props';
 import { Character, buildBear, buildFox, buildSheep } from './character';
-import { Critter } from './critters';
+import { Critter, Hearts } from './critters';
 import { Clouds } from './clouds';
-import { Aurora } from './aurora';
+import { Aurora, SkyAurora } from './aurora';
+import { Constellations, Meteors } from './sky';
+import { patchSurface, type SurfaceFx } from './surfaceFx';
 import { ColliderGrid } from './collision';
 import { WONDERS, wonderDir, type Wonder } from './wonders';
 import { loadFound, saveFound } from './progress';
@@ -46,6 +48,10 @@ const TURN_RATE = 11;
 const GRAVITY = 24;
 const HOP_VELOCITY = 7.5;
 const INTERACT_RANGE = 3.6;
+/** How close the player has to be to pet an animal, in surface units. */
+const PET_RANGE = 2.8;
+/** Seconds the explorer keeps a hand out after a pat. */
+const PET_POSE = 1.4;
 /** Radius of the explorer's footprint, in surface units. */
 const PLAYER_RADIUS = 0.35;
 /** Seconds of no progress toward a click target before the walk is cancelled. */
@@ -88,6 +94,8 @@ export class Game {
   private ground: THREE.Mesh;
   private water: THREE.Mesh;
   private stars: THREE.Points;
+  private constellations: Constellations;
+  private meteors: Meteors;
   private glowMat: THREE.MeshBasicMaterial | null = null;
   private nightMesh: THREE.Mesh | null = null;
   private dayNight = new DayNight();
@@ -142,9 +150,15 @@ export class Game {
   private lampLight: THREE.PointLight;
   private lampOn = false;
   private critters: Critter[] = [];
+  private hearts = new Hearts();
+  /** Seconds left of the explorer's petting pose. */
+  private petTime = 0;
   private clouds: Clouds;
   private aurora: Aurora;
+  private skyAurora: SkyAurora;
   private weather = new Weather();
+  /** Snow settling and wet ground on the lit materials. */
+  private fx: SurfaceFx;
   private gems: Gem[] = [];
 
   private promptId: string | null = null;
@@ -194,7 +208,9 @@ export class Game {
     this.ground = buildGround();
     this.water = buildWater();
     this.stars = buildStars(seed);
-    this.scene.add(this.ground, this.water, this.stars);
+    this.constellations = new Constellations(seed);
+    this.meteors = new Meteors(seed);
+    this.scene.add(this.ground, this.water, this.stars, this.constellations.group, this.meteors.group);
 
     const props = buildWorldProps(seed);
     if (props.solid) this.scene.add(props.solid);
@@ -207,6 +223,8 @@ export class Game {
       this.nightMesh = props.night;
     }
     this.colliders = new ColliderGrid(props.colliders);
+    // Snow and rain land on the ground and the props through the same patch.
+    this.fx = patchSurface([this.ground.material as THREE.Material, ...(props.solid ? [props.solid.material as THREE.Material] : [])]);
 
     // Windmill rotor.
     const hubPivot = new THREE.Group();
@@ -269,28 +287,38 @@ export class Game {
     this.scene.add(this.boat, this.wake.group);
 
     // Critters.
-    const spawn = (model: THREE.Group, biome: 'farm' | 'arctic' | 'forest' | 'shore', e: number, n: number, roam: number, speed: number, seed: number) => {
+    const spawn = (
+      model: THREE.Group,
+      name: string,
+      biome: 'farm' | 'arctic' | 'forest' | 'shore',
+      e: number,
+      n: number,
+      roam: number,
+      speed: number,
+      seed: number
+    ) => {
       const home = offsetDir(biomeById(biome).center.clone(), e, n);
-      const c = new Critter(model, home, roam, speed, seed, this.colliders);
+      const c = new Critter(model, `${name.replace(' ', '-')}-${seed}`, name, home, roam, speed, seed, this.colliders);
       c.group.traverse((o) => {
         if (o instanceof THREE.Mesh) o.castShadow = true;
       });
       this.critters.push(c);
       this.scene.add(c.group);
     };
-    spawn(buildSheep(), 'farm', -2.5, -3.5, 3.5, 1.1, 1);
-    spawn(buildSheep(), 'farm', -1.0, -4.5, 3.5, 1.0, 2);
-    spawn(buildSheep(), 'farm', 1.5, -5.5, 3.0, 1.2, 3);
-    spawn(buildSheep(), 'farm', 6, 3, 3.0, 0.9, 4);
-    spawn(buildBear(), 'arctic', -4, 5, 5, 1.3, 5);
-    spawn(buildBear(), 'arctic', 5, -5, 5, 1.1, 6);
-    spawn(buildBear(), 'arctic', -6, -4, 4, 1.0, 7);
-    spawn(buildFox(), 'forest', 4, 3, 5, 2.2, 8);
-    spawn(buildFox(), 'shore', -4, 4, 6, 2.4, 9);
+    spawn(buildSheep(), 'sheep', 'farm', -2.5, -3.5, 3.5, 1.1, 1);
+    spawn(buildSheep(), 'sheep', 'farm', -1.0, -4.5, 3.5, 1.0, 2);
+    spawn(buildSheep(), 'sheep', 'farm', 1.5, -5.5, 3.0, 1.2, 3);
+    spawn(buildSheep(), 'sheep', 'farm', 6, 3, 3.0, 0.9, 4);
+    spawn(buildBear(), 'polar bear', 'arctic', -4, 5, 5, 1.3, 5);
+    spawn(buildBear(), 'polar bear', 'arctic', 5, -5, 5, 1.1, 6);
+    spawn(buildBear(), 'polar bear', 'arctic', -6, -4, 4, 1.0, 7);
+    spawn(buildFox(), 'fox', 'forest', 4, 3, 5, 2.2, 8);
+    spawn(buildFox(), 'fox', 'shore', -4, 4, 6, 2.4, 9);
 
-    this.scene.add(this.clouds.group, this.weather.group);
+    this.scene.add(this.clouds.group, this.weather.group, this.hearts.group);
     this.aurora = new Aurora(biomeById('arctic').center, PLANET_RADIUS);
-    this.scene.add(this.aurora.group);
+    this.skyAurora = new SkyAurora(seed);
+    this.scene.add(this.aurora.group, this.skyAurora.group);
     if (this.found.includes('education')) this.aurora.setActive(true);
     if (this.found.includes('blog')) this.lampOn = true;
 
@@ -550,7 +578,9 @@ export class Game {
 
     if (input.consumeInteract() && !this.overlayOpen && !this.globe) {
       const gem = this.nearestGem();
+      const pal = gem ? null : this.nearestCritter();
       if (gem) this.findWonder(gem);
+      else if (pal) this.petCritter(pal);
       else if (!this.boating && this.launchTarget()) this.launchBoat();
     }
 
@@ -633,6 +663,9 @@ export class Game {
 
     const targetAnim = moving ? speed / RUN_SPEED : 0;
     this.animSpeed += (targetAnim - this.animSpeed) * Math.min(1, dt * 10);
+    // A step, a hop, or simply time cancels the crouch over an animal.
+    if (moving || this.airborne) this.petTime = 0;
+    else if (this.petTime > 0) this.petTime -= dt;
 
     if (this.airborne) {
       this.hopH += this.hopV * dt;
@@ -644,7 +677,7 @@ export class Game {
       }
     }
 
-    this.character.update(dt, this.animSpeed, this.airborne, this.time);
+    this.character.update(dt, this.animSpeed, this.airborne, this.time, false, this.petTime > 0);
     this.placeCharacter();
     this.updateBiome(dt);
   }
@@ -661,7 +694,7 @@ export class Game {
       this.audio.setMood(b.id);
       const weather = weatherFor(b.id);
       this.weather.set(weather);
-      this.audio.setWeather(weather === 'rain' ? 'rain' : weather === 'snow' ? 'wind' : null);
+      this.audio.setWeather(weather === 'rain' ? 'rain' : weather === 'snow' ? 'wind' : weather === 'embers' ? 'ember' : null);
     }
     this.launchDir = this.boating || this.globe ? null : findLaunchPoint(this.dir);
   }
@@ -869,11 +902,21 @@ export class Game {
     this.lampLight.intensity += (lampTarget - this.lampLight.intensity) * Math.min(1, dt * 2);
 
     for (const c of this.critters) c.update(dt, t);
+    this.hearts.update(dt, this.camera.quaternion);
     this.clouds.update(dt);
     this.weather.setHidden(this.globe);
     this.weather.update(dt, t, this.dir);
+    // Rain darkens the ground it falls on and snow settles on whatever faces the sky.
+    this.fx.setCenter(this.character.group.position);
+    this.fx.setWet(this.weather.rainLevel);
+    this.fx.setSnow(this.weather.snowLevel);
     this.aurora.night = night;
     this.aurora.update(dt, t);
+    this.skyAurora.night = night;
+    this.skyAurora.setHidden(this.globe);
+    this.skyAurora.update(dt, t);
+    this.constellations.update(t);
+    this.meteors.update(dt);
     if (this.boatPlaced) {
       if (!this.boating) this.placeBoat();
       this.wake.update(dt, this.boatDir, this.boatHeading, this.boating ? this.boatSpeed : 0);
@@ -907,6 +950,8 @@ export class Game {
     this.sun.color.copy(L.sun);
     this.sun.intensity = L.sunIntensity;
     (this.stars.material as THREE.PointsMaterial).opacity = L.starOpacity;
+    this.constellations.setOpacity(L.starOpacity);
+    this.meteors.setOpacity(L.starOpacity);
     (this.water.material as THREE.MeshStandardMaterial).color.copy(L.water);
     // Lava, embers, and crystals burn brighter against a dark sky.
     if (this.glowMat) this.glowMat.color.setScalar(0.9 + L.night * 0.5);
@@ -941,12 +986,51 @@ export class Game {
     return best;
   }
 
+  /** Animal within petting reach, if any. */
+  private nearestCritter(): Critter | null {
+    let best: Critter | null = null;
+    let bestDist = PET_RANGE;
+    for (const c of this.critters) {
+      const d = c.dir.angleTo(this.dir) * PLANET_RADIUS;
+      if (d < bestDist) {
+        bestDist = d;
+        best = c;
+      }
+    }
+    return best;
+  }
+
+  /** Pat an animal: it turns and bounces, hearts rise, and the explorer crouches. */
+  private petCritter(c: Critter): void {
+    this.audio.start();
+    this.exitIntro();
+    c.pet(this.dir);
+    this.hearts.burst(c.group.position, c.dir, 3);
+    this.audio.pet();
+    // The rowing pose wins over the crouch, so skip it when afloat.
+    this.petTime = this.boating ? 0 : PET_POSE;
+    this.walkTarget = null;
+    this.targetRing.visible = false;
+    // Face the animal.
+    _v1.copy(c.dir).addScaledVector(this.dir, -c.dir.dot(this.dir));
+    if (_v1.lengthSq() > 1e-6) this.heading.copy(_v1).normalize();
+    this.promptId = null; // re-emit the prompt with the "again" wording
+  }
+
   private updatePrompt(): void {
     const idle = this.globe || this.overlayOpen || this.photo;
     const gem = idle ? null : this.nearestGem();
+    const pal = idle || gem ? null : this.nearestCritter();
     let prompt: Prompt | null = null;
     if (gem) prompt = { id: gem.wonder.id, action: gem.wonder.action, found: this.found.includes(gem.wonder.id) };
-    else if (!idle && !this.boating && this.launchTarget()) {
+    else if (pal) {
+      prompt = {
+        id: `pet-${pal.id}${pal.petted ? '-again' : ''}`,
+        action: pal.petted ? `Say hello to the ${pal.name}` : `Pet the ${pal.name}`,
+        found: false,
+        kicker: pal.petted ? 'An old friend' : 'A curious animal'
+      };
+    } else if (!idle && !this.boating && this.launchTarget()) {
       const reuse = this.launchTarget() === this.boatDir;
       prompt = { id: reuse ? 'boat-board' : 'boat-launch', action: reuse ? 'Board the boat' : 'Launch a boat', found: false, kicker: 'The shallows' };
     }

@@ -28,7 +28,6 @@ export class Input {
   private interactQueued = false;
   private globeQueued = false;
   private helpQueued = false;
-  private clockQueued = false;
   private photoQueued = false;
   private escapeQueued = false;
   private orbitDx = 0;
@@ -126,11 +125,6 @@ export class Input {
     this.photoQueued = false;
     return v;
   }
-  consumeClock(): boolean {
-    const v = this.clockQueued;
-    this.clockQueued = false;
-    return v;
-  }
   consumeHelp(): boolean {
     const v = this.helpQueued;
     this.helpQueued = false;
@@ -191,9 +185,6 @@ export class Input {
       case 'KeyH':
       case 'Slash':
         if (!e.repeat) this.helpQueued = true;
-        break;
-      case 'KeyT':
-        if (!e.repeat) this.clockQueued = true;
         break;
       case 'KeyP':
         if (!e.repeat) this.photoQueued = true;

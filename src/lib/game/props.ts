@@ -1,8 +1,12 @@
 // Low-poly scenery. Everything static is baked into three merged meshes (one
 // lit, one unlit "glow" for lava, embers, and crystals, and one "night" batch of
-// windows and doorways that only light up after dark) so the whole planet's
-// props cost a handful of draw calls. Animated pieces (windmill blades, flames) are
-// built separately and placed by the Game at the anchor frames returned here.
+// lit windows and doorways) so the whole planet's props cost a handful of draw
+// calls. Animated pieces (windmill blades, flames) are built separately and
+// placed by the Game at the anchor frames returned here.
+//
+// Anything that glows also registers an `Emitter` through `emit(...)`, the way
+// a solid prop registers a footprint, so the light pool in `lights.ts` can cast
+// real light from it when the player is near.
 
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
@@ -10,6 +14,7 @@ import { BIOMES, biomeById, landBiomeAt, isOcean, oceanField, type BiomeId } fro
 import { deriveSeed, seededRng } from './noise';
 import { PLANET_RADIUS, offsetDir, surfaceFrame } from './planet';
 import type { Collider } from './collision';
+import { emitter, type Emitter, type EmitterOptions } from './lights';
 import { WONDERS, wonderDir } from './wonders';
 
 // ---------------------------------------------------------------- batching
@@ -104,7 +109,7 @@ const STRAW = 0xe0c060;
 const PALM = 0x3aa35a;
 const CACTUS = 0x4f9a5c;
 
-type Ctx = { solid: PropBatch; glow: PropBatch; night: PropBatch; rng: () => number; colliders: Collider[] };
+type Ctx = { solid: PropBatch; glow: PropBatch; night: PropBatch; rng: () => number; colliders: Collider[]; lights: Emitter[] };
 
 const _cp = new THREE.Vector3();
 
@@ -117,6 +122,27 @@ function footprint(c: Ctx, frame: THREE.Matrix4, radius: number, offset?: [numbe
   if (offset) _cp.set(offset[0], 0, offset[1]).applyMatrix4(frame);
   else _cp.setFromMatrixPosition(frame);
   c.colliders.push({ dir: _cp.clone().normalize(), radius });
+}
+
+/**
+ * Register a light source at a local `[x, y, z]` offset in the prop's frame.
+ * `intensity` is the peak; the pool fades it with distance and, for a flame,
+ * flickers it. `distance` is the light's reach in world units.
+ */
+function emit(
+  c: Ctx,
+  frame: THREE.Matrix4,
+  color: number,
+  intensity: number,
+  distance: number,
+  offset: [number, number, number],
+  o: EmitterOptions = {}
+): void {
+  _cp.set(offset[0], offset[1], offset[2]).applyMatrix4(frame);
+  // The flicker phase comes from the position, not `c.rng()`: drawing here would
+  // shift every later draw and reshuffle the scatter for a given seed.
+  const phase = Math.abs(_cp.x * 12.9898 + _cp.y * 78.233 + _cp.z * 37.719) % 6.283;
+  c.lights.push(emitter(_cp.clone(), color, intensity, distance, { phase, ...o }));
 }
 
 const rnd = (c: Ctx, a: number, b: number) => a + c.rng() * (b - a);
@@ -217,6 +243,8 @@ function cabin(c: Ctx, f: THREE.Matrix4): void {
   // Lamplight in the windows, faded in by the Game after dark.
   part(c.night, G.box, 0xffd27a, f, { p: [0.62, 0.55, 0.87], s: [0.42, 0.42, 0.06] });
   part(c.night, G.box, 0xffd27a, f, { p: [-0.62, 0.55, 0.87], s: [0.42, 0.42, 0.06] });
+  // Lamplight spilling out of the two windows, pooled into one source.
+  emit(c, f, 0xffc978, 22, 10, [0, 0.7, 1.15], { flicker: 0.2 });
   part(c.solid, G.box, ROCK_D, f, { p: [0.65, 1.2, -0.4], s: [0.3, 0.9, 0.3] });
 }
 
@@ -247,6 +275,7 @@ function campfire(c: Ctx, f: THREE.Matrix4): void {
   part(c.solid, G.cyl6, WOOD_D, f, { p: [0, 0.08, 0], s: [0.18, 0.9, 0.18], r: [Math.PI / 2, 0, 0.5] });
   part(c.solid, G.cyl6, WOOD_D, f, { p: [0, 0.08, 0], s: [0.18, 0.9, 0.18], r: [Math.PI / 2, 0, -0.5] });
   part(c.glow, G.dodeca, LAVA, f, { p: [0, 0.05, 0], s: [0.5, 0.18, 0.5] });
+  emit(c, f, 0xff9040, 52, 12, [0, 1.0, 0], { flicker: 1 });
 }
 
 function barn(c: Ctx, f: THREE.Matrix4): void {
@@ -372,6 +401,9 @@ function volcano(c: Ctx, f: THREE.Matrix4): void {
       r: [Math.atan2(4.25, 1.0) - Math.PI / 2 + 0.2, a, 0]
     });
   }
+  // Above the rim, not down in the crater: from inside the cone the light
+  // would never reach the outer slopes it is meant to set glowing.
+  emit(c, f, LAVA, 95, 30, [0, 6.4, 0], { flicker: 0.4 });
 }
 
 function lavaRock(c: Ctx, f: THREE.Matrix4): void {
@@ -387,6 +419,7 @@ function forge(c: Ctx, f: THREE.Matrix4): void {
   part(c.solid, G.box, 0x4a3128, f, { p: [0, 2.3, -0.3], s: [0.5, 0.6, 0.5] });
   part(c.glow, G.box, LAVA, f, { p: [0, 0.55, 0.62], s: [0.8, 0.45, 0.05] });
   part(c.glow, G.box, LAVA_B, f, { p: [0, 0.65, 0.63], s: [0.35, 0.22, 0.03] });
+  emit(c, f, 0xff8a34, 36, 11, [0, 0.7, 0.8], { flicker: 0.7 });
   // Anvil on a stump beside the furnace.
   part(c.solid, G.cyl8, WOOD_D, f, { p: [1.4, 0, 0.4], s: [0.55, 0.55, 0.55] });
   part(c.solid, G.box, 0x4a4f57, f, { p: [1.4, 0.55, 0.4], s: [0.75, 0.22, 0.32] });
@@ -421,6 +454,7 @@ function igloo(c: Ctx, f: THREE.Matrix4): void {
   part(c.solid, G.cyl8, 0xe4ecef, f, { p: [0, 0, 1.2], s: [0.9, 0.9, 0.9], r: [Math.PI / 2, 0, 0] });
   part(c.solid, G.box, 0x2f3d4a, f, { p: [0, 0.05, 1.6], s: [0.5, 0.55, 0.1] });
   part(c.night, G.box, 0xffc46a, f, { p: [0, 0.05, 1.61], s: [0.46, 0.5, 0.1] });
+  emit(c, f, 0xffb865, 16, 8, [0, 0.35, 1.85], { flicker: 0.25 });
 }
 
 function iceShard(c: Ctx, f: THREE.Matrix4, big = false): void {
@@ -452,6 +486,7 @@ function auroraCrystal(c: Ctx, f: THREE.Matrix4): void {
   part(c.solid, G.cyl6, 0x4c8290, f, { p: [0, 0.35, 0], s: [1.3, 0.25, 1.3] });
   part(c.glow, G.cone6, 0xb6f3ff, f, { p: [0, 0.6, 0], s: [0.5, 1.6, 0.5] });
   part(c.glow, G.cone6, 0x9be7ff, f, { p: [0.3, 0.6, 0.15], s: [0.3, 0.9, 0.3], r: [0.1, 0.5, -0.3] });
+  emit(c, f, 0xa8ecff, 32, 14, [0, 1.3, 0], { flicker: 0.3 });
 }
 
 function pathStone(c: Ctx, f: THREE.Matrix4): void {
@@ -463,7 +498,7 @@ function pathStone(c: Ctx, f: THREE.Matrix4): void {
 export type WorldProps = {
   solid: THREE.Mesh | null;
   glow: THREE.Mesh | null;
-  /** Windows and doorways that glow after dark; the Game drives their opacity. */
+  /** Lit windows and doorways. */
   night: THREE.Mesh | null;
   /** Hub of the farm windmill: the Game mounts the spinning blades here. */
   windmillHub: THREE.Matrix4;
@@ -471,6 +506,8 @@ export type WorldProps = {
   fire: THREE.Matrix4;
   /** Lighthouse lamp position (lit once the blog wonder is found). */
   lamp: THREE.Matrix4;
+  /** Every glowing prop's light source, for the pool in `lights.ts`. */
+  lights: Emitter[];
   /** Ground frame of each wonder, keyed by id, for floating markers. */
   wonderFrames: Map<string, THREE.Matrix4>;
   /** Footprints of every solid prop, for the collision grid. */
@@ -485,7 +522,14 @@ function landAt(ctx: Ctx, biome: BiomeId, east: number, north: number, yaw: numb
 }
 
 export function buildWorldProps(seed: number): WorldProps {
-  const ctx: Ctx = { solid: new PropBatch(), glow: new PropBatch(), night: new PropBatch(), rng: seededRng(deriveSeed(seed, 3)), colliders: [] };
+  const ctx: Ctx = {
+    solid: new PropBatch(),
+    glow: new PropBatch(),
+    night: new PropBatch(),
+    rng: seededRng(deriveSeed(seed, 3)),
+    colliders: [],
+    lights: []
+  };
   const exclusions: Exclusion[] = [];
   const exclude = (biome: BiomeId, east: number, north: number, radius: number) => {
     exclusions.push({ dir: offsetDir(biomeById(biome).center.clone(), east, north), radius });
@@ -662,18 +706,15 @@ export function buildWorldProps(seed: number): WorldProps {
   const glowMat = new THREE.MeshBasicMaterial({ vertexColors: true });
   const solid = ctx.solid.build(solidMat);
   const glow = ctx.glow.build(glowMat);
-  const night = ctx.night.build(new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, opacity: 0, depthWrite: false }));
-  if (night) {
-    night.name = 'night';
-    night.visible = false;
-  }
+  const night = ctx.night.build(new THREE.MeshBasicMaterial({ vertexColors: true }));
+  if (night) night.name = 'night';
   if (solid) {
     solid.castShadow = true;
     solid.receiveShadow = true;
     solid.name = 'props';
   }
   if (glow) glow.name = 'glow';
-  return { solid, glow, night, windmillHub, fire, lamp, wonderFrames, colliders: ctx.colliders };
+  return { solid, glow, night, windmillHub, fire, lamp, wonderFrames, colliders: ctx.colliders, lights: ctx.lights };
 }
 
 // ---------------------------------------------------------------- dynamic

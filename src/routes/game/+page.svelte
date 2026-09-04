@@ -36,7 +36,6 @@
         gameState.update((s) => ({ ...s, openWonder: wonder, help: false }));
       },
       onGlobe: (globeView) => gameState.update((s) => ({ ...s, globeView })),
-      onClock: (clock) => gameState.update((s) => ({ ...s, clock })),
       onIntroEnd: () => gameState.update((s) => ({ ...s, intro: false })),
       onHelp: () => toggleHelp(),
       onEscape: () => {
@@ -159,11 +158,9 @@
         prompt={$gameState.prompt}
         muted={$gameState.muted}
         globeView={$gameState.globeView}
-        clock={$gameState.clock}
         intro={$gameState.intro}
         isTouch={$gameState.isTouch}
         on:globe={() => game?.toggleGlobe()}
-        on:clock={() => game?.toggleClock()}
         on:mute={toggleMute}
         on:help={toggleHelp}
         on:photo={() => game?.togglePhoto()}

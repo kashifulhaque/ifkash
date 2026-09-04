@@ -1,6 +1,6 @@
-// Night sky extras: named constellations drawn from the planet's own scenery,
-// and the occasional shooting star. Both hang far outside the planet on their
-// own shell and fade with the same star opacity the day-night clock samples.
+// Night sky: the moon, a few planets, named constellations drawn from the
+// planet's own scenery, and the occasional shooting star. All of them hang far
+// outside the planet on their own shell, well inside the camera's far plane.
 
 import * as THREE from 'three';
 import { deriveSeed, seededRng } from './noise';
@@ -64,6 +64,189 @@ const FIGURES: Figure[] = [
 const _e1 = new THREE.Vector3();
 const _e2 = new THREE.Vector3();
 const _p = new THREE.Vector3();
+
+// ---------------------------------------------------------------- moon
+
+/** Radius the moon hangs at, outside the constellations. */
+const MOON_RADIUS = 460;
+/** Half-width of the moon's quad. The disc fills `DISC` of it; the rest is halo. */
+const MOON_SIZE = 40;
+
+const MOON_FRAG = `
+uniform vec3 uFace;
+uniform vec3 uDark;
+uniform vec3 uHalo;
+uniform float uPhase;
+varying vec2 vUv;
+
+const float DISC = 0.45;
+
+float blob(vec2 p, vec2 c, float r) {
+  return smoothstep(r, r * 0.35, distance(p, c));
+}
+
+void main() {
+  vec2 p = (vUv - 0.5) * 2.0;
+  float d = length(p);
+
+  // A soft halo that reaches well past the disc and lifts the sky around it.
+  float halo = pow(max(0.0, 1.0 - d), 3.5);
+  vec3 col = uHalo * halo;
+  float a = halo * 0.5;
+
+  // The terminator is an ellipse across the face, so the phase reads as a
+  // crescent rather than a straight cut. The unlit side keeps a little
+  // earthshine so the whole disc stays visible.
+  float ny = clamp(p.y / DISC, -1.0, 1.0);
+  float term = uPhase * sqrt(max(0.0, 1.0 - ny * ny)) * DISC;
+  float lit = smoothstep(term - 0.035, term + 0.035, p.x);
+  vec3 face = mix(uDark, uFace, lit);
+  face *= 1.0 - 0.22 * blob(p, vec2(-0.13, 0.15), 0.14);
+  face *= 1.0 - 0.17 * blob(p, vec2(0.17, -0.04), 0.11);
+  face *= 1.0 - 0.13 * blob(p, vec2(0.01, -0.26), 0.09);
+
+  float disc = smoothstep(DISC, DISC - 0.015, d);
+  col = mix(col, face, disc);
+  a = max(a, disc);
+  gl_FragColor = vec4(col, a);
+}
+`;
+
+const MOON_VERT = `
+varying vec2 vUv;
+void main() {
+  vUv = uv;
+  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+}
+`;
+
+/**
+ * A billboarded moon at a seeded point in the sky, with a phase and a halo. It
+ * is scenery, not the key light: the moonlight in `Game` rides over the
+ * camera's shoulder so the visible face of the planet is always readable, the
+ * same trick the sun used before. Walking far enough around the planet still
+ * carries the moon down past the horizon and brings it back up the far side.
+ */
+export class Moon {
+  readonly group = new THREE.Group();
+  /** Where in the sky this planet's moon sits. */
+  readonly direction: THREE.Vector3;
+  private mesh: THREE.Mesh;
+
+  constructor(seed: number) {
+    const rng = seededRng(deriveSeed(seed, 11));
+    this.direction = new THREE.Vector3(rng() * 2 - 1, rng() * 2 - 1, rng() * 2 - 1).normalize();
+    const mat = new THREE.ShaderMaterial({
+      uniforms: {
+        uFace: { value: new THREE.Color(0xe4ecf7) },
+        uDark: { value: new THREE.Color(0x2b3a58) },
+        uHalo: { value: new THREE.Color(0x6d8cc4) },
+        // A waxing or waning gibbous: enough of a terminator to read as a phase,
+        // never so thin that the moon stops lighting the sky.
+        uPhase: { value: (rng() < 0.5 ? -1 : 1) * (0.25 + rng() * 0.35) }
+      },
+      vertexShader: MOON_VERT,
+      fragmentShader: MOON_FRAG,
+      transparent: true,
+      depthWrite: false,
+      toneMapped: false
+    });
+    this.mesh = new THREE.Mesh(new THREE.PlaneGeometry(MOON_SIZE * 2, MOON_SIZE * 2), mat);
+    this.mesh.position.copy(this.direction).multiplyScalar(MOON_RADIUS);
+    this.mesh.renderOrder = -2;
+    this.mesh.frustumCulled = false;
+    this.group.add(this.mesh);
+  }
+
+  /** Turn the quad to face the camera. The moon is too far to move otherwise. */
+  update(camera: THREE.Camera): void {
+    this.mesh.quaternion.copy(camera.quaternion);
+  }
+}
+
+// ---------------------------------------------------------------- planets
+
+/** Radius the planets hang at, among the constellations. */
+const PLANET_RADIUS_SKY = 490;
+
+/** Colour and point size of each wanderer, brightest first. The star field
+ * draws at size 1.6, so even the faintest of these reads as a planet. */
+const WANDERERS: [number, number][] = [
+  [0xffc9a0, 11],
+  [0xd98a5a, 9],
+  [0xdfe6ff, 8],
+  [0xf0dca8, 7]
+];
+
+const PLANET_VERT = `
+attribute float size;
+attribute vec3 tint;
+varying vec3 vTint;
+void main() {
+  vTint = tint;
+  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  gl_PointSize = size;
+}
+`;
+
+const PLANET_FRAG = `
+varying vec3 vTint;
+void main() {
+  // A solid core inside a soft halo, so the point reads as a small disc rather
+  // than a square or a single lit pixel.
+  float d = length(gl_PointCoord - 0.5) * 2.0;
+  float core = smoothstep(0.55, 0.0, d);
+  float halo = smoothstep(1.0, 0.0, d);
+  gl_FragColor = vec4(vTint, core * 0.9 + halo * halo * 0.35);
+}
+`;
+
+/**
+ * Four wanderers: bigger and warmer than the stars behind them, and, unlike the
+ * stars and the constellation figures, perfectly steady. Planets do not
+ * twinkle, and leaving them still is what tells them apart at a glance.
+ */
+export class Planets {
+  readonly group = new THREE.Group();
+
+  constructor(seed: number) {
+    const rng = seededRng(deriveSeed(seed, 12));
+    const pos = new Float32Array(WANDERERS.length * 3);
+    const col = new Float32Array(WANDERERS.length * 3);
+    const size = new Float32Array(WANDERERS.length);
+    const c = new THREE.Color();
+    for (let i = 0; i < WANDERERS.length; i++) {
+      _p.set(rng() * 2 - 1, rng() * 2 - 1, rng() * 2 - 1).normalize().multiplyScalar(PLANET_RADIUS_SKY);
+      pos[i * 3] = _p.x;
+      pos[i * 3 + 1] = _p.y;
+      pos[i * 3 + 2] = _p.z;
+      c.setHex(WANDERERS[i][0]);
+      col[i * 3] = c.r;
+      col[i * 3 + 1] = c.g;
+      col[i * 3 + 2] = c.b;
+      size[i] = WANDERERS[i][1];
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    geo.setAttribute('tint', new THREE.BufferAttribute(col, 3));
+    geo.setAttribute('size', new THREE.BufferAttribute(size, 1));
+    const points = new THREE.Points(
+      geo,
+      new THREE.ShaderMaterial({
+        vertexShader: PLANET_VERT,
+        fragmentShader: PLANET_FRAG,
+        transparent: true,
+        depthWrite: false,
+        toneMapped: false,
+        blending: THREE.AdditiveBlending
+      })
+    );
+    points.frustumCulled = false;
+    this.group.add(points);
+  }
+}
+
+// ---------------------------------------------------------------- figures
 
 /**
  * The named figures, as bright stars joined by faint lines. Each planet's seed
@@ -141,7 +324,7 @@ export class Constellations {
     this.group.visible = false;
   }
 
-  /** Match the star field's fade, so the figures come and go with the night. */
+  /** Overall brightness of the figures. */
   setOpacity(o: number): void {
     this.opacity = o;
     const on = o > 0.02;

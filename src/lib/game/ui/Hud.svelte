@@ -1,12 +1,11 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
-  import type { BiomeCaption, ClockState } from '../store';
+  import type { BiomeCaption } from '../store';
 
   export let found = 0;
   export let total = 7;
   export let biome: BiomeCaption | null = null;
   export let prompt: { id: string; action: string; found: boolean; kicker?: string } | null = null;
-  export let clock: ClockState = { paused: false, night: false };
   export let muted = false;
   export let globeView = false;
   export let intro = true;
@@ -57,24 +56,6 @@
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <path d="M4 9v6h4l5 4V5L8 9z" />
           <path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12" />
-        </svg>
-      {/if}
-    </button>
-    <button
-      class="round"
-      class:active={clock.paused}
-      on:click={() => dispatch('clock')}
-      aria-label={clock.paused ? 'Resume the day' : 'Pause the day'}
-      title={clock.paused ? 'Resume the day (T)' : 'Pause the day (T)'}
-    >
-      {#if clock.night}
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M14.5 3.5a8.5 8.5 0 1 0 6 14.3A9 9 0 0 1 14.5 3.5z" />
-        </svg>
-      {:else}
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <circle cx="12" cy="12" r="4" />
-          <path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8" />
         </svg>
       {/if}
     </button>

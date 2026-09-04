@@ -5,20 +5,21 @@ import { biomeAt, biomeById, isOcean, layoutBiomes } from './biomes';
 import { setNoiseSeed } from './noise';
 import { dailySeedLabel, hashSeed } from './seed';
 import { PLANET_RADIUS, SEA_LEVEL, buildGround, buildStars, buildWater, tangentBasis, walkRadius, offsetDir } from './planet';
-import { DayNight } from './daynight';
+import { NIGHT } from './night';
+import { LightPool, emitter, type Emitter } from './lights';
 import { BOAT_SEAT, LAUNCH_RANGE, Wake, buildBoat, findLaunchPoint } from './boat';
 import { buildFlame, buildWindmillBlades, buildWorldProps } from './props';
 import { Character, buildBear, buildFox, buildSheep } from './character';
 import { Critter, Hearts } from './critters';
 import { Clouds } from './clouds';
 import { Aurora, SkyAurora } from './aurora';
-import { Constellations, Meteors } from './sky';
+import { Constellations, Meteors, Moon, Planets } from './sky';
 import { patchSurface, type SurfaceFx } from './surfaceFx';
 import { ColliderGrid } from './collision';
 import { WONDERS, wonderDir, type Wonder } from './wonders';
 import { loadFound, saveFound } from './progress';
 import { Weather, weatherFor } from './weather';
-import type { BiomeCaption, ClockState } from './store';
+import type { BiomeCaption } from './store';
 
 /** Interaction card. `kicker` overrides the wonder wording, for example for the boat. */
 export type Prompt = { id: string; action: string; found: boolean; kicker?: string };
@@ -34,7 +35,6 @@ export type GameCallbacks = {
   onFound: (ids: string[]) => void;
   onOpenWonder: (w: Wonder) => void;
   onGlobe: (globe: boolean) => void;
-  onClock: (clock: ClockState) => void;
   onIntroEnd: () => void;
   onHelp: () => void;
   onEscape: () => void;
@@ -77,7 +77,17 @@ const _m = new THREE.Matrix4();
 const _q = new THREE.Quaternion();
 const _size = new THREE.Vector2();
 
-type Gem = { wonder: Wonder; dir: THREE.Vector3; mesh: THREE.Mesh; ring: THREE.Mesh; frameQ: THREE.Quaternion; base: THREE.Vector3; up: THREE.Vector3 };
+type Gem = {
+  wonder: Wonder;
+  dir: THREE.Vector3;
+  mesh: THREE.Mesh;
+  ring: THREE.Mesh;
+  frameQ: THREE.Quaternion;
+  base: THREE.Vector3;
+  up: THREE.Vector3;
+  /** The marker's own light, followed along as it bobs. */
+  light: Emitter;
+};
 
 export class Game {
   readonly input: Input;
@@ -89,17 +99,19 @@ export class Game {
   private renderer: THREE.WebGLRenderer;
   private scene = new THREE.Scene();
   private camera: THREE.PerspectiveCamera;
-  private sun: THREE.DirectionalLight;
+  /** Key light. Pale moonlight, kept camera-relative; see `updateCamera`. */
+  private moonLight: THREE.DirectionalLight;
   private hemi: THREE.HemisphereLight;
   private ground: THREE.Mesh;
   private water: THREE.Mesh;
   private stars: THREE.Points;
   private constellations: Constellations;
   private meteors: Meteors;
+  private moon: Moon;
+  private planets: Planets;
+  /** Point lights lent to whichever light sources are nearest the player. */
+  private lights = new LightPool(6);
   private glowMat: THREE.MeshBasicMaterial | null = null;
-  private nightMesh: THREE.Mesh | null = null;
-  private dayNight = new DayNight();
-  private clockNight = false;
   private raycaster = new THREE.Raycaster();
   private callbacks: GameCallbacks;
   private canvas: HTMLCanvasElement;
@@ -146,8 +158,9 @@ export class Game {
   // Scenery that moves.
   private blades: THREE.Group;
   private flame: THREE.Group;
-  private flameLight: THREE.PointLight;
-  private lampLight: THREE.PointLight;
+  /** Lighthouse lamp: dark until the blog wonder is found, then eased up. */
+  private lamp: Emitter;
+  private lampLevel = 0;
   private lampOn = false;
   private critters: Critter[] = [];
   private hearts = new Hearts();
@@ -189,28 +202,31 @@ export class Game {
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.15;
-    this.scene.background = new THREE.Color(0x0d1c28);
+    this.scene.background = NIGHT.sky.clone();
 
     this.camera = new THREE.PerspectiveCamera(42, 1, 0.1, 1400);
 
-    this.hemi = new THREE.HemisphereLight(0xdcefff, 0x6b7a63, 1.35);
+    this.hemi = new THREE.HemisphereLight(NIGHT.hemiSky, NIGHT.hemiGround, NIGHT.hemiIntensity);
     this.scene.add(this.hemi);
-    this.sun = new THREE.DirectionalLight(0xfff3dc, 2.1);
-    this.sun.castShadow = true;
-    this.sun.shadow.mapSize.set(2048, 2048);
-    this.sun.shadow.camera.near = 1;
-    this.sun.shadow.camera.far = 320;
-    this.sun.shadow.bias = -0.0005;
-    this.sun.shadow.normalBias = 0.03;
+    this.moonLight = new THREE.DirectionalLight(NIGHT.moon, NIGHT.moonIntensity);
+    this.moonLight.castShadow = true;
+    this.moonLight.shadow.mapSize.set(2048, 2048);
+    this.moonLight.shadow.camera.near = 1;
+    this.moonLight.shadow.camera.far = 320;
+    this.moonLight.shadow.bias = -0.0005;
+    this.moonLight.shadow.normalBias = 0.03;
     this.setShadowBounds(PLANET_RADIUS + 14);
-    this.scene.add(this.sun, this.sun.target);
+    this.scene.add(this.moonLight, this.moonLight.target, this.lights.group);
 
     this.ground = buildGround();
     this.water = buildWater();
     this.stars = buildStars(seed);
     this.constellations = new Constellations(seed);
     this.meteors = new Meteors(seed);
+    this.moon = new Moon(seed);
+    this.planets = new Planets(seed);
     this.scene.add(this.ground, this.water, this.stars, this.constellations.group, this.meteors.group);
+    this.scene.add(this.moon.group, this.planets.group);
 
     const props = buildWorldProps(seed);
     if (props.solid) this.scene.add(props.solid);
@@ -218,10 +234,8 @@ export class Game {
       this.scene.add(props.glow);
       this.glowMat = props.glow.material as THREE.MeshBasicMaterial;
     }
-    if (props.night) {
-      this.scene.add(props.night);
-      this.nightMesh = props.night;
-    }
+    if (props.night) this.scene.add(props.night);
+    for (const e of props.lights) this.lights.add(e);
     this.colliders = new ColliderGrid(props.colliders);
     // Snow and rain land on the ground and the props through the same patch.
     this.fx = patchSurface([this.ground.material as THREE.Material, ...(props.solid ? [props.solid.material as THREE.Material] : [])]);
@@ -233,20 +247,20 @@ export class Game {
     hubPivot.add(this.blades);
     this.scene.add(hubPivot);
 
-    // Campfire flame and its light.
+    // Campfire flame. Its light is one of the pooled emitters, registered by
+    // the campfire builder along with the ring of stones.
     const firePivot = new THREE.Group();
     props.fire.decompose(firePivot.position, firePivot.quaternion, _v1);
     this.flame = buildFlame();
     this.flame.position.y = 0.15;
-    this.flameLight = new THREE.PointLight(0xff9040, 28, 9, 2);
-    this.flameLight.position.y = 1.0;
-    firePivot.add(this.flame, this.flameLight);
+    firePivot.add(this.flame);
     this.scene.add(firePivot);
 
-    // Lighthouse lamp, dark until the blog wonder is found.
-    this.lampLight = new THREE.PointLight(0xffe6a3, 0, 26, 2);
-    this.lampLight.position.setFromMatrixPosition(props.lamp);
-    this.scene.add(this.lampLight);
+    // Lighthouse lamp, dark until the blog wonder is found. It reaches much
+    // further than the other sources, so it earns a slot from well out to sea.
+    this.lamp = this.lights.add(
+      emitter(new THREE.Vector3().setFromMatrixPosition(props.lamp), 0xffe6a3, 0, 30, { on: false })
+    );
 
     // Wonder markers.
     for (const w of WONDERS) {
@@ -270,7 +284,10 @@ export class Game {
       const base = new THREE.Vector3().setFromMatrixPosition(frame);
       const frameQ = new THREE.Quaternion().setFromRotationMatrix(frame);
       this.scene.add(mesh, ring);
-      this.gems.push({ wonder: w, dir: wonderDir(w), mesh, ring, frameQ, base, up });
+      const light = this.lights.add(
+        emitter(mesh.position, found ? 0xffb703 : 0x5fd3ff, 15, 9, { flicker: 0.35, phase: this.gems.length * 1.7 })
+      );
+      this.gems.push({ wonder: w, dir: wonderDir(w), mesh, ring, frameQ, base, up, light });
     }
 
     // Click-to-walk marker.
@@ -375,24 +392,6 @@ export class Game {
     return this.audio.toggle();
   }
 
-  /** Pause or resume the day-night clock. Returns true when paused. */
-  toggleClock(): boolean {
-    this.dayNight.paused = !this.dayNight.paused;
-    this.emitClock();
-    return this.dayNight.paused;
-  }
-
-  /** Fraction of the day in [0, 1): midnight is 0, noon is 0.5. */
-  get timeOfDay(): number {
-    return this.dayNight.time;
-  }
-
-  /** Jump the clock, for tuning from the console. */
-  setTimeOfDay(t: number): void {
-    this.dayNight.set(t);
-    this.applyLighting();
-  }
-
   startAudio(): void {
     this.audio.start();
   }
@@ -495,7 +494,7 @@ export class Game {
   }
 
   private setShadowBounds(extent: number): void {
-    const cam = this.sun.shadow.camera;
+    const cam = this.moonLight.shadow.camera;
     cam.left = -extent;
     cam.right = extent;
     cam.top = extent;
@@ -522,7 +521,6 @@ export class Game {
     const input = this.input;
     if (input.consumeEscape()) this.callbacks.onEscape();
     if (input.consumeHelp()) this.callbacks.onHelp();
-    if (input.consumeClock() && !this.overlayOpen) this.toggleClock();
     if (input.consumePhoto() && !this.overlayOpen) this.togglePhoto();
     if (input.consumeGlobe() && !this.overlayOpen) {
       this.exitIntro();
@@ -874,32 +872,34 @@ export class Game {
     this.camera.lookAt(this.camLook);
     this.camera.updateMatrixWorld();
 
-    // The sun rides over the camera's left shoulder so the visible face of
-    // the planet is always lit, and shadows fall consistently.
+    // The moonlight rides over the camera's left shoulder so the visible face
+    // of the planet always catches some light and shadows fall consistently.
+    // The moon in the sky is scenery at a fixed seeded point; keeping the key
+    // light off it is what stops half the planet going unplayably dark.
     const right = _v1.setFromMatrixColumn(this.camera.matrixWorld, 0);
     const camUp = _v2.setFromMatrixColumn(this.camera.matrixWorld, 1);
     const back = _v3.setFromMatrixColumn(this.camera.matrixWorld, 2);
-    const lift = 0.3 + this.dayNight.light.sunHeight * 0.65; // low sun at dawn and dusk, long shadows
-    const sunDir = right.multiplyScalar(-1.15).addScaledVector(camUp, lift).addScaledVector(back, 0.6).normalize();
-    const focus = this.globe ? this.sun.target.position.set(0, 0, 0) : this.sun.target.position.copy(this.character.group.position);
-    this.sun.position.copy(focus).addScaledVector(sunDir, 140);
-    this.sun.target.updateMatrixWorld();
+    const lift = 0.3 + NIGHT.moonHeight * 0.65;
+    const moonDir = right.multiplyScalar(-1.15).addScaledVector(camUp, lift).addScaledVector(back, 0.6).normalize();
+    const target = this.moonLight.target.position;
+    const focus = this.globe ? target.set(0, 0, 0) : target.copy(this.character.group.position);
+    this.moonLight.position.copy(focus).addScaledVector(moonDir, 140);
+    this.moonLight.target.updateMatrixWorld();
+    this.moon.update(this.camera);
   }
 
   // ---------------------------------------------------------------- world
 
   private updateWorld(dt: number): void {
     const t = this.time;
-    this.dayNight.update(dt);
-    this.applyLighting();
-    const night = this.dayNight.light.night;
 
     this.blades.rotation.z += dt * 1.1;
     this.flame.scale.set(1 + Math.sin(t * 13) * 0.1, 1 + Math.sin(t * 17.3) * 0.18 + Math.sin(t * 5) * 0.06, 1 + Math.cos(t * 11) * 0.1);
     this.flame.rotation.y = t * 0.8;
-    this.flameLight.intensity = (26 + Math.sin(t * 11) * 5 + Math.sin(t * 23) * 3) * (1 + night * 0.9);
-    const lampTarget = this.lampOn ? 70 * (0.55 + night * 0.6) : 0;
-    this.lampLight.intensity += (lampTarget - this.lampLight.intensity) * Math.min(1, dt * 2);
+    // The lighthouse eases up rather than snapping on when the wonder is found.
+    this.lampLevel += ((this.lampOn ? 1 : 0) - this.lampLevel) * Math.min(1, dt * 2);
+    this.lamp.on = this.lampLevel > 0.01;
+    this.lamp.intensity = 90 * this.lampLevel;
 
     for (const c of this.critters) c.update(dt, t);
     this.hearts.update(dt, this.camera.quaternion);
@@ -910,9 +910,7 @@ export class Game {
     this.fx.setCenter(this.character.group.position);
     this.fx.setWet(this.weather.rainLevel);
     this.fx.setSnow(this.weather.snowLevel);
-    this.aurora.night = night;
     this.aurora.update(dt, t);
-    this.skyAurora.night = night;
     this.skyAurora.setHidden(this.globe);
     this.skyAurora.update(dt, t);
     this.constellations.update(t);
@@ -930,45 +928,32 @@ export class Game {
       _q.setFromAxisAngle(g.up, t * 0.9 + i);
       g.mesh.quaternion.copy(_q).multiply(g.frameQ);
       const pulse = found ? 0.6 : 0.8 + Math.sin(t * 3 + i) * 0.35;
-      (g.mesh.material as THREE.MeshStandardMaterial).emissiveIntensity = pulse * (1 + night * 1.2);
+      (g.mesh.material as THREE.MeshStandardMaterial).emissiveIntensity = pulse * 2.2;
       (g.ring.material as THREE.MeshBasicMaterial).opacity = found ? 0.3 : 0.35 + Math.sin(t * 3 + i) * 0.15;
+      // `light.pos` is the marker's own position vector, so it follows the bob.
+      g.light.intensity = 15 * pulse;
     }
 
     if (this.targetRing.visible) {
       const s = 1 + Math.sin(t * 6) * 0.12;
       this.targetRing.scale.set(s, s, s);
     }
+
+    // Hand the pooled lights to whichever sources are nearest the explorer.
+    this.lights.update(t, this.character.group.position);
   }
 
-  /** Copy the sampled time-of-day lighting onto the sky, lights, stars, and water. */
+  /**
+   * Settle the world into its one lighting mood. There is no clock to sample,
+   * so this runs once, at build time.
+   */
   private applyLighting(): void {
-    const L = this.dayNight.light;
-    (this.scene.background as THREE.Color).copy(L.sky);
-    this.hemi.color.copy(L.hemiSky);
-    this.hemi.groundColor.copy(L.hemiGround);
-    this.hemi.intensity = L.hemiIntensity;
-    this.sun.color.copy(L.sun);
-    this.sun.intensity = L.sunIntensity;
-    (this.stars.material as THREE.PointsMaterial).opacity = L.starOpacity;
-    this.constellations.setOpacity(L.starOpacity);
-    this.meteors.setOpacity(L.starOpacity);
-    (this.water.material as THREE.MeshStandardMaterial).color.copy(L.water);
+    (this.water.material as THREE.MeshStandardMaterial).color.copy(NIGHT.water);
+    (this.stars.material as THREE.PointsMaterial).opacity = 1;
+    this.constellations.setOpacity(1);
+    this.meteors.setOpacity(1);
     // Lava, embers, and crystals burn brighter against a dark sky.
-    if (this.glowMat) this.glowMat.color.setScalar(0.9 + L.night * 0.5);
-    if (this.nightMesh) {
-      const on = L.night > 0.02;
-      this.nightMesh.visible = on;
-      if (on) (this.nightMesh.material as THREE.MeshBasicMaterial).opacity = Math.min(1, L.night * 1.3);
-    }
-    const night = L.night > 0.5;
-    if (night !== this.clockNight) {
-      this.clockNight = night;
-      this.emitClock();
-    }
-  }
-
-  private emitClock(): void {
-    this.callbacks.onClock({ paused: this.dayNight.paused, night: this.clockNight });
+    if (this.glowMat) this.glowMat.color.setScalar(1.4);
   }
 
   // ---------------------------------------------------------------- wonders

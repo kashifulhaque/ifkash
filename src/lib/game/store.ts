@@ -3,9 +3,6 @@ import type { Wonder } from './wonders';
 
 export type BiomeCaption = { name: string; kind: string; index: string; tagline: string };
 
-/** Day-night clock as shown in the HUD. */
-export type ClockState = { paused: boolean; night: boolean };
-
 export type GameState = {
   ready: boolean;
   webglFailed: boolean;
@@ -27,7 +24,6 @@ export type GameState = {
   toast: { id: number; text: string } | null;
   /** Label of the world seed, for example "2026-09-04" or "quiet-fox-73". */
   seed: string;
-  clock: ClockState;
 };
 
 export const initialState: GameState = {
@@ -45,8 +41,7 @@ export const initialState: GameState = {
   photo: false,
   muted: false,
   toast: null,
-  seed: '',
-  clock: { paused: false, night: false }
+  seed: ''
 };
 
 export const gameState = writable<GameState>({ ...initialState });

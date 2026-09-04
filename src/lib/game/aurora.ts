@@ -15,6 +15,10 @@ const HUE_FOOT = 0.36;
 const HUE_CROWN = 0.82;
 /** How far the whole ramp drifts, in hue units, over a full drift cycle. */
 const HUE_DRIFT = 0.09;
+/** Opacity the arctic curtain settles at once it is woken. */
+const FULL = 0.52;
+/** Opacity the sky-wide bands settle at. Deliberately faint: three of them overlap. */
+const SKY_FULL = 0.23;
 
 const _c = new THREE.Color();
 
@@ -34,8 +38,6 @@ export class Aurora {
   private ribbons: { mesh: THREE.Mesh; base: Float32Array; phase: number }[] = [];
   private opacity = 0;
   private active = false;
-  /** 0 by day, 1 at midnight; the ribbons glow brighter after dark. */
-  night = 0;
 
   constructor(center: THREE.Vector3, radius: number) {
     const right = new THREE.Vector3();
@@ -72,7 +74,7 @@ export class Aurora {
   }
 
   update(dt: number, time: number): void {
-    const target = this.active ? 0.22 + this.night * 0.3 : 0;
+    const target = this.active ? FULL : 0;
     this.opacity += (target - this.opacity) * Math.min(1, dt * 1.2);
     if (this.opacity < 0.005 && !this.active) {
       this.group.visible = false;
@@ -130,8 +132,6 @@ export class SkyAurora {
   }[] = [];
   private opacity = 0;
   private hidden = false;
-  /** 0 by day, 1 at midnight. The bands only show after dark. */
-  night = 0;
 
   constructor(seed: number) {
     const rng = seededRng(seed);
@@ -179,7 +179,7 @@ export class SkyAurora {
   }
 
   update(dt: number, time: number): void {
-    const target = this.hidden ? 0 : Math.max(0, this.night - 0.12) * 0.26;
+    const target = this.hidden ? 0 : SKY_FULL;
     this.opacity += (target - this.opacity) * Math.min(1, dt * 1.5);
     const on = this.opacity > 0.004;
     this.group.visible = on;

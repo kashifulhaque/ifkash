@@ -29,6 +29,7 @@ export class Input {
   private globeQueued = false;
   private helpQueued = false;
   private photoQueued = false;
+  private journalQueued = false;
   private escapeQueued = false;
   private orbitDx = 0;
   private orbitDy = 0;
@@ -100,6 +101,9 @@ export class Input {
   queuePhoto(): void {
     this.photoQueued = true;
   }
+  queueJournal(): void {
+    this.journalQueued = true;
+  }
   /** Touch joystick moved: counts as the first gesture. */
   notifyTouchMove(): void {
     this.fireAny();
@@ -123,6 +127,11 @@ export class Input {
   consumePhoto(): boolean {
     const v = this.photoQueued;
     this.photoQueued = false;
+    return v;
+  }
+  consumeJournal(): boolean {
+    const v = this.journalQueued;
+    this.journalQueued = false;
     return v;
   }
   consumeHelp(): boolean {
@@ -159,6 +168,16 @@ export class Input {
       this.escapeQueued = true;
       return;
     }
+    // The help and journal keys also close their own overlays, so they work
+    // while the rest of the input is switched off.
+    if ((e.code === 'KeyH' || e.code === 'Slash') && !e.repeat) {
+      this.helpQueued = true;
+      return;
+    }
+    if (e.code === 'KeyJ' && !e.repeat) {
+      this.journalQueued = true;
+      return;
+    }
     if (!this.enabled) return;
     if (e.code in MOVE_KEYS) {
       e.preventDefault();
@@ -181,10 +200,6 @@ export class Input {
         break;
       case 'KeyM':
         if (!e.repeat) this.globeQueued = true;
-        break;
-      case 'KeyH':
-      case 'Slash':
-        if (!e.repeat) this.helpQueued = true;
         break;
       case 'KeyP':
         if (!e.repeat) this.photoQueued = true;

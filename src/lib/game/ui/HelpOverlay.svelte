@@ -45,7 +45,9 @@
         <div><dt>Look</dt><dd>Drag anywhere else to orbit the camera. Pinch to zoom.</dd></div>
         <div><dt>Hop</dt><dd>Tap the hop button.</dd></div>
         <div><dt>Open a wonder</dt><dd>Walk up to a marker and tap the card that appears.</dd></div>
-        <div><dt>Animals</dt><dd>Walk up to a sheep, a fox, or a polar bear and tap the card to pet it.</dd></div>
+        <div><dt>Animals</dt><dd>Walk up to a sheep, a fox, or a polar bear and tap the card to pet it. Pet it twice and it follows you for a while.</dd></div>
+        <div><dt>Shards</dt><dd>A dozen starlight shards glow purple across each planet. Walk over one to collect it.</dd></div>
+        <div><dt>Journal</dt><dd>Tap the book button to see the biomes, animals, and milestones you have collected across every planet.</dd></div>
         <div><dt>Boats</dt><dd>Stand at the shore and tap the card to launch a boat. Steer with the stick. Reach land to dock.</dd></div>
         <div><dt>The sky</dt><dd>It is always night here. Look up for the moon, the planets, the constellations, and the odd shooting star.</dd></div>
         <div><dt>Photo mode</dt><dd>Tap the camera button to hide the interface. Save a picture or leave from the corner buttons.</dd></div>
@@ -53,8 +55,9 @@
         <div><dt><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></dt><dd>Walk. Arrow keys work too.</dd></div>
         <div><dt><kbd>Shift</kbd></dt><dd>Run.</dd></div>
         <div><dt><kbd>Space</kbd></dt><dd>Hop.</dd></div>
-        <div><dt><kbd>E</kbd></dt><dd>Open the wonder you are standing next to, or pet the animal beside you.</dd></div>
+        <div><dt><kbd>E</kbd></dt><dd>Open the wonder you are standing next to, or pet the animal beside you. Pet it twice and it follows you for a while.</dd></div>
         <div><dt><kbd>M</kbd></dt><dd>Pull back to see the whole planet. Click a spot to walk there.</dd></div>
+        <div><dt><kbd>J</kbd></dt><dd>Open the journal: biomes visited, animals befriended, milestones, and a dozen starlight shards to find on each planet.</dd></div>
         <div><dt>The sky</dt><dd>It is always night here. Look up for the moon, the planets, the constellations, auroras, and the odd shooting star.</dd></div>
         <div><dt><kbd>P</kbd></dt><dd>Photo mode: hides the interface. Press again or <kbd>Esc</kbd> to leave, or save a picture from the corner.</dd></div>
         <div><dt>Mouse</dt><dd>Drag to orbit the camera, scroll to zoom, click the ground to walk.</dd></div>

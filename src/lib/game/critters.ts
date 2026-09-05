@@ -7,6 +7,12 @@ import type { ColliderGrid } from './collision';
 const CRITTER_RADIUS = 0.5;
 /** Seconds an animal stays pleased after a pat. */
 const HAPPY_TIME = 2.4;
+/** How far a companion trails behind the explorer, in surface units. */
+const FOLLOW_GAP = 1.8;
+/** Beyond this, a companion has been left behind and goes back to wandering. */
+const FOLLOW_LOSE = 16;
+/** Seconds a companion tags along before its attention drifts. */
+const FOLLOW_TIME = 75;
 
 const _right = new THREE.Vector3();
 const _fwd = new THREE.Vector3();
@@ -73,9 +79,36 @@ export class Critter {
     this.place();
   }
 
+  /** Someone this animal is tagging along behind, or null while it wanders. */
+  private leader: THREE.Vector3 | null = null;
+  private followLeft = 0;
+
   /** True while the animal is still enjoying a pat. */
   get pleased(): boolean {
     return this.happy > 0;
+  }
+
+  /** True while the animal is following the explorer. */
+  get following(): boolean {
+    return this.leader !== null;
+  }
+
+  /**
+   * Tag along behind `leader`, a unit direction that its owner keeps up to
+   * date. The animal wanders off again after a while, or if it is left behind.
+   */
+  follow(leader: THREE.Vector3): void {
+    this.leader = leader;
+    this.followLeft = FOLLOW_TIME;
+    this.target = null;
+  }
+
+  /** Stop following and go back to wandering near home. */
+  release(): void {
+    this.leader = null;
+    this.followLeft = 0;
+    this.target = null;
+    this.wait = 0.5;
   }
 
   /** Take a pat: turn toward `from`, stand still, and bounce. */
@@ -101,6 +134,37 @@ export class Critter {
       this.group.scale.set(1, 1, 1);
       this.pivot.rotation.set(0, 0, 0);
       this.place();
+    }
+    if (this.leader) {
+      this.followLeft -= dt;
+      const gap = this.dir.angleTo(this.leader) * PLANET_RADIUS;
+      if (this.followLeft <= 0 || gap > FOLLOW_LOSE) {
+        this.release();
+      } else if (gap > FOLLOW_GAP + 0.4) {
+        // Close the gap, hurrying when far behind; stop a polite step short.
+        _to.copy(this.leader).addScaledVector(this.dir, -this.leader.dot(this.dir));
+        if (_to.lengthSq() > 1e-8) {
+          _to.normalize();
+          this.heading.lerp(_to, Math.min(1, dt * 6)).addScaledVector(this.dir, -this.heading.dot(this.dir)).normalize();
+          const hurry = gap > 6 ? 5.2 : gap > 3.5 ? 3.4 : Math.max(this.speed, 2.2);
+          const step = Math.min(hurry * dt, gap - FOLLOW_GAP);
+          const ang = step / PLANET_RADIUS;
+          this.dir.multiplyScalar(Math.cos(ang)).addScaledVector(this.heading, Math.sin(ang)).normalize();
+          this.colliders?.resolve(this.dir, CRITTER_RADIUS);
+          this.heading.addScaledVector(this.dir, -this.heading.dot(this.dir)).normalize();
+          this.phase += (step / this.cycle) * Math.PI * 2;
+          this.animate();
+          this.place();
+          return;
+        }
+      } else {
+        // Close enough: wait, facing the explorer.
+        _to.copy(this.leader).addScaledVector(this.dir, -this.leader.dot(this.dir));
+        if (_to.lengthSq() > 1e-8) this.heading.lerp(_to.normalize(), Math.min(1, dt * 3)).addScaledVector(this.dir, -this.heading.dot(this.dir)).normalize();
+        this.idle(time);
+        this.place();
+        return;
+      }
     }
     if (this.wait > 0) {
       this.wait -= dt;

@@ -16,7 +16,7 @@ deployables in one repo:**
 
 Beyond the résumé editor the README centers on, the app has several
 Google-authenticated mini-apps: `/fitness` (workout and cardio tracker), `/tools/splitter`
-(expense splitter), and `/game` (a cozy low-poly tiny-planet explorer whose seven "small wonders" open portfolio sections; built on Three.js in `src/lib/game`).
+(expense splitter), and `/game` (a cozy low-poly tiny-planet explorer whose seven "small wonders" open portfolio sections; built on Three.js in `src/lib/game`). Beyond the wonders the game has per-planet starlight shards (`shards.ts`), animal companions that follow after a second pat (`critters.ts`), fireworks for the big finds (`fireworks.ts`), and a cross-planet traveller's journal of biomes, species, milestones, and stats (`journal.ts`, persisted in `localStorage` with no Three.js import so other pages can read it).
 
 ## Toolchain & commands
 

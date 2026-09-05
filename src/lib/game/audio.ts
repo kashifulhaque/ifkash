@@ -510,6 +510,64 @@ export class Ambience {
     });
   }
 
+  /** Bright rising glissando for a picked-up shard. */
+  sparkle(): void {
+    const ctx = this.ctx;
+    if (!ctx || !this.master || this.muted) return;
+    const now = ctx.currentTime;
+    const root = this.mood ? this.mood.root : 60;
+    [12, 16, 19, 24].forEach((semis, i) => {
+      const osc = ctx.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.value = midiToHz(root + semis + 12);
+      const g = ctx.createGain();
+      const t0 = now + i * 0.055;
+      g.gain.setValueAtTime(0, t0);
+      g.gain.linearRampToValueAtTime(0.06, t0 + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.0008, t0 + 0.7);
+      osc.connect(g).connect(this.master!);
+      if (this.reverbSend) g.connect(this.reverbSend);
+      osc.start(t0);
+      osc.stop(t0 + 0.75);
+    });
+  }
+
+  /** Distant firework: a soft thump and a hiss of sparks. */
+  pop(): void {
+    const ctx = this.ctx;
+    if (!ctx || !this.master || this.muted) return;
+    const now = ctx.currentTime;
+    const thump = ctx.createOscillator();
+    thump.type = 'sine';
+    thump.frequency.setValueAtTime(140, now);
+    thump.frequency.exponentialRampToValueAtTime(50, now + 0.25);
+    const tg = ctx.createGain();
+    tg.gain.setValueAtTime(0.12, now);
+    tg.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+    thump.connect(tg).connect(this.master);
+    thump.start(now);
+    thump.stop(now + 0.32);
+
+    const len = 0.6;
+    const buf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * len), ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < data.length; i++) {
+      const t = i / data.length;
+      data[i] = (Math.random() * 2 - 1) * (1 - t) * (1 - t) * (1 - t);
+    }
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.value = 2400 + Math.random() * 1200;
+    filter.Q.value = 0.7;
+    const g = ctx.createGain();
+    g.gain.value = 0.05;
+    src.connect(filter).connect(g).connect(this.master);
+    if (this.reverbSend) g.connect(this.reverbSend);
+    src.start(now + 0.03);
+  }
+
   /** Short hop blip. */
   hop(): void {
     const ctx = this.ctx;

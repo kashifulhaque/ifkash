@@ -1,5 +1,6 @@
 import { writable } from 'svelte/store';
 import type { Wonder } from './wonders';
+import { emptyJournal, type Journal } from './journal';
 
 export type BiomeCaption = { name: string; kind: string; index: string; tagline: string };
 
@@ -21,9 +22,14 @@ export type GameState = {
   photo: boolean;
   muted: boolean;
   /** Short fading notice, for example after finding a wonder. */
-  toast: { id: number; text: string } | null;
+  toast: { id: number; text: string; kicker?: string; link?: { href: string; label: string } } | null;
   /** Label of the world seed, for example "2026-09-04" or "quiet-fox-73". */
   seed: string;
+  /** The traveller's journal overlay. */
+  journalOpen: boolean;
+  journal: Journal;
+  /** Starlight shards collected on this planet. */
+  shards: { found: number; total: number };
 };
 
 export const initialState: GameState = {
@@ -41,7 +47,10 @@ export const initialState: GameState = {
   photo: false,
   muted: false,
   toast: null,
-  seed: ''
+  seed: '',
+  journalOpen: false,
+  journal: emptyJournal(),
+  shards: { found: 0, total: 0 }
 };
 
 export const gameState = writable<GameState>({ ...initialState });

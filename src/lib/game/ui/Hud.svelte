@@ -4,6 +4,8 @@
 
   export let found = 0;
   export let total = 7;
+  /** Starlight shards collected on this planet. */
+  export let shards: { found: number; total: number } = { found: 0, total: 0 };
   export let biome: BiomeCaption | null = null;
   export let prompt: { id: string; action: string; found: boolean; kicker?: string } | null = null;
   export let muted = false;
@@ -37,6 +39,16 @@
     {/key}
     <span class="of">/ {total}</span>
     <span class="label">small wonders</span>
+    {#if shards.total > 0}
+      <span class="divider"></span>
+      <span class="shards" class:complete={shards.found >= shards.total} title="Starlight shards on this planet">
+        <span class="shard-icon">✦</span>
+        {#key shards.found}
+          <strong class="count">{shards.found}</strong>
+        {/key}
+        <span class="of">/ {shards.total}</span>
+      </span>
+    {/if}
   </div>
 
   <div class="actions">
@@ -63,6 +75,12 @@
       <svg viewBox="0 0 24 24" aria-hidden="true">
         <path d="M4 8.5A1.5 1.5 0 0 1 5.5 7H8l1.5-2h5L16 7h2.5A1.5 1.5 0 0 1 20 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 17.5z" />
         <circle cx="12" cy="13" r="3.2" />
+      </svg>
+    </button>
+    <button class="round" on:click={() => dispatch('journal')} aria-label="Journal" title="Journal (J)">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H18a1 1 0 0 1 1 1v14.5a1.5 1.5 0 0 1-1.5 1.5H6.5A1.5 1.5 0 0 1 5 18.5z" />
+        <path d="M5 17.5A1.5 1.5 0 0 1 6.5 16H19M9 7.5h6M9 10.5h4" />
       </svg>
     </button>
     <button class="round" on:click={() => dispatch('help')} aria-label="Help" title="Help (H)">
@@ -110,6 +128,7 @@
         <span class="group"><kbd>space</kbd> hop</span>
         <span class="group"><kbd>E</kbd> interact</span>
         <span class="group"><kbd>M</kbd> globe</span>
+        <span class="group"><kbd>J</kbd> journal</span>
       </div>
     {:else if !intro}
       <p class="hint-line small">Tap a spot to wander · drag to look around</p>
@@ -216,6 +235,24 @@
   }
   .counter.complete .count {
     color: #e9c46a;
+  }
+  .counter .divider {
+    width: 1px;
+    height: 14px;
+    margin: 0 2px;
+    background: rgba(255, 255, 255, 0.16);
+  }
+  .counter .shards {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .counter .shard-icon {
+    color: #c9b3ff;
+    font-size: 0.7rem;
+  }
+  .counter .shards.complete .count {
+    color: #c9b3ff;
   }
 
   /* Round buttons */

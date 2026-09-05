@@ -289,7 +289,7 @@ let dotTexture: THREE.Texture | null = null;
 let leafTexture: THREE.Texture | null = null;
 
 /** A soft round sprite, drawn once on a canvas so points read as flakes rather than squares. */
-function softDot(): THREE.Texture {
+export function softDot(): THREE.Texture {
   if (dotTexture) return dotTexture;
   const size = 32;
   const canvas = document.createElement('canvas');

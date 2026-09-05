@@ -12,14 +12,16 @@
   import HelpOverlay from '$lib/game/ui/HelpOverlay.svelte';
   import TouchControls from '$lib/game/ui/TouchControls.svelte';
   import PhotoBar from '$lib/game/ui/PhotoBar.svelte';
+  import JournalPanel from '$lib/game/ui/JournalPanel.svelte';
 
   let canvas: HTMLCanvasElement;
   let game: Game | null = null;
   let destroyed = false;
   let justFound = false;
   let saving = false;
+  type Toast = NonNullable<(typeof initialState)['toast']>;
   /** Toast to show once the wonder panel closes, for example after the seventh find. */
-  let pendingToast: string | null = null;
+  let pendingToast: Omit<Toast, 'id'> | null = null;
   let toastTimer: ReturnType<typeof setTimeout> | undefined;
 
   function makeCallbacks(): GameCallbacks {
@@ -29,7 +31,8 @@
       onFound: (found) => {
         justFound = true;
         gameState.update((s) => ({ ...s, found }));
-        if (found.length >= WONDERS.length) pendingToast = 'Every small wonder found. A badge now waits on the home page.';
+        if (found.length >= WONDERS.length)
+          pendingToast = { text: 'Every small wonder found. A badge now waits on the home page.', link: { href: '/', label: 'See it' } };
       },
       onOpenWonder: (wonder) => {
         game?.setOverlayOpen(true);
@@ -39,10 +42,19 @@
       onIntroEnd: () => gameState.update((s) => ({ ...s, intro: false })),
       onHelp: () => toggleHelp(),
       onEscape: () => {
-        if ($gameState.openWonder || $gameState.help) closeOverlays();
+        if ($gameState.openWonder || $gameState.help || $gameState.journalOpen) closeOverlays();
         else if ($gameState.photo) game?.setPhoto(false);
       },
-      onPhoto: (photo) => gameState.update((s) => ({ ...s, photo }))
+      onPhoto: (photo) => gameState.update((s) => ({ ...s, photo })),
+      onJournal: (journal) => gameState.update((s) => ({ ...s, journal })),
+      onShards: (found, total) => gameState.update((s) => ({ ...s, shards: { found, total } })),
+      onMilestone: (m) => {
+        const toast = { kicker: 'Milestone', text: `${m.title} · ${m.blurb}` };
+        // The wonder panel is about to open on the seventh find; hold the toast until it closes.
+        if ($gameState.openWonder || m.id === 'wonders') pendingToast = toast;
+        else showToast(toast);
+      },
+      onJournalOpen: () => toggleJournal()
     };
   }
 
@@ -62,7 +74,14 @@
       goto('/');
       return;
     }
-    gameState.update((s) => ({ ...s, ready: true, found: game!.found, muted: game!.audio.muted }));
+    gameState.update((s) => ({
+      ...s,
+      ready: true,
+      found: game!.found,
+      muted: game!.audio.muted,
+      journal: game!.journal,
+      shards: game!.shardProgress
+    }));
     if (dev) (window as unknown as Record<string, unknown>).__game = game;
   });
 
@@ -76,7 +95,7 @@
 
   function closeOverlays() {
     justFound = false;
-    gameState.update((s) => ({ ...s, openWonder: null, help: false }));
+    gameState.update((s) => ({ ...s, openWonder: null, help: false, journalOpen: false }));
     game?.setOverlayOpen(false);
     if (pendingToast) {
       showToast(pendingToast);
@@ -84,11 +103,20 @@
     }
   }
 
-  function showToast(text: string) {
+  function showToast(toast: Omit<Toast, 'id'>) {
     clearTimeout(toastTimer);
     const id = Date.now();
-    gameState.update((s) => ({ ...s, toast: { id, text } }));
+    gameState.update((s) => ({ ...s, toast: { id, ...toast } }));
     toastTimer = setTimeout(() => gameState.update((s) => (s.toast?.id === id ? { ...s, toast: null } : s)), 7000);
+  }
+
+  function toggleJournal() {
+    if ($gameState.journalOpen) {
+      closeOverlays();
+      return;
+    }
+    game?.setOverlayOpen(true);
+    gameState.update((s) => ({ ...s, journalOpen: true, help: false, openWonder: null }));
   }
 
   /** Photo mode: render a frame and download it as a PNG named after the seed. */
@@ -115,7 +143,7 @@
       return;
     }
     game?.setOverlayOpen(true);
-    gameState.update((s) => ({ ...s, help: true, openWonder: null }));
+    gameState.update((s) => ({ ...s, help: true, openWonder: null, journalOpen: false }));
   }
 
   function toggleMute() {
@@ -154,6 +182,7 @@
       <Hud
         found={$gameState.found.length}
         total={$gameState.total}
+        shards={$gameState.shards}
         biome={$gameState.biome}
         prompt={$gameState.prompt}
         muted={$gameState.muted}
@@ -164,6 +193,7 @@
         on:mute={toggleMute}
         on:help={toggleHelp}
         on:photo={() => game?.togglePhoto()}
+        on:journal={toggleJournal}
         on:interact={interactFromHud}
       />
     {/if}
@@ -176,13 +206,18 @@
       {#key $gameState.toast.id}
         <div class="toast" role="status">
           <span class="spark">✦</span>
-          <span>{$gameState.toast.text}</span>
-          <a href="/">See it</a>
+          <span class="toast-text">
+            {#if $gameState.toast.kicker}<span class="toast-kicker">{$gameState.toast.kicker}</span>{/if}
+            <span>{$gameState.toast.text}</span>
+          </span>
+          {#if $gameState.toast.link}
+            <a href={$gameState.toast.link.href}>{$gameState.toast.link.label}</a>
+          {/if}
         </div>
       {/key}
     {/if}
 
-    {#if $gameState.ready && $gameState.isTouch && !$gameState.openWonder && !$gameState.help && !$gameState.photo}
+    {#if $gameState.ready && $gameState.isTouch && !$gameState.openWonder && !$gameState.help && !$gameState.journalOpen && !$gameState.photo}
       <TouchControls
         on:move={(e) => {
           if (!game) return;
@@ -200,6 +235,10 @@
 
     {#if $gameState.help}
       <HelpOverlay isTouch={$gameState.isTouch} found={$gameState.found.length} total={$gameState.total} seed={$gameState.seed} on:close={closeOverlays} />
+    {/if}
+
+    {#if $gameState.journalOpen}
+      <JournalPanel journal={$gameState.journal} found={$gameState.found} shards={$gameState.shards} seed={$gameState.seed} on:close={closeOverlays} />
     {/if}
   {/if}
 
@@ -327,6 +366,17 @@
     animation: toast-in 0.4s ease-out, toast-out 0.6s ease-in 6.4s forwards;
   }
   .toast .spark {
+    color: #e9c46a;
+  }
+  .toast-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .toast-kicker {
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
     color: #e9c46a;
   }
   .toast a {

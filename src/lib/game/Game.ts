@@ -33,6 +33,20 @@ import { WONDERS, wonderDir, type Wonder } from './wonders';
 import { loadFound, saveFound } from './progress';
 import { Weather, weatherFor } from './weather';
 import type { BiomeCaption } from './store';
+import { Shards } from './shards';
+import { Fireworks } from './fireworks';
+import {
+  JOURNAL_BIOMES,
+  SPECIES,
+  loadJournal,
+  loadShards,
+  milestoneById,
+  saveJournal,
+  saveShards,
+  type Journal,
+  type Milestone,
+  type MilestoneId
+} from './journal';
 
 /** Interaction card. `kicker` overrides the wonder wording, for example for the boat. */
 export type Prompt = { id: string; action: string; found: boolean; kicker?: string };
@@ -53,6 +67,14 @@ export type GameCallbacks = {
   onEscape: () => void;
   /** Photo mode entered or left; the page hides the HUD while it is on. */
   onPhoto: (photo: boolean) => void;
+  /** The journal changed: a new biome, species, milestone, or a stat tick. */
+  onJournal: (j: Journal) => void;
+  /** Starlight shards collected on this planet. */
+  onShards: (found: number, total: number) => void;
+  /** A milestone was just earned. */
+  onMilestone: (m: Milestone) => void;
+  /** The player asked for the journal. */
+  onJournalOpen: () => void;
 };
 
 // Tuned against the explorer's stride: `character.ts` solves the walk cycle
@@ -72,6 +94,8 @@ const PET_POSE = 1.4;
 const PLAYER_RADIUS = 0.35;
 /** Seconds of no progress toward a click target before the walk is cancelled. */
 const STUCK_TIMEOUT = 0.6;
+/** Journal stats are written to storage this often, in seconds, not every step. */
+const JOURNAL_FLUSH = 4;
 const CAM_MIN = 5;
 const CAM_MAX = 28;
 const GLOBE_MARGIN = 10;
@@ -115,6 +139,8 @@ export class Game {
   /** Label of the seed this world was generated from. */
   readonly seed: string;
   found: string[];
+  /** The traveller's journal, shared across every planet. */
+  journal: Journal;
 
   private renderer: THREE.WebGLRenderer;
   private scene = new THREE.Scene();
@@ -195,6 +221,15 @@ export class Game {
   /** Snow settling and wet ground on the lit materials. */
   private fx: SurfaceFx;
   private gems: Gem[] = [];
+  private shards: Shards;
+  private fireworks = new Fireworks();
+  /** The animal currently tagging along, if any. */
+  private companion: Critter | null = null;
+  /** True while the current shooting star has already been counted. */
+  private meteorSeen = false;
+  /** Seconds until the journal's running stats are next saved. */
+  private journalFlush = JOURNAL_FLUSH;
+  private journalDirty = false;
 
   private promptId: string | null = null;
   private biomeId: string | null = null;
@@ -210,9 +245,14 @@ export class Game {
     this.canvas = canvas;
     this.callbacks = callbacks;
     this.found = loadFound();
+    this.journal = loadJournal();
 
     // Seed the generators before anything reads noise or biome centres.
     this.seed = options.seed ?? dailySeedLabel();
+    if (!this.journal.planets.includes(this.seed)) {
+      this.journal.planets = [...this.journal.planets, this.seed];
+      this.journalDirty = true;
+    }
     const seed = hashSeed(this.seed);
     setNoiseSeed(seed);
     layoutBiomes(seed);
@@ -261,6 +301,9 @@ export class Game {
     if (props.night) this.scene.add(props.night);
     for (const e of props.lights) this.lights.add(e);
     this.colliders = new ColliderGrid(props.colliders);
+    this.shards = new Shards(seed, this.colliders, this.lights, loadShards(this.seed));
+    this.scene.add(this.shards.group, this.fireworks.group);
+    this.fireworks.onBurst = () => this.audio.pop();
     // Snow and rain land on the ground and the props through the same patch.
     this.fx = patchSurface([this.ground.material as THREE.Material, ...(props.solid ? [props.solid.material as THREE.Material] : [])], NIGHT.rim);
 
@@ -436,6 +479,11 @@ export class Game {
     this.setGlobe(!this.globe);
   }
 
+  /** Starlight shards collected on this planet, and how many it holds. */
+  get shardProgress(): { found: number; total: number } {
+    return { found: this.shards.foundCount, total: this.shards.total };
+  }
+
   toggleMute(): boolean {
     this.audio.start();
     return this.audio.toggle();
@@ -605,6 +653,7 @@ export class Game {
     if (input.consumeEscape()) this.callbacks.onEscape();
     if (input.consumeHelp()) this.callbacks.onHelp();
     if (input.consumePhoto() && !this.overlayOpen) this.togglePhoto();
+    if (input.consumeJournal()) this.callbacks.onJournalOpen();
     if (input.consumeGlobe() && !this.overlayOpen) {
       this.exitIntro();
       this.toggleGlobe();
@@ -654,6 +703,9 @@ export class Game {
         this.hopV = HOP_VELOCITY;
         this.airborne = true;
         this.audio.hop();
+        this.journal.hops += 1;
+        this.journalDirty = true;
+        if (this.journal.hops >= 100) this.award('grasshopper');
       }
     }
 
@@ -725,6 +777,9 @@ export class Game {
         up.copy(_v2);
         this.heading.addScaledVector(up, -this.heading.dot(up)).normalize();
         this.camForward.addScaledVector(up, -this.camForward.dot(up)).normalize();
+        this.journal.paces += speed * dt;
+        this.journalDirty = true;
+        if (this.journal.paces >= 1000) this.award('wanderer');
         if (this.walkTarget) {
           // Give up on a click target that an obstacle keeps us from reaching.
           const progress = before - up.angleTo(this.walkTarget);
@@ -762,6 +817,23 @@ export class Game {
     if (this.character.footStrike && !this.airborne) this.audio.step(this.animSpeed > 0.75);
     this.placeCharacter();
     this.updateBiome(dt);
+    if (moving) this.pickUpShard();
+  }
+
+  /** Collect a shard the explorer has walked onto. */
+  private pickUpShard(): void {
+    const idx = this.shards.collect(this.dir);
+    if (idx < 0) return;
+    saveShards(this.seed, this.shards.foundIndices);
+    this.audio.sparkle();
+    this.journal.shards += 1;
+    this.journalDirty = true;
+    this.callbacks.onShards(this.shards.foundCount, this.shards.total);
+    if (this.shards.foundCount >= this.shards.total) {
+      this.fireworks.celebrate(this.character.group.position, 4.5);
+      this.award('starfall');
+    }
+    this.flushJournal(true);
   }
 
   /** Biome caption and shore scan, on a quarter-second cadence. */
@@ -773,6 +845,11 @@ export class Game {
     if (b.id !== this.biomeId) {
       this.biomeId = b.id;
       this.callbacks.onBiome({ name: b.name, kind: b.kind, index: b.index, tagline: b.tagline });
+      if (!this.journal.biomes.includes(b.id)) {
+        this.journal.biomes = [...this.journal.biomes, b.id];
+        if (JOURNAL_BIOMES.every((id) => this.journal.biomes.includes(id))) this.award('cartographer');
+        this.flushJournal(true);
+      }
       this.audio.setMood(b.id);
       const weather = weatherFor(b.id);
       this.weather.set(weather);
@@ -832,6 +909,10 @@ export class Game {
     this.audio.hop();
     this.placeBoat();
     this.placeCharacter();
+    // A companion waits on the shore; the boat only seats one.
+    this.companion?.release();
+    this.companion = null;
+    this.award('sailor');
   }
 
   /** Step ashore at `land`, leaving the boat afloat where it is. */
@@ -1003,6 +1084,19 @@ export class Game {
     this.skyAurora.update(dt, t);
     this.constellations.update(t);
     this.meteors.update(dt);
+    this.shards.update(dt, t);
+    this.fireworks.update(dt);
+    // A streak counts as seen if it crosses the sky while the player is on the ground.
+    if (this.meteors.group.visible) {
+      if (!this.meteorSeen && !this.globe && !this.intro) {
+        this.meteorSeen = true;
+        this.award('stargazer');
+      }
+    } else {
+      this.meteorSeen = false;
+    }
+    if (this.companion && !this.companion.following) this.companion = null;
+    this.flushJournal(false, dt);
     if (this.boatPlaced) {
       if (!this.boating) this.placeBoat();
       this.wake.update(dt, this.boatDir, this.boatHeading, this.boating ? this.boatSpeed : 0);
@@ -1044,6 +1138,31 @@ export class Game {
     if (this.glowMat) this.glowMat.color.setScalar(1.4);
   }
 
+  // ---------------------------------------------------------------- journal
+
+  /** Record a milestone the first time it is earned, and tell the page. */
+  private award(id: MilestoneId): void {
+    if (this.journal.milestones.includes(id)) return;
+    this.journal.milestones = [...this.journal.milestones, id];
+    this.flushJournal(true);
+    this.callbacks.onMilestone(milestoneById(id));
+  }
+
+  /**
+   * Save the journal and publish it. Steps and hops change every frame, so
+   * those only flush on a timer; `now` forces it for the events that matter.
+   */
+  private flushJournal(now: boolean, dt = 0): void {
+    this.journalFlush -= dt;
+    if (!now && this.journalFlush > 0) return;
+    this.journalFlush = JOURNAL_FLUSH;
+    if (!this.journalDirty && !now) return;
+    this.journalDirty = false;
+    if (this.journal.planets.length >= 3) this.award('traveller');
+    saveJournal(this.journal);
+    this.callbacks.onJournal(this.journal);
+  }
+
   // ---------------------------------------------------------------- wonders
 
   private nearestGem(): Gem | null {
@@ -1077,7 +1196,20 @@ export class Game {
   private petCritter(c: Critter): void {
     this.audio.start();
     this.exitIntro();
+    // A second pat wins the animal over: it tags along for a while.
+    const befriend = c.petted && !c.following && !this.boating;
     c.pet(this.dir);
+    if (befriend) {
+      if (this.companion && this.companion !== c) this.companion.release();
+      this.companion = c;
+      c.follow(this.dir);
+      this.award('friend');
+    }
+    if (!this.journal.species.includes(c.name)) {
+      this.journal.species = [...this.journal.species, c.name];
+      if (SPECIES.every((sp) => this.journal.species.includes(sp))) this.award('zoologist');
+      this.flushJournal(true);
+    }
     this.hearts.burst(c.group.position, c.dir, 3);
     this.audio.pet();
     // The rowing pose wins over the crouch, so skip it when afloat.
@@ -1098,10 +1230,10 @@ export class Game {
     if (gem) prompt = { id: gem.wonder.id, action: gem.wonder.action, found: this.found.includes(gem.wonder.id) };
     else if (pal) {
       prompt = {
-        id: `pet-${pal.id}${pal.petted ? '-again' : ''}`,
-        action: pal.petted ? `Say hello to the ${pal.name}` : `Pet the ${pal.name}`,
+        id: `pet-${pal.id}${pal.following ? '-friend' : pal.petted ? '-again' : ''}`,
+        action: pal.following ? `Pet your ${pal.name}` : pal.petted ? `Say hello to the ${pal.name}` : `Pet the ${pal.name}`,
         found: false,
-        kicker: pal.petted ? 'An old friend' : 'A curious animal'
+        kicker: pal.following ? 'Your companion' : pal.petted ? 'Pet again to make a friend' : 'A curious animal'
       };
     } else if (!idle && !this.boating && this.launchTarget()) {
       const reuse = this.launchTarget() === this.boatDir;
@@ -1126,6 +1258,10 @@ export class Game {
       mat.emissive.setHex(0xffb703);
       (gem.ring.material as THREE.MeshBasicMaterial).color.setHex(0xffd166);
       this.promptId = null; // re-emit the prompt with found = true
+      if (this.found.length >= WONDERS.length) {
+        this.fireworks.celebrate(this.character.group.position, 8);
+        this.award('wonders');
+      }
     }
     if (w.id === 'education') this.aurora.setActive(true);
     if (w.id === 'blog') this.lampOn = true;

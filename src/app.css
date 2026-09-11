@@ -17,7 +17,7 @@
 }
 
 /* ────────────────────────────────────────────────────────────────
-   Drawably — pen-on-paper. White paper (dark: midnight sketchbook),
+   Drawably — pen-on-paper. White paper (dark: pure-black sketchbook),
    pen-blue ink (#2724d1), warm neutral notes, hand-drawn boiling
    outlines sketched in Drawably Pen headings. Canonical tokens first;
    legacy GLYPH names remapped so scoped page styles inherit the look
@@ -34,8 +34,8 @@
 }
 
 :root {
-  --background: #15132b;
-  --card: #15132b;
+  --background: #000000;
+  --card: #000000;
   --popover: rgb(198 196 255 / 6%);
   --muted-surface: rgb(198 196 255 / 13%);
 
@@ -183,9 +183,9 @@
   --complete: var(--ok);
   --planned: var(--ink-mute);
 
-  --code-bg: #0f0e21;
-  --overlay-bg: rgb(15 14 33 / 78%);
-  --header-bg: rgb(21 19 43 / 88%);
+  --code-bg: #0a0a0a;
+  --overlay-bg: rgb(0 0 0 / 78%);
+  --header-bg: rgb(0 0 0 / 88%);
   --nav-bg: var(--header-bg);
   --header-offset: 69px;
   --page-glow: transparent;
@@ -199,7 +199,7 @@
   --shadow-hard: none;
   --shadow-hard-lg: none;
 
-  --agent-bg: rgb(21 19 43 / 96%);
+  --agent-bg: rgb(0 0 0 / 96%);
   --agent-border: var(--border);
   --agent-shadow: rgb(0 0 0 / 60%);
   --agent-text: var(--foreground);
@@ -226,7 +226,7 @@
   --agent-pill-hover-text: var(--foreground);
   --agent-progress-track: var(--popover);
   --agent-progress-fill: var(--foreground);
-  --agent-fab-bg: rgb(21 19 43 / 92%);
+  --agent-fab-bg: rgb(0 0 0 / 92%);
   --agent-fab-border: var(--border);
   --agent-fab-color: var(--muted-foreground);
   --agent-fab-hover-color: var(--foreground);

@@ -8,6 +8,7 @@
   import { env } from '$env/dynamic/public';
   import { LogOut, Check, Plus, Trash2 } from 'lucide-svelte';
   import LoadingState from '$lib/components/LoadingState.svelte';
+  import WeightChart from '$lib/components/WeightChart.svelte';
   import { setToken, loadToken, AuthError } from '$lib/splitterApi';
   import { isLocalDev } from '$lib/apiBase';
   import { scheduleTokenRefresh } from '$lib/fitnessAuth';
@@ -24,6 +25,12 @@
     type Profile,
     type Goal
   } from '$lib/fitnessMetrics';
+  import {
+    weightInsights,
+    trainingCadence,
+    weightForBmi,
+    type RateBand
+  } from '$lib/fitnessInsights';
   import {
     DAY_TEMPLATES,
     setsFromScheme,
@@ -567,24 +574,57 @@
     return groups;
   })();
 
-  // Chart geometry for the weekly-average sparkline. Flat data gets a fake
-  // span so the line sits mid-chart instead of degenerating to NaN.
-  const SPARK_W = 320;
-  const SPARK_H = 96;
-  const SPARK_PAD = 8;
-  $: sparkGeo = (() => {
-    if (weekly.length < 2) return null;
-    const vals = weekly.map((p) => p.avgKg);
-    const min = Math.min(...vals);
-    const max = Math.max(...vals);
-    const span = max - min || 1;
-    const pts = weekly.map((p, i) => ({
-      x: SPARK_PAD + (i / (weekly.length - 1)) * (SPARK_W - 2 * SPARK_PAD),
-      y: SPARK_PAD + (1 - (p.avgKg - min) / span) * (SPARK_H - 2 * SPARK_PAD)
-    }));
-    const line = pts.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
-    const area = `${SPARK_PAD},${SPARK_H - SPARK_PAD} ${line} ${SPARK_W - SPARK_PAD},${SPARK_H - SPARK_PAD}`;
-    return { line, area, last: pts[pts.length - 1], min, max };
+  // ---- insights ------------------------------------------------------------
+  // All the trend maths lives in `fitnessInsights.ts`; the page only formats it.
+  $: insights = weightInsights(bodyweight, profile, weekly, today());
+  $: cadence = trainingCadence(sessions, today());
+  /** Upper edge of the normal BMI range at this height — the chart's goal line. */
+  $: normalBmiKg = weightForBmi(24.9, profile.height_cm);
+
+  const BAND_NOTE: Record<RateBand, string> = {
+    gaining: 'Trending up over this window. Expected on a bulk; on a cut it means intake is above target.',
+    holding: 'Holding steady — the trend is flat.',
+    slow: 'Losing, but under 0.5 %/wk. Fine if that is the plan, otherwise the deficit is too small to show.',
+    sustainable: 'In the 0.5–1.0 %/wk band — fast enough to matter, slow enough to keep muscle.',
+    aggressive: 'Above 1.0 %/wk. Workable for a short block; watch the priority lifts for strength drops.',
+    'very fast': 'Over 1.25 %/wk. Fast enough to cost muscle — consider easing the deficit.'
+  };
+
+  const BAND_LABEL: Record<RateBand, string> = {
+    gaining: 'gaining',
+    holding: 'flat',
+    slow: 'slow',
+    sustainable: 'on target',
+    aggressive: 'aggressive',
+    'very fast': 'too fast'
+  };
+
+  /** Bands to flag amber rather than treat as on-plan. */
+  const BAND_WARN: RateBand[] = ['gaining', 'aggressive', 'very fast'];
+
+  const fmtSigned = (v: number | null, dp = 1): string =>
+    v === null ? '—' : (v > 0 ? '+' : '') + v.toFixed(dp);
+
+  /** ISO date → "5 Sep 2026"; the projections are months out, so the year earns its place. */
+  const fmtDate = (iso: string | null): string =>
+    iso
+      ? new Date(iso + 'T00:00:00').toLocaleDateString('en-GB', {
+          day: 'numeric',
+          month: 'short',
+          year: 'numeric'
+        })
+      : '—';
+
+  // How the measured deficit compares with the one the goal asks for. Only
+  // called out past ±200 kcal/day, which is inside the noise of MET estimates.
+  $: deficitNote = (() => {
+    const gap = insights.deficitGap;
+    if (gap === null || insights.plannedDeficit === 0) return '';
+    if (gap > 200)
+      return 'Losing faster than the plan implies — intake is under target, or your activity multiplier is set too low.';
+    if (gap < -200)
+      return 'Losing slower than the plan implies — intake is likely above target, or TDEE is overestimated.';
+    return 'Measured loss matches the planned deficit.';
   })();
 
   // Newest first, each week annotated with its change vs the week before.
@@ -599,10 +639,6 @@
   $: weekDelta =
     weekly.length > 1
       ? Math.round((weekly[weekly.length - 1].avgKg - weekly[weekly.length - 2].avgKg) * 10) / 10
-      : null;
-  $: totalDelta =
-    weekly.length > 1
-      ? Math.round((weekly[weekly.length - 1].avgKg - weekly[0].avgKg) * 10) / 10
       : null;
 
   const fmtDelta = (d: number | null): string => (d === null ? '—' : (d > 0 ? '+' : '') + d.toFixed(1));
@@ -1125,51 +1161,194 @@
   {/if}
 
   {#if signedIn}
-    <!-- Bodyweight trend -->
-    <details class="fold">
+    <!-- Bodyweight trend, insights and projections -->
+    <details class="fold" open>
       <summary>
         <span class="fold-title">Bodyweight trend</span>
-        {#if latestWeek}<span class="fold-meta">{latestWeek.avgKg} kg avg</span>{/if}
+        {#if insights.trendKg !== null}
+          <span class="fold-meta">{insights.trendKg} kg trend · {fmtSigned(insights.primary.kgPerWeek, 2)} kg/wk</span>
+        {/if}
       </summary>
       <div class="fold-body">
-        {#if weekly.length}
+        {#if insights.points.length}
           <div class="trend-stats">
             <div class="trend-stat">
-              <span class="ts-val">{latestWeek?.avgKg}<small> kg</small></span>
-              <span class="ts-label">latest weekly avg</span>
+              <span class="ts-val">{insights.trendKg}<small> kg</small></span>
+              <span class="ts-label">trend weight</span>
+              <span class="ts-sub">scale {insights.latestKg} kg · {fmtDate(insights.latestDate)}</span>
             </div>
             <div class="trend-stat" class:down={(weekDelta ?? 0) < 0} class:up={(weekDelta ?? 0) > 0}>
               <span class="ts-val">{fmtDelta(weekDelta)}<small> kg</small></span>
               <span class="ts-label">vs last week</span>
+              <span class="ts-sub">weekly averages</span>
             </div>
-            <div class="trend-stat" class:down={(totalDelta ?? 0) < 0} class:up={(totalDelta ?? 0) > 0}>
-              <span class="ts-val">{fmtDelta(totalDelta)}<small> kg</small></span>
+            <div
+              class="trend-stat"
+              class:down={(insights.totalChange ?? 0) < 0}
+              class:up={(insights.totalChange ?? 0) > 0}
+            >
+              <span class="ts-val">{fmtSigned(insights.totalChange)}<small> kg</small></span>
               <span class="ts-label">since start</span>
+              <span class="ts-sub">
+                {fmtSigned(insights.totalChangePct)}% · {insights.consistency.spanDays} days · from {insights.startKg} kg
+              </span>
+            </div>
+            <div
+              class="trend-stat"
+              class:down={(insights.primary.kgPerWeek ?? 0) < 0}
+              class:up={(insights.primary.kgPerWeek ?? 0) > 0}
+            >
+              <span class="ts-val">{fmtSigned(insights.primary.kgPerWeek, 2)}<small> kg/wk</small></span>
+              <span class="ts-label">current rate</span>
+              <span class="ts-sub">{insights.primary.label} · fitted</span>
             </div>
           </div>
 
-          {#if sparkGeo}
-            <div class="spark-wrap">
-              <svg class="spark" viewBox="0 0 320 96" preserveAspectRatio="none" aria-hidden="true">
-                <defs>
-                  <linearGradient id="bw-grad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0" style="stop-color: var(--blueprint, #6ea8fe); stop-opacity: 0.25" />
-                    <stop offset="1" style="stop-color: var(--blueprint, #6ea8fe); stop-opacity: 0" />
-                  </linearGradient>
-                </defs>
-                <polygon points={sparkGeo.area} fill="url(#bw-grad)" />
-                <polyline points={sparkGeo.line} />
-              </svg>
-              <span
-                class="spark-dot"
-                style="left: {(sparkGeo.last.x / SPARK_W) * 100}%; top: {(sparkGeo.last.y / SPARK_H) * 100}%"
-              ></span>
-              <span class="spark-tag max">{sparkGeo.max} kg</span>
-              <span class="spark-tag min">{sparkGeo.min} kg</span>
-            </div>
+          {#if insights.primary.band}
+            <p class="assess" class:warn={BAND_WARN.includes(insights.primary.band)}>
+              <span class="assess-chip">
+                {BAND_LABEL[insights.primary.band]}
+                {#if insights.primary.pctPerWeek !== null}
+                  · {fmtSigned(insights.primary.pctPerWeek, 2)}%/wk
+                {/if}
+              </span>
+              {BAND_NOTE[insights.primary.band]}
+            </p>
           {/if}
 
-          <p class="hint">Weekly averages — track this, ignore daily swings.</p>
+          <WeightChart
+            points={insights.points}
+            ema={insights.ema}
+            targetKg={normalBmiKg}
+            targetLabel={`BMI 25 · ${normalBmiKg} kg`}
+          />
+
+          <h4 class="ins-head">Rate by window</h4>
+          <div class="rate-grid">
+            {#each insights.rates as r}
+              <div
+                class="rate-cell"
+                class:muted={r.kgPerWeek === null}
+                class:down={(r.kgPerWeek ?? 0) < 0}
+                class:up={(r.kgPerWeek ?? 0) > 0}
+              >
+                <span class="r-val">{fmtSigned(r.kgPerWeek, 2)}<small> kg/wk</small></span>
+                <span class="r-label">{r.label}</span>
+                <span class="r-sub">
+                  {#if r.kgPerWeek === null}
+                    not enough data
+                  {:else}
+                    {fmtSigned(r.pctPerWeek, 2)}%/wk · {r.n} weigh-ins · fit {r.r2}
+                  {/if}
+                </span>
+              </div>
+            {/each}
+          </div>
+          <p class="hint">
+            Each rate is a least-squares fit over its own window, not a first-to-last subtraction —
+            one heavy meal can't move it. <strong>Fit</strong> is r²: how much of the movement the
+            line explains, so a low number means the window is mostly noise.
+          </p>
+
+          <h4 class="ins-head">Energy balance</h4>
+          <div class="ins-rows">
+            <div class="ins-row">
+              <span>Deficit implied by the trend</span>
+              <strong>
+                {insights.primary.kcalPerDay === null ? '—' : `${insights.primary.kcalPerDay} kcal/day`}
+              </strong>
+            </div>
+            <div class="ins-row">
+              <span>Deficit this goal asks for</span>
+              <strong>{insights.plannedDeficit} kcal/day</strong>
+            </div>
+            <div class="ins-row">
+              <span>Gap</span>
+              <strong class:warn={Math.abs(insights.deficitGap ?? 0) > 200}>
+                {insights.deficitGap === null ? '—' : `${fmtSigned(insights.deficitGap, 0)} kcal/day`}
+              </strong>
+            </div>
+          </div>
+          {#if deficitNote}<p class="hint">{deficitNote}</p>{/if}
+
+          <h4 class="ins-head">
+            Projections
+            <small>at {fmtSigned(insights.primary.kgPerWeek, 2)} kg/wk</small>
+          </h4>
+          {#if (insights.primary.kgPerWeek ?? 0) < 0}
+            <div class="ins-rows">
+              {#each insights.projections as pr}
+                <div class="ins-row">
+                  <span>{pr.label} <em>{pr.targetKg} kg</em></span>
+                  <strong>
+                    {#if pr.reached}
+                      already there
+                    {:else if pr.date}
+                      {fmtDate(pr.date)} · {pr.weeks} wk
+                    {:else}
+                      not on this trend
+                    {/if}
+                  </strong>
+                </div>
+              {/each}
+            </div>
+            {#if insights.forecast.length}
+              <div class="forecast">
+                {#each insights.forecast as f}
+                  <div class="fc">
+                    <span class="fc-val">{f.kg}<small> kg</small></span>
+                    <span class="fc-label">in {f.weeks} wk</span>
+                  </div>
+                {/each}
+              </div>
+            {/if}
+          {:else}
+            <p class="hint">Projections need a downward trend — there is nothing to extrapolate yet.</p>
+          {/if}
+          <p class="hint">
+            Straight-line extrapolation of the {insights.primary.label} fit at 7700 kcal per kg, with
+            BMI targets taken from your height. A real cut slows as you get lighter, so read these as
+            the optimistic end.
+          </p>
+
+          <h4 class="ins-head">Signals</h4>
+          <ul class="signal-list">
+            {#if insights.stalled}
+              <li class="warn">
+                The last two weeks are flat while the whole log is down — either a normal water-weight
+                stall, or the deficit has drifted shut. Give it another week before changing anything.
+              </li>
+            {/if}
+            {#if insights.volatility !== null}
+              <li>
+                Day-to-day swing around the trend is ±{insights.volatility} kg, so a single weigh-in
+                inside that range carries no information.
+              </li>
+            {/if}
+            <li>
+              Logged {insights.consistency.last30} of the last 30 days ({insights.consistency.coverage30}%)
+              · {insights.consistency.streak}-day streak · longest gap {insights.consistency.longestGap} days.
+            </li>
+            {#if (insights.consistency.daysSinceLast ?? 0) > 2}
+              <li class="warn">
+                Last weigh-in was {insights.consistency.daysSinceLast} days ago — the trend weight goes
+                stale quickly.
+              </li>
+            {/if}
+            {#if insights.extremes.best && insights.extremes.best.delta < 0}
+              <li>
+                Best week: {insights.extremes.best.delta.toFixed(1)} kg, week of {insights.extremes.best.weekStart}.
+              </li>
+            {/if}
+            {#if insights.extremes.worst && insights.extremes.worst.delta > 0}
+              <li>
+                Biggest gain: +{insights.extremes.worst.delta.toFixed(1)} kg, week of {insights.extremes.worst.weekStart}.
+              </li>
+            {/if}
+          </ul>
+
+          <h4 class="ins-head">Weekly averages</h4>
+          <p class="hint">Track this, ignore daily swings.</p>
           <div class="weekly-list">
             {#each weeklyWithDelta as w}
               <div class="weekly-row">
@@ -1184,6 +1363,64 @@
           </div>
         {:else}
           <p class="hint">No bodyweight entries yet — add one up top.</p>
+        {/if}
+      </div>
+    </details>
+
+    <!-- Training cadence — frequency and focus balance from the session list -->
+    <details class="fold">
+      <summary>
+        <span class="fold-title">Training cadence</span>
+        {#if cadence.total}<span class="fold-meta">{cadence.perWeek} sessions/wk</span>{/if}
+      </summary>
+      <div class="fold-body">
+        {#if cadence.total}
+          <div class="rate-grid">
+            <div class="rate-cell">
+              <span class="r-val">{cadence.last7}</span>
+              <span class="r-label">last 7 days</span>
+              <span class="r-sub">sessions logged</span>
+            </div>
+            <div class="rate-cell">
+              <span class="r-val">{cadence.perWeek}<small> /wk</small></span>
+              <span class="r-label">last 4 weeks</span>
+              <span class="r-sub">{cadence.last28} sessions</span>
+            </div>
+            <div class="rate-cell" class:up={(cadence.daysSinceLast ?? 0) > 2}>
+              <span class="r-val">{cadence.daysSinceLast ?? '—'}</span>
+              <span class="r-label">days since last</span>
+              <span class="r-sub">{cadence.streak}-day streak</span>
+            </div>
+            <div class="rate-cell">
+              <span class="r-val">{cadence.total}</span>
+              <span class="r-label">all time</span>
+              <span class="r-sub">longest gap {cadence.longestGap} days</span>
+            </div>
+          </div>
+
+          <h4 class="ins-head">Focus balance <small>last 4 weeks</small></h4>
+          <div class="focus-bars">
+            {#each cadence.focus as f}
+              <div class="focus-row">
+                <span class="focus-label">{f.label}</span>
+                <span class="focus-track">
+                  <span
+                    class="focus-fill"
+                    style="width: {Math.max(...cadence.focus.map((x) => x.count), 1) > 0
+                      ? (f.count / Math.max(...cadence.focus.map((x) => x.count), 1)) * 100
+                      : 0}%"
+                  ></span>
+                </span>
+                <span class="focus-count">{f.count}</span>
+              </div>
+            {/each}
+          </div>
+          <p class="hint">
+            The plan runs each focus twice a week, so four weeks of it is eight of each. A focus
+            sitting well under the other two is the one going backwards.
+          </p>
+        {:else}
+          <p class="hint">No sessions logged yet.</p>
         {/if}
       </div>
     </details>
@@ -1780,10 +2017,10 @@
 
   .fold-body { padding: 1.25rem 1rem; }
 
-  /* ── Bodyweight trend ───────────────────────────────────── */
+  /* ── Bodyweight trend + insights ────────────────────────── */
   .trend-stats {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr));
     gap: 0.75rem;
     margin-bottom: 1rem;
   }
@@ -1792,50 +2029,184 @@
     flex-direction: column;
     align-items: center;
     gap: 0.15rem;
-    padding: 0.75rem 0.4rem;
+    padding: 0.75rem 0.5rem;
     border: 1px solid var(--border-subtle);
     border-radius: 0.5rem;
+    text-align: center;
   }
   .ts-val { font-family: var(--font-mono); font-size: 1.15rem; font-weight: 700; color: var(--text-primary); }
   .ts-val small { font-size: 0.68rem; font-weight: 500; color: var(--text-tertiary); }
   .ts-label { font-size: 0.64rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-tertiary); }
+  .ts-sub {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    line-height: 1.35;
+    color: var(--text-faint);
+  }
   .trend-stat.down .ts-val { color: var(--blueprint, #6ea8fe); }
   .trend-stat.up .ts-val { color: #e67e22; }
 
-  .spark-wrap { position: relative; margin: 0 0 1rem; }
-  .spark { display: block; width: 100%; height: 96px; }
-  .spark polyline {
-    fill: none;
-    stroke: var(--blueprint, #6ea8fe);
-    stroke-width: 2;
-    stroke-linejoin: round;
-    stroke-linecap: round;
-    vector-effect: non-scaling-stroke;
+  /* The one-line verdict on the current rate. */
+  .assess {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.5rem;
+    margin: 0 0 1.25rem;
+    padding: 0.7rem 0.85rem;
+    border: 1px solid var(--blueprint);
+    border-radius: 0.5rem;
+    background: var(--blueprint-tint);
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    color: var(--text-secondary);
   }
-  .spark-dot {
-    position: absolute;
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: var(--blueprint, #6ea8fe);
-    box-shadow: 0 0 0 3px var(--bg, #111);
-    transform: translate(-50%, -50%);
-    pointer-events: none;
-  }
-  .spark-tag {
-    position: absolute;
-    right: 0;
+  .assess.warn { border-color: #e67e22; background: rgb(230 126 34 / 10%); }
+  .assess-chip {
+    flex: none;
     font-family: var(--font-mono);
-    font-size: 0.66rem;
-    color: var(--text-tertiary);
-    background: var(--bg, #111);
-    padding: 0.05rem 0.3rem;
-    border-radius: 0.25rem;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-primary);
   }
-  .spark-tag.max { top: -0.3rem; }
-  .spark-tag.min { bottom: -0.3rem; }
+
+  .ins-head {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    margin: 1.5rem 0 0.6rem;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+  }
+  .ins-head small {
+    font-size: 0.66rem;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    text-transform: none;
+    color: var(--text-faint);
+  }
+
+  .rate-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr));
+    gap: 0.6rem;
+  }
+  .rate-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    padding: 0.65rem 0.7rem;
+    border: 1px solid var(--border-subtle);
+    border-radius: 0.5rem;
+  }
+  .r-val { font-family: var(--font-mono); font-size: 1rem; font-weight: 700; color: var(--text-primary); }
+  .r-val small { font-size: 0.64rem; font-weight: 500; color: var(--text-tertiary); }
+  .r-label { font-size: 0.62rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-tertiary); }
+  .r-sub { font-family: var(--font-mono); font-size: 0.62rem; line-height: 1.35; color: var(--text-faint); }
+  .rate-cell.down .r-val { color: var(--blueprint, #6ea8fe); }
+  .rate-cell.up .r-val { color: #e67e22; }
+  .rate-cell.muted .r-val { color: var(--text-faint); }
+
+  .ins-rows { display: flex; flex-direction: column; }
+  .ins-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.85rem;
+    padding: 0.45rem 0;
+    border-bottom: 1px solid var(--border-subtle);
+    font-size: 0.84rem;
+    color: var(--text-secondary);
+  }
+  .ins-row:last-child { border-bottom: none; }
+  .ins-row em { font-family: var(--font-mono); font-style: normal; font-size: 0.72rem; color: var(--text-faint); }
+  .ins-row strong {
+    flex: none;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-align: right;
+    color: var(--text-primary);
+  }
+  .ins-row strong.warn { color: #e67e22; }
+
+  .forecast {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(4.75rem, 1fr));
+    gap: 0.5rem;
+    margin-top: 0.85rem;
+  }
+  .fc {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.1rem;
+    padding: 0.55rem 0.4rem;
+    border: 1px dashed var(--border-subtle);
+    border-radius: 0.5rem;
+  }
+  .fc-val { font-family: var(--font-mono); font-size: 0.95rem; font-weight: 700; color: var(--text-primary); }
+  .fc-val small { font-size: 0.62rem; font-weight: 500; color: var(--text-tertiary); }
+  .fc-label { font-size: 0.62rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-tertiary); }
+
+  .signal-list { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; margin: 0; padding: 0; }
+  .signal-list li {
+    position: relative;
+    padding-left: 0.9rem;
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    color: var(--text-secondary);
+  }
+  .signal-list li::before {
+    content: '·';
+    position: absolute;
+    left: 0.2rem;
+    color: var(--text-faint);
+  }
+  .signal-list li.warn { color: #e67e22; }
+  .signal-list li.warn::before { color: #e67e22; }
+
+  /* Focus balance bars — one row per Push / Pull / Legs. */
+  .focus-bars { display: flex; flex-direction: column; gap: 0.4rem; }
+  .focus-row { display: flex; align-items: center; gap: 0.6rem; }
+  .focus-label {
+    flex: none;
+    width: 3.2rem;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+  }
+  .focus-track {
+    flex: 1;
+    height: 0.5rem;
+    border-radius: 0.25rem;
+    background: var(--blueprint-tint);
+    overflow: hidden;
+  }
+  .focus-fill { display: block; height: 100%; background: var(--blueprint); }
+  .focus-count {
+    flex: none;
+    min-width: 1.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-align: right;
+    color: var(--text-primary);
+  }
 
   .hint { font-size: 0.8125rem; color: var(--text-tertiary); margin: 0 0 0.75rem; }
+  /* A hint explaining the block above it needs air; one introducing the block
+     below it (straight after a heading) does not. */
+  .rate-grid + .hint,
+  .ins-rows + .hint,
+  .forecast + .hint,
+  .focus-bars + .hint { margin-top: 0.85rem; }
 
   .weekly-list { display: flex; flex-direction: column; }
   .weekly-row {
@@ -1980,6 +2351,9 @@
     .page-title { font-size: 1.75rem; }
     .week-strip { grid-template-columns: repeat(3, 1fr); gap: 0.4rem; }
     .day-chip { padding: 0.5rem 0.5rem; }
+
+    /* Four forecast cells in a tidy 2×2 rather than auto-fit's 3 + 1. */
+    .forecast { grid-template-columns: repeat(2, 1fr); }
 
     /* Session bar: stack date + bodyweight so neither gets squeezed. */
     .session-bar { gap: 0.75rem; }

@@ -14,7 +14,7 @@
       crossorigin
     />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#15132b" />
+    <meta name="theme-color" content="#000000" />
     <script>
       (function () {
         try {
@@ -24,7 +24,7 @@
           document.documentElement.setAttribute("data-theme", t);
           document
             .querySelector('meta[name="theme-color"]')
-            ?.setAttribute("content", t === "dark" ? "#15132b" : "#fdfcf8");
+            ?.setAttribute("content", t === "dark" ? "#000000" : "#fdfcf8");
         } catch (e) {
           document.documentElement.setAttribute("data-theme", "dark");
         }

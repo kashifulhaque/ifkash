@@ -29,6 +29,11 @@ const GOAL_DEFICIT: Record<Goal, number> = {
   maintain: 0
 };
 
+/** kcal/day the goal asks to be removed from TDEE (0 when maintaining). */
+export function goalDeficit(goal: Goal): number {
+  return GOAL_DEFICIT[goal] ?? 0;
+}
+
 export const GOAL_LABELS: Record<Goal, string> = {
   cut_moderate: 'Moderate cut (−750 kcal)',
   cut_aggressive: 'Aggressive cut (−1000 kcal)',

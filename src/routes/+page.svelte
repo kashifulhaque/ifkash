@@ -55,6 +55,12 @@
       href: "/blog",
     },
     { n: "07", name: "Game", desc: "A tiny planet to wander", href: "/game" },
+    {
+      n: "08",
+      name: "Roadmap",
+      desc: "Interview course anchored to shipped work",
+      href: "/roadmap",
+    },
   ];
 </script>
 

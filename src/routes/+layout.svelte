@@ -17,6 +17,7 @@
     { href: "/work", label: "Work" },
     { href: "/projects", label: "Projects" },
     { href: "/rl", label: "RL" },
+    { href: "/roadmap", label: "Roadmap" },
     { href: "/tools", label: "Tools" },
     { href: "/education", label: "Education" },
     { href: "/blog", label: "Blog" },

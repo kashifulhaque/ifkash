@@ -15,6 +15,9 @@ export const NAVIGATION_MAP: Record<string, string> = {
   ferray: '/projects/ferray',
   'reinforcement learning': '/rl',
   'snake dqn': '/rl/snake-dqn',
+  roadmap: '/roadmap',
+  'interview prep': '/roadmap',
+  course: '/roadmap',
   tools: '/tools',
   'pdf annotator': '/tools/pdf-annotator',
   'expense splitter': '/tools/splitter',
@@ -70,6 +73,7 @@ Python, C++, Rust, Go, PyTorch, transformer training, reinforcement learning, Fl
 - /work: Roles and companies.
 - /projects: Open source and independent work.
 - /rl: Reinforcement learning experiments.
+- /roadmap: An interview roadmap for LLM pre-training, post-training, RL, and inference, with the numbers behind each project.
 - /tools: Browser-based utilities.
 - /education: Academic background.
 - /blog: Engineering notes and experiments hosted on Hashnode.

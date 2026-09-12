@@ -4,7 +4,7 @@ import { Ambience } from './audio';
 import { biomeAt, biomeById, isOcean, layoutBiomes, type BiomeId } from './biomes';
 import { setNoiseSeed } from './noise';
 import { dailySeedLabel, hashSeed } from './seed';
-import { PLANET_RADIUS, SEA_LEVEL, buildAtmosphere, buildGround, buildStars, buildWater, tangentBasis, walkRadius, offsetDir } from './planet';
+import { PLANET_RADIUS, SEA_LEVEL, buildGround, buildStars, buildWater, tangentBasis, walkRadius, offsetDir } from './planet';
 import { NIGHT } from './night';
 import { LightPool, emitter, type Emitter } from './lights';
 import { BOAT_SEAT, LAUNCH_RANGE, Wake, buildBoat, findLaunchPoint } from './boat';
@@ -150,8 +150,6 @@ export class Game {
   private hemi: THREE.HemisphereLight;
   private ground: THREE.Mesh;
   private water: THREE.Mesh;
-  /** Halo on the planet's limb; see `buildAtmosphere`. */
-  private atmosphere: THREE.Mesh;
   private stars: THREE.Points;
   private constellations: Constellations;
   private meteors: Meteors;
@@ -283,13 +281,12 @@ export class Game {
 
     this.ground = buildGround();
     this.water = buildWater();
-    this.atmosphere = buildAtmosphere(NIGHT.rim);
     this.stars = buildStars(seed);
     this.constellations = new Constellations(seed);
     this.meteors = new Meteors(seed);
     this.moon = new Moon(seed);
     this.planets = new Planets(seed);
-    this.scene.add(this.ground, this.water, this.atmosphere, this.stars, this.constellations.group, this.meteors.group);
+    this.scene.add(this.ground, this.water, this.stars, this.constellations.group, this.meteors.group);
     this.scene.add(this.moon.group, this.planets.group);
 
     const props = buildWorldProps(seed);

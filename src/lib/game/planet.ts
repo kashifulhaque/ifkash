@@ -274,41 +274,6 @@ varying vec3 vWave;
   return mesh;
 }
 
-/**
- * A thin shell of air around the planet. Rendered from the inside, so only the
- * far side shows, which puts a soft halo on the limb — the one cue that tells a
- * ball of rock from a planet with a sky.
- */
-export function buildAtmosphere(color: THREE.Color): THREE.Mesh {
-  const mat = new THREE.ShaderMaterial({
-    uniforms: { uColor: { value: color.clone() } },
-    side: THREE.BackSide,
-    transparent: true,
-    depthWrite: false,
-    blending: THREE.AdditiveBlending,
-    toneMapped: false,
-    vertexShader: `varying vec3 vN;
-varying vec3 vP;
-void main() {
-  vN = normalize(mat3(modelMatrix) * normal);
-  vP = (modelMatrix * vec4(position, 1.0)).xyz;
-  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-}`,
-    fragmentShader: `uniform vec3 uColor;
-varying vec3 vN;
-varying vec3 vP;
-void main() {
-  vec3 view = normalize(cameraPosition - vP);
-  // Strongest where the shell is edge on to the camera: the limb.
-  float rim = pow(clamp(1.0 - abs(dot(normalize(vN), view)), 0.0, 1.0), 3.0);
-  gl_FragColor = vec4(uColor * rim * 0.9, rim);
-}`
-  });
-  const mesh = new THREE.Mesh(new THREE.SphereGeometry(PLANET_RADIUS * 1.05, 64, 40), mat);
-  mesh.name = 'atmosphere';
-  mesh.renderOrder = -1;
-  return mesh;
-}
 
 export function buildStars(seed: number): THREE.Points {
   const rng = seededRng(deriveSeed(seed, 4));

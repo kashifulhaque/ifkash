@@ -463,7 +463,7 @@
       height: 26px;
     }
     .counter {
-      top: 12px;
+      top: 56px;
       padding: 6px 12px;
     }
     .actions {
@@ -476,7 +476,7 @@
     }
     .caption {
       left: 14px;
-      top: 58px;
+      top: 100px;
       bottom: auto;
       max-width: 220px;
     }

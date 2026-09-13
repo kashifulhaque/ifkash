@@ -105,8 +105,10 @@ export type GameCallbacks = {
   onJournalOpen: () => void;
   /** Ship inventory or fuel changed. */
   onSpace: (status: SpaceStatus) => void;
-  /** The player boarded their ship and needs a destination. */
-  onNavigate: (destinations: SpaceDestination[]) => void;
+  /** The player entered or left direct-control spaceflight. */
+  onFlight: (flying: boolean) => void;
+  /** The ship physically reached one of the destination planets. */
+  onArrive: (destination: SpaceDestination) => void;
   /** A ship part, crafting, or refuelling event needs a toast. */
   onSpaceNotice: (notice: { kicker: string; text: string }) => void;
 };
@@ -141,6 +143,10 @@ const BOAT_TURN = 2.2;
 /** Per-second approach rates toward the target speed: throttle up, then coast down. */
 const BOAT_ACCEL = 1.4;
 const BOAT_DRAG = 0.9;
+/** Spaceflight is always moving; Shift/touch-run raises the cruise speed. */
+const FLIGHT_SPEED = 34;
+const FLIGHT_BOOST = 56;
+const FLIGHT_TURN = 1.35;
 
 const _e = new THREE.Euler();
 
@@ -214,10 +220,18 @@ export class Game {
   private targetRing: THREE.Mesh;
   private colliders: ColliderGrid;
 
-  // Starship: salvage is scattered on Earth; the landed ship follows the player between worlds.
+  // Starship: salvage is scattered on Earth; the completed ship can be flown
+  // directly into any of the three generated destination planets.
   private parts: ShipParts | null = null;
   private ship: THREE.Group;
   private shipDir = new THREE.Vector3();
+  private readonly destinations: SpaceDestination[];
+  private flying = false;
+  private arriving = false;
+  private flightForward = new THREE.Vector3();
+  private flightUp = new THREE.Vector3();
+  private flightSpeed = 0;
+  private flightWarning = 0;
 
   // Boat: one rowboat that is launched from a shore, sailed, and docked where it lands.
   private boat: THREE.Group;
@@ -294,6 +308,7 @@ export class Game {
     this.depth = this.seed === EARTH_SEED ? 0 : Math.max(1, Math.floor(options.depth ?? 1));
     this.profile = planetProfile(this.seed);
     this.shipProgress = loadShipProgress();
+    this.destinations = spaceDestinations(this.seed, this.depth);
     if (!this.journal.planets.includes(this.seed)) {
       this.journal.planets = [...this.journal.planets, this.seed];
       this.journalDirty = true;
@@ -333,9 +348,8 @@ export class Game {
     this.constellations = new Constellations(seed);
     this.meteors = new Meteors(seed);
     this.moon = new Moon(seed);
-    this.planets = new Planets(seed);
     this.scene.add(this.ground, this.water, this.stars, this.constellations.group, this.meteors.group);
-    this.scene.add(this.moon.group, this.planets.group);
+    this.scene.add(this.moon.group);
 
     const props = buildWorldProps(seed);
     if (props.solid) this.scene.add(props.solid);
@@ -354,6 +368,8 @@ export class Game {
     surfaceFrame(this.shipDir, -0.35, _m, 0.08).decompose(this.ship.position, this.ship.quaternion, this.ship.scale);
     this.ship.visible = this.seed === EARTH_SEED || this.shipProgress.crafted;
     this.scene.add(this.ship);
+    this.planets = new Planets(seed, this.destinations, this.shipDir);
+    this.scene.add(this.planets.group);
     if (this.seed === EARTH_SEED && !this.shipProgress.crafted) {
       this.parts = new ShipParts(
         seed,
@@ -563,28 +579,49 @@ export class Game {
     };
   }
 
-  /** Publish the current planet's three deterministic onward routes. */
-  openNavigation(): void {
-    if (!this.shipProgress.crafted) return;
+  /** Board the completed ship and hand its movement to the player. */
+  launchFlight(): void {
+    if (!this.shipProgress.crafted || this.flying) return;
+    const target = this.planets.targets.find(({ destination }) => destination.fuelCost <= this.shipProgress.fuel);
+    if (!target) {
+      this.callbacks.onSpaceNotice({
+        kicker: 'Flight computer',
+        text: 'Collect more starlight shards before launching'
+      });
+      return;
+    }
     this.audio.start();
     this.exitIntro();
-    this.callbacks.onNavigate(spaceDestinations(this.seed, this.depth));
+    if (this.globe) this.setGlobe(false);
+    this.setOverlayOpen(false);
+    this.flying = true;
+    this.arriving = false;
+    this.flightWarning = 0;
+    this.walkTarget = null;
+    this.targetRing.visible = false;
+    this.character.group.visible = false;
+    this.ship.position.copy(this.shipDir).multiplyScalar(walkRadius(this.shipDir) + 2.5);
+    this.flightForward.copy(target.position).sub(this.ship.position).normalize();
+    this.flightUp.copy(this.shipDir).addScaledVector(this.flightForward, -this.shipDir.dot(this.flightForward));
+    if (this.flightUp.lengthSq() < 1e-6) tangentBasis(this.flightForward, 0, _v1, this.flightUp);
+    this.flightUp.normalize();
+    this.flightSpeed = 10;
+    this.transition = 1.4;
+    this.placeFlightShip();
+    this.callbacks.onPrompt(null);
+    this.callbacks.onFlight(true);
   }
 
-  /** Spend fuel for a generated route. Persistence happens before the page swaps worlds. */
-  travelTo(destination: SpaceDestination): boolean {
-    if (!this.shipProgress.crafted) return false;
-    const route = spaceDestinations(this.seed, this.depth).find(
-      (candidate) =>
-        candidate.seed === destination.seed &&
-        candidate.depth === destination.depth &&
-        candidate.fuelCost === destination.fuelCost
-    );
-    if (!route || route.fuelCost > this.shipProgress.fuel) return false;
-    this.shipProgress = { ...this.shipProgress, fuel: this.shipProgress.fuel - route.fuelCost };
-    saveShipProgress(this.shipProgress);
-    this.callbacks.onSpace(this.spaceStatus);
-    return true;
+  /** Abort a flight and put the ship back on its landing pad. */
+  landFlight(): void {
+    if (!this.flying || this.arriving) return;
+    this.flying = false;
+    this.flightSpeed = 0;
+    this.character.group.visible = true;
+    surfaceFrame(this.shipDir, -0.35, _m, 0.08).decompose(this.ship.position, this.ship.quaternion, this.ship.scale);
+    this.transition = 1.2;
+    this.callbacks.onFlight(false);
+    this.callbacks.onSpaceNotice({ kicker: 'Flight computer', text: 'Returned to the landing pad' });
   }
 
   toggleMute(): boolean {
@@ -628,6 +665,7 @@ export class Game {
     cancelAnimationFrame(this.raf);
     this.input.dispose();
     this.audio.dispose();
+    this.planets.dispose();
     this.scene.traverse((o) => {
       if (o instanceof THREE.Mesh) {
         o.geometry.dispose();
@@ -753,17 +791,36 @@ export class Game {
 
   private handleInput(dt: number): void {
     const input = this.input;
-    if (input.consumeEscape()) this.callbacks.onEscape();
+    if (input.consumeEscape()) {
+      if (this.overlayOpen) this.callbacks.onEscape();
+      else if (this.flying) this.landFlight();
+      else this.callbacks.onEscape();
+    }
     if (input.consumeHelp()) this.callbacks.onHelp();
     if (input.consumePhoto() && !this.overlayOpen) this.togglePhoto();
     if (input.consumeJournal()) this.callbacks.onJournalOpen();
-    if (input.consumeGlobe() && !this.overlayOpen) {
+
+    const globe = input.consumeGlobe();
+    const orbit = input.consumeOrbit();
+    const zoom = input.consumeZoom();
+    const click = input.consumeClick();
+    const hop = input.consumeHop();
+    const interact = input.consumeInteract();
+    this.dragThisFrame = orbit.dx !== 0 || orbit.dy !== 0;
+
+    if (this.flying) {
+      if (!this.overlayOpen && hop) {
+        this.landFlight();
+        return;
+      }
+      if (!this.overlayOpen) this.steerFlight(-orbit.dx * 0.0035, -orbit.dy * 0.0035);
+      return;
+    }
+
+    if (globe && !this.overlayOpen) {
       this.exitIntro();
       this.toggleGlobe();
     }
-
-    const orbit = input.consumeOrbit();
-    this.dragThisFrame = orbit.dx !== 0 || orbit.dy !== 0;
     if (this.globe) {
       this.globeYaw -= orbit.dx * 0.006;
       this.globePitch = THREE.MathUtils.clamp(this.globePitch + orbit.dy * 0.005, -1.2, 1.2);
@@ -775,13 +832,11 @@ export class Game {
       this.camPitch = THREE.MathUtils.clamp(this.camPitch + orbit.dy * 0.005, 0.22, 1.35);
     }
 
-    const zoom = input.consumeZoom();
     if (zoom !== 0) {
       if (this.globe) this.globeZoom = THREE.MathUtils.clamp(this.globeZoom * Math.exp(zoom * 0.1), 0.65, 1.7);
       else this.camDist = THREE.MathUtils.clamp(this.camDist * Math.exp(zoom * 0.12), CAM_MIN, CAM_MAX);
     }
 
-    const click = input.consumeClick();
     if (click && !this.overlayOpen) {
       this.raycaster.setFromCamera(new THREE.Vector2(click.x, click.y), this.camera);
       const hits = this.raycaster.intersectObjects([this.ground, this.water], false);
@@ -799,7 +854,7 @@ export class Game {
       }
     }
 
-    if (input.consumeHop() && !this.overlayOpen) {
+    if (hop && !this.overlayOpen) {
       this.audio.start();
       if (this.globe) this.setGlobe(false);
       if (!this.airborne && !this.boating) {
@@ -812,7 +867,7 @@ export class Game {
       }
     }
 
-    if (input.consumeInteract() && !this.overlayOpen && !this.globe) {
+    if (interact && !this.overlayOpen && !this.globe) {
       const gem = this.nearestGem();
       const byShip = !gem && !this.boating && this.ship.visible && this.shipDir.angleTo(this.dir) * PLANET_RADIUS < INTERACT_RANGE + 0.8;
       const pal = gem || byShip ? null : this.nearestCritter();
@@ -829,6 +884,10 @@ export class Game {
   // ---------------------------------------------------------------- player
 
   private updatePlayer(dt: number): void {
+    if (this.flying) {
+      this.updateFlight(dt);
+      return;
+    }
     if (this.boating) {
       this.updateBoat(dt);
       this.updateBiome(dt);
@@ -1145,7 +1204,11 @@ export class Game {
     const desiredLook = _v2;
     const desiredUp = _v3;
 
-    if (this.globe) {
+    if (this.flying) {
+      desiredPos.copy(this.ship.position).addScaledVector(this.flightForward, -10).addScaledVector(this.flightUp, 4.2);
+      desiredLook.copy(this.ship.position).addScaledVector(this.flightForward, 15);
+      desiredUp.copy(this.flightUp);
+    } else if (this.globe) {
       if (!this.dragThisFrame) this.globeYaw += dt * 0.05;
       desiredPos.copy(this.globeDirection()).multiplyScalar(this.globeDistance());
       desiredLook.set(0, 0, 0);
@@ -1182,7 +1245,7 @@ export class Game {
     const back = _v3.setFromMatrixColumn(this.camera.matrixWorld, 2);
     const lift = 0.3 + NIGHT.moonHeight * 0.65;
     const moonDir = right.multiplyScalar(-1.15).addScaledVector(camUp, lift).addScaledVector(back, 0.6).normalize();
-    const focus = this.globe ? _v4.set(0, 0, 0) : _v4.copy(this.character.group.position);
+    const focus = this.flying ? _v4.copy(this.ship.position) : this.globe ? _v4.set(0, 0, 0) : _v4.copy(this.character.group.position);
     this.snapShadowFocus(focus, moonDir);
     this.moonLight.target.position.copy(focus);
     this.moonLight.position.copy(focus).addScaledVector(moonDir, 140);
@@ -1194,6 +1257,7 @@ export class Game {
 
   private updateWorld(dt: number): void {
     const t = this.time;
+    this.planets.update(dt, t);
 
     this.blades.rotation.z += dt * 1.1;
     // Swell and surf on the sea.
@@ -1208,14 +1272,14 @@ export class Game {
     for (const c of this.critters) c.update(dt, t);
     this.hearts.update(dt, this.camera.quaternion);
     this.clouds.update(dt);
-    this.weather.setHidden(this.globe);
+    this.weather.setHidden(this.globe || this.flying);
     this.weather.update(dt, t, this.dir);
     // Rain darkens the ground it falls on and snow settles on whatever faces the sky.
     this.fx.setCenter(this.character.group.position);
     this.fx.setWet(this.weather.rainLevel);
     this.fx.setSnow(this.weather.snowLevel);
     this.aurora.update(dt, t);
-    this.skyAurora.setHidden(this.globe);
+    this.skyAurora.setHidden(this.globe || this.flying);
     this.skyAurora.update(dt, t);
     this.constellations.update(t);
     this.meteors.update(dt);
@@ -1224,7 +1288,7 @@ export class Game {
     this.fireworks.update(dt);
     // A streak counts as seen if it crosses the sky while the player is on the ground.
     if (this.meteors.group.visible) {
-      if (!this.meteorSeen && !this.globe && !this.intro) {
+      if (!this.meteorSeen && !this.globe && !this.flying && !this.intro) {
         this.meteorSeen = true;
         this.award('stargazer');
       }
@@ -1257,8 +1321,8 @@ export class Game {
       this.targetRing.scale.set(s, s, s);
     }
 
-    // Hand the pooled lights to whichever sources are nearest the explorer.
-    this.lights.update(t, this.character.group.position);
+    // Hand the pooled lights to whichever sources are nearest the active traveller.
+    this.lights.update(t, this.flying ? this.ship.position : this.character.group.position);
   }
 
   /**
@@ -1300,6 +1364,77 @@ export class Game {
   }
 
   // ---------------------------------------------------------------- starship
+  /** Apply one yaw/pitch step while preserving an orthonormal flight frame. */
+  private steerFlight(yaw: number, pitch: number): void {
+    if (yaw !== 0) {
+      _q.setFromAxisAngle(this.flightUp, yaw);
+      this.flightForward.applyQuaternion(_q).normalize();
+    }
+    _v1.crossVectors(this.flightUp, this.flightForward).normalize();
+    if (pitch !== 0) {
+      _q.setFromAxisAngle(_v1, -pitch);
+      this.flightForward.applyQuaternion(_q).normalize();
+      this.flightUp.applyQuaternion(_q).normalize();
+    }
+    _v1.crossVectors(this.flightUp, this.flightForward).normalize();
+    this.flightUp.crossVectors(this.flightForward, _v1).normalize();
+  }
+
+  private placeFlightShip(): void {
+    _v1.crossVectors(this.flightUp, this.flightForward).normalize();
+    _m.makeBasis(_v1, this.flightUp, this.flightForward);
+    this.ship.quaternion.setFromRotationMatrix(_m);
+  }
+
+  /** Advance direct-control flight and arrive only when the hull reaches a visible world. */
+  private updateFlight(dt: number): void {
+    if (this.arriving) return;
+    const steering = !this.overlayOpen;
+    if (steering) this.steerFlight(this.input.moveX * FLIGHT_TURN * dt, this.input.moveY * FLIGHT_TURN * dt);
+    const cruise = steering ? (this.input.run ? FLIGHT_BOOST : FLIGHT_SPEED) : 0;
+    this.flightSpeed += (cruise - this.flightSpeed) * Math.min(1, dt * 2.8);
+    this.ship.position.addScaledVector(this.flightForward, this.flightSpeed * dt);
+    this.placeFlightShip();
+    this.flightWarning = Math.max(0, this.flightWarning - dt);
+
+    const distanceFromOriginSq = this.ship.position.lengthSq();
+    if (distanceFromOriginSq < (PLANET_RADIUS + 2) ** 2 || distanceFromOriginSq > 520 ** 2) {
+      this.landFlight();
+      return;
+    }
+
+    for (const target of this.planets.targets) {
+      const arrivalRadius = target.radius + 2.4;
+      if (this.ship.position.distanceToSquared(target.position) > arrivalRadius * arrivalRadius) continue;
+      if (target.destination.fuelCost > this.shipProgress.fuel) {
+        if (this.flightWarning === 0) {
+          this.callbacks.onSpaceNotice({
+            kicker: 'Route locked',
+            text: `${target.destination.name} needs ${target.destination.fuelCost} fuel`
+          });
+          this.flightWarning = 2.5;
+        }
+        _v2.copy(this.ship.position).sub(target.position).normalize();
+        this.ship.position.copy(target.position).addScaledVector(_v2, target.radius + 4);
+        this.flightForward.reflect(_v2).normalize();
+        this.flightUp.addScaledVector(this.flightForward, -this.flightUp.dot(this.flightForward)).normalize();
+        this.placeFlightShip();
+        return;
+      }
+
+      this.shipProgress = { ...this.shipProgress, fuel: this.shipProgress.fuel - target.destination.fuelCost };
+      saveShipProgress(this.shipProgress);
+      this.callbacks.onSpace(this.spaceStatus);
+      this.arriving = true;
+      this.flightSpeed = 0;
+      this.callbacks.onFlight(false);
+      queueMicrotask(() => {
+        if (!this.disposed) this.callbacks.onArrive(target.destination);
+      });
+      return;
+    }
+  }
+
 
 
   private useShip(): void {
@@ -1327,7 +1462,7 @@ export class Game {
       this.promptId = null;
       return;
     }
-    this.callbacks.onNavigate(spaceDestinations(this.seed, this.depth));
+    this.launchFlight();
   }
 
   private replaceShip(crafted: boolean): void {
@@ -1404,7 +1539,7 @@ export class Game {
   }
 
   private updatePrompt(): void {
-    const idle = this.globe || this.overlayOpen || this.photo;
+    const idle = this.globe || this.flying || this.overlayOpen || this.photo;
     const gem = idle ? null : this.nearestGem();
     const byShip =
       !idle && !gem && !this.boating && this.ship.visible && this.shipDir.angleTo(this.dir) * PLANET_RADIUS < INTERACT_RANGE + 0.8;
@@ -1414,7 +1549,7 @@ export class Game {
     else if (byShip) {
       const missing = SHIP_PARTS.length - this.shipProgress.parts.length;
       prompt = this.shipProgress.crafted
-        ? { id: 'ship-board', action: 'Board ship', found: false, kicker: `${this.shipProgress.fuel}/${MAX_FUEL} fuel · choose a planet` }
+        ? { id: 'ship-board', action: 'Board ship', found: false, kicker: `${this.shipProgress.fuel}/${MAX_FUEL} fuel · fly to a planet` }
         : missing === 0
           ? { id: 'ship-craft', action: 'Craft your spaceship', found: false, kicker: 'All five parts recovered' }
           : { id: `ship-parts-${missing}`, action: `Recover ${missing} more ${missing === 1 ? 'part' : 'parts'}`, found: false, kicker: 'Wrecked starship' };

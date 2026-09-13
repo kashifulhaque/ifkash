@@ -32,7 +32,7 @@
     journal: void;
     help: void;
     interact: void;
-    navigation: void;
+    launch: void;
     earth: void;
   }>();
 
@@ -81,7 +81,7 @@
     </p>
     {#if space.crafted}
       <div class="fuel-heading">
-        <strong>Ship ready · launch</strong>
+        <strong>Ship ready · direct flight</strong>
         <span>{boundedFuel} / {space.maxFuel} fuel</span>
       </div>
       <progress value={boundedFuel} max={Math.max(space.maxFuel, 1)} aria-label={`Ship fuel: ${boundedFuel} of ${space.maxFuel}`}></progress>
@@ -100,7 +100,7 @@
 
   <div class="actions">
     {#if space.crafted}
-      <button class="round" on:click={() => dispatch('navigation')} aria-label="Open star map and launch" title="Open star map">
+      <button class="round" on:click={() => dispatch('launch')} aria-label="Board spaceship and launch" title="Board ship and launch">
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <path d="M14.5 4.5c2.2-1.1 4-1.1 5-1-0.1 1-0.1 2.8-1.2 5L14 12.8l-3-3z" />
           <path d="M11 9.8 7.5 9 5 11.5l4 1.5 1.5 4 2.5-2.5-.8-3.5M15.5 8.5h.01" />

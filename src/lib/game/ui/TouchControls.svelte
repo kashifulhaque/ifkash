@@ -1,5 +1,6 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
+  export let flying = false;
 
   const dispatch = createEventDispatcher<{ move: { x: number; y: number }; hop: void; run: { active: boolean } }>();
 
@@ -68,13 +69,18 @@
   </div>
 
   <div class="buttons">
-    <button class="btn" class:on={running} on:click={toggleRun} aria-label="Toggle run" aria-pressed={running}>
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 4l-1 5 4 2-2 5-3-1-3 5M14 3.5a1 1 0 1 0 2 0 1 1 0 1 0-2 0" /></svg>
-      <span>run</span>
+    <button class="btn" class:on={running} on:click={toggleRun} aria-label={flying ? 'Toggle flight boost' : 'Toggle run'} aria-pressed={running}>
+      {#if flying}
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 4 6-1 7H9L8 9zM9 16l-2 4 5-2 5 2-2-4" /></svg>
+        <span>boost</span>
+      {:else}
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 4l-1 5 4 2-2 5-3-1-3 5M14 3.5a1 1 0 1 0 2 0 1 1 0 1 0-2 0" /></svg>
+        <span>run</span>
+      {/if}
     </button>
-    <button class="btn big" on:pointerdown|preventDefault={() => dispatch('hop')} aria-label="Hop">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V6M6 12l6-6 6 6" /></svg>
-      <span>hop</span>
+    <button class="btn big" on:pointerdown|preventDefault={() => dispatch('hop')} aria-label={flying ? 'Land on the current planet' : 'Hop'}>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d={flying ? 'M5 15h14M7 11l5 4 5-4M12 15V4' : 'M12 19V6M6 12l6-6 6 6'} /></svg>
+      <span>{flying ? 'land' : 'hop'}</span>
     </button>
   </div>
 </div>

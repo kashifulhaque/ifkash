@@ -5,6 +5,7 @@
 import * as THREE from 'three';
 import { deriveSeed, seededRng } from './noise';
 import { tangentBasis } from './planet';
+import type { SpaceDestination } from './space';
 
 /** Radius of the shell the constellations sit on, just inside the star field. */
 const RADIUS = 500;
@@ -164,85 +165,151 @@ export class Moon {
   }
 }
 
-// ---------------------------------------------------------------- planets
+// ---------------------------------------------------------------- destination planets
 
-/** Radius the planets hang at, among the constellations. */
-const PLANET_RADIUS_SKY = 490;
+/** The reachable worlds sit on this shell: far enough to read as sky, close
+ * enough that a flight takes seconds rather than becoming a loading screen. */
+const DESTINATION_DISTANCE = 245;
 
-/** Colour and point size of each wanderer, brightest first. The star field
- * draws at size 1.6, so even the faintest of these reads as a planet. */
-const WANDERERS: [number, number][] = [
-  [0xffc9a0, 11],
-  [0xd98a5a, 9],
-  [0xdfe6ff, 8],
-  [0xf0dca8, 7]
-];
+export type PlanetTarget = {
+  destination: SpaceDestination;
+  position: THREE.Vector3;
+  radius: number;
+  body: THREE.Mesh;
+  atmosphere: THREE.Mesh;
+  ring: THREE.Mesh;
+  label: THREE.Sprite;
+};
 
-const PLANET_VERT = `
-attribute float size;
-attribute vec3 tint;
-varying vec3 vTint;
-void main() {
-  vTint = tint;
-  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-  gl_PointSize = size;
+/** Paint one crisp, camera-facing route label without bringing DOM overlays
+ * into the render loop. The texture is built once per generated destination. */
+function destinationLabel(destination: SpaceDestination): THREE.Sprite {
+  const canvas = document.createElement('canvas');
+  canvas.width = 768;
+  canvas.height = 160;
+  const ctx = canvas.getContext('2d')!;
+  ctx.fillStyle = 'rgba(6, 15, 24, 0.82)';
+  ctx.beginPath();
+  ctx.roundRect(4, 4, canvas.width - 8, canvas.height - 8, 28);
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(242, 239, 230, 0.55)';
+  ctx.lineWidth = 4;
+  ctx.stroke();
+  ctx.fillStyle = '#f2efe6';
+  ctx.font = '600 42px Inter, system-ui, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(destination.name, canvas.width / 2, 65);
+  ctx.fillStyle = '#e9c46a';
+  ctx.font = '500 25px Inter, system-ui, sans-serif';
+  ctx.fillText(`${destination.kind.replace(/[-_]/g, ' ')} · ${destination.fuelCost} fuel`, canvas.width / 2, 111);
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.minFilter = THREE.LinearFilter;
+  const sprite = new THREE.Sprite(
+    new THREE.SpriteMaterial({
+      map: texture,
+      transparent: true,
+      depthTest: true,
+      depthWrite: false,
+      toneMapped: false
+    })
+  );
+  sprite.scale.set(42, 8.75, 1);
+  return sprite;
 }
-`;
-
-const PLANET_FRAG = `
-varying vec3 vTint;
-void main() {
-  // A solid core inside a soft halo, so the point reads as a small disc rather
-  // than a square or a single lit pixel.
-  float d = length(gl_PointCoord - 0.5) * 2.0;
-  float core = smoothstep(0.55, 0.0, d);
-  float halo = smoothstep(1.0, 0.0, d);
-  gl_FragColor = vec4(vTint, core * 0.9 + halo * halo * 0.35);
-}
-`;
 
 /**
- * Four wanderers: bigger and warmer than the stars behind them, and, unlike the
- * stars and the constellation figures, perfectly steady. Planets do not
- * twinkle, and leaving them still is what tells them apart at a glance.
+ * The three generated onward routes rendered as real bodies in the sky.
+ * Placement is a stable fan above the landing pad, so every route is visible
+ * before launch and each one can be reached by physically flying into it.
  */
 export class Planets {
   readonly group = new THREE.Group();
+  readonly targets: PlanetTarget[] = [];
 
-  constructor(seed: number) {
+  constructor(seed: number, destinations: readonly SpaceDestination[], launchDir: THREE.Vector3) {
     const rng = seededRng(deriveSeed(seed, 12));
-    const pos = new Float32Array(WANDERERS.length * 3);
-    const col = new Float32Array(WANDERERS.length * 3);
-    const size = new Float32Array(WANDERERS.length);
-    const c = new THREE.Color();
-    for (let i = 0; i < WANDERERS.length; i++) {
-      _p.set(rng() * 2 - 1, rng() * 2 - 1, rng() * 2 - 1).normalize().multiplyScalar(PLANET_RADIUS_SKY);
-      pos[i * 3] = _p.x;
-      pos[i * 3 + 1] = _p.y;
-      pos[i * 3 + 2] = _p.z;
-      c.setHex(WANDERERS[i][0]);
-      col[i * 3] = c.r;
-      col[i * 3 + 1] = c.g;
-      col[i * 3 + 2] = c.b;
-      size[i] = WANDERERS[i][1];
+    const anchor = launchDir.clone().normalize();
+    const east = new THREE.Vector3();
+    const north = new THREE.Vector3();
+    tangentBasis(anchor, rng() * Math.PI * 2, east, north);
+    // Keep every body near the landing pad's horizon rather than directly
+    // behind the globe. The positive radial component leaves every launch path
+    // clear of the current world.
+    const fan: ReadonlyArray<readonly [number, number]> = [
+      [-0.62, 0.3],
+      [0, 0.44],
+      [0.62, 0.24]
+    ];
+
+    for (let i = 0; i < destinations.length; i++) {
+      const destination = destinations[i];
+      const [across, radial] = fan[i] ?? [rng() - 0.5, 0.2 + rng() * 0.25];
+      const direction = north.clone().addScaledVector(east, across).addScaledVector(anchor, radial).normalize();
+      const distance = DESTINATION_DISTANCE + i * 24;
+      const radius = 13 + rng() * 4;
+      const position = direction.multiplyScalar(distance);
+      const color = new THREE.Color(destination.color);
+      const root = new THREE.Group();
+      root.position.copy(position);
+
+      const body = new THREE.Mesh(
+        new THREE.IcosahedronGeometry(radius, 3),
+        new THREE.MeshStandardMaterial({
+          color,
+          emissive: color.clone().multiplyScalar(0.1),
+          roughness: 0.82,
+          metalness: 0.04,
+          flatShading: true
+        })
+      );
+      const atmosphere = new THREE.Mesh(
+        new THREE.SphereGeometry(radius * 1.14, 24, 16),
+        new THREE.MeshBasicMaterial({
+          color: color.clone().lerp(new THREE.Color(0xdffcff), 0.35),
+          transparent: true,
+          opacity: 0.14,
+          side: THREE.BackSide,
+          depthWrite: false,
+          toneMapped: false
+        })
+      );
+      const ring = new THREE.Mesh(
+        new THREE.TorusGeometry(radius * 1.55, 0.32, 6, 64),
+        new THREE.MeshBasicMaterial({
+          color: color.clone().lerp(new THREE.Color(0xffffff), 0.45),
+          transparent: true,
+          opacity: 0.52,
+          depthWrite: false,
+          toneMapped: false
+        })
+      );
+      ring.rotation.set(Math.PI / 2 + (rng() - 0.5) * 0.5, rng() * Math.PI, (rng() - 0.5) * 0.45);
+      const label = destinationLabel(destination);
+      label.position.set(0, radius * 1.85, 0);
+      root.add(body, atmosphere, ring, label);
+      this.group.add(root);
+      this.targets.push({ destination, position, radius, body, atmosphere, ring, label });
     }
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-    geo.setAttribute('tint', new THREE.BufferAttribute(col, 3));
-    geo.setAttribute('size', new THREE.BufferAttribute(size, 1));
-    const points = new THREE.Points(
-      geo,
-      new THREE.ShaderMaterial({
-        vertexShader: PLANET_VERT,
-        fragmentShader: PLANET_FRAG,
-        transparent: true,
-        depthWrite: false,
-        toneMapped: false,
-        blending: THREE.AdditiveBlending
-      })
-    );
-    points.frustumCulled = false;
-    this.group.add(points);
+  }
+
+  update(dt: number, time: number): void {
+    for (let i = 0; i < this.targets.length; i++) {
+      const target = this.targets[i];
+      target.body.rotation.y += dt * (0.08 + i * 0.025);
+      target.ring.rotation.z += dt * (i % 2 === 0 ? 0.05 : -0.04);
+      const pulse = 1 + Math.sin(time * 1.4 + i * 1.8) * 0.025;
+      target.atmosphere.scale.setScalar(pulse);
+    }
+  }
+
+  dispose(): void {
+    for (const target of this.targets) {
+      const material = target.label.material as THREE.SpriteMaterial;
+      material.map?.dispose();
+      material.dispose();
+    }
   }
 }
 

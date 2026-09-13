@@ -1,7 +1,7 @@
 import { writable } from 'svelte/store';
 import type { Wonder } from './wonders';
 import { emptyJournal, type Journal } from './journal';
-import { MAX_FUEL, SHIP_PARTS, type SpaceDestination, type SpaceStatus } from './space';
+import { MAX_FUEL, SHIP_PARTS, type SpaceStatus } from './space';
 
 export type BiomeCaption = { name: string; kind: string; index: string; tagline: string };
 
@@ -33,10 +33,8 @@ export type GameState = {
   shards: { found: number; total: number };
   /** Current ship inventory and planet summary. */
   space: SpaceStatus;
-  /** The star-map overlay. */
-  navigationOpen: boolean;
-  /** Procedurally generated routes available from the current planet. */
-  destinations: SpaceDestination[];
+  /** True while the player directly controls the ship between visible worlds. */
+  flying: boolean;
 };
 
 export const initialState: GameState = {
@@ -69,8 +67,7 @@ export const initialState: GameState = {
     depth: 0,
     isEarth: true
   },
-  navigationOpen: false,
-  destinations: []
+  flying: false
 };
 
 export const gameState = writable<GameState>({ ...initialState });

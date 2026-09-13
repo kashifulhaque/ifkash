@@ -43,10 +43,10 @@
       <ol>
         <li><strong>Recover five ship parts</strong><span>Search the planet for the missing components.</span></li>
         <li><strong>Craft at the landing pad</strong><span>Bring all five parts back and assemble your ship.</span></li>
-        <li><strong>Launch into deep space</strong><span>Choose one of three generated planets, then keep travelling deeper without a final limit.</span></li>
+        <li><strong>Fly into deep space</strong><span>Board the ship, steer toward one of the three labelled planets in the sky, and fly into it to land.</span></li>
       </ol>
-      <p class="fuel-note"><strong>Fuel:</strong> starlight shards refill the ship up to its meter's limit. Every route shows its cost; routes you cannot afford stay locked.</p>
-      <p class="earth-note"><strong>Earth recall:</strong> while away, the home control or star map teleports you to Earth for free.</p>
+      <p class="fuel-note"><strong>Fuel:</strong> starlight shards refill the ship up to its meter's limit. Each planet's sky label shows the route cost; worlds you cannot afford repel the ship.</p>
+      <p class="earth-note"><strong>Earth recall:</strong> while away, the home control teleports you to Earth for free.</p>
     </section>
 
     <dl>
@@ -58,11 +58,11 @@
         <div><dt>Animals</dt><dd>Walk up to a sheep, a fox, or a polar bear and tap the card to pet it. Pet it twice and it follows you for a while.</dd></div>
         <div><dt>Shards</dt><dd>A dozen starlight shards glow purple across each planet. Walk over one to collect it.</dd></div>
         <div><dt>Ship parts</dt><dd>Walk into each missing part to recover it. Once all five are found, return to the landing pad and tap the card to craft, then launch.</dd></div>
-        <div><dt>Deep space</dt><dd>Pick an affordable planet on the star map. Every arrival creates three routes one depth farther out.</dd></div>
-        <div><dt>Earth</dt><dd>When away from home, tap the home control or choose the free Earth recall on the star map.</dd></div>
+        <div><dt>Deep space</dt><dd>Board the ship, steer with the stick, and fly into a labelled planet. Toggle boost for more speed; tap land to return to the current world.</dd></div>
+        <div><dt>Earth</dt><dd>When away from home, tap the home control for a free recall.</dd></div>
         <div><dt>Journal</dt><dd>Tap the book button to see the biomes, animals, and milestones you have collected across every planet.</dd></div>
         <div><dt>Boats</dt><dd>Stand at the shore and tap the card to launch a boat. Steer with the stick. Reach land to dock.</dd></div>
-        <div><dt>The sky</dt><dd>It is always night here. Look up for the moon, the planets, the constellations, and the odd shooting star.</dd></div>
+        <div><dt>The sky</dt><dd>The three large labelled planets are real destinations. The moon, constellations, and odd shooting star share the night with them.</dd></div>
         <div><dt>Photo mode</dt><dd>Tap the camera button to hide the interface. Save a picture or leave from the corner buttons.</dd></div>
       {:else}
         <div><dt><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></dt><dd>Walk. Arrow keys work too.</dd></div>
@@ -71,9 +71,9 @@
         <div><dt><kbd>E</kbd></dt><dd>Interact with wonders and animals. At the landing pad, craft after recovering all five ship parts, then launch.</dd></div>
         <div><dt><kbd>M</kbd></dt><dd>Pull back to see the whole planet. Click a spot to walk there.</dd></div>
         <div><dt><kbd>J</kbd></dt><dd>Open the journal: biomes visited, animals befriended, milestones, and a dozen starlight shards to find on each planet.</dd></div>
-        <div><dt>Deep space</dt><dd>Choose an affordable route on the star map. Every arrival generates three planets one depth farther out, with no final depth.</dd></div>
-        <div><dt>Earth recall</dt><dd>When away from home, use the home control or the free Earth route on the star map.</dd></div>
-        <div><dt>The sky</dt><dd>It is always night here. Look up for the moon, the planets, the constellations, auroras, and the odd shooting star.</dd></div>
+        <div><dt>Deep space</dt><dd>Board the ship, steer with <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd>, hold <kbd>Shift</kbd> to boost, and fly into a labelled planet. <kbd>Space</kbd> lands back on the current world.</dd></div>
+        <div><dt>Earth recall</dt><dd>When away from home, use the home control for a free recall.</dd></div>
+        <div><dt>The sky</dt><dd>The three large labelled planets are real destinations. The moon, constellations, auroras, and odd shooting star share the night with them.</dd></div>
         <div><dt><kbd>P</kbd></dt><dd>Photo mode: hides the interface. Press again or <kbd>Esc</kbd> to leave, or save a picture from the corner.</dd></div>
         <div><dt>Mouse</dt><dd>Drag to orbit the camera, scroll to zoom, click the ground to walk.</dd></div>
         <div><dt>Boats</dt><dd>Stand at the shore and press <kbd>E</kbd> to launch a boat. Steer with the walk keys. Reach land to dock.</dd></div>

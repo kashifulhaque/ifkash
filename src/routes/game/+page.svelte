@@ -14,7 +14,6 @@
   import TouchControls from '$lib/game/ui/TouchControls.svelte';
   import PhotoBar from '$lib/game/ui/PhotoBar.svelte';
   import JournalPanel from '$lib/game/ui/JournalPanel.svelte';
-  import NavigationPanel from '$lib/game/ui/NavigationPanel.svelte';
 
   let canvas: HTMLCanvasElement;
   let game: Game | null = null;
@@ -23,8 +22,6 @@
   let isTouch = false;
   let justFound = false;
   let saving = false;
-  let travellingTo: SpaceDestination | null = null;
-  $: travelColor = travellingTo ? `#${(travellingTo.color & 0xffffff).toString(16).padStart(6, '0')}` : '#256a8c';
   type Toast = NonNullable<(typeof initialState)['toast']>;
   /** Toast to show once the wonder panel closes, for example after the seventh find. */
   let pendingToast: Omit<Toast, 'id'> | null = null;
@@ -42,13 +39,13 @@
       },
       onOpenWonder: (wonder) => {
         game?.setOverlayOpen(true);
-        gameState.update((s) => ({ ...s, openWonder: wonder, help: false, journalOpen: false, navigationOpen: false }));
+        gameState.update((s) => ({ ...s, openWonder: wonder, help: false, journalOpen: false }));
       },
       onGlobe: (globeView) => gameState.update((s) => ({ ...s, globeView })),
       onIntroEnd: () => gameState.update((s) => ({ ...s, intro: false })),
       onHelp: () => toggleHelp(),
       onEscape: () => {
-        if ($gameState.openWonder || $gameState.help || $gameState.journalOpen || $gameState.navigationOpen) closeOverlays();
+        if ($gameState.openWonder || $gameState.help || $gameState.journalOpen) closeOverlays();
         else if ($gameState.photo) game?.setPhoto(false);
       },
       onPhoto: (photo) => gameState.update((s) => ({ ...s, photo })),
@@ -61,17 +58,16 @@
       },
       onJournalOpen: () => toggleJournal(),
       onSpace: (space) => gameState.update((s) => ({ ...s, space })),
-      onNavigate: (destinations) => {
-        game?.setOverlayOpen(true);
+      onFlight: (flying) => {
         gameState.update((s) => ({
           ...s,
-          destinations,
-          navigationOpen: true,
+          flying,
           openWonder: null,
           help: false,
           journalOpen: false
         }));
       },
+      onArrive: (destination) => moveToPlanet(destination, true),
       onSpaceNotice: (notice) => showToast(notice)
     };
   }
@@ -151,7 +147,7 @@
 
   function handlePopState(): void {
     if (!GameConstructor) return;
-    travellingTo = null;
+    gameState.update((s) => ({ ...s, flying: false }));
     const current = locationPlanet();
     createPlanet(current.seed, current.depth, null);
   }
@@ -162,9 +158,7 @@
       ...s,
       openWonder: null,
       help: false,
-      journalOpen: false,
-      navigationOpen: false,
-      destinations: []
+      journalOpen: false
     }));
     game?.setOverlayOpen(false);
     if (pendingToast) {
@@ -186,7 +180,7 @@
       return;
     }
     game?.setOverlayOpen(true);
-    gameState.update((s) => ({ ...s, journalOpen: true, help: false, openWonder: null, navigationOpen: false }));
+    gameState.update((s) => ({ ...s, journalOpen: true, help: false, openWonder: null }));
   }
 
   /** Photo mode: render a frame and download it as a PNG named after the seed. */
@@ -213,7 +207,7 @@
       return;
     }
     game?.setOverlayOpen(true);
-    gameState.update((s) => ({ ...s, help: true, openWonder: null, journalOpen: false, navigationOpen: false }));
+    gameState.update((s) => ({ ...s, help: true, openWonder: null, journalOpen: false }));
   }
 
   function toggleMute(): void {
@@ -228,31 +222,18 @@
     game.input.queueInteract();
   }
 
-  async function moveToPlanet(destination: SpaceDestination, spendFuel: boolean): Promise<void> {
-    if (!game || travellingTo) return;
-    if (spendFuel && !game.travelTo(destination)) {
-      showToast({ kicker: 'Flight computer', text: 'Not enough fuel for that route' });
-      return;
-    }
-    game.setOverlayOpen(true);
-    travellingTo = destination;
-    gameState.update((s) => ({ ...s, navigationOpen: false, destinations: [] }));
-    await new Promise((resolve) => setTimeout(resolve, 950));
+  function moveToPlanet(destination: SpaceDestination, flown: boolean): void {
     if (destroyed) return;
     createPlanet(destination.seed, destination.depth, 'push');
-    travellingTo = null;
     showToast({
-      kicker: spendFuel ? `Arrived · depth ${destination.depth}` : 'Emergency recall',
-      text: spendFuel ? `${destination.name} · ${destination.kind}` : 'Teleported safely back to Earth'
+      kicker: flown ? `Arrived · depth ${destination.depth}` : 'Emergency recall',
+      text: flown ? `${destination.name} · ${destination.kind}` : 'Teleported safely back to Earth'
     });
   }
 
   function returnToEarth(): void {
     if ($gameState.space.isEarth) return;
-    void moveToPlanet(
-      { seed: EARTH_SEED, name: 'Earth', kind: 'Homeworld', depth: 0, fuelCost: 0, color: 0x256a8c },
-      false
-    );
+    moveToPlanet({ seed: EARTH_SEED, name: 'Earth', kind: 'Homeworld', depth: 0, fuelCost: 0, color: 0x256a8c }, false);
   }
 </script>
 
@@ -266,7 +247,7 @@
 
 <div class="game-root">
   {#if !$gameState.webglFailed}
-    <canvas bind:this={canvas} class="game-canvas" class:grab={$gameState.ready}></canvas>
+    <canvas bind:this={canvas} class="game-canvas" class:grab={$gameState.ready && !$gameState.flying} class:flight={$gameState.flying}></canvas>
 
     {#if !$gameState.ready}
       <div class="loading" aria-live="polite">
@@ -275,7 +256,7 @@
       </div>
     {/if}
 
-    {#if $gameState.ready && !$gameState.photo}
+    {#if $gameState.ready && !$gameState.photo && !$gameState.flying}
       <Hud
         found={$gameState.found.length}
         total={$gameState.total}
@@ -293,9 +274,26 @@
         on:photo={() => game?.togglePhoto()}
         on:journal={toggleJournal}
         on:interact={interactFromHud}
-        on:navigation={() => game?.openNavigation()}
+        on:launch={() => game?.launchFlight()}
         on:earth={returnToEarth}
       />
+    {/if}
+    {#if $gameState.ready && $gameState.flying && !$gameState.photo && !$gameState.help && !$gameState.journalOpen}
+      <div class="flight-hud" aria-live="polite">
+        <div class="flight-status">
+          <span>Direct flight</span>
+          <strong>{$gameState.space.fuel} fuel</strong>
+        </div>
+        <button class="land" on:click={() => game?.landFlight()}>Land on {$gameState.space.planetName}</button>
+        <div class="crosshair" aria-hidden="true"><span></span></div>
+        <p class="flight-hint">
+          {#if $gameState.isTouch}
+            Steer with the stick · boost with the rocket · fly into a labelled planet
+          {:else}
+            <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> steer · <kbd>Shift</kbd> boost · <kbd>Space</kbd> land · fly into a labelled planet
+          {/if}
+        </p>
+      </div>
     {/if}
 
     {#if $gameState.ready && $gameState.photo}
@@ -317,8 +315,9 @@
       {/key}
     {/if}
 
-    {#if $gameState.ready && $gameState.isTouch && !$gameState.openWonder && !$gameState.help && !$gameState.journalOpen && !$gameState.navigationOpen && !$gameState.photo && !travellingTo}
+    {#if $gameState.ready && $gameState.isTouch && !$gameState.openWonder && !$gameState.help && !$gameState.journalOpen && !$gameState.photo}
       <TouchControls
+        flying={$gameState.flying}
         on:move={(e) => {
           if (!game) return;
           game.input.touchMove = e.detail;
@@ -348,31 +347,6 @@
       <JournalPanel journal={$gameState.journal} found={$gameState.found} shards={$gameState.shards} seed={$gameState.seed} on:close={closeOverlays} />
     {/if}
 
-    {#if $gameState.navigationOpen}
-      <NavigationPanel
-        space={$gameState.space}
-        destinations={$gameState.destinations}
-        on:travel={(event) => void moveToPlanet(event.detail, true)}
-        on:earth={returnToEarth}
-        on:close={closeOverlays}
-      />
-    {/if}
-
-    {#if travellingTo}
-      <div class="warp" style:--destination={travelColor} role="status" aria-live="assertive">
-        <div class="streaks" aria-hidden="true"></div>
-        <svg class="warp-ship" viewBox="0 0 120 80" aria-hidden="true">
-          <path d="M60 5 76 44 111 63 72 60 60 76 48 60 9 63 44 44Z" />
-          <ellipse cx="60" cy="35" rx="9" ry="16" />
-          <path class="flame" d="m53 61 7 16 7-16" />
-        </svg>
-        <div class="warp-copy">
-          <p>{travellingTo.depth === 0 ? 'Emergency recall' : `Jumping to depth ${travellingTo.depth}`}</p>
-          <h2>{travellingTo.name}</h2>
-          <span>{travellingTo.kind}</span>
-        </div>
-      </div>
-    {/if}
   {/if}
 
   <noscript>
@@ -438,6 +412,9 @@
   }
   .game-canvas.grab:active {
     cursor: grabbing;
+  }
+  .game-canvas.flight {
+    cursor: crosshair;
   }
 
   .loading {
@@ -534,116 +511,137 @@
     }
   }
 
-  .warp {
+  .flight-hud {
     position: absolute;
     inset: 0;
-    z-index: 50;
-    display: grid;
-    place-items: center;
-    overflow: hidden;
+    z-index: 18;
+    pointer-events: none;
     color: #f2efe6;
-    background:
-      radial-gradient(circle at 50% 45%, color-mix(in srgb, var(--destination) 34%, transparent), transparent 18%),
-      #050914;
-    animation: warp-arrive 0.95s ease-in-out both;
+    text-shadow: 0 2px 12px rgba(5, 9, 20, 0.9);
   }
-  .streaks,
-  .streaks::before,
-  .streaks::after {
+  .flight-status {
     position: absolute;
-    inset: -70%;
-    content: '';
-    background-image:
-      radial-gradient(circle, rgba(255, 255, 255, 0.9) 0 1px, transparent 1.5px),
-      radial-gradient(circle, rgba(126, 219, 209, 0.75) 0 1px, transparent 1.5px);
-    background-position: 0 0, 31px 43px;
-    background-size: 67px 79px, 97px 113px;
-    transform: perspective(280px) rotateX(62deg) scale(0.35);
-    animation: star-rush 0.42s linear infinite;
+    top: 22px;
+    left: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 10px 14px;
+    border: 1px solid rgba(126, 219, 209, 0.38);
+    border-radius: 12px;
+    background: rgba(6, 15, 24, 0.68);
+    backdrop-filter: blur(8px);
   }
-  .streaks::before {
-    transform: rotate(41deg);
-  }
-  .streaks::after {
-    transform: rotate(-37deg);
-  }
-  .warp-ship {
-    position: relative;
-    width: min(34vw, 190px);
-    overflow: visible;
-    fill: #d8cfbd;
-    stroke: #f2efe6;
-    stroke-width: 1.2;
-    filter: drop-shadow(0 0 22px color-mix(in srgb, var(--destination) 65%, white));
-    animation: ship-launch 0.95s cubic-bezier(0.3, 0, 0.6, 1) both;
-  }
-  .warp-ship ellipse {
-    fill: color-mix(in srgb, var(--destination) 70%, #dffcff);
-  }
-  .warp-ship .flame {
-    fill: #e9c46a;
-    stroke: #fff2c4;
-  }
-  .warp-copy {
-    position: absolute;
-    bottom: max(13vh, 64px);
-    z-index: 1;
-    text-align: center;
-    text-shadow: 0 2px 16px #050914;
-  }
-  .warp-copy p,
-  .warp-copy span {
-    margin: 0;
-    color: rgba(242, 239, 230, 0.68);
-    font-size: 0.68rem;
+  .flight-status span {
+    color: #7edbd1;
+    font-size: 0.6rem;
     letter-spacing: 0.18em;
     text-transform: uppercase;
   }
-  .warp-copy h2 {
-    margin: 7px 0 5px;
-    font-family: var(--planet-serif);
-    font-size: clamp(1.7rem, 5vw, 2.7rem);
-    font-weight: 400;
+  .flight-status strong {
+    font-size: 0.82rem;
+    font-weight: 600;
   }
-  @keyframes star-rush {
-    from {
-      transform: perspective(280px) rotateX(62deg) translateY(-8%) scale(0.25);
-      opacity: 0.35;
-    }
-    to {
-      transform: perspective(280px) rotateX(62deg) translateY(28%) scale(0.8);
-      opacity: 1;
-    }
+  .land {
+    position: absolute;
+    top: 22px;
+    right: 24px;
+    padding: 10px 14px;
+    border: 1px solid rgba(242, 239, 230, 0.3);
+    border-radius: 999px;
+    background: rgba(6, 15, 24, 0.68);
+    backdrop-filter: blur(8px);
+    color: #f2efe6;
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+    pointer-events: auto;
   }
-  @keyframes ship-launch {
-    0% {
-      transform: translateY(38vh) scale(1.45);
-    }
-    68% {
-      transform: translateY(-2vh) scale(0.75);
-    }
-    100% {
-      transform: translateY(-45vh) scale(0.08);
-      opacity: 0.15;
-    }
+  .land:hover {
+    border-color: rgba(233, 196, 106, 0.75);
+    color: #e9c46a;
   }
-  @keyframes warp-arrive {
-    0%,
-    100% {
-      opacity: 0;
-    }
-    12%,
-    88% {
-      opacity: 1;
-    }
+  .crosshair {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 34px;
+    height: 34px;
+    transform: translate(-50%, -50%);
+    border: 1px solid rgba(242, 239, 230, 0.62);
+    border-radius: 50%;
+    box-shadow: 0 0 14px rgba(126, 219, 209, 0.35);
   }
-  @media (prefers-reduced-motion: reduce) {
-    .warp,
-    .warp-ship,
-    .streaks,
-    .streaks::before,
-    .streaks::after {
-      animation: none;
+  .crosshair::before,
+  .crosshair::after,
+  .crosshair span::before,
+  .crosshair span::after {
+    position: absolute;
+    content: '';
+    background: rgba(242, 239, 230, 0.72);
+  }
+  .crosshair::before,
+  .crosshair::after {
+    top: 50%;
+    width: 9px;
+    height: 1px;
+  }
+  .crosshair::before {
+    right: 100%;
+  }
+  .crosshair::after {
+    left: 100%;
+  }
+  .crosshair span::before,
+  .crosshair span::after {
+    left: 50%;
+    width: 1px;
+    height: 9px;
+  }
+  .crosshair span::before {
+    bottom: 100%;
+  }
+  .crosshair span::after {
+    top: 100%;
+  }
+  .flight-hint {
+    position: absolute;
+    bottom: 24px;
+    left: 50%;
+    max-width: calc(100% - 32px);
+    margin: 0;
+    padding: 8px 13px;
+    transform: translateX(-50%);
+    border-radius: 999px;
+    background: rgba(6, 15, 24, 0.62);
+    color: rgba(242, 239, 230, 0.82);
+    font-size: 0.68rem;
+    letter-spacing: 0.04em;
+    text-align: center;
+    white-space: nowrap;
+  }
+  .flight-hint kbd {
+    display: inline-grid;
+    min-width: 18px;
+    height: 18px;
+    margin-inline: 1px;
+    place-items: center;
+    border: 1px solid rgba(242, 239, 230, 0.3);
+    border-radius: 4px;
+    background: rgba(242, 239, 230, 0.08);
+    font: 0.6rem var(--planet-sans);
+  }
+  @media (max-width: 640px) {
+    .flight-status {
+      top: 14px;
+      left: 14px;
+    }
+    .land {
+      top: 14px;
+      right: 14px;
+    }
+    .flight-hint {
+      bottom: 156px;
+      white-space: normal;
     }
   }
   .noscript {

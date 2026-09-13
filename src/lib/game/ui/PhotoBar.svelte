@@ -115,6 +115,13 @@
     }
   }
   @media (max-width: 640px) {
+    .hint {
+      top: 18px;
+      bottom: auto;
+      max-width: calc(100% - 32px);
+      text-align: center;
+      white-space: normal;
+    }
     .tools {
       opacity: 0.85;
     }

@@ -80,7 +80,7 @@ import {
 export type Prompt = { id: string; action: string; found: boolean; kicker?: string };
 
 export type GameOptions = {
-  /** World seed label. Defaults to today's planet. See `seed.ts`. */
+  /** World seed label. Defaults to Earth. */
   seed?: string;
   /** Number of outward jumps made from Earth. */
   depth?: number;
@@ -298,16 +298,17 @@ export class Game {
   private last = 0;
   private time = 0;
   private disposed = false;
+  private handlePageHide = () => this.persistJournalOnExit();
 
   constructor(canvas: HTMLCanvasElement, callbacks: GameCallbacks, options: GameOptions = {}) {
     this.canvas = canvas;
     this.callbacks = callbacks;
-    this.found = loadFound();
     this.journal = loadJournal();
 
-    // Seed every generator before anything reads terrain or biome state.
+    // Seed every generator before anything reads terrain, biome, or progress state.
     this.seed = options.seed ?? EARTH_SEED;
     this.depth = this.seed === EARTH_SEED ? 0 : Math.max(1, Math.floor(options.depth ?? 1));
+    this.found = loadFound(this.seed);
     this.profile = planetProfile(this.seed);
     this.shipProgress = loadShipProgress();
     this.destinations = spaceDestinations(this.seed, this.depth);
@@ -566,6 +567,7 @@ export class Game {
 
     this.input = new Input(canvas);
     this.input.onFirstGesture(() => this.exitIntro());
+    window.addEventListener('pagehide', this.handlePageHide);
     this.callbacks.onSpace(this.spaceStatus);
     this.applyLighting();
 
@@ -589,7 +591,8 @@ export class Game {
   }
 
   toggleGlobe(): void {
-    this.setGlobe(!this.globe);
+    if (this.intro) this.exitIntro();
+    else this.setGlobe(!this.globe);
   }
 
   /** Starlight shards collected on this planet, and how many it holds. */
@@ -694,6 +697,8 @@ export class Game {
   }
 
   dispose(): void {
+    window.removeEventListener('pagehide', this.handlePageHide);
+    this.persistJournalOnExit();
     this.disposed = true;
     cancelAnimationFrame(this.raf);
     this.input.dispose();
@@ -850,10 +855,7 @@ export class Game {
       return;
     }
 
-    if (globe && !this.overlayOpen) {
-      this.exitIntro();
-      this.toggleGlobe();
-    }
+    if (globe && !this.overlayOpen) this.toggleGlobe();
     if (this.globe) {
       this.globeYaw -= orbit.dx * 0.006;
       this.globePitch = THREE.MathUtils.clamp(this.globePitch + orbit.dy * 0.005, -1.2, 1.2);
@@ -1382,6 +1384,16 @@ export class Game {
     this.callbacks.onMilestone(milestoneById(id));
   }
 
+  /** Persist monotonic journal progress without publishing UI during teardown. */
+  private persistJournalOnExit(): void {
+    if (!this.journalDirty) return;
+    if (this.journal.planets.length >= 3 && !this.journal.milestones.includes('traveller')) {
+      this.journal.milestones = [...this.journal.milestones, 'traveller'];
+    }
+    this.journal = saveJournal(this.journal);
+    this.journalDirty = false;
+  }
+
   /**
    * Save the journal and publish it. Steps and hops change every frame, so
    * those only flush on a timer; `now` forces it for the events that matter.
@@ -1392,8 +1404,11 @@ export class Game {
     this.journalFlush = JOURNAL_FLUSH;
     if (!this.journalDirty && !now) return;
     this.journalDirty = false;
-    if (this.journal.planets.length >= 3) this.award('traveller');
-    saveJournal(this.journal);
+    if (this.journal.planets.length >= 3 && !this.journal.milestones.includes('traveller')) {
+      this.journal.milestones = [...this.journal.milestones, 'traveller'];
+      this.callbacks.onMilestone(milestoneById('traveller'));
+    }
+    this.journal = saveJournal(this.journal);
     this.callbacks.onJournal(this.journal);
   }
 
@@ -1615,7 +1630,7 @@ export class Game {
     this.audio.start();
     if (!this.found.includes(w.id)) {
       this.found = [...this.found, w.id];
-      saveFound(this.found, this.seed);
+      saveFound(this.found, this.seed, this.depth);
       this.callbacks.onFound(this.found);
       this.audio.chime();
       const mat = gem.mesh.material as THREE.MeshStandardMaterial;

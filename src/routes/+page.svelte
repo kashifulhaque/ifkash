@@ -14,7 +14,7 @@
     if (!progress.complete) return;
     badge = {
       text: `${progress.found.length} of ${WONDER_COUNT} small wonders`,
-      href: progress.seed ? seedLink(progress.seed, "") : "/game",
+      href: progress.seed ? seedLink(progress.seed, "", progress.depth) : "/game",
     };
   });
 

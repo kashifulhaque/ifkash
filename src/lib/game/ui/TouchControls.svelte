@@ -13,6 +13,13 @@
   let originY = 0;
   let pointerId: number | null = null;
   let running = false;
+  let previousFlying = flying;
+
+  $: if (flying !== previousFlying) {
+    previousFlying = flying;
+    running = false;
+    dispatch('run', { active: false });
+  }
 
   function onDown(e: PointerEvent) {
     if (pointerId !== null) return;
@@ -63,6 +70,7 @@
     on:pointermove={onMove}
     on:pointerup={onUp}
     on:pointercancel={onUp}
+    on:lostpointercapture={onUp}
     role="presentation"
   >
     <div class="knob" style="transform: translate({knobX}px, {knobY}px)"></div>

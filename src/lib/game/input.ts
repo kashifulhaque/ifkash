@@ -162,8 +162,9 @@ export class Input {
   }
 
   private onKeyDown = (e: KeyboardEvent) => {
-    const target = e.target as HTMLElement | null;
+    const target = e.target instanceof HTMLElement ? e.target : null;
     if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) return;
+    if ((e.code === 'Enter' || e.code === 'Space') && target?.closest('button, a[href], [role="button"]')) return;
     if (e.code === 'Escape') {
       this.escapeQueued = true;
       return;

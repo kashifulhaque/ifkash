@@ -240,7 +240,7 @@ function validShipProgress(value: unknown): ShipProgress {
   return {
     parts,
     crafted: record.crafted === true && allPartsFound,
-    fuel: Math.min(MAX_FUEL, Math.max(0, rawFuel))
+    fuel: Math.floor(Math.min(MAX_FUEL, Math.max(0, rawFuel)))
   };
 }
 

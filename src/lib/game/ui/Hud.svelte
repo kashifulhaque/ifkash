@@ -85,6 +85,11 @@
         <span>{boundedFuel} / {space.maxFuel} fuel</span>
       </div>
       <progress value={boundedFuel} max={Math.max(space.maxFuel, 1)} aria-label={`Ship fuel: ${boundedFuel} of ${space.maxFuel}`}></progress>
+    {:else if !space.isEarth}
+      <div class="mission-line">
+        <strong>{space.parts >= space.totalParts ? 'Craft your spaceship on Earth' : 'Recover ship parts on Earth'}</strong>
+        <span>{space.parts} / {space.totalParts}</span>
+      </div>
     {:else if space.parts >= space.totalParts}
       <div class="mission-line complete">
         <strong>All five parts recovered</strong>

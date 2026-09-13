@@ -1,6 +1,7 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
   import { seedLink } from '../seed';
+  import { EARTH_SEED } from '../space';
 
   export let isTouch = false;
   export let found = 0;
@@ -13,7 +14,7 @@
   let copyState: 'idle' | 'copied' | 'failed' = 'idle';
   let copyTimer: ReturnType<typeof setTimeout> | undefined;
 
-  $: isEarth = seed === 'earth';
+  $: isEarth = seed === EARTH_SEED;
   $: link = seed ? seedLink(seed, undefined, depth) : '';
 
   async function copyLink() {
@@ -41,8 +42,8 @@
     <section class="journey" aria-labelledby="journey-title">
       <p class="kicker" id="journey-title">Your journey</p>
       <ol>
-        <li><strong>Recover five ship parts</strong><span>Search the planet for the missing components.</span></li>
-        <li><strong>Craft at the landing pad</strong><span>Bring all five parts back and assemble your ship.</span></li>
+        <li><strong>Recover five ship parts on Earth</strong><span>Search the homeworld for the missing components.</span></li>
+        <li><strong>Craft at Earth's landing pad</strong><span>Bring all five parts back and assemble your ship.</span></li>
         <li><strong>Fly into deep space</strong><span>Board the ship, steer toward one of the three labelled planets in the sky, and fly into it to land.</span></li>
       </ol>
       <p class="fuel-note"><strong>Fuel:</strong> starlight shards refill the ship up to its meter's limit. Each planet's sky label shows the route cost; worlds you cannot afford repel the ship.</p>
@@ -55,9 +56,12 @@
         <div><dt>Look</dt><dd>Drag anywhere else to orbit the camera. Pinch to zoom.</dd></div>
         <div><dt>Hop</dt><dd>Tap the hop button.</dd></div>
         <div><dt>Open a wonder</dt><dd>Walk up to a marker and tap the card that appears.</dd></div>
-        <div><dt>Animals</dt><dd>Walk up to a sheep, a fox, or a polar bear and tap the card to pet it. Pet it twice and it follows you for a while.</dd></div>
+        <div>
+          <dt>Animals</dt>
+          <dd>{isEarth ? 'Walk up to a sheep, fox, or polar bear and tap the card to pet it.' : 'Walk up to a local lifeform and tap the card to pet it.'} Pet it twice and it follows you for a while.</dd>
+        </div>
         <div><dt>Shards</dt><dd>A dozen starlight shards glow purple across each planet. Walk over one to collect it.</dd></div>
-        <div><dt>Ship parts</dt><dd>Walk into each missing part to recover it. Once all five are found, return to the landing pad and tap the card to craft, then launch.</dd></div>
+        <div><dt>Ship parts</dt><dd>On Earth, walk into each missing part to recover it. Once all five are found, return to the landing pad and tap the card to craft, then launch.</dd></div>
         <div><dt>Deep space</dt><dd>Board the ship, steer with the stick, and fly into a labelled planet. Toggle boost for more speed; tap land to return to the current world.</dd></div>
         <div><dt>Earth</dt><dd>When away from home, tap the home control for a free recall.</dd></div>
         <div><dt>Journal</dt><dd>Tap the book button to see the biomes, animals, and milestones you have collected across every planet.</dd></div>
@@ -68,7 +72,7 @@
         <div><dt><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></dt><dd>Walk. Arrow keys work too.</dd></div>
         <div><dt><kbd>Shift</kbd></dt><dd>Run.</dd></div>
         <div><dt><kbd>Space</kbd></dt><dd>Hop.</dd></div>
-        <div><dt><kbd>E</kbd></dt><dd>Interact with wonders and animals. At the landing pad, craft after recovering all five ship parts, then launch.</dd></div>
+        <div><dt><kbd>E</kbd></dt><dd>Interact with wonders and animals. At Earth's landing pad, craft after recovering all five ship parts, then launch.</dd></div>
         <div><dt><kbd>M</kbd></dt><dd>Pull back to see the whole planet. Click a spot to walk there.</dd></div>
         <div><dt><kbd>J</kbd></dt><dd>Open the journal: biomes visited, animals befriended, milestones, and a dozen starlight shards to find on each planet.</dd></div>
         <div><dt>Deep space</dt><dd>Board the ship, steer with <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd>, hold <kbd>Shift</kbd> to boost, and fly into a labelled planet. <kbd>Space</kbd> lands back on the current world.</dd></div>

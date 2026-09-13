@@ -104,8 +104,8 @@ export const emptyJournal = (): Journal => ({
   shards: 0
 });
 
-const strings = (v: unknown): string[] => (Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : []);
-const num = (v: unknown): number => (typeof v === 'number' && Number.isFinite(v) ? v : 0);
+const strings = (v: unknown): string[] => (Array.isArray(v) ? [...new Set(v.filter((x): x is string => typeof x === 'string'))] : []);
+const num = (v: unknown): number => (typeof v === 'number' && Number.isFinite(v) ? Math.max(0, v) : 0);
 
 export function loadJournal(): Journal {
   try {
@@ -127,11 +127,22 @@ export function loadJournal(): Journal {
   }
 }
 
-export function saveJournal(j: Journal): void {
+export function saveJournal(journal: Journal): Journal {
   try {
-    localStorage.setItem(JOURNAL_KEY, JSON.stringify(j));
+    const stored = loadJournal();
+    const merged: Journal = {
+      biomes: [...new Set([...stored.biomes, ...journal.biomes])],
+      species: [...new Set([...stored.species, ...journal.species])],
+      milestones: [...new Set([...stored.milestones, ...journal.milestones])],
+      paces: Math.max(stored.paces, journal.paces),
+      hops: Math.max(stored.hops, journal.hops),
+      planets: [...new Set([...stored.planets, ...journal.planets])],
+      shards: Math.max(stored.shards, journal.shards)
+    };
+    localStorage.setItem(JOURNAL_KEY, JSON.stringify(merged));
+    return merged;
   } catch {
-    /* storage unavailable */
+    return journal;
   }
 }
 

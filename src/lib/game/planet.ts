@@ -7,29 +7,28 @@ export const PLANET_RADIUS = 42;
 /** Radius of the translucent water sphere. */
 export const SEA_LEVEL = PLANET_RADIUS + 0.4;
 
-const EARTH_HUE = 0;
-const EARTH_SATURATION = 1;
-let planetHue = EARTH_HUE;
-let planetSaturation = EARTH_SATURATION;
 let terrainReliefScale = 1;
 let terrainRuggedScale = 1;
 let terrainDetailScale = 1;
 let terrainCreaseFrequency = 3.2;
+let terrainTerrace = 0;
 let planetWater = 0x256a8c;
-const _hsl = { h: 0, s: 0, l: 0 };
+let planetTerrain: readonly [number, number, number] | null = null;
+let planetShore = 0;
 
 /** Apply a profile to all subsequently generated terrain and water. */
 export function configurePlanet(profile: PlanetProfile): void {
-  planetHue = THREE.MathUtils.clamp(profile.hue, -0.5, 0.5);
-  planetSaturation = THREE.MathUtils.clamp(profile.saturation, 0.25, 2);
   const relief = THREE.MathUtils.clamp(profile.relief, 0.4, 1.6);
   const ruggedness = THREE.MathUtils.clamp(profile.ruggedness, 0.4, 1.6);
   terrainReliefScale = relief;
   terrainRuggedScale = ruggedness;
   terrainDetailScale = THREE.MathUtils.lerp(1, ruggedness, 0.65);
   terrainCreaseFrequency = 3.2 * (1 + (ruggedness - 1) * 0.25);
+  terrainTerrace = profile.archetype === 'crystal' ? 0.42 : profile.archetype === 'fracture' ? 0.68 : 0;
   planetWater = profile.water;
-  configureBiomeOcean(relief, ruggedness, profile.seed === 'earth');
+  planetTerrain = profile.archetype === 'earth' ? null : profile.terrain;
+  planetShore = profile.shore;
+  configureBiomeOcean(profile);
 }
 
 /**
@@ -69,7 +68,8 @@ export function surfaceRadius(d: THREE.Vector3): number {
   // ground — and any prop or wonder standing on it — hidden under the water
   // sphere. The floor keeps every land point just clear of the waterline.
   const shaped = h >= 0 ? h : Math.max(-0.25, h * 0.15);
-  return PLANET_RADIUS + 0.7 + rise * shaped;
+  const formed = terrainTerrace > 0 ? Math.round(shaped / terrainTerrace) * terrainTerrace : shaped;
+  return PLANET_RADIUS + 0.7 + rise * formed;
 }
 
 const _na = new THREE.Vector3();
@@ -153,11 +153,8 @@ export function offsetDir(d: THREE.Vector3, east: number, north: number): THREE.
 }
 
 function pickShade(b: Biome, h: number): number {
-  return h < 0.62 ? b.ground[0] : h < 0.84 ? b.ground[1] : b.ground[2];
-}
-
-function applyPlanetPalette(color: THREE.Color): void {
-  color.offsetHSL(planetHue, color.getHSL(_hsl).s * (planetSaturation - 1), 0);
+  const palette = planetTerrain ?? b.ground;
+  return h < 0.62 ? palette[0] : h < 0.84 ? palette[1] : palette[2];
 }
 
 export function buildGround(): THREE.Mesh {
@@ -181,14 +178,19 @@ export function buildGround(): THREE.Mesh {
     const h = hash3(Math.round(mid.x * 997), Math.round(mid.y * 991), Math.round(mid.z * 983));
     let hex: number;
     if (biome === OCEAN) {
-      hex = pickShade(OCEAN, h);
+      hex = planetTerrain ? planetTerrain[0] : pickShade(OCEAN, h);
     } else if (f < 0.09) {
-      hex = biome.beach;
+      hex = planetTerrain ? planetShore : biome.beach;
     } else {
       hex = pickShade(biome, h);
     }
     col.setHex(hex);
-    applyPlanetPalette(col);
+    if (planetTerrain && biome !== OCEAN) {
+      // Preserve readable regions on alien worlds without reverting to Earth's
+      // greens, snow, and sand: each Voronoi biome shifts the shared geology.
+      const region = Math.max(0, Number.parseInt(biome.index, 10) - 1);
+      col.offsetHSL(((region % 4) - 1.5) * 0.018, 0, ((region % 3) - 1) * 0.035);
+    }
     // Faint per-face variation keeps the flat shading from looking like a texture.
     const v = 0.96 + hash3(i, 7, 13) * 0.08;
     col.multiplyScalar(v);

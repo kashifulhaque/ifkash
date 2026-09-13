@@ -16,6 +16,7 @@ import { PLANET_RADIUS, offsetDir, surfaceFrame } from './planet';
 import type { Collider } from './collision';
 import { emitter, type Emitter, type EmitterOptions } from './lights';
 import { WONDERS, wonderDir } from './wonders';
+import type { PlanetProfile } from './space';
 
 // ---------------------------------------------------------------- batching
 
@@ -874,6 +875,115 @@ function icicles(c: Ctx, f: THREE.Matrix4): void {
     });
   }
 }
+/**
+ * One unmistakable life/geology form per alien archetype. These replace
+ * terrestrial trees, farms, furniture, and ruins away from Earth.
+ */
+function alienSignature(c: Ctx, f: THREE.Matrix4, profile: PlanetProfile, large = false): void {
+  const s = large ? 1.75 : rnd(c, 0.65, 1.05);
+  const accent = profile.accent;
+  footprint(c, f, 0.75 * s);
+
+  switch (profile.archetype) {
+    case 'bloom': {
+      part(c.solid, G.taper8, 0x17343d, f, { s: [0.48 * s, 2.7 * s, 0.48 * s] });
+      part(c.glow, G.dodeca, accent, f, { p: [0, 2.45 * s, 0], s: [2.2 * s, 0.75 * s, 2.2 * s] });
+      for (let i = 0; i < 5; i++) {
+        const a = (i / 5) * Math.PI * 2;
+        part(c.glow, G.sphere, 0x8affc8, f, { p: [Math.cos(a) * 0.85 * s, 2.15 * s, Math.sin(a) * 0.85 * s], s: 0.24 * s });
+      }
+      break;
+    }
+    case 'reef': {
+      part(c.solid, G.cone8, 0x234f63, f, { s: [1.15 * s, 1.3 * s, 1.15 * s] });
+      for (let i = 0; i < 6; i++) {
+        const a = (i / 6) * Math.PI * 2;
+        const h = rnd(c, 1.3, 2.8) * s;
+        part(c.solid, G.cyl6, i % 2 ? 0x2aa59c : 0x815583, f, {
+          p: [Math.cos(a) * 0.42 * s, 0.55 * s, Math.sin(a) * 0.42 * s],
+          s: [0.22 * s, h, 0.22 * s],
+          r: [Math.sin(a) * 0.28, 0, -Math.cos(a) * 0.28]
+        });
+        part(c.glow, G.sphere, accent, f, { p: [Math.cos(a) * 0.8 * s, h * 0.92, Math.sin(a) * 0.8 * s], s: 0.2 * s });
+      }
+      break;
+    }
+    case 'crystal': {
+      part(c.solid, G.dodeca, 0x50314f, f, { s: [1.5 * s, 0.28 * s, 1.5 * s] });
+      for (let i = 0; i < 4; i++) {
+        const a = (i / 4) * Math.PI * 2 + 0.35;
+        part(c.glow, G.cone4, i % 2 ? accent : 0xff83c8, f, {
+          p: [Math.cos(a) * 0.34 * s, 0.12 * s, Math.sin(a) * 0.34 * s],
+          s: [0.62 * s, rnd(c, 2.4, 4.2) * s, 0.2 * s],
+          r: [Math.sin(a) * 0.18, a, -Math.cos(a) * 0.18]
+        });
+      }
+      break;
+    }
+    case 'rime': {
+      for (let i = 0; i < 7; i++) {
+        const a = (i / 7) * Math.PI * 2;
+        part(i % 3 === 0 ? c.glow : c.solid, G.cone6, i % 3 === 0 ? accent : 0xb7dce4, f, {
+          p: [Math.cos(a) * 0.55 * s, 0, Math.sin(a) * 0.55 * s],
+          s: [0.34 * s, rnd(c, 1.8, 4.0) * s, 0.34 * s],
+          r: [Math.sin(a) * 0.22, a, -Math.cos(a) * 0.22]
+        });
+      }
+      break;
+    }
+    case 'ember': {
+      part(c.solid, G.cone6, 0x211a22, f, { s: [1.8 * s, 1.3 * s, 1.8 * s] });
+      part(c.glow, G.cyl6, accent, f, { p: [0, 1.12 * s, 0], s: [0.54 * s, 0.16 * s, 0.54 * s] });
+      for (let i = 0; i < 4; i++) {
+        const a = (i / 4) * Math.PI * 2;
+        part(c.solid, G.cyl6, i % 2 ? 0x30262b : 0x17151a, f, {
+          p: [Math.cos(a) * 0.75 * s, 0, Math.sin(a) * 0.75 * s],
+          s: [0.42 * s, rnd(c, 1.2, 2.8) * s, 0.42 * s]
+        });
+      }
+      break;
+    }
+    case 'fracture': {
+      for (let i = 0; i < 5; i++) {
+        const y = (0.25 + i * 0.72) * s;
+        part(i === 2 ? c.glow : c.solid, G.dodeca, i === 2 ? accent : i % 2 ? 0x514682 : 0x2c2a59, f, {
+          p: [Math.sin(i * 2.1) * 0.42 * s, y, Math.cos(i * 1.7) * 0.36 * s],
+          s: [rnd(c, 0.55, 1.0) * s, 0.42 * s, rnd(c, 0.55, 1.0) * s],
+          r: [i * 0.4, i * 0.8, i * 0.27]
+        });
+      }
+      break;
+    }
+    case 'spore': {
+      part(c.solid, G.taper8, 0x343f35, f, { s: [0.5 * s, 2.2 * s, 0.5 * s] });
+      part(c.glow, G.sphere, accent, f, { p: [0, 1.9 * s, 0], s: [1.75 * s, 0.58 * s, 1.75 * s] });
+      for (let i = 0; i < 5; i++) {
+        const a = (i / 5) * Math.PI * 2;
+        part(c.glow, G.sphere, 0xf0b0ff, f, { p: [Math.cos(a) * 0.72 * s, 2.32 * s, Math.sin(a) * 0.72 * s], s: 0.13 * s });
+      }
+      break;
+    }
+  }
+
+  if (large) emit(c, f, accent, 18, 11, [0, 2.1 * s, 0], { flicker: profile.archetype === 'ember' ? 0.8 : 0.18 });
+}
+
+function alienStone(c: Ctx, f: THREE.Matrix4, profile: PlanetProfile): void {
+  const s = rnd(c, 0.45, 1.15);
+  const floating = profile.archetype === 'fracture';
+  part(c.solid, G.dodeca, profile.terrain[Math.floor(c.rng() * 3)]!, f, {
+    p: [0, floating ? 0.5 * s : 0, 0],
+    s: [s, rnd(c, 0.65, 1.4) * s, rnd(c, 0.7, 1.2) * s],
+    r: [c.rng(), c.rng() * 3, c.rng()]
+  });
+  if (s > 0.85) footprint(c, f, 0.45 * s);
+}
+
+function alienSignal(c: Ctx, f: THREE.Matrix4, profile: PlanetProfile, bright = false): void {
+  part(c.solid, G.cyl6, profile.terrain[0], f, { s: [0.5, 0.18, 0.5] });
+  part(c.glow, G.tetra, profile.accent, f, { p: [0, 0.22, 0], s: bright ? 0.5 : 0.28, r: [0, c.rng() * 3, 0] });
+  if (bright) emit(c, f, profile.accent, 11, 7, [0, 0.65, 0], { flicker: 0.22 });
+}
 
 // ------------------------------------------------------- built things
 
@@ -1303,6 +1413,40 @@ const SCATTER: Record<LandBiomeId, Scatter[]> = {
   ]
 };
 
+function alienScatter(profile: PlanetProfile): Scatter[] {
+  const table: Scatter[] = [
+    { p: 0.09, build: (c, f) => alienSignature(c, f, profile) },
+    { p: 0.15, build: (c, f) => alienStone(c, f, profile) },
+    { p: 0.055, build: (c, f) => alienSignal(c, f, profile) }
+  ];
+
+  switch (profile.archetype) {
+    case 'bloom':
+      table.push({ p: 0.12, build: (c, f) => grass(c, f, 0x4fd9a7) }, { p: 0.045, build: (c, f) => crystalCluster(c, f, profile.accent) });
+      break;
+    case 'reef':
+      table.push({ p: 0.08, build: reeds }, { p: 0.055, build: (c, f) => crystalCluster(c, f, profile.accent) });
+      break;
+    case 'crystal':
+      table.push({ p: 0.1, build: (c, f) => crystalCluster(c, f, profile.accent) }, { p: 0.04, build: (c, f) => basaltColumn(c, f) });
+      break;
+    case 'rime':
+      table.push({ p: 0.13, build: (c, f) => iceShard(c, f, c.rng() < 0.18) }, { p: 0.07, build: icicles });
+      break;
+    case 'ember':
+      table.push({ p: 0.12, build: lavaRock }, { p: 0.045, build: steamVent }, { p: 0.05, build: basaltColumn });
+      break;
+    case 'fracture':
+      table.push({ p: 0.08, build: (c, f) => crystalCluster(c, f, profile.accent) }, { p: 0.075, build: basaltColumn });
+      break;
+    case 'spore':
+      table.push({ p: 0.12, build: (c, f) => mushroom(c, f, true) }, { p: 0.04, build: bigMushroom });
+      break;
+  }
+
+  return table;
+}
+
 /**
  * A dry spot on the coast to run a jetty out from, and the yaw that points it
  * at the water. Scans headings out of the biome centre for the first waterline
@@ -1354,7 +1498,29 @@ function landAt(ctx: Ctx, biome: BiomeId, east: number, north: number, yaw: numb
   return surfaceFrame(d, yaw, new THREE.Matrix4(), lift);
 }
 
-export function buildWorldProps(seed: number): WorldProps {
+function finishWorldProps(
+  ctx: Ctx,
+  wonderFrames: Map<string, THREE.Matrix4>,
+  windmillHub: THREE.Matrix4,
+  fire: THREE.Matrix4,
+  lamp: THREE.Matrix4
+): WorldProps {
+  const solidMat = new THREE.MeshStandardMaterial({ vertexColors: true, flatShading: true, roughness: 0.85 });
+  const glowMat = new THREE.MeshBasicMaterial({ vertexColors: true });
+  const solid = ctx.solid.build(solidMat);
+  const glow = ctx.glow.build(glowMat);
+  const night = ctx.night.build(new THREE.MeshBasicMaterial({ vertexColors: true }));
+  if (night) night.name = 'night';
+  if (solid) {
+    solid.castShadow = true;
+    solid.receiveShadow = true;
+    solid.name = 'props';
+  }
+  if (glow) glow.name = 'glow';
+  return { solid, glow, night, windmillHub, fire, lamp, wonderFrames, colliders: ctx.colliders, lights: ctx.lights };
+}
+
+export function buildWorldProps(seed: number, profile: PlanetProfile): WorldProps {
   const ctx: Ctx = {
     solid: new PropBatch(),
     glow: new PropBatch(),
@@ -1376,6 +1542,68 @@ export function buildWorldProps(seed: number): WorldProps {
     exclusions.push({ dir: d, radius: 2.4 });
   }
   const wf = (id: string) => wonderFrames.get(id)!;
+
+  if (profile.archetype !== 'earth') {
+    // Alien wonders are signal clearings rather than copies of Earth's cabins,
+    // farms, and lighthouse. The portfolio gems remain the shared interaction.
+    for (const w of WONDERS) {
+      const origin = wonderDirs.get(w.id)!;
+      for (let i = 0; i < 3; i++) {
+        const a = (i / 3) * Math.PI * 2 + w.yaw;
+        const d = offsetDir(origin.clone(), Math.cos(a) * 2.8, Math.sin(a) * 2.8);
+        alienSignature(ctx, surfaceFrame(d, a, new THREE.Matrix4()), profile, i === 0);
+        exclusions.push({ dir: d, radius: 1.5 });
+      }
+      const signalDir = offsetDir(origin.clone(), 1.25, -0.75);
+      alienSignal(ctx, surfaceFrame(signalDir, 0, new THREE.Matrix4()), profile, true);
+      exclusions.push({ dir: signalDir, radius: 0.8 });
+    }
+
+    // Sparse glowing nodes trace great-circle routes. Their gaps keep the
+    // landscape wild while still giving a traveller a line to follow.
+    const loop = ['about', 'work', 'resume', 'contact', 'blog', 'projects', 'education', 'about'];
+    const pa = new THREE.Vector3();
+    const pb = new THREE.Vector3();
+    const pd = new THREE.Vector3();
+    const pf = new THREE.Matrix4();
+    let node = 0;
+    for (let i = 0; i < loop.length - 1; i++) {
+      pa.copy(wonderDirs.get(loop[i])!);
+      pb.copy(wonderDirs.get(loop[i + 1])!);
+      const ang = pa.angleTo(pb);
+      const steps = Math.floor((ang * PLANET_RADIUS) / 4.5);
+      for (let s = 1; s < steps; s++) {
+        const t = s / steps;
+        pd.copy(pa).multiplyScalar(Math.sin((1 - t) * ang)).addScaledVector(pb, Math.sin(t * ang)).divideScalar(Math.sin(ang)).normalize();
+        if (isOcean(pd) || oceanField(pd) < 0.05) continue;
+        alienSignal(ctx, surfaceFrame(pd, 0, pf, 0.03), profile, ++node % 5 === 0);
+        exclusions.push({ dir: pd.clone(), radius: 0.65 });
+      }
+    }
+
+    const d = new THREE.Vector3();
+    const f = new THREE.Matrix4();
+    const table = alienScatter(profile);
+    for (let i = 0; i < SCATTER_SAMPLES; i++) {
+      d.set(ctx.rng() * 2 - 1, ctx.rng() * 2 - 1, ctx.rng() * 2 - 1);
+      if (d.lengthSq() < 0.05) continue;
+      d.normalize();
+      if (oceanField(d) < 0.07 || ctx.rng() > clumpAt(d)) continue;
+      if (exclusions.some((ex) => d.angleTo(ex.dir) * PLANET_RADIUS < ex.radius)) continue;
+      let r = ctx.rng();
+      surfaceFrame(d, ctx.rng() * Math.PI * 2, f);
+      for (const entry of table) {
+        r -= entry.p;
+        if (r < 0) {
+          entry.build(ctx, f);
+          break;
+        }
+      }
+    }
+
+    const dormant = wf('about').clone();
+    return finishWorldProps(ctx, wonderFrames, dormant, dormant, wf('blog').clone());
+  }
 
   // --- Fernwood: campfire camp, cabin, and a mountain range behind it.
   campfire(ctx, wf('about'));
@@ -1645,19 +1873,7 @@ export function buildWorldProps(seed: number): WorldProps {
     }
   }
 
-  const solidMat = new THREE.MeshStandardMaterial({ vertexColors: true, flatShading: true, roughness: 0.85 });
-  const glowMat = new THREE.MeshBasicMaterial({ vertexColors: true });
-  const solid = ctx.solid.build(solidMat);
-  const glow = ctx.glow.build(glowMat);
-  const night = ctx.night.build(new THREE.MeshBasicMaterial({ vertexColors: true }));
-  if (night) night.name = 'night';
-  if (solid) {
-    solid.castShadow = true;
-    solid.receiveShadow = true;
-    solid.name = 'props';
-  }
-  if (glow) glow.name = 'glow';
-  return { solid, glow, night, windmillHub, fire, lamp, wonderFrames, colliders: ctx.colliders, lights: ctx.lights };
+  return finishWorldProps(ctx, wonderFrames, windmillHub, fire, lamp);
 }
 
 // ---------------------------------------------------------------- dynamic

@@ -669,3 +669,56 @@ export function buildFrog(): THREE.Group {
     { geo: U.box, color: 0x4d8a3c, p: [0.14, 0.05, 0.18], s: [0.07, 0.07, 0.14] }
   ]);
 }
+
+/** Three low-poly alien body plans, recoloured from the destination profile. */
+export function buildAlienCritter(primary: number, accent: number, variant: number): THREE.Group {
+  const dark = new THREE.Color(primary).multiplyScalar(0.55).getHex();
+  const eye = 0xf6fff3;
+
+  if (variant % 3 === 0) {
+    return animal(
+      'walk',
+      0.74,
+      [
+        { geo: U.dodeca, color: primary, p: [0, 0.5, 0], s: [0.55, 0.48, 0.7] },
+        { geo: U.ico, color: accent, p: [0, 0.64, 0.42], s: [0.34, 0.22, 0.26] },
+        { geo: U.sphere, color: eye, p: [0, 0.69, 0.56], s: 0.1 },
+        { geo: U.box, color: dark, p: [0, 0.7, 0.62], s: [0.04, 0.04, 0.03] },
+        { geo: U.cone, color: accent, p: [-0.22, 0.85, 0.02], s: [0.1, 0.45, 0.1], r: [0, 0, 0.35] },
+        { geo: U.cone, color: accent, p: [0.22, 0.85, 0.02], s: [0.1, 0.45, 0.1], r: [0, 0, -0.35] }
+      ],
+      [
+        { x: -0.32, z: 0.28, w: 0.12, h: 0.45, color: dark },
+        { x: 0.32, z: 0.28, w: 0.12, h: 0.45, color: dark },
+        { x: -0.28, z: -0.3, w: 0.12, h: 0.45, color: dark },
+        { x: 0.28, z: -0.3, w: 0.12, h: 0.45, color: dark }
+      ]
+    );
+  }
+
+  if (variant % 3 === 1) {
+    return animal(
+      'scuttle',
+      0.46,
+      [
+        { geo: U.ico, color: primary, p: [0, 0.3, 0], s: [0.72, 0.28, 0.5] },
+        { geo: U.dodeca, color: accent, p: [0, 0.38, 0.28], s: [0.36, 0.2, 0.28] },
+        { geo: U.sphere, color: eye, p: [-0.13, 0.43, 0.42], s: 0.09 },
+        { geo: U.sphere, color: eye, p: [0.13, 0.43, 0.42], s: 0.09 },
+        { geo: U.box, color: dark, p: [-0.13, 0.44, 0.49], s: [0.04, 0.04, 0.03] },
+        { geo: U.box, color: dark, p: [0.13, 0.44, 0.49], s: [0.04, 0.04, 0.03] },
+        { geo: U.cone, color: primary, p: [-0.55, 0.31, -0.06], s: [0.3, 0.12, 0.45], r: [0, 0, Math.PI / 2] },
+        { geo: U.cone, color: primary, p: [0.55, 0.31, -0.06], s: [0.3, 0.12, 0.45], r: [0, 0, -Math.PI / 2] }
+      ]
+    );
+  }
+
+  return animal('hop', 0.92, [
+    { geo: U.sphere, color: primary, p: [0, 0.28, 0], s: [0.5, 0.5, 0.55] },
+    { geo: U.dodeca, color: accent, p: [0, 0.58, 0.1], s: [0.38, 0.4, 0.34] },
+    { geo: U.sphere, color: eye, p: [0, 0.65, 0.31], s: 0.14 },
+    { geo: U.box, color: dark, p: [0, 0.67, 0.39], s: [0.055, 0.055, 0.03] },
+    { geo: U.cone, color: accent, p: [-0.24, 0.78, 0], s: [0.1, 0.4, 0.1], r: [0, 0, 0.5] },
+    { geo: U.cone, color: accent, p: [0.24, 0.78, 0], s: [0.1, 0.4, 0.1], r: [0, 0, -0.5] }
+  ]);
+}

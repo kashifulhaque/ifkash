@@ -3,6 +3,7 @@
 // so pages outside the game can read it without pulling in the game bundle.
 
 import type { BiomeId } from './biomes';
+import type { PlanetArchetype } from './space';
 
 const JOURNAL_KEY = 'planet_journal';
 const SHARDS_KEY = 'planet_shards';
@@ -10,7 +11,12 @@ const SHARDS_KEY = 'planet_shards';
 /** Land biomes plus the sea, in the order the journal lists them. */
 export const JOURNAL_BIOMES: BiomeId[] = ['forest', 'farm', 'shore', 'ember', 'arctic', 'desert', 'marsh', 'grove', 'ocean'];
 
-/** Every animal on the planet, by the name shown in the pet prompt. */
+/** Earth keeps its legacy ids; alien regions are scoped to the planet that was explored. */
+export function biomeJournalKey(seed: string, biome: BiomeId): string {
+  return seed === 'earth' ? biome : `${seed}:${biome}`;
+}
+
+/** Earth's species, retained as the homeworld field-guide page. */
 export const SPECIES = [
   'sheep',
   'goat',
@@ -27,7 +33,21 @@ export const SPECIES = [
   'jackrabbit'
 ] as const;
 
-export type Species = (typeof SPECIES)[number];
+type AlienArchetype = Exclude<PlanetArchetype, 'earth'>;
+
+export const ALIEN_SPECIES: Record<AlienArchetype, readonly [string, string, string]> = {
+  bloom: ['glimmerback', 'dew hopper', 'lantern grazer'],
+  reef: ['coral skitter', 'tide bulb', 'pearl grazer'],
+  crystal: ['prism walker', 'glass skitter', 'sun hopper'],
+  rime: ['rime walker', 'ice skitter', 'comet puff'],
+  ember: ['cinderback', 'magma skitter', 'coal hopper'],
+  fracture: ['orbit grazer', 'rift skitter', 'null hopper'],
+  spore: ['cap walker', 'spore skitter', 'puffling']
+};
+
+export function speciesFor(archetype: PlanetArchetype): readonly string[] {
+  return archetype === 'earth' ? SPECIES : ALIEN_SPECIES[archetype];
+}
 
 /** Starlight shards scattered over each planet. */
 export const SHARD_COUNT = 12;

@@ -117,6 +117,21 @@ export const WONDERS: Wonder[] = [
   }
 ];
 
+const ALIEN_WONDER_ACTIONS: Record<WonderId, string> = {
+  about: 'Listen to the signal',
+  work: 'Open the memory vault',
+  contact: 'Send a starbound transmission',
+  resume: "Read the traveller's record",
+  blog: 'Ignite the orbital beacon',
+  projects: 'Enter the maker foundry',
+  education: 'Align the sky prism'
+};
+
+/** Earth keeps its storybook landmarks; alien worlds use signal clearings. */
+export function wonderAction(wonder: Wonder, isEarth: boolean): string {
+  return isEarth ? wonder.action : ALIEN_WONDER_ACTIONS[wonder.id];
+}
+
 /** Unit direction of a wonder on the sphere. */
 export function wonderDir(w: Wonder, out = new THREE.Vector3()): THREE.Vector3 {
   out.copy(biomeById(w.biome).center);

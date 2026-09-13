@@ -34,16 +34,23 @@ export type SpaceDestination = {
   color: number;
 };
 
+export type PlanetArchetype = 'earth' | 'bloom' | 'reef' | 'crystal' | 'rime' | 'ember' | 'fracture' | 'spore';
+
 export type PlanetProfile = {
   seed: string;
   name: string;
   kind: string;
+  archetype: PlanetArchetype;
   sky: number;
   water: number;
-  /** Additive HSL hue rotation; Earth is zero. */
-  hue: number;
-  /** Multipliers over the familiar Earth terrain; Earth is one. */
-  saturation: number;
+  terrain: readonly [number, number, number];
+  shore: number;
+  accent: number;
+  cloud: number;
+  cloudCount: number;
+  /** Additive bias to the ocean field. Positive values expose more land. */
+  landBias: number;
+  /** Multipliers over Earth's terrain amplitudes. */
   relief: number;
   ruggedness: number;
 };
@@ -60,111 +67,159 @@ export type SpaceStatus = {
   isEarth: boolean;
 };
 
+type AlienArchetype = Exclude<PlanetArchetype, 'earth'>;
+
 type Archetype = {
+  id: AlienArchetype;
   kind: string;
   sky: number;
   water: number;
-  hue: readonly [number, number];
-  saturation: readonly [number, number];
+  terrain: readonly [number, number, number];
+  shore: number;
+  accent: number;
+  cloud: number;
+  cloudCount: readonly [number, number];
+  landBias: readonly [number, number];
   relief: readonly [number, number];
   ruggedness: readonly [number, number];
 };
 
+/** Deliberately strong silhouettes and palettes: every destination is a different physical idea, not recoloured Earth. */
 const ARCHETYPES: readonly Archetype[] = [
   {
-    kind: 'Garden world',
-    sky: 0x172944,
-    water: 0x286986,
-    hue: [-0.03, 0.04],
-    saturation: [0.92, 1.14],
-    relief: [0.82, 1.08],
-    ruggedness: [0.75, 1.12]
+    id: 'bloom',
+    kind: 'Bioluminescent canopy',
+    sky: 0x071d2b,
+    water: 0x123f55,
+    terrain: [0x163f4b, 0x235b61, 0x3a7168],
+    shore: 0x57a88f,
+    accent: 0x69ffe0,
+    cloud: 0x74c8ba,
+    cloudCount: [7, 11],
+    landBias: [0.02, 0.15],
+    relief: [0.9, 1.14],
+    ruggedness: [0.78, 1.02]
   },
   {
-    kind: 'Ocean world',
-    sky: 0x132d4c,
-    water: 0x176d8a,
-    hue: [0.08, 0.13],
-    saturation: [1.02, 1.2],
-    relief: [0.7, 0.9],
-    ruggedness: [0.65, 0.82]
+    id: 'reef',
+    kind: 'Pelagic reef',
+    sky: 0x07172e,
+    water: 0x075b78,
+    terrain: [0x174058, 0x1c7180, 0x3c9b91],
+    shore: 0x62d6b3,
+    accent: 0xff8bd7,
+    cloud: 0x80dfe4,
+    cloudCount: [16, 23],
+    landBias: [-0.3, -0.18],
+    relief: [0.55, 0.76],
+    ruggedness: [0.48, 0.7]
   },
   {
-    kind: 'Desert world',
-    sky: 0x39231d,
-    water: 0x315c61,
-    hue: [-0.12, -0.07],
-    saturation: [0.92, 1.16],
-    relief: [0.78, 1.08],
-    ruggedness: [0.9, 1.24]
+    id: 'crystal',
+    kind: 'Glass desert',
+    sky: 0x24122f,
+    water: 0x493255,
+    terrain: [0x6d365f, 0x9a4f74, 0xd18492],
+    shore: 0xf2b59b,
+    accent: 0xffd38a,
+    cloud: 0xe4a6c8,
+    cloudCount: [2, 5],
+    landBias: [0.18, 0.3],
+    relief: [0.86, 1.08],
+    ruggedness: [1.02, 1.3]
   },
   {
-    kind: 'Frost world',
-    sky: 0x18273e,
-    water: 0x39788f,
-    hue: [0.06, 0.12],
-    saturation: [0.75, 0.92],
-    relief: [1.02, 1.28],
-    ruggedness: [0.95, 1.3]
+    id: 'rime',
+    kind: 'Cometary ice hollow',
+    sky: 0x07182d,
+    water: 0x295c7b,
+    terrain: [0x8eb5c5, 0xc4dce2, 0xe8f3ed],
+    shore: 0xa7edf0,
+    accent: 0x9dfcff,
+    cloud: 0xb8e6ee,
+    cloudCount: [10, 16],
+    landBias: [0.08, 0.2],
+    relief: [1.04, 1.3],
+    ruggedness: [1.2, 1.5]
   },
   {
-    kind: 'Ember world',
-    sky: 0x32191d,
-    water: 0x49383e,
-    hue: [-0.11, -0.06],
-    saturation: [1.08, 1.2],
-    relief: [1.08, 1.3],
-    ruggedness: [1.16, 1.4]
+    id: 'ember',
+    kind: 'Volcanic crucible',
+    sky: 0x240b0b,
+    water: 0xe34719,
+    terrain: [0x211b24, 0x3b2830, 0x6a332c],
+    shore: 0xff8a2a,
+    accent: 0xffc247,
+    cloud: 0x6f3530,
+    cloudCount: [18, 25],
+    landBias: [0.2, 0.34],
+    relief: [1.14, 1.4],
+    ruggedness: [1.28, 1.58]
   },
   {
-    kind: 'Amethyst world',
-    sky: 0x251c43,
-    water: 0x453e78,
-    hue: [0.1, 0.15],
-    saturation: [1, 1.2],
-    relief: [0.9, 1.18],
-    ruggedness: [0.86, 1.22]
+    id: 'fracture',
+    kind: 'Fractured gravity moon',
+    sky: 0x100d2b,
+    water: 0x211d4f,
+    terrain: [0x302d60, 0x514682, 0x7564a0],
+    shore: 0x9e86cb,
+    accent: 0xbba5ff,
+    cloud: 0x7d73b2,
+    cloudCount: [0, 3],
+    landBias: [0.28, 0.4],
+    relief: [1.18, 1.48],
+    ruggedness: [1.32, 1.6]
   },
   {
-    kind: 'Moss world',
-    sky: 0x192b2a,
-    water: 0x285d59,
-    hue: [-0.06, -0.01],
-    saturation: [0.86, 1.08],
-    relief: [0.84, 1.14],
-    ruggedness: [0.8, 1.16]
+    id: 'spore',
+    kind: 'Mycelial dreamworld',
+    sky: 0x101d22,
+    water: 0x283b43,
+    terrain: [0x334936, 0x5a6041, 0x7d7553],
+    shore: 0xa09a68,
+    accent: 0xc58cff,
+    cloud: 0x9b91b6,
+    cloudCount: [8, 14],
+    landBias: [-0.04, 0.1],
+    relief: [0.78, 1.02],
+    ruggedness: [0.7, 0.94]
   }
 ];
 
 const NAME_FIRST = [
-  'Aster', 'Brindle', 'Cinder', 'Dapple', 'Elara', 'Fable', 'Glimmer', 'Hollow',
-  'Iris', 'Juniper', 'Luma', 'Mallow', 'Nimbus', 'Opal', 'Peregrine', 'Quill',
-  'Ripple', 'Sorrel', 'Tansy', 'Umber', 'Vesper', 'Wren', 'Yarrow', 'Zephyr'
+  'Aevra', 'Caelum', 'Ceryx', 'Eidolon', 'Ilyra', 'Khepri', 'Lacuna', 'Myrr',
+  'Nacre', 'Ossia', 'Penum', 'Qiroth', 'Rhyme', 'Serein', 'Thessa', 'Umbriel',
+  'Vael', 'Xanthe', 'Ysil', 'Zephra'
 ] as const;
 
 const NAME_LAST = [
-  'Bloom', 'Cairn', 'Cove', 'Drift', 'Fields', 'Haven', 'Isle', 'Light',
-  'Mere', 'Reach', 'Rest', 'Ridge', 'Shore', 'Vale', 'Wilds', 'Wood'
+  'Atoll', 'Breach', 'Calyx', 'Cradle', 'Crucible', 'Drift', 'Echo', 'Halo',
+  'Hollow', 'Maw', 'Reach', 'Remnant', 'Rift', 'Shroud', 'Spindle', 'Veil'
 ] as const;
 
 const SEED_ADJECTIVES = [
-  'amber', 'brisk', 'calm', 'dusky', 'fern', 'gentle', 'hidden', 'ivory',
-  'lucky', 'misty', 'quiet', 'rosy', 'silver', 'tiny', 'velvet', 'windy'
+  'ashen', 'auroral', 'benthic', 'broken', 'echoing', 'glass', 'hollow', 'luminous',
+  'orbital', 'riven', 'silent', 'tidal', 'umbra', 'verdant', 'violet', 'wandering'
 ] as const;
 
 const SEED_NOUNS = [
-  'beacon', 'comet', 'cove', 'dune', 'finch', 'harbour', 'lantern', 'meadow',
-  'moon', 'orchard', 'pebble', 'reef', 'sparrow', 'thistle', 'willow', 'wren'
+  'calyx', 'comet', 'coral', 'ember', 'halo', 'islet', 'lantern', 'maw',
+  'monolith', 'prism', 'reef', 'rift', 'signal', 'spore', 'vault', 'whorl'
 ] as const;
 
 const earthProfile: PlanetProfile = {
   seed: EARTH_SEED,
   name: 'Earth',
   kind: 'Homeworld',
+  archetype: 'earth',
   sky: 0x16243f,
   water: 0x256a8c,
-  hue: 0,
-  saturation: 1,
+  terrain: [0, 0, 0],
+  shore: 0,
+  accent: 0x9fe8ff,
+  cloud: 0xf6f8fa,
+  cloudCount: 14,
+  landBias: 0,
   relief: 1,
   ruggedness: 1
 };
@@ -218,10 +273,15 @@ export function planetProfile(seed: string): PlanetProfile {
     seed,
     name: `${pick(NAME_FIRST, rng)} ${pick(NAME_LAST, rng)}`,
     kind: archetype.kind,
+    archetype: archetype.id,
     sky: archetype.sky,
     water: archetype.water,
-    hue: between(archetype.hue, rng),
-    saturation: between(archetype.saturation, rng),
+    terrain: archetype.terrain,
+    shore: archetype.shore,
+    accent: archetype.accent,
+    cloud: archetype.cloud,
+    cloudCount: Math.round(between(archetype.cloudCount, rng)),
+    landBias: between(archetype.landBias, rng),
     relief: between(archetype.relief, rng),
     ruggedness: between(archetype.ruggedness, rng)
   };

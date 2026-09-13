@@ -22,6 +22,7 @@ import { BOAT_SEAT, LAUNCH_RANGE, Wake, buildBoat, findLaunchPoint } from './boa
 import { buildFlame, buildWindmillBlades, buildWorldProps } from './props';
 import {
   Character,
+  buildAlienCritter,
   buildBear,
   buildCrab,
   buildDeer,
@@ -40,7 +41,7 @@ import { Aurora, SkyAurora } from './aurora';
 import { Constellations, Meteors, Moon, Planets } from './sky';
 import { patchSurface, type SurfaceFx } from './surfaceFx';
 import { ColliderGrid } from './collision';
-import { WONDERS, wonderDir, type Wonder } from './wonders';
+import { WONDERS, wonderAction, wonderDir, type Wonder } from './wonders';
 import { loadFound, saveFound } from './progress';
 import { Weather, weatherFor } from './weather';
 import type { BiomeCaption } from './store';
@@ -48,7 +49,8 @@ import { Shards } from './shards';
 import { Fireworks } from './fireworks';
 import {
   JOURNAL_BIOMES,
-  SPECIES,
+  biomeJournalKey,
+  speciesFor,
   loadJournal,
   loadShards,
   milestoneById,
@@ -317,7 +319,7 @@ export class Game {
     configurePlanet(this.profile);
     setNoiseSeed(seed);
     layoutBiomes(seed);
-    this.clouds = new Clouds(seed);
+    this.clouds = new Clouds(seed, this.profile);
 
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
@@ -351,7 +353,7 @@ export class Game {
     this.scene.add(this.ground, this.water, this.stars, this.constellations.group, this.meteors.group);
     this.scene.add(this.moon.group);
 
-    const props = buildWorldProps(seed);
+    const props = buildWorldProps(seed, this.profile);
     if (props.solid) this.scene.add(props.solid);
     if (props.glow) {
       this.scene.add(props.glow);
@@ -391,6 +393,7 @@ export class Game {
     props.windmillHub.decompose(hubPivot.position, hubPivot.quaternion, _v1);
     this.blades = buildWindmillBlades();
     hubPivot.add(this.blades);
+    this.blades.visible = this.profile.archetype === 'earth';
     this.scene.add(hubPivot);
 
     // Campfire flame. Its light is one of the pooled emitters, registered by
@@ -398,6 +401,7 @@ export class Game {
     const firePivot = new THREE.Group();
     props.fire.decompose(firePivot.position, firePivot.quaternion, _v1);
     this.flame = buildFlame();
+    this.flame.visible = this.profile.archetype === 'earth';
     this.flame.position.y = 0.15;
     firePivot.add(this.flame);
     this.scene.add(firePivot);
@@ -468,37 +472,66 @@ export class Game {
       this.critters.push(c);
       this.scene.add(c.group);
     };
-    spawn(buildSheep(), 'sheep', 'farm', -2.5, -3.5, 3.5, 1.1, 1);
-    spawn(buildSheep(), 'sheep', 'farm', -1.0, -4.5, 3.5, 1.0, 2);
-    spawn(buildSheep(), 'sheep', 'farm', 1.5, -5.5, 3.0, 1.2, 3);
-    spawn(buildGoat(), 'goat', 'farm', 6, 3, 3.0, 1.3, 4);
-    spawn(buildGoat(), 'goat', 'farm', 4.5, -2.0, 3.0, 1.2, 5);
-    spawn(buildBear(), 'polar bear', 'arctic', -4, 5, 5, 1.3, 6);
-    spawn(buildBear(), 'polar bear', 'arctic', 5, -5, 5, 1.1, 7);
-    spawn(buildPenguin(), 'penguin', 'arctic', -6, -4, 3, 0.9, 8);
-    spawn(buildPenguin(), 'penguin', 'arctic', -5.2, -3.2, 3, 0.8, 9);
-    spawn(buildPenguin(), 'penguin', 'arctic', -6.5, -2.4, 3, 1.0, 10);
-    spawn(buildFox(), 'fox', 'forest', 4, 3, 5, 2.2, 11);
-    spawn(buildFox(), 'fox', 'forest', -5, -3, 5, 2.0, 12);
-    spawn(buildRabbit(), 'rabbit', 'forest', 2, -4, 4, 2.6, 13);
-    spawn(buildRabbit(), 'rabbit', 'forest', -3, 5, 4, 2.4, 14);
-    spawn(buildDeer(), 'deer', 'forest', 7, -2, 6, 1.8, 15);
-    spawn(buildCrab(), 'crab', 'shore', -4, 4, 4, 1.4, 16);
-    spawn(buildCrab(), 'crab', 'shore', 3, 5, 4, 1.5, 17);
-    spawn(buildTurtle(), 'turtle', 'shore', -2, -4, 3, 0.7, 18);
-    spawn(buildDuck(), 'duck', 'marsh', -3, 2, 4, 1.2, 19);
-    spawn(buildDuck(), 'duck', 'marsh', -2.2, 2.8, 4, 1.1, 20);
-    spawn(buildDuck(), 'duck', 'marsh', -3.6, 3.4, 4, 1.3, 21);
-    spawn(buildFrog(), 'frog', 'marsh', 4, -3, 3, 1.6, 22);
-    spawn(buildFrog(), 'frog', 'marsh', 1.5, -5, 3, 1.5, 23);
-    spawn(buildDeer(), 'deer', 'grove', -5, 2, 6, 1.9, 24);
-    spawn(buildDeer(), 'deer', 'grove', 4, -3, 6, 1.7, 25);
-    spawn(buildRabbit(0xa08a72), 'rabbit', 'grove', 2, 4, 4, 2.5, 26);
-    spawn(buildRabbit(0xa08a72), 'rabbit', 'grove', -2.5, -4.5, 4, 2.3, 27);
-    // Fennecs: the same fox, bleached by the sun.
-    spawn(buildFox(0xe6c48a), 'fennec fox', 'desert', 5, 2, 7, 2.4, 28);
-    spawn(buildFox(0xe6c48a), 'fennec fox', 'desert', -4, -4, 7, 2.2, 29);
-    spawn(buildRabbit(0xd8c3a0), 'jackrabbit', 'desert', 2, -6, 5, 2.8, 30);
+    if (this.profile.archetype === 'earth') {
+      spawn(buildSheep(), 'sheep', 'farm', -2.5, -3.5, 3.5, 1.1, 1);
+      spawn(buildSheep(), 'sheep', 'farm', -1.0, -4.5, 3.5, 1.0, 2);
+      spawn(buildSheep(), 'sheep', 'farm', 1.5, -5.5, 3.0, 1.2, 3);
+      spawn(buildGoat(), 'goat', 'farm', 6, 3, 3.0, 1.3, 4);
+      spawn(buildGoat(), 'goat', 'farm', 4.5, -2.0, 3.0, 1.2, 5);
+      spawn(buildBear(), 'polar bear', 'arctic', -4, 5, 5, 1.3, 6);
+      spawn(buildBear(), 'polar bear', 'arctic', 5, -5, 5, 1.1, 7);
+      spawn(buildPenguin(), 'penguin', 'arctic', -6, -4, 3, 0.9, 8);
+      spawn(buildPenguin(), 'penguin', 'arctic', -5.2, -3.2, 3, 0.8, 9);
+      spawn(buildPenguin(), 'penguin', 'arctic', -6.5, -2.4, 3, 1.0, 10);
+      spawn(buildFox(), 'fox', 'forest', 4, 3, 5, 2.2, 11);
+      spawn(buildFox(), 'fox', 'forest', -5, -3, 5, 2.0, 12);
+      spawn(buildRabbit(), 'rabbit', 'forest', 2, -4, 4, 2.6, 13);
+      spawn(buildRabbit(), 'rabbit', 'forest', -3, 5, 4, 2.4, 14);
+      spawn(buildDeer(), 'deer', 'forest', 7, -2, 6, 1.8, 15);
+      spawn(buildCrab(), 'crab', 'shore', -4, 4, 4, 1.4, 16);
+      spawn(buildCrab(), 'crab', 'shore', 3, 5, 4, 1.5, 17);
+      spawn(buildTurtle(), 'turtle', 'shore', -2, -4, 3, 0.7, 18);
+      spawn(buildDuck(), 'duck', 'marsh', -3, 2, 4, 1.2, 19);
+      spawn(buildDuck(), 'duck', 'marsh', -2.2, 2.8, 4, 1.1, 20);
+      spawn(buildDuck(), 'duck', 'marsh', -3.6, 3.4, 4, 1.3, 21);
+      spawn(buildFrog(), 'frog', 'marsh', 4, -3, 3, 1.6, 22);
+      spawn(buildFrog(), 'frog', 'marsh', 1.5, -5, 3, 1.5, 23);
+      spawn(buildDeer(), 'deer', 'grove', -5, 2, 6, 1.9, 24);
+      spawn(buildDeer(), 'deer', 'grove', 4, -3, 6, 1.7, 25);
+      spawn(buildRabbit(0xa08a72), 'rabbit', 'grove', 2, 4, 4, 2.5, 26);
+      spawn(buildRabbit(0xa08a72), 'rabbit', 'grove', -2.5, -4.5, 4, 2.3, 27);
+      spawn(buildFox(0xe6c48a), 'fennec fox', 'desert', 5, 2, 7, 2.4, 28);
+      spawn(buildFox(0xe6c48a), 'fennec fox', 'desert', -4, -4, 7, 2.2, 29);
+      spawn(buildRabbit(0xd8c3a0), 'jackrabbit', 'desert', 2, -6, 5, 2.8, 30);
+    } else {
+      const names = speciesFor(this.profile.archetype);
+      const homes: readonly [Exclude<BiomeId, 'ocean'>, number, number][] = [
+        ['forest', 4, 3],
+        ['forest', -4, -3],
+        ['farm', 3, -3],
+        ['farm', -4, 2],
+        ['shore', 3, 4],
+        ['ember', -3, -3],
+        ['arctic', 4, 3],
+        ['arctic', -4, -3],
+        ['desert', 4, -2],
+        ['marsh', -3, 3],
+        ['grove', 3, -4],
+        ['grove', -4, 2]
+      ];
+      homes.forEach(([biome, east, north], i) => {
+        spawn(
+          buildAlienCritter(this.profile.terrain[1], this.profile.accent, i),
+          names[i % names.length]!,
+          biome,
+          east,
+          north,
+          4.5,
+          1.35 + (i % 3) * 0.35,
+          i + 40
+        );
+      });
+    }
 
     this.scene.add(this.clouds.group, this.weather.group, this.hearts.group);
     this.aurora = new Aurora(biomeById('arctic').center, PLANET_RADIUS);
@@ -1039,9 +1072,10 @@ export class Game {
     if (b.id !== this.biomeId) {
       this.biomeId = b.id;
       this.callbacks.onBiome({ name: b.name, kind: b.kind, index: b.index, tagline: b.tagline });
-      if (!this.journal.biomes.includes(b.id)) {
-        this.journal.biomes = [...this.journal.biomes, b.id];
-        if (JOURNAL_BIOMES.every((id) => this.journal.biomes.includes(id))) this.award('cartographer');
+      const journalKey = biomeJournalKey(this.seed, b.id);
+      if (!this.journal.biomes.includes(journalKey)) {
+        this.journal.biomes = [...this.journal.biomes, journalKey];
+        if (JOURNAL_BIOMES.every((id) => this.journal.biomes.includes(biomeJournalKey(this.seed, id)))) this.award('cartographer');
         this.flushJournal(true);
       }
       this.audio.setMood(b.id);
@@ -1523,7 +1557,7 @@ export class Game {
     }
     if (!this.journal.species.includes(c.name)) {
       this.journal.species = [...this.journal.species, c.name];
-      if (SPECIES.every((sp) => this.journal.species.includes(sp))) this.award('zoologist');
+      if (speciesFor(this.profile.archetype).every((sp) => this.journal.species.includes(sp))) this.award('zoologist');
       this.flushJournal(true);
     }
     this.hearts.burst(c.group.position, c.dir, 3);
@@ -1545,7 +1579,13 @@ export class Game {
       !idle && !gem && !this.boating && this.ship.visible && this.shipDir.angleTo(this.dir) * PLANET_RADIUS < INTERACT_RANGE + 0.8;
     const pal = idle || gem || byShip ? null : this.nearestCritter();
     let prompt: Prompt | null = null;
-    if (gem) prompt = { id: gem.wonder.id, action: gem.wonder.action, found: this.found.includes(gem.wonder.id) };
+    if (gem) {
+      prompt = {
+        id: gem.wonder.id,
+        action: wonderAction(gem.wonder, this.profile.archetype === 'earth'),
+        found: this.found.includes(gem.wonder.id)
+      };
+    }
     else if (byShip) {
       const missing = SHIP_PARTS.length - this.shipProgress.parts.length;
       prompt = this.shipProgress.crafted

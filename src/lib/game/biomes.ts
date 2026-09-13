@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { deriveSeed, fbm3, seededRng } from './noise';
+import type { PlanetArchetype, PlanetProfile } from './space';
 
 export type BiomeId =
   | 'forest'
@@ -129,6 +130,50 @@ export const OCEAN: Biome = {
 
 const LAND_BIOMES = BIOMES;
 
+type AlienArchetype = Exclude<PlanetArchetype, 'earth'>;
+type RegionTheme = { names: readonly string[]; ocean: string; tagline: string };
+
+const EARTH_LABELS = BIOMES.map(({ name, kind, tagline }) => ({ name, kind, tagline }));
+const EARTH_OCEAN_LABEL = { name: OCEAN.name, kind: OCEAN.kind, tagline: OCEAN.tagline };
+const REGION_KINDS = ['CANOPY', 'PLAIN', 'SHELF', 'RIFT', 'CROWN', 'WASTE', 'BASIN', 'SANCTUM'] as const;
+const ALIEN_REGIONS: Record<AlienArchetype, RegionTheme> = {
+  bloom: {
+    names: ['Whisper Canopy', 'Pollen Steppe', 'Nectar Shelf', 'Rootfire Rift', 'Pale Crown', 'Singing Flats', 'Lantern Mire', 'Memory Grove'],
+    ocean: 'Mirror Sap',
+    tagline: 'The whole forest answers when one lantern opens.'
+  },
+  reef: {
+    names: ['Kelp Vault', 'Anemone Plain', 'Pearl Shelf', 'Blackwater Vent', 'Foam Crown', 'Tidal Waste', 'Choir Basin', 'Coral Sanctum'],
+    ocean: 'The Worldsea',
+    tagline: 'Currents carry old songs between the islands.'
+  },
+  crystal: {
+    names: ['Prism Thicket', 'Glass Steppe', 'Opal Shelf', 'Sunscar Rift', 'Quartz Crown', 'Chime Waste', 'Mercury Basin', 'Facet Sanctum'],
+    ocean: 'Mercury Deep',
+    tagline: 'Every shard remembers a different sunrise.'
+  },
+  rime: {
+    names: ['Needle Wood', 'Snowglass Plain', 'Blue Shelf', 'Warmth Rift', 'Comet Crown', 'White Waste', 'Melt Basin', 'Halo Sanctum'],
+    ocean: 'Underice',
+    tagline: 'Something warm still moves beneath the ice.'
+  },
+  ember: {
+    names: ['Cinder Spires', 'Ash Plain', 'Obsidian Shelf', 'Furnace Rift', 'Smoke Crown', 'Burning Waste', 'Caldera Basin', 'Forge Sanctum'],
+    ocean: 'Magma Sea',
+    tagline: 'The crust cools for a breath, then begins again.'
+  },
+  fracture: {
+    names: ['Levitating Wood', 'Tilted Plain', 'Broken Shelf', 'Gravity Rift', 'Orbital Crown', 'Quiet Waste', 'Null Basin', 'Echo Sanctum'],
+    ocean: 'The Still Below',
+    tagline: 'Loose stones fall sideways when the moon exhales.'
+  },
+  spore: {
+    names: ['Giant Cap Forest', 'Hyphae Plain', 'Gill Shelf', 'Spore Rift', 'Puffball Crown', 'Dreaming Waste', 'Mycelium Basin', 'Bloom Sanctum'],
+    ocean: 'Inkdew',
+    tagline: 'The ground dreams in rings beneath your feet.'
+  }
+};
+
 let oceanScale = 1.7;
 let oceanStretchX = 1;
 let oceanStretchY = 1;
@@ -139,16 +184,29 @@ let profileLandBias = 0;
 let profileCoastScale = 1;
 let earthProfile = true;
 
-/**
- * Configure the broad land/sea balance without changing the planet radius.
- * Profile values are multipliers centred on Earth's existing terrain.
- */
-export function configureBiomeOcean(relief: number, ruggedness: number, isEarth: boolean): void {
-  const r = THREE.MathUtils.clamp(relief, 0.4, 1.6);
-  const rough = THREE.MathUtils.clamp(ruggedness, 0.4, 1.6);
-  profileLandBias = (r - 1) * 0.28;
-  profileCoastScale = 1 + (rough - 1) * 0.18;
-  earthProfile = isEarth;
+/** Configure continent coverage and the names shown when crossing this world's regions. */
+export function configureBiomeOcean(profile: PlanetProfile): void {
+  const r = THREE.MathUtils.clamp(profile.relief, 0.4, 1.6);
+  const rough = THREE.MathUtils.clamp(profile.ruggedness, 0.4, 1.6);
+  profileLandBias = THREE.MathUtils.clamp(profile.landBias, -0.45, 0.45);
+  profileCoastScale = 1 + (rough - 1) * 0.18 + (r - 1) * 0.06;
+  earthProfile = profile.archetype === 'earth';
+
+  if (profile.archetype === 'earth') {
+    BIOMES.forEach((biome, i) => Object.assign(biome, EARTH_LABELS[i]));
+    Object.assign(OCEAN, EARTH_OCEAN_LABEL);
+    return;
+  }
+
+  const theme = ALIEN_REGIONS[profile.archetype];
+  BIOMES.forEach((biome, i) => {
+    biome.name = theme.names[i]!;
+    biome.kind = REGION_KINDS[i]!;
+    biome.tagline = theme.tagline;
+  });
+  OCEAN.name = theme.ocean;
+  OCEAN.kind = profile.archetype === 'ember' ? 'MAGMA' : profile.archetype === 'reef' ? 'WORLDSEA' : 'ALIEN SEA';
+  OCEAN.tagline = theme.tagline;
 }
 
 /** Uniformly random unit direction. */

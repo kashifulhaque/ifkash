@@ -1,8 +1,9 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
   import { BIOMES, OCEAN } from '../biomes';
-  import { JOURNAL_BIOMES, MILESTONES, SHARD_COUNT, SPECIES, type Journal } from '../journal';
-  import { WONDERS } from '../wonders';
+  import { JOURNAL_BIOMES, MILESTONES, SHARD_COUNT, biomeJournalKey, speciesFor, type Journal } from '../journal';
+  import { EARTH_SEED, planetProfile } from '../space';
+  import { WONDERS, wonderAction } from '../wonders';
 
   export let journal: Journal;
   /** Ids of the wonders found on this planet. */
@@ -14,8 +15,10 @@
 
   const biomes = JOURNAL_BIOMES.map((id) => (id === 'ocean' ? OCEAN : BIOMES.find((b) => b.id === id)!));
 
-  $: biomesSeen = journal.biomes.filter((id) => JOURNAL_BIOMES.includes(id as (typeof JOURNAL_BIOMES)[number])).length;
-  $: speciesSeen = SPECIES.filter((sp) => journal.species.includes(sp)).length;
+  $: profile = planetProfile(seed || EARTH_SEED);
+  $: biomesSeen = JOURNAL_BIOMES.filter((id) => journal.biomes.includes(biomeJournalKey(seed || EARTH_SEED, id))).length;
+  $: species = speciesFor(profile.archetype);
+  $: speciesSeen = species.filter((sp) => journal.species.includes(sp)).length;
   $: earned = MILESTONES.filter((m) => journal.milestones.includes(m.id)).length;
   $: paces = Math.floor(journal.paces);
 
@@ -66,7 +69,7 @@
         {#each WONDERS as w}
           <li class:known={found.includes(w.id)}>
             <span class="mark">{found.includes(w.id) ? '◆' : '◇'}</span>
-            <span class="name">{found.includes(w.id) ? w.title : w.action}</span>
+            <span class="name">{found.includes(w.id) ? w.title : wonderAction(w, profile.archetype === 'earth')}</span>
           </li>
         {/each}
       </ul>
@@ -76,9 +79,12 @@
       <h3>Biomes <span class="tally">{biomesSeen} / {biomes.length}</span></h3>
       <ul class="stamps">
         {#each biomes as b}
-          {@const known = journal.biomes.includes(b.id)}
+          {@const known = journal.biomes.includes(biomeJournalKey(seed || EARTH_SEED, b.id))}
           <li class:known>
-            <span class="swatch" style={`--c:#${b.ground[1].toString(16).padStart(6, '0')}`}></span>
+            <span
+              class="swatch"
+              style={`--c:#${(profile.archetype === 'earth' ? b.ground[1] : profile.terrain[1]).toString(16).padStart(6, '0')}`}
+            ></span>
             <span class="name">{known ? b.name : b.kind.charAt(0) + b.kind.slice(1).toLowerCase()}</span>
           </li>
         {/each}
@@ -86,9 +92,9 @@
     </section>
 
     <section>
-      <h3>Animals befriended <span class="tally">{speciesSeen} / {SPECIES.length}</span></h3>
+      <h3>Lifeforms befriended <span class="tally">{speciesSeen} / {species.length}</span></h3>
       <ul class="stamps">
-        {#each SPECIES as sp}
+        {#each species as sp}
           {@const known = journal.species.includes(sp)}
           <li class:known>
             <span class="mark">{known ? '♥' : '·'}</span>

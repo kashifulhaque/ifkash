@@ -54,7 +54,12 @@ export function hashSeed(label: string): number {
   return h >>> 0;
 }
 
-/** Shareable URL for the given seed on the current origin. */
-export function seedLink(label: string, base: string = typeof location === 'undefined' ? '' : location.origin): string {
-  return `${base}/game?seed=${encodeURIComponent(label)}`;
+/** Shareable URL for a generated world; depth preserves its onward route graph. */
+export function seedLink(
+  label: string,
+  base: string = typeof location === 'undefined' ? '' : location.origin,
+  depth = 0
+): string {
+  const route = depth > 0 ? `&depth=${Math.floor(depth)}` : '';
+  return `${base}/game?seed=${encodeURIComponent(label)}${route}`;
 }

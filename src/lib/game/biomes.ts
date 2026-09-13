@@ -129,6 +129,28 @@ export const OCEAN: Biome = {
 
 const LAND_BIOMES = BIOMES;
 
+let oceanScale = 1.7;
+let oceanStretchX = 1;
+let oceanStretchY = 1;
+let oceanStretchZ = 1;
+let oceanWarp = 0;
+let layoutLandBias = 0;
+let profileLandBias = 0;
+let profileCoastScale = 1;
+let earthProfile = true;
+
+/**
+ * Configure the broad land/sea balance without changing the planet radius.
+ * Profile values are multipliers centred on Earth's existing terrain.
+ */
+export function configureBiomeOcean(relief: number, ruggedness: number, isEarth: boolean): void {
+  const r = THREE.MathUtils.clamp(relief, 0.4, 1.6);
+  const rough = THREE.MathUtils.clamp(ruggedness, 0.4, 1.6);
+  profileLandBias = (r - 1) * 0.28;
+  profileCoastScale = 1 + (rough - 1) * 0.18;
+  earthProfile = isEarth;
+}
+
 /** Uniformly random unit direction. */
 function randomDir(rng: () => number, out: THREE.Vector3): THREE.Vector3 {
   const z = rng() * 2 - 1;
@@ -146,6 +168,24 @@ function randomDir(rng: () => number, out: THREE.Vector3): THREE.Vector3 {
  */
 export function layoutBiomes(seed: number): void {
   const rng = seededRng(deriveSeed(seed, 2));
+  const oceanRng = seededRng(deriveSeed(seed, 23));
+  if (earthProfile) {
+    oceanScale = 1.7;
+    oceanStretchX = 1;
+    oceanStretchY = 1;
+    oceanStretchZ = 1;
+    oceanWarp = 0;
+    layoutLandBias = 0;
+  } else {
+    // A separate stream changes continental scale, aspect, and overall sea
+    // coverage without disturbing the biome centres or prop streams.
+    oceanScale = 1.48 + oceanRng() * 0.48;
+    oceanStretchX = 0.82 + oceanRng() * 0.38;
+    oceanStretchY = 0.82 + oceanRng() * 0.38;
+    oceanStretchZ = 0.82 + oceanRng() * 0.38;
+    oceanWarp = (oceanRng() - 0.5) * 0.42;
+    layoutLandBias = (oceanRng() - 0.5) * 0.2;
+  }
   const centers = LAND_BIOMES.map((b) => b.center);
   const cand = new THREE.Vector3();
   for (let i = 0; i < centers.length; i++) {
@@ -212,15 +252,28 @@ export function nearestCenterAngle(d: THREE.Vector3): number {
  * belt around the south so the planet reads as islands rather than one blob.
  */
 export function oceanField(d: THREE.Vector3): number {
-  const n = fbm3(d.x * 1.7 + 11, d.y * 1.7 - 2, d.z * 1.7 + 7, 4);
+  const scale = oceanScale * profileCoastScale;
+  const n =
+    fbm3(
+      d.x * scale * oceanStretchX + 11,
+      d.y * scale * oceanStretchY - 2,
+      d.z * scale * oceanStretchZ + 7,
+      4
+    ) +
+    oceanWarp * fbm3(d.z * 3.1 - 6, d.x * 2.2 + 13, d.y * 2.7 + 4, 3);
   const keep = THREE.MathUtils.smoothstep(nearestCenterAngle(d), 0.34, 0.78); // 0 near centres
   // Southern belt bias: below the equator the sea wins more often.
   const south = THREE.MathUtils.smoothstep(-d.y, 0.1, 0.9) * 0.35;
   // Near a centre the noise is damped and a strong land bias added, so the
   // heart of a biome is dry whatever the seed — landmarks and wonders are
-  // placed relative to it and cannot be allowed to fall in the sea. Far from
-  // every centre the bias reverses and the noise carves the coastlines.
-  return n * (0.35 + 0.65 * keep) + 0.6 * (1 - keep) - keep * (0.22 + south);
+  // placed relative to it and cannot be allowed to fall in the sea. Profile
+  // and seed biases fade out inside that protected region.
+  return (
+    n * (0.35 + 0.65 * keep) +
+    0.6 * (1 - keep) -
+    keep * (0.22 + south) +
+    keep * (profileLandBias + layoutLandBias)
+  );
 }
 
 export function isOcean(d: THREE.Vector3): boolean {

@@ -3,8 +3,19 @@ import { Input } from './input';
 import { Ambience } from './audio';
 import { biomeAt, biomeById, isOcean, layoutBiomes, type BiomeId } from './biomes';
 import { setNoiseSeed } from './noise';
-import { dailySeedLabel, hashSeed } from './seed';
-import { PLANET_RADIUS, SEA_LEVEL, buildGround, buildStars, buildWater, tangentBasis, walkRadius, offsetDir } from './planet';
+import { hashSeed } from './seed';
+import {
+  PLANET_RADIUS,
+  SEA_LEVEL,
+  buildGround,
+  buildStars,
+  buildWater,
+  configurePlanet,
+  tangentBasis,
+  walkRadius,
+  offsetDir,
+  surfaceFrame
+} from './planet';
 import { NIGHT } from './night';
 import { LightPool, emitter, type Emitter } from './lights';
 import { BOAT_SEAT, LAUNCH_RANGE, Wake, buildBoat, findLaunchPoint } from './boat';
@@ -47,6 +58,21 @@ import {
   type Milestone,
   type MilestoneId
 } from './journal';
+import { ShipParts, buildSpaceship } from './spaceship';
+import {
+  EARTH_SEED,
+  MAX_FUEL,
+  SHARD_FUEL,
+  SHIP_PARTS,
+  loadShipProgress,
+  planetProfile,
+  saveShipProgress,
+  spaceDestinations,
+  type PlanetProfile,
+  type ShipProgress,
+  type SpaceDestination,
+  type SpaceStatus
+} from './space';
 
 /** Interaction card. `kicker` overrides the wonder wording, for example for the boat. */
 export type Prompt = { id: string; action: string; found: boolean; kicker?: string };
@@ -54,6 +80,8 @@ export type Prompt = { id: string; action: string; found: boolean; kicker?: stri
 export type GameOptions = {
   /** World seed label. Defaults to today's planet. See `seed.ts`. */
   seed?: string;
+  /** Number of outward jumps made from Earth. */
+  depth?: number;
 };
 
 export type GameCallbacks = {
@@ -75,6 +103,12 @@ export type GameCallbacks = {
   onMilestone: (m: Milestone) => void;
   /** The player asked for the journal. */
   onJournalOpen: () => void;
+  /** Ship inventory or fuel changed. */
+  onSpace: (status: SpaceStatus) => void;
+  /** The player boarded their ship and needs a destination. */
+  onNavigate: (destinations: SpaceDestination[]) => void;
+  /** A ship part, crafting, or refuelling event needs a toast. */
+  onSpaceNotice: (notice: { kicker: string; text: string }) => void;
 };
 
 // Tuned against the explorer's stride: `character.ts` solves the walk cycle
@@ -141,6 +175,11 @@ export class Game {
   found: string[];
   /** The traveller's journal, shared across every planet. */
   journal: Journal;
+  /** Procedural identity and visual traits of the current planet. */
+  readonly profile: PlanetProfile;
+  /** Number of outward jumps made from Earth. */
+  readonly depth: number;
+  private shipProgress: ShipProgress;
 
   private renderer: THREE.WebGLRenderer;
   private scene = new THREE.Scene();
@@ -174,6 +213,11 @@ export class Game {
   private stuckTime = 0;
   private targetRing: THREE.Mesh;
   private colliders: ColliderGrid;
+
+  // Starship: salvage is scattered on Earth; the landed ship follows the player between worlds.
+  private parts: ShipParts | null = null;
+  private ship: THREE.Group;
+  private shipDir = new THREE.Vector3();
 
   // Boat: one rowboat that is launched from a shore, sailed, and docked where it lands.
   private boat: THREE.Group;
@@ -245,13 +289,17 @@ export class Game {
     this.found = loadFound();
     this.journal = loadJournal();
 
-    // Seed the generators before anything reads noise or biome centres.
-    this.seed = options.seed ?? dailySeedLabel();
+    // Seed every generator before anything reads terrain or biome state.
+    this.seed = options.seed ?? EARTH_SEED;
+    this.depth = this.seed === EARTH_SEED ? 0 : Math.max(1, Math.floor(options.depth ?? 1));
+    this.profile = planetProfile(this.seed);
+    this.shipProgress = loadShipProgress();
     if (!this.journal.planets.includes(this.seed)) {
       this.journal.planets = [...this.journal.planets, this.seed];
       this.journalDirty = true;
     }
     const seed = hashSeed(this.seed);
+    configurePlanet(this.profile);
     setNoiseSeed(seed);
     layoutBiomes(seed);
     this.clouds = new Clouds(seed);
@@ -262,7 +310,7 @@ export class Game {
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.15;
-    this.scene.background = NIGHT.sky.clone();
+    this.scene.background = new THREE.Color(this.profile.sky);
 
     this.camera = new THREE.PerspectiveCamera(42, 1, 0.1, 1400);
 
@@ -298,6 +346,24 @@ export class Game {
     if (props.night) this.scene.add(props.night);
     for (const e of props.lights) this.lights.add(e);
     this.colliders = new ColliderGrid(props.colliders);
+    const fire = wonderDir(WONDERS[0]);
+    this.shipDir.copy(fire);
+    offsetDir(this.shipDir, 1.1, -1.8);
+    for (let i = 0; i < 10 && isOcean(this.shipDir); i++) offsetDir(this.shipDir, -0.11, 0.18);
+    this.ship = buildSpaceship(this.shipProgress.crafted);
+    surfaceFrame(this.shipDir, -0.35, _m, 0.08).decompose(this.ship.position, this.ship.quaternion, this.ship.scale);
+    this.ship.visible = this.seed === EARTH_SEED || this.shipProgress.crafted;
+    this.scene.add(this.ship);
+    if (this.seed === EARTH_SEED && !this.shipProgress.crafted) {
+      this.parts = new ShipParts(
+        seed,
+        this.colliders,
+        this.lights,
+        this.shipProgress.parts,
+        [this.shipDir, ...WONDERS.map((wonder) => wonderDir(wonder))]
+      );
+      this.scene.add(this.parts.group);
+    }
     this.shards = new Shards(seed, this.colliders, this.lights, loadShards(this.seed));
     this.scene.add(this.shards.group, this.fireworks.group);
     this.fireworks.onBurst = () => this.audio.pop();
@@ -426,7 +492,6 @@ export class Game {
     if (this.found.includes('blog')) this.lampOn = true;
 
     // Player starts a few steps from the campfire, facing it.
-    const fire = wonderDir(WONDERS[0]);
     this.dir.copy(fire);
     offsetDir(this.dir, 1.4, -3.6);
     // Some seeds put that spot in the sea; step back toward the fire until it is dry land.
@@ -452,6 +517,7 @@ export class Game {
 
     this.input = new Input(canvas);
     this.input.onFirstGesture(() => this.exitIntro());
+    this.callbacks.onSpace(this.spaceStatus);
     this.applyLighting();
 
     this.resize();
@@ -469,6 +535,7 @@ export class Game {
       this.targetRing.visible = false;
       this.input.touchMove.x = 0;
       this.input.touchMove.y = 0;
+      this.input.touchRun = false;
     }
   }
 
@@ -479,6 +546,45 @@ export class Game {
   /** Starlight shards collected on this planet, and how many it holds. */
   get shardProgress(): { found: number; total: number } {
     return { found: this.shards.foundCount, total: this.shards.total };
+  }
+
+  /** Current ship objective, fuel, and planet identity for the HUD. */
+  get spaceStatus(): SpaceStatus {
+    return {
+      parts: this.parts?.foundCount ?? this.shipProgress.parts.length,
+      totalParts: SHIP_PARTS.length,
+      crafted: this.shipProgress.crafted,
+      fuel: this.shipProgress.fuel,
+      maxFuel: MAX_FUEL,
+      planetName: this.profile.name,
+      planetKind: this.profile.kind,
+      depth: this.depth,
+      isEarth: this.seed === EARTH_SEED
+    };
+  }
+
+  /** Publish the current planet's three deterministic onward routes. */
+  openNavigation(): void {
+    if (!this.shipProgress.crafted) return;
+    this.audio.start();
+    this.exitIntro();
+    this.callbacks.onNavigate(spaceDestinations(this.seed, this.depth));
+  }
+
+  /** Spend fuel for a generated route. Persistence happens before the page swaps worlds. */
+  travelTo(destination: SpaceDestination): boolean {
+    if (!this.shipProgress.crafted) return false;
+    const route = spaceDestinations(this.seed, this.depth).find(
+      (candidate) =>
+        candidate.seed === destination.seed &&
+        candidate.depth === destination.depth &&
+        candidate.fuelCost === destination.fuelCost
+    );
+    if (!route || route.fuelCost > this.shipProgress.fuel) return false;
+    this.shipProgress = { ...this.shipProgress, fuel: this.shipProgress.fuel - route.fuelCost };
+    saveShipProgress(this.shipProgress);
+    this.callbacks.onSpace(this.spaceStatus);
+    return true;
   }
 
   toggleMute(): boolean {
@@ -708,8 +814,10 @@ export class Game {
 
     if (input.consumeInteract() && !this.overlayOpen && !this.globe) {
       const gem = this.nearestGem();
-      const pal = gem ? null : this.nearestCritter();
+      const byShip = !gem && !this.boating && this.ship.visible && this.shipDir.angleTo(this.dir) * PLANET_RADIUS < INTERACT_RANGE + 0.8;
+      const pal = gem || byShip ? null : this.nearestCritter();
       if (gem) this.findWonder(gem);
+      else if (byShip) this.useShip();
       else if (pal) this.petCritter(pal);
       else if (!this.boating && this.launchTarget()) this.launchBoat();
     }
@@ -814,7 +922,10 @@ export class Game {
     if (this.character.footStrike && !this.airborne) this.audio.step(this.animSpeed > 0.75);
     this.placeCharacter();
     this.updateBiome(dt);
-    if (moving) this.pickUpShard();
+    if (moving) {
+      this.pickUpShard();
+      this.pickUpPart();
+    }
   }
 
   /** Collect a shard the explorer has walked onto. */
@@ -826,11 +937,38 @@ export class Game {
     this.journal.shards += 1;
     this.journalDirty = true;
     this.callbacks.onShards(this.shards.foundCount, this.shards.total);
+    if (this.shipProgress.crafted && this.shipProgress.fuel < MAX_FUEL) {
+      const before = this.shipProgress.fuel;
+      this.shipProgress = { ...this.shipProgress, fuel: Math.min(MAX_FUEL, before + SHARD_FUEL) };
+      saveShipProgress(this.shipProgress);
+      this.callbacks.onSpace(this.spaceStatus);
+      this.callbacks.onSpaceNotice({
+        kicker: 'Starship fuel',
+        text: `Starlight refined · +${this.shipProgress.fuel - before} fuel`
+      });
+    }
     if (this.shards.foundCount >= this.shards.total) {
       this.fireworks.celebrate(this.character.group.position, 4.5);
       this.award('starfall');
     }
     this.flushJournal(true);
+  }
+
+  /** Collect one of Earth's five scattered ship parts. */
+  private pickUpPart(): void {
+    if (!this.parts || this.shipProgress.crafted) return;
+    const idx = this.parts.collect(this.dir);
+    if (idx < 0) return;
+    this.shipProgress = { ...this.shipProgress, parts: this.parts.foundIndices };
+    saveShipProgress(this.shipProgress);
+    this.audio.sparkle();
+    this.callbacks.onSpace(this.spaceStatus);
+    const complete = this.shipProgress.parts.length >= SHIP_PARTS.length;
+    this.callbacks.onSpaceNotice({
+      kicker: complete ? 'Starship ready' : 'Part recovered',
+      text: complete ? `${SHIP_PARTS[idx]} found · return to the landing pad` : `${SHIP_PARTS[idx]} · ${this.shipProgress.parts.length}/${SHIP_PARTS.length}`
+    });
+    this.promptId = null;
   }
 
   /** Biome caption and shore scan, on a quarter-second cadence. */
@@ -1082,6 +1220,7 @@ export class Game {
     this.constellations.update(t);
     this.meteors.update(dt);
     this.shards.update(dt, t);
+    this.parts?.update(dt, t);
     this.fireworks.update(dt);
     // A streak counts as seen if it crosses the sky while the player is on the ground.
     if (this.meteors.group.visible) {
@@ -1127,7 +1266,7 @@ export class Game {
    * so this runs once, at build time.
    */
   private applyLighting(): void {
-    (this.water.material as THREE.MeshStandardMaterial).color.copy(NIGHT.water);
+    // `buildWater` already applies the current planet profile.
     (this.stars.material as THREE.PointsMaterial).opacity = 1;
     this.constellations.setOpacity(1);
     this.meteors.setOpacity(1);
@@ -1158,6 +1297,51 @@ export class Game {
     if (this.journal.planets.length >= 3) this.award('traveller');
     saveJournal(this.journal);
     this.callbacks.onJournal(this.journal);
+  }
+
+  // ---------------------------------------------------------------- starship
+
+
+  private useShip(): void {
+    this.audio.start();
+    this.exitIntro();
+    if (!this.shipProgress.crafted) {
+      const missing = SHIP_PARTS.length - this.shipProgress.parts.length;
+      if (missing > 0) {
+        this.callbacks.onSpaceNotice({
+          kicker: 'Wrecked starship',
+          text: `Recover ${missing} more ${missing === 1 ? 'part' : 'parts'} before crafting`
+        });
+        return;
+      }
+      this.shipProgress = { ...this.shipProgress, crafted: true, fuel: MAX_FUEL };
+      saveShipProgress(this.shipProgress);
+      this.replaceShip(true);
+      this.fireworks.celebrate(this.ship.position, 6);
+      this.audio.sparkle();
+      this.callbacks.onSpace(this.spaceStatus);
+      this.callbacks.onSpaceNotice({
+        kicker: 'Starship crafted',
+        text: 'Engines online · board the ship to venture into space'
+      });
+      this.promptId = null;
+      return;
+    }
+    this.callbacks.onNavigate(spaceDestinations(this.seed, this.depth));
+  }
+
+  private replaceShip(crafted: boolean): void {
+    const old = this.ship;
+    this.scene.remove(old);
+    old.traverse((object) => {
+      if (!(object instanceof THREE.Mesh)) return;
+      object.geometry.dispose();
+      const materials = Array.isArray(object.material) ? object.material : [object.material];
+      for (const material of materials) material.dispose();
+    });
+    this.ship = buildSpaceship(crafted);
+    surfaceFrame(this.shipDir, -0.35, _m, 0.08).decompose(this.ship.position, this.ship.quaternion, this.ship.scale);
+    this.scene.add(this.ship);
   }
 
   // ---------------------------------------------------------------- wonders
@@ -1222,10 +1406,19 @@ export class Game {
   private updatePrompt(): void {
     const idle = this.globe || this.overlayOpen || this.photo;
     const gem = idle ? null : this.nearestGem();
-    const pal = idle || gem ? null : this.nearestCritter();
+    const byShip =
+      !idle && !gem && !this.boating && this.ship.visible && this.shipDir.angleTo(this.dir) * PLANET_RADIUS < INTERACT_RANGE + 0.8;
+    const pal = idle || gem || byShip ? null : this.nearestCritter();
     let prompt: Prompt | null = null;
     if (gem) prompt = { id: gem.wonder.id, action: gem.wonder.action, found: this.found.includes(gem.wonder.id) };
-    else if (pal) {
+    else if (byShip) {
+      const missing = SHIP_PARTS.length - this.shipProgress.parts.length;
+      prompt = this.shipProgress.crafted
+        ? { id: 'ship-board', action: 'Board ship', found: false, kicker: `${this.shipProgress.fuel}/${MAX_FUEL} fuel · choose a planet` }
+        : missing === 0
+          ? { id: 'ship-craft', action: 'Craft your spaceship', found: false, kicker: 'All five parts recovered' }
+          : { id: `ship-parts-${missing}`, action: `Recover ${missing} more ${missing === 1 ? 'part' : 'parts'}`, found: false, kicker: 'Wrecked starship' };
+    } else if (pal) {
       prompt = {
         id: `pet-${pal.id}${pal.following ? '-friend' : pal.petted ? '-again' : ''}`,
         action: pal.following ? `Pet your ${pal.name}` : pal.petted ? `Say hello to the ${pal.name}` : `Pet the ${pal.name}`,

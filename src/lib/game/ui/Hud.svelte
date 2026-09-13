@@ -1,11 +1,23 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
+  import { MAX_FUEL, SHIP_PARTS, type SpaceStatus } from '../space';
   import type { BiomeCaption } from '../store';
 
   export let found = 0;
   export let total = 7;
   /** Starlight shards collected on this planet. */
   export let shards: { found: number; total: number } = { found: 0, total: 0 };
+  export let space: SpaceStatus = {
+    parts: 0,
+    totalParts: SHIP_PARTS.length,
+    crafted: false,
+    fuel: 0,
+    maxFuel: MAX_FUEL,
+    planetName: 'Earth',
+    planetKind: 'Homeworld',
+    depth: 0,
+    isEarth: true
+  };
   export let biome: BiomeCaption | null = null;
   export let prompt: { id: string; action: string; found: boolean; kicker?: string } | null = null;
   export let muted = false;
@@ -13,7 +25,19 @@
   export let intro = true;
   export let isTouch = false;
 
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    globe: void;
+    mute: void;
+    photo: void;
+    journal: void;
+    help: void;
+    interact: void;
+    navigation: void;
+    earth: void;
+  }>();
+
+  $: boundedFuel = Math.min(Math.max(space.fuel, 0), Math.max(space.maxFuel, 0));
+  $: planetKind = space.planetKind.replace(/[-_]/g, ' ');
 </script>
 
 <div class="hud" aria-live="polite">
@@ -50,8 +74,46 @@
       </span>
     {/if}
   </div>
+  <section class="mission" class:ship-ready={space.crafted} aria-label="Journey objective">
+    <p class="mission-place">
+      {space.planetName}
+      <span>· {planetKind}{space.depth > 0 ? ` · depth ${space.depth}` : ''}</span>
+    </p>
+    {#if space.crafted}
+      <div class="fuel-heading">
+        <strong>Ship ready · launch</strong>
+        <span>{boundedFuel} / {space.maxFuel} fuel</span>
+      </div>
+      <progress value={boundedFuel} max={Math.max(space.maxFuel, 1)} aria-label={`Ship fuel: ${boundedFuel} of ${space.maxFuel}`}></progress>
+    {:else if space.parts >= space.totalParts}
+      <div class="mission-line complete">
+        <strong>All five parts recovered</strong>
+        <span>Craft at the landing pad</span>
+      </div>
+    {:else}
+      <div class="mission-line">
+        <strong>Recover the five ship parts</strong>
+        <span>{space.parts} / {space.totalParts}</span>
+      </div>
+    {/if}
+  </section>
 
   <div class="actions">
+    {#if space.crafted}
+      <button class="round" on:click={() => dispatch('navigation')} aria-label="Open star map and launch" title="Open star map">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M14.5 4.5c2.2-1.1 4-1.1 5-1-0.1 1-0.1 2.8-1.2 5L14 12.8l-3-3z" />
+          <path d="M11 9.8 7.5 9 5 11.5l4 1.5 1.5 4 2.5-2.5-.8-3.5M15.5 8.5h.01" />
+        </svg>
+      </button>
+    {/if}
+    {#if !space.isEarth}
+      <button class="round" on:click={() => dispatch('earth')} aria-label="Teleport home to Earth for free" title="Return to Earth · free">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="m4 11 8-7 8 7M6.5 9.5V20h11V9.5M9.5 20v-6h5v6" />
+        </svg>
+      </button>
+    {/if}
     <button class="round" class:active={globeView} on:click={() => dispatch('globe')} aria-label={globeView ? 'Return to the ground' : 'View the whole planet'} title="Globe view (M)">
       <svg viewBox="0 0 24 24" aria-hidden="true">
         <circle cx="12" cy="12" r="9" />
@@ -255,6 +317,82 @@
     color: #c9b3ff;
   }
 
+  /* Journey objective */
+  .mission {
+    position: absolute;
+    top: 64px;
+    left: 50%;
+    width: min(290px, calc(100% - 32px));
+    transform: translateX(-50%);
+    padding: 9px 13px 10px;
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    background: var(--glass);
+    backdrop-filter: blur(10px);
+  }
+  .mission.ship-ready {
+    border-color: rgba(233, 196, 106, 0.35);
+  }
+  .mission-place {
+    margin: 0 0 5px;
+    overflow: hidden;
+    color: #fbf8f0;
+    font-size: 0.62rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-overflow: ellipsis;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .mission-place span {
+    color: rgba(242, 239, 230, 0.5);
+    font-weight: 400;
+  }
+  .mission-line,
+  .fuel-heading {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 0.68rem;
+  }
+  .mission-line strong,
+  .fuel-heading strong {
+    color: rgba(242, 239, 230, 0.82);
+    font-weight: 500;
+  }
+  .mission-line span,
+  .fuel-heading span {
+    flex: none;
+    color: rgba(242, 239, 230, 0.55);
+  }
+  .mission-line.complete strong,
+  .fuel-heading strong {
+    color: #e9c46a;
+  }
+  .mission progress {
+    display: block;
+    width: 100%;
+    height: 4px;
+    margin-top: 7px;
+    overflow: hidden;
+    border: 0;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.09);
+    color: #e9c46a;
+  }
+  .mission progress::-webkit-progress-bar {
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.09);
+  }
+  .mission progress::-webkit-progress-value {
+    border-radius: 999px;
+    background: #e9c46a;
+  }
+  .mission progress::-moz-progress-bar {
+    border-radius: 999px;
+    background: #e9c46a;
+  }
   /* Round buttons */
   .actions {
     position: absolute;
@@ -466,8 +604,13 @@
       top: 56px;
       padding: 6px 12px;
     }
+    .mission {
+      top: 94px;
+      padding: 8px 11px 9px;
+    }
     .actions {
       top: 12px;
+      gap: 6px;
       right: 12px;
     }
     .round {
@@ -476,7 +619,7 @@
     }
     .caption {
       left: 14px;
-      top: 100px;
+      top: 160px;
       bottom: auto;
       max-width: 220px;
     }

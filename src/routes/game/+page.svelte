@@ -5,7 +5,8 @@
   import { name } from '$lib/content';
   import { gameState, initialState } from '$lib/game/store';
   import { WONDERS } from '$lib/game/wonders';
-  import { resolveSeedLabel } from '$lib/game/seed';
+  import { normalizeSeedLabel } from '$lib/game/seed';
+  import { EARTH_SEED, type SpaceDestination } from '$lib/game/space';
   import type { Game, GameCallbacks } from '$lib/game/Game';
   import Hud from '$lib/game/ui/Hud.svelte';
   import WonderPanel from '$lib/game/ui/WonderPanel.svelte';
@@ -13,12 +14,17 @@
   import TouchControls from '$lib/game/ui/TouchControls.svelte';
   import PhotoBar from '$lib/game/ui/PhotoBar.svelte';
   import JournalPanel from '$lib/game/ui/JournalPanel.svelte';
+  import NavigationPanel from '$lib/game/ui/NavigationPanel.svelte';
 
   let canvas: HTMLCanvasElement;
   let game: Game | null = null;
+  let GameConstructor: typeof Game | null = null;
   let destroyed = false;
+  let isTouch = false;
   let justFound = false;
   let saving = false;
+  let travellingTo: SpaceDestination | null = null;
+  $: travelColor = travellingTo ? `#${(travellingTo.color & 0xffffff).toString(16).padStart(6, '0')}` : '#256a8c';
   type Toast = NonNullable<(typeof initialState)['toast']>;
   /** Toast to show once the wonder panel closes, for example after the seventh find. */
   let pendingToast: Omit<Toast, 'id'> | null = null;
@@ -36,13 +42,13 @@
       },
       onOpenWonder: (wonder) => {
         game?.setOverlayOpen(true);
-        gameState.update((s) => ({ ...s, openWonder: wonder, help: false }));
+        gameState.update((s) => ({ ...s, openWonder: wonder, help: false, journalOpen: false, navigationOpen: false }));
       },
       onGlobe: (globeView) => gameState.update((s) => ({ ...s, globeView })),
       onIntroEnd: () => gameState.update((s) => ({ ...s, intro: false })),
       onHelp: () => toggleHelp(),
       onEscape: () => {
-        if ($gameState.openWonder || $gameState.help || $gameState.journalOpen) closeOverlays();
+        if ($gameState.openWonder || $gameState.help || $gameState.journalOpen || $gameState.navigationOpen) closeOverlays();
         else if ($gameState.photo) game?.setPhoto(false);
       },
       onPhoto: (photo) => gameState.update((s) => ({ ...s, photo })),
@@ -50,52 +56,116 @@
       onShards: (found, total) => gameState.update((s) => ({ ...s, shards: { found, total } })),
       onMilestone: (m) => {
         const toast = { kicker: 'Milestone', text: `${m.title} · ${m.blurb}` };
-        // The wonder panel is about to open on the seventh find; hold the toast until it closes.
         if ($gameState.openWonder || m.id === 'wonders') pendingToast = toast;
         else showToast(toast);
       },
-      onJournalOpen: () => toggleJournal()
+      onJournalOpen: () => toggleJournal(),
+      onSpace: (space) => gameState.update((s) => ({ ...s, space })),
+      onNavigate: (destinations) => {
+        game?.setOverlayOpen(true);
+        gameState.update((s) => ({
+          ...s,
+          destinations,
+          navigationOpen: true,
+          openWonder: null,
+          help: false,
+          journalOpen: false
+        }));
+      },
+      onSpaceNotice: (notice) => showToast(notice)
     };
   }
 
-  onMount(async () => {
-    if (!browser) return;
-    const isTouch = window.matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window;
-    const seed = resolveSeedLabel(window.location.search);
-    gameState.update((s) => ({ ...s, isTouch, total: WONDERS.length, seed }));
-    const mod = await import('$lib/game/Game');
-    // The layout's full-width branch can remount this page mid-import.
-    if (destroyed || !canvas) return;
+  function locationPlanet(): { seed: string; depth: number } {
+    const params = new URLSearchParams(window.location.search);
+    const seed = normalizeSeedLabel(params.get('seed')) ?? EARTH_SEED;
+    const rawDepth = Number(params.get('depth'));
+    const depth = seed === EARTH_SEED ? 0 : Number.isInteger(rawDepth) && rawDepth > 0 ? rawDepth : 1;
+    return { seed, depth };
+  }
+
+  function updatePlanetUrl(seed: string, depth: number, mode: 'push' | 'replace'): void {
+    const url = new URL(window.location.href);
+    if (seed === EARTH_SEED) {
+      url.searchParams.delete('seed');
+      url.searchParams.delete('depth');
+    } else {
+      url.searchParams.set('seed', seed);
+      url.searchParams.set('depth', String(depth));
+    }
+    window.history[mode === 'push' ? 'pushState' : 'replaceState']({}, '', `${url.pathname}${url.search}${url.hash}`);
+  }
+
+  function createPlanet(seed: string, depth: number, historyMode: 'push' | 'replace' | null): void {
+    if (!GameConstructor || destroyed || !canvas) return;
+    game?.dispose();
+    game = null;
+    const retainedToast = $gameState.toast;
+    gameState.set({
+      ...initialState,
+      isTouch,
+      total: WONDERS.length,
+      seed,
+      toast: retainedToast
+    });
+    if (historyMode) updatePlanetUrl(seed, depth, historyMode);
     try {
-      game = new mod.Game(canvas, makeCallbacks(), { seed });
+      const nextGame = new GameConstructor(canvas, makeCallbacks(), { seed, depth });
+      game = nextGame;
+      gameState.update((s) => ({
+        ...s,
+        ready: true,
+        found: nextGame.found,
+        muted: nextGame.audio.muted,
+        journal: nextGame.journal,
+        shards: nextGame.shardProgress,
+        space: nextGame.spaceStatus
+      }));
+      if (dev) (window as unknown as Record<string, unknown>).__game = nextGame;
     } catch (err) {
       console.error('WebGL init failed', err);
       gameState.update((s) => ({ ...s, webglFailed: true }));
       goto('/');
-      return;
     }
-    gameState.update((s) => ({
-      ...s,
-      ready: true,
-      found: game!.found,
-      muted: game!.audio.muted,
-      journal: game!.journal,
-      shards: game!.shardProgress
-    }));
-    if (dev) (window as unknown as Record<string, unknown>).__game = game;
+  }
+
+  onMount(async () => {
+    if (!browser) return;
+    isTouch = window.matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window;
+    const mod = await import('$lib/game/Game');
+    if (destroyed || !canvas) return;
+    GameConstructor = mod.Game;
+    const current = locationPlanet();
+    createPlanet(current.seed, current.depth, null);
+    window.addEventListener('popstate', handlePopState);
   });
 
   onDestroy(() => {
     destroyed = true;
     clearTimeout(toastTimer);
+    if (browser) window.removeEventListener('popstate', handlePopState);
     game?.dispose();
     game = null;
     gameState.set({ ...initialState });
   });
 
-  function closeOverlays() {
+  function handlePopState(): void {
+    if (!GameConstructor) return;
+    travellingTo = null;
+    const current = locationPlanet();
+    createPlanet(current.seed, current.depth, null);
+  }
+
+  function closeOverlays(): void {
     justFound = false;
-    gameState.update((s) => ({ ...s, openWonder: null, help: false, journalOpen: false }));
+    gameState.update((s) => ({
+      ...s,
+      openWonder: null,
+      help: false,
+      journalOpen: false,
+      navigationOpen: false,
+      destinations: []
+    }));
     game?.setOverlayOpen(false);
     if (pendingToast) {
       showToast(pendingToast);
@@ -103,24 +173,24 @@
     }
   }
 
-  function showToast(toast: Omit<Toast, 'id'>) {
+  function showToast(toast: Omit<Toast, 'id'>): void {
     clearTimeout(toastTimer);
     const id = Date.now();
     gameState.update((s) => ({ ...s, toast: { id, ...toast } }));
     toastTimer = setTimeout(() => gameState.update((s) => (s.toast?.id === id ? { ...s, toast: null } : s)), 7000);
   }
 
-  function toggleJournal() {
+  function toggleJournal(): void {
     if ($gameState.journalOpen) {
       closeOverlays();
       return;
     }
     game?.setOverlayOpen(true);
-    gameState.update((s) => ({ ...s, journalOpen: true, help: false, openWonder: null }));
+    gameState.update((s) => ({ ...s, journalOpen: true, help: false, openWonder: null, navigationOpen: false }));
   }
 
   /** Photo mode: render a frame and download it as a PNG named after the seed. */
-  async function savePhoto() {
+  async function savePhoto(): Promise<void> {
     if (!game || saving) return;
     saving = true;
     try {
@@ -137,33 +207,60 @@
     }
   }
 
-  function toggleHelp() {
+  function toggleHelp(): void {
     if ($gameState.help) {
       closeOverlays();
       return;
     }
     game?.setOverlayOpen(true);
-    gameState.update((s) => ({ ...s, help: true, openWonder: null, journalOpen: false }));
+    gameState.update((s) => ({ ...s, help: true, openWonder: null, journalOpen: false, navigationOpen: false }));
   }
 
-  function toggleMute() {
+  function toggleMute(): void {
     if (!game) return;
     const muted = game.toggleMute();
     gameState.update((s) => ({ ...s, muted }));
   }
 
-  function interactFromHud() {
+  function interactFromHud(): void {
     if (!game) return;
     game.startAudio();
     game.input.queueInteract();
   }
+
+  async function moveToPlanet(destination: SpaceDestination, spendFuel: boolean): Promise<void> {
+    if (!game || travellingTo) return;
+    if (spendFuel && !game.travelTo(destination)) {
+      showToast({ kicker: 'Flight computer', text: 'Not enough fuel for that route' });
+      return;
+    }
+    game.setOverlayOpen(true);
+    travellingTo = destination;
+    gameState.update((s) => ({ ...s, navigationOpen: false, destinations: [] }));
+    await new Promise((resolve) => setTimeout(resolve, 950));
+    if (destroyed) return;
+    createPlanet(destination.seed, destination.depth, 'push');
+    travellingTo = null;
+    showToast({
+      kicker: spendFuel ? `Arrived · depth ${destination.depth}` : 'Emergency recall',
+      text: spendFuel ? `${destination.name} · ${destination.kind}` : 'Teleported safely back to Earth'
+    });
+  }
+
+  function returnToEarth(): void {
+    if ($gameState.space.isEarth) return;
+    void moveToPlanet(
+      { seed: EARTH_SEED, name: 'Earth', kind: 'Homeworld', depth: 0, fuelCost: 0, color: 0x256a8c },
+      false
+    );
+  }
 </script>
 
 <svelte:head>
-  <title>{name} · Tiny Planet</title>
+  <title>{name} · {$gameState.space.planetName}</title>
   <meta
     name="description"
-    content="Personal website of Kashiful Haque, ML Engineer. Wander a tiny low-poly planet and find seven small wonders that hold the portfolio."
+    content="Explore procedural low-poly planets, recover starship parts, craft a ship, gather fuel, and journey endlessly through space."
   />
 </svelte:head>
 
@@ -183,6 +280,7 @@
         found={$gameState.found.length}
         total={$gameState.total}
         shards={$gameState.shards}
+        space={$gameState.space}
         biome={$gameState.biome}
         prompt={$gameState.prompt}
         muted={$gameState.muted}
@@ -195,6 +293,8 @@
         on:photo={() => game?.togglePhoto()}
         on:journal={toggleJournal}
         on:interact={interactFromHud}
+        on:navigation={() => game?.openNavigation()}
+        on:earth={returnToEarth}
       />
     {/if}
 
@@ -217,7 +317,7 @@
       {/key}
     {/if}
 
-    {#if $gameState.ready && $gameState.isTouch && !$gameState.openWonder && !$gameState.help && !$gameState.journalOpen && !$gameState.photo}
+    {#if $gameState.ready && $gameState.isTouch && !$gameState.openWonder && !$gameState.help && !$gameState.journalOpen && !$gameState.navigationOpen && !$gameState.photo && !travellingTo}
       <TouchControls
         on:move={(e) => {
           if (!game) return;
@@ -234,11 +334,44 @@
     {/if}
 
     {#if $gameState.help}
-      <HelpOverlay isTouch={$gameState.isTouch} found={$gameState.found.length} total={$gameState.total} seed={$gameState.seed} on:close={closeOverlays} />
+      <HelpOverlay
+        isTouch={$gameState.isTouch}
+        found={$gameState.found.length}
+        total={$gameState.total}
+        seed={$gameState.seed}
+        depth={$gameState.space.depth}
+        on:close={closeOverlays}
+      />
     {/if}
 
     {#if $gameState.journalOpen}
       <JournalPanel journal={$gameState.journal} found={$gameState.found} shards={$gameState.shards} seed={$gameState.seed} on:close={closeOverlays} />
+    {/if}
+
+    {#if $gameState.navigationOpen}
+      <NavigationPanel
+        space={$gameState.space}
+        destinations={$gameState.destinations}
+        on:travel={(event) => void moveToPlanet(event.detail, true)}
+        on:earth={returnToEarth}
+        on:close={closeOverlays}
+      />
+    {/if}
+
+    {#if travellingTo}
+      <div class="warp" style:--destination={travelColor} role="status" aria-live="assertive">
+        <div class="streaks" aria-hidden="true"></div>
+        <svg class="warp-ship" viewBox="0 0 120 80" aria-hidden="true">
+          <path d="M60 5 76 44 111 63 72 60 60 76 48 60 9 63 44 44Z" />
+          <ellipse cx="60" cy="35" rx="9" ry="16" />
+          <path class="flame" d="m53 61 7 16 7-16" />
+        </svg>
+        <div class="warp-copy">
+          <p>{travellingTo.depth === 0 ? 'Emergency recall' : `Jumping to depth ${travellingTo.depth}`}</p>
+          <h2>{travellingTo.name}</h2>
+          <span>{travellingTo.kind}</span>
+        </div>
+      </div>
     {/if}
   {/if}
 
@@ -401,6 +534,118 @@
     }
   }
 
+  .warp {
+    position: absolute;
+    inset: 0;
+    z-index: 50;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    color: #f2efe6;
+    background:
+      radial-gradient(circle at 50% 45%, color-mix(in srgb, var(--destination) 34%, transparent), transparent 18%),
+      #050914;
+    animation: warp-arrive 0.95s ease-in-out both;
+  }
+  .streaks,
+  .streaks::before,
+  .streaks::after {
+    position: absolute;
+    inset: -70%;
+    content: '';
+    background-image:
+      radial-gradient(circle, rgba(255, 255, 255, 0.9) 0 1px, transparent 1.5px),
+      radial-gradient(circle, rgba(126, 219, 209, 0.75) 0 1px, transparent 1.5px);
+    background-position: 0 0, 31px 43px;
+    background-size: 67px 79px, 97px 113px;
+    transform: perspective(280px) rotateX(62deg) scale(0.35);
+    animation: star-rush 0.42s linear infinite;
+  }
+  .streaks::before {
+    transform: rotate(41deg);
+  }
+  .streaks::after {
+    transform: rotate(-37deg);
+  }
+  .warp-ship {
+    position: relative;
+    width: min(34vw, 190px);
+    overflow: visible;
+    fill: #d8cfbd;
+    stroke: #f2efe6;
+    stroke-width: 1.2;
+    filter: drop-shadow(0 0 22px color-mix(in srgb, var(--destination) 65%, white));
+    animation: ship-launch 0.95s cubic-bezier(0.3, 0, 0.6, 1) both;
+  }
+  .warp-ship ellipse {
+    fill: color-mix(in srgb, var(--destination) 70%, #dffcff);
+  }
+  .warp-ship .flame {
+    fill: #e9c46a;
+    stroke: #fff2c4;
+  }
+  .warp-copy {
+    position: absolute;
+    bottom: max(13vh, 64px);
+    z-index: 1;
+    text-align: center;
+    text-shadow: 0 2px 16px #050914;
+  }
+  .warp-copy p,
+  .warp-copy span {
+    margin: 0;
+    color: rgba(242, 239, 230, 0.68);
+    font-size: 0.68rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+  .warp-copy h2 {
+    margin: 7px 0 5px;
+    font-family: var(--planet-serif);
+    font-size: clamp(1.7rem, 5vw, 2.7rem);
+    font-weight: 400;
+  }
+  @keyframes star-rush {
+    from {
+      transform: perspective(280px) rotateX(62deg) translateY(-8%) scale(0.25);
+      opacity: 0.35;
+    }
+    to {
+      transform: perspective(280px) rotateX(62deg) translateY(28%) scale(0.8);
+      opacity: 1;
+    }
+  }
+  @keyframes ship-launch {
+    0% {
+      transform: translateY(38vh) scale(1.45);
+    }
+    68% {
+      transform: translateY(-2vh) scale(0.75);
+    }
+    100% {
+      transform: translateY(-45vh) scale(0.08);
+      opacity: 0.15;
+    }
+  }
+  @keyframes warp-arrive {
+    0%,
+    100% {
+      opacity: 0;
+    }
+    12%,
+    88% {
+      opacity: 1;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .warp,
+    .warp-ship,
+    .streaks,
+    .streaks::before,
+    .streaks::after {
+      animation: none;
+    }
+  }
   .noscript {
     padding: 40px;
     font-family: var(--font-mono);

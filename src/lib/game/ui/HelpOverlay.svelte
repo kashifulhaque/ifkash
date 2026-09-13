@@ -1,21 +1,20 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
-  import { dailySeedLabel, randomSeedLabel, seedLink } from '../seed';
+  import { seedLink } from '../seed';
 
   export let isTouch = false;
   export let found = 0;
   export let total = 7;
   export let seed = '';
+  export let depth = 0;
 
   const dispatch = createEventDispatcher();
 
   let copyState: 'idle' | 'copied' | 'failed' = 'idle';
   let copyTimer: ReturnType<typeof setTimeout> | undefined;
 
-  $: isDaily = seed === dailySeedLabel();
-  $: link = seed ? seedLink(seed) : '';
-  // Pick the "another planet" destination once, so re-renders don't re-roll it.
-  const anotherLink = seedLink(randomSeedLabel(), '');
+  $: isEarth = seed === 'earth';
+  $: link = seed ? seedLink(seed, undefined, depth) : '';
 
   async function copyLink() {
     clearTimeout(copyTimer);
@@ -33,11 +32,22 @@
   <button class="backdrop" on:click={() => dispatch('close')} aria-label="Close"></button>
   <div class="panel">
     <p class="kicker">How to wander</p>
-    <h2>A tiny planet, seven small wonders</h2>
+    <h2>Seven wonders, one way into deep space</h2>
     <p class="lead">
-      Walk the planet, find the glowing markers, and open each one to read a chapter of the
-      portfolio. Found so far: <strong>{found} of {total}</strong>.
+      Explore the planet and open its glowing wonders. Found so far:
+      <strong>{found} of {total}</strong>.
     </p>
+
+    <section class="journey" aria-labelledby="journey-title">
+      <p class="kicker" id="journey-title">Your journey</p>
+      <ol>
+        <li><strong>Recover five ship parts</strong><span>Search the planet for the missing components.</span></li>
+        <li><strong>Craft at the landing pad</strong><span>Bring all five parts back and assemble your ship.</span></li>
+        <li><strong>Launch into deep space</strong><span>Choose one of three generated planets, then keep travelling deeper without a final limit.</span></li>
+      </ol>
+      <p class="fuel-note"><strong>Fuel:</strong> starlight shards refill the ship up to its meter's limit. Every route shows its cost; routes you cannot afford stay locked.</p>
+      <p class="earth-note"><strong>Earth recall:</strong> while away, the home control or star map teleports you to Earth for free.</p>
+    </section>
 
     <dl>
       {#if isTouch}
@@ -47,6 +57,9 @@
         <div><dt>Open a wonder</dt><dd>Walk up to a marker and tap the card that appears.</dd></div>
         <div><dt>Animals</dt><dd>Walk up to a sheep, a fox, or a polar bear and tap the card to pet it. Pet it twice and it follows you for a while.</dd></div>
         <div><dt>Shards</dt><dd>A dozen starlight shards glow purple across each planet. Walk over one to collect it.</dd></div>
+        <div><dt>Ship parts</dt><dd>Walk into each missing part to recover it. Once all five are found, return to the landing pad and tap the card to craft, then launch.</dd></div>
+        <div><dt>Deep space</dt><dd>Pick an affordable planet on the star map. Every arrival creates three routes one depth farther out.</dd></div>
+        <div><dt>Earth</dt><dd>When away from home, tap the home control or choose the free Earth recall on the star map.</dd></div>
         <div><dt>Journal</dt><dd>Tap the book button to see the biomes, animals, and milestones you have collected across every planet.</dd></div>
         <div><dt>Boats</dt><dd>Stand at the shore and tap the card to launch a boat. Steer with the stick. Reach land to dock.</dd></div>
         <div><dt>The sky</dt><dd>It is always night here. Look up for the moon, the planets, the constellations, and the odd shooting star.</dd></div>
@@ -55,9 +68,11 @@
         <div><dt><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></dt><dd>Walk. Arrow keys work too.</dd></div>
         <div><dt><kbd>Shift</kbd></dt><dd>Run.</dd></div>
         <div><dt><kbd>Space</kbd></dt><dd>Hop.</dd></div>
-        <div><dt><kbd>E</kbd></dt><dd>Open the wonder you are standing next to, or pet the animal beside you. Pet it twice and it follows you for a while.</dd></div>
+        <div><dt><kbd>E</kbd></dt><dd>Interact with wonders and animals. At the landing pad, craft after recovering all five ship parts, then launch.</dd></div>
         <div><dt><kbd>M</kbd></dt><dd>Pull back to see the whole planet. Click a spot to walk there.</dd></div>
         <div><dt><kbd>J</kbd></dt><dd>Open the journal: biomes visited, animals befriended, milestones, and a dozen starlight shards to find on each planet.</dd></div>
+        <div><dt>Deep space</dt><dd>Choose an affordable route on the star map. Every arrival generates three planets one depth farther out, with no final depth.</dd></div>
+        <div><dt>Earth recall</dt><dd>When away from home, use the home control or the free Earth route on the star map.</dd></div>
         <div><dt>The sky</dt><dd>It is always night here. Look up for the moon, the planets, the constellations, auroras, and the odd shooting star.</dd></div>
         <div><dt><kbd>P</kbd></dt><dd>Photo mode: hides the interface. Press again or <kbd>Esc</kbd> to leave, or save a picture from the corner.</dd></div>
         <div><dt>Mouse</dt><dd>Drag to orbit the camera, scroll to zoom, click the ground to walk.</dd></div>
@@ -68,19 +83,18 @@
     {#if seed}
       <div class="seed">
         <div class="seed-text">
-          <p class="kicker">{isDaily ? "Today's planet" : 'Planet seed'}</p>
+          <p class="kicker">{isEarth ? 'Homeworld' : `Planet seed · depth ${depth}`}</p>
           <p class="seed-label"><code>{seed}</code></p>
           <p class="seed-help">
             {#if copyState === 'failed'}
               Copy this link by hand: <span class="seed-url">{link}</span>
             {:else}
-              Share the link to show someone this exact world. A new planet appears every day.
+              Share this link to show someone this exact world.
             {/if}
           </p>
         </div>
         <div class="seed-actions">
           <button class="chip" on:click={copyLink}>{copyState === 'copied' ? 'Copied' : 'Copy link'}</button>
-          <a class="chip ghost" href={anotherLink} data-sveltekit-reload>Another planet</a>
         </div>
       </div>
     {/if}
@@ -147,6 +161,62 @@
   .lead strong {
     color: #e9c46a;
     font-weight: 600;
+  }
+  .journey {
+    margin: 0 0 20px;
+    padding: 14px 15px;
+    border: 1px solid rgba(233, 196, 106, 0.2);
+    border-radius: 12px;
+    background: rgba(233, 196, 106, 0.045);
+  }
+  .journey ol {
+    margin: 11px 0 12px;
+    padding: 0;
+    display: grid;
+    gap: 8px;
+    counter-reset: journey;
+    list-style: none;
+  }
+  .journey li {
+    display: grid;
+    grid-template-columns: 21px 1fr;
+    column-gap: 9px;
+    counter-increment: journey;
+  }
+  .journey li::before {
+    grid-row: 1 / span 2;
+    width: 19px;
+    height: 19px;
+    display: grid;
+    place-items: center;
+    border: 1px solid rgba(233, 196, 106, 0.4);
+    border-radius: 50%;
+    color: #e9c46a;
+    content: counter(journey);
+    font-size: 0.6rem;
+  }
+  .journey li strong {
+    color: rgba(242, 239, 230, 0.88);
+    font-size: 0.76rem;
+    font-weight: 500;
+  }
+  .journey li span {
+    margin-top: 2px;
+    color: rgba(242, 239, 230, 0.58);
+    font-size: 0.69rem;
+    line-height: 1.45;
+  }
+  .fuel-note,
+  .earth-note {
+    margin: 5px 0 0;
+    color: rgba(242, 239, 230, 0.62);
+    font-size: 0.69rem;
+    line-height: 1.5;
+  }
+  .fuel-note strong,
+  .earth-note strong {
+    color: #e9c46a;
+    font-weight: 500;
   }
   dl {
     margin: 0;
@@ -237,14 +307,6 @@
   .chip:hover {
     background: rgba(233, 196, 106, 0.22);
   }
-  .chip.ghost {
-    border-color: rgba(255, 255, 255, 0.18);
-    background: rgba(255, 255, 255, 0.04);
-    color: rgba(242, 239, 230, 0.8);
-  }
-  .chip.ghost:hover {
-    background: rgba(255, 255, 255, 0.1);
-  }
   .actions {
     display: flex;
     align-items: center;
@@ -285,6 +347,14 @@
     }
   }
   @media (max-width: 600px) {
+    .overlay {
+      align-items: flex-end;
+      padding: 12px;
+    }
+    .panel {
+      max-height: min(92vh, 92dvh);
+      padding: 21px 18px 18px;
+    }
     dl div {
       grid-template-columns: 1fr;
       gap: 4px;

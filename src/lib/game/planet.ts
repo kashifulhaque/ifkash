@@ -1,10 +1,36 @@
 import * as THREE from 'three';
-import { biomeAt, isOcean, oceanField, OCEAN, type Biome } from './biomes';
+import { biomeAt, configureBiomeOcean, isOcean, oceanField, OCEAN, type Biome } from './biomes';
 import { deriveSeed, fbm3, hash3, seededRng } from './noise';
+import type { PlanetProfile } from './space';
 
 export const PLANET_RADIUS = 42;
 /** Radius of the translucent water sphere. */
 export const SEA_LEVEL = PLANET_RADIUS + 0.4;
+
+const EARTH_HUE = 0;
+const EARTH_SATURATION = 1;
+let planetHue = EARTH_HUE;
+let planetSaturation = EARTH_SATURATION;
+let terrainReliefScale = 1;
+let terrainRuggedScale = 1;
+let terrainDetailScale = 1;
+let terrainCreaseFrequency = 3.2;
+let planetWater = 0x256a8c;
+const _hsl = { h: 0, s: 0, l: 0 };
+
+/** Apply a profile to all subsequently generated terrain and water. */
+export function configurePlanet(profile: PlanetProfile): void {
+  planetHue = THREE.MathUtils.clamp(profile.hue, -0.5, 0.5);
+  planetSaturation = THREE.MathUtils.clamp(profile.saturation, 0.25, 2);
+  const relief = THREE.MathUtils.clamp(profile.relief, 0.4, 1.6);
+  const ruggedness = THREE.MathUtils.clamp(profile.ruggedness, 0.4, 1.6);
+  terrainReliefScale = relief;
+  terrainRuggedScale = ruggedness;
+  terrainDetailScale = THREE.MathUtils.lerp(1, ruggedness, 0.65);
+  terrainCreaseFrequency = 3.2 * (1 + (ruggedness - 1) * 0.25);
+  planetWater = profile.water;
+  configureBiomeOcean(relief, ruggedness, profile.seed === 'earth');
+}
 
 /**
  * Distance from the planet centre to the ground along unit direction `d`.
@@ -18,21 +44,26 @@ export const SEA_LEVEL = PLANET_RADIUS + 0.4;
  */
 export function surfaceRadius(d: THREE.Vector3): number {
   const f = oceanField(d);
+  const reliefScale = terrainReliefScale;
+  const ruggedScale = terrainRuggedScale;
+  const detailScale = terrainDetailScale;
   if (f < 0) {
     // Seabed: falls away from the coast so the water reads as deeper offshore.
     const depth = Math.min(1, -f * 4);
     const relief = fbm3(d.x * 6 + 3, d.y * 6, d.z * 6 - 1, 3) * 0.45;
-    return PLANET_RADIUS - 0.25 - depth * 1.6 + relief * 0.3;
+    return PLANET_RADIUS - 0.25 - depth * 1.6 + relief * 0.3 * reliefScale;
   }
   // A short cliff at the waterline, then the relief eases in over the shore so
   // the beaches stay walkable and the coastline keeps its shape.
   const rise = Math.min(1, f * 5);
-  const swell = fbm3(d.x * 1.9 - 7, d.y * 1.9 + 4, d.z * 1.9 + 9, 3) * 2.2;
-  const roll = fbm3(d.x * 6 + 3, d.y * 6, d.z * 6 - 1, 3) * 0.55;
+  const swell = fbm3(d.x * 1.9 - 7, d.y * 1.9 + 4, d.z * 1.9 + 9, 3) * 2.2 * reliefScale;
+  const roll = fbm3(d.x * 6 + 3, d.y * 6, d.z * 6 - 1, 3) * 0.55 * detailScale;
   const rugged = Math.max(0, fbm3(d.x * 1.4 + 21, d.y * 1.4 - 8, d.z * 1.4 + 3, 2));
   // A ridged fBm: folding the noise about zero turns its valleys into creases.
-  const crease = 1 - Math.abs(fbm3(d.x * 3.2 - 12, d.y * 3.2 + 6, d.z * 3.2 - 2, 4));
-  const h = 0.5 + swell + roll + rugged * crease * crease * 2.8;
+  const crease = 1 - Math.abs(
+    fbm3(d.x * terrainCreaseFrequency - 12, d.y * terrainCreaseFrequency + 6, d.z * terrainCreaseFrequency - 2, 4)
+  );
+  const h = 0.5 + swell + roll + rugged * crease * crease * 2.8 * ruggedScale;
   // Dips are squashed and floored. Land is decided by `oceanField`, not by
   // height, so a valley deep enough to fall under `SEA_LEVEL` would leave dry
   // ground — and any prop or wonder standing on it — hidden under the water
@@ -125,6 +156,10 @@ function pickShade(b: Biome, h: number): number {
   return h < 0.62 ? b.ground[0] : h < 0.84 ? b.ground[1] : b.ground[2];
 }
 
+function applyPlanetPalette(color: THREE.Color): void {
+  color.offsetHSL(planetHue, color.getHSL(_hsl).s * (planetSaturation - 1), 0);
+}
+
 export function buildGround(): THREE.Mesh {
   const geo = new THREE.IcosahedronGeometry(1, 44);
   const pos = geo.attributes.position as THREE.BufferAttribute;
@@ -153,6 +188,7 @@ export function buildGround(): THREE.Mesh {
       hex = pickShade(biome, h);
     }
     col.setHex(hex);
+    applyPlanetPalette(col);
     // Faint per-face variation keeps the flat shading from looking like a texture.
     const v = 0.96 + hash3(i, 7, 13) * 0.08;
     col.multiplyScalar(v);
@@ -206,13 +242,16 @@ export function buildWater(): THREE.Mesh {
   }
   geo.setAttribute('aShore', new THREE.BufferAttribute(shore, 1));
 
+  const surface = new THREE.Color(planetWater);
+  const deep = surface.clone().offsetHSL(-0.02, -0.05, -0.04);
+  const foam = surface.clone().offsetHSL(-0.01, -0.25, 0.58);
   const uniforms = {
     uTime: { value: 0 },
-    uDeep: { value: new THREE.Color(0x1b5c80) },
-    uFoam: { value: new THREE.Color(0xdff2fb) }
+    uDeep: { value: deep },
+    uFoam: { value: foam }
   };
   const mat = new THREE.MeshStandardMaterial({
-    color: 0x3fb3d3,
+    color: surface,
     transparent: true,
     opacity: 0.86,
     roughness: 0.22,

@@ -3,6 +3,7 @@
   import { page } from "$app/stores";
   import AiAgent from "$lib/components/AiAgent.svelte";
   import CommandDeck from "$lib/components/CommandDeck.svelte";
+  import CursorGlow from "$lib/components/CursorGlow.svelte";
   import WeatherHeadsUp from "$lib/components/WeatherHeadsUp.svelte";
   import { theme, toggleTheme } from "$lib/stores/theme";
 
@@ -117,6 +118,8 @@
     <AiAgent />
   </div>
 {/if}
+
+<CursorGlow />
 
 <style>
   .site-wrapper {

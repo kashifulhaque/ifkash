@@ -32,11 +32,14 @@
     journal: void;
     help: void;
     interact: void;
+    refuel: void;
     launch: void;
     earth: void;
   }>();
 
   $: boundedFuel = Math.min(Math.max(space.fuel, 0), Math.max(space.maxFuel, 0));
+  $: needsRefuel = space.crafted && boundedFuel < space.maxFuel;
+  $: lowFuel = space.crafted && boundedFuel <= space.maxFuel * 0.4;
   $: planetKind = space.planetKind.replace(/[-_]/g, ' ');
 </script>
 
@@ -80,11 +83,24 @@
       <span>· {planetKind}{space.depth > 0 ? ` · depth ${space.depth}` : ''}</span>
     </p>
     {#if space.crafted}
-      <div class="fuel-heading">
-        <strong>Ship ready · direct flight</strong>
+      <div class="fuel-heading" class:low={lowFuel}>
+        <strong>
+          {#if needsRefuel && space.isEarth}
+            Landing pad recharge available
+          {:else if lowFuel}
+            Low fuel · collect ✦ shards
+          {:else}
+            Ship ready · direct flight
+          {/if}
+        </strong>
         <span>{boundedFuel} / {space.maxFuel} fuel</span>
       </div>
-      <progress value={boundedFuel} max={Math.max(space.maxFuel, 1)} aria-label={`Ship fuel: ${boundedFuel} of ${space.maxFuel}`}></progress>
+      <progress class:low={lowFuel} value={boundedFuel} max={Math.max(space.maxFuel, 1)} aria-label={`Ship fuel: ${boundedFuel} of ${space.maxFuel}`}></progress>
+      {#if needsRefuel && space.isEarth}
+        <button class="refuel" on:click={() => dispatch('refuel')}>Refuel to {space.maxFuel}</button>
+      {:else if lowFuel}
+        <p class="fuel-help">Collect starlight, or use home recall for a full recharge.</p>
+      {/if}
     {:else if !space.isEarth}
       <div class="mission-line">
         <strong>{space.parts >= space.totalParts ? 'Craft your spaceship on Earth' : 'Recover ship parts on Earth'}</strong>
@@ -375,6 +391,9 @@
   .fuel-heading strong {
     color: #e9c46a;
   }
+  .fuel-heading.low strong {
+    color: #ffab73;
+  }
   .mission progress {
     display: block;
     width: 100%;
@@ -397,6 +416,35 @@
   .mission progress::-moz-progress-bar {
     border-radius: 999px;
     background: #e9c46a;
+  }
+  .mission progress.low::-webkit-progress-value {
+    background: #ffab73;
+  }
+  .mission progress.low::-moz-progress-bar {
+    background: #ffab73;
+  }
+  .refuel {
+    width: 100%;
+    margin-top: 8px;
+    padding: 6px 10px;
+    border: 1px solid rgba(233, 196, 106, 0.55);
+    border-radius: 8px;
+    background: rgba(233, 196, 106, 0.12);
+    color: #f6df9b;
+    font: inherit;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+  .refuel:hover {
+    background: rgba(233, 196, 106, 0.2);
+    border-color: rgba(233, 196, 106, 0.8);
+  }
+  .fuel-help {
+    margin: 7px 0 0;
+    color: rgba(242, 239, 230, 0.66);
+    font-size: 0.64rem;
+    line-height: 1.35;
   }
   /* Round buttons */
   .actions {

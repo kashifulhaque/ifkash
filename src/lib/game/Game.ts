@@ -615,6 +615,23 @@ export class Game {
     };
   }
 
+  /** Fully recharge the grounded ship at Earth's landing pad. */
+  refuelShip(): void {
+    if (!this.shipProgress.crafted || this.flying || this.seed !== EARTH_SEED || this.shipProgress.fuel >= MAX_FUEL) return;
+    const added = MAX_FUEL - this.shipProgress.fuel;
+    this.audio.start();
+    this.exitIntro();
+    this.shipProgress = { ...this.shipProgress, fuel: MAX_FUEL };
+    saveShipProgress(this.shipProgress);
+    this.audio.sparkle();
+    this.callbacks.onSpace(this.spaceStatus);
+    this.callbacks.onSpaceNotice({
+      kicker: 'Landing pad recharge',
+      text: `Fuel cells restored · +${added} fuel`
+    });
+    this.promptId = null;
+  }
+
   /** Board the completed ship and hand its movement to the player. */
   launchFlight(): void {
     if (!this.shipProgress.crafted || this.flying) return;
@@ -622,7 +639,7 @@ export class Game {
     if (!target) {
       this.callbacks.onSpaceNotice({
         kicker: 'Flight computer',
-        text: 'Collect more starlight shards before launching'
+        text: 'Collect starlight shards, or recall Earth for a full recharge'
       });
       return;
     }
@@ -1511,6 +1528,10 @@ export class Game {
       this.promptId = null;
       return;
     }
+    if (this.seed === EARTH_SEED && this.shipProgress.fuel < MAX_FUEL) {
+      this.refuelShip();
+      return;
+    }
     this.launchFlight();
   }
 
@@ -1604,7 +1625,9 @@ export class Game {
     else if (byShip) {
       const missing = SHIP_PARTS.length - this.shipProgress.parts.length;
       prompt = this.shipProgress.crafted
-        ? { id: 'ship-board', action: 'Board ship', found: false, kicker: `${this.shipProgress.fuel}/${MAX_FUEL} fuel · fly to a planet` }
+        ? this.seed === EARTH_SEED && this.shipProgress.fuel < MAX_FUEL
+          ? { id: 'ship-refuel', action: 'Refuel spaceship', found: false, kicker: `${this.shipProgress.fuel}/${MAX_FUEL} fuel · full landing-pad recharge` }
+          : { id: 'ship-board', action: 'Board ship', found: false, kicker: `${this.shipProgress.fuel}/${MAX_FUEL} fuel · fly to a planet` }
         : missing === 0
           ? { id: 'ship-craft', action: 'Craft your spaceship', found: false, kicker: 'All five parts recovered' }
           : { id: `ship-parts-${missing}`, action: `Recover ${missing} more ${missing === 1 ? 'part' : 'parts'}`, found: false, kicker: 'Wrecked starship' };

@@ -274,6 +274,7 @@
         on:photo={() => game?.togglePhoto()}
         on:journal={toggleJournal}
         on:interact={interactFromHud}
+        on:refuel={() => game?.refuelShip()}
         on:launch={() => game?.launchFlight()}
         on:earth={returnToEarth}
       />

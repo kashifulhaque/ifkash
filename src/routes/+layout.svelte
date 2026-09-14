@@ -2,6 +2,7 @@
   import "../app.css";
   import { page } from "$app/stores";
   import AiAgent from "$lib/components/AiAgent.svelte";
+  import CommandDeck from "$lib/components/CommandDeck.svelte";
   import WeatherHeadsUp from "$lib/components/WeatherHeadsUp.svelte";
   import { theme, toggleTheme } from "$lib/stores/theme";
 
@@ -45,6 +46,7 @@
           rel="noopener noreferrer">GitHub</a
         >
         <a href="/api/cv?format=view">Resume</a>
+        <CommandDeck />
         <button
           type="button"
           class="theme-toggle"

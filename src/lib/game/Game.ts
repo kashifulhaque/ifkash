@@ -38,7 +38,7 @@ import {
 import { Critter, Hearts } from './critters';
 import { Clouds } from './clouds';
 import { Aurora, SkyAurora } from './aurora';
-import { Constellations, Meteors, Moon, Planets } from './sky';
+import { Constellations, Meteors, Moon, Planets, type PlanetTarget } from './sky';
 import { patchSurface, type SurfaceFx } from './surfaceFx';
 import { ColliderGrid } from './collision';
 import { WONDERS, wonderAction, wonderDir, type Wonder } from './wonders';
@@ -149,6 +149,9 @@ const BOAT_DRAG = 0.9;
 const FLIGHT_SPEED = 34;
 const FLIGHT_BOOST = 56;
 const FLIGHT_TURN = 1.35;
+/** Distance above a destination surface at which the landing computer takes over. */
+const LANDING_APPROACH = 16;
+const LANDING_DURATION = 2.4;
 
 const _e = new THREE.Euler();
 
@@ -223,7 +226,7 @@ export class Game {
   private colliders: ColliderGrid;
 
   // Starship: salvage is scattered on Earth; the completed ship can be flown
-  // directly into any of the three generated destination planets.
+  // to any generated destination and set down on its visible terrain.
   private parts: ShipParts | null = null;
   private ship: THREE.Group;
   private shipDir = new THREE.Vector3();
@@ -234,6 +237,13 @@ export class Game {
   private flightUp = new THREE.Vector3();
   private flightSpeed = 0;
   private flightWarning = 0;
+  private landingTarget: PlanetTarget | null = null;
+  private landingElapsed = 0;
+  private landingStart = new THREE.Vector3();
+  private landingEnd = new THREE.Vector3();
+  private landingUp = new THREE.Vector3();
+  private landingStartRotation = new THREE.Quaternion();
+  private landingEndRotation = new THREE.Quaternion();
 
   // Boat: one rowboat that is launched from a shore, sailed, and docked where it lands.
   private boat: THREE.Group;
@@ -650,6 +660,8 @@ export class Game {
     this.flying = true;
     this.arriving = false;
     this.flightWarning = 0;
+    this.landingTarget = null;
+    this.landingElapsed = 0;
     this.walkTarget = null;
     this.targetRing.visible = false;
     this.character.group.visible = false;
@@ -1452,9 +1464,61 @@ export class Game {
     this.ship.quaternion.setFromRotationMatrix(_m);
   }
 
-  /** Advance direct-control flight and arrive only when the hull reaches a visible world. */
+  /** Commit fuel and prepare a controlled descent onto visible terrain. */
+  private beginPlanetLanding(target: PlanetTarget): void {
+    this.shipProgress = { ...this.shipProgress, fuel: this.shipProgress.fuel - target.destination.fuelCost };
+    saveShipProgress(this.shipProgress);
+    this.callbacks.onSpace(this.spaceStatus);
+    this.arriving = true;
+    this.flightSpeed = 0;
+    this.landingTarget = target;
+    this.landingElapsed = 0;
+    this.landingStart.copy(this.ship.position);
+    this.landingStartRotation.copy(this.ship.quaternion);
+    this.landingUp.copy(this.ship.position).sub(target.position).normalize();
+    this.landingEnd.copy(target.position).addScaledVector(this.landingUp, target.surfaceRadius(this.landingUp) + 0.08);
+
+    _v2.copy(this.flightUp).addScaledVector(this.landingUp, -this.flightUp.dot(this.landingUp));
+    if (_v2.lengthSq() < 1e-6) tangentBasis(this.landingUp, 0, _v1, _v2);
+    else _v2.normalize();
+    _v1.crossVectors(this.landingUp, _v2).normalize();
+    _m.makeBasis(_v1, this.landingUp, _v2);
+    this.landingEndRotation.setFromRotationMatrix(_m);
+    this.planets.beginLanding(target);
+    this.callbacks.onSpaceNotice({
+      kicker: 'Landing approach',
+      text: `Descending to ${target.destination.name}`
+    });
+  }
+
+  /** Ease the hull from forward flight into a feet-down touchdown. */
+  private updatePlanetLanding(dt: number): void {
+    const target = this.landingTarget;
+    if (!target) return;
+    this.landingElapsed += dt;
+    const progress = Math.min(1, this.landingElapsed / LANDING_DURATION);
+    const eased = progress * progress * (3 - 2 * progress);
+    this.ship.position.lerpVectors(this.landingStart, this.landingEnd, eased);
+    this.ship.position.addScaledVector(this.landingUp, Math.sin(progress * Math.PI) * 1.6);
+    this.ship.quaternion.slerpQuaternions(this.landingStartRotation, this.landingEndRotation, eased);
+    this.flightUp.set(0, 1, 0).applyQuaternion(this.ship.quaternion).normalize();
+    this.flightForward.set(0, 0, 1).applyQuaternion(this.ship.quaternion).normalize();
+    if (progress < 1) return;
+
+    const destination = target.destination;
+    this.landingTarget = null;
+    this.callbacks.onFlight(false);
+    queueMicrotask(() => {
+      if (!this.disposed) this.callbacks.onArrive(destination);
+    });
+  }
+
+  /** Advance direct-control flight and hand a close approach to the landing computer. */
   private updateFlight(dt: number): void {
-    if (this.arriving) return;
+    if (this.arriving) {
+      this.updatePlanetLanding(dt);
+      return;
+    }
     const steering = !this.overlayOpen;
     if (steering) this.steerFlight(this.input.moveX * FLIGHT_TURN * dt, this.input.moveY * FLIGHT_TURN * dt);
     const cruise = steering ? (this.input.run ? FLIGHT_BOOST : FLIGHT_SPEED) : 0;
@@ -1470,8 +1534,8 @@ export class Game {
     }
 
     for (const target of this.planets.targets) {
-      const arrivalRadius = target.radius + 2.4;
-      if (this.ship.position.distanceToSquared(target.position) > arrivalRadius * arrivalRadius) continue;
+      const approachRadius = target.radius + LANDING_APPROACH;
+      if (this.ship.position.distanceToSquared(target.position) > approachRadius * approachRadius) continue;
       if (target.destination.fuelCost > this.shipProgress.fuel) {
         if (this.flightWarning === 0) {
           this.callbacks.onSpaceNotice({
@@ -1481,22 +1545,14 @@ export class Game {
           this.flightWarning = 2.5;
         }
         _v2.copy(this.ship.position).sub(target.position).normalize();
-        this.ship.position.copy(target.position).addScaledVector(_v2, target.radius + 4);
+        this.ship.position.copy(target.position).addScaledVector(_v2, approachRadius + 2);
         this.flightForward.reflect(_v2).normalize();
         this.flightUp.addScaledVector(this.flightForward, -this.flightUp.dot(this.flightForward)).normalize();
         this.placeFlightShip();
         return;
       }
 
-      this.shipProgress = { ...this.shipProgress, fuel: this.shipProgress.fuel - target.destination.fuelCost };
-      saveShipProgress(this.shipProgress);
-      this.callbacks.onSpace(this.spaceStatus);
-      this.arriving = true;
-      this.flightSpeed = 0;
-      this.callbacks.onFlight(false);
-      queueMicrotask(() => {
-        if (!this.disposed) this.callbacks.onArrive(target.destination);
-      });
+      this.beginPlanetLanding(target);
       return;
     }
   }

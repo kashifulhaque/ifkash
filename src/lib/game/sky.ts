@@ -3,9 +3,10 @@
 // outside the planet on their own shell, well inside the camera's far plane.
 
 import * as THREE from 'three';
-import { deriveSeed, seededRng } from './noise';
+import { deriveSeed, seededRng, valueNoise3 } from './noise';
 import { tangentBasis } from './planet';
-import type { SpaceDestination } from './space';
+import { hashSeed } from './seed';
+import { planetProfile, type PlanetProfile, type SpaceDestination } from './space';
 
 /** Radius of the shell the constellations sit on, just inside the star field. */
 const RADIUS = 500;
@@ -167,19 +168,133 @@ export class Moon {
 
 // ---------------------------------------------------------------- destination planets
 
-/** The reachable worlds sit on this shell: far enough to read as sky, close
- * enough that a flight takes seconds rather than becoming a loading screen. */
+/** The reachable worlds sit far enough away to read as celestial bodies while
+ * still being close enough for a short, continuous flight. */
 const DESTINATION_DISTANCE = 245;
+
+type PreviewField = { x: number; y: number; z: number };
 
 export type PlanetTarget = {
   destination: SpaceDestination;
   position: THREE.Vector3;
   radius: number;
   body: THREE.Mesh;
+  water: THREE.Mesh;
   atmosphere: THREE.Mesh;
   ring: THREE.Mesh;
   label: THREE.Sprite;
+  /** Terrain radius in the target's local radial direction. */
+  surfaceRadius: (direction: THREE.Vector3) => number;
 };
+
+/** Coherent noise independent of the active world's global terrain seed. */
+function previewFbm(direction: THREE.Vector3, scale: number, field: PreviewField, octaves: number): number {
+  let sum = 0;
+  let amplitude = 1;
+  let normalizer = 0;
+  let frequency = 1;
+  const x = direction.x * scale + field.x;
+  const y = direction.y * scale + field.y;
+  const z = direction.z * scale + field.z;
+  for (let octave = 0; octave < octaves; octave++) {
+    sum += valueNoise3(x * frequency + octave * 17.3, y * frequency - octave * 9.1, z * frequency + octave * 4.7) * amplitude;
+    normalizer += amplitude;
+    amplitude *= 0.5;
+    frequency *= 2;
+  }
+  return sum / normalizer;
+}
+
+
+/** Low-poly relief matching the destination's generated archetype. */
+function previewSurfaceRadius(
+  direction: THREE.Vector3,
+  radius: number,
+  profile: PlanetProfile,
+  field: PreviewField,
+  continent = previewFbm(direction, 1.35, field, 4)
+): number {
+  const coast = -0.04 - profile.landBias * 0.55;
+  if (continent <= coast) return radius * (0.965 - Math.min(0.035, (coast - continent) * 0.06));
+
+  const broad = Math.max(0, continent - coast);
+  const detail = previewFbm(direction, 5.2, field, 3);
+  const ridge = 1 - Math.abs(previewFbm(direction, 2.8, field, 3));
+  let height = 0.018 + broad * 0.12 * profile.relief + detail * 0.018 * profile.ruggedness + ridge * ridge * ridge * 0.035 * profile.ruggedness;
+  if (profile.archetype === 'crystal') height = Math.round(height / 0.018) * 0.018;
+  else if (profile.archetype === 'fracture') height = Math.round(height / 0.026) * 0.026;
+  return radius * (1 + Math.max(0.008, height));
+}
+
+function destinationTerrain(destination: SpaceDestination, radius: number): { body: THREE.Mesh; water: THREE.Mesh; surfaceRadius: (d: THREE.Vector3) => number } {
+  const profile = planetProfile(destination.seed);
+  const fieldRng = seededRng(deriveSeed(hashSeed(destination.seed), 14));
+  const field = { x: fieldRng() * 500 - 250, y: fieldRng() * 500 - 250, z: fieldRng() * 500 - 250 };
+  const geometry = new THREE.IcosahedronGeometry(1, 4);
+  const positions = geometry.attributes.position as THREE.BufferAttribute;
+  const colors = new Float32Array(positions.count * 3);
+  const a = new THREE.Vector3();
+  const b = new THREE.Vector3();
+  const c = new THREE.Vector3();
+  const midpoint = new THREE.Vector3();
+  const color = new THREE.Color();
+  const coast = -0.04 - profile.landBias * 0.55;
+
+  for (let i = 0; i < positions.count; i += 3) {
+    a.fromBufferAttribute(positions, i).normalize();
+    b.fromBufferAttribute(positions, i + 1).normalize();
+    c.fromBufferAttribute(positions, i + 2).normalize();
+    midpoint.copy(a).add(b).add(c).normalize();
+    const continent = previewFbm(midpoint, 1.35, field, 4);
+    const surface = previewSurfaceRadius(midpoint, radius, profile, field, continent);
+    if (continent <= coast) color.set(profile.terrain[0]).multiplyScalar(0.52);
+    else if (continent < coast + 0.075) color.set(profile.shore);
+    else {
+      const rise = (surface / radius - 1) / 0.12;
+      color.set(profile.terrain[rise < 0.38 ? 0 : rise < 0.72 ? 1 : 2]);
+    }
+    color.multiplyScalar(0.92 + valueNoise3(midpoint.x * 9 + field.x, midpoint.y * 9 + field.y, midpoint.z * 9 + field.z) * 0.08);
+
+    for (let vertex = 0; vertex < 3; vertex++) {
+      const direction = vertex === 0 ? a : vertex === 1 ? b : c;
+      const vertexRadius = previewSurfaceRadius(direction, radius, profile, field);
+      positions.setXYZ(i + vertex, direction.x * vertexRadius, direction.y * vertexRadius, direction.z * vertexRadius);
+      colors[(i + vertex) * 3] = color.r;
+      colors[(i + vertex) * 3 + 1] = color.g;
+      colors[(i + vertex) * 3 + 2] = color.b;
+    }
+  }
+
+  geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+  geometry.deleteAttribute('uv');
+  geometry.computeVertexNormals();
+  const body = new THREE.Mesh(
+    geometry,
+    new THREE.MeshStandardMaterial({
+      vertexColors: true,
+      emissive: new THREE.Color(profile.accent).multiplyScalar(0.055),
+      roughness: 0.94,
+      metalness: 0,
+      flatShading: true
+    })
+  );
+  const water = new THREE.Mesh(
+    new THREE.SphereGeometry(radius, 48, 32),
+    new THREE.MeshStandardMaterial({
+      color: profile.water,
+      emissive: new THREE.Color(profile.water).multiplyScalar(0.08),
+      transparent: true,
+      opacity: 0.78,
+      roughness: 0.28,
+      metalness: 0.08
+    })
+  );
+  return {
+    body,
+    water,
+    surfaceRadius: (direction) => Math.max(radius, previewSurfaceRadius(direction, radius, profile, field))
+  };
+}
 
 /** Paint one crisp, camera-facing route label without bringing DOM overlays
  * into the render loop. The texture is built once per generated destination. */
@@ -220,9 +335,8 @@ function destinationLabel(destination: SpaceDestination): THREE.Sprite {
 }
 
 /**
- * The three generated onward routes rendered as real bodies in the sky.
- * Placement is a stable fan above the landing pad, so every route is visible
- * before launch and each one can be reached by physically flying into it.
+ * Three generated onward routes rendered as terrain-bearing worlds. Placement
+ * is a stable fan above the landing pad so each route is visible before launch.
  */
 export class Planets {
   readonly group = new THREE.Group();
@@ -234,9 +348,6 @@ export class Planets {
     const east = new THREE.Vector3();
     const north = new THREE.Vector3();
     tangentBasis(anchor, rng() * Math.PI * 2, east, north);
-    // Keep every body near the landing pad's horizon rather than directly
-    // behind the globe. The positive radial component leaves every launch path
-    // clear of the current world.
     const fan: ReadonlyArray<readonly [number, number]> = [
       [-0.62, 0.3],
       [0, 0.44],
@@ -248,56 +359,54 @@ export class Planets {
       const [across, radial] = fan[i] ?? [rng() - 0.5, 0.2 + rng() * 0.25];
       const direction = north.clone().addScaledVector(east, across).addScaledVector(anchor, radial).normalize();
       const distance = DESTINATION_DISTANCE + i * 24;
-      const radius = 13 + rng() * 4;
+      const radius = 18 + rng() * 4;
       const position = direction.multiplyScalar(distance);
-      const color = new THREE.Color(destination.color);
+      const profile = planetProfile(destination.seed);
+      const color = new THREE.Color(profile.water);
       const root = new THREE.Group();
       root.position.copy(position);
 
-      const body = new THREE.Mesh(
-        new THREE.IcosahedronGeometry(radius, 3),
-        new THREE.MeshStandardMaterial({
-          color,
-          emissive: color.clone().multiplyScalar(0.1),
-          roughness: 0.82,
-          metalness: 0.04,
-          flatShading: true
-        })
-      );
+      const terrain = destinationTerrain(destination, radius);
       const atmosphere = new THREE.Mesh(
-        new THREE.SphereGeometry(radius * 1.14, 24, 16),
+        new THREE.SphereGeometry(radius * 1.16, 32, 20),
         new THREE.MeshBasicMaterial({
-          color: color.clone().lerp(new THREE.Color(0xdffcff), 0.35),
+          color: color.clone().lerp(new THREE.Color(profile.accent), 0.42),
           transparent: true,
-          opacity: 0.14,
+          opacity: 0.16,
           side: THREE.BackSide,
           depthWrite: false,
           toneMapped: false
         })
       );
       const ring = new THREE.Mesh(
-        new THREE.TorusGeometry(radius * 1.55, 0.32, 6, 64),
+        new THREE.TorusGeometry(radius * 1.52, 0.32, 6, 64),
         new THREE.MeshBasicMaterial({
-          color: color.clone().lerp(new THREE.Color(0xffffff), 0.45),
+          color: new THREE.Color(profile.accent).lerp(new THREE.Color(0xffffff), 0.35),
           transparent: true,
-          opacity: 0.52,
+          opacity: 0.5,
           depthWrite: false,
           toneMapped: false
         })
       );
       ring.rotation.set(Math.PI / 2 + (rng() - 0.5) * 0.5, rng() * Math.PI, (rng() - 0.5) * 0.45);
       const label = destinationLabel(destination);
-      label.position.set(0, radius * 1.85, 0);
-      root.add(body, atmosphere, ring, label);
+      label.position.set(0, radius * 1.78, 0);
+      root.add(terrain.body, terrain.water, atmosphere, ring, label);
       this.group.add(root);
-      this.targets.push({ destination, position, radius, body, atmosphere, ring, label });
+      this.targets.push({ destination, position, radius, body: terrain.body, water: terrain.water, atmosphere, ring, label, surfaceRadius: terrain.surfaceRadius });
     }
+  }
+
+  /** Remove route graphics once a ship commits to a landing approach. */
+  beginLanding(target: PlanetTarget): void {
+    target.label.visible = false;
+    target.ring.visible = false;
   }
 
   update(dt: number, time: number): void {
     for (let i = 0; i < this.targets.length; i++) {
       const target = this.targets[i];
-      target.body.rotation.y += dt * (0.08 + i * 0.025);
+      target.water.rotation.y += dt * (0.025 + i * 0.008);
       target.ring.rotation.z += dt * (i % 2 === 0 ? 0.05 : -0.04);
       const pulse = 1 + Math.sin(time * 1.4 + i * 1.8) * 0.025;
       target.atmosphere.scale.setScalar(pulse);

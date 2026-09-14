@@ -285,13 +285,13 @@
           <span>Direct flight</span>
           <strong>{$gameState.space.fuel} fuel</strong>
         </div>
-        <button class="land" on:click={() => game?.landFlight()}>Land on {$gameState.space.planetName}</button>
+        <button class="land" on:click={() => game?.landFlight()}>Return to {$gameState.space.planetName}</button>
         <div class="crosshair" aria-hidden="true"><span></span></div>
         <p class="flight-hint">
           {#if $gameState.isTouch}
-            Steer with the stick · boost with the rocket · fly into a labelled planet
+            Steer with the stick · boost with the rocket · approach a terrain world to land
           {:else}
-            <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> steer · <kbd>Shift</kbd> boost · <kbd>Space</kbd> land · fly into a labelled planet
+            <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> steer · <kbd>Shift</kbd> boost · <kbd>Space</kbd> return · approach a terrain world to land
           {/if}
         </p>
       </div>

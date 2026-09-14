@@ -44,7 +44,7 @@
       <ol>
         <li><strong>Recover five ship parts on Earth</strong><span>Search the homeworld for the missing components.</span></li>
         <li><strong>Craft at Earth's landing pad</strong><span>Bring all five parts back and assemble your ship.</span></li>
-        <li><strong>Fly into deep space</strong><span>Board the ship, steer toward one of the three labelled planets in the sky, and fly into it to land.</span></li>
+        <li><strong>Land on another world</strong><span>Board the ship, steer toward one of the three labelled terrain planets, and let the landing computer set you down.</span></li>
       </ol>
       <p class="fuel-note"><strong>Fuel:</strong> starlight shards add fuel anywhere. Earth's landing pad can fully recharge the ship; use the free home recall if you run low away from Earth. Each sky label shows its route cost.</p>
       <p class="earth-note"><strong>Earth recall:</strong> while away, the home control teleports you to Earth for free.</p>
@@ -62,11 +62,11 @@
         </div>
         <div><dt>Shards</dt><dd>A dozen starlight shards glow purple across each planet. Walk over one to collect it.</dd></div>
         <div><dt>Ship parts</dt><dd>On Earth, walk into each missing part to recover it. Once all five are found, return to the landing pad and tap the card to craft. Return later to refuel there.</dd></div>
-        <div><dt>Deep space</dt><dd>Board the ship, steer with the stick, and fly into a labelled planet. Toggle boost for more speed; tap land to return to the current world.</dd></div>
+        <div><dt>Deep space</dt><dd>Board the ship, steer with the stick, and approach a labelled terrain planet to land. Toggle boost for more speed; tap return to abort to the current world.</dd></div>
         <div><dt>Earth</dt><dd>When away from home, tap the home control for a free recall.</dd></div>
         <div><dt>Journal</dt><dd>Tap the book button to see the biomes, animals, and milestones you have collected across every planet.</dd></div>
         <div><dt>Boats</dt><dd>Stand at the shore and tap the card to launch a boat. Steer with the stick. Reach land to dock.</dd></div>
-        <div><dt>The sky</dt><dd>The three large labelled planets are real destinations. The moon, constellations, and odd shooting star share the night with them.</dd></div>
+        <div><dt>The sky</dt><dd>The three large labelled planets have visible land, water, and a surface your spacecraft can land on. The moon, constellations, and odd shooting star share the night with them.</dd></div>
         <div><dt>Photo mode</dt><dd>Tap the camera button to hide the interface. Save a picture or leave from the corner buttons.</dd></div>
       {:else}
         <div><dt><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></dt><dd>Walk. Arrow keys work too.</dd></div>
@@ -75,9 +75,9 @@
         <div><dt><kbd>E</kbd></dt><dd>Interact with wonders and animals. At Earth's landing pad, craft after recovering all five ship parts, launch, or fully refuel the ship.</dd></div>
         <div><dt><kbd>M</kbd></dt><dd>Pull back to see the whole planet. Click a spot to walk there.</dd></div>
         <div><dt><kbd>J</kbd></dt><dd>Open the journal: biomes visited, animals befriended, milestones, and a dozen starlight shards to find on each planet.</dd></div>
-        <div><dt>Deep space</dt><dd>Board the ship, steer with <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd>, hold <kbd>Shift</kbd> to boost, and fly into a labelled planet. <kbd>Space</kbd> lands back on the current world.</dd></div>
+        <div><dt>Deep space</dt><dd>Board the ship, steer with <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd>, hold <kbd>Shift</kbd> to boost, and approach a labelled terrain planet to land. <kbd>Space</kbd> returns to the current world.</dd></div>
         <div><dt>Earth recall</dt><dd>When away from home, use the home control for a free recall.</dd></div>
-        <div><dt>The sky</dt><dd>The three large labelled planets are real destinations. The moon, constellations, auroras, and odd shooting star share the night with them.</dd></div>
+        <div><dt>The sky</dt><dd>The three large labelled planets have visible land, water, and a surface your spacecraft can land on. The moon, constellations, auroras, and odd shooting star share the night with them.</dd></div>
         <div><dt><kbd>P</kbd></dt><dd>Photo mode: hides the interface. Press again or <kbd>Esc</kbd> to leave, or save a picture from the corner.</dd></div>
         <div><dt>Mouse</dt><dd>Drag to orbit the camera, scroll to zoom, click the ground to walk.</dd></div>
         <div><dt>Boats</dt><dd>Stand at the shore and press <kbd>E</kbd> to launch a boat. Steer with the walk keys. Reach land to dock.</dd></div>

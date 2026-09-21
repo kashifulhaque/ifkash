@@ -194,7 +194,7 @@ export const DAY_INFO: Record<DayLabel, DayInfo> = {
   'Lower A': {
     day: 'Tue',
     detail: 'quads / hamstrings / calves / core',
-    cardio: '10 min easy cycle: legs are already done'
+    cardio: '10 min crosstrainer, easy: legs are already done'
   },
   'Upper B': {
     day: 'Wed',
@@ -204,7 +204,7 @@ export const DAY_INFO: Record<DayLabel, DayInfo> = {
   'Lower B': {
     day: 'Thu',
     detail: 'hamstrings / quads / calves / core',
-    cardio: '10 min easy cycle'
+    cardio: '10 min crosstrainer, easy'
   },
   Cardio: {
     day: 'Sat / Sun',
@@ -214,17 +214,6 @@ export const DAY_INFO: Record<DayLabel, DayInfo> = {
   }
 };
 
-/**
- * How to run the plan, shown on the page. Kept here with the templates so the
- * rules and the exercise lists change together.
- */
-export const PLAN_RULES: string[] = [
-  'Monday to Thursday are the four lifts, in order. Saturday or Sunday is the spare slot: do the lift you missed if there is one, otherwise cardio or a long walk. Never two lifts in one day.',
-  'Progress by reps first: when every set reaches the top of its range, add 2.5 kg per dumbbell or on upper-body machines and 5 kg on leg machines next time. Stop each set with one or two reps left; no singles.',
-  'Dumbbells and machines are the default because they are always free. Take the barbell option only when it is free the moment you get there; never wait for it.',
-  'Short on time: do the key lifts and 10 minutes of cardio, then leave. A finished short session beats an abandoned long one.',
-  'Aim for 8,000 to 10,000 steps every day, gym or not. That is the cheapest calorie lever available and it costs no recovery.'
-];
 
 // Name → kind lookup across every template, so history / restored off-template
 // rows can be rendered with the right units without a DB column. Defaults to
@@ -303,16 +292,17 @@ export function cardioMet(kind: string): number {
   return CARDIO_OPTIONS.find((o) => o.value === kind)?.met ?? 6.0;
 }
 
-// The day's suggested cardio bout, matching `DAY_INFO[...].cardio`. Treadmill
-// is deliberately not prescribed anywhere: it's the one machine here that
-// won't get used, and cardio you skip burns nothing. Upper days carry the
-// crosstrainer work; lower days get a short easy spin because the legs have
-// just been trained. The optional day is where a longer bout belongs.
+// The day's suggested cardio bout, matching `DAY_INFO[...].cardio`. Every
+// bout is on the crosstrainer: the cycle and treadmill are the two machines
+// here that won't get used, and cardio you skip burns nothing. Upper days
+// carry the real work; lower days get a short easy spin because the legs
+// have just been trained. The optional day is where a longer bout belongs.
+// Daily steps happen outside the gym and aren't logged here.
 export const CARDIO_DEFAULTS: Record<DayLabel, { kind: string; minutes: number }> = {
   'Upper A': { kind: 'Crosstrainer (intervals)', minutes: 20 },
-  'Lower A': { kind: 'Cycle', minutes: 10 },
+  'Lower A': { kind: 'Crosstrainer', minutes: 10 },
   'Upper B': { kind: 'Crosstrainer', minutes: 20 },
-  'Lower B': { kind: 'Cycle', minutes: 10 },
+  'Lower B': { kind: 'Crosstrainer', minutes: 10 },
   Cardio: { kind: 'Crosstrainer (intervals)', minutes: 30 }
 };
 

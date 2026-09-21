@@ -38,7 +38,6 @@
     DAY_LABELS,
     LIFT_DAYS,
     DAY_INFO,
-    PLAN_RULES,
     setsFromScheme,
     kgToGrams,
     gramsToKg,
@@ -1129,6 +1128,47 @@
     {/if}
   </section>
 
+  <!-- The whole week on one screen: every day's lifts and cardio, ticked once
+       logged this week. Each row opens that day above. -->
+  <details class="fold">
+    <summary>
+      <span class="fold-title">Week overview</span>
+      <span class="fold-meta">{LIFT_DAYS.length} lifts + 1 spare</span>
+    </summary>
+    <div class="fold-body overview">
+      {#each DAY_LABELS as label}
+        {@const done = signedIn && week.done.includes(label)}
+        <button
+          type="button"
+          class="ov-day"
+          class:done
+          class:optional={DAY_INFO[label].optional}
+          class:active={label === active}
+          on:click={() => selectDay(label)}
+          title="Open {label}"
+        >
+          <span class="ov-when">{DAY_INFO[label].day}</span>
+          <span class="ov-body">
+            <span class="ov-title">
+              {label}
+              {#if done}<Check size={13} strokeWidth={2.5} />{/if}
+            </span>
+            <span class="ov-lifts">
+              {#if DAY_TEMPLATES[label].length}
+                {#each DAY_TEMPLATES[label] as ex}
+                  <span class="ov-lift" class:key={ex.priority}>{ex.name} <em>{ex.scheme}</em></span>
+                {/each}
+              {:else}
+                <span class="ov-lift">{DAY_INFO[label].detail}</span>
+              {/if}
+            </span>
+            <span class="ov-cardio">🚴 {DAY_INFO[label].cardio}</span>
+          </span>
+        </button>
+      {/each}
+    </div>
+  </details>
+
   {#if signedIn}
     <!-- Progress: the three numbers that answer "is this working?" and the
          chart. Everything else is behind the details fold on purpose. -->
@@ -1170,18 +1210,6 @@
         <p class="hint">No bodyweight entries yet — add one up top and the trend appears here.</p>
       {/if}
     </section>
-
-    <!-- The rules the plan runs on. Collapsed: read once, glance at later. -->
-    <details class="fold">
-      <summary><span class="fold-title">How this plan works</span></summary>
-      <div class="fold-body">
-        <ol class="rules">
-          {#each PLAN_RULES as rule}
-            <li>{rule}</li>
-          {/each}
-        </ol>
-      </div>
-    </details>
 
     <!-- Everything the progress card left out: profile, body maths, the fitted
          rates, projections, signals, cadence. -->
@@ -2051,18 +2079,53 @@
   .trend-stat.warn .ts-val { color: #e67e22; }
   .progress-card .hint { margin: 0; }
 
-  /* ── Plan rules ─────────────────────────────────────────── */
-  .rules {
-    margin: 0;
-    padding-left: 1.25rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.6rem;
-    font-size: 0.875rem;
-    line-height: 1.55;
-    color: var(--text-secondary);
+  /* ── Week overview ──────────────────────────────────────── */
+  .overview { display: flex; flex-direction: column; gap: 0.5rem; padding: 0.75rem; }
+  .ov-day {
+    display: grid;
+    grid-template-columns: 4rem minmax(0, 1fr);
+    gap: 0.75rem;
+    width: 100%;
+    padding: 0.7rem 0.85rem;
+    text-align: left;
+    background: transparent;
+    border: 1px solid var(--border-subtle);
+    border-left: 2px solid transparent;
+    border-radius: 0.5rem;
+    cursor: var(--cursor-pointer);
+    transition: border-color 0.15s, background 0.15s;
   }
-  .rules li::marker { font-family: var(--font-mono); color: var(--text-faint); }
+  .ov-day:hover { border-color: var(--border-strong); }
+  .ov-day.active { border-left-color: var(--blueprint); background: var(--blueprint-tint); }
+  .ov-day.optional { border-style: dashed; border-left-style: solid; }
+  .ov-when {
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+    padding-top: 0.15rem;
+  }
+  .ov-body { display: flex; flex-direction: column; gap: 0.35rem; min-width: 0; }
+  .ov-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  .ov-day.done .ov-title { color: var(--blueprint); }
+  .ov-lifts { display: flex; flex-wrap: wrap; gap: 0.25rem 0.75rem; }
+  .ov-lift { font-size: 0.8rem; line-height: 1.45; color: var(--text-secondary); }
+  .ov-lift.key { color: var(--text-primary); }
+  .ov-lift em {
+    font-family: var(--font-mono);
+    font-style: normal;
+    font-size: 0.68rem;
+    color: var(--text-tertiary);
+  }
+  .ov-cardio { font-size: 0.74rem; font-style: italic; color: var(--text-tertiary); }
 
   /* ── Folds (rules / numbers / history) ──────────────────── */
   .fold { border: 1px solid var(--border); border-radius: 0.625rem; }
@@ -2460,6 +2523,9 @@
     .ex-equip { order: 1; }
     .ex-target { order: 3; flex-basis: 100%; padding-left: 2rem; }
     .ex-alt { order: 4; padding-left: 2rem; }
+    /* Weekday above the body rather than beside it at phone width. */
+    .ov-day { grid-template-columns: 1fr; gap: 0.3rem; padding: 0.65rem 0.75rem; }
+    .overview { padding: 0.5rem; }
 
     /* Cardio: the machine name shares a row with two number fields and a
        delete button, which crushes the select to a bare chevron at this width

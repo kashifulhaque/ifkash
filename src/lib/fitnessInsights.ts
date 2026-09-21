@@ -8,7 +8,7 @@
 //   - a least-squares fit over a fixed window gives the *rate*, because a rate
 //     read off two endpoints is mostly water weight.
 
-import type { BodyweightEntry, WeeklyAverage } from '$lib/workout';
+import { LIFT_DAYS, type BodyweightEntry, type WeeklyAverage } from '$lib/workout';
 import { goalDeficit, type Profile } from '$lib/fitnessMetrics';
 
 /** Energy in a kilogram of body tissue lost on a cut (~mostly fat). */
@@ -330,6 +330,26 @@ export function weeklyExtremes(weekly: WeeklyAverage[]): {
   return { best, worst };
 }
 
+// ---- pace against the goal -------------------------------------------------
+
+export type Pace = 'ahead' | 'on pace' | 'behind' | 'flat' | 'gaining';
+
+/**
+ * The measured rate read against the rate the goal asks for. Both are kg/week
+ * and negative while losing. Bands are wide on purpose: a 4-week fit still
+ * carries water-weight noise, and the page shows one word, not a number.
+ */
+export function paceAgainst(measured: number | null, target: number): Pace | null {
+  if (measured === null) return null;
+  if (measured > 0.1) return 'gaining';
+  if (target >= 0) return Math.abs(measured) <= 0.1 ? 'flat' : measured < 0 ? 'ahead' : 'gaining';
+  if (measured > -0.1) return 'flat';
+  const ratio = measured / target; // both negative → positive share of target
+  if (ratio >= 1.3) return 'ahead';
+  if (ratio >= 0.75) return 'on pace';
+  return 'behind';
+}
+
 // ---- the whole picture -----------------------------------------------------
 
 export type WeightInsights = {
@@ -354,6 +374,10 @@ export type WeightInsights = {
   deficitGap: number | null;
   /** A flat recent trend inside a log that was falling — worth naming. */
   stalled: boolean;
+  /** kg/week the goal's deficit works out to; negative while cutting, 0 on maintain. */
+  targetKgPerWeek: number;
+  /** The measured rate against that target, or null without enough weigh-ins. */
+  pace: Pace | null;
   projections: Projection[];
   forecast: { weeks: number; kg: number }[];
   consistency: Consistency;
@@ -399,6 +423,9 @@ export function weightInsights(
   const stalled =
     recent !== null && longRun !== null && Math.abs(recent) < 0.1 && longRun < -0.1;
 
+  const targetKgPerWeek = round((-plannedDeficit * 7) / KCAL_PER_KG, 2);
+  const pace = paceAgainst(primary.kgPerWeek, targetKgPerWeek);
+
   // Projections run off the primary rate; targets are BMI-derived so they need
   // no extra state (the profile has no goal-weight field).
   const kgPerDay = primary.kgPerWeek === null ? 0 : primary.kgPerWeek / 7;
@@ -432,6 +459,8 @@ export function weightInsights(
     plannedDeficit,
     deficitGap,
     stalled,
+    targetKgPerWeek,
+    pace,
     projections,
     forecast,
     consistency: consistency(points, today),
@@ -447,7 +476,7 @@ export type TrainingCadence = {
   last28: number;
   /** Sessions per week averaged over the last 28 days. */
   perWeek: number;
-  /** Push / Pull / Legs counts over the last 28 days. */
+  /** Sessions per lifting day over the last 28 days. */
   focus: { label: string; count: number }[];
   daysSinceLast: number | null;
   /** Consecutive days trained up to the most recent session. */
@@ -487,9 +516,54 @@ export function trainingCadence(
     last7: sessions.filter((s) => inWindow(s.date, 7)).length,
     last28: last28.length,
     perWeek: round(last28.length / 4, 1),
-    focus: ['Push', 'Pull', 'Legs'].map((label) => ({ label, count: counts.get(label) ?? 0 })),
+    focus: LIFT_DAYS.map((label) => ({ label, count: counts.get(label) ?? 0 })),
     daysSinceLast: dates.length ? Math.max(0, nowT - dates[dates.length - 1]) : null,
     streak,
     longestGap
+  };
+}
+
+// ---- this week's checklist -------------------------------------------------
+
+export type WeekChecklist = {
+  /** ISO Monday of the week that contains `today`. */
+  weekStart: string;
+  /** Day labels logged in that week, deduplicated. */
+  done: string[];
+  liftsDone: number;
+  liftsTotal: number;
+  /** True once every lifting day has a session this week. */
+  complete: boolean;
+};
+
+/**
+ * Which of the plan's days have a session in the current Monday-to-Sunday
+ * week. This is the number the page leads with: the plan counts a week as
+ * finished when all four lifting days are logged, whatever the calendar says.
+ */
+export function weekChecklist(
+  sessions: { date: string; day_label: string }[],
+  liftDays: readonly string[],
+  today: string
+): WeekChecklist {
+  const t = toDays(today);
+  // `toDays` counts from the epoch, a Thursday, so Mondays fall on t ≡ 4 (mod 7).
+  const monday = t - ((((t - 4) % 7) + 7) % 7);
+  const weekStart = toISO(monday);
+  const weekEnd = toISO(monday + 6);
+  const done = [
+    ...new Set(
+      sessions
+        .filter((s) => s.day_label && s.date >= weekStart && s.date <= weekEnd)
+        .map((s) => s.day_label)
+    )
+  ];
+  const liftsDone = liftDays.filter((d) => done.includes(d)).length;
+  return {
+    weekStart,
+    done,
+    liftsDone,
+    liftsTotal: liftDays.length,
+    complete: liftsDone >= liftDays.length
   };
 }

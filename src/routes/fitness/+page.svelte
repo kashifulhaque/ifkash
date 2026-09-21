@@ -18,7 +18,7 @@
     {
       name: 'Workout',
       icon: Dumbbell,
-      desc: 'The push/pull/legs split, the cardio rules and the numbers — plus a log to track every session and progressive overload.',
+      desc: 'The four-day upper/lower split, the cardio rules and the week checklist — plus a log to track every session and progressive overload.',
       href: '/fitness/workout'
     }
   ];

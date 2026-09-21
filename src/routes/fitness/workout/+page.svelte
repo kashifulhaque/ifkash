@@ -1,6 +1,6 @@
 <svelte:head>
   <title>Workout — Kashif</title>
-  <meta name="description" content="A 5–6 day push/pull/legs program with cardio mixed in — built to gain muscle while cutting." />
+  <meta name="description" content="A four-day upper/lower program with short cardio bouts — built to hold muscle while cutting." />
 </svelte:head>
 
 <script lang="ts">
@@ -28,11 +28,17 @@
   import {
     weightInsights,
     trainingCadence,
+    weekChecklist,
     weightForBmi,
-    type RateBand
+    type RateBand,
+    type Pace
   } from '$lib/fitnessInsights';
   import {
     DAY_TEMPLATES,
+    DAY_LABELS,
+    LIFT_DAYS,
+    DAY_INFO,
+    PLAN_RULES,
     setsFromScheme,
     kgToGrams,
     gramsToKg,
@@ -56,29 +62,13 @@
 
   const clientId = env.PUBLIC_GOOGLE_CLIENT_ID ?? '';
 
-  const cardio: Record<Focus, string> = {
-    Push: '20 min crosstrainer, steady',
-    Pull: '20 min crosstrainer intervals — 30s hard / 90s easy × 10',
-    Legs: '15 min easy cycle (legs are already done)'
-  };
-
-  const split: { day: string; focus: Focus; detail: string }[] = [
-    { day: 'Day 1', focus: 'Push', detail: 'chest / shoulders / triceps / abs' },
-    { day: 'Day 2', focus: 'Pull', detail: 'back / rear delts / biceps / core' },
-    { day: 'Day 3', focus: 'Legs', detail: 'quads / hamstrings / calves' },
-    { day: 'Day 4', focus: 'Push', detail: 'chest / shoulders / triceps / abs' },
-    { day: 'Day 5', focus: 'Pull', detail: 'back / rear delts / biceps / core' },
-    { day: 'Day 6', focus: 'Legs', detail: 'quads / hamstrings / calves' }
-  ];
-
   // ---- state ---------------------------------------------------------------
 
   let signedIn = false;
   let gisButton: HTMLDivElement;
   let errorMsg = '';
 
-  let active: Focus = 'Push';
-  const FOCUSES: Focus[] = ['Push', 'Pull', 'Legs'];
+  let active: Focus = LIFT_DAYS[0];
   let expanded: Record<string, boolean> = {};
 
   function today(): string {
@@ -104,6 +94,8 @@
     equipment: Equipment;
     /** Compound / previously-neglected lift — progress these first. */
     priority: boolean;
+    /** Fallback or upgrade for when the prescribed implement is taken or free. */
+    alt: string;
     sets: SetRow[];
   };
   let exercises: ExerciseRow[] = [];
@@ -173,6 +165,7 @@
       kind: ex.kind,
       equipment: ex.equipment ?? '',
       priority: ex.priority ?? false,
+      alt: ex.alt ?? '',
       sets: Array.from({ length: setsFromScheme(ex.scheme) }, blankSet)
     }));
   }
@@ -270,9 +263,10 @@
 
   /**
    * Build the editable rows for the active day. If a session already exists for
-   * (date, active) restore it as committed values; otherwise prefill set weights
-   * (only) from the most recent prior session of the same day. Bodyweight is
-   * prefilled from today's entry or the latest prior one.
+   * (date, active) restore it as committed values; otherwise prefill each
+   * exercise's weights from the last session that contains it, whatever day it
+   * was logged under. Bodyweight is prefilled from today's entry or the latest
+   * prior one.
    */
   async function loadDayData() {
     const rows = templateRows(active);
@@ -288,11 +282,7 @@
           if (restored.length) cardio = restored;
         }
       } else {
-        const prior = sessions.find((s) => s.day_label === active && s.date < sessionDate);
-        if (prior) {
-          const d = await detailFor(prior.id);
-          if (d) fillRows(rows, d, false);
-        }
+        await prefillFromHistory(rows);
       }
 
       const bwToday = bodyweight.find((b) => b.date === sessionDate);
@@ -313,6 +303,37 @@
 
     exercises = rows;
     cardioRows = cardio;
+  }
+
+  /**
+   * Suggest weights for each template row from the most recent prior session
+   * that logged that exercise on the row's implement. Sessions are scanned
+   * newest-first across every day label, because the same lift appears on
+   * more than one day and a plan change renames days without changing the
+   * lifts. Sets with no implement recorded (logged before it was tracked)
+   * count as a match; sets on a different implement don't, so a template
+   * barbell slot isn't relabelled by last week's dumbbell session. Each
+   * session costs one request, so the scan stops once every row has a
+   * suggestion or after `PREFILL_LOOKBACK` sessions, whichever comes first.
+   */
+  const PREFILL_LOOKBACK = 20;
+  async function prefillFromHistory(rows: ExerciseRow[]) {
+    const pending = new Map(rows.filter((r) => r.name).map((r) => [r.name, r.equipment]));
+    if (pending.size === 0) return;
+    const matches = (x: { exercise: string; equipment: Equipment }) => {
+      const want = pending.get(x.exercise);
+      return want !== undefined && (!want || !x.equipment || x.equipment === want);
+    };
+    const prior = sessions.filter((s) => s.date < sessionDate).slice(0, PREFILL_LOOKBACK);
+    for (const s of prior) {
+      if (pending.size === 0) break;
+      const d = await detailFor(s.id);
+      if (!d) continue;
+      const wanted = { ...d, sets: d.sets.filter(matches) };
+      if (wanted.sets.length === 0) continue;
+      fillRows(rows, wanted, false);
+      for (const x of wanted.sets) pending.delete(x.exercise);
+    }
   }
 
   /** Restore committed cardio rows from a saved session detail. */
@@ -342,6 +363,7 @@
           kind: exerciseKind(g.exercise),
           equipment: g.equipment || exerciseEquipment(g.exercise),
           priority: false,
+          alt: '',
           sets: []
         };
         rows.push(row);
@@ -392,7 +414,7 @@
   function addExercise() {
     exercises = [
       ...exercises,
-      { name: '', scheme: '', kind: 'weighted', equipment: '', priority: false, sets: [blankSet()] }
+      { name: '', scheme: '', kind: 'weighted', equipment: '', priority: false, alt: '', sets: [blankSet()] }
     ];
   }
 
@@ -421,19 +443,19 @@
   }
 
   /**
-   * The day to open on boot, read off the history: if today is already logged,
-   * that's the current day — reopen it; otherwise continue the Push → Pull →
-   * Legs rotation from the most recent session (so a fresh visit lands on the
-   * right day instead of always defaulting to Push). No history → Day 1.
+   * The day to open on boot. If today is already logged, reopen it. Otherwise
+   * open the first lifting day that has no session this week, which is the
+   * plan's "missed a day, shift the week" rule made automatic: on Tuesday
+   * after a Monday Upper A that is Lower A; on Wednesday after a skipped
+   * Tuesday it is still Lower A. Once all four are logged, the spare slot is
+   * cardio.
    */
   function pickDay(): Focus {
     const todayStr = today();
     const todays = sessions.find((s) => s.date === todayStr && s.day_label);
-    if (todays) return todays.day_label as Focus;
-    const last = sessions.find((s) => s.date < todayStr && s.day_label);
-    if (!last) return 'Push';
-    const i = FOCUSES.indexOf(last.day_label as Focus);
-    return i >= 0 ? FOCUSES[(i + 1) % FOCUSES.length] : 'Push';
+    if (todays && DAY_LABELS.includes(todays.day_label as Focus)) return todays.day_label as Focus;
+    const done = weekChecklist(sessions, LIFT_DAYS, todayStr).done;
+    return LIFT_DAYS.find((d) => !done.includes(d)) ?? 'Cardio';
   }
 
   function onDateChange() {
@@ -578,8 +600,27 @@
   // All the trend maths lives in `fitnessInsights.ts`; the page only formats it.
   $: insights = weightInsights(bodyweight, profile, weekly, today());
   $: cadence = trainingCadence(sessions, today());
+  $: week = weekChecklist(sessions, LIFT_DAYS, today());
   /** Upper edge of the normal BMI range at this height — the chart's goal line. */
   $: normalBmiKg = weightForBmi(24.9, profile.height_cm);
+
+  // The one-word read on the 4-week rate against the goal's rate. Bands are
+  // deliberately coarse; the numbers behind them live in the details fold.
+  const PACE_LABEL: Record<Pace, string> = {
+    ahead: 'ahead of goal',
+    'on pace': 'on pace',
+    behind: 'behind goal',
+    flat: 'flat',
+    gaining: 'gaining'
+  };
+  const PACE_NOTE: Record<Pace, string> = {
+    ahead: 'Faster than the goal asks. Fine for a short block; if the key lifts start dropping, eat a little more.',
+    'on pace': 'Losing at the rate the goal asks for. Keep doing what this month did.',
+    behind: 'Losing, but slower than the goal asks. Steps and the food rules are the levers, not more gym time.',
+    flat: 'No movement over the last month. A 3-week stall on a cut means intake has drifted up to maintenance.',
+    gaining: 'Trending up over the last month. Intake is above maintenance, whatever the training looks like.'
+  };
+  const PACE_WARN: Pace[] = ['behind', 'flat', 'gaining'];
 
   const BAND_NOTE: Record<RateBand, string> = {
     gaining: 'Trending up over this window. Expected on a bulk; on a cut it means intake is above target.',
@@ -828,7 +869,7 @@
       </div>
     </div>
     <p class="page-desc">
-      Push/pull/legs split. Pick a day, then {signedIn ? 'tap an exercise and log your sets — it saves as you type.' : 'sign in to log your sets right here.'}
+      Four lifts a week, upper/lower. Pick a day, then {signedIn ? 'tap an exercise and log your sets — it saves as you type.' : 'sign in to log your sets right here.'}
     </p>
   </header>
 
@@ -836,19 +877,36 @@
     <div class="error-banner">{errorMsg}</div>
   {/if}
 
-  <!-- Week at a glance — each chip jumps to that day's exercises. -->
-  <div class="week-strip">
-    {#each split as row}
-      <button
-        class="day-chip"
-        class:active={row.focus === active}
-        on:click={() => selectDay(row.focus)}
-        title={row.detail}
-      >
-        <span class="chip-day">{row.day}</span>
-        <span class="chip-focus">{row.focus}</span>
-      </button>
-    {/each}
+  <!-- The week: each chip jumps to that day's exercises and ticks once the day
+       is logged this week. Four ticks is a finished week; the fifth is a bonus. -->
+  <div class="week-block">
+    <div class="week-strip">
+      {#each DAY_LABELS as label}
+        <button
+          class="day-chip"
+          class:active={label === active}
+          class:done={signedIn && week.done.includes(label)}
+          class:optional={DAY_INFO[label].optional}
+          on:click={() => selectDay(label)}
+          title={DAY_INFO[label].detail}
+        >
+          <span class="chip-day">{DAY_INFO[label].day}</span>
+          <span class="chip-focus">
+            {label}
+            {#if signedIn && week.done.includes(label)}<Check size={13} strokeWidth={2.5} />{/if}
+          </span>
+        </button>
+      {/each}
+    </div>
+    {#if signedIn}
+      <p class="week-line" class:complete={week.complete}>
+        {#if week.complete}
+          Week done — {week.liftsDone} of {week.liftsTotal} lifts logged. Anything more is extra.
+        {:else}
+          {week.liftsDone} of {week.liftsTotal} lifts logged this week.
+        {/if}
+      </p>
+    {/if}
   </div>
 
   {#if !signedIn}
@@ -878,87 +936,21 @@
         />
       </label>
     </div>
-
-    <!-- Live body metrics — recompute from the bodyweight above + profile. -->
-    {#if metrics && targets}
-      <div class="metrics-card">
-        <div class="metrics-grid">
-          <div class="metric">
-            <span class="m-val">{metrics.bmi}</span>
-            <span class="m-label">BMI</span>
-            <span class="m-sub">{metrics.bmiCategory}</span>
-          </div>
-          <div class="metric">
-            <span class="m-val">{metrics.bmr}</span>
-            <span class="m-label">BMR</span>
-            <span class="m-sub">kcal/day</span>
-          </div>
-          <div class="metric">
-            <span class="m-val">{metrics.tdee}</span>
-            <span class="m-label">TDEE</span>
-            <span class="m-sub">maintenance</span>
-          </div>
-          <div class="metric goal">
-            <span class="m-val">{targets.calories}</span>
-            <span class="m-label">Target</span>
-            <span class="m-sub">kcal/day</span>
-          </div>
-        </div>
-        <p class="macro-line">
-          Daily macros: <strong>{targets.protein_g}g</strong> protein ·
-          <strong>{targets.carbs_g}g</strong> carbs ·
-          <strong>{targets.fat_g}g</strong> fat
-        </p>
-      </div>
-
-      <!-- Profile — the inputs the metrics math is built on. -->
-      <details class="fold">
-        <summary>Profile</summary>
-        <div class="fold-body">
-          <div class="profile-grid">
-            <label>
-              Height (cm)
-              <input type="number" min="50" max="300" bind:value={profile.height_cm} on:input={onProfileChange} />
-            </label>
-            <label>
-              Age
-              <input type="number" min="1" max="120" bind:value={profile.age_years} on:input={onProfileChange} />
-            </label>
-            <label>
-              Sex
-              <select bind:value={profile.sex} on:change={onProfileChange}>
-                <option value="male">male</option>
-                <option value="female">female</option>
-              </select>
-            </label>
-            <label>
-              Activity
-              <select bind:value={profile.activity} on:change={onProfileChange}>
-                {#each ACTIVITY_OPTIONS as a}
-                  <option value={a.value}>{a.label}</option>
-                {/each}
-              </select>
-            </label>
-            <label class="wide">
-              Goal
-              <select bind:value={profile.goal} on:change={onProfileChange}>
-                {#each GOALS as g}
-                  <option value={g}>{GOAL_LABELS[g]}</option>
-                {/each}
-              </select>
-            </label>
-          </div>
-        </div>
-      </details>
-    {/if}
   {/if}
 
   <!-- Active day's exercises -->
   <section class="day-card">
     <div class="day-card-head">
       <h2>{active}</h2>
-      <span class="cardio-pill">🚴 {cardio[active]}</span>
+      <span class="cardio-pill">🚴 {DAY_INFO[active].cardio}</span>
     </div>
+
+    {#if exercises.length === 0}
+      <p class="empty-day">
+        No lifting today. Log the cardio bout below{signedIn ? '' : ' once signed in'}, or add an
+        exercise if you end up doing one.
+      </p>
+    {/if}
 
     {#if !signedIn}
       <!-- read-only plan view -->
@@ -969,13 +961,16 @@
             <span class="ex-name">{ex.name}</span>
             {#if ex.priority}<span class="key-tag" title="Priority lift — progress this first">key</span>{/if}
             <span class="ex-scheme">{ex.scheme}</span>
+            {#if ex.alt}<span class="ex-alt">{ex.alt}</span>{/if}
           </li>
         {/each}
       </ul>
-      <p class="key-legend">
-        <span class="key-tag">key</span> — the lifts that drive the result. Progress these first;
-        the rest are accessories and are what to cut when you're short on time.
-      </p>
+      {#if exercises.length}
+        <p class="key-legend">
+          <span class="key-tag">key</span> — the lifts that drive the result. Progress these first;
+          the rest are accessories and are what to cut when you're short on time.
+        </p>
+      {/if}
     {:else}
       <!-- interactive logging view -->
       <div class="log-list">
@@ -1021,6 +1016,7 @@
                 </select>
               {/if}
               <span class="chevron" aria-hidden="true">{expanded[rowKey(ex, i)] ? '−' : '+'}</span>
+              {#if ex.alt}<span class="ex-alt">{ex.alt}</span>{/if}
             </button>
 
             {#if expanded[rowKey(ex, i)]}
@@ -1133,79 +1129,177 @@
     {/if}
   </section>
 
-  <!-- Session energy burn — rough MET-based estimate from the sets + cardio. -->
-  {#if signedIn && metricKg > 0}
-    <div class="burn-card">
-      <div class="burn-grid">
-        <div class="burn-metric">
-          <span class="b-val">{liftKcal}</span>
-          <span class="b-label">Lifting</span>
-          <span class="b-sub">{totalSets} {totalSets === 1 ? 'set' : 'sets'}</span>
-        </div>
-        <div class="burn-metric">
-          <span class="b-val">{cardioBurn}</span>
-          <span class="b-label">Cardio</span>
-          <span class="b-sub">kcal</span>
-        </div>
-        <div class="burn-metric total">
-          <span class="b-val">{sessionKcal}</span>
-          <span class="b-label">Session</span>
-          <span class="b-sub">kcal burnt</span>
-        </div>
-      </div>
-      <p class="burn-note">
-        Rough estimate at {metricKg.toFixed(1)} kg — lifting assumes ~2.5 min per logged set at
-        moderate effort (8-15 reps). Cardio counts your logged (or estimated) kcal.
-      </p>
-    </div>
-  {/if}
-
   {#if signedIn}
-    <!-- Bodyweight trend, insights and projections -->
-    <details class="fold" open>
+    <!-- Progress: the three numbers that answer "is this working?" and the
+         chart. Everything else is behind the details fold on purpose. -->
+    <section class="progress-card">
+      {#if insights.points.length}
+        <div class="trend-stats">
+          <div class="trend-stat">
+            <span class="ts-val">{insights.trendKg}<small> kg</small></span>
+            <span class="ts-label">trend weight</span>
+            <span class="ts-sub">scale {insights.latestKg} kg · {fmtDate(insights.latestDate)}</span>
+          </div>
+          <div
+            class="trend-stat"
+            class:down={(insights.primary.kgPerWeek ?? 0) < 0}
+            class:up={(insights.primary.kgPerWeek ?? 0) > 0}
+          >
+            <span class="ts-val">{fmtSigned(insights.primary.kgPerWeek, 2)}<small> kg/wk</small></span>
+            <span class="ts-label">{insights.primary.label}</span>
+            <span class="ts-sub">goal {fmtSigned(insights.targetKgPerWeek, 2)} kg/wk</span>
+          </div>
+          <div class="trend-stat" class:warn={insights.pace !== null && PACE_WARN.includes(insights.pace)}>
+            <span class="ts-val pace">{insights.pace ? PACE_LABEL[insights.pace] : '—'}</span>
+            <span class="ts-label">pace</span>
+            <span class="ts-sub">{cadence.perWeek} sessions/wk · last 4 weeks</span>
+          </div>
+        </div>
+
+        {#if insights.pace}
+          <p class="assess" class:warn={PACE_WARN.includes(insights.pace)}>{PACE_NOTE[insights.pace]}</p>
+        {/if}
+
+        <WeightChart
+          points={insights.points}
+          ema={insights.ema}
+          targetKg={normalBmiKg}
+          targetLabel={`BMI 25 · ${normalBmiKg} kg`}
+        />
+      {:else}
+        <p class="hint">No bodyweight entries yet — add one up top and the trend appears here.</p>
+      {/if}
+    </section>
+
+    <!-- The rules the plan runs on. Collapsed: read once, glance at later. -->
+    <details class="fold">
+      <summary><span class="fold-title">How this plan works</span></summary>
+      <div class="fold-body">
+        <ol class="rules">
+          {#each PLAN_RULES as rule}
+            <li>{rule}</li>
+          {/each}
+        </ol>
+      </div>
+    </details>
+
+    <!-- Everything the progress card left out: profile, body maths, the fitted
+         rates, projections, signals, cadence. -->
+    <details class="fold">
       <summary>
-        <span class="fold-title">Bodyweight trend</span>
+        <span class="fold-title">All the numbers</span>
         {#if insights.trendKg !== null}
-          <span class="fold-meta">{insights.trendKg} kg trend · {fmtSigned(insights.primary.kgPerWeek, 2)} kg/wk</span>
+          <span class="fold-meta">{fmtSigned(insights.totalChange)} kg since start</span>
         {/if}
       </summary>
       <div class="fold-body">
-        {#if insights.points.length}
-          <div class="trend-stats">
-            <div class="trend-stat">
-              <span class="ts-val">{insights.trendKg}<small> kg</small></span>
-              <span class="ts-label">trend weight</span>
-              <span class="ts-sub">scale {insights.latestKg} kg · {fmtDate(insights.latestDate)}</span>
+        <h4 class="ins-head first">Profile</h4>
+        <div class="profile-grid">
+          <label>
+            Height (cm)
+            <input type="number" min="50" max="300" bind:value={profile.height_cm} on:input={onProfileChange} />
+          </label>
+          <label>
+            Age
+            <input type="number" min="1" max="120" bind:value={profile.age_years} on:input={onProfileChange} />
+          </label>
+          <label>
+            Sex
+            <select bind:value={profile.sex} on:change={onProfileChange}>
+              <option value="male">male</option>
+              <option value="female">female</option>
+            </select>
+          </label>
+          <label>
+            Activity
+            <select bind:value={profile.activity} on:change={onProfileChange}>
+              {#each ACTIVITY_OPTIONS as a}
+                <option value={a.value}>{a.label}</option>
+              {/each}
+            </select>
+          </label>
+          <label class="wide">
+            Goal
+            <select bind:value={profile.goal} on:change={onProfileChange}>
+              {#each GOALS as g}
+                <option value={g}>{GOAL_LABELS[g]}</option>
+              {/each}
+            </select>
+          </label>
+        </div>
+
+        {#if metrics && targets}
+          <h4 class="ins-head">Body maths <small>at {metricKg.toFixed(1)} kg</small></h4>
+          <div class="rate-grid">
+            <div class="rate-cell">
+              <span class="r-val">{metrics.bmi}</span>
+              <span class="r-label">BMI</span>
+              <span class="r-sub">{metrics.bmiCategory}</span>
             </div>
-            <div class="trend-stat" class:down={(weekDelta ?? 0) < 0} class:up={(weekDelta ?? 0) > 0}>
-              <span class="ts-val">{fmtDelta(weekDelta)}<small> kg</small></span>
-              <span class="ts-label">vs last week</span>
-              <span class="ts-sub">weekly averages</span>
+            <div class="rate-cell">
+              <span class="r-val">{metrics.bmr}</span>
+              <span class="r-label">BMR</span>
+              <span class="r-sub">kcal/day</span>
+            </div>
+            <div class="rate-cell">
+              <span class="r-val">{metrics.tdee}</span>
+              <span class="r-label">TDEE</span>
+              <span class="r-sub">maintenance</span>
+            </div>
+            <div class="rate-cell">
+              <span class="r-val">{targets.protein_g}<small> g</small></span>
+              <span class="r-label">protein</span>
+              <span class="r-sub">per day · 2 g/kg</span>
+            </div>
+          </div>
+          <p class="hint">
+            The calorie target ({targets.calories} kcal) and macros are here if you want them, but the
+            plan is run on the trend weight and the food rules, not on counting.
+          </p>
+
+          <h4 class="ins-head">This session <small>rough burn</small></h4>
+          <div class="rate-grid">
+            <div class="rate-cell">
+              <span class="r-val">{liftKcal}<small> kcal</small></span>
+              <span class="r-label">lifting</span>
+              <span class="r-sub">{totalSets} {totalSets === 1 ? 'set' : 'sets'} · ~2.5 min each</span>
+            </div>
+            <div class="rate-cell">
+              <span class="r-val">{cardioBurn}<small> kcal</small></span>
+              <span class="r-label">cardio</span>
+              <span class="r-sub">logged or estimated</span>
+            </div>
+            <div class="rate-cell">
+              <span class="r-val">{sessionKcal}<small> kcal</small></span>
+              <span class="r-label">session</span>
+              <span class="r-sub">total</span>
+            </div>
+          </div>
+        {/if}
+
+        {#if insights.points.length}
+          <h4 class="ins-head">Bodyweight</h4>
+          <div class="rate-grid">
+            <div class="rate-cell" class:down={(weekDelta ?? 0) < 0} class:up={(weekDelta ?? 0) > 0}>
+              <span class="r-val">{fmtDelta(weekDelta)}<small> kg</small></span>
+              <span class="r-label">vs last week</span>
+              <span class="r-sub">weekly averages</span>
             </div>
             <div
-              class="trend-stat"
+              class="rate-cell"
               class:down={(insights.totalChange ?? 0) < 0}
               class:up={(insights.totalChange ?? 0) > 0}
             >
-              <span class="ts-val">{fmtSigned(insights.totalChange)}<small> kg</small></span>
-              <span class="ts-label">since start</span>
-              <span class="ts-sub">
+              <span class="r-val">{fmtSigned(insights.totalChange)}<small> kg</small></span>
+              <span class="r-label">since start</span>
+              <span class="r-sub">
                 {fmtSigned(insights.totalChangePct)}% · {insights.consistency.spanDays} days · from {insights.startKg} kg
               </span>
-            </div>
-            <div
-              class="trend-stat"
-              class:down={(insights.primary.kgPerWeek ?? 0) < 0}
-              class:up={(insights.primary.kgPerWeek ?? 0) > 0}
-            >
-              <span class="ts-val">{fmtSigned(insights.primary.kgPerWeek, 2)}<small> kg/wk</small></span>
-              <span class="ts-label">current rate</span>
-              <span class="ts-sub">{insights.primary.label} · fitted</span>
             </div>
           </div>
 
           {#if insights.primary.band}
-            <p class="assess" class:warn={BAND_WARN.includes(insights.primary.band)}>
+            <p class="assess quiet" class:warn={BAND_WARN.includes(insights.primary.band)}>
               <span class="assess-chip">
                 {BAND_LABEL[insights.primary.band]}
                 {#if insights.primary.pctPerWeek !== null}
@@ -1215,13 +1309,6 @@
               {BAND_NOTE[insights.primary.band]}
             </p>
           {/if}
-
-          <WeightChart
-            points={insights.points}
-            ema={insights.ema}
-            targetKg={normalBmiKg}
-            targetLabel={`BMI 25 · ${normalBmiKg} kg`}
-          />
 
           <h4 class="ins-head">Rate by window</h4>
           <div class="rate-grid">
@@ -1361,20 +1448,10 @@
               </div>
             {/each}
           </div>
-        {:else}
-          <p class="hint">No bodyweight entries yet — add one up top.</p>
         {/if}
-      </div>
-    </details>
 
-    <!-- Training cadence — frequency and focus balance from the session list -->
-    <details class="fold">
-      <summary>
-        <span class="fold-title">Training cadence</span>
-        {#if cadence.total}<span class="fold-meta">{cadence.perWeek} sessions/wk</span>{/if}
-      </summary>
-      <div class="fold-body">
         {#if cadence.total}
+          <h4 class="ins-head">Training cadence</h4>
           <div class="rate-grid">
             <div class="rate-cell">
               <span class="r-val">{cadence.last7}</span>
@@ -1398,7 +1475,7 @@
             </div>
           </div>
 
-          <h4 class="ins-head">Focus balance <small>last 4 weeks</small></h4>
+          <h4 class="ins-head">Day balance <small>last 4 weeks</small></h4>
           <div class="focus-bars">
             {#each cadence.focus as f}
               <div class="focus-row">
@@ -1416,11 +1493,9 @@
             {/each}
           </div>
           <p class="hint">
-            The plan runs each focus twice a week, so four weeks of it is eight of each. A focus
-            sitting well under the other two is the one going backwards.
+            Each day runs once a week, so four weeks of the plan is four of each. Sessions from
+            the earlier push/pull/legs plan don't appear here.
           </p>
-        {:else}
-          <p class="hint">No sessions logged yet.</p>
         {/if}
       </div>
     </details>
@@ -1604,11 +1679,26 @@
   }
 
   /* ── Week strip ─────────────────────────────────────────── */
+  .week-block { display: flex; flex-direction: column; gap: 0.6rem; }
   .week-strip {
     display: grid;
-    grid-template-columns: repeat(6, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     gap: 0.5rem;
   }
+  /* A logged day keeps its outline but earns the accent tick; the optional day
+     is dashed so the eye reads four solid slots plus one spare. */
+  .day-chip.optional { border-style: dashed; }
+  .day-chip.done { border-color: var(--blueprint); }
+  .day-chip.done .chip-focus { color: var(--blueprint); }
+  .chip-focus { display: inline-flex; align-items: center; gap: 0.3rem; }
+  .week-line {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.03em;
+    color: var(--text-tertiary);
+  }
+  .week-line.complete { color: var(--blueprint); }
   .day-chip {
     display: flex;
     flex-direction: column;
@@ -1677,33 +1767,7 @@
   }
   input:focus { outline: none; border-color: var(--border-strong); }
 
-  /* ── Body metrics ───────────────────────────────────────── */
-  .metrics-card {
-    border: 1px solid var(--border);
-    border-radius: 0.625rem;
-    padding: 1rem;
-  }
-  .metrics-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 0.75rem;
-  }
-  .metric {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.15rem;
-    padding: 0.75rem 0.4rem;
-    border: 1px solid var(--border-subtle);
-    border-radius: 0.5rem;
-  }
-  .metric.goal { border-color: var(--blueprint); background: var(--blueprint-tint); }
-  .m-val { font-size: 1.25rem; font-weight: 700; color: var(--text-primary); }
-  .m-label { font-size: 0.7rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-secondary); }
-  .m-sub { font-size: 0.66rem; color: var(--text-tertiary); }
-  .macro-line { margin: 0.85rem 0 0; font-size: 0.85rem; color: var(--text-secondary); text-align: center; }
-  .macro-line strong { color: var(--text-primary); }
-
+  /* ── Profile (inside the numbers fold) ──────────────────── */
   .profile-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -1731,9 +1795,6 @@
   }
   .profile-grid select:focus { outline: none; border-color: var(--border-strong); }
 
-  @media (max-width: 520px) {
-    .metrics-grid { grid-template-columns: repeat(2, 1fr); }
-  }
   input.suggested { color: var(--text-tertiary); font-style: italic; }
 
   /* ── Day card ───────────────────────────────────────────── */
@@ -1754,6 +1815,14 @@
   }
   .day-card-head h2 { font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin: 0; }
   .cardio-pill { font-size: 0.78rem; color: var(--text-secondary); font-style: italic; }
+  .empty-day {
+    margin: 0;
+    padding: 0.9rem 1rem;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: var(--text-tertiary);
+    border-bottom: 1px solid var(--border-subtle);
+  }
 
   /* read-only plan list */
   .exercise-list { display: flex; flex-direction: column; list-style: none; padding: 0; margin: 0; }
@@ -1813,6 +1882,18 @@
     color: var(--text-tertiary);
   }
   .ex-name-input { font-weight: 600; }
+  /* The fallback for a contested implement: a full-width footnote under the
+     row header, so the name, target, and picker keep their single line. */
+  .ex-alt {
+    flex-basis: 100%;
+    padding-left: 2.25rem;
+    font-size: 0.72rem;
+    line-height: 1.4;
+    color: var(--text-tertiary);
+    font-style: italic;
+  }
+  .log-ex-head { flex-wrap: wrap; row-gap: 0.15rem; }
+  .exercise-list li { flex-wrap: wrap; row-gap: 0.15rem; }
 
   /* Priority lifts — the compounds that carry the session. Marked with an
      accent rail rather than a colour swap, so the list still scans as one
@@ -1959,33 +2040,31 @@
   .cardio-field .unit { font-size: 0.72rem; color: var(--text-faint); }
   .cardio-add { margin: 0.25rem 0 0; align-self: flex-start; }
 
-  /* ── Session burn ───────────────────────────────────────── */
-  .burn-card {
+  /* ── Progress card ──────────────────────────────────────── */
+  .progress-card {
     border: 1px solid var(--border);
     border-radius: 0.625rem;
     padding: 1rem;
   }
-  .burn-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 0.75rem;
-  }
-  .burn-metric {
+  .progress-card .trend-stats { grid-template-columns: repeat(3, 1fr); }
+  .ts-val.pace { font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.04em; }
+  .trend-stat.warn .ts-val { color: #e67e22; }
+  .progress-card .hint { margin: 0; }
+
+  /* ── Plan rules ─────────────────────────────────────────── */
+  .rules {
+    margin: 0;
+    padding-left: 1.25rem;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: 0.15rem;
-    padding: 0.75rem 0.4rem;
-    border: 1px solid var(--border-subtle);
-    border-radius: 0.5rem;
+    gap: 0.6rem;
+    font-size: 0.875rem;
+    line-height: 1.55;
+    color: var(--text-secondary);
   }
-  .burn-metric.total { border-color: var(--blueprint); background: var(--blueprint-tint); }
-  .b-val { font-size: 1.25rem; font-weight: 700; color: var(--text-primary); }
-  .b-label { font-size: 0.7rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-secondary); }
-  .b-sub { font-size: 0.66rem; color: var(--text-tertiary); }
-  .burn-note { margin: 0.85rem 0 0; font-size: 0.78rem; line-height: 1.5; color: var(--text-tertiary); text-align: center; }
+  .rules li::marker { font-family: var(--font-mono); color: var(--text-faint); }
 
-  /* ── Folds (notes / history / trend) ────────────────────── */
+  /* ── Folds (rules / numbers / history) ──────────────────── */
   .fold { border: 1px solid var(--border); border-radius: 0.625rem; }
   .fold summary {
     display: flex;
@@ -2062,6 +2141,9 @@
     color: var(--text-secondary);
   }
   .assess.warn { border-color: #e67e22; background: rgb(230 126 34 / 10%); }
+  /* Inside the numbers fold the verdict is supporting detail, not a banner. */
+  .assess.quiet { margin-top: 0.85rem; border-color: var(--border-subtle); background: transparent; }
+  .assess.quiet.warn { border-color: #e67e22; }
   .assess-chip {
     flex: none;
     font-family: var(--font-mono);
@@ -2091,6 +2173,7 @@
     text-transform: none;
     color: var(--text-faint);
   }
+  .ins-head.first { margin-top: 0; }
 
   .rate-grid {
     display: grid;
@@ -2172,12 +2255,12 @@
   .signal-list li.warn { color: #e67e22; }
   .signal-list li.warn::before { color: #e67e22; }
 
-  /* Focus balance bars — one row per Push / Pull / Legs. */
+  /* Day balance bars — one row per lifting day. */
   .focus-bars { display: flex; flex-direction: column; gap: 0.4rem; }
   .focus-row { display: flex; align-items: center; gap: 0.6rem; }
   .focus-label {
     flex: none;
-    width: 3.2rem;
+    width: 4.2rem;
     font-family: var(--font-mono);
     font-size: 0.72rem;
     color: var(--text-secondary);
@@ -2351,6 +2434,9 @@
     .page-title { font-size: 1.75rem; }
     .week-strip { grid-template-columns: repeat(3, 1fr); gap: 0.4rem; }
     .day-chip { padding: 0.5rem 0.5rem; }
+    /* Two numbers side by side, the pace verdict on its own full-width row. */
+    .progress-card .trend-stats { grid-template-columns: repeat(2, 1fr); }
+    .progress-card .trend-stat:last-child { grid-column: 1 / -1; }
 
     /* Four forecast cells in a tidy 2×2 rather than auto-fit's 3 + 1. */
     .forecast { grid-template-columns: repeat(2, 1fr); }
@@ -2373,6 +2459,7 @@
     .chevron { order: 2; }
     .ex-equip { order: 1; }
     .ex-target { order: 3; flex-basis: 100%; padding-left: 2rem; }
+    .ex-alt { order: 4; padding-left: 2rem; }
 
     /* Cardio: the machine name shares a row with two number fields and a
        delete button, which crushes the select to a bare chevron at this width
@@ -2389,6 +2476,5 @@
 
   @media (max-width: 380px) {
     .week-strip { grid-template-columns: repeat(2, 1fr); }
-    .metrics-grid { gap: 0.5rem; }
   }
 </style>

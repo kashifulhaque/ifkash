@@ -1,6 +1,12 @@
 import { getApiBase } from '$lib/apiBase';
 import { loadToken, AuthError } from '$lib/splitterApi';
-import type { SessionSummary, SessionDetail, BodyweightEntry, Equipment } from '$lib/workout';
+import type {
+  SessionSummary,
+  SessionDetail,
+  BodyweightEntry,
+  Equipment,
+  TrainingLog
+} from '$lib/workout';
 
 // The tracker reuses the splitter's Google sign-in token (same localStorage key,
 // same auth flow) so the user signs in once across both tools. Auth helpers
@@ -76,6 +82,9 @@ export const workoutApi = {
     }),
 
   getSession: (id: number) => api<SessionDetail>(`/sessions/${id}`),
+
+  /** Every set and cardio bout, oldest first — one request for the report view. */
+  listLog: () => api<TrainingLog>('/log'),
 
   deleteSession: (id: number) =>
     api<{ id: number }>(`/sessions/${id}`, { method: 'DELETE' }),

@@ -17,6 +17,10 @@ pub async fn get_session(req: Request, ctx: RouteContext<()>) -> Result<Response
     handlers::workout::get_session(req, ctx).await
 }
 
+pub async fn list_log(req: Request, ctx: RouteContext<()>) -> Result<Response> {
+    handlers::workout::list_log(req, ctx).await
+}
+
 pub async fn delete_session(req: Request, ctx: RouteContext<()>) -> Result<Response> {
     handlers::workout::delete_session(req, ctx).await
 }

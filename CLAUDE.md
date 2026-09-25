@@ -94,6 +94,10 @@ cd api && npx wrangler d1 migrations apply ifkash --local
 - **Shared logic lives in `src/lib`**, imported via the `$lib` alias. Pure domain math is
   kept I/O-free and separate from API wrappers — e.g. `fitnessMetrics.ts` (BMI/BMR/TDEE, MET
   kcal math) vs `workoutApi.ts` (fetch calls). Put new pure helpers alongside the former.
+  The workout report card (`components/WorkoutReport.svelte`) follows the same split: its
+  maths is in `workoutReport.ts`, and it reads the whole training history in one request
+  from `GET /api/workout/log`. The page patches that log locally after each save
+  (`patchLog`) instead of refetching it.
 - **Migrations are append-only**, numbered `NNNN_name.sql` in `api/migrations/`. Add a new
   file; never edit an applied one. CI applies pending migrations to the remote D1 before
   each Worker deploy, so a migration ships with the `api/**` push that needs it.

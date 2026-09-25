@@ -52,6 +52,7 @@ pub fn register_routes(router: Router<'_, ()>) -> Router<'_, ()> {
     .put_async("/api/workout/sessions", workout::upsert_session)
     .get_async("/api/workout/sessions/:id", workout::get_session)
     .delete_async("/api/workout/sessions/:id", workout::delete_session)
+    .get_async("/api/workout/log", workout::list_log)
     .get_async("/api/workout/bodyweight", workout::list_bodyweight)
     .post_async("/api/workout/bodyweight", workout::add_bodyweight)
     .delete_async("/api/workout/bodyweight/:id", workout::delete_bodyweight)

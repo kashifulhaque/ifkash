@@ -340,6 +340,31 @@ export type SessionDetail = {
   cardio?: CardioEntry[];
 };
 
+/** One logged set, stamped with its session's date and day label (`GET /log`). */
+export type LogSet = {
+  session_id: number;
+  date: string;
+  day_label: string;
+  exercise: string;
+  equipment: Equipment;
+  set_index: number;
+  reps: number;
+  weight_g: number;
+};
+
+/** One logged cardio bout, stamped like `LogSet`. */
+export type LogCardio = {
+  session_id: number;
+  date: string;
+  day_label: string;
+  kind: string;
+  minutes: number;
+  kcal: number;
+};
+
+/** The whole training history, oldest first, as the report view reads it. */
+export type TrainingLog = { sets: LogSet[]; cardio: LogCardio[] };
+
 export type BodyweightEntry = {
   id: number;
   date: string;

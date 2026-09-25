@@ -9,6 +9,8 @@
   import { LogOut, Check, Plus, Trash2 } from 'lucide-svelte';
   import LoadingState from '$lib/components/LoadingState.svelte';
   import WeightChart from '$lib/components/WeightChart.svelte';
+  import WorkoutReport from '$lib/components/WorkoutReport.svelte';
+  import { patchLog, dropSession } from '$lib/workoutReport';
   import { setToken, loadToken, AuthError } from '$lib/splitterApi';
   import { isLocalDev } from '$lib/apiBase';
   import { scheduleTokenRefresh } from '$lib/fitnessAuth';
@@ -54,7 +56,8 @@
     type SessionSummary,
     type SessionDetail,
     type BodyweightEntry,
-    type WeeklyAverage
+    type WeeklyAverage,
+    type TrainingLog
   } from '$lib/workout';
 
   type Focus = DayLabel;
@@ -230,6 +233,49 @@
 
   let sessions: SessionSummary[] = [];
   let bodyweight: BodyweightEntry[] = [];
+
+  // Every set and bout, oldest first, for the report card. Loaded once, then
+  // patched locally after each save rather than refetched.
+  let log: TrainingLog = { sets: [], cardio: [] };
+  let logLoading = false;
+
+  async function loadLog() {
+    logLoading = true;
+    try {
+      log = await workoutApi.listLog();
+    } catch (e) {
+      if (e instanceof AuthError) {
+        await guard(() => Promise.reject(e));
+      } else {
+        // A Worker without the /log route yet (Pages can deploy first): build
+        // the log from per-session detail instead, which the cache shares.
+        log = await logFromDetails();
+      }
+    } finally {
+      logLoading = false;
+    }
+  }
+
+  /** Fallback log from the last `LOG_FALLBACK` sessions, four requests at a time. */
+  const LOG_FALLBACK = 60;
+  async function logFromDetails(): Promise<TrainingLog> {
+    const out: TrainingLog = { sets: [], cardio: [] };
+    const recent = sessions.slice(0, LOG_FALLBACK);
+    for (let i = 0; i < recent.length; i += 4) {
+      const batch = await Promise.all(recent.slice(i, i + 4).map((s) => detailFor(s.id)));
+      for (const d of batch) {
+        if (!d) continue;
+        const stamp = { session_id: d.session.id, date: d.session.date, day_label: d.session.day_label };
+        for (const x of d.sets) out.sets.push({ ...stamp, ...x, equipment: x.equipment ?? '' });
+        for (const c of d.cardio ?? []) out.cardio.push({ ...stamp, kind: c.kind, minutes: c.minutes, kcal: c.kcal });
+      }
+    }
+    const byDate = (a: { date: string; session_id: number }, b: { date: string; session_id: number }) =>
+      a.date === b.date ? a.session_id - b.session_id : a.date < b.date ? -1 : 1;
+    out.sets.sort(byDate);
+    out.cardio.sort(byDate);
+    return out;
+  }
 
   const detailCache = new Map<number, SessionDetail>();
   async function detailFor(id: number): Promise<SessionDetail | undefined> {
@@ -540,6 +586,9 @@
         })
       );
       ok = ok && r !== undefined;
+      if (r) {
+        log = patchLog(log, { session_id: r.id, date: sessionDate, day_label: active }, payload, cardio);
+      }
     }
 
     if (!bwSuggested && str(bw).trim() !== '' && str(bw) !== str(lastSavedBw)) {
@@ -722,6 +771,7 @@
         openDetail = null;
       }
       detailCache.delete(id);
+      log = dropSession(log, id);
       await refreshLists();
       await loadDayData();
     }
@@ -785,6 +835,7 @@
     signedIn = false;
     sessions = [];
     bodyweight = [];
+    log = { sets: [], cardio: [] };
     detailCache.clear();
     openId = null;
     openDetail = null;
@@ -817,6 +868,7 @@
     active = pickDay();
     await loadProfile();
     await loadDayData();
+    await loadLog();
   }
 
   onMount(async () => {
@@ -1210,6 +1262,10 @@
         <p class="hint">No bodyweight entries yet — add one up top and the trend appears here.</p>
       {/if}
     </section>
+
+    <!-- Training report: a day, week, or month read against the plan and
+         compared with another period. -->
+    <WorkoutReport {log} {bodyweight} today={today()} loading={logLoading} />
 
     <!-- Everything the progress card left out: profile, body maths, the fitted
          rates, projections, signals, cadence. -->

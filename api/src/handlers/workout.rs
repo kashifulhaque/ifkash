@@ -464,6 +464,67 @@ pub async fn get_session(req: Request, ctx: RouteContext<()>) -> Result<Response
     })
 }
 
+#[derive(Serialize, Deserialize)]
+struct LogSetRow {
+    session_id: i64,
+    date: String,
+    day_label: String,
+    exercise: String,
+    equipment: String,
+    set_index: i64,
+    reps: i64,
+    weight_g: i64,
+}
+
+#[derive(Serialize, Deserialize)]
+struct LogCardioRow {
+    session_id: i64,
+    date: String,
+    day_label: String,
+    kind: String,
+    minutes: i64,
+    kcal: i64,
+}
+
+#[derive(Serialize)]
+struct TrainingLog {
+    sets: Vec<LogSetRow>,
+    cardio: Vec<LogCardioRow>,
+}
+
+/// GET /api/workout/log — every set and cardio bout the user has logged, each
+/// row stamped with its session's date and day label. The report view reads
+/// the whole history in one request instead of fetching each session.
+pub async fn list_log(req: Request, ctx: RouteContext<()>) -> Result<Response> {
+    let owner_id = owner!(req, ctx);
+    let d1 = ctx.d1("IFKASH_D1")?;
+
+    let sets: Vec<LogSetRow> = d1
+        .prepare(
+            "SELECT s.id AS session_id, s.date, s.day_label, w.exercise, w.equipment, \
+             w.set_index, w.reps, w.weight_g \
+             FROM workout_sets w JOIN workout_sessions s ON s.id = w.session_id \
+             WHERE s.owner_id = ?1 ORDER BY s.date ASC, s.id ASC, w.id ASC",
+        )
+        .bind(&[n(owner_id)])?
+        .all()
+        .await?
+        .results()?;
+
+    let cardio: Vec<LogCardioRow> = d1
+        .prepare(
+            "SELECT s.id AS session_id, s.date, s.day_label, c.kind, c.minutes, c.kcal \
+             FROM workout_cardio c JOIN workout_sessions s ON s.id = c.session_id \
+             WHERE s.owner_id = ?1 ORDER BY s.date ASC, s.id ASC, c.entry_index ASC, c.id ASC",
+        )
+        .bind(&[n(owner_id)])?
+        .all()
+        .await?
+        .results()?;
+
+    Response::from_json(&TrainingLog { sets, cardio })
+}
+
 /// DELETE /api/workout/sessions/:id — delete a session and its sets.
 pub async fn delete_session(req: Request, ctx: RouteContext<()>) -> Result<Response> {
     let owner_id = owner!(req, ctx);

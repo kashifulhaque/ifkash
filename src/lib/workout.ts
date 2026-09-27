@@ -46,7 +46,8 @@ export const EQUIPMENT_OPTIONS: Equipment[] = [
 ];
 
 // Four lifting days a week (upper / lower / upper / lower) plus an optional
-// cardio-only day, replacing the six-day push / pull / legs split.
+// cardio day with a few light accessories, replacing the six-day push / pull /
+// legs split.
 //
 // Why: thirteen weeks of logs showed 5-6 gym days a week but only 5-6 of each
 // day's 8 exercises done, core skipped every time, deadlift dropped after the
@@ -114,7 +115,15 @@ export const LOWER_A: Exercise[] = [
   },
   { name: 'Leg curls', scheme: '3×10-12', kind: 'weighted', equipment: 'Machine' },
   { name: 'Calf raises', scheme: '3×12-15', kind: 'weighted', equipment: 'Machine' },
-  { name: 'Hanging leg raise', scheme: '3×10-12', kind: 'bodyweight', equipment: 'Bodyweight' }
+  // Logged sets reached 2-4 straight-leg reps, so 10-12 was out of reach.
+  // Knees bent is the same movement at a load that fits the range.
+  {
+    name: 'Hanging leg raise',
+    scheme: '3×8-12',
+    kind: 'bodyweight',
+    equipment: 'Bodyweight',
+    alt: 'knees bent until straight legs reach 8 reps'
+  }
 ];
 
 /** Day 3: horizontal pull and incline press lead. */
@@ -155,8 +164,20 @@ export const LOWER_B: Exercise[] = [
   { name: 'Plank', scheme: '3×45s', kind: 'time', equipment: 'Bodyweight' }
 ];
 
-/** Optional day 5: cardio only, no lifting. Logging it is a bonus, not a debt. */
-export const CARDIO_ONLY: Exercise[] = [];
+/**
+ * Optional day 5: cardio first, then a few light accessories if you want them.
+ * Logging it is a bonus, not a debt. Only small single-joint lifts, so the day
+ * adds arm and shoulder work without costing recovery for Monday's Upper A:
+ * no legs, no heavy presses or pulls, and nothing marked as a key lift. These
+ * sets stay out of the plan's weekly volume target (`PLAN_WEEKLY_SETS` counts
+ * the four lifting days only), so skipping them never shows up as a shortfall.
+ */
+export const CARDIO_DAY: Exercise[] = [
+  { name: 'Lateral raises', scheme: '3×12-15', kind: 'weighted', equipment: 'Dumbbell' },
+  { name: 'Face pulls', scheme: '2×15', kind: 'weighted', equipment: 'Cable' },
+  { name: 'Bicep curls', scheme: '2×10-12', kind: 'weighted', equipment: 'Dumbbell' },
+  { name: 'Cable tricep pushdown', scheme: '2×12-15', kind: 'weighted', equipment: 'Cable' }
+];
 
 export type DayLabel = 'Upper A' | 'Lower A' | 'Upper B' | 'Lower B' | 'Cardio';
 
@@ -171,7 +192,7 @@ export const DAY_TEMPLATES: Record<DayLabel, Exercise[]> = {
   'Lower A': LOWER_A,
   'Upper B': UPPER_B,
   'Lower B': LOWER_B,
-  Cardio: CARDIO_ONLY
+  Cardio: CARDIO_DAY
 };
 
 export type DayInfo = {
@@ -208,7 +229,7 @@ export const DAY_INFO: Record<DayLabel, DayInfo> = {
   },
   Cardio: {
     day: 'Sat / Sun',
-    detail: 'the spare slot: a missed lift if there is one, otherwise cardio only',
+    detail: 'the spare slot: a missed lift if there is one, otherwise cardio plus light arms and shoulders',
     cardio: '30 min crosstrainer intervals, or a long walk outside',
     optional: true
   }

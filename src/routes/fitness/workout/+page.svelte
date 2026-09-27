@@ -11,6 +11,7 @@
   import WeightChart from '$lib/components/WeightChart.svelte';
   import WorkoutReport from '$lib/components/WorkoutReport.svelte';
   import { patchLog, dropSession } from '$lib/workoutReport';
+  import { loadTarget, type LoadTarget } from '$lib/workoutTargets';
   import { setToken, loadToken, AuthError } from '$lib/splitterApi';
   import { isLocalDev } from '$lib/apiBase';
   import { scheduleTokenRefresh } from '$lib/fitnessAuth';
@@ -239,6 +240,31 @@
   let log: TrainingLog = { sets: [], cardio: [] };
   let logLoading = false;
 
+  // Today's working load per row, from the log. Recomputed when the implement
+  // or the date changes; `applyTargets` copies it into untouched set rows.
+  $: loadTargets = exercises.map((ex): LoadTarget | null =>
+    ex.kind === 'weighted' ? loadTarget(log, ex.name, ex.equipment, ex.scheme, sessionDate, ex.priority) : null
+  );
+
+  /**
+   * Prefill every set of a row with its target load, as a suggestion. This
+   * replaces the copy of last session's weights, which carried its ramp (15,
+   * 15, 17.5, 20) forward; the plan wants one load for every working set.
+   * Rows with any committed value are left alone.
+   */
+  function applyTargets() {
+    exercises.forEach((ex) => {
+      if (ex.kind !== 'weighted' || ex.sets.some((s) => !s.suggested && (str(s.weight) !== '' || str(s.reps) !== ''))) return;
+      const t = loadTarget(log, ex.name, ex.equipment, ex.scheme, sessionDate, ex.priority);
+      if (!t) return;
+      for (const s of ex.sets) {
+        s.weight = gramsToKg(Math.round(t.kg * 1000));
+        s.suggested = true;
+      }
+    });
+    exercises = exercises;
+  }
+
   async function loadLog() {
     logLoading = true;
     try {
@@ -348,6 +374,7 @@
 
     exercises = rows;
     cardioRows = cardio;
+    if (log.sets.length) applyTargets();
   }
 
   /**
@@ -869,6 +896,7 @@
     await loadProfile();
     await loadDayData();
     await loadLog();
+    applyTargets();
   }
 
   onMount(async () => {
@@ -996,6 +1024,12 @@
       <span class="cardio-pill">🚴 {DAY_INFO[active].cardio}</span>
     </div>
 
+    {#if DAY_INFO[active].optional && exercises.length}
+      <p class="empty-day">
+        Do the cardio first. The lifts are optional: do as many as you have time for, and log only
+        the sets you do.
+      </p>
+    {/if}
     {#if exercises.length === 0}
       <p class="empty-day">
         No lifting today. Log the cardio bout below{signedIn ? '' : ' once signed in'}, or add an
@@ -1038,7 +1072,9 @@
                 {#if ex.priority}
                   <span class="key-tag" title="Priority lift — progress this first">key</span>
                 {/if}
-                <span class="ex-target">{ex.scheme}</span>
+                <span class="ex-target">
+                  {ex.scheme}{#if loadTargets[i]}<span class="ex-load" title={loadTargets[i]?.reason}>@ {gramsToKg(Math.round((loadTargets[i]?.kg ?? 0) * 1000))} kg</span>{/if}
+                </span>
               {:else}
                 <input
                   class="ex-name-input"
@@ -1056,7 +1092,10 @@
                   class:unset={!ex.equipment}
                   bind:value={ex.equipment}
                   on:click|stopPropagation
-                  on:change={scheduleSave}
+                  on:change={() => {
+                    applyTargets();
+                    scheduleSave();
+                  }}
                   title="Equipment used"
                   aria-label="Equipment for {ex.name || 'this exercise'}"
                 >
@@ -1072,6 +1111,15 @@
 
             {#if expanded[rowKey(ex, i)]}
               <div class="sets">
+                {#if loadTargets[i]}
+                  {@const t = loadTargets[i]}
+                  <p class="load-note">
+                    {t?.reason}
+                    {#if t?.warmups.length}
+                      Warm up first with {t.warmups.map((w, k) => `${k === t.warmups.length - 1 ? 5 : 8} × ${gramsToKg(Math.round(w * 1000))} kg`).join(', then ')}, and don't log the warm-ups.
+                    {/if}
+                  </p>
+                {/if}
                 {#each ex.sets as s, j}
                   <div class="set-row">
                     <span class="set-num">{j + 1}</span>
@@ -1963,6 +2011,13 @@
   .ex-target {
     font-family: var(--font-mono);
     font-size: 0.72rem;
+    color: var(--text-tertiary);
+  }
+  .ex-load { margin-left: 0.4em; color: var(--blueprint); }
+  .load-note {
+    margin: 0 0 0.5rem;
+    font-size: 0.75rem;
+    line-height: 1.45;
     color: var(--text-tertiary);
   }
   .ex-name-input { font-weight: 600; }

@@ -505,15 +505,17 @@ export function buildReport(log: TrainingLog, range: Range, bodyweight: Bodyweig
     if (l.best && l.before && l.before.score > 0) l.change = l.best.score / l.before.score - 1;
   }
 
-  // Plan adherence: what each plan-day session prescribed against what got logged.
+  // Plan adherence: what each plan-day session prescribed against what got
+  // logged. Only the four lifting days count; the cardio day's accessories are
+  // optional, so skipping them isn't a miss.
   let plannedSets = 0;
   let doneSets = 0;
   let plannedExercises = 0;
   let doneExercises = 0;
   const missed: MissedLift[] = [];
   for (const s of sessions) {
+    if (!(LIFT_DAYS as string[]).includes(s.day_label)) continue;
     const template = DAY_TEMPLATES[s.day_label as DayLabel];
-    if (!template?.length) continue;
     for (const ex of template) {
       const want = setsFromScheme(ex.scheme);
       const got = [...s.lifts.values()]
@@ -562,7 +564,8 @@ export function buildReport(log: TrainingLog, range: Range, bodyweight: Bodyweig
       : liftSessions + legacySessions;
 
   const dayLabel = sessions[0]?.day_label as DayLabel | undefined;
-  const liftTarget = range.period === 'day' ? (dayLabel && DAY_TEMPLATES[dayLabel]?.length ? 1 : 0) : round(4 * weeks, 1);
+  const liftTarget =
+    range.period === 'day' ? (dayLabel && (LIFT_DAYS as string[]).includes(dayLabel) ? 1 : 0) : round(4 * weeks, 1);
   const cardioTarget =
     range.period === 'day'
       ? dayLabel && CARDIO_DEFAULTS[dayLabel]
@@ -658,7 +661,7 @@ export type Progression = {
 };
 
 /** The usual smallest jump on each implement. */
-function loadStep(equipment: Equipment): number {
+export function loadStep(equipment: Equipment): number {
   return equipment === 'Dumbbell' ? 2 : 2.5;
 }
 

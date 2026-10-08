@@ -50,3 +50,33 @@ export function scheduleTokenRefresh(
     id.prompt();
   }, delay);
 }
+
+/** Load the Google Identity Services script once; resolves when it's ready. */
+export function loadGis(): Promise<void> {
+  if (googleId()) return Promise.resolve();
+  return new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = 'https://accounts.google.com/gsi/client';
+    s.async = true;
+    s.onload = () => resolve();
+    s.onerror = () => reject();
+    document.head.appendChild(s);
+  });
+}
+
+/** Render the "Sign in with Google" button into `el`. No-op until GIS has loaded. */
+export function renderGoogleButton(
+  el: HTMLElement | undefined,
+  clientId: string,
+  onCredential: (resp: { credential: string }) => void
+): void {
+  const google = (window as any).google;
+  if (!google?.accounts?.id || !el) return;
+  google.accounts.id.initialize({ client_id: clientId, callback: onCredential });
+  el.innerHTML = '';
+  google.accounts.id.renderButton(el, {
+    theme: 'filled_black',
+    size: 'large',
+    text: 'signin_with'
+  });
+}

@@ -441,3 +441,26 @@ export function weeklyAverages(entries: BodyweightEntry[]): WeeklyAverage[] {
     }));
 }
 
+
+/**
+ * Group a session detail's flat set rows by exercise and implement, preserving
+ * order. Splitting on equipment keeps a machine pec fly and dumbbell flyes as
+ * two separate blocks, because their loads aren't comparable.
+ */
+export function groupSets(detail: SessionDetail) {
+  const groups: {
+    exercise: string;
+    equipment: Equipment;
+    sets: { reps: number; weight_g: number }[];
+  }[] = [];
+  for (const s of detail.sets) {
+    const equipment = s.equipment ?? '';
+    let g = groups.find((x) => x.exercise === s.exercise && x.equipment === equipment);
+    if (!g) {
+      g = { exercise: s.exercise, equipment, sets: [] };
+      groups.push(g);
+    }
+    g.sets.push({ reps: s.reps, weight_g: s.weight_g });
+  }
+  return groups;
+}

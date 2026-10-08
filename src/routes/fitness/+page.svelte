@@ -5,7 +5,7 @@
 </svelte:head>
 
 <script lang="ts">
-  import { Dumbbell } from "lucide-svelte";
+  import { Dumbbell, TrendingUp } from "lucide-svelte";
 
   type Card = {
     name: string;
@@ -20,6 +20,12 @@
       icon: Dumbbell,
       desc: 'The four-day upper/lower split, the cardio rules and the week checklist — plus a log to track every session and progressive overload.',
       href: '/fitness/workout'
+    },
+    {
+      name: 'Insights',
+      icon: TrendingUp,
+      desc: 'Is it working? The bodyweight trend, the day/week/month training report, every fitted rate and projection, and the full session history.',
+      href: '/fitness/workout/insights'
     }
   ];
 </script>

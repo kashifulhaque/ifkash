@@ -8,13 +8,11 @@
   import { env } from '$env/dynamic/public';
   import { LogOut, Check, Plus, Trash2 } from 'lucide-svelte';
   import LoadingState from '$lib/components/LoadingState.svelte';
-  import WeightChart from '$lib/components/WeightChart.svelte';
-  import WorkoutReport from '$lib/components/WorkoutReport.svelte';
-  import { patchLog, dropSession } from '$lib/workoutReport';
+  import { patchLog } from '$lib/workoutReport';
   import { loadTarget, type LoadTarget } from '$lib/workoutTargets';
   import { setToken, loadToken, AuthError } from '$lib/splitterApi';
   import { isLocalDev } from '$lib/apiBase';
-  import { scheduleTokenRefresh } from '$lib/fitnessAuth';
+  import { scheduleTokenRefresh, loadGis, renderGoogleButton } from '$lib/fitnessAuth';
   import { workoutApi, type ExercisePayload, type CardioPayload } from '$lib/workoutApi';
   import { profileApi } from '$lib/profileApi';
   import {
@@ -28,14 +26,7 @@
     type Profile,
     type Goal
   } from '$lib/fitnessMetrics';
-  import {
-    weightInsights,
-    trainingCadence,
-    weekChecklist,
-    weightForBmi,
-    type RateBand,
-    type Pace
-  } from '$lib/fitnessInsights';
+  import { weekChecklist } from '$lib/fitnessInsights';
   import {
     DAY_TEMPLATES,
     DAY_LABELS,
@@ -44,12 +35,12 @@
     setsFromScheme,
     kgToGrams,
     gramsToKg,
-    weeklyAverages,
     CARDIO_OPTIONS,
     CARDIO_DEFAULTS,
     cardioMet,
     exerciseKind,
     exerciseEquipment,
+    groupSets,
     EQUIPMENT_OPTIONS,
     type DayLabel,
     type ExerciseKind,
@@ -57,7 +48,6 @@
     type SessionSummary,
     type SessionDetail,
     type BodyweightEntry,
-    type WeeklyAverage,
     type TrainingLog
   } from '$lib/workout';
 
@@ -230,6 +220,18 @@
   $: cardioBurn = cardioRows.reduce((n, r) => n + cardioKcal(r), 0);
   $: sessionKcal = liftKcal + cardioBurn;
 
+  // The rest of the date: a second session already saved under another day
+  // label (a cardio day after a lift, say). Read from the log, which is
+  // patched after every save, so it never double-counts the active day.
+  $: otherSetsToday = log.sets.filter((s) => s.date === sessionDate && s.day_label !== active).length;
+  $: otherCardioToday = log.cardio
+    .filter((c) => c.date === sessionDate && c.day_label !== active)
+    .reduce((n, c) => n + c.kcal, 0);
+  $: daySets = totalSets + otherSetsToday;
+  $: dayLiftKcal = metricKg > 0 ? strengthKcal(metricKg, daySets) : 0;
+  $: dayCardioKcal = cardioBurn + otherCardioToday;
+  $: dayKcal = dayLiftKcal + dayCardioKcal;
+
   // ---- data loading + prefill ---------------------------------------------
 
   let sessions: SessionSummary[] = [];
@@ -309,27 +311,6 @@
     const d = await guard(() => workoutApi.getSession(id));
     if (d) detailCache.set(id, d);
     return d;
-  }
-
-  /** Group a detail's flat set rows by exercise + implement, preserving order.
-   *  Splitting on equipment keeps a machine pec fly and dumbbell flyes as two
-   *  separate blocks — their loads aren't comparable. */
-  function groupSets(detail: SessionDetail) {
-    const groups: {
-      exercise: string;
-      equipment: Equipment;
-      sets: { reps: number; weight_g: number }[];
-    }[] = [];
-    for (const s of detail.sets) {
-      const equipment = s.equipment ?? '';
-      let g = groups.find((x) => x.exercise === s.exercise && x.equipment === equipment);
-      if (!g) {
-        g = { exercise: s.exercise, equipment, sets: [] };
-        groups.push(g);
-      }
-      g.sets.push({ reps: s.reps, weight_g: s.weight_g });
-    }
-    return groups;
   }
 
   /**
@@ -634,180 +615,8 @@
     }
   }
 
-  // ---- history + trend -----------------------------------------------------
-
-  let weekly: WeeklyAverage[] = [];
-  $: weekly = weeklyAverages(bodyweight);
-
-  // date → bodyweight grams, so each history row can show that day's weight.
-  $: bwByDate = new Map(bodyweight.map((b) => [b.date, b.weight_g]));
-
-  // History grouped by month (newest first), each row carrying display-ready
-  // date parts and that day's bodyweight — the list renders from this directly.
-  type HistRow = SessionSummary & { dom: string; wd: string; mon: string; bw: number | undefined };
-  $: historyGroups = (() => {
-    const groups: { key: string; label: string; rows: HistRow[] }[] = [];
-    for (const s of sessions) {
-      const d = new Date(s.date + 'T00:00:00');
-      const row: HistRow = {
-        ...s,
-        dom: String(d.getDate()),
-        wd: d.toLocaleDateString('en-GB', { weekday: 'short' }),
-        mon: d.toLocaleDateString('en-GB', { month: 'short' }),
-        bw: bwByDate.get(s.date)
-      };
-      const key = s.date.slice(0, 7);
-      let grp = groups.find((x) => x.key === key);
-      if (!grp) {
-        grp = {
-          key,
-          label: d.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }),
-          rows: []
-        };
-        groups.push(grp);
-      }
-      grp.rows.push(row);
-    }
-    return groups;
-  })();
-
-  // ---- insights ------------------------------------------------------------
-  // All the trend maths lives in `fitnessInsights.ts`; the page only formats it.
-  $: insights = weightInsights(bodyweight, profile, weekly, today());
-  $: cadence = trainingCadence(sessions, today());
+  /** This week's lifts, for the day chips and the opening day. */
   $: week = weekChecklist(sessions, LIFT_DAYS, today());
-  /** Upper edge of the normal BMI range at this height — the chart's goal line. */
-  $: normalBmiKg = weightForBmi(24.9, profile.height_cm);
-
-  // The one-word read on the 4-week rate against the goal's rate. Bands are
-  // deliberately coarse; the numbers behind them live in the details fold.
-  const PACE_LABEL: Record<Pace, string> = {
-    ahead: 'ahead of goal',
-    'on pace': 'on pace',
-    behind: 'behind goal',
-    flat: 'flat',
-    gaining: 'gaining'
-  };
-  const PACE_NOTE: Record<Pace, string> = {
-    ahead: 'Faster than the goal asks. Fine for a short block; if the key lifts start dropping, eat a little more.',
-    'on pace': 'Losing at the rate the goal asks for. Keep doing what this month did.',
-    behind: 'Losing, but slower than the goal asks. Steps and the food rules are the levers, not more gym time.',
-    flat: 'No movement over the last month. A 3-week stall on a cut means intake has drifted up to maintenance.',
-    gaining: 'Trending up over the last month. Intake is above maintenance, whatever the training looks like.'
-  };
-  const PACE_WARN: Pace[] = ['behind', 'flat', 'gaining'];
-
-  const BAND_NOTE: Record<RateBand, string> = {
-    gaining: 'Trending up over this window. Expected on a bulk; on a cut it means intake is above target.',
-    holding: 'Holding steady — the trend is flat.',
-    slow: 'Losing, but under 0.5 %/wk. Fine if that is the plan, otherwise the deficit is too small to show.',
-    sustainable: 'In the 0.5–1.0 %/wk band — fast enough to matter, slow enough to keep muscle.',
-    aggressive: 'Above 1.0 %/wk. Workable for a short block; watch the priority lifts for strength drops.',
-    'very fast': 'Over 1.25 %/wk. Fast enough to cost muscle — consider easing the deficit.'
-  };
-
-  const BAND_LABEL: Record<RateBand, string> = {
-    gaining: 'gaining',
-    holding: 'flat',
-    slow: 'slow',
-    sustainable: 'on target',
-    aggressive: 'aggressive',
-    'very fast': 'too fast'
-  };
-
-  /** Bands to flag amber rather than treat as on-plan. */
-  const BAND_WARN: RateBand[] = ['gaining', 'aggressive', 'very fast'];
-
-  const fmtSigned = (v: number | null, dp = 1): string =>
-    v === null ? '—' : (v > 0 ? '+' : '') + v.toFixed(dp);
-
-  /** ISO date → "5 Sep 2026"; the projections are months out, so the year earns its place. */
-  const fmtDate = (iso: string | null): string =>
-    iso
-      ? new Date(iso + 'T00:00:00').toLocaleDateString('en-GB', {
-          day: 'numeric',
-          month: 'short',
-          year: 'numeric'
-        })
-      : '—';
-
-  // How the measured deficit compares with the one the goal asks for. Only
-  // called out past ±200 kcal/day, which is inside the noise of MET estimates.
-  $: deficitNote = (() => {
-    const gap = insights.deficitGap;
-    if (gap === null || insights.plannedDeficit === 0) return '';
-    if (gap > 200)
-      return 'Losing faster than the plan implies — intake is under target, or your activity multiplier is set too low.';
-    if (gap < -200)
-      return 'Losing slower than the plan implies — intake is likely above target, or TDEE is overestimated.';
-    return 'Measured loss matches the planned deficit.';
-  })();
-
-  // Newest first, each week annotated with its change vs the week before.
-  $: weeklyWithDelta = [...weekly]
-    .map((w, i) => ({
-      ...w,
-      delta: i > 0 ? Math.round((w.avgKg - weekly[i - 1].avgKg) * 10) / 10 : null
-    }))
-    .reverse();
-
-  $: latestWeek = weekly.length ? weekly[weekly.length - 1] : null;
-  $: weekDelta =
-    weekly.length > 1
-      ? Math.round((weekly[weekly.length - 1].avgKg - weekly[weekly.length - 2].avgKg) * 10) / 10
-      : null;
-
-  const fmtDelta = (d: number | null): string => (d === null ? '—' : (d > 0 ? '+' : '') + d.toFixed(1));
-
-  let openId: number | null = null;
-  let openDetail: SessionDetail | null = null;
-  let loadingDetail = false;
-
-  // One-line stats for the currently expanded history row.
-  $: openStats = openDetail
-    ? {
-        exercises: new Set(openDetail.sets.map((x) => x.exercise)).size,
-        sets: openDetail.sets.length,
-        cardio: openDetail.cardio?.length ?? 0
-      }
-    : null;
-
-  async function toggleSession(id: number) {
-    if (openId === id) {
-      openId = null;
-      openDetail = null;
-      return;
-    }
-    openId = id;
-    openDetail = null;
-    loadingDetail = true;
-    openDetail = (await detailFor(id)) ?? null;
-    loadingDetail = false;
-  }
-
-  async function deleteSession(id: number) {
-    const s = sessions.find((x) => x.id === id);
-    const ok = await guard(() => workoutApi.deleteSession(id));
-    if (ok) {
-      // Drop the matching bodyweight entry for that date too, so the two stay
-      // in lockstep (one merged history row).
-      const bwEntry = s ? bodyweight.find((b) => b.date === s.date) : undefined;
-      if (bwEntry) await guard(() => workoutApi.deleteBodyweight(bwEntry.id));
-      if (openId === id) {
-        openId = null;
-        openDetail = null;
-      }
-      detailCache.delete(id);
-      log = dropSession(log, id);
-      await refreshLists();
-      await loadDayData();
-    }
-  }
-
-  function setLabel(reps: number, weight_g: number, name: string): string {
-    if (exerciseKind(name) === 'time') return `${reps}s`;
-    return weight_g > 0 ? `${gramsToKg(weight_g)}kg × ${reps}` : `BW × ${reps}`;
-  }
 
   async function refreshLists() {
     const [s, b] = await Promise.all([
@@ -833,29 +642,7 @@
     bootSignedIn();
   }
 
-  function renderGoogleButton() {
-    const google = (window as any).google;
-    if (!google?.accounts?.id || !gisButton) return;
-    google.accounts.id.initialize({ client_id: clientId, callback: onCredential });
-    gisButton.innerHTML = '';
-    google.accounts.id.renderButton(gisButton, {
-      theme: 'filled_black',
-      size: 'large',
-      text: 'signin_with'
-    });
-  }
-
-  function loadGis(): Promise<void> {
-    if ((window as any).google?.accounts?.id) return Promise.resolve();
-    return new Promise((resolve, reject) => {
-      const s = document.createElement('script');
-      s.src = 'https://accounts.google.com/gsi/client';
-      s.async = true;
-      s.onload = () => resolve();
-      s.onerror = () => reject();
-      document.head.appendChild(s);
-    });
-  }
+  const showSignIn = () => setTimeout(() => renderGoogleButton(gisButton, clientId, onCredential), 0);
 
   function signOut() {
     setToken(null);
@@ -864,12 +651,10 @@
     bodyweight = [];
     log = { sets: [], cardio: [] };
     detailCache.clear();
-    openId = null;
-    openDetail = null;
     saveStatus = 'idle';
     exercises = templateRows(active);
     cardioRows = [defaultCardio(active)];
-    setTimeout(renderGoogleButton, 0);
+    showSignIn();
   }
 
   async function guard<T>(fn: () => Promise<T>): Promise<T | undefined> {
@@ -882,7 +667,7 @@
         sessions = [];
         bodyweight = [];
         saveStatus = 'idle';
-        setTimeout(renderGoogleButton, 0);
+        showSignIn();
       } else {
         errorMsg = e instanceof Error ? e.message : 'something went wrong';
       }
@@ -916,7 +701,7 @@
       scheduleRefresh();
       await bootSignedIn();
     } else {
-      renderGoogleButton();
+      renderGoogleButton(gisButton, clientId, onCredential);
     }
   });
 </script>
@@ -949,6 +734,7 @@
     </div>
     <p class="page-desc">
       Four lifts a week, upper/lower. Pick a day, then {signedIn ? 'tap an exercise and log your sets — it saves as you type.' : 'sign in to log your sets right here.'}
+      {#if signedIn}The trend, report and history are on the <a href="/fitness/workout/insights">insights page</a>.{/if}
     </p>
   </header>
 
@@ -1270,450 +1056,112 @@
   </details>
 
   {#if signedIn}
-    <!-- Progress: the three numbers that answer "is this working?" and the
-         chart. Everything else is behind the details fold on purpose. -->
-    <section class="progress-card">
-      {#if insights.points.length}
-        <div class="trend-stats">
-          <div class="trend-stat">
-            <span class="ts-val">{insights.trendKg}<small> kg</small></span>
-            <span class="ts-label">trend weight</span>
-            <span class="ts-sub">scale {insights.latestKg} kg · {fmtDate(insights.latestDate)}</span>
+    <!-- My details: the profile the body maths runs on, and the numbers it
+         gives at the current bodyweight. -->
+    <section class="info-card">
+      <div class="info-head">
+        <h2>My details</h2>
+        {#if metrics}<span class="info-meta">at {metricKg.toFixed(1)} kg</span>{/if}
+      </div>
+      <div class="profile-grid">
+        <label>
+          Height (cm)
+          <input type="number" min="50" max="300" bind:value={profile.height_cm} on:input={onProfileChange} />
+        </label>
+        <label>
+          Age
+          <input type="number" min="1" max="120" bind:value={profile.age_years} on:input={onProfileChange} />
+        </label>
+        <label>
+          Sex
+          <select bind:value={profile.sex} on:change={onProfileChange}>
+            <option value="male">male</option>
+            <option value="female">female</option>
+          </select>
+        </label>
+        <label>
+          Activity
+          <select bind:value={profile.activity} on:change={onProfileChange}>
+            {#each ACTIVITY_OPTIONS as a}
+              <option value={a.value}>{a.label}</option>
+            {/each}
+          </select>
+        </label>
+        <label class="wide">
+          Goal
+          <select bind:value={profile.goal} on:change={onProfileChange}>
+            {#each GOALS as g}
+              <option value={g}>{GOAL_LABELS[g]}</option>
+            {/each}
+          </select>
+        </label>
+      </div>
+      {#if metrics && targets}
+        <div class="rate-grid">
+          <div class="rate-cell">
+            <span class="r-val">{metrics.bmi}</span>
+            <span class="r-label">BMI</span>
+            <span class="r-sub">{metrics.bmiCategory}</span>
           </div>
-          <div
-            class="trend-stat"
-            class:down={(insights.primary.kgPerWeek ?? 0) < 0}
-            class:up={(insights.primary.kgPerWeek ?? 0) > 0}
-          >
-            <span class="ts-val">{fmtSigned(insights.primary.kgPerWeek, 2)}<small> kg/wk</small></span>
-            <span class="ts-label">{insights.primary.label}</span>
-            <span class="ts-sub">goal {fmtSigned(insights.targetKgPerWeek, 2)} kg/wk</span>
+          <div class="rate-cell">
+            <span class="r-val">{metrics.bmr}</span>
+            <span class="r-label">BMR</span>
+            <span class="r-sub">kcal/day</span>
           </div>
-          <div class="trend-stat" class:warn={insights.pace !== null && PACE_WARN.includes(insights.pace)}>
-            <span class="ts-val pace">{insights.pace ? PACE_LABEL[insights.pace] : '—'}</span>
-            <span class="ts-label">pace</span>
-            <span class="ts-sub">{cadence.perWeek} sessions/wk · last 4 weeks</span>
+          <div class="rate-cell">
+            <span class="r-val">{metrics.tdee}</span>
+            <span class="r-label">TDEE</span>
+            <span class="r-sub">maintenance</span>
+          </div>
+          <div class="rate-cell">
+            <span class="r-val">{targets.protein_g}<small> g</small></span>
+            <span class="r-label">protein</span>
+            <span class="r-sub">per day · 2 g/kg</span>
           </div>
         </div>
-
-        {#if insights.pace}
-          <p class="assess" class:warn={PACE_WARN.includes(insights.pace)}>{PACE_NOTE[insights.pace]}</p>
-        {/if}
-
-        <WeightChart
-          points={insights.points}
-          ema={insights.ema}
-          targetKg={normalBmiKg}
-          targetLabel={`BMI 25 · ${normalBmiKg} kg`}
-        />
-      {:else}
-        <p class="hint">No bodyweight entries yet — add one up top and the trend appears here.</p>
+        <p class="hint">
+          The calorie target ({targets.calories} kcal) and macros are here if you want them, but the
+          plan is run on the trend weight and the food rules, not on counting.
       {/if}
     </section>
 
-    <!-- Training report: a day, week, or month read against the plan and
-         compared with another period. -->
-    <WorkoutReport {log} {bodyweight} today={today()} loading={logLoading} />
-
-    <!-- Everything the progress card left out: profile, body maths, the fitted
-         rates, projections, signals, cadence. -->
-    <details class="fold">
-      <summary>
-        <span class="fold-title">All the numbers</span>
-        {#if insights.trendKg !== null}
-          <span class="fold-meta">{fmtSigned(insights.totalChange)} kg since start</span>
-        {/if}
-      </summary>
-      <div class="fold-body">
-        <h4 class="ins-head first">Profile</h4>
-        <div class="profile-grid">
-          <label>
-            Height (cm)
-            <input type="number" min="50" max="300" bind:value={profile.height_cm} on:input={onProfileChange} />
-          </label>
-          <label>
-            Age
-            <input type="number" min="1" max="120" bind:value={profile.age_years} on:input={onProfileChange} />
-          </label>
-          <label>
-            Sex
-            <select bind:value={profile.sex} on:change={onProfileChange}>
-              <option value="male">male</option>
-              <option value="female">female</option>
-            </select>
-          </label>
-          <label>
-            Activity
-            <select bind:value={profile.activity} on:change={onProfileChange}>
-              {#each ACTIVITY_OPTIONS as a}
-                <option value={a.value}>{a.label}</option>
-              {/each}
-            </select>
-          </label>
-          <label class="wide">
-            Goal
-            <select bind:value={profile.goal} on:change={onProfileChange}>
-              {#each GOALS as g}
-                <option value={g}>{GOAL_LABELS[g]}</option>
-              {/each}
-            </select>
-          </label>
+    <!-- Burned today: a rough burn for this date. The active day's rows count
+         live; any other session already logged on the same date comes from
+         the log. -->
+    <section class="info-card">
+      <div class="info-head">
+        <h2>Burned today</h2>
+        <span class="info-meta">rough estimate</span>
+      </div>
+      <div class="rate-grid">
+        <div class="rate-cell">
+          <span class="r-val">{dayLiftKcal}<small> kcal</small></span>
+          <span class="r-label">lifting</span>
+          <span class="r-sub">{daySets} {daySets === 1 ? 'set' : 'sets'} · ~2.5 min each</span>
         </div>
-
-        {#if metrics && targets}
-          <h4 class="ins-head">Body maths <small>at {metricKg.toFixed(1)} kg</small></h4>
-          <div class="rate-grid">
-            <div class="rate-cell">
-              <span class="r-val">{metrics.bmi}</span>
-              <span class="r-label">BMI</span>
-              <span class="r-sub">{metrics.bmiCategory}</span>
-            </div>
-            <div class="rate-cell">
-              <span class="r-val">{metrics.bmr}</span>
-              <span class="r-label">BMR</span>
-              <span class="r-sub">kcal/day</span>
-            </div>
-            <div class="rate-cell">
-              <span class="r-val">{metrics.tdee}</span>
-              <span class="r-label">TDEE</span>
-              <span class="r-sub">maintenance</span>
-            </div>
-            <div class="rate-cell">
-              <span class="r-val">{targets.protein_g}<small> g</small></span>
-              <span class="r-label">protein</span>
-              <span class="r-sub">per day · 2 g/kg</span>
-            </div>
-          </div>
-          <p class="hint">
-            The calorie target ({targets.calories} kcal) and macros are here if you want them, but the
-            plan is run on the trend weight and the food rules, not on counting.
-          </p>
-
-          <h4 class="ins-head">This session <small>rough burn</small></h4>
-          <div class="rate-grid">
-            <div class="rate-cell">
-              <span class="r-val">{liftKcal}<small> kcal</small></span>
-              <span class="r-label">lifting</span>
-              <span class="r-sub">{totalSets} {totalSets === 1 ? 'set' : 'sets'} · ~2.5 min each</span>
-            </div>
-            <div class="rate-cell">
-              <span class="r-val">{cardioBurn}<small> kcal</small></span>
-              <span class="r-label">cardio</span>
-              <span class="r-sub">logged or estimated</span>
-            </div>
-            <div class="rate-cell">
-              <span class="r-val">{sessionKcal}<small> kcal</small></span>
-              <span class="r-label">session</span>
-              <span class="r-sub">total</span>
-            </div>
-          </div>
-        {/if}
-
-        {#if insights.points.length}
-          <h4 class="ins-head">Bodyweight</h4>
-          <div class="rate-grid">
-            <div class="rate-cell" class:down={(weekDelta ?? 0) < 0} class:up={(weekDelta ?? 0) > 0}>
-              <span class="r-val">{fmtDelta(weekDelta)}<small> kg</small></span>
-              <span class="r-label">vs last week</span>
-              <span class="r-sub">weekly averages</span>
-            </div>
-            <div
-              class="rate-cell"
-              class:down={(insights.totalChange ?? 0) < 0}
-              class:up={(insights.totalChange ?? 0) > 0}
-            >
-              <span class="r-val">{fmtSigned(insights.totalChange)}<small> kg</small></span>
-              <span class="r-label">since start</span>
-              <span class="r-sub">
-                {fmtSigned(insights.totalChangePct)}% · {insights.consistency.spanDays} days · from {insights.startKg} kg
-              </span>
-            </div>
-          </div>
-
-          {#if insights.primary.band}
-            <p class="assess quiet" class:warn={BAND_WARN.includes(insights.primary.band)}>
-              <span class="assess-chip">
-                {BAND_LABEL[insights.primary.band]}
-                {#if insights.primary.pctPerWeek !== null}
-                  · {fmtSigned(insights.primary.pctPerWeek, 2)}%/wk
-                {/if}
-              </span>
-              {BAND_NOTE[insights.primary.band]}
-            </p>
-          {/if}
-
-          <h4 class="ins-head">Rate by window</h4>
-          <div class="rate-grid">
-            {#each insights.rates as r}
-              <div
-                class="rate-cell"
-                class:muted={r.kgPerWeek === null}
-                class:down={(r.kgPerWeek ?? 0) < 0}
-                class:up={(r.kgPerWeek ?? 0) > 0}
-              >
-                <span class="r-val">{fmtSigned(r.kgPerWeek, 2)}<small> kg/wk</small></span>
-                <span class="r-label">{r.label}</span>
-                <span class="r-sub">
-                  {#if r.kgPerWeek === null}
-                    not enough data
-                  {:else}
-                    {fmtSigned(r.pctPerWeek, 2)}%/wk · {r.n} weigh-ins · fit {r.r2}
-                  {/if}
-                </span>
-              </div>
-            {/each}
-          </div>
-          <p class="hint">
-            Each rate is a least-squares fit over its own window, not a first-to-last subtraction —
-            one heavy meal can't move it. <strong>Fit</strong> is r²: how much of the movement the
-            line explains, so a low number means the window is mostly noise.
-          </p>
-
-          <h4 class="ins-head">Energy balance</h4>
-          <div class="ins-rows">
-            <div class="ins-row">
-              <span>Deficit implied by the trend</span>
-              <strong>
-                {insights.primary.kcalPerDay === null ? '—' : `${insights.primary.kcalPerDay} kcal/day`}
-              </strong>
-            </div>
-            <div class="ins-row">
-              <span>Deficit this goal asks for</span>
-              <strong>{insights.plannedDeficit} kcal/day</strong>
-            </div>
-            <div class="ins-row">
-              <span>Gap</span>
-              <strong class:warn={Math.abs(insights.deficitGap ?? 0) > 200}>
-                {insights.deficitGap === null ? '—' : `${fmtSigned(insights.deficitGap, 0)} kcal/day`}
-              </strong>
-            </div>
-          </div>
-          {#if deficitNote}<p class="hint">{deficitNote}</p>{/if}
-
-          <h4 class="ins-head">
-            Projections
-            <small>at {fmtSigned(insights.primary.kgPerWeek, 2)} kg/wk</small>
-          </h4>
-          {#if (insights.primary.kgPerWeek ?? 0) < 0}
-            <div class="ins-rows">
-              {#each insights.projections as pr}
-                <div class="ins-row">
-                  <span>{pr.label} <em>{pr.targetKg} kg</em></span>
-                  <strong>
-                    {#if pr.reached}
-                      already there
-                    {:else if pr.date}
-                      {fmtDate(pr.date)} · {pr.weeks} wk
-                    {:else}
-                      not on this trend
-                    {/if}
-                  </strong>
-                </div>
-              {/each}
-            </div>
-            {#if insights.forecast.length}
-              <div class="forecast">
-                {#each insights.forecast as f}
-                  <div class="fc">
-                    <span class="fc-val">{f.kg}<small> kg</small></span>
-                    <span class="fc-label">in {f.weeks} wk</span>
-                  </div>
-                {/each}
-              </div>
-            {/if}
-          {:else}
-            <p class="hint">Projections need a downward trend — there is nothing to extrapolate yet.</p>
-          {/if}
-          <p class="hint">
-            Straight-line extrapolation of the {insights.primary.label} fit at 7700 kcal per kg, with
-            BMI targets taken from your height. A real cut slows as you get lighter, so read these as
-            the optimistic end.
-          </p>
-
-          <h4 class="ins-head">Signals</h4>
-          <ul class="signal-list">
-            {#if insights.stalled}
-              <li class="warn">
-                The last two weeks are flat while the whole log is down — either a normal water-weight
-                stall, or the deficit has drifted shut. Give it another week before changing anything.
-              </li>
-            {/if}
-            {#if insights.volatility !== null}
-              <li>
-                Day-to-day swing around the trend is ±{insights.volatility} kg, so a single weigh-in
-                inside that range carries no information.
-              </li>
-            {/if}
-            <li>
-              Logged {insights.consistency.last30} of the last 30 days ({insights.consistency.coverage30}%)
-              · {insights.consistency.streak}-day streak · longest gap {insights.consistency.longestGap} days.
-            </li>
-            {#if (insights.consistency.daysSinceLast ?? 0) > 2}
-              <li class="warn">
-                Last weigh-in was {insights.consistency.daysSinceLast} days ago — the trend weight goes
-                stale quickly.
-              </li>
-            {/if}
-            {#if insights.extremes.best && insights.extremes.best.delta < 0}
-              <li>
-                Best week: {insights.extremes.best.delta.toFixed(1)} kg, week of {insights.extremes.best.weekStart}.
-              </li>
-            {/if}
-            {#if insights.extremes.worst && insights.extremes.worst.delta > 0}
-              <li>
-                Biggest gain: +{insights.extremes.worst.delta.toFixed(1)} kg, week of {insights.extremes.worst.weekStart}.
-              </li>
-            {/if}
-          </ul>
-
-          <h4 class="ins-head">Weekly averages</h4>
-          <p class="hint">Track this, ignore daily swings.</p>
-          <div class="weekly-list">
-            {#each weeklyWithDelta as w}
-              <div class="weekly-row">
-                <span class="weekly-week">week of {w.weekStart}</span>
-                <span class="weekly-count">{w.count} {w.count === 1 ? 'entry' : 'entries'}</span>
-                <span class="weekly-delta" class:down={(w.delta ?? 0) < 0} class:up={(w.delta ?? 0) > 0}>
-                  {#if w.delta === null}—{:else}{w.delta < 0 ? '▼' : '▲'} {Math.abs(w.delta).toFixed(1)}{/if}
-                </span>
-                <span class="weekly-avg">{w.avgKg} kg</span>
-              </div>
-            {/each}
-          </div>
-        {/if}
-
-        {#if cadence.total}
-          <h4 class="ins-head">Training cadence</h4>
-          <div class="rate-grid">
-            <div class="rate-cell">
-              <span class="r-val">{cadence.last7}</span>
-              <span class="r-label">last 7 days</span>
-              <span class="r-sub">sessions logged</span>
-            </div>
-            <div class="rate-cell">
-              <span class="r-val">{cadence.perWeek}<small> /wk</small></span>
-              <span class="r-label">last 4 weeks</span>
-              <span class="r-sub">{cadence.last28} sessions</span>
-            </div>
-            <div class="rate-cell" class:up={(cadence.daysSinceLast ?? 0) > 2}>
-              <span class="r-val">{cadence.daysSinceLast ?? '—'}</span>
-              <span class="r-label">days since last</span>
-              <span class="r-sub">{cadence.streak}-day streak</span>
-            </div>
-            <div class="rate-cell">
-              <span class="r-val">{cadence.total}</span>
-              <span class="r-label">all time</span>
-              <span class="r-sub">longest gap {cadence.longestGap} days</span>
-            </div>
-          </div>
-
-          <h4 class="ins-head">Day balance <small>last 4 weeks</small></h4>
-          <div class="focus-bars">
-            {#each cadence.focus as f}
-              <div class="focus-row">
-                <span class="focus-label">{f.label}</span>
-                <span class="focus-track">
-                  <span
-                    class="focus-fill"
-                    style="width: {Math.max(...cadence.focus.map((x) => x.count), 1) > 0
-                      ? (f.count / Math.max(...cadence.focus.map((x) => x.count), 1)) * 100
-                      : 0}%"
-                  ></span>
-                </span>
-                <span class="focus-count">{f.count}</span>
-              </div>
-            {/each}
-          </div>
-          <p class="hint">
-            Each day runs once a week, so four weeks of the plan is four of each. Sessions from
-            the earlier push/pull/legs plan don't appear here.
-          </p>
-        {/if}
+        <div class="rate-cell">
+          <span class="r-val">{dayCardioKcal}<small> kcal</small></span>
+          <span class="r-label">cardio</span>
+          <span class="r-sub">logged or estimated</span>
+        </div>
+        <div class="rate-cell">
+          <span class="r-val">{dayKcal}<small> kcal</small></span>
+          <span class="r-label">today</span>
+          <span class="r-sub">total</span>
+        </div>
       </div>
-    </details>
+      {#if otherSetsToday || otherCardioToday}
+        <p class="hint">Includes the other session logged on this date.</p>
+      {/if}
+    </section>
 
-    <!-- History -->
-    <details class="fold">
-      <summary>
-        <span class="fold-title">History</span>
-        {#if sessions.length}
-          <span class="fold-meta">{sessions.length} {sessions.length === 1 ? 'session' : 'sessions'}</span>
-        {/if}
-      </summary>
-      <div class="fold-body">
-        {#if sessions.length === 0}
-          <p class="hint">No sessions logged yet.</p>
-        {:else}
-          <div class="history-list">
-            {#each historyGroups as grp}
-              <div class="history-month">{grp.label}</div>
-              {#each grp.rows as s (s.id)}
-                <div class="history-item" class:open={openId === s.id} class:today={s.date === today()}>
-                  <button
-                    class="history-head"
-                    on:click={() => toggleSession(s.id)}
-                    aria-expanded={openId === s.id}
-                  >
-                    <span class="hist-date">
-                      <span class="hist-dom">{s.dom}</span>
-                      <span class="hist-sub">{s.wd} {s.mon}</span>
-                    </span>
-                    {#if s.day_label}<span class="hist-day">{s.day_label}</span>{/if}
-                    {#if s.bw !== undefined}
-                      <span class="hist-bw">{gramsToKg(s.bw)}<small> kg</small></span>
-                    {/if}
-                    <span class="hist-chevron" aria-hidden="true">{openId === s.id ? '−' : '+'}</span>
-                  </button>
-                  <button class="icon-btn" on:click={() => deleteSession(s.id)} title="Delete session + bodyweight">
-                    <Trash2 size={15} />
-                  </button>
-                  {#if openId === s.id}
-                    <div class="history-detail">
-                      {#if loadingDetail}
-                        <div class="hint"><LoadingState label="Loading session" /></div>
-                      {:else if openDetail}
-                        {#if openStats}
-                          <div class="detail-stats">
-                            {openStats.exercises} {openStats.exercises === 1 ? 'exercise' : 'exercises'} ·
-                            {openStats.sets} {openStats.sets === 1 ? 'set' : 'sets'}
-                            {#if openStats.cardio}&nbsp;· {openStats.cardio} cardio{/if}
-                          </div>
-                        {/if}
-                        {#each groupSets(openDetail) as g}
-                          <div class="detail-ex">
-                            <span class="detail-ex-name">
-                              {g.exercise}
-                              {#if g.equipment}<span class="detail-ex-equip">{g.equipment}</span>{/if}
-                            </span>
-                            <div class="detail-sets">
-                              {#each g.sets as st}
-                                <span class="set-badge">{setLabel(st.reps, st.weight_g, g.exercise)}</span>
-                              {/each}
-                            </div>
-                          </div>
-                        {/each}
-                        {#if openDetail.cardio && openDetail.cardio.length}
-                          <div class="detail-ex">
-                            <span class="detail-ex-name">🚴 Cardio</span>
-                            <div class="detail-sets">
-                              {#each openDetail.cardio as c}
-                                <span class="set-badge">
-                                  {c.kind}{c.minutes > 0 ? ` · ${c.minutes} min` : ''} · {c.kcal} kcal
-                                </span>
-                              {/each}
-                            </div>
-                          </div>
-                        {/if}
-                      {/if}
-                    </div>
-                  {/if}
-                </div>
-              {/each}
-            {/each}
-          </div>
-        {/if}
-      </div>
-    </details>
+    <!-- Everything else — the trend, the training report, every fitted number
+         and the history — lives on its own page. -->
+    <a class="link-card" href="/fitness/workout/insights">
+      <span class="link-title">Insights &amp; history</span>
+      <span class="link-meta">trend · report · all the numbers · past sessions</span>
+      <span class="link-arrow" aria-hidden="true">&rarr;</span>
+    </a>
   {/if}
 </div>
 
@@ -2179,17 +1627,6 @@
   .cardio-field .unit { font-size: 0.72rem; color: var(--text-faint); }
   .cardio-add { margin: 0.25rem 0 0; align-self: flex-start; }
 
-  /* ── Progress card ──────────────────────────────────────── */
-  .progress-card {
-    border: 1px solid var(--border);
-    border-radius: 0.625rem;
-    padding: 1rem;
-  }
-  .progress-card .trend-stats { grid-template-columns: repeat(3, 1fr); }
-  .ts-val.pace { font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.04em; }
-  .trend-stat.warn .ts-val { color: #e67e22; }
-  .progress-card .hint { margin: 0; }
-
   /* ── Week overview ──────────────────────────────────────── */
   .overview { display: flex; flex-direction: column; gap: 0.5rem; padding: 0.75rem; }
   .ov-day {
@@ -2270,85 +1707,7 @@
 
   .fold-body { padding: 1.25rem 1rem; }
 
-  /* ── Bodyweight trend + insights ────────────────────────── */
-  .trend-stats {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr));
-    gap: 0.75rem;
-    margin-bottom: 1rem;
-  }
-  .trend-stat {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.15rem;
-    padding: 0.75rem 0.5rem;
-    border: 1px solid var(--border-subtle);
-    border-radius: 0.5rem;
-    text-align: center;
-  }
-  .ts-val { font-family: var(--font-mono); font-size: 1.15rem; font-weight: 700; color: var(--text-primary); }
-  .ts-val small { font-size: 0.68rem; font-weight: 500; color: var(--text-tertiary); }
-  .ts-label { font-size: 0.64rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-tertiary); }
-  .ts-sub {
-    font-family: var(--font-mono);
-    font-size: 0.62rem;
-    line-height: 1.35;
-    color: var(--text-faint);
-  }
-  .trend-stat.down .ts-val { color: var(--blueprint, #6ea8fe); }
-  .trend-stat.up .ts-val { color: #e67e22; }
-
-  /* The one-line verdict on the current rate. */
-  .assess {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    gap: 0.5rem;
-    margin: 0 0 1.25rem;
-    padding: 0.7rem 0.85rem;
-    border: 1px solid var(--blueprint);
-    border-radius: 0.5rem;
-    background: var(--blueprint-tint);
-    font-size: 0.8125rem;
-    line-height: 1.5;
-    color: var(--text-secondary);
-  }
-  .assess.warn { border-color: #e67e22; background: rgb(230 126 34 / 10%); }
-  /* Inside the numbers fold the verdict is supporting detail, not a banner. */
-  .assess.quiet { margin-top: 0.85rem; border-color: var(--border-subtle); background: transparent; }
-  .assess.quiet.warn { border-color: #e67e22; }
-  .assess-chip {
-    flex: none;
-    font-family: var(--font-mono);
-    font-size: 0.68rem;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: var(--text-primary);
-  }
-
-  .ins-head {
-    display: flex;
-    align-items: baseline;
-    gap: 0.5rem;
-    margin: 1.5rem 0 0.6rem;
-    font-family: var(--font-mono);
-    font-size: 0.7rem;
-    font-weight: 600;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--text-secondary);
-  }
-  .ins-head small {
-    font-size: 0.66rem;
-    font-weight: 400;
-    letter-spacing: 0.02em;
-    text-transform: none;
-    color: var(--text-faint);
-  }
-  .ins-head.first { margin-top: 0; }
-
+  /* ── Body maths grid (details card, burned today) ──────── */
   .rate-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr));
@@ -2366,254 +1725,65 @@
   .r-val small { font-size: 0.64rem; font-weight: 500; color: var(--text-tertiary); }
   .r-label { font-size: 0.62rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-tertiary); }
   .r-sub { font-family: var(--font-mono); font-size: 0.62rem; line-height: 1.35; color: var(--text-faint); }
-  .rate-cell.down .r-val { color: var(--blueprint, #6ea8fe); }
-  .rate-cell.up .r-val { color: #e67e22; }
-  .rate-cell.muted .r-val { color: var(--text-faint); }
 
-  .ins-rows { display: flex; flex-direction: column; }
-  .ins-row {
+  .hint { font-size: 0.8125rem; color: var(--text-tertiary); margin: 0 0 0.75rem; }
+  .rate-grid + .hint { margin-top: 0.85rem; }
+
+  /* ── Info cards (details, burned today) + insights link ─── */
+  .info-card {
+    border: 1px solid var(--border);
+    border-radius: 0.625rem;
+    padding: 1rem;
+  }
+  .info-head {
     display: flex;
     align-items: baseline;
     justify-content: space-between;
-    gap: 0.85rem;
-    padding: 0.45rem 0;
-    border-bottom: 1px solid var(--border-subtle);
-    font-size: 0.84rem;
-    color: var(--text-secondary);
+    gap: 1rem;
+    margin-bottom: 0.875rem;
   }
-  .ins-row:last-child { border-bottom: none; }
-  .ins-row em { font-family: var(--font-mono); font-style: normal; font-size: 0.72rem; color: var(--text-faint); }
-  .ins-row strong {
-    flex: none;
-    font-family: var(--font-mono);
-    font-size: 0.8rem;
-    font-weight: 600;
-    text-align: right;
-    color: var(--text-primary);
-  }
-  .ins-row strong.warn { color: #e67e22; }
-
-  .forecast {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(4.75rem, 1fr));
-    gap: 0.5rem;
-    margin-top: 0.85rem;
-  }
-  .fc {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.1rem;
-    padding: 0.55rem 0.4rem;
-    border: 1px dashed var(--border-subtle);
-    border-radius: 0.5rem;
-  }
-  .fc-val { font-family: var(--font-mono); font-size: 0.95rem; font-weight: 700; color: var(--text-primary); }
-  .fc-val small { font-size: 0.62rem; font-weight: 500; color: var(--text-tertiary); }
-  .fc-label { font-size: 0.62rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-tertiary); }
-
-  .signal-list { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; margin: 0; padding: 0; }
-  .signal-list li {
-    position: relative;
-    padding-left: 0.9rem;
-    font-size: 0.8125rem;
-    line-height: 1.5;
-    color: var(--text-secondary);
-  }
-  .signal-list li::before {
-    content: '·';
-    position: absolute;
-    left: 0.2rem;
-    color: var(--text-faint);
-  }
-  .signal-list li.warn { color: #e67e22; }
-  .signal-list li.warn::before { color: #e67e22; }
-
-  /* Day balance bars — one row per lifting day. */
-  .focus-bars { display: flex; flex-direction: column; gap: 0.4rem; }
-  .focus-row { display: flex; align-items: center; gap: 0.6rem; }
-  .focus-label {
-    flex: none;
-    width: 4.2rem;
+  .info-head h2 { font-size: 1rem; font-weight: 600; color: var(--text-primary); margin: 0; }
+  .info-meta {
     font-family: var(--font-mono);
     font-size: 0.72rem;
-    color: var(--text-secondary);
-  }
-  .focus-track {
-    flex: 1;
-    height: 0.5rem;
-    border-radius: 0.25rem;
-    background: var(--blueprint-tint);
-    overflow: hidden;
-  }
-  .focus-fill { display: block; height: 100%; background: var(--blueprint); }
-  .focus-count {
-    flex: none;
-    min-width: 1.5rem;
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-align: right;
-    color: var(--text-primary);
-  }
-
-  .hint { font-size: 0.8125rem; color: var(--text-tertiary); margin: 0 0 0.75rem; }
-  /* A hint explaining the block above it needs air; one introducing the block
-     below it (straight after a heading) does not. */
-  .rate-grid + .hint,
-  .ins-rows + .hint,
-  .forecast + .hint,
-  .focus-bars + .hint { margin-top: 0.85rem; }
-
-  .weekly-list { display: flex; flex-direction: column; }
-  .weekly-row {
-    display: flex;
-    align-items: baseline;
-    gap: 0.85rem;
-    padding: 0.45rem 0;
-    border-bottom: 1px solid var(--border-subtle);
-    font-size: 0.875rem;
-  }
-  .weekly-row:last-child { border-bottom: none; }
-  .weekly-week { color: var(--text-secondary); flex: 1; }
-  .weekly-count { color: var(--text-faint); font-size: 0.72rem; }
-  .weekly-delta {
-    font-family: var(--font-mono);
-    font-size: 0.72rem;
-    color: var(--text-tertiary);
-    min-width: 3rem;
-    text-align: right;
-  }
-  .weekly-delta.down { color: var(--blueprint, #6ea8fe); }
-  .weekly-delta.up { color: #e67e22; }
-  .weekly-avg {
-    font-family: var(--font-mono);
-    font-weight: 600;
-    color: var(--text-primary);
-    min-width: 4.25rem;
-    text-align: right;
-  }
-
-  .history-list { display: flex; flex-direction: column; gap: 0.4rem; }
-  .history-month {
-    font-family: var(--font-mono);
-    font-size: 0.68rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--text-tertiary);
-    padding: 0.85rem 0.25rem 0.3rem;
-    margin-top: 0.4rem;
-    border-bottom: 1px solid var(--border-subtle);
-  }
-  .history-month:first-child { margin-top: 0; padding-top: 0; }
-  .history-item {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 0.5rem 0.75rem;
-    align-items: center;
-    padding: 0.6rem 0.75rem;
-    border: 1px solid var(--border-subtle);
-    border-radius: 0.5rem;
-    transition: border-color 0.15s, background 0.15s;
-  }
-  .history-item:hover { border-color: var(--border-strong); }
-  .history-item.open { border-color: var(--blueprint); background: var(--blueprint-tint); }
-  .history-head {
-    display: flex;
-    align-items: center;
-    gap: 0.85rem;
-    min-width: 0;
-    background: transparent;
-    border: none;
-    cursor: var(--cursor-pointer);
-    text-align: left;
-    padding: 0;
-  }
-  .hist-date {
-    display: flex;
-    align-items: baseline;
-    gap: 0.35rem;
-    flex: none;
-    font-family: var(--font-mono);
-  }
-  .hist-dom { font-size: 1.05rem; font-weight: 700; color: var(--text-primary); min-width: 1.1rem; }
-  .hist-sub { font-size: 0.68rem; color: var(--text-tertiary); }
-  .history-item.today .hist-dom { color: var(--blueprint, #6ea8fe); }
-  .hist-day {
-    flex: none;
-    font-size: 0.68rem;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--blueprint, #6ea8fe);
-  }
-  .hist-bw {
-    margin-left: auto;
-    font-family: var(--font-mono);
-    font-size: 0.78rem;
     color: var(--text-tertiary);
     white-space: nowrap;
   }
-  .hist-bw small { font-size: 0.66rem; }
-  .hist-chevron {
-    flex: none;
-    width: 1.1rem;
-    text-align: center;
-    font-family: var(--font-mono);
-    font-size: 1rem;
-    color: var(--text-faint);
-  }
-  .history-item.open .hist-chevron { color: var(--blueprint, #6ea8fe); }
-  .history-detail {
-    grid-column: 1 / -1;
-    display: flex;
-    flex-direction: column;
-    gap: 0.625rem;
-    padding-top: 0.6rem;
-    border-top: 1px solid var(--border-subtle);
-  }
-  .detail-stats {
-    font-family: var(--font-mono);
-    font-size: 0.7rem;
-    letter-spacing: 0.02em;
-    color: var(--text-tertiary);
-  }
-  .detail-ex { display: flex; flex-direction: column; gap: 0.375rem; }
-  .detail-ex-name { font-size: 0.875rem; color: var(--text-secondary); }
-  .detail-ex-equip {
-    font-family: var(--font-mono);
-    font-size: 0.68rem;
-    color: var(--text-tertiary);
-    border: 1px solid var(--border-subtle);
-    border-radius: 999px;
-    padding: 0.05rem 0.4rem;
-    margin-left: 0.35rem;
-  }
-  .detail-sets { display: flex; flex-wrap: wrap; gap: 0.375rem; }
-  .set-badge {
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    color: var(--text-primary);
-    background: var(--surface-raised);
-    padding: 0.25rem 0.5rem;
-    border-radius: 0.25rem;
-  }
+  .info-card .profile-grid { margin-bottom: 1rem; }
+  .info-card .hint { margin: 0.85rem 0 0; }
 
-  @keyframes fade-up {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+  .link-card {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.875rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 0.625rem;
+    color: var(--text-primary);
+    text-decoration: none;
+    transition: border-color 0.15s;
   }
+  .link-card:hover { border-color: var(--border-strong); }
+  .link-title { font-size: 0.95rem; font-weight: 600; }
+  .link-meta {
+    flex: 1;
+    min-width: 0;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--text-tertiary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .link-arrow { color: var(--text-tertiary); transition: transform 0.15s; }
+  .link-card:hover .link-arrow { transform: translateX(3px); }
 
   @media (max-width: 640px) {
     .page { gap: 1.15rem; }
     .page-title { font-size: 1.75rem; }
     .week-strip { grid-template-columns: repeat(3, 1fr); gap: 0.4rem; }
     .day-chip { padding: 0.5rem 0.5rem; }
-    /* Two numbers side by side, the pace verdict on its own full-width row. */
-    .progress-card .trend-stats { grid-template-columns: repeat(2, 1fr); }
-    .progress-card .trend-stat:last-child { grid-column: 1 / -1; }
-
-    /* Four forecast cells in a tidy 2×2 rather than auto-fit's 3 + 1. */
-    .forecast { grid-template-columns: repeat(2, 1fr); }
+    .link-meta { display: none; }
 
     /* Session bar: stack date + bodyweight so neither gets squeezed. */
     .session-bar { gap: 0.75rem; }

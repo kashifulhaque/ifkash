@@ -2,10 +2,13 @@
 	import { onMount, onDestroy } from 'svelte';
 	import { browser } from '$app/environment';
 	import LoadingState from '$lib/components/LoadingState.svelte';
+	import { theme as siteTheme } from '$lib/stores/theme';
 
 	export let value: string = '';
 	export let language: string = 'plaintext';
-	export let theme: string = 'vs-dark';
+	/** 'auto' follows the site theme (Nordisk daylight / polar night).
+	 *  Any other value is passed to Monaco as a theme name. */
+	export let theme: string = 'auto';
 	export let onChange: ((value: string) => void) | undefined = undefined;
 
 	let editorContainer: HTMLDivElement;
@@ -13,6 +16,72 @@
 	let monaco: any;
 	let loading = true;
 	let error: string | null = null;
+	let unsubscribeTheme: (() => void) | undefined;
+
+	// Read a token from the live CSS so the editor matches app.css in
+	// both themes. Monaco only accepts hex, so drop anything else.
+	function token(name: string): string | undefined {
+		const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+		return /^#[0-9a-f]{6}$/i.test(v) ? v : undefined;
+	}
+
+	function defineNordiskTheme(mode: 'light' | 'dark'): string {
+		const name = `nordisk-${mode}`;
+		const t = (n: string) => token(n);
+		const bare = (n: string) => t(n)?.slice(1);
+		const alpha = (n: string, a: string) => (t(n) ? t(n) + a : undefined);
+		const colors: Record<string, string | undefined> = {
+			'editor.background': t('--surface'),
+			'editor.foreground': t('--ink'),
+			'editorLineNumber.foreground': t('--ink-3'),
+			'editorLineNumber.activeForeground': t('--ink'),
+			'editor.lineHighlightBackground': alpha('--surface-2', '80'),
+			'editor.lineHighlightBorder': alpha('--surface-2', '00'),
+			'editor.selectionBackground': alpha('--fjord', '33'),
+			'editor.inactiveSelectionBackground': alpha('--fjord', '1f'),
+			'editor.selectionHighlightBackground': alpha('--fjord', '1a'),
+			'editor.findMatchBackground': alpha('--clay', '40'),
+			'editor.findMatchHighlightBackground': alpha('--clay', '26'),
+			'editorCursor.foreground': t('--fjord'),
+			'editorWhitespace.foreground': t('--line'),
+			'editorIndentGuide.background1': t('--line'),
+			'editorIndentGuide.activeBackground1': t('--line-strong'),
+			'editorGutter.background': t('--surface'),
+			'editorWidget.background': t('--surface'),
+			'editorWidget.border': t('--line'),
+			'editorHoverWidget.background': t('--surface'),
+			'editorHoverWidget.border': t('--line'),
+			'input.background': t('--surface'),
+			'input.border': t('--line-strong'),
+			'focusBorder': t('--fjord'),
+			'scrollbar.shadow': alpha('--ink', '00'),
+			'scrollbarSlider.background': alpha('--line-strong', '80'),
+			'scrollbarSlider.hoverBackground': t('--line-strong'),
+			'scrollbarSlider.activeBackground': t('--ink-3'),
+			'minimap.background': t('--surface'),
+			'minimapSlider.background': alpha('--line-strong', '40'),
+			'editorOverviewRuler.border': alpha('--line', '00'),
+		};
+		monaco.editor.defineTheme(name, {
+			base: mode === 'dark' ? 'vs-dark' : 'vs',
+			inherit: true,
+			rules: [
+				{ token: '', foreground: bare('--ink') },
+				{ token: 'comment', foreground: bare('--ink-3'), fontStyle: 'italic' },
+				{ token: 'keyword', foreground: bare('--fjord') },
+				{ token: 'string', foreground: bare('--moss') },
+				{ token: 'number', foreground: bare('--clay') },
+			].filter((r) => r.foreground),
+			colors: Object.fromEntries(
+				Object.entries(colors).filter((e): e is [string, string] => !!e[1])
+			),
+		});
+		return name;
+	}
+
+	function resolveTheme(mode: 'light' | 'dark'): string {
+		return theme === 'auto' ? defineNordiskTheme(mode) : theme;
+	}
 
 	onMount(async () => {
 		if (!browser) return;
@@ -34,15 +103,23 @@
 			};
 
 			// Create editor
+			let mode: 'light' | 'dark' = 'light';
+			siteTheme.subscribe((m) => (mode = m))();
 			editor = monaco.editor.create(editorContainer, {
 				value,
 				language,
-				theme,
+				theme: resolveTheme(mode),
 				automaticLayout: true,
 				fontFamily: '"JetBrains Mono Variable", "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace',
 				fontSize: 14,
+				lineHeight: 22,
 				lineNumbers: 'on',
-				minimap: { enabled: true },
+				minimap: { enabled: true, renderCharacters: false },
+				padding: { top: 16, bottom: 16 },
+				renderLineHighlight: 'all',
+				overviewRulerBorder: false,
+				hideCursorInOverviewRuler: true,
+				scrollbar: { verticalScrollbarSize: 10, horizontalScrollbarSize: 10, useShadows: false },
 				scrollBeyondLastLine: false,
 				wordWrap: 'on',
 				tabSize: 2,
@@ -57,6 +134,12 @@
 				}
 			});
 
+			// Re-theme when the site switches between daylight and polar night.
+			// theme.ts subscribed first, so <html data-theme> is already updated.
+			unsubscribeTheme = siteTheme.subscribe((m) => {
+				if (monaco) monaco.editor.setTheme(resolveTheme(m));
+			});
+
 			loading = false;
 		} catch (err) {
 			console.error('Failed to load Monaco Editor:', err);
@@ -66,6 +149,7 @@
 	});
 
 	onDestroy(() => {
+		unsubscribeTheme?.();
 		if (editor) {
 			editor.dispose();
 		}
@@ -97,6 +181,7 @@
 		width: 100%;
 		height: 100%;
 		min-height: 400px;
+		background: var(--surface);
 	}
 
 	.monaco-editor-container {
@@ -107,23 +192,24 @@
 
 	.overlay {
 		position: absolute;
-		top: 0;
-		left: 0;
-		right: 0;
-		bottom: 0;
+		inset: 0;
+		z-index: 10;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		background: rgba(30, 30, 30, 0.95);
-		z-index: 1000;
+		padding: var(--s-5);
+		background: var(--surface);
+		color: var(--ink-3);
 	}
 
 	.message {
-		font-size: 16px;
-		color: #888;
+		max-width: 40ch;
+		color: var(--ink-3);
+		font-size: var(--text-sm);
+		text-align: center;
 	}
 
 	.overlay.error .message {
-		color: #f44336;
+		color: var(--danger);
 	}
 </style>

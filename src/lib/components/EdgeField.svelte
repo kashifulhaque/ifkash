@@ -24,13 +24,21 @@
   const MOBILE_WEBGPU_PARTICLES = 16_384;
   const FALLBACK_PARTICLES = 720;
 
+  // Polar-night palette for the aurora window. The panel is a night sky in
+  // both site themes, so these mirror the dark-theme token values in app.css
+  // (--surface-2, --ink, --moss, --fjord) rather than reading live variables.
+  const AURORA_SKY = "#101315";
+  const AURORA_GRID = "rgba(236,232,224,0.05)";
+  const AURORA_MOSS = "163,181,151";
+  const AURORA_GLACIER = "143,182,207";
+
   let canvas: HTMLCanvasElement;
   let prompt = "train small models, ship fast systems";
   let activePrompt = prompt;
   let fieldSeed = hashText(prompt);
   let energy = 1;
   let paused = false;
-  let rendererLabel = "INITIALIZING";
+  let rendererLabel = "Initializing";
   let particleCount = 0;
   let fps = 0;
   let edgeState: "connecting" | "live" | "unavailable" = "connecting";
@@ -245,11 +253,17 @@
           let size = vec2f(0.004 + speed * 0.008, 0.0028);
           let offset = corners[vertex_index] * size;
           let tint = hash(f32(instance_index) * 0.417 + uniforms.flow.z * 31.0);
-          let cool = vec3f(0.28, 0.87, 1.0);
-          let warm = vec3f(0.74, 1.0, 0.36);
+          // Aurora hues: glacier (#8fb6cf) low in the sky, moss (#a3b597) high,
+          // with a muted teal between them. Low alpha keeps the field soft.
+          let glacier = vec3f(0.561, 0.714, 0.812);
+          let teal = vec3f(0.533, 0.737, 0.706);
+          let moss = vec3f(0.639, 0.710, 0.592);
+          let band = clamp(packet.position.y * 0.5 + 0.5, 0.0, 1.0);
+          let hue = mix(tint, band, 0.6);
+          let aurora_rgb = select(mix(teal, moss, (hue - 0.5) * 2.0), mix(glacier, teal, hue * 2.0), hue < 0.5);
           var output: VertexOutput;
           output.position = vec4f(packet.position + offset, 0.0, 1.0);
-          output.color = vec4f(mix(cool, warm, tint), 0.22 + speed * 0.42);
+          output.color = vec4f(aurora_rgb, 0.1 + speed * 0.2);
           return output;
         }
 
@@ -403,7 +417,7 @@
           colorAttachments: [
             {
               view: context.getCurrentTexture().createView(),
-              clearValue: { r: 0.018, g: 0.025, b: 0.021, a: 1 },
+              clearValue: { r: 0.063, g: 0.075, b: 0.082, a: 1 },
               loadOp: "clear",
               storeOp: "store",
             },
@@ -428,7 +442,7 @@
       frameHandle = requestAnimationFrame(draw);
     };
 
-    rendererLabel = "WEBGPU COMPUTE";
+    rendererLabel = "WebGPU compute";
     frameHandle = requestAnimationFrame(draw);
 
     destroyRenderer = () => {
@@ -448,11 +462,11 @@
   function startCanvasFallback() {
     const context = canvas.getContext("2d", { alpha: false });
     if (!context) {
-      rendererLabel = "STATIC MODE";
+      rendererLabel = "Static mode";
       return;
     }
 
-    rendererLabel = "CANVAS FALLBACK";
+    rendererLabel = "Canvas fallback";
     particleCount = FALLBACK_PARTICLES;
 
     const packets: Packet[] = Array.from({ length: FALLBACK_PARTICLES }, (_, i) => ({
@@ -513,12 +527,12 @@
 
       if (!paused && !document.hidden) {
         energy += (1 - energy) * Math.min(delta * 2.4, 1);
-        context.fillStyle = "#050706";
+        context.fillStyle = AURORA_SKY;
         context.fillRect(0, 0, width, height);
 
         for (let layer = 1; layer < 5; layer += 1) {
           const x = (width * layer) / 5;
-          context.strokeStyle = "rgba(255,255,255,0.055)";
+          context.strokeStyle = AURORA_GRID;
           context.beginPath();
           context.moveTo(x, 0);
           context.lineTo(x, height);
@@ -543,8 +557,8 @@
           const length = Math.max(1.5, (packet.x - previousX) * width * 3 + 2);
           const warm = (i + Math.round(fieldSeed * 100)) % 5 === 0;
           context.fillStyle = warm
-            ? `rgba(190,255,94,${packet.alpha})`
-            : `rgba(80,218,255,${packet.alpha * 0.82})`;
+            ? `rgba(${AURORA_MOSS},${packet.alpha * 0.6})`
+            : `rgba(${AURORA_GLACIER},${packet.alpha * 0.5})`;
           context.fillRect(px - length, py, length, Math.max(1, height / 520));
         }
 
@@ -593,7 +607,7 @@
 <section class="edge-field" aria-labelledby="edge-field-heading">
   <header class="field-heading">
     <div>
-      <p class="field-kicker">Experiment 08 / edge field</p>
+      <p class="eyebrow">Experiment 08 / Edge field</p>
       <h2 id="edge-field-heading">Watch a neural system route itself.</h2>
     </div>
     <p class="field-intro">
@@ -606,7 +620,7 @@
     <div class="viewport-column">
       <div class="machine-bar">
         <div class="machine-status">
-          <span class:live={rendererLabel !== "INITIALIZING"}></span>
+          <span class:live={rendererLabel !== "Initializing"}></span>
           {rendererLabel}
         </div>
         <div class="machine-readout">
@@ -633,7 +647,7 @@
           Move your pointer to bend the field
         </div>
         <div class="seed-readout" aria-hidden="true">
-          SEED {fieldSeed.toFixed(8)}
+          Seed {fieldSeed.toFixed(8)}
         </div>
       </div>
     </div>
@@ -705,117 +719,129 @@
 </section>
 
 <style>
+  /* The aurora window is a night sky in both site themes. Its local palette
+     mirrors the polar-night token values in app.css. */
   .edge-field {
-    --field-green: #baff63;
-    --field-cyan: #54d8ff;
-    --field-bg: #050706;
-    --field-panel: #090c0a;
-    --field-line: rgb(224 255 229 / 13%);
-    margin: 88px 0 8px;
-    color: #f4f7f2;
+    --af-sky: #101315;
+    --af-panel: #15181b;
+    --af-line: #2b3035;
+    --af-line-strong: #3d444a;
+    --af-ink: #ece8e0;
+    --af-ink-2: #b5b1a9;
+    --af-muted: #8f8c84;
+    --af-moss: #a3b597;
+    --af-glacier: #8fb6cf;
+    --af-wash: rgb(236 232 224 / 5%);
+    margin: var(--s-9) 0 0;
   }
+
+  /* ── Heading (site tokens) ───────────────────────────────── */
 
   .field-heading {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(280px, 0.65fr);
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 0.7fr);
     align-items: end;
-    gap: 32px 64px;
-    margin-bottom: 28px;
+    gap: var(--s-5) var(--s-8);
+    margin-bottom: var(--s-6);
   }
 
-  .field-kicker {
-    margin: 0 0 14px;
-    color: var(--ink-3);
-    font-family: var(--font-mono);
-    font-size: 11px;
-    line-height: 1;
-    letter-spacing: 0.09em;
-    text-transform: uppercase;
+  .field-heading .eyebrow {
+    margin: 0 0 var(--s-3);
   }
 
   .field-heading h2 {
-    max-width: 14ch;
-    color: var(--foreground);
-    font-size: clamp(30px, 4vw, 52px);
+    max-width: 18ch;
+    margin: 0;
+    color: var(--ink);
+    font-size: var(--text-2xl);
     font-weight: 500;
-    line-height: 1.02;
-    letter-spacing: -0.045em;
+    line-height: 1.05;
+    letter-spacing: -0.035em;
   }
 
   .field-intro {
     max-width: 46ch;
     margin: 0;
     color: var(--ink-2);
-    font-size: 14px;
-    line-height: 1.65;
+    font-size: 15px;
+    line-height: 1.6;
   }
+
+  /* ── Instrument frame ────────────────────────────────────── */
 
   .field-machine {
     display: grid;
-    grid-template-columns: minmax(0, 1.7fr) minmax(260px, 0.72fr);
+    grid-template-columns: minmax(0, 1fr) 300px;
     min-height: 540px;
     overflow: hidden;
-    border: 1px solid var(--field-line);
-    border-radius: 10px;
-    background: var(--field-bg);
-    box-shadow: 0 32px 100px rgb(0 0 0 / 34%);
+    border: 1px solid var(--af-line);
+    border-radius: var(--radius-md);
+    background: var(--af-sky);
+    color: var(--af-ink);
+    color-scheme: dark;
+  }
+
+  .field-machine :focus-visible {
+    outline-color: var(--af-glacier);
   }
 
   .viewport-column {
     display: grid;
     grid-template-rows: auto minmax(0, 1fr);
     min-width: 0;
-    border-right: 1px solid var(--field-line);
+    border-right: 1px solid var(--af-line);
   }
 
   .machine-bar {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 16px;
+    gap: var(--s-4);
     min-height: 44px;
-    padding: 0 16px;
-    border-bottom: 1px solid var(--field-line);
-    color: rgb(234 255 237 / 54%);
+    padding: 0 var(--s-4);
+    border-bottom: 1px solid var(--af-line);
+    color: var(--af-muted);
     font-family: var(--font-mono);
-    font-size: 9px;
-    letter-spacing: 0.07em;
-    text-transform: uppercase;
+    font-size: var(--text-xs);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
   }
 
   .machine-status,
   .machine-readout {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: var(--s-2);
+  }
+
+  .machine-status {
+    color: var(--af-ink-2);
   }
 
   .machine-readout {
-    gap: 16px;
+    gap: var(--s-5);
   }
 
   .machine-status > span,
   .block-label > span {
-    width: 6px;
-    height: 6px;
+    width: 7px;
+    height: 7px;
+    flex: 0 0 auto;
     border-radius: 50%;
-    background: #6b736d;
-    box-shadow: 0 0 0 3px rgb(255 255 255 / 3%);
+    box-shadow: inset 0 0 0 1px var(--af-muted);
   }
 
   .machine-status > span.live,
   .block-label > span.live {
-    background: var(--field-green);
-    box-shadow: 0 0 14px rgb(186 255 99 / 72%);
+    background: var(--af-moss);
+    box-shadow: none;
   }
 
   .canvas-wrap {
     position: relative;
     min-height: 494px;
     overflow: hidden;
-    background:
-      radial-gradient(circle at 52% 48%, rgb(84 216 255 / 7%), transparent 48%),
-      var(--field-bg);
+    background: var(--af-sky);
   }
 
   canvas {
@@ -835,10 +861,10 @@
 
   .layer {
     position: absolute;
-    top: 0;
-    bottom: 0;
+    top: var(--s-7);
+    bottom: var(--s-7);
     width: 1px;
-    background: linear-gradient(transparent, rgb(255 255 255 / 8%) 16%, rgb(255 255 255 / 8%) 84%, transparent);
+    background: var(--af-wash);
   }
 
   .layer-1 { left: 10%; }
@@ -851,19 +877,18 @@
     position: absolute;
     top: 50%;
     left: 50%;
-    width: 8px;
-    height: 8px;
-    border: 1px solid rgb(186 255 99 / 60%);
+    width: 7px;
+    height: 7px;
+    border: 1px solid var(--af-moss);
     border-radius: 50%;
-    background: var(--field-bg);
-    box-shadow: 0 0 18px rgb(186 255 99 / 30%);
+    background: var(--af-sky);
+    opacity: 0.6;
     transform: translate(-50%, -50%);
   }
 
   .layer:nth-child(even) i {
     top: 34%;
-    border-color: rgb(84 216 255 / 60%);
-    box-shadow: 0 0 18px rgb(84 216 255 / 30%);
+    border-color: var(--af-glacier);
   }
 
   .layer:nth-child(3) i {
@@ -872,48 +897,48 @@
 
   .layer span {
     position: absolute;
-    top: 16px;
-    left: 8px;
-    color: rgb(234 255 237 / 28%);
+    top: calc(-1 * var(--s-5));
+    left: 0;
+    color: var(--af-muted);
     font-family: var(--font-mono);
-    font-size: 8px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    font-size: 11px;
+    transform: translateX(-50%);
   }
 
   .canvas-instruction,
   .seed-readout {
     position: absolute;
-    bottom: 14px;
-    color: rgb(234 255 237 / 30%);
+    bottom: var(--s-4);
+    color: var(--af-muted);
     font-family: var(--font-mono);
-    font-size: 8px;
-    letter-spacing: 0.07em;
-    text-transform: uppercase;
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
     pointer-events: none;
   }
 
   .canvas-instruction {
-    left: 16px;
+    left: var(--s-4);
   }
 
   .seed-readout {
-    right: 16px;
+    right: var(--s-4);
   }
+
+  /* ── Controls column ─────────────────────────────────────── */
 
   .control-column {
     display: flex;
     min-width: 0;
     flex-direction: column;
-    background: var(--field-panel);
+    background: var(--af-panel);
   }
 
   .edge-block,
   .prompt-control,
   .active-seed,
   .privacy-note {
-    padding: 22px;
-    border-bottom: 1px solid var(--field-line);
+    padding: var(--s-5);
+    border-bottom: 1px solid var(--af-line);
   }
 
   .block-label,
@@ -921,136 +946,152 @@
   .active-seed > span {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: var(--s-2);
     margin: 0;
-    color: rgb(234 255 237 / 42%);
+    color: var(--af-muted);
     font-family: var(--font-mono);
-    font-size: 9px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    font-size: var(--text-xs);
+    line-height: 1.4;
   }
 
   .colo {
-    margin: 18px 0 0;
-    color: var(--field-green);
+    margin: var(--s-4) 0 0;
+    color: var(--af-ink);
     font-family: var(--font-mono);
-    font-size: 42px;
-    font-weight: 500;
+    font-size: var(--text-xl);
+    font-weight: 400;
     line-height: 1;
-    letter-spacing: -0.05em;
-    text-shadow: 0 0 28px rgb(186 255 99 / 22%);
+    letter-spacing: -0.02em;
   }
 
   .edge-location {
-    margin: 8px 0 0;
-    color: rgb(244 247 242 / 74%);
-    font-size: 12px;
+    margin: var(--s-2) 0 0;
+    color: var(--af-ink-2);
+    font-size: var(--text-sm);
   }
 
   .edge-facts {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 12px;
-    margin: 24px 0 0;
+    gap: var(--s-3);
+    margin: var(--s-5) 0 0;
+    padding-top: var(--s-4);
+    border-top: 1px solid var(--af-line);
+  }
+
+  .edge-facts div {
+    min-width: 0;
   }
 
   .edge-facts dt {
-    color: rgb(234 255 237 / 32%);
+    color: var(--af-muted);
     font-family: var(--font-mono);
-    font-size: 8px;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+    font-size: 11px;
   }
 
   .edge-facts dd {
-    margin: 5px 0 0;
+    margin: var(--s-1) 0 0;
     overflow: hidden;
-    color: rgb(244 247 242 / 76%);
+    color: var(--af-ink);
     font-family: var(--font-mono);
-    font-size: 9px;
+    font-size: var(--text-xs);
+    font-variant-numeric: tabular-nums;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 
   .edge-message {
-    min-height: 92px;
-    margin: 18px 0 0;
-    color: rgb(244 247 242 / 58%);
-    font-size: 12px;
-    line-height: 1.65;
+    min-height: 88px;
+    margin: var(--s-4) 0 0;
+    color: var(--af-ink-2);
+    font-size: var(--text-sm);
+    line-height: 1.6;
   }
 
   .prompt-control {
     display: grid;
-    gap: 12px;
+    gap: var(--s-3);
   }
 
   .prompt-input {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 0 12px;
-    border: 1px solid var(--field-line);
-    background: rgb(255 255 255 / 2%);
-    color: var(--field-green);
+    gap: var(--s-2);
+    padding: 0 var(--s-3);
+    border: 1px solid var(--af-line-strong);
+    border-radius: var(--radius-sm);
+    background: var(--af-sky);
+    color: var(--af-glacier);
     font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    transition: border-color var(--dur-fast) var(--ease);
   }
 
   .prompt-input:focus-within {
-    border-color: rgb(186 255 99 / 52%);
-    box-shadow: 0 0 0 3px rgb(186 255 99 / 7%);
+    border-color: var(--af-glacier);
   }
 
   .prompt-input input {
     width: 100%;
     min-width: 0;
-    height: 42px;
+    height: 40px;
     padding: 0;
     border: 0;
     outline: 0;
     background: transparent;
-    color: #f4f7f2;
+    color: var(--af-ink);
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: var(--text-sm);
+  }
+
+  .prompt-input input:focus-visible {
+    outline: 0;
   }
 
   .prompt-control button,
   .machine-actions button {
-    min-height: 38px;
-    border: 1px solid var(--field-line);
-    border-radius: 5px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 36px;
+    padding: 0 var(--s-3);
+    border: 1px solid var(--af-line-strong);
+    border-radius: var(--radius-sm);
     background: transparent;
-    color: rgb(244 247 242 / 68%);
-    font-family: var(--font-mono);
-    font-size: 9px;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
+    color: var(--af-ink-2);
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    cursor: pointer;
+    transition:
+      background-color var(--dur-fast) var(--ease),
+      border-color var(--dur-fast) var(--ease),
+      color var(--dur-fast) var(--ease);
   }
 
   .prompt-control button {
-    border-color: var(--field-green);
-    background: var(--field-green);
-    color: #071006;
-    font-weight: 600;
+    border-color: var(--af-ink);
+    background: var(--af-ink);
+    color: var(--af-sky);
   }
 
-  .prompt-control button:hover,
-  .prompt-control button:focus-visible {
-    background: #d0ff97;
+  .prompt-control button:hover {
+    border-color: var(--af-glacier);
+    background: var(--af-glacier);
   }
 
   .machine-actions {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    padding: 12px 22px;
-    border-bottom: 1px solid var(--field-line);
+    gap: var(--s-2);
+    padding: var(--s-4) var(--s-5);
+    border-bottom: 1px solid var(--af-line);
   }
 
-  .machine-actions button:hover,
-  .machine-actions button:focus-visible {
-    border-color: rgb(244 247 242 / 36%);
-    color: #ffffff;
+  .machine-actions button:hover {
+    border-color: var(--af-ink-2);
+    background: var(--af-wash);
+    color: var(--af-ink);
   }
 
   .active-seed {
@@ -1058,27 +1099,26 @@
   }
 
   .active-seed p {
-    margin: 12px 0 0;
-    color: rgb(244 247 242 / 74%);
+    margin: var(--s-3) 0 0;
+    color: var(--af-ink);
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: var(--text-sm);
     line-height: 1.55;
+    overflow-wrap: anywhere;
   }
 
   .privacy-note {
     margin: 0;
     border-bottom: 0;
-    color: rgb(234 255 237 / 32%);
-    font-family: var(--font-mono);
-    font-size: 8px;
-    line-height: 1.65;
-    letter-spacing: 0.02em;
+    color: var(--af-muted);
+    font-size: var(--text-xs);
+    line-height: 1.6;
   }
 
   @media (max-width: 900px) {
     .field-heading {
       grid-template-columns: 1fr;
-      gap: 16px;
+      gap: var(--s-4);
     }
 
     .field-machine {
@@ -1087,11 +1127,11 @@
 
     .viewport-column {
       border-right: 0;
-      border-bottom: 1px solid var(--field-line);
+      border-bottom: 1px solid var(--af-line);
     }
 
     .canvas-wrap {
-      min-height: 440px;
+      min-height: 420px;
     }
 
     .control-column {
@@ -1100,35 +1140,14 @@
     }
 
     .edge-block,
-    .prompt-control,
-    .active-seed,
-    .privacy-note,
-    .machine-actions {
-      border-bottom: 1px solid var(--field-line);
-    }
-
-    .edge-block,
     .active-seed {
-      border-right: 1px solid var(--field-line);
-    }
-
-    .machine-actions {
-      padding: 12px 22px;
+      border-right: 1px solid var(--af-line);
     }
   }
 
   @media (max-width: 620px) {
     .edge-field {
-      margin-top: 72px;
-    }
-
-    .field-heading h2 {
-      max-width: 12ch;
-    }
-
-    .field-machine {
-      margin-inline: -12px;
-      border-radius: 7px;
+      margin-top: var(--s-8);
     }
 
     .machine-readout span:first-child,
@@ -1138,7 +1157,7 @@
     }
 
     .canvas-wrap {
-      min-height: 380px;
+      min-height: 360px;
     }
 
     .control-column {
@@ -1150,8 +1169,19 @@
       border-right: 0;
     }
 
+    .edge-block,
+    .prompt-control,
+    .active-seed,
+    .privacy-note {
+      padding: var(--s-4);
+    }
+
+    .machine-actions {
+      padding: var(--s-3) var(--s-4);
+    }
+
     .edge-facts {
-      gap: 8px;
+      gap: var(--s-2);
     }
   }
 

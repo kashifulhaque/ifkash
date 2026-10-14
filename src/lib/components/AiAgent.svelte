@@ -438,79 +438,80 @@
 {/if}
 
 <style>
+  /* ── Floating trigger: a small hairline pill ─────────────── */
+
   .agent-fab {
     position: fixed;
-    right: 24px;
-    bottom: 24px;
+    right: var(--s-5);
+    bottom: var(--s-5);
     z-index: 70;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 7px;
-    height: 40px;
-    padding: 0 12px;
-    border: 1px solid var(--border-strong);
-    border-radius: var(--radius-md);
-    background: var(--agent-bg);
+    gap: var(--s-2);
+    height: 32px;
+    padding: 0 var(--s-3) 0 10px;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-pill);
+    background: var(--surface);
     color: var(--ink-2);
     font-family: var(--font-sans);
-    font-size: 13px;
+    font-size: var(--text-sm);
     font-weight: 500;
-    box-shadow: 0 8px 28px var(--agent-shadow);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    line-height: 1;
+    cursor: pointer;
     transition:
-      color 160ms var(--ease-inout),
-      border-color 160ms var(--ease-inout),
-      background-color 160ms var(--ease-inout);
+      color var(--dur-fast) var(--ease),
+      border-color var(--dur-fast) var(--ease),
+      background-color var(--dur-fast) var(--ease);
   }
 
   .agent-fab:hover,
   .agent-fab.active {
-    border-color: var(--foreground);
-    background: var(--background);
-    color: var(--foreground);
+    border-color: var(--ink);
+    color: var(--ink);
   }
 
   .agent-fab svg,
   .agent-btn-sm svg {
-    width: 15px;
-    height: 15px;
+    width: 14px;
+    height: 14px;
+    flex: 0 0 auto;
     fill: none;
     stroke: currentColor;
-    stroke-width: 1.8;
+    stroke-width: 1.5;
     stroke-linecap: round;
     stroke-linejoin: round;
   }
 
+  /* ── Panel ───────────────────────────────────────────────── */
+
   .agent-panel {
     position: fixed;
-    right: 24px;
-    bottom: 76px;
+    right: var(--s-5);
+    bottom: calc(var(--s-5) + 32px + var(--s-3));
     z-index: 70;
     display: flex;
     flex-direction: column;
     width: 400px;
-    height: min(540px, calc(100vh - 112px));
+    height: min(560px, calc(100dvh - 128px));
     overflow: hidden;
-    border: 1px solid var(--border);
+    border: 1px solid var(--line);
     border-radius: var(--radius-md);
-    background: var(--agent-bg);
-    color: var(--foreground);
-    box-shadow: 0 20px 60px var(--agent-shadow);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    animation: panel-enter 160ms var(--ease-out);
+    background: var(--surface);
+    color: var(--ink);
+    box-shadow: 0 12px 32px -12px var(--shadow-color);
+    animation: panel-enter var(--dur) var(--ease-out);
   }
 
   @keyframes panel-enter {
     from {
       opacity: 0;
-      transform: translateY(6px);
+      transform: translateY(8px);
     }
     to {
       opacity: 1;
-      transform: translateY(0);
+      transform: none;
     }
   }
 
@@ -520,8 +521,8 @@
     justify-content: space-between;
     flex: 0 0 auto;
     min-height: 56px;
-    padding: 12px 14px 12px 18px;
-    border-bottom: 1px solid var(--border);
+    padding: var(--s-3) var(--s-3) var(--s-3) var(--s-5);
+    border-bottom: 1px solid var(--line);
   }
 
   .agent-header-left,
@@ -531,54 +532,64 @@
   }
 
   .agent-header-left {
-    gap: 8px;
+    gap: var(--s-3);
   }
 
   .agent-header-right {
-    gap: 2px;
+    gap: var(--s-1);
   }
 
   .agent-title {
-    color: var(--foreground);
-    font-size: 14px;
-    font-weight: 600;
+    color: var(--ink);
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
   }
 
   .agent-badge {
+    display: inline-flex;
+    align-items: center;
+    height: 20px;
+    padding: 0 var(--s-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-pill);
     color: var(--ink-3);
+    font-family: var(--font-mono);
     font-size: 11px;
-    font-weight: 500;
   }
 
   .agent-btn-sm {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 30px;
-    height: 30px;
+    display: inline-grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
     padding: 0;
     border: 0;
     border-radius: var(--radius-sm);
     background: transparent;
     color: var(--ink-3);
+    cursor: pointer;
     transition:
-      color 160ms var(--ease-inout),
-      background-color 160ms var(--ease-inout);
+      color var(--dur-fast) var(--ease),
+      background-color var(--dur-fast) var(--ease);
   }
 
   .agent-btn-sm:hover {
-    background: var(--hover);
-    color: var(--foreground);
+    background: var(--hover-wash);
+    color: var(--ink);
   }
+
+  /* ── Body ────────────────────────────────────────────────── */
 
   .agent-body {
     display: flex;
     flex: 1;
     flex-direction: column;
-    gap: 14px;
+    gap: var(--s-4);
     min-height: 0;
-    padding: 18px;
+    padding: var(--s-5);
     overflow-y: auto;
+    overscroll-behavior: contain;
   }
 
   .agent-welcome,
@@ -587,59 +598,53 @@
     flex: 1;
     flex-direction: column;
     align-items: flex-start;
-    justify-content: center;
+    justify-content: flex-end;
     min-height: 100%;
+    padding: var(--s-5) 0 var(--s-2);
     text-align: left;
   }
 
-  .agent-welcome {
-    gap: 0;
-    padding: 24px 6px;
-  }
-
-  .agent-empty {
-    padding: 24px 6px;
-  }
-
   .welcome-kicker {
-    margin: 0 0 8px;
+    display: inline-flex;
+    margin: 0 0 var(--s-3);
     color: var(--ink-3);
-    font-size: 12px;
-    font-weight: 500;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    line-height: 1.4;
   }
 
   .agent-welcome h2,
   .agent-empty h2 {
     margin: 0;
-    color: var(--foreground);
-    font-size: 24px;
-    font-weight: 600;
-    line-height: 1.15;
-    letter-spacing: -0.025em;
+    color: var(--ink);
+    font-size: var(--text-lg);
+    font-weight: 500;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
   }
 
   .welcome-text,
   .agent-empty > p:last-child {
-    max-width: 34ch;
-    margin: 14px 0 0;
+    max-width: 36ch;
+    margin: var(--s-3) 0 0;
     color: var(--ink-2);
     font-size: 14px;
-    line-height: 1.55;
+    line-height: 1.6;
   }
 
   .welcome-icon {
-    margin-bottom: 16px;
+    margin-bottom: var(--s-4);
     color: var(--ink-3);
   }
 
   .welcome-icon.loading {
-    animation: icon-pulse 1.5s ease-in-out infinite;
+    animation: icon-pulse 1.6s var(--ease) infinite;
   }
 
   @keyframes icon-pulse {
     0%,
     100% {
-      opacity: 0.45;
+      opacity: 0.4;
     }
     50% {
       opacity: 1;
@@ -647,52 +652,57 @@
   }
 
   .agent-btn-load {
+    display: inline-flex;
+    align-items: center;
     min-height: 40px;
-    margin-top: 24px;
-    padding: 9px 15px;
-    border: 1px solid var(--foreground);
+    margin-top: var(--s-5);
+    padding: 0 var(--s-4);
+    border: 1px solid var(--ink);
     border-radius: var(--radius-sm);
-    background: var(--foreground);
-    color: var(--background);
-    font-size: 13px;
+    background: var(--ink);
+    color: var(--ink-inverse);
+    font-size: 14px;
     font-weight: 500;
+    cursor: pointer;
     transition:
-      background-color 160ms var(--ease-inout),
-      border-color 160ms var(--ease-inout);
+      background-color var(--dur-fast) var(--ease),
+      border-color var(--dur-fast) var(--ease);
   }
 
   .agent-btn-load:hover {
-    border-color: var(--accent-2);
-    background: var(--accent-2);
+    border-color: var(--fjord-strong);
+    background: var(--fjord-strong);
   }
 
   .progress-section {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: var(--s-3);
     width: 100%;
     max-width: 280px;
   }
 
   .progress-bar-track {
     width: 100%;
-    height: 2px;
+    height: 1px;
     overflow: hidden;
-    background: var(--pressed);
+    background: var(--line);
   }
 
   .progress-bar-fill {
     height: 100%;
-    background: var(--foreground);
-    transition: width 300ms ease-out;
+    background: var(--fjord);
+    transition: width var(--dur-slow) var(--ease-out);
   }
 
   .error-text {
     margin: 0;
-    color: var(--destructive);
-    font-size: 13px;
+    color: var(--danger);
+    font-size: 14px;
     line-height: 1.5;
   }
+
+  /* ── Messages ────────────────────────────────────────────── */
 
   .msg {
     display: flex;
@@ -709,27 +719,28 @@
 
   .msg-bubble {
     max-width: 88%;
-    padding: 10px 12px;
+    padding: var(--s-2) var(--s-3);
     border-radius: var(--radius-sm);
-    font-size: 13px;
-    line-height: 1.55;
+    font-size: 14px;
+    line-height: 1.6;
     overflow-wrap: anywhere;
   }
 
   .msg-bubble-user {
-    background: var(--pressed);
-    color: var(--foreground);
+    border: 1px solid var(--line);
+    background: var(--surface-2);
+    color: var(--ink);
   }
 
   .msg-bubble-assistant {
     max-width: 100%;
-    padding: 2px 0;
+    padding: 0;
     background: transparent;
     color: var(--ink-2);
   }
 
   .msg-bubble-assistant :global(p) {
-    margin: 0 0 8px;
+    margin: 0 0 var(--s-2);
     color: inherit;
     font-size: inherit;
     line-height: inherit;
@@ -740,22 +751,33 @@
   }
 
   .msg-bubble-assistant :global(strong) {
-    color: var(--foreground);
+    color: var(--ink);
     font-weight: 600;
+  }
+
+  .msg-bubble-assistant :global(a) {
+    color: var(--ink);
+    text-decoration: underline;
+    text-decoration-color: var(--line-strong);
+    text-underline-offset: 0.22em;
+  }
+
+  .msg-bubble-assistant :global(a:hover) {
+    color: var(--fjord);
+    text-decoration-color: var(--fjord);
   }
 
   .msg-bubble-assistant :global(code) {
     padding: 1px 4px;
-    border: 1px solid var(--border);
-    border-radius: 3px;
-    background: var(--popover);
+    border-radius: var(--radius-xs);
+    background: var(--code-surface);
     font-family: var(--font-mono);
     font-size: 12px;
   }
 
   .msg-bubble-assistant :global(ul),
   .msg-bubble-assistant :global(ol) {
-    margin: 6px 0;
+    margin: var(--s-2) 0;
     padding-left: 18px;
   }
 
@@ -764,15 +786,16 @@
   }
 
   .msg-speed {
-    margin: 4px 0 0;
+    margin: var(--s-1) 0 0;
     color: var(--ink-3);
     font-family: var(--font-mono);
-    font-size: 10px;
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
   }
 
   .cursor-blink {
     color: var(--ink-3);
-    animation: blink 800ms step-end infinite;
+    animation: blink 900ms step-end infinite;
   }
 
   @keyframes blink {
@@ -784,54 +807,58 @@
   .nav-pills {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px;
-    margin-top: 8px;
+    gap: var(--s-2);
+    margin-top: var(--s-3);
   }
 
   .nav-pill {
-    min-height: 30px;
-    padding: 5px 9px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
+    display: inline-flex;
+    align-items: center;
+    height: 28px;
+    padding: 0 var(--s-3);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-pill);
     background: transparent;
     color: var(--ink-2);
-    font-size: 12px;
-    font-weight: 500;
+    font-size: var(--text-sm);
+    cursor: pointer;
     transition:
-      color 160ms var(--ease-inout),
-      border-color 160ms var(--ease-inout),
-      background-color 160ms var(--ease-inout);
+      color var(--dur-fast) var(--ease),
+      border-color var(--dur-fast) var(--ease),
+      background-color var(--dur-fast) var(--ease);
   }
 
   .nav-pill:hover {
-    border-color: var(--border-strong);
-    background: var(--hover);
-    color: var(--foreground);
+    border-color: var(--fjord);
+    background: var(--fjord-wash);
+    color: var(--fjord);
   }
+
+  /* ── Composer ────────────────────────────────────────────── */
 
   .agent-input-area {
     display: flex;
     align-items: flex-end;
     flex: 0 0 auto;
-    gap: 8px;
-    padding: 14px;
-    border-top: 1px solid var(--border);
+    gap: var(--s-2);
+    padding: var(--s-3);
+    border-top: 1px solid var(--line);
   }
 
   .agent-input {
     flex: 1;
     min-height: 40px;
     max-height: 88px;
-    padding: 9px 11px;
+    padding: 9px var(--s-3);
     resize: none;
-    border: 1px solid transparent;
+    border: 1px solid var(--line-strong);
     border-radius: var(--radius-sm);
-    background: var(--popover);
-    color: var(--foreground);
+    background: var(--bg);
+    color: var(--ink);
     font-family: var(--font-sans);
-    font-size: 13px;
+    font-size: 14px;
     line-height: 20px;
-    transition: border-color 160ms var(--ease-inout);
+    transition: border-color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
   }
 
   .agent-input::placeholder {
@@ -839,52 +866,77 @@
   }
 
   .agent-input:focus {
-    border-color: var(--border-strong);
+    border-color: var(--fjord);
+    box-shadow: 0 0 0 3px var(--fjord-wash);
     outline: none;
   }
 
   .agent-input:disabled {
+    border-color: var(--line);
     cursor: not-allowed;
   }
 
   .agent-send-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+    display: inline-grid;
+    place-items: center;
     flex: 0 0 auto;
     width: 40px;
     height: 40px;
     padding: 0;
-    border: 1px solid var(--foreground);
+    border: 1px solid var(--ink);
     border-radius: var(--radius-sm);
-    background: var(--foreground);
-    color: var(--background);
+    background: var(--ink);
+    color: var(--ink-inverse);
+    cursor: pointer;
     transition:
-      opacity 160ms var(--ease-inout),
-      background-color 160ms var(--ease-inout);
+      opacity var(--dur-fast) var(--ease),
+      border-color var(--dur-fast) var(--ease),
+      background-color var(--dur-fast) var(--ease);
   }
 
   .agent-send-btn:hover:not(:disabled) {
-    background: var(--accent-2);
+    border-color: var(--fjord-strong);
+    background: var(--fjord-strong);
   }
 
   .agent-send-btn:disabled {
     cursor: not-allowed;
-    opacity: 0.28;
+    opacity: 0.3;
   }
 
-  @media (max-width: 560px) {
+  /* ── Mobile: bottom sheet ────────────────────────────────── */
+
+  @media (max-width: 640px) {
     .agent-fab {
-      right: 16px;
-      bottom: 16px;
+      right: var(--s-4);
+      bottom: var(--s-4);
     }
 
     .agent-panel {
-      right: 16px;
-      bottom: 68px;
-      left: 16px;
+      right: 0;
+      bottom: 0;
+      left: 0;
       width: auto;
-      height: min(560px, calc(100dvh - 96px));
+      height: min(600px, 82dvh);
+      border-width: 1px 0 0;
+      border-radius: var(--radius-md) var(--radius-md) 0 0;
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    .agent-header {
+      padding-left: var(--s-4);
+    }
+
+    .agent-body {
+      padding: var(--s-4);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .agent-panel,
+    .welcome-icon.loading,
+    .cursor-blink {
+      animation: none;
     }
   }
 </style>

@@ -49,39 +49,63 @@
     score = 0;
   }
 
+  // Board palette, read from the theme tokens so the board follows
+  // daylight / polar night. Re-read whenever <html data-theme> changes.
+  const palette = {
+    surface: '',
+    line: '',
+    ink: '',
+    ink2: '',
+    falu: ''
+  };
+  let dpr = 1;
+
+  function readPalette(): void {
+    const css = getComputedStyle(document.documentElement);
+    const v = (name: string) => css.getPropertyValue(name).trim();
+    palette.surface = v('--surface');
+    palette.line = v('--line');
+    palette.ink = v('--ink');
+    palette.ink2 = v('--ink-2');
+    palette.falu = v('--falu');
+  }
+
   function draw(): void {
     if (!ctx) return;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, GAME_W, GAME_H);
 
     // board
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
+    ctx.fillStyle = palette.surface;
     ctx.fillRect(0, 0, GAME_W, GAME_H);
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
-    ctx.lineWidth = 1;
-    for (let x = 0; x < GAME_W; x += BLOCK_SIZE) {
-      ctx.beginPath();
-      ctx.moveTo(x + 0.5, 0);
-      ctx.lineTo(x + 0.5, GAME_H);
-      ctx.stroke();
+
+    // hairline grid: one device pixel, snapped to the pixel grid
+    const hair = 1 / dpr;
+    ctx.fillStyle = palette.line;
+    for (let x = BLOCK_SIZE; x < GAME_W; x += BLOCK_SIZE) {
+      ctx.fillRect(x, 0, hair, GAME_H);
     }
-    for (let y = 0; y < GAME_H; y += BLOCK_SIZE) {
-      ctx.beginPath();
-      ctx.moveTo(0, y + 0.5);
-      ctx.lineTo(GAME_W, y + 0.5);
-      ctx.stroke();
+    for (let y = BLOCK_SIZE; y < GAME_H; y += BLOCK_SIZE) {
+      ctx.fillRect(0, y, GAME_W, hair);
     }
 
-    // food
-    ctx.fillStyle = '#c84040';
-    ctx.fillRect(game.food.x, game.food.y, BLOCK_SIZE, BLOCK_SIZE);
+    // food: the Falu-red dot
+    const r = BLOCK_SIZE / 2;
+    ctx.fillStyle = palette.falu;
+    ctx.beginPath();
+    ctx.arc(game.food.x + r, game.food.y + r, r - 4, 0, Math.PI * 2);
+    ctx.fill();
 
-    // snake
-    for (let i = 0; i < game.snake.length; i++) {
+    // snake: square ink cells, the tail easing toward --ink-2
+    const inset = 2;
+    const n = game.snake.length;
+    for (let i = n - 1; i >= 0; i--) {
       const s = game.snake[i];
-      if (i === 0) ctx.fillStyle = '#8ab4f8';
-      else ctx.fillStyle = i % 2 === 0 ? '#3b6fb5' : '#3a6eae';
-      ctx.fillRect(s.x + 1, s.y + 1, BLOCK_SIZE - 2, BLOCK_SIZE - 2);
+      ctx.fillStyle = i === 0 ? palette.ink : palette.ink2;
+      ctx.globalAlpha = i === 0 ? 1 : 1 - (0.45 * i) / Math.max(n - 1, 1);
+      ctx.fillRect(s.x + inset, s.y + inset, BLOCK_SIZE - inset * 2, BLOCK_SIZE - inset * 2);
     }
+    ctx.globalAlpha = 1;
   }
 
   function onRaf(t: number): void {
@@ -122,9 +146,25 @@
 
   onMount(() => {
     game = new SnakeGame();
+    dpr = Math.min(window.devicePixelRatio || 1, 3);
+    canvas.width = GAME_W * dpr;
+    canvas.height = GAME_H * dpr;
     ctx = canvas.getContext('2d')!;
+    readPalette();
+
+    const themeObserver = new MutationObserver(() => {
+      readPalette();
+      draw();
+    });
+    themeObserver.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme']
+    });
+
     start();
     draw();
+
+    return () => themeObserver.disconnect();
   });
 
   onDestroy(() => {
@@ -140,16 +180,16 @@
 </script>
 
 <div class="page">
-  <header class="page-header">
-    <div class="breadcrumb">
+  <header class="page-head">
+    <nav class="breadcrumb" aria-label="Breadcrumb">
       <a href="/rl">RL</a>
-      <span class="separator">/</span>
-      <a href="/rl/snake-dqn">snake-dqn</a>
-      <span class="separator">/</span>
-      <span>play</span>
-    </div>
+      <span aria-hidden="true">/</span>
+      <a href="/rl/snake-dqn">Snake DQN</a>
+      <span aria-hidden="true">/</span>
+      <span aria-current="page">Play</span>
+    </nav>
     <h1 class="page-title">Watch the Agent Play</h1>
-    <p class="page-desc">
+    <p class="lead">
       The trained dueling Double DQN weights running live in your browser — a
       faithful TypeScript port of the Python experiment, greedy action
       selection, no exploration.
@@ -157,15 +197,24 @@
   </header>
 
   <section class="stage">
-    <div class="canvas-wrap">
-      <canvas
-        bind:this={canvas}
-        width={GAME_W}
-        height={GAME_H}
-        aria-label="Snake RL agent playing"
-      ></canvas>
-      <div class="overlay-status" class:show={status === 'starting'}>
-        {#if status === 'starting'}new game{/if}
+    <div class="tray">
+      <div class="canvas-wrap">
+        <canvas
+          bind:this={canvas}
+          width={GAME_W}
+          height={GAME_H}
+          aria-label="Snake RL agent playing"
+        ></canvas>
+        <div class="overlay-status" class:show={status === 'starting'}>
+          {#if status === 'starting'}new game{/if}
+        </div>
+      </div>
+      <div class="tray-foot">
+        <span class="state">
+          <span class="led" class:led-hollow={!running} aria-hidden="true"></span>
+          {running ? 'Live' : 'Paused'}
+        </span>
+        <span>32 × 24</span>
       </div>
     </div>
 
@@ -185,17 +234,26 @@
         </div>
       </div>
       <div class="actions">
-        <button class="btn" class:active={running} on:click={running ? stop : start}>
-          {running ? 'Pause' : 'Resume'}
-        </button>
-        <button class="btn" on:click={restart}>Restart</button>
+        <div class="btn-row">
+          <button class="btn btn-sm btn-primary" class:active={running} on:click={running ? stop : start}>
+            {running ? 'Pause' : 'Resume'}
+          </button>
+          <button class="btn btn-sm" on:click={restart}>Restart</button>
+        </div>
         <div class="speed">
-          <span class="speed-label">Speed</span>
-          {#each [1, 2, 4, 8] as s}
-            <button class="speed-btn" class:active={speed === s} on:click={() => (speed = s)}>
-              {s}×
-            </button>
-          {/each}
+          <span class="speed-label" id="speed-label">Speed</span>
+          <div class="segmented" role="group" aria-labelledby="speed-label">
+            {#each [1, 2, 4, 8] as s}
+              <button
+                class="speed-btn"
+                class:active={speed === s}
+                aria-pressed={speed === s}
+                on:click={() => (speed = s)}
+              >
+                {s}×
+              </button>
+            {/each}
+          </div>
         </div>
       </div>
     </div>
@@ -215,64 +273,35 @@
 
 <style>
   .page {
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
-    max-width: 48rem;
-    animation: fade-up var(--dur-base) var(--ease-out-quart);
+    animation: rise var(--dur-slow) var(--ease-out) both;
   }
 
-  .page-header {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    padding-bottom: 2rem;
-    border-bottom: 1px solid var(--line-soft);
-  }
-
-  .breadcrumb {
-    font-family: var(--font-mono-g);
-    font-size: 0.7rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--ink-mute);
-  }
-
-  .breadcrumb a {
-    color: var(--ink-mute);
-    transition: color var(--dur-instant) var(--ease-out-quart);
-  }
-
-  .breadcrumb a:hover {
-    color: var(--signal-hi);
-  }
-
-  .separator {
-    margin: 0 0.5rem;
-  }
-
-  .page-desc {
-    font-size: 1.0625rem;
-    line-height: 1.6;
-    color: var(--ink-soft);
-    margin: 0;
-  }
+  /* ── Stage: the board as an object, readouts beside it ─────── */
 
   .stage {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
+    display: grid;
+    grid-template-columns: minmax(0, 760px) minmax(220px, 264px);
+    gap: var(--s-7);
+    align-items: start;
+    padding-top: var(--s-7);
+  }
+
+  /* A shallow tray holding the board, like a boxed board game */
+  .tray {
+    padding: var(--s-3);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    background: var(--surface-2);
   }
 
   .canvas-wrap {
     position: relative;
     width: 100%;
-    max-width: 640px;
     aspect-ratio: 4 / 3;
-    border: 1px solid var(--line-soft);
-    border-radius: var(--radius-sm);
     overflow: hidden;
-    background: #0b0d10;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-xs);
+    background: var(--surface);
   }
 
   canvas {
@@ -283,154 +312,220 @@
 
   .overlay-status {
     position: absolute;
-    top: 0.75rem;
-    left: 0.75rem;
-    font-family: var(--font-mono-g);
-    font-size: 0.7rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--ink-mute);
+    top: var(--s-3);
+    left: var(--s-3);
+    padding: 2px var(--s-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-xs);
+    background: var(--surface);
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: 0.02em;
     opacity: 0;
-    transition: opacity var(--dur-instant) var(--ease-out-quart);
+    transition: opacity var(--dur-fast) var(--ease);
   }
 
   .overlay-status.show {
     opacity: 1;
   }
 
-  .controls {
+  .tray-foot {
     display: flex;
-    flex-direction: column;
-    gap: 1rem;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--s-3);
+    padding: var(--s-3) var(--s-1) 0;
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: 0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .state {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-2);
+  }
+
+  /* ── Readouts and controls ─────────────────────────────────── */
+
+  .controls {
+    display: grid;
+    gap: var(--s-6);
   }
 
   .stats {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1rem;
-    max-width: 640px;
+    border-top: 1px solid var(--ink);
   }
 
   .stat {
     display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-    padding: 1rem 1.25rem;
-    background: var(--panel);
-    border: 1px solid var(--line-soft);
-    border-radius: var(--radius-sm);
+    justify-content: space-between;
+    align-items: baseline;
+    gap: var(--s-4);
+    padding: var(--s-4) 0;
+    border-bottom: 1px solid var(--line);
   }
 
   .stat-label {
-    font-family: var(--font-mono-g);
-    font-size: 0.65rem;
-    font-weight: 500;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--ink-mute);
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: 0.02em;
   }
 
   .stat-value {
-    font-family: var(--font-dots);
-    font-size: 1.75rem;
-    font-weight: 600;
     color: var(--ink);
+    font-family: var(--font-mono);
+    font-size: var(--text-xl);
+    font-weight: 400;
     line-height: 1;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
   }
 
   .actions {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    flex-wrap: wrap;
+    display: grid;
+    gap: var(--s-5);
   }
 
-  .btn {
-    font-family: var(--font-mono-g);
-    font-size: 0.7rem;
-    font-weight: 500;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--ink-soft);
-    padding: 0.5rem 1rem;
-    background: var(--panel);
-    border: 1px solid var(--line-soft);
-    border-radius: var(--radius-sm);
-    cursor: var(--cursor-pointer);
-    transition:
-      color var(--dur-instant) var(--ease-out-quart),
-      background-color var(--dur-instant) var(--ease-out-quart),
-      border-color var(--dur-instant) var(--ease-out-quart);
-  }
-
-  .btn:hover,
-  .btn.active {
-    background: var(--ink);
-    color: var(--void);
-    border-color: var(--ink);
+  .actions .btn-row .btn {
+    flex: 1 1 0;
   }
 
   .speed {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+    display: grid;
+    gap: var(--s-2);
   }
 
   .speed-label {
-    font-family: var(--font-mono-g);
-    font-size: 0.65rem;
-    font-weight: 500;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--ink-mute);
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: 0.02em;
+  }
+
+  /* Hairline segmented control */
+  .segmented {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
   }
 
   .speed-btn {
-    font-family: var(--font-mono-g);
-    font-size: 0.7rem;
-    color: var(--ink-soft);
-    padding: 0.35rem 0.6rem;
+    min-height: 32px;
+    padding: 0 var(--s-2);
+    border: 0;
+    border-left: 1px solid var(--line);
     background: transparent;
-    border: 1px solid var(--line-soft);
-    border-radius: var(--radius-sm);
-    cursor: var(--cursor-pointer);
+    color: var(--ink-2);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    font-variant-numeric: tabular-nums;
+    cursor: pointer;
     transition:
-      color var(--dur-instant) var(--ease-out-quart),
-      background-color var(--dur-instant) var(--ease-out-quart),
-      border-color var(--dur-instant) var(--ease-out-quart);
+      background-color var(--dur-fast) var(--ease),
+      color var(--dur-fast) var(--ease);
   }
 
-  .speed-btn:hover,
+  .speed-btn:first-child {
+    border-left: 0;
+  }
+
+  .speed-btn:hover {
+    background: var(--hover-wash);
+    color: var(--ink);
+  }
+
   .speed-btn.active {
-    background: var(--ink);
-    color: var(--void);
-    border-color: var(--ink);
+    background: var(--fjord-wash);
+    color: var(--fjord);
+  }
+
+  .speed-btn:focus-visible {
+    outline-offset: -2px;
+  }
+
+  /* ── Note ──────────────────────────────────────────────────── */
+
+  .note {
+    max-width: var(--measure);
+    margin-top: var(--s-8);
+    padding-top: var(--s-5);
+    border-top: 1px solid var(--line);
   }
 
   .note p {
-    font-size: 0.875rem;
+    margin: 0;
+    color: var(--ink-2);
+    font-size: var(--text-sm);
     line-height: 1.7;
-    color: var(--ink-mute);
   }
 
-  .note code {
-    font-family: var(--font-mono-g);
-    font-size: 0.8125rem;
-    color: var(--ink-soft);
-    background: var(--code-bg);
-    border: 1px solid var(--line-soft);
-    padding: 0.125rem 0.375rem;
-    border-radius: var(--radius-sm);
-  }
-
-  @keyframes fade-up {
-    from {
-      opacity: 0;
-      transform: translateY(10px);
+  @media (max-width: 900px) {
+    .stage {
+      grid-template-columns: minmax(0, 1fr);
+      gap: var(--s-6);
+      padding-top: var(--s-6);
     }
-    to {
-      opacity: 1;
-      transform: translateY(0);
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      border-bottom: 1px solid var(--line);
+    }
+
+    .stat {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--s-2);
+      padding: var(--s-4) var(--s-4) var(--s-4) 0;
+      border-bottom: 0;
+    }
+
+    .stat + .stat {
+      padding-left: var(--s-4);
+      border-left: 1px solid var(--line);
+    }
+
+    .actions {
+      grid-template-columns: auto auto;
+      justify-content: space-between;
+      align-items: end;
+    }
+
+    .actions .btn-row .btn {
+      flex: 0 0 auto;
+    }
+
+    .segmented {
+      min-width: 176px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .tray {
+      padding: var(--s-2);
+    }
+
+    .actions {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .actions .btn-row .btn {
+      flex: 1 1 0;
+    }
+
+    .stat-value {
+      font-size: var(--text-lg);
+    }
+
+    .note {
+      margin-top: var(--s-7);
     }
   }
 </style>

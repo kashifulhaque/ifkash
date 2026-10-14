@@ -65,50 +65,49 @@
 </div>
 
 <style>
+  /* Inherits currentColor so it reads correctly on the page (ink-3 parents)
+     and inside filled buttons. Monochrome only; no shimmer gradient. */
   .loader {
     display: inline-flex;
     align-items: center;
-    gap: 10px;
+    gap: var(--s-2);
+    color: inherit;
+    line-height: 1;
   }
 
   .grid {
     display: grid;
-    grid-template-columns: repeat(3, 4px);
-    grid-auto-rows: 4px;
-    gap: 1.5px;
+    grid-template-columns: repeat(3, 3px);
+    grid-auto-rows: 3px;
+    gap: 2px;
+    flex-shrink: 0;
   }
 
   .cell {
-    background: var(--ink);
-    border-radius: 1px;
-    animation: pixel-on ease-in-out infinite;
+    background: currentColor;
+    border-radius: 0.5px;
+    animation: pixel-on var(--ease) infinite;
   }
 
   .cell.round {
-    border-radius: 9999px;
+    border-radius: var(--radius-pill);
   }
 
   .label {
-    font-size: 13px;
-    font-weight: 500;
-    color: transparent;
-    -webkit-background-clip: text;
-    background-clip: text;
-    background-image: linear-gradient(
-      90deg,
-      var(--text-faint) 35%,
-      var(--ink) 50%,
-      var(--text-faint) 65%
-    );
-    background-size: 200% 100%;
-    animation: shimmer-text 1.4s linear infinite;
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    font-weight: 400;
+    letter-spacing: -0.005em;
+    color: inherit;
     white-space: nowrap;
+    animation: breathe 1.8s var(--ease) infinite;
   }
 
   .timer {
     font-family: var(--font-mono);
-    font-size: 12px;
-    color: var(--text-faint);
+    font-size: var(--text-xs);
+    color: inherit;
+    opacity: 0.6;
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
   }
@@ -123,12 +122,13 @@
     }
   }
 
-  @keyframes shimmer-text {
-    from {
-      background-position: 200% 0;
+  @keyframes breathe {
+    0%,
+    100% {
+      opacity: 1;
     }
-    to {
-      background-position: -200% 0;
+    50% {
+      opacity: 0.55;
     }
   }
 
@@ -138,7 +138,7 @@
       animation: none !important;
     }
     .cell {
-      opacity: 0.07 !important;
+      opacity: 0.25 !important;
     }
   }
 </style>

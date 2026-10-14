@@ -49,177 +49,194 @@
   ];
 </script>
 
-<header class="page-header">
-  <h1 class="section-title">Work</h1>
-  <p class="section-subtitle">Roles and companies</p>
+<header class="page-head">
+  <p class="eyebrow">01 / Work</p>
+  <h1 class="page-title">Work</h1>
+  <p class="lead">Roles and companies</p>
 </header>
 
-<section class="jobs-list">
+<ol class="timeline">
   {#each jobs as job, i}
-    <a
-      href={job.url}
-      target="_blank"
-      rel="noopener noreferrer"
-      class="job-row stagger"
-      style="--i: {i}"
-    >
-      <span
-        class="job-led"
-        class:lit={job.status === 'current'}
-        aria-hidden="true"
-      ></span>
-      <div class="job-main">
-        <span class="job-role">{job.role}</span>
-        <span class="job-company">{job.company}</span>
-      </div>
-      <span class="job-period">{job.period}</span>
-      <span class="job-location">{job.location}</span>
-    </a>
+    <li class="stop stagger" class:current={job.status === 'current'} style="--i: {i}">
+      <a href={job.url} target="_blank" rel="noopener noreferrer" class="job">
+        <span class="job-period">{job.period}</span>
+        <span class="job-node" aria-hidden="true">
+          <span class="led" class:led-hollow={job.status !== 'current'}></span>
+        </span>
+        <span class="job-main">
+          <span class="job-role">{job.role}</span>
+          <span class="job-meta">
+            <span class="job-company">{job.company}</span>
+            <span class="job-sep" aria-hidden="true">·</span>
+            <span class="job-location">{job.location}</span>
+          </span>
+        </span>
+        <span class="job-arrow" aria-hidden="true">↗</span>
+      </a>
+    </li>
   {/each}
-</section>
+</ol>
 
 <style>
-  .page-header {
-    padding-top: 16px;
-    padding-bottom: 0;
+  .timeline {
+    position: relative;
+    margin: 0;
+    padding: var(--s-7) 0 var(--s-4);
+    list-style: none;
   }
 
-  .jobs-list {
-    display: flex;
-    flex-direction: column;
-    border-top: 1px solid var(--border);
-    padding-top: 0;
+  .stop {
+    position: relative;
   }
 
-  .job-row {
+  .job {
     display: grid;
-    grid-template-columns: 14px minmax(0, 1fr) auto auto;
+    grid-template-columns: 136px 24px minmax(0, 1fr) 20px;
     align-items: baseline;
-    gap: 24px;
-    padding: 20px 12px;
-    margin: 0 -12px;
-    border-bottom: 1px solid var(--border);
-    transition: color 0.15s var(--ease-inout);
-    color: var(--foreground);
+    column-gap: var(--s-5);
+    padding: var(--s-5) 0 var(--s-6);
+    color: var(--ink);
   }
 
-  .job-row:hover {
-    color: var(--foreground);
+  /* The rail: one continuous hairline drawn per stop so it joins up. */
+  .job-node {
+    position: relative;
+    align-self: stretch;
+    display: flex;
+    justify-content: center;
+  }
+  .job-node::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: calc(-1 * var(--s-6));
+    left: 50%;
+    width: 1px;
+    background: var(--line);
+    transform: translateX(-0.5px);
+  }
+  .stop:first-child .job-node::before {
+    top: 16px;
+  }
+  .stop:last-child .job-node::before {
+    bottom: auto;
+    height: 16px;
+  }
+  .job-node .led {
+    position: relative;
+    z-index: 1;
+    margin-top: 13px; /* centred on the role's first line */
+    /* A ring of page colour so the rail breaks around each marker. */
+    outline: 4px solid var(--bg);
+  }
+  .job-node .led-hollow {
+    background: var(--bg);
   }
 
-  .job-row:hover .job-role {
-    color: var(--accent-2);
+  .job-period {
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-variant-numeric: tabular-nums;
+    line-height: 1.4;
+    white-space: nowrap;
+    padding-top: 0.45em;
   }
-
-  .job-led {
-    width: 6px;
-    height: 6px;
-    border-radius: 0;
-    border: 1px solid var(--ink-mute);
-    background: transparent;
-    transform: translateY(1px);
-    justify-self: center;
-  }
-
-  .job-led.lit {
-    background: var(--accent);
-    border-color: var(--accent);
-    box-shadow: none;
-    animation: none;
+  .current .job-period {
+    color: var(--moss);
   }
 
   .job-main {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
+    display: grid;
+    gap: var(--s-2);
     min-width: 0;
   }
 
   .job-role {
-    font-family: var(--font-serif);
-    font-size: 1.5rem;
-    font-weight: 400;
+    color: var(--ink);
+    font-size: var(--text-xl);
+    font-weight: 500;
+    line-height: 1.15;
     letter-spacing: -0.025em;
-    text-transform: none;
-    color: inherit;
-    line-height: 1.2;
+    transition: color var(--dur-fast) var(--ease);
   }
 
-  .job-company {
-    font-family: var(--font-label);
-    font-size: 11px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--muted-foreground);
+  .job-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--s-2);
+    color: var(--ink-2);
+    font-size: var(--text-base);
   }
-
-  .job-row:hover .job-company {
-    color: var(--muted-foreground);
-  }
-
-  .job-period {
-    font-family: var(--font-label);
-    font-size: 11px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--muted-foreground);
-    font-variant-numeric: tabular-nums;
-    white-space: nowrap;
-    text-align: right;
-  }
-
-  .job-row:hover .job-period {
-    color: var(--muted-foreground);
-  }
-
+  .job-sep,
   .job-location {
-    font-family: var(--font-label);
-    font-size: 11px;
-    letter-spacing: 0.1em;
-    color: var(--ink-mute);
-    text-transform: uppercase;
-    white-space: nowrap;
-    min-width: 140px;
-    text-align: right;
+    color: var(--ink-3);
+  }
+  .job-location {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
   }
 
-  .job-row:hover .job-location {
-    color: var(--ink-mute);
+  .job-arrow {
+    justify-self: end;
+    color: var(--ink-3);
+    font-size: var(--text-sm);
+    transition:
+      transform var(--dur-fast) var(--ease),
+      color var(--dur-fast) var(--ease);
   }
 
-  @media (max-width: 768px) {
-    .job-row {
-      grid-template-columns: 12px minmax(0, 1fr);
-      grid-template-rows: auto auto;
-      gap: 6px 16px;
-      padding: 16px 10px;
-      margin: 0 -10px;
+  .job:hover .job-role,
+  .job:hover .job-arrow {
+    color: var(--fjord);
+  }
+  .job:hover .job-arrow {
+    transform: translate(3px, -3px);
+  }
+
+  @media (max-width: 720px) {
+    .timeline {
+      padding-top: var(--s-6);
     }
 
-    .job-led {
-      grid-row: 1;
-      transform: translateY(6px);
+    .job {
+      grid-template-columns: 16px minmax(0, 1fr) 16px;
+      grid-template-areas:
+        'node period arrow'
+        'node main   main';
+      column-gap: var(--s-4);
+      row-gap: var(--s-2);
+      padding: var(--s-4) 0 var(--s-5);
     }
-
-    .job-main {
-      grid-row: 1;
-      grid-column: 2;
+    .job-node {
+      grid-area: node;
+      grid-row: 1 / span 2;
     }
-
+    .job-node::before {
+      bottom: calc(-1 * var(--s-5));
+    }
+    .stop:first-child .job-node::before {
+      top: 9px;
+    }
+    .stop:last-child .job-node::before {
+      height: 9px;
+    }
+    .job-node .led {
+      margin-top: 6px; /* centred on the period line */
+    }
     .job-period {
-      grid-row: 2;
-      grid-column: 2;
-      text-align: left;
+      grid-area: period;
+      padding-top: 0;
     }
-
-    .job-location {
-      display: none;
+    .job-main {
+      grid-area: main;
     }
-  }
-
-  @media (max-width: 480px) {
+    .job-arrow {
+      grid-area: arrow;
+    }
     .job-role {
-      font-size: 1.35rem;
+      font-size: var(--text-lg);
     }
   }
 </style>

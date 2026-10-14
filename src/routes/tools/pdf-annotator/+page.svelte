@@ -19,7 +19,6 @@
     Trash2,
     Download,
     FolderOpen,
-    ChevronLeft,
   } from "lucide-svelte";
   import LoadingState from "$lib/components/LoadingState.svelte";
   import {
@@ -87,7 +86,7 @@
   $: hasPdf = pages.length > 0;
   $: captureCursor =
     tool === "text"
-      ? "var(--cursor-text)"
+      ? "text"
       : tool === "image"
         ? "copy"
         : "crosshair";
@@ -623,16 +622,43 @@
 />
 
 <div class="annotator">
-  <header class="bar">
-    <div class="bar-group left">
-      <a href="/tools" class="back" aria-label="Back to tools">
-        <ChevronLeft size={18} />
-      </a>
-      <span class="title">PDF Annotator</span>
-      {#if fileName}<span class="file">{fileName}.pdf</span>{/if}
+  <header class="appbar">
+    <div class="appbar-left">
+      <a href="/" class="wordmark" aria-label="ifkash.dev home"><span class="dot" aria-hidden="true"></span> ifkash</a>
+      <nav class="crumb" aria-label="Breadcrumb">
+        <span class="sep" aria-hidden="true">/</span>
+        <a href="/tools" class="back" aria-label="Back to tools">tools</a>
+        <span class="sep" aria-hidden="true">/</span>
+        <span class="title" aria-current="page">PDF Annotator</span>
+        {#if fileName}<span class="file">{fileName}.pdf</span>{/if}
+      </nav>
     </div>
 
     {#if hasPdf}
+      <div class="appbar-actions">
+        <button class="btn btn-sm" on:click={() => pdfInput.click()} title="Open PDF">
+          <FolderOpen size={15} />
+          <span class="tb-text">Open</span>
+        </button>
+        <button
+          class="btn btn-sm btn-primary"
+          on:click={onDownload}
+          disabled={exporting}
+          title="Download annotated PDF"
+        >
+          {#if exporting}
+            <LoadingState label="Exporting" />
+          {:else}
+            <Download size={15} />
+            <span class="tb-text">Download</span>
+          {/if}
+        </button>
+      </div>
+    {/if}
+  </header>
+
+  {#if hasPdf}
+    <div class="toolstrip" role="toolbar" aria-label="Annotation tools">
       <div class="bar-group tools">
         {#each TOOLS as t}
           <button
@@ -641,8 +667,9 @@
             on:click={() => selectTool(t.id)}
             title={t.label}
             aria-label={t.label}
+            aria-pressed={tool === t.id}
           >
-            <svelte:component this={t.icon} size={17} />
+            <svelte:component this={t.icon} size={16} />
           </button>
         {/each}
         <button
@@ -651,11 +678,12 @@
           on:click={pickImage}
           title="Image / signature"
           aria-label="Image or signature"
+          aria-pressed={tool === "image"}
         >
-          <ImageIcon size={17} />
+          <ImageIcon size={16} />
         </button>
 
-        <span class="divider"></span>
+        <span class="divider" aria-hidden="true"></span>
 
         <div class="swatches">
           {#each PRESETS as c}
@@ -677,6 +705,7 @@
         </div>
 
         {#if tool === "draw" || tool === "highlight"}
+          <span class="divider" aria-hidden="true"></span>
           <label class="slider" title="Stroke width">
             <Pencil size={13} />
             <input
@@ -685,9 +714,11 @@
               max="20"
               bind:value={strokeWidth}
             />
+            <span class="slider-val">{strokeWidth}</span>
           </label>
         {/if}
         {#if tool === "text" || (selectedId && annotations.find((a) => a.id === selectedId)?.type === "text")}
+          <span class="divider" aria-hidden="true"></span>
           <label class="slider" title="Font size">
             <Type size={13} />
             <input
@@ -697,6 +728,7 @@
               value={fontSize}
               on:input={onFontInput}
             />
+            <span class="slider-val">{fontSize}</span>
           </label>
         {/if}
       </div>
@@ -709,7 +741,7 @@
           title="Undo"
           aria-label="Undo"
         >
-          <Undo2 size={17} />
+          <Undo2 size={16} />
         </button>
         <button
           class="tb"
@@ -718,7 +750,7 @@
           title="Redo"
           aria-label="Redo"
         >
-          <Redo2 size={17} />
+          <Redo2 size={16} />
         </button>
         <button
           class="tb"
@@ -730,40 +762,22 @@
           title="Delete selected"
           aria-label="Delete selected"
         >
-          <Trash2 size={17} />
+          <Trash2 size={16} />
         </button>
         <button
-          class="tb"
+          class="tb tb-wide"
           on:click={clearAll}
           disabled={!annotations.length}
           title="Clear all"
         >
-          <span class="tb-text">Clear</span>
-        </button>
-        <span class="divider"></span>
-        <button class="tb" on:click={() => pdfInput.click()} title="Open PDF">
-          <FolderOpen size={17} />
-          <span class="tb-text">Open</span>
-        </button>
-        <button
-          class="tb primary"
-          on:click={onDownload}
-          disabled={exporting}
-          title="Download annotated PDF"
-        >
-          {#if exporting}
-            <LoadingState label="Exporting" />
-          {:else}
-            <Download size={16} />
-            <span class="tb-text">Download</span>
-          {/if}
+          <span>Clear</span>
         </button>
       </div>
-    {/if}
-  </header>
+    </div>
+  {/if}
 
   {#if loadError}
-    <div class="error">{loadError}</div>
+    <div class="error" role="alert">{loadError}</div>
   {/if}
 
   {#if !hasPdf}
@@ -777,13 +791,14 @@
         <LoadingState label="Loading PDF" />
       {:else}
         <div class="empty-card">
+          <p class="eyebrow">Client-side · nothing uploaded</p>
           <h2>Annotate a PDF</h2>
           <p>
             Add text, draw, and stamp a signature — then download. Everything
             stays in your browser.
           </p>
-          <button class="open-btn" on:click={() => pdfInput.click()}>
-            <FolderOpen size={18} /> Choose PDF
+          <button class="btn btn-primary open-btn" on:click={() => pdfInput.click()}>
+            <FolderOpen size={16} /> Choose PDF
           </button>
           <span class="hint">or drop a file here</span>
         </div>
@@ -884,93 +899,154 @@
 
 <style>
   .annotator {
-    height: 100vh;
     display: flex;
     flex-direction: column;
-    background: var(--bg);
+    height: 100vh;
+    height: 100dvh;
     overflow: hidden;
+    background: var(--bg);
+    color: var(--ink-2);
   }
 
-  .bar {
+  /* ── App bar ─────────────────────────────────────────── */
+
+  .appbar {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s-4);
+    height: 56px;
+    padding: 0 var(--s-5);
+    border-bottom: 1px solid var(--line);
+    background: var(--bg);
+  }
+
+  .appbar-left {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 8px 12px;
-    background: var(--bg-surface);
-    border-bottom: 1px solid var(--rule-soft);
-    flex-wrap: wrap;
+    gap: var(--s-3);
+    min-width: 0;
+  }
+
+  .wordmark {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 8px;
+    color: var(--ink);
+    font-size: 16px;
+    font-weight: 500;
+    letter-spacing: -0.025em;
+    white-space: nowrap;
+  }
+  .wordmark .dot {
+    width: 8px;
+    height: 8px;
+  }
+  .wordmark:hover {
+    color: var(--ink);
+  }
+
+  .crumb {
+    display: flex;
+    align-items: center;
+    gap: var(--s-2);
+    min-width: 0;
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    white-space: nowrap;
+  }
+  .sep {
+    color: var(--line-strong);
+  }
+  .back {
+    color: var(--ink-3);
+  }
+  .back:hover {
+    color: var(--ink);
+  }
+  .title {
+    color: var(--ink);
+  }
+  .file {
+    max-width: 200px;
+    margin-left: var(--s-2);
+    padding: 1px 8px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-pill);
+    color: var(--ink-3);
+    text-overflow: ellipsis;
+  }
+
+  .appbar-actions {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: var(--s-2);
+  }
+  .appbar-actions .btn {
+    gap: 6px;
+  }
+
+  /* ── Tool strip ──────────────────────────────────────── */
+
+  .toolstrip {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s-3);
+    min-height: 48px;
+    padding: var(--s-1) var(--s-5);
+    overflow-x: auto;
+    border-bottom: 1px solid var(--line);
+    background: var(--surface);
+    scrollbar-width: none;
+  }
+  .toolstrip::-webkit-scrollbar {
+    display: none;
   }
 
   .bar-group {
     display: flex;
+    flex-shrink: 0;
     align-items: center;
-    gap: 6px;
-  }
-
-  .bar-group.tools {
-    flex: 1;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-
-  .bar-group.left {
-    min-width: 0;
-  }
-
-  .back {
-    display: inline-flex;
-    align-items: center;
-    color: var(--ink-soft);
-    border: 1px solid var(--rule-soft);
-    padding: 5px;
-  }
-
-  .back:hover {
-    color: var(--blueprint);
-    border-color: var(--blueprint);
-  }
-
-  .title {
-    font-family: var(--font-display);
-    font-size: 1.25rem;
-    letter-spacing: -0.005em;
-    color: var(--ink);
-    white-space: nowrap;
-  }
-
-  .file {
-    font-family: var(--font-mono);
-    font-size: 0.72rem;
-    color: var(--ink-mute);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    max-width: 160px;
+    gap: 2px;
   }
 
   .tb {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 6px;
-    padding: 7px 9px;
-    background: transparent;
-    color: var(--ink-soft);
+    width: 32px;
+    height: 32px;
+    padding: 0;
     border: 1px solid transparent;
-    font-family: var(--font-mono);
-    font-size: 0.78rem;
-    cursor: var(--cursor-pointer);
-    transition: color 0.12s, background 0.12s, border-color 0.12s;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--ink-2);
+    cursor: pointer;
+    transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease);
+  }
+  .tb-wide {
+    width: auto;
+    padding: 0 var(--s-3);
+    font-size: var(--text-sm);
   }
 
   .tb:hover:not(:disabled) {
+    background: var(--hover-wash);
     color: var(--ink);
-    background: var(--bg-surface-hover);
   }
 
   .tb.active {
-    color: var(--blueprint);
-    border-color: var(--blueprint);
-    background: var(--blueprint-tint);
+    border-color: var(--line);
+    background: var(--fjord-wash);
+    color: var(--fjord);
   }
 
   .tb:disabled {
@@ -978,150 +1054,159 @@
     cursor: not-allowed;
   }
 
-  .tb.primary {
-    color: var(--bg);
-    background: var(--blueprint);
-    border-color: var(--blueprint);
-  }
-
-  .tb.primary:hover:not(:disabled) {
-    background: var(--accent-hover);
-  }
-
-  .tb-text {
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-  }
-
   .divider {
+    flex-shrink: 0;
     width: 1px;
     height: 20px;
-    background: var(--rule-soft);
-    margin: 0 2px;
+    margin: 0 var(--s-2);
+    background: var(--line);
   }
 
   .swatches {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: var(--s-2);
   }
 
+  /* Swatch fills are annotation ink (user data), not theme colour. */
   .swatch {
-    width: 18px;
-    height: 18px;
-    border: 1px solid var(--rule-soft);
-    cursor: var(--cursor-pointer);
+    width: 16px;
+    height: 16px;
     padding: 0;
+    border: 0;
+    border-radius: 50%;
+    box-shadow: inset 0 0 0 1px var(--line-strong);
+    cursor: pointer;
+    transition: transform var(--dur-fast) var(--ease);
+  }
+  .swatch:hover {
+    transform: scale(1.12);
   }
 
   .swatch.active {
-    outline: 2px solid var(--blueprint);
-    outline-offset: 1px;
+    outline: 1px solid var(--ink);
+    outline-offset: 2px;
   }
 
   .color-input {
-    width: 24px;
+    width: 22px;
     height: 22px;
     padding: 0;
-    border: 1px solid var(--rule-soft);
+    overflow: hidden;
+    border: 1px solid var(--line-strong);
+    border-radius: 50%;
     background: transparent;
-    cursor: var(--cursor-pointer);
+    cursor: pointer;
+  }
+  .color-input::-webkit-color-swatch-wrapper {
+    padding: 0;
+  }
+  .color-input::-webkit-color-swatch {
+    border: 0;
+    border-radius: 50%;
+  }
+  .color-input::-moz-color-swatch {
+    border: 0;
+    border-radius: 50%;
   }
 
   .slider {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    color: var(--ink-soft);
+    gap: var(--s-2);
+    color: var(--ink-3);
   }
 
   .slider input {
-    width: 90px;
-    accent-color: var(--blueprint);
+    width: 88px;
+    accent-color: var(--fjord);
+  }
+
+  .slider-val {
+    min-width: 2ch;
+    color: var(--ink-2);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
   }
 
   .error {
-    padding: 8px 14px;
-    background: var(--bg-surface);
-    border-bottom: 1px solid var(--warn);
-    color: var(--warn);
+    flex-shrink: 0;
+    padding: var(--s-2) var(--s-5);
+    border-bottom: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--danger);
     font-family: var(--font-mono);
-    font-size: 0.8rem;
+    font-size: var(--text-xs);
   }
 
-  /* ─── Empty state ─────────────────────────────────────── */
+  /* ── Empty state ─────────────────────────────────────── */
+
   .empty {
-    flex: 1;
     display: flex;
+    flex: 1;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    color: var(--ink-soft);
-    flex-direction: column;
-    gap: 12px;
+    gap: var(--s-3);
+    padding: var(--s-5);
+    color: var(--ink-3);
   }
 
   .empty-card {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 14px;
+    gap: var(--s-3);
+    width: 100%;
+    max-width: 480px;
+    padding: var(--s-8) var(--s-6);
+    border: 1px dashed var(--line-strong);
+    border-radius: var(--radius-md);
+    background: var(--surface);
     text-align: center;
-    max-width: 420px;
-    padding: 40px;
-    border: 1px dashed var(--rule-soft);
   }
 
   .empty-card h2 {
-    font-family: var(--font-display);
-    color: var(--blueprint);
+    margin: 0;
+    color: var(--ink);
+    font-size: var(--text-xl);
+    letter-spacing: -0.025em;
   }
 
-  .empty-card p {
-    color: var(--ink-soft);
-    font-size: 0.95rem;
-  }
-
-  .open-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 18px;
-    background: var(--blueprint);
-    color: var(--bg);
-    border: none;
-    font-family: var(--font-mono);
-    font-size: 0.82rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    cursor: var(--cursor-pointer);
-  }
-
-  .open-btn:hover {
-    background: var(--accent-hover);
+  .empty-card p:not(.eyebrow) {
+    max-width: 36ch;
+    margin: 0 0 var(--s-3);
+    color: var(--ink-2);
+    font-size: 15px;
   }
 
   .hint {
+    color: var(--ink-3);
     font-family: var(--font-mono);
-    font-size: 0.72rem;
-    color: var(--ink-mute);
+    font-size: var(--text-xs);
   }
 
-  /* ─── Document stage ──────────────────────────────────── */
+  /* ── Document stage ──────────────────────────────────── */
+
   .stage {
-    flex: 1;
-    overflow: auto;
-    padding: 24px;
     display: flex;
+    flex: 1;
     flex-direction: column;
     align-items: center;
-    gap: 20px;
+    gap: var(--s-5);
+    overflow: auto;
+    padding: var(--s-6);
+    background: var(--surface-2);
   }
 
+  /* The page is media; the PDF render paints its own paper. */
   .page {
     position: relative;
-    background: #fff;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
     flex-shrink: 0;
+    background: var(--surface);
+    box-shadow: 0 0 0 1px var(--line);
   }
 
   .base,
@@ -1149,24 +1234,24 @@
   }
 
   .anno.selected {
-    outline: 1px dashed var(--blueprint);
-    outline-offset: 2px;
+    outline: 1px dashed var(--fjord);
+    outline-offset: 3px;
   }
 
   .anno-text {
-    cursor: move;
     min-height: 1em;
+    cursor: move;
   }
 
   .anno-text .te {
-    font-family: var(--font-body);
-    line-height: 1.2;
-    outline: none;
-    white-space: pre-wrap;
-    word-break: break-word;
     min-width: 8px;
     min-height: 1em;
-    cursor: var(--cursor-text);
+    outline: none;
+    font-family: var(--font-sans);
+    line-height: 1.2;
+    white-space: pre-wrap;
+    word-break: break-word;
+    cursor: text;
   }
 
   .anno-image {
@@ -1186,39 +1271,46 @@
   }
 
   .del {
-    top: -10px;
-    right: -10px;
-    width: 18px;
-    height: 18px;
-    line-height: 1;
-    border: none;
-    background: var(--warn);
-    color: var(--bg);
-    border-radius: 50%;
-    cursor: var(--cursor-pointer);
-    font-size: 13px;
+    top: -11px;
+    right: -11px;
     display: flex;
     align-items: center;
     justify-content: center;
+    width: 20px;
+    height: 20px;
     padding: 0;
+    border: 1px solid var(--line-strong);
+    border-radius: 50%;
+    background: var(--surface);
+    color: var(--danger);
+    font-size: 13px;
+    line-height: 1;
+    cursor: pointer;
+  }
+  .del:hover {
+    border-color: var(--danger);
   }
 
   .grip-corner {
-    right: -6px;
-    bottom: -6px;
-    width: 12px;
-    height: 12px;
-    background: var(--blueprint);
+    right: -5px;
+    bottom: -5px;
+    width: 10px;
+    height: 10px;
+    border: 1px solid var(--surface);
+    border-radius: var(--radius-xs);
+    background: var(--fjord);
     cursor: nwse-resize;
   }
 
   .grip-w {
-    right: -6px;
     top: 50%;
-    transform: translateY(-50%);
-    width: 10px;
+    right: -5px;
+    width: 8px;
     height: 18px;
-    background: var(--blueprint);
+    border: 1px solid var(--surface);
+    border-radius: var(--radius-xs);
+    background: var(--fjord);
+    transform: translateY(-50%);
     cursor: ew-resize;
   }
 
@@ -1229,15 +1321,35 @@
     touch-action: none;
   }
 
-  @media (max-width: 768px) {
-    .title {
-      font-size: 1.05rem;
-    }
+  @media (max-width: 900px) {
     .file {
       display: none;
     }
+  }
+
+  @media (max-width: 640px) {
+    .appbar,
+    .toolstrip,
+    .error {
+      padding-left: var(--s-4);
+      padding-right: var(--s-4);
+    }
+    .tb-text {
+      display: none;
+    }
+    .appbar-actions .btn {
+      min-width: 32px;
+      padding: 0 var(--s-2);
+    }
     .stage {
-      padding: 12px;
+      padding: var(--s-3);
+    }
+  }
+
+  @media (max-width: 440px) {
+    .crumb .back,
+    .crumb .back + .sep {
+      display: none;
     }
   }
 </style>

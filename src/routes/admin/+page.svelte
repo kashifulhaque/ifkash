@@ -38,79 +38,59 @@
   <meta name="robots" content="noindex" />
 </svelte:head>
 
-<header class="page-header">
-  <h1 class="section-title">Admin</h1>
-  <p class="section-subtitle">Signed in as <span class="email">{data.email}</span></p>
+<header class="page-head">
+  <p class="eyebrow"><span class="led" aria-hidden="true"></span> Owner only</p>
+  <h1 class="page-title">Admin</h1>
+  <p class="lead">Signed in as <span class="email">{data.email}</span></p>
 </header>
 
-<section class="admin-list">
+<ol class="rows admin-list">
   {#each entries as entry, i}
-    <a href={entry.href} class="admin-row stagger" style="--i: {i}">
-      <span class="admin-icon"><svelte:component this={entry.icon} size={18} strokeWidth={1.8} /></span>
-      <div class="admin-body">
-        <span class="admin-name">{entry.name}</span>
-        <p class="admin-desc">{entry.desc}</p>
-      </div>
-      <span class="admin-arrow" aria-hidden="true">&rarr;</span>
-    </a>
+    <li class="stagger" style="--i: {i}">
+      <a href={entry.href} class="admin-row">
+        <span class="admin-index">{String(i + 1).padStart(2, "0")}</span>
+        <div class="admin-body">
+          <span class="admin-name">
+            <span class="admin-icon" aria-hidden="true"><svelte:component this={entry.icon} size={16} strokeWidth={1.6} /></span>
+            {entry.name}
+          </span>
+          <p class="admin-desc">{entry.desc}</p>
+        </div>
+        <span class="admin-meta">
+          <span class="admin-path">{entry.href}</span>
+          <span class="admin-arrow" aria-hidden="true">&rarr;</span>
+        </span>
+      </a>
+    </li>
   {/each}
-</section>
+</ol>
 
 <style>
-  .page-header {
-    padding-top: 16px;
-  }
-
   .email {
-    font-family: var(--font-mono-g);
-    color: var(--signal-hi);
+    color: var(--ink);
+    font-family: var(--font-mono);
+    font-size: 0.86em;
+    overflow-wrap: anywhere;
   }
 
   .admin-list {
-    display: flex;
-    flex-direction: column;
-    margin-top: 8px;
+    margin-top: var(--s-7);
   }
 
   .admin-row {
     display: grid;
-    grid-template-columns: 36px minmax(0, 1fr) 24px;
-    align-items: center;
-    gap: 20px;
-    padding: 22px 12px;
-    margin: 0 -12px;
-    border-bottom: 1px solid var(--line-soft);
+    grid-template-columns: 48px minmax(0, 1fr) auto;
+    align-items: baseline;
+    gap: var(--s-5);
+    padding: var(--s-5) 0;
     color: var(--ink);
-    transition:
-      background 0.15s,
-      color 0.15s;
   }
 
-  .admin-row:first-child {
-    border-top: 1px solid var(--line-soft);
-  }
-
-  .admin-row:hover {
-    background: var(--ink);
-    color: var(--void);
-    border-bottom-color: var(--ink);
-  }
-
-  .admin-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 36px;
-    height: 36px;
-    flex-shrink: 0;
-    border: 1px solid var(--line-soft);
-    border-radius: var(--radius-sm);
-    color: var(--signal);
-  }
-
-  .admin-row:hover .admin-icon {
-    border-color: var(--void);
-    color: var(--void);
+  .admin-index {
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-variant-numeric: tabular-nums;
   }
 
   .admin-body {
@@ -118,52 +98,69 @@
   }
 
   .admin-name {
-    font-family: var(--font-dots);
-    font-size: 1.5rem;
-    font-weight: 600;
-    letter-spacing: 0.03em;
-    text-transform: uppercase;
-    line-height: 1;
-    color: inherit;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-2);
+    color: var(--ink);
+    font-size: var(--text-lg);
+    font-weight: 500;
+    line-height: 1.25;
+    letter-spacing: -0.015em;
+    transition: color var(--dur-fast) var(--ease);
+  }
+
+  .admin-icon {
+    display: inline-flex;
+    color: var(--ink-3);
+    transition: color var(--dur-fast) var(--ease);
   }
 
   .admin-desc {
-    margin: 8px 0 0;
-    font-family: var(--font-sans-g);
-    font-size: 0.9rem;
-    line-height: 1.5;
-    color: var(--ink-soft);
-    max-width: 640px;
+    max-width: var(--measure);
+    margin: var(--s-2) 0 0;
+    color: var(--ink-2);
+    font-size: 15px;
+    line-height: 1.55;
   }
 
-  .admin-row:hover .admin-desc {
-    color: var(--void);
+  .admin-meta {
+    display: inline-flex;
+    align-items: baseline;
+    gap: var(--s-3);
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    white-space: nowrap;
   }
 
   .admin-arrow {
-    font-family: var(--font-mono-g);
-    font-size: 1rem;
-    color: var(--ink-mute);
-    transition: color 0.15s, transform 0.15s;
+    color: var(--ink-3);
+    font-size: var(--text-sm);
+    transition: transform var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+  }
+
+  .admin-row:hover .admin-name,
+  .admin-row:hover .admin-icon,
+  .admin-row:hover .admin-arrow {
+    color: var(--fjord);
   }
 
   .admin-row:hover .admin-arrow {
-    color: var(--void);
-    transform: translateX(4px);
+    transform: translateX(3px);
   }
 
-  @media (max-width: 768px) {
+  @media (max-width: 640px) {
     .admin-row {
-      grid-template-columns: 36px minmax(0, 1fr);
-      padding: 18px 10px;
-      margin: 0 -10px;
+      grid-template-columns: 32px minmax(0, 1fr);
+      gap: var(--s-3);
+      padding: var(--s-4) 0;
     }
 
     .admin-name {
-      font-size: 1.25rem;
+      font-size: var(--text-md);
     }
 
-    .admin-arrow {
+    .admin-meta {
       display: none;
     }
   }

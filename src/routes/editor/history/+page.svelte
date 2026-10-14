@@ -15,15 +15,19 @@
 </svelte:head>
 
 <div class="history-page">
-  <header class="header">
-    <div class="header-left">
-      <a href="/editor" class="back-btn"><ArrowLeft size={18} /></a>
-      <h1>History</h1>
+  <header class="page-head">
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <a href="/editor" class="back"><ArrowLeft size={14} /> Editor</a>
+      <span aria-hidden="true">/</span>
+      <span aria-current="page">History</span>
+    </nav>
+    <div class="head-row">
+      <h1 class="page-title">History</h1>
+      <span class="count">{history.length} versions</span>
     </div>
-    <span class="count">{history.length} versions</span>
   </header>
 
-  <main class="main">
+  <section class="main">
     <div class="table-container">
       <table>
         <thead>
@@ -31,20 +35,20 @@
             <th>Version</th>
             <th>Created</th>
             <th>Notes</th>
-            <th></th>
+            <th><span class="sr-only">Actions</span></th>
           </tr>
         </thead>
         <tbody>
           {#each history as item, i (item.id)}
-            <tr style="--delay: {i * 30}ms">
+            <tr class="stagger" style="--i: {Math.min(i, 12)}">
               <td class="version-cell">v{item.version || "?"}</td>
               <td class="date-cell">{formatDate(item.created)}</td>
               <td class="notes-cell">{item.notes || "—"}</td>
               <td class="actions-cell">
-                <a href={item.pdf_url} target="_blank" class="action-btn" title="View PDF">
+                <a href={item.pdf_url} target="_blank" class="btn btn-sm btn--ghost icon" title="View PDF" aria-label="View PDF">
                   <FileText size={14} />
                 </a>
-                <a href="/editor?id={item.id}" class="action-btn load">
+                <a href="/editor?id={item.id}" class="btn btn-sm load">
                   <RotateCcw size={12} /> Load
                 </a>
               </td>
@@ -53,69 +57,52 @@
         </tbody>
       </table>
     </div>
-  </main>
+  </section>
 </div>
 
 <style>
-  .history-page {
-    min-height: 100vh;
-    background: var(--paper);
+  .page-head {
+    padding-top: var(--s-7);
+    padding-bottom: var(--s-6);
   }
 
-  .header {
-    display: flex;
+  .back {
+    display: inline-flex;
     align-items: center;
+    gap: var(--s-1);
+  }
+
+  .breadcrumb [aria-current="page"] {
+    color: var(--ink);
+  }
+
+  .head-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
     justify-content: space-between;
-    padding: 1rem 1.5rem;
-    background: var(--surface-raised);
-    border-bottom: 1px solid var(--border);
-    position: sticky;
-    top: 0;
-    z-index: 10;
+    gap: var(--s-2) var(--s-5);
   }
 
-  .header-left {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-  }
-
-  .back-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.5rem;
-    color: var(--text-tertiary);
-    border-radius: var(--radius-sm);
-    transition: all var(--dur-instant) var(--ease-out-quart);
-  }
-
-  .back-btn:hover {
-    color: var(--text-primary);
-    background: var(--surface-sunken);
-  }
-
-  .header h1 {
-    font-size: 1.125rem;
-    font-weight: 600;
-    color: var(--text-primary);
+  .page-title {
+    font-size: var(--text-2xl);
   }
 
   .count {
-    font-size: 0.75rem;
-    color: var(--text-faint);
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-variant-numeric: tabular-nums;
   }
 
   .main {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 2rem 1.5rem;
+    padding-top: var(--s-6);
   }
 
   .table-container {
-    background: var(--surface-raised);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
     overflow: hidden;
   }
 
@@ -125,29 +112,30 @@
   }
 
   th {
-    padding: 0.875rem 1rem;
-    font-size: 0.6875rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--text-faint);
+    height: 36px;
+    padding: 0 var(--s-4);
+    border-bottom: 1px solid var(--line);
+    background: var(--surface-2);
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-weight: 400;
     text-align: left;
-    background: var(--surface-sunken);
-    border-bottom: 1px solid var(--border);
   }
 
-  tr {
-    animation: fade-in 0.3s var(--ease-out-quart) backwards;
-    animation-delay: var(--delay);
+  tbody tr {
+    transition: background-color var(--dur-fast) var(--ease);
   }
 
   tbody tr:hover {
-    background: var(--surface-sunken);
+    background: var(--hover-wash);
   }
 
   td {
-    padding: 0.875rem 1rem;
-    border-bottom: 1px solid var(--border-subtle);
+    height: 56px;
+    padding: var(--s-2) var(--s-4);
+    border-bottom: 1px solid var(--line);
+    vertical-align: middle;
   }
 
   tr:last-child td {
@@ -155,50 +143,93 @@
   }
 
   .version-cell {
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: var(--text-primary);
+    color: var(--ink);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
   }
 
   .date-cell {
-    font-size: 0.8125rem;
-    color: var(--text-tertiary);
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
   }
 
   .notes-cell {
-    font-size: 0.8125rem;
-    color: var(--text-faint);
-    font-style: italic;
+    color: var(--ink-2);
+    font-size: var(--text-sm);
   }
 
   .actions-cell {
     text-align: right;
+    white-space: nowrap;
   }
 
-  .action-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
-    padding: 0.375rem 0.5rem;
-    font-size: 0.75rem;
-    color: var(--text-tertiary);
-    border-radius: var(--radius-sm);
-    transition: all var(--dur-instant) var(--ease-out-quart);
+  .btn.icon {
+    width: 32px;
+    padding: 0;
+    vertical-align: middle;
   }
 
-  .action-btn:hover {
-    color: var(--text-primary);
-    background: var(--border);
+  .load {
+    gap: var(--s-1);
+    margin-left: var(--s-1);
+    vertical-align: middle;
   }
 
-  .action-btn.load {
-    margin-left: 0.5rem;
-    background: var(--surface-sunken);
-    border: 1px solid var(--border);
-  }
+  /* Small screens: each version becomes a stacked row. */
+  @media (max-width: 639px) {
+    thead {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+    }
 
-  @keyframes fade-in {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    table,
+    tbody {
+      display: block;
+    }
+
+    tbody tr {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      grid-template-areas:
+        "version actions"
+        "date actions"
+        "notes notes";
+      gap: var(--s-1) var(--s-3);
+      padding: var(--s-4);
+      border-bottom: 1px solid var(--line);
+    }
+
+    tbody tr:last-child {
+      border-bottom: none;
+    }
+
+    td {
+      height: auto;
+      padding: 0;
+      border: none;
+    }
+
+    .version-cell {
+      grid-area: version;
+    }
+    .date-cell {
+      grid-area: date;
+    }
+    .notes-cell {
+      grid-area: notes;
+      margin-top: var(--s-1);
+    }
+    .actions-cell {
+      grid-area: actions;
+      align-self: center;
+    }
   }
 </style>

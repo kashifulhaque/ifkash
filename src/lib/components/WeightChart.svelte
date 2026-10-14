@@ -187,15 +187,8 @@
       on:pointermove={onMove}
       on:pointerleave={() => (hoverIdx = null)}
     >
-      <defs>
-        <linearGradient id="wc-fill" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" class="fill-top" />
-          <stop offset="1" class="fill-bottom" />
-        </linearGradient>
-      </defs>
-
       {#each geo.ticks as t}
-        <line class="grid" x1={PAD.left} y1={t.y} x2={W - PAD.right} y2={t.y} />
+        <line class="gridline" x1={PAD.left} y1={t.y} x2={W - PAD.right} y2={t.y} />
         <text class="axis y" x={PAD.left - 8} y={t.y + 3.5}>{t.label}</text>
       {/each}
 
@@ -208,7 +201,7 @@
         <text class="target-label" x={W - PAD.right} y={geo.y(targetKg) - 5}>{targetLabel}</text>
       {/if}
 
-      {#if geo.area}<polygon class="area" points={geo.area} fill="url(#wc-fill)" />{/if}
+      {#if geo.area}<polygon class="area" points={geo.area} />{/if}
 
       {#if geo.trend}
         <line class="trend" x1={geo.trend.x1} y1={geo.trend.y1} x2={geo.trend.x2} y2={geo.trend.y2} />
@@ -218,12 +211,12 @@
       <polyline class="ema" points={geo.line} />
 
       {#each geo.dots as d}
-        <circle class="dot" cx={d.cx} cy={d.cy} r="2.5" />
+        <circle class="pt" cx={d.cx} cy={d.cy} r="2.5" />
       {/each}
 
       {#if hover}
         <line class="guide" x1={hover.cx} y1={PAD.top} x2={hover.cx} y2={H - PAD.bottom} />
-        <circle class="dot hot" cx={hover.cx} cy={hover.cy} r="4" />
+        <circle class="pt hot" cx={hover.cx} cy={hover.cy} r="4" />
         <text
           class="readout"
           x={hoverFlip ? hover.cx - 8 : hover.cx + 8}
@@ -250,42 +243,52 @@
   {/if}
 </div>
 
-<style>
-  .chart { display: flex; flex-direction: column; gap: 0.6rem; }
 
-  .chart-head { display: flex; align-items: center; gap: 0.75rem; }
+<style>
+  /* Series follow DESIGN.md: trend fjord (1), goal line moss (2), fitted
+     forecast clay (3), raw weigh-ins ink-3 (4). Grid on --line, axis text in
+     mono --ink-3. Every colour is a CSS variable, so both themes work. */
+  .chart { display: flex; flex-direction: column; gap: var(--s-3); }
+
+  .chart-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--s-2) var(--s-3);
+  }
   .chart-title {
+    color: var(--ink-3);
     font-family: var(--font-mono);
-    font-size: 0.7rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--text-secondary);
+    font-size: var(--text-xs);
   }
   .range-switch {
-    margin-left: auto;
     display: flex;
-    gap: 0.15rem;
-    padding: 0.15rem;
-    border: 1px solid var(--border-subtle);
-    border-radius: 0.4rem;
+    gap: 2px;
+    margin-left: auto;
+    padding: 2px;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-sm);
   }
   .range-switch button {
-    appearance: none;
-    border: none;
-    background: none;
-    padding: 0.2rem 0.5rem;
-    border-radius: 0.3rem;
+    min-width: 2.5rem;
+    min-height: 32px;
+    padding: 0 var(--s-2);
+    border: 0;
+    border-radius: var(--radius-xs);
+    background: transparent;
+    color: var(--ink-2);
     font-family: var(--font-mono);
-    font-size: 0.68rem;
-    color: var(--text-tertiary);
-    cursor: var(--cursor-pointer);
+    font-size: var(--text-xs);
+    font-variant-numeric: tabular-nums;
+    appearance: none;
+    cursor: pointer;
+    transition: background-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
   }
-  .range-switch button:hover { color: var(--text-primary); background: var(--bg-surface-hover); }
+  .range-switch button:hover { background: var(--hover-wash); color: var(--ink); }
   .range-switch button.on {
-    color: var(--text-primary);
-    background: var(--blueprint-tint);
-    border: 1px solid var(--blueprint);
-    padding: calc(0.2rem - 1px) calc(0.5rem - 1px);
+    background: var(--fjord-wash);
+    color: var(--fjord);
+    font-weight: 500;
   }
 
   .plot {
@@ -295,60 +298,60 @@
     touch-action: pan-y;
   }
 
-  .grid { stroke: var(--border-subtle); stroke-width: 1; vector-effect: non-scaling-stroke; }
+  .gridline { stroke: var(--line); stroke-width: 1; vector-effect: non-scaling-stroke; }
   .axis {
+    fill: var(--ink-3);
     font-family: var(--font-mono);
     font-size: 9px;
-    fill: var(--text-faint);
+    font-variant-numeric: tabular-nums;
   }
   .axis.y { text-anchor: end; }
   .axis.x { text-anchor: middle; }
 
-  .area { stroke: none; }
-  .fill-top { stop-color: var(--blueprint); stop-opacity: 0.22; }
-  .fill-bottom { stop-color: var(--blueprint); stop-opacity: 0; }
+  /* A flat wash under the trend, no gradient. */
+  .area { fill: var(--fjord); fill-opacity: 0.07; stroke: none; }
 
   .ema {
     fill: none;
-    stroke: var(--blueprint);
+    stroke: var(--fjord);
     stroke-width: 2;
     stroke-linejoin: round;
     stroke-linecap: round;
     vector-effect: non-scaling-stroke;
   }
-  .dot { fill: var(--blueprint); opacity: 0.4; }
-  .dot.hot { fill: var(--blueprint); opacity: 1; }
+  .pt { fill: var(--ink-3); opacity: 0.55; }
+  .pt.hot { fill: var(--fjord); opacity: 1; }
 
   .trend {
-    stroke: var(--text-secondary);
+    stroke: var(--clay);
     stroke-width: 1.5;
     stroke-dasharray: 5 4;
-    opacity: 0.75;
     vector-effect: non-scaling-stroke;
   }
-  .now { stroke: var(--border); stroke-width: 1; vector-effect: non-scaling-stroke; }
+  .now { stroke: var(--line-strong); stroke-width: 1; vector-effect: non-scaling-stroke; }
 
   .target {
-    stroke: var(--ok, #44d288);
+    stroke: var(--moss);
     stroke-width: 1;
     stroke-dasharray: 2 3;
     vector-effect: non-scaling-stroke;
   }
   .target-label {
+    fill: var(--moss);
     font-family: var(--font-mono);
     font-size: 9px;
-    fill: var(--ok, #44d288);
     text-anchor: end;
   }
 
-  .guide { stroke: var(--border-strong); stroke-width: 1; vector-effect: non-scaling-stroke; }
+  .guide { stroke: var(--line-strong); stroke-width: 1; vector-effect: non-scaling-stroke; }
   .readout {
+    fill: var(--ink);
     font-family: var(--font-mono);
     font-size: 10px;
-    font-weight: 600;
-    fill: var(--text-primary);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
     paint-order: stroke;
-    stroke: var(--bg);
+    stroke: var(--surface);
     stroke-width: 3px;
     stroke-linejoin: round;
   }
@@ -357,26 +360,28 @@
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 0.3rem 0.5rem;
+    gap: 4px var(--s-2);
     margin: 0;
-    font-size: 0.7rem;
-    color: var(--text-tertiary);
+    color: var(--ink-3);
+    font-size: var(--text-xs);
+    line-height: 1.5;
   }
   .key { display: inline-block; flex: none; }
-  .dot-key { width: 7px; height: 7px; border-radius: 50%; background: var(--blueprint); opacity: 0.5; }
-  .line-key { width: 16px; height: 2px; background: var(--blueprint); }
+  .dot-key { width: 7px; height: 7px; border-radius: 50%; background: var(--ink-3); opacity: 0.7; }
+  .line-key { width: 16px; height: 2px; margin-left: var(--s-2); background: var(--fjord); }
   .trend-key {
     width: 16px;
     height: 0;
-    border-top: 2px dashed var(--text-secondary);
-    margin-left: 0.35rem;
+    margin-left: var(--s-2);
+    border-top: 2px dashed var(--clay);
   }
 
-  .empty { margin: 0; font-size: 0.8125rem; color: var(--text-tertiary); }
+  .empty { margin: 0; color: var(--ink-3); font-size: var(--text-sm); }
 
   @media (max-width: 560px) {
     .axis { font-size: 11px; }
     .readout { font-size: 12px; }
     .target-label { font-size: 11px; }
+    .range-switch button { min-height: 36px; }
   }
 </style>

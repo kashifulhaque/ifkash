@@ -109,192 +109,209 @@
       ]
     }
   ];
+
+  const statusLabel = { active: 'Active', shipped: 'Shipped', archived: 'Archived' } as const;
+  const pad = (n: number) => String(n).padStart(2, '0');
 </script>
 
-<header class="page-header">
-  <h1 class="section-title">Projects</h1>
-  <p class="section-subtitle">Things I've built or am actively shaping</p>
+<header class="page-head">
+  <p class="eyebrow">02 / Projects</p>
+  <h1 class="page-title">Projects</h1>
+  <p class="lead">Things I've built or am actively shaping</p>
 </header>
 
-<section class="projects-list">
+<ol class="rows list">
   {#each projects as project, i}
-    <article class="project-row stagger" style="--i: {i}">
-      <span
-        class="project-led"
-        class:lit={project.status === 'active'}
-        class:shipped={project.status === 'shipped'}
-        class:archived={project.status === 'archived'}
-        aria-hidden="true"
-      ></span>
-      <div class="project-body">
-        <div class="project-top">
-          {#if project.page}
-            <a href={project.page} class="project-name-link">
-              <span class="project-name">{project.name}</span>
-            </a>
-          {:else}
-            <span class="project-name">{project.name}</span>
-          {/if}
-          <div class="project-links">
-            {#each project.links as link}
-              <a
-                href={link.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                class="project-link"
-              >
-                {link.label}
-              </a>
-            {/each}
-          </div>
-        </div>
-        <p class="project-desc">{project.desc}</p>
+    <li class="row stagger" class:linked={!!project.page} style="--i: {i}">
+      <span class="row-n">{pad(i + 1)}</span>
+
+      <div class="row-body">
+        {#if project.page}
+          <a href={project.page} class="row-title">
+            <span class="row-name">{project.name}</span>
+            <span class="row-arrow" aria-hidden="true">→</span>
+          </a>
+        {:else}
+          <span class="row-title">
+            <span class="row-name">{project.name}</span>
+          </span>
+        {/if}
+        <p class="row-desc">{project.desc}</p>
       </div>
-    </article>
+
+      <div class="row-meta">
+        {#if project.status}
+          <span class="tag status">
+            <span
+              class="led"
+              class:led-hollow={project.status === 'archived'}
+              aria-hidden="true"
+            ></span>
+            {statusLabel[project.status]}
+          </span>
+        {/if}
+        {#if project.links.length}
+          <ul class="row-links">
+            {#each project.links as link}
+              <li>
+                <a href={link.url} target="_blank" rel="noopener noreferrer" class="row-link">
+                  {link.label}<span aria-hidden="true">↗</span>
+                </a>
+              </li>
+            {/each}
+          </ul>
+        {/if}
+      </div>
+    </li>
   {/each}
-</section>
+</ol>
 
 <style>
-  .page-header {
-    padding-top: 16px;
+  .list {
+    margin-top: var(--s-7);
   }
 
-  .projects-list {
-    display: flex;
-    flex-direction: column;
-    border-top: 1px solid var(--line-soft);
-  }
-
-  .project-row {
+  .row {
+    position: relative;
     display: grid;
-    grid-template-columns: 14px minmax(0, 1fr);
-    align-items: start;
-    gap: 20px;
-    padding: 22px 12px;
-    margin: 0 -12px;
-    border-bottom: 1px solid var(--line-soft);
-    transition: background 0.15s;
+    grid-template-columns: 48px minmax(0, 1fr) minmax(176px, auto);
+    align-items: baseline;
+    column-gap: var(--s-5);
+    padding: var(--s-5) 0;
   }
 
-  .project-row:hover {
-    background: var(--blueprint-tint);
+  .row-n {
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-variant-numeric: tabular-nums;
   }
 
-  .project-led {
-    width: 6px;
-    height: 6px;
-    border-radius: 0;
-    border: 1px solid var(--ink-mute);
-    background: transparent;
-    transform: translateY(10px);
-    justify-self: center;
-    flex-shrink: 0;
-  }
-
-  .project-led.lit {
-    background: var(--accent);
-    border-color: var(--accent);
-    box-shadow: none;
-    animation: none;
-  }
-
-  .project-led.shipped {
-    background: var(--ok);
-    border-color: var(--ok);
-    box-shadow: none;
-  }
-
-  .project-led.archived {
-    background: transparent;
-    border-style: dashed;
-    border-color: var(--ink-mute);
-  }
-
-  .project-body {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+  .row-body {
+    display: grid;
+    gap: var(--s-2);
     min-width: 0;
   }
 
-  .project-top {
-    display: flex;
+  .row-title {
+    display: inline-flex;
     align-items: baseline;
-    justify-content: space-between;
-    gap: 16px;
-    flex-wrap: wrap;
-  }
-
-  .project-name {
-    font-family: var(--font-serif);
-    font-size: 1.5rem;
-    font-weight: 400;
-    letter-spacing: -0.025em;
-    text-transform: none;
-    color: var(--foreground);
-    line-height: 1.2;
-  }
-
-  .project-name-link {
-    border-bottom: none;
-  }
-
-  .project-name-link:hover .project-name {
-    color: var(--accent-2);
-  }
-
-  .project-links {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-
-  .project-link {
-    font-family: var(--font-label);
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    padding: 5px 11px;
-    background: transparent;
-    color: var(--muted-foreground);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
+    gap: var(--s-2);
+    justify-self: start;
+    color: var(--ink);
     text-decoration: none;
+  }
+  /* Stretch the detail link over the whole row; the outbound links sit above it. */
+  a.row-title::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+  }
+
+  .row-name {
+    font-size: var(--text-lg);
+    font-weight: 500;
+    line-height: 1.25;
+    letter-spacing: -0.015em;
+    transition: color var(--dur-fast) var(--ease);
+  }
+
+  .row-arrow {
+    color: var(--ink-3);
+    font-size: var(--text-base);
     transition:
-      color 0.15s var(--ease-inout),
-      border-color 0.15s var(--ease-inout);
+      transform var(--dur-fast) var(--ease),
+      color var(--dur-fast) var(--ease);
   }
 
-  .project-link:hover {
-    color: var(--foreground);
-    background: transparent;
-    border-color: var(--border-strong);
+  .row.linked:hover .row-name,
+  .row.linked:hover .row-arrow {
+    color: var(--fjord);
+  }
+  .row.linked:hover .row-arrow {
+    transform: translateX(3px);
   }
 
-  .project-desc {
-    font-family: var(--font-sans);
-    font-size: 0.95rem;
-    line-height: 1.6;
-    color: var(--muted-foreground);
-    max-width: 720px;
+  .row-desc {
+    max-width: var(--measure);
+    margin: 0;
+    color: var(--ink-2);
+    font-size: var(--text-base);
+    line-height: 1.55;
   }
 
-  @media (max-width: 768px) {
-    .project-row {
-      gap: 16px;
-      padding: 18px 10px;
-      margin: 0 -10px;
+  .row-meta {
+    display: grid;
+    justify-items: end;
+    align-content: start;
+    gap: var(--s-3);
+  }
+
+  .status {
+    color: var(--ink-2);
+  }
+  .status .led {
+    width: 6px;
+    height: 6px;
+  }
+
+  .row-links {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: var(--s-1) var(--s-4);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .row-link {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 3px;
+    color: var(--ink-2);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    text-decoration: none;
+    transition: color var(--dur-fast) var(--ease);
+  }
+  .row-link span {
+    color: var(--ink-3);
+    transition: color var(--dur-fast) var(--ease);
+  }
+  .row-link:hover,
+  .row-link:hover span {
+    color: var(--fjord);
+  }
+
+  @media (max-width: 720px) {
+    .list {
+      margin-top: var(--s-6);
     }
 
-    .project-name {
-      font-size: 1.5rem;
+    .row {
+      grid-template-columns: 32px minmax(0, 1fr);
+      row-gap: var(--s-3);
+      column-gap: var(--s-3);
     }
 
-    .project-top {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 10px;
+    .row-meta {
+      grid-column: 2;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-items: start;
+      gap: var(--s-3) var(--s-4);
+    }
+
+    .row-links {
+      justify-content: flex-start;
+    }
+
+    .row-name {
+      font-size: var(--text-md);
     }
   }
 </style>

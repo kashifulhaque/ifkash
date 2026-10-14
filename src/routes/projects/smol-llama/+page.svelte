@@ -3,135 +3,152 @@
   <meta name="description" content="360M parameter LLaMA trained from scratch on 6B tokens. GQA, RoPE, SwiGLU." />
 </svelte:head>
 
-<div class="page">
-  <header class="page-header">
-    <div class="breadcrumb">
+<article class="detail">
+  <header class="page-head">
+    <nav class="breadcrumb" aria-label="Breadcrumb">
       <a href="/projects">Projects</a>
-      <span class="separator">/</span>
-      <span>smol-llama</span>
-    </div>
-    <h1 class="page-title">smol-llama 🦙</h1>
-    <p class="page-desc">A 360M parameter LLaMA-style language model trained from scratch on 6B tokens. Built with GQA, RoPE, and SwiGLU on a single H100 GPU in 22 hours for $53.</p>
-    <div class="project-links">
-      <a href="https://huggingface.co/weights-and-wires/smol-llama" target="_blank" rel="noopener noreferrer" class="project-link">
-        Model
+      <span aria-hidden="true">/</span>
+      <span aria-current="page">smol-llama</span>
+    </nav>
+    <h1 class="page-title">smol-llama <span class="mark">🦙</span></h1>
+    <p class="lead">A 360M parameter LLaMA-style language model trained from scratch on 6B tokens. Built with GQA, RoPE, and SwiGLU on a single H100 GPU in 22 hours for $53.</p>
+    <div class="btn-row">
+      <a href="https://huggingface.co/weights-and-wires/smol-llama" target="_blank" rel="noopener noreferrer" class="btn btn-sm">
+        Model <span class="ext" aria-hidden="true">↗</span>
       </a>
-      <a href="https://github.com/weights-and-wires/smol-llama" target="_blank" rel="noopener noreferrer" class="project-link">
-        Code
+      <a href="https://github.com/weights-and-wires/smol-llama" target="_blank" rel="noopener noreferrer" class="btn btn-sm">
+        Code <span class="ext" aria-hidden="true">↗</span>
       </a>
     </div>
   </header>
 
-  <section class="content">
-    <div class="section">
-      <h2>Overview</h2>
-      <p>
-        smol-llama is a minimal, from-scratch implementation of a LLaMA-style language model for pre-training on custom data. 
-        The project demonstrates that you can train a capable small language model on a reasonable budget—the entire 360M parameter 
-        model was trained on 6B tokens using a single NVIDIA H100 GPU in approximately 22 hours at a total cost of around $53.
-      </p>
-    </div>
+  <div class="detail-body">
+    <aside class="facts" aria-label="Project facts">
+      <dl>
+        <div class="fact">
+          <dt>Parameters</dt>
+          <dd>~360M</dd>
+        </div>
+        <div class="fact">
+          <dt>Tokens</dt>
+          <dd>~6B · FineWeb-6B</dd>
+        </div>
+        <div class="fact">
+          <dt>Hardware</dt>
+          <dd>1× H100 80GB</dd>
+        </div>
+        <div class="fact">
+          <dt>Training time</dt>
+          <dd>~22 h</dd>
+        </div>
+        <div class="fact">
+          <dt>Cost</dt>
+          <dd>~$53</dd>
+        </div>
+        <div class="fact">
+          <dt>Stack</dt>
+          <dd><span>PyTorch</span><span>uv</span></dd>
+        </div>
+        <div class="fact">
+          <dt>Links</dt>
+          <dd>
+            <a href="https://huggingface.co/weights-and-wires/smol-llama" target="_blank" rel="noopener noreferrer">Model <span aria-hidden="true">↗</span></a>
+            <a href="https://github.com/weights-and-wires/smol-llama" target="_blank" rel="noopener noreferrer">GitHub <span aria-hidden="true">↗</span></a>
+            <a href="https://huggingface.co/datasets/weights-and-wires/fineweb-6b" target="_blank" rel="noopener noreferrer">Dataset <span aria-hidden="true">↗</span></a>
+          </dd>
+        </div>
+      </dl>
+    </aside>
 
-    <div class="section">
-      <h2>Model Architecture</h2>
-      <div class="stats-grid">
-        <div class="stat">
-          <div class="stat-label">Parameters</div>
-          <div class="stat-value">~360M</div>
-        </div>
-        <div class="stat">
-          <div class="stat-label">Hidden Dimension</div>
-          <div class="stat-value">960</div>
-        </div>
-        <div class="stat">
-          <div class="stat-label">Layers</div>
-          <div class="stat-value">32</div>
-        </div>
-        <div class="stat">
-          <div class="stat-label">Attention Heads</div>
-          <div class="stat-value">15Q / 5KV</div>
-        </div>
-        <div class="stat">
-          <div class="stat-label">Context Length</div>
-          <div class="stat-value">2048</div>
-        </div>
-        <div class="stat">
-          <div class="stat-label">Vocab Size</div>
-          <div class="stat-value">49,152</div>
-        </div>
-      </div>
-    </div>
+    <div class="copy">
+      <section class="section">
+        <h2><span class="num">01</span>Overview</h2>
+        <p>
+          smol-llama is a minimal, from-scratch implementation of a LLaMA-style language model for pre-training on custom data.
+          The project demonstrates that you can train a capable small language model on a reasonable budget—the entire 360M parameter
+          model was trained on 6B tokens using a single NVIDIA H100 GPU in approximately 22 hours at a total cost of around $53.
+        </p>
+      </section>
 
-    <div class="section">
-      <h2>Key Features</h2>
-      <ul class="feature-list">
-        <li><strong>Grouped Query Attention (GQA)</strong>: Efficient inference with 15 query heads and 5 key-value heads</li>
-        <li><strong>RoPE</strong>: Rotary Position Embeddings for better position encoding</li>
-        <li><strong>RMSNorm</strong>: Root Mean Square normalization instead of LayerNorm</li>
-        <li><strong>SwiGLU</strong>: Gated Linear Unit activation in the feed-forward network</li>
-        <li><strong>Flash Attention 2</strong>: Fast and memory-efficient attention with SDPA fallback</li>
-        <li><strong>Gradient Checkpointing</strong>: Memory-efficient training for larger models</li>
-        <li><strong>torch.compile</strong>: Optimized training speed with PyTorch 2.0 compilation</li>
-      </ul>
-    </div>
+      <section class="section">
+        <h2><span class="num">02</span>Model Architecture</h2>
+        <div class="stats">
+          <div class="stat">
+            <span class="stat-label">Parameters</span>
+            <span class="stat-value">~360M</span>
+          </div>
+          <div class="stat">
+            <span class="stat-label">Hidden Dimension</span>
+            <span class="stat-value">960</span>
+          </div>
+          <div class="stat">
+            <span class="stat-label">Layers</span>
+            <span class="stat-value">32</span>
+          </div>
+          <div class="stat">
+            <span class="stat-label">Attention Heads</span>
+            <span class="stat-value">15Q / 5KV</span>
+          </div>
+          <div class="stat">
+            <span class="stat-label">Context Length</span>
+            <span class="stat-value">2048</span>
+          </div>
+          <div class="stat">
+            <span class="stat-label">Vocab Size</span>
+            <span class="stat-value">49,152</span>
+          </div>
+        </div>
+      </section>
 
-    <div class="section">
-      <h2>Training Details</h2>
-      <div class="training-grid">
-        <div class="training-item">
-          <span class="training-label">GPU</span>
-          <span class="training-value">1× NVIDIA H100 (80GB PCIe)</span>
-        </div>
-        <div class="training-item">
-          <span class="training-label">Training Speed</span>
-          <span class="training-value">~75,000 tokens/sec</span>
-        </div>
-        <div class="training-item">
-          <span class="training-label">Training Time</span>
-          <span class="training-value">~22 hours (1 epoch)</span>
-        </div>
-        <div class="training-item">
-          <span class="training-label">Cloud Provider</span>
-          <span class="training-value">RunPod (~$2.40/hr)</span>
-        </div>
-        <div class="training-item">
-          <span class="training-label">Total Cost</span>
-          <span class="training-value">~$53</span>
-        </div>
-        <div class="training-item">
-          <span class="training-label">Dataset</span>
-          <span class="training-value">FineWeb-6B (~6B tokens)</span>
-        </div>
-      </div>
-    </div>
+      <section class="section">
+        <h2><span class="num">03</span>Key Features</h2>
+        <ul class="defs">
+          <li><span class="term">Grouped Query Attention (GQA)</span><span class="desc">Efficient inference with 15 query heads and 5 key-value heads</span></li>
+          <li><span class="term">RoPE</span><span class="desc">Rotary Position Embeddings for better position encoding</span></li>
+          <li><span class="term">RMSNorm</span><span class="desc">Root Mean Square normalization instead of LayerNorm</span></li>
+          <li><span class="term">SwiGLU</span><span class="desc">Gated Linear Unit activation in the feed-forward network</span></li>
+          <li><span class="term">Flash Attention 2</span><span class="desc">Fast and memory-efficient attention with SDPA fallback</span></li>
+          <li><span class="term">Gradient Checkpointing</span><span class="desc">Memory-efficient training for larger models</span></li>
+          <li><span class="term">torch.compile</span><span class="desc">Optimized training speed with PyTorch 2.0 compilation</span></li>
+        </ul>
+      </section>
 
-    <div class="section">
-      <h2>Dataset</h2>
-      <p>
-        The model is trained on <a href="https://huggingface.co/datasets/weights-and-wires/fineweb-6b" target="_blank" rel="noopener noreferrer" class="inline-link">fineweb-6b</a>, 
-        a curated 6B token dataset pre-tokenized with a custom 49K BPE vocabulary. The dataset includes 11.3 GB of training tokens 
-        and 57 MB of validation tokens, all pre-processed for immediate use.
-      </p>
-    </div>
+      <section class="section">
+        <h2><span class="num">04</span>Training Details</h2>
+        <dl class="kv">
+          <div><dt>GPU</dt><dd>1× NVIDIA H100 (80GB PCIe)</dd></div>
+          <div><dt>Training Speed</dt><dd>~75,000 tokens/sec</dd></div>
+          <div><dt>Training Time</dt><dd>~22 hours (1 epoch)</dd></div>
+          <div><dt>Cloud Provider</dt><dd>RunPod (~$2.40/hr)</dd></div>
+          <div><dt>Total Cost</dt><dd>~$53</dd></div>
+          <div><dt>Dataset</dt><dd>FineWeb-6B (~6B tokens)</dd></div>
+        </dl>
+      </section>
 
-    <div class="section">
-      <h2>Quick Start</h2>
-      <div class="code-block">
+      <section class="section">
+        <h2><span class="num">05</span>Dataset</h2>
+        <p>
+          The model is trained on <a href="https://huggingface.co/datasets/weights-and-wires/fineweb-6b" target="_blank" rel="noopener noreferrer">fineweb-6b</a>,
+          a curated 6B token dataset pre-tokenized with a custom 49K BPE vocabulary. The dataset includes 11.3 GB of training tokens
+          and 57 MB of validation tokens, all pre-processed for immediate use.
+        </p>
+      </section>
+
+      <section class="section">
+        <h2><span class="num">06</span>Quick Start</h2>
         <pre><code># Install dependencies
 uv sync
 
 # Run training
 uv run ./pretrain.py</code></pre>
-      </div>
-      <p class="section-note">
-        The training script automatically downloads the pre-tokenized dataset, initializes the model, trains with gradient accumulation and mixed precision, 
-        and saves checkpoints every 200 steps.
-      </p>
-    </div>
+        <p class="note">
+          The training script automatically downloads the pre-tokenized dataset, initializes the model, trains with gradient accumulation and mixed precision,
+          and saves checkpoints every 200 steps.
+        </p>
+      </section>
 
-    <div class="section">
-      <h2>Using the Pre-trained Model</h2>
-      <div class="code-block">
+      <section class="section">
+        <h2><span class="num">07</span>Using the Pre-trained Model</h2>
         <pre><code>from transformers import AutoModelForCausalLM, AutoTokenizer
 import torch
 
@@ -156,380 +173,395 @@ outputs = model.generate(
 )
 
 print(tokenizer.decode(outputs[0], skip_special_tokens=True))</code></pre>
-      </div>
-    </div>
+      </section>
 
-    <div class="section">
-      <h2>Training Configuration</h2>
-      <div class="config-list">
-        <div class="config-item">
-          <span class="config-key">Batch Size</span>
-          <span class="config-value">64</span>
-        </div>
-        <div class="config-item">
-          <span class="config-key">Context Length</span>
-          <span class="config-value">2048 tokens</span>
-        </div>
-        <div class="config-item">
-          <span class="config-key">Gradient Accumulation</span>
-          <span class="config-value">8 steps (effective batch: 512)</span>
-        </div>
-        <div class="config-item">
-          <span class="config-key">Learning Rate</span>
-          <span class="config-value">3e-4 (peak)</span>
-        </div>
-        <div class="config-item">
-          <span class="config-key">Max Iterations</span>
-          <span class="config-value">5,725 (~6B tokens)</span>
-        </div>
-        <div class="config-item">
-          <span class="config-key">Warmup Steps</span>
-          <span class="config-value">900 iterations</span>
-        </div>
-        <div class="config-item">
-          <span class="config-key">Tokens per Step</span>
-          <span class="config-value">~1M tokens</span>
-        </div>
-      </div>
-    </div>
+      <section class="section">
+        <h2><span class="num">08</span>Training Configuration</h2>
+        <dl class="kv">
+          <div><dt>Batch Size</dt><dd>64</dd></div>
+          <div><dt>Context Length</dt><dd>2048 tokens</dd></div>
+          <div><dt>Gradient Accumulation</dt><dd>8 steps (effective batch: 512)</dd></div>
+          <div><dt>Learning Rate</dt><dd>3e-4 (peak)</dd></div>
+          <div><dt>Max Iterations</dt><dd>5,725 (~6B tokens)</dd></div>
+          <div><dt>Warmup Steps</dt><dd>900 iterations</dd></div>
+          <div><dt>Tokens per Step</dt><dd>~1M tokens</dd></div>
+        </dl>
+      </section>
 
-    <div class="section">
-      <h2>Project Structure</h2>
-      <ul class="structure-list">
-        <li><code>pretrain.py</code>: Main training script with gradient accumulation and checkpointing</li>
-        <li><code>utils/model.py</code>: Complete LLaMA architecture implementation</li>
-        <li><code>utils/rotary.py</code>: Rotary position embeddings (RoPE)</li>
-        <li><code>utils/data.py</code>: Efficient data loading from pre-tokenized binaries</li>
-        <li><code>utils/checkpoint.py</code>: Checkpoint saving/loading and HuggingFace uploads</li>
-        <li><code>utils/lr_schedule.py</code>: Cosine learning rate schedule with warmup</li>
-        <li><code>utils/logging.py</code>: Weights & Biases integration for experiment tracking</li>
-        <li><code>notebooks/1-train-tokenizer.ipynb</code>: Custom BPE tokenizer training</li>
-      </ul>
-    </div>
+      <section class="section">
+        <h2><span class="num">09</span>Project Structure</h2>
+        <ul class="defs">
+          <li><span class="term"><code>pretrain.py</code></span><span class="desc">Main training script with gradient accumulation and checkpointing</span></li>
+          <li><span class="term"><code>utils/model.py</code></span><span class="desc">Complete LLaMA architecture implementation</span></li>
+          <li><span class="term"><code>utils/rotary.py</code></span><span class="desc">Rotary position embeddings (RoPE)</span></li>
+          <li><span class="term"><code>utils/data.py</code></span><span class="desc">Efficient data loading from pre-tokenized binaries</span></li>
+          <li><span class="term"><code>utils/checkpoint.py</code></span><span class="desc">Checkpoint saving/loading and HuggingFace uploads</span></li>
+          <li><span class="term"><code>utils/lr_schedule.py</code></span><span class="desc">Cosine learning rate schedule with warmup</span></li>
+          <li><span class="term"><code>utils/logging.py</code></span><span class="desc">Weights & Biases integration for experiment tracking</span></li>
+          <li><span class="term"><code>notebooks/1-train-tokenizer.ipynb</code></span><span class="desc">Custom BPE tokenizer training</span></li>
+        </ul>
+      </section>
 
-    <div class="section">
-      <h2>Resources</h2>
-      <ul class="resource-list">
-        <li>
-          <a href="https://huggingface.co/weights-and-wires/smol-llama" target="_blank" rel="noopener noreferrer" class="resource-link">
-            Pre-trained Model on HuggingFace
-          </a>
-        </li>
-        <li>
-          <a href="https://huggingface.co/datasets/weights-and-wires/fineweb-6b" target="_blank" rel="noopener noreferrer" class="resource-link">
-            FineWeb-6B Training Dataset
-          </a>
-        </li>
-        <li>
-          <a href="https://github.com/weights-and-wires/smol-llama" target="_blank" rel="noopener noreferrer" class="resource-link">
-            Source Code on GitHub
-          </a>
-        </li>
-      </ul>
+      <section class="section">
+        <h2><span class="num">10</span>Resources</h2>
+        <ul class="linklist">
+          <li>
+            <a href="https://huggingface.co/weights-and-wires/smol-llama" target="_blank" rel="noopener noreferrer">
+              Pre-trained Model on HuggingFace
+              <span class="arrow" aria-hidden="true">↗</span>
+            </a>
+          </li>
+          <li>
+            <a href="https://huggingface.co/datasets/weights-and-wires/fineweb-6b" target="_blank" rel="noopener noreferrer">
+              FineWeb-6B Training Dataset
+              <span class="arrow" aria-hidden="true">↗</span>
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/weights-and-wires/smol-llama" target="_blank" rel="noopener noreferrer">
+              Source Code on GitHub
+              <span class="arrow" aria-hidden="true">↗</span>
+            </a>
+          </li>
+        </ul>
+      </section>
     </div>
-  </section>
-</div>
+  </div>
+</article>
 
 <style>
-  .page {
-    display: flex;
-    flex-direction: column;
-    gap: 3rem;
-    max-width: 48rem;
-    animation: fade-up var(--dur-base) var(--ease-out-quart);
+  /* ── Detail page (shared across project write-ups) ───────────── */
+
+  .page-title {
+    max-width: 18ch;
+    overflow-wrap: break-word;
   }
 
-  .page-header {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    padding-bottom: 2rem;
-    border-bottom: 1px solid var(--line-soft);
+  /* Sections carry their own top hairline, so the head drops its rule */
+  .page-head {
+    border-bottom: 0;
   }
 
-  .breadcrumb {
-    font-family: var(--font-mono-g);
-    font-size: 0.7rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--text-faint);
-  }
-
-  .breadcrumb a {
-    color: var(--text-faint);
-    transition: color var(--dur-instant) var(--ease-out-quart);
-  }
-
-  .breadcrumb a:hover {
-    color: var(--signal-hi);
-  }
-
-  .separator {
-    margin: 0 0.5rem;
-  }
-
-  .page-desc {
-    font-size: 1.0625rem;
-    line-height: 1.6;
-    color: var(--text-secondary);
+  .page-head .lead {
     margin: 0;
   }
 
-  .project-links {
-    display: flex;
-    gap: 1rem;
+  .page-head .btn-row {
+    margin-top: var(--s-2);
   }
 
-  .project-link {
-    font-family: var(--font-mono-g);
-    font-size: 0.7rem;
-    font-weight: 500;
-    color: var(--text-faint);
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    transition: color var(--dur-instant) var(--ease-out-quart),
-      background-color var(--dur-instant) var(--ease-out-quart),
-      border-color var(--dur-instant) var(--ease-out-quart);
-    padding: 0.5rem 1rem;
-    border: 1px solid var(--line-soft);
-    border-radius: var(--radius-sm);
+  .ext {
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    transition: color var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
   }
 
-  .project-link:hover {
-    background: var(--ink);
-    color: var(--void);
-    border-color: var(--ink);
+  .btn:hover .ext {
+    color: inherit;
+    transform: translate(2px, -2px);
   }
 
-  .content {
-    display: flex;
-    flex-direction: column;
-    gap: 2.5rem;
+  .detail-body {
+    display: grid;
+    gap: var(--s-7);
+  }
+
+  /* Facts: mono summary column */
+  .facts dl {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: var(--s-5);
+    margin: 0;
+    border-top: 1px solid var(--line);
+  }
+
+  .fact {
+    min-width: 0;
+    padding: var(--s-3) 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .fact dt {
+    margin-bottom: var(--s-1);
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    line-height: 1.4;
+  }
+
+  .fact dd {
+    display: grid;
+    gap: 2px;
+    margin: 0;
+    color: var(--ink);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    line-height: 1.5;
+    font-variant-numeric: tabular-nums;
+    overflow-wrap: anywhere;
+  }
+
+  .fact a {
+    display: inline-flex;
+    align-items: baseline;
+    gap: var(--s-2);
+    color: var(--ink);
+    text-decoration: none;
+  }
+
+  .fact a:hover {
+    color: var(--fjord);
+  }
+
+  .fact a span {
+    color: var(--ink-3);
+    transition: color var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+  }
+
+  .fact a:hover span {
+    color: var(--fjord);
+    transform: translate(2px, -2px);
+  }
+
+  /* Reading column (not .prose: that name belongs to Tailwind Typography) */
+  .copy {
+    min-width: 0;
+  }
+
+  .section {
+    padding-top: var(--s-4);
+    border-top: 1px solid var(--line);
+  }
+
+  .section + .section {
+    margin-top: var(--s-8);
+  }
+
+  .section > * {
+    margin: 0;
+  }
+
+  .section > * + * {
+    margin-top: var(--s-4);
   }
 
   .section h2 {
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: var(--text-primary);
+    display: flex;
+    align-items: baseline;
+    gap: var(--s-4);
+    font-size: var(--text-xl);
+    letter-spacing: -0.022em;
+  }
+
+  .num {
+    flex: none;
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-weight: 400;
     letter-spacing: 0.02em;
-    text-transform: uppercase;
-    margin-bottom: 1rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .section > h2 + * {
+    margin-top: var(--s-5);
   }
 
   .section p {
-    font-size: 0.9375rem;
-    line-height: 1.7;
-    color: var(--text-secondary);
-    margin-bottom: 1rem;
+    line-height: 1.65;
   }
 
-  .section p:last-child {
-    margin-bottom: 0;
+  @media (min-width: 960px) {
+    .detail-body {
+      grid-template-columns: 240px minmax(0, var(--measure));
+      column-gap: var(--s-8);
+      align-items: start;
+      padding-top: var(--s-4);
+    }
+
+    .facts {
+      position: sticky;
+      top: calc(64px + var(--s-6));
+    }
+
+    .facts dl {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .section + .section {
+      margin-top: var(--s-9);
+    }
   }
 
-  .section-note {
-    margin-top: 1rem;
-    font-size: 0.875rem;
-    color: var(--text-faint);
+  .page-title .mark {
+    font-size: 0.6em;
+    letter-spacing: 0;
+    vertical-align: 0.12em;
   }
 
-  .inline-link {
-    color: var(--text-secondary);
-    text-decoration: underline;
-    text-decoration-color: var(--text-faint);
-    transition: color var(--dur-instant) var(--ease-out-quart),
-      text-decoration-color var(--dur-instant) var(--ease-out-quart);
+  /* Aside paragraph set off by a hairline */
+  .note {
+    padding-left: var(--s-4);
+    border-left: 1px solid var(--line-strong);
+    color: var(--ink-2);
   }
 
-  .inline-link:hover {
-    color: var(--signal);
-    text-decoration-color: var(--signal);
-  }
-
-  .stats-grid {
+  /* Key numbers: rows on mobile, a spec-sheet grid from 600px */
+  .stats {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 1rem;
+    border-top: 1px solid var(--line);
   }
 
   .stat {
     display: flex;
-    flex-direction: column;
-    gap: 0.375rem;
-    padding: 1rem;
-    background: var(--panel);
-    border: 1px solid var(--line-soft);
-    border-radius: var(--radius-sm);
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--s-4);
+    min-width: 0;
+    padding: var(--s-3) 0;
+    border-bottom: 1px solid var(--line);
   }
 
   .stat-label {
-    font-size: 0.75rem;
-    font-weight: 500;
-    color: var(--text-faint);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    line-height: 1.4;
   }
 
   .stat-value {
-    font-size: 1.125rem;
-    font-weight: 600;
-    color: var(--text-primary);
+    color: var(--ink);
+    font-family: var(--font-mono);
+    font-size: var(--text-lg);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
   }
 
-  .training-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
+  @media (min-width: 600px) {
+    .stats {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      border-left: 1px solid var(--line);
+    }
+
+    .stat {
+      flex-direction: column;
+      justify-content: flex-start;
+      gap: var(--s-3);
+      padding: var(--s-4);
+      border-right: 1px solid var(--line);
+    }
+
+    .stat-value {
+      font-size: var(--text-xl);
+      text-align: left;
+    }
   }
 
-  .training-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.875rem 1rem;
-    background: var(--panel);
-    border: 1px solid var(--line-soft);
-    border-radius: var(--radius-sm);
+  /* Key / value rows with mono values */
+  .kv {
+    border-top: 1px solid var(--line);
   }
 
-  .training-label {
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: var(--text-faint);
+  .kv > div {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+    gap: var(--s-5);
+    padding: var(--s-3) 0;
+    border-bottom: 1px solid var(--line);
   }
 
-  .training-value {
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: var(--text-secondary);
+  .kv dt {
+    color: var(--ink-2);
   }
 
-  .config-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .config-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.75rem 1rem;
-    background: var(--panel);
-    border: 1px solid var(--line-soft);
-    border-radius: var(--radius-sm);
-  }
-
-  .config-key {
-    font-size: 0.875rem;
-    color: var(--text-secondary);
-  }
-
-  .config-value {
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: var(--text-secondary);
-    font-family: var(--font-mono-g);
-  }
-
-  .feature-list,
-  .structure-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    list-style: none;
-    padding: 0;
-  }
-
-  .feature-list li,
-  .structure-list li {
-    font-size: 0.9375rem;
-    line-height: 1.6;
-    color: var(--text-secondary);
-    padding-left: 1.5rem;
-    position: relative;
-  }
-
-  .feature-list li::before,
-  .structure-list li::before {
-    content: '→';
-    position: absolute;
-    left: 0;
-    color: var(--signal);
-  }
-
-  .resource-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    list-style: none;
-    padding: 0;
-  }
-
-  .resource-link {
-    display: inline-flex;
-    align-items: center;
-    font-family: var(--font-mono-g);
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    color: var(--text-secondary);
-    padding: 0.75rem 1rem;
-    background: var(--panel);
-    border: 1px solid var(--line-soft);
-    border-radius: var(--radius-sm);
-    transition: color var(--dur-instant) var(--ease-out-quart),
-      background-color var(--dur-instant) var(--ease-out-quart),
-      border-color var(--dur-instant) var(--ease-out-quart);
-  }
-
-  .resource-link:hover {
-    background: var(--ink);
-    color: var(--void);
-    border-color: var(--ink);
-  }
-
-  .code-block {
-    background: var(--code-bg);
-    border: 1px solid var(--line-soft);
-    border-radius: var(--radius-sm);
-    overflow-x: auto;
-  }
-
-  .code-block pre {
+  .kv dd {
     margin: 0;
-    padding: 1.25rem;
+    color: var(--ink);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    line-height: 1.7;
+    font-variant-numeric: tabular-nums;
   }
 
-  .code-block code {
-    font-family: var(--font-mono-g);
-    font-size: 0.875rem;
-    line-height: 1.6;
-    color: var(--text-secondary);
+  /* Term / description rows */
+  .defs {
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--line);
   }
 
-  .structure-list code {
-    font-family: var(--font-mono-g);
-    font-size: 0.875rem;
-    color: var(--text-secondary);
-    background: var(--panel-hi);
-    border: 1px solid var(--line-soft);
-    padding: 0.125rem 0.375rem;
-    border-radius: var(--radius-sm);
+  .defs > li {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--s-1) var(--s-5);
+    padding: var(--s-3) 0;
+    border-bottom: 1px solid var(--line);
   }
 
-  @keyframes fade-up {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+  .term {
+    min-width: 0;
+    color: var(--ink);
+    font-weight: 500;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
   }
 
-  @media (max-width: 768px) {
-    .section h2 {
-      font-size: 1.25rem;
+
+  .desc {
+    color: var(--ink-2);
+    line-height: 1.55;
+  }
+
+  @media (min-width: 600px) {
+    .defs > li {
+      grid-template-columns: minmax(0, 12rem) minmax(0, 1fr);
     }
+  }
 
-    .stats-grid {
-      grid-template-columns: repeat(2, 1fr);
-    }
+  .term code {
+    padding: 0;
+    background: none;
+    color: var(--ink);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    font-weight: 400;
+  }
+
+  /* Outbound resource rows */
+  .linklist {
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--line);
+  }
+
+  .linklist a {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--s-4);
+    padding: var(--s-3) 0;
+    border-bottom: 1px solid var(--line);
+    color: var(--ink);
+    text-decoration: none;
+  }
+
+  .linklist a:hover {
+    color: var(--fjord);
+  }
+
+  .arrow {
+    flex: none;
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    transition: color var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+  }
+
+  .linklist a:hover .arrow {
+    color: var(--fjord);
+    transform: translate(2px, -2px);
   }
 </style>

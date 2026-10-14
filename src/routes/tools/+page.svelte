@@ -28,154 +28,128 @@
       links: []
     }
   ];
+
+  const pad = (n: number) => String(n).padStart(2, '0');
 </script>
 
-<header class="page-header">
-  <h1 class="section-title">Tools</h1>
-  <p class="section-subtitle">Small utilities — most run entirely in your browser</p>
+<header class="page-head">
+  <p class="eyebrow">04 / Tools</p>
+  <h1 class="page-title">Tools</h1>
+  <p class="lead">Small utilities — most run entirely in your browser</p>
 </header>
 
-<section class="tools-list">
+<ol class="rows list">
   {#each tools as tool, i}
-    <a href={tool.page} class="tool-row stagger" style="--i: {i}">
-      <span
-        class="tool-led"
-        class:lit={tool.status === 'active'}
-        class:shipped={tool.status === 'shipped'}
-        class:archived={tool.status === 'archived'}
-        aria-hidden="true"
-      ></span>
-      <div class="tool-body">
-        <div class="tool-top">
-          <span class="tool-name">{tool.name}</span>
-          <span class="tool-arrow" aria-hidden="true">&rarr;</span>
-        </div>
-        <p class="tool-desc">{tool.desc}</p>
-      </div>
-    </a>
+    <li class="stagger" style="--i: {i}">
+      <a href={tool.page} class="row">
+        <span class="row-n">{pad(i + 1)}</span>
+        <span class="row-body">
+          <span class="row-name">{tool.name}</span>
+          <span class="row-desc">{tool.desc}</span>
+        </span>
+        <span class="row-meta">
+          {#if tool.status === 'active'}
+            <span class="led" aria-hidden="true"></span>
+          {/if}
+          <span class="row-path">{tool.page}</span>
+          <span class="row-arrow" aria-hidden="true">→</span>
+        </span>
+      </a>
+    </li>
   {/each}
-</section>
+</ol>
 
 <style>
-  .page-header {
-    padding-top: 16px;
+  .list {
+    margin-top: var(--s-7);
   }
 
-  .tools-list {
-    display: flex;
-    flex-direction: column;
-    border-top: 1px solid var(--line-soft);
-  }
-
-  .tool-row {
+  .row {
     display: grid;
-    grid-template-columns: 14px minmax(0, 1fr);
-    align-items: start;
-    gap: 20px;
-    padding: 22px 12px;
-    margin: 0 -12px;
-    border-bottom: 1px solid var(--border);
-    color: var(--foreground);
-    transition: color 0.15s var(--ease-inout);
+    grid-template-columns: 48px minmax(0, 1fr) auto;
+    align-items: baseline;
+    column-gap: var(--s-5);
+    padding: var(--s-5) 0;
+    color: var(--ink);
+    text-decoration: none;
   }
 
-  .tool-row:hover {
-    color: var(--foreground);
+  .row-n {
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-variant-numeric: tabular-nums;
   }
 
-  .tool-row:hover .tool-name {
-    color: var(--accent-2);
-  }
-
-  .tool-led {
-    width: 6px;
-    height: 6px;
-    border-radius: 0;
-    border: 1px solid var(--ink-mute);
-    background: transparent;
-    transform: translateY(10px);
-    justify-self: center;
-    flex-shrink: 0;
-  }
-
-  .tool-led.lit {
-    background: var(--accent);
-    border-color: var(--accent);
-    box-shadow: none;
-    animation: none;
-  }
-
-  .tool-led.shipped {
-    background: var(--ok);
-    border-color: var(--ok);
-    box-shadow: none;
-  }
-
-  .tool-led.archived {
-    background: transparent;
-    border-style: dashed;
-    border-color: var(--ink-mute);
-  }
-
-  .tool-body {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+  .row-body {
+    display: grid;
+    gap: var(--s-2);
     min-width: 0;
   }
 
-  .tool-top {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 16px;
+  .row-name {
+    color: var(--ink);
+    font-size: var(--text-lg);
+    font-weight: 500;
+    line-height: 1.25;
+    letter-spacing: -0.015em;
+    transition: color var(--dur-fast) var(--ease);
   }
 
-  .tool-name {
-    font-family: var(--font-serif);
-    font-size: 1.5rem;
-    font-weight: 400;
-    letter-spacing: -0.025em;
-    text-transform: none;
-    line-height: 1.2;
-    color: inherit;
+  .row-desc {
+    max-width: var(--measure);
+    color: var(--ink-2);
+    font-size: var(--text-base);
+    line-height: 1.55;
   }
 
-  .tool-arrow {
+  .row-meta {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-3);
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    white-space: nowrap;
+  }
+  .row-meta .led {
+    width: 6px;
+    height: 6px;
+  }
+
+  .row-arrow {
     font-family: var(--font-sans);
-    font-size: 1rem;
-    color: var(--ink-mute);
+    font-size: var(--text-base);
     transition:
-      transform 0.15s var(--ease-inout),
-      color 0.15s var(--ease-inout);
+      transform var(--dur-fast) var(--ease),
+      color var(--dur-fast) var(--ease);
   }
 
-  .tool-row:hover .tool-arrow {
-    color: var(--accent);
-    transform: translateX(4px);
+  .row:hover .row-name,
+  .row:hover .row-arrow {
+    color: var(--fjord);
+  }
+  .row:hover .row-arrow {
+    transform: translateX(3px);
   }
 
-  .tool-desc {
-    font-family: var(--font-sans);
-    font-size: 0.95rem;
-    line-height: 1.6;
-    color: var(--muted-foreground);
-    max-width: 720px;
-  }
-
-  .tool-row:hover .tool-desc {
-    color: var(--muted-foreground);
-  }
-
-  @media (max-width: 768px) {
-    .tool-row {
-      gap: 16px;
-      padding: 18px 10px;
-      margin: 0 -10px;
+  @media (max-width: 720px) {
+    .list {
+      margin-top: var(--s-6);
     }
 
-    .tool-name {
-      font-size: 1.5rem;
+    .row {
+      grid-template-columns: 32px minmax(0, 1fr);
+      row-gap: var(--s-3);
+      column-gap: var(--s-3);
+    }
+
+    .row-meta {
+      grid-column: 2;
+    }
+
+    .row-name {
+      font-size: var(--text-md);
     }
   }
 </style>

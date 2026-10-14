@@ -90,6 +90,7 @@
   $: aqi25 = lwd?.aqi_pm_2_point_5 ?? null;
   $: isRaining = (rainIntensity ?? 0) > 0;
   $: roundedTemp = temp == null || Number.isNaN(temp) ? null : Math.round(temp);
+  $: aqiReading = aqi25 ?? aqi10;
 
   onMount(() => {
     refresh();
@@ -136,7 +137,12 @@
           <line x1="17.66" y1="6.34" x2="19.07" y2="4.93"></line>
         </svg>
       {/if}
-      <span>{roundedTemp}°</span>
+      <span class="readout">
+        <span class="temp">{roundedTemp}°</span>
+        {#if aqiReading != null}
+          <span class="aqi"><span class="sep" aria-hidden="true">·</span>AQI {fmt(aqiReading, 0)}</span>
+        {/if}
+      </span>
     </button>
 
     {#if isOpen}
@@ -147,7 +153,7 @@
       >
         <header class="weather-panel-header">
           <div>
-            <p class="weather-kicker">Live conditions</p>
+            <p class="weather-kicker"><span class="led" aria-hidden="true"></span>Live conditions</p>
             <h2>Weather at home</h2>
           </div>
           <button
@@ -217,57 +223,85 @@
     align-items: center;
   }
 
+  /* Quiet mono readout in the top bar: "27° · AQI 41" */
   .weather-trigger {
     display: inline-flex;
     align-items: center;
-    gap: 5px;
-    min-width: 42px;
-    height: 28px;
-    padding: 0 6px;
-    border: 0;
+    gap: var(--s-2);
+    height: 32px;
+    padding: 0 var(--s-2);
+    border: 1px solid transparent;
     border-radius: var(--radius-sm);
     background: transparent;
     color: var(--ink-2);
-    font-family: var(--font-sans);
-    font-size: 13px;
-    font-weight: 500;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-variant-numeric: tabular-nums;
     line-height: 1;
+    white-space: nowrap;
+    cursor: pointer;
     transition:
-      color 160ms var(--ease-inout),
-      background-color 160ms var(--ease-inout);
+      color var(--dur-fast) var(--ease),
+      background-color var(--dur-fast) var(--ease),
+      border-color var(--dur-fast) var(--ease);
   }
 
-  .weather-trigger:hover,
+  .weather-trigger:hover {
+    background: var(--hover-wash);
+    color: var(--ink);
+  }
+
   .weather-trigger.active {
-    background: var(--hover);
-    color: var(--foreground);
+    border-color: var(--line);
+    color: var(--ink);
+  }
+
+  .readout {
+    display: inline-flex;
+    align-items: baseline;
+  }
+
+  .temp {
+    color: var(--ink);
+  }
+
+  .aqi {
+    color: var(--ink-3);
+  }
+
+  .sep {
+    margin: 0 0.5em;
   }
 
   .weather-trigger svg,
   .weather-close svg {
-    width: 13px;
-    height: 13px;
+    width: 14px;
+    height: 14px;
+    flex: 0 0 auto;
     fill: none;
     stroke: currentColor;
-    stroke-width: 1.8;
+    stroke-width: 1.5;
     stroke-linecap: round;
     stroke-linejoin: round;
   }
 
+  .weather-trigger svg {
+    color: var(--ink-3);
+  }
+
+  /* Popover */
   .weather-panel {
     position: absolute;
-    top: calc(100% + 10px);
+    top: calc(100% + var(--s-3));
     right: 0;
-    width: 280px;
-    padding: 20px;
-    border: 1px solid var(--border);
+    width: 296px;
+    padding: var(--s-5);
+    border: 1px solid var(--line);
     border-radius: var(--radius-md);
-    background: var(--agent-bg);
-    color: var(--foreground);
-    box-shadow: 0 16px 40px var(--agent-shadow);
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
-    animation: weather-enter 160ms var(--ease-out);
+    background: var(--surface);
+    color: var(--ink);
+    box-shadow: 0 12px 32px -12px var(--shadow-color);
+    animation: weather-enter var(--dur) var(--ease-out);
   }
 
   @keyframes weather-enter {
@@ -277,7 +311,7 @@
     }
     to {
       opacity: 1;
-      transform: translateY(0);
+      transform: none;
     }
   }
 
@@ -285,70 +319,81 @@
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    gap: 16px;
+    gap: var(--s-4);
   }
 
   .weather-kicker {
-    margin: 0 0 4px;
+    display: flex;
+    align-items: center;
+    gap: var(--s-2);
+    margin: 0 0 var(--s-2);
     color: var(--ink-3);
-    font-size: 12px;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
     line-height: 1.4;
   }
 
   .weather-panel h2 {
     margin: 0;
-    font-size: 16px;
-    font-weight: 600;
+    color: var(--ink);
+    font-size: var(--text-base);
+    font-weight: 500;
     line-height: 1.3;
-    letter-spacing: -0.015em;
+    letter-spacing: -0.01em;
   }
 
   .weather-close {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+    display: inline-grid;
+    place-items: center;
     flex: 0 0 auto;
-    width: 28px;
-    height: 28px;
-    margin: -6px -6px 0 0;
+    width: 32px;
+    height: 32px;
+    margin: calc(-1 * var(--s-2)) calc(-1 * var(--s-2)) 0 0;
+    padding: 0;
     border: 0;
     border-radius: var(--radius-sm);
     background: transparent;
     color: var(--ink-3);
+    cursor: pointer;
+    transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease);
   }
 
   .weather-close:hover {
-    background: var(--hover);
-    color: var(--foreground);
+    background: var(--hover-wash);
+    color: var(--ink);
   }
 
   .weather-reading {
     display: flex;
     align-items: baseline;
     justify-content: space-between;
-    gap: 16px;
-    margin-top: 24px;
-    padding-bottom: 16px;
-    border-bottom: 1px solid var(--border);
+    gap: var(--s-4);
+    margin-top: var(--s-5);
+    padding-bottom: var(--s-4);
+    border-bottom: 1px solid var(--line);
   }
 
   .weather-reading strong {
-    color: var(--foreground);
-    font-size: 24px;
-    font-weight: 500;
+    color: var(--ink);
+    font-family: var(--font-mono);
+    font-size: var(--text-xl);
+    font-weight: 400;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
     letter-spacing: -0.03em;
   }
 
   .weather-reading span {
     color: var(--ink-3);
-    font-size: 12px;
+    font-size: var(--text-sm);
+    text-align: right;
   }
 
   .weather-stats {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 16px 20px;
-    margin: 16px 0 0;
+    gap: var(--s-4) var(--s-5);
+    margin: var(--s-4) 0 0;
   }
 
   .weather-stats div {
@@ -356,32 +401,43 @@
   }
 
   .weather-stats dt {
-    margin-bottom: 3px;
+    margin-bottom: var(--s-1);
     color: var(--ink-3);
-    font-size: 12px;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
   }
 
   .weather-stats dd {
     margin: 0;
-    color: var(--foreground);
-    font-size: 13px;
-    font-weight: 500;
+    color: var(--ink);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    font-variant-numeric: tabular-nums;
     white-space: nowrap;
   }
 
   .weather-stats dd span {
-    margin-left: 3px;
+    margin-left: var(--s-1);
     color: var(--ink-3);
-    font-weight: 400;
   }
 
-  @media (max-width: 560px) {
+  @media (max-width: 640px) {
+    .aqi {
+      display: none;
+    }
+
     .weather-panel {
       position: fixed;
-      top: 132px;
-      right: 24px;
-      left: 24px;
+      top: 64px;
+      right: var(--gutter);
+      left: var(--gutter);
       width: auto;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .weather-panel {
+      animation: none;
     }
   }
 </style>

@@ -3,171 +3,173 @@
   <meta name="description" content="Train a tiny Llama on TinyStories, then run bare-metal inference on the Vicharak Shrike-Lite (RP2040 + FPGA, 264KB SRAM). 213K params, C firmware." />
 </svelte:head>
 
-<div class="page">
-  <header class="page-header">
-    <div class="breadcrumb">
+<article class="detail">
+  <header class="page-head">
+    <nav class="breadcrumb" aria-label="Breadcrumb">
       <a href="/projects">Projects</a>
-      <span class="separator">/</span>
-      <span>vicharak</span>
-    </div>
-    <h1 class="page-title">Micro-Llama on Shrike-Lite 🔌</h1>
-    <p class="page-desc">A tiny Llama-style language model trained from scratch on TinyStories, then deployed for bare-metal inference on the Vicharak Shrike-Lite — an RP2040 + Renesas FPGA board with only 264KB of SRAM.</p>
-    <div class="project-links">
-      <a href="https://github.com/weights-and-wires/vicharak-llm" target="_blank" rel="noopener noreferrer" class="project-link">
-        Code
+      <span aria-hidden="true">/</span>
+      <span aria-current="page">vicharak</span>
+    </nav>
+    <h1 class="page-title">Micro-Llama on Shrike-Lite <span class="mark">🔌</span></h1>
+    <p class="lead">A tiny Llama-style language model trained from scratch on TinyStories, then deployed for bare-metal inference on the Vicharak Shrike-Lite — an RP2040 + Renesas FPGA board with only 264KB of SRAM.</p>
+    <div class="btn-row">
+      <a href="https://github.com/weights-and-wires/vicharak-llm" target="_blank" rel="noopener noreferrer" class="btn btn-sm">
+        Code <span class="ext" aria-hidden="true">↗</span>
       </a>
-      <a href="https://huggingface.co/weights-and-wires/vicharak-micro-llama" target="_blank" rel="noopener noreferrer" class="project-link">
-        Model
+      <a href="https://huggingface.co/weights-and-wires/vicharak-micro-llama" target="_blank" rel="noopener noreferrer" class="btn btn-sm">
+        Model <span class="ext" aria-hidden="true">↗</span>
       </a>
-      <a href="https://api.wandb.ai/links/dotslasha/9zs6fx7t" target="_blank" rel="noopener noreferrer" class="project-link">
-        W&amp;B Report
+      <a href="https://api.wandb.ai/links/dotslasha/9zs6fx7t" target="_blank" rel="noopener noreferrer" class="btn btn-sm">
+        W&amp;B Report <span class="ext" aria-hidden="true">↗</span>
       </a>
     </div>
   </header>
 
-  <section class="content">
-    <div class="section">
-      <h2>Overview</h2>
-      <p>
-        The goal was to push a transformer language model to the absolute edge: train a small Llama from scratch, then run
-        it <em>entirely bare-metal</em> on a microcontroller with no operating system, no allocator, and no floating-point
-        hardware. The board is the
-        <a href="https://github.com/vicharak-in/shrike" target="_blank" rel="noopener noreferrer" class="inline-link">Vicharak Shrike-Lite</a>
-        — a dual-core RP2040 paired with a Renesas SLG47910 FPGA, sharing just 264KB of SRAM.
-      </p>
-      <p>
-        The full pipeline lives in one repo: JAX/Flax training on a GPU, export to a flat binary, then a hand-written C
-        inference core that reads weights from QSPI flash via XIP and streams generated text over USB CDC.
-      </p>
-    </div>
+  <div class="detail-body">
+    <aside class="facts" aria-label="Project facts">
+      <dl>
+        <div class="fact">
+          <dt>Board</dt>
+          <dd><span>Shrike-Lite</span><span>RP2040 + FPGA</span></dd>
+        </div>
+        <div class="fact">
+          <dt>SRAM</dt>
+          <dd>264 KB</dd>
+        </div>
+        <div class="fact">
+          <dt>Parameters</dt>
+          <dd>213,312</dd>
+        </div>
+        <div class="fact">
+          <dt>Stack</dt>
+          <dd><span>JAX / Flax</span><span>C</span></dd>
+        </div>
+        <div class="fact">
+          <dt>Eval loss</dt>
+          <dd>~3.27</dd>
+        </div>
+        <div class="fact">
+          <dt>Perplexity</dt>
+          <dd>~26.4</dd>
+        </div>
+        <div class="fact">
+          <dt>Links</dt>
+          <dd>
+            <a href="https://github.com/weights-and-wires/vicharak-llm" target="_blank" rel="noopener noreferrer">GitHub <span aria-hidden="true">↗</span></a>
+            <a href="https://huggingface.co/weights-and-wires/vicharak-micro-llama" target="_blank" rel="noopener noreferrer">Model <span aria-hidden="true">↗</span></a>
+            <a href="https://api.wandb.ai/links/dotslasha/9zs6fx7t" target="_blank" rel="noopener noreferrer">W&amp;B report <span aria-hidden="true">↗</span></a>
+          </dd>
+        </div>
+      </dl>
+    </aside>
 
-    <div class="section">
-      <h2>Pipeline</h2>
-      <div class="code-block">
+    <div class="copy">
+      <section class="section">
+        <h2><span class="num">01</span>Overview</h2>
+        <p>
+          The goal was to push a transformer language model to the absolute edge: train a small Llama from scratch, then run
+          it <em>entirely bare-metal</em> on a microcontroller with no operating system, no allocator, and no floating-point
+          hardware. The board is the
+          <a href="https://github.com/vicharak-in/shrike" target="_blank" rel="noopener noreferrer">Vicharak Shrike-Lite</a>
+          — a dual-core RP2040 paired with a Renesas SLG47910 FPGA, sharing just 264KB of SRAM.
+        </p>
+        <p>
+          The full pipeline lives in one repo: JAX/Flax training on a GPU, export to a flat binary, then a hand-written C
+          inference core that reads weights from QSPI flash via XIP and streams generated text over USB CDC.
+        </p>
+      </section>
+
+      <section class="section">
+        <h2><span class="num">02</span>Pipeline</h2>
         <pre><code>TinyStories → JAX train (RunPod) → micro_llama.bin → C firmware → UF2 on Shrike-Lite</code></pre>
-      </div>
-      <p class="section-note">
-        The model is trained in JAX/Flax, exported to a single <code>micro_llama.bin</code> checkpoint, embedded into the
-        firmware, and flashed to the board as a UF2 — replacing MicroPython entirely.
-      </p>
-    </div>
+        <p class="note">
+          The model is trained in JAX/Flax, exported to a single <code>micro_llama.bin</code> checkpoint, embedded into the
+          firmware, and flashed to the board as a UF2 — replacing MicroPython entirely.
+        </p>
+      </section>
 
-    <div class="section">
-      <h2>Model Architecture</h2>
-      <div class="stats-grid">
-        <div class="stat">
-          <div class="stat-label">Parameters</div>
-          <div class="stat-value">213,312</div>
+      <section class="section">
+        <h2><span class="num">03</span>Model Architecture</h2>
+        <div class="stats">
+          <div class="stat">
+            <span class="stat-label">Parameters</span>
+            <span class="stat-value">213,312</span>
+          </div>
+          <div class="stat">
+            <span class="stat-label">dim / hidden_dim</span>
+            <span class="stat-value">64 / 128</span>
+          </div>
+          <div class="stat">
+            <span class="stat-label">Layers</span>
+            <span class="stat-value">2</span>
+          </div>
+          <div class="stat">
+            <span class="stat-label">Attention Heads</span>
+            <span class="stat-value">2Q / 2KV</span>
+          </div>
+          <div class="stat">
+            <span class="stat-label">Context Length</span>
+            <span class="stat-value">128</span>
+          </div>
+          <div class="stat">
+            <span class="stat-label">Vocab Size</span>
+            <span class="stat-value">1,024 BPE</span>
+          </div>
         </div>
-        <div class="stat">
-          <div class="stat-label">dim / hidden_dim</div>
-          <div class="stat-value">64 / 128</div>
-        </div>
-        <div class="stat">
-          <div class="stat-label">Layers</div>
-          <div class="stat-value">2</div>
-        </div>
-        <div class="stat">
-          <div class="stat-label">Attention Heads</div>
-          <div class="stat-value">2Q / 2KV</div>
-        </div>
-        <div class="stat">
-          <div class="stat-label">Context Length</div>
-          <div class="stat-value">128</div>
-        </div>
-        <div class="stat">
-          <div class="stat-label">Vocab Size</div>
-          <div class="stat-value">1,024 BPE</div>
-        </div>
-      </div>
-      <p class="section-note">
-        Standard Llama building blocks: GQA (2 query heads, 2 key-value heads, head_dim 32), RoPE, RMSNorm, and a SwiGLU
-        feed-forward network with an untied output head. Special tokens: pad=0, unk=1, bos=2, eos=3.
-      </p>
-    </div>
+        <p class="note">
+          Standard Llama building blocks: GQA (2 query heads, 2 key-value heads, head_dim 32), RoPE, RMSNorm, and a SwiGLU
+          feed-forward network with an untied output head. Special tokens: pad=0, unk=1, bos=2, eos=3.
+        </p>
+      </section>
 
-    <div class="section">
-      <h2>The 264KB SRAM Constraint</h2>
-      <p>
-        Everything has to fit on a chip with 264KB of total SRAM and no FPU. The architecture is locked by that budget:
-        weights live in QSPI flash via <strong>XIP</strong> (execute-in-place), while activations and the KV cache must
-        fit inside SRAM at runtime. The fp32 KV cache alone occupies ~131KB — which is why the shape above is as small as
-        it is. FPGA INT8 MAC acceleration on the SLG47910 (~1120 LUTs) is mapped out but not yet started.
-      </p>
-      <div class="training-grid">
-        <div class="training-item">
-          <span class="training-label">Board</span>
-          <span class="training-value">Vicharak Shrike-Lite (RP2040 + Renesas FPGA)</span>
-        </div>
-        <div class="training-item">
-          <span class="training-label">Total SRAM</span>
-          <span class="training-value">264 KB</span>
-        </div>
-        <div class="training-item">
-          <span class="training-label">Weight storage</span>
-          <span class="training-value">QSPI Flash via XIP</span>
-        </div>
-        <div class="training-item">
-          <span class="training-label">KV cache (fp32)</span>
-          <span class="training-value">~131 KB</span>
-        </div>
-        <div class="training-item">
-          <span class="training-label">Output</span>
-          <span class="training-value">USB CDC serial text</span>
-        </div>
-      </div>
-    </div>
+      <section class="section">
+        <h2><span class="num">04</span>The 264KB SRAM Constraint</h2>
+        <p>
+          Everything has to fit on a chip with 264KB of total SRAM and no FPU. The architecture is locked by that budget:
+          weights live in QSPI flash via <strong>XIP</strong> (execute-in-place), while activations and the KV cache must
+          fit inside SRAM at runtime. The fp32 KV cache alone occupies ~131KB — which is why the shape above is as small as
+          it is. FPGA INT8 MAC acceleration on the SLG47910 (~1120 LUTs) is mapped out but not yet started.
+        </p>
+        <dl class="kv">
+          <div><dt>Board</dt><dd>Vicharak Shrike-Lite (RP2040 + Renesas FPGA)</dd></div>
+          <div><dt>Total SRAM</dt><dd>264 KB</dd></div>
+          <div><dt>Weight storage</dt><dd>QSPI Flash via XIP</dd></div>
+          <div><dt>KV cache (fp32)</dt><dd>~131 KB</dd></div>
+          <div><dt>Output</dt><dd>USB CDC serial text</dd></div>
+        </dl>
+      </section>
 
-    <div class="section">
-      <h2>Training Details</h2>
-      <div class="training-grid">
-        <div class="training-item">
-          <span class="training-label">GPU</span>
-          <span class="training-value">1× NVIDIA RTX 3090 (RunPod)</span>
-        </div>
-        <div class="training-item">
-          <span class="training-label">Framework</span>
-          <span class="training-value">JAX / Flax</span>
-        </div>
-        <div class="training-item">
-          <span class="training-label">Dataset</span>
-          <span class="training-value">TinyStories</span>
-        </div>
-        <div class="training-item">
-          <span class="training-label">Training Steps</span>
-          <span class="training-value">5,000</span>
-        </div>
-        <div class="training-item">
-          <span class="training-label">Eval Loss</span>
-          <span class="training-value">~3.27</span>
-        </div>
-        <div class="training-item">
-          <span class="training-label">Perplexity</span>
-          <span class="training-value">~26.4</span>
-        </div>
-      </div>
-      <p class="section-note">
-        The training runtime auto-selects CUDA → Metal → CPU <em>before</em> importing JAX, so the same code trains on an
-        NVIDIA GPU, an Apple Silicon Mac, or plain CPU.
-      </p>
-    </div>
+      <section class="section">
+        <h2><span class="num">05</span>Training Details</h2>
+        <dl class="kv">
+          <div><dt>GPU</dt><dd>1× NVIDIA RTX 3090 (RunPod)</dd></div>
+          <div><dt>Framework</dt><dd>JAX / Flax</dd></div>
+          <div><dt>Dataset</dt><dd>TinyStories</dd></div>
+          <div><dt>Training Steps</dt><dd>5,000</dd></div>
+          <div><dt>Eval Loss</dt><dd>~3.27</dd></div>
+          <div><dt>Perplexity</dt><dd>~26.4</dd></div>
+        </dl>
+        <p class="note">
+          The training runtime auto-selects CUDA → Metal → CPU <em>before</em> importing JAX, so the same code trains on an
+          NVIDIA GPU, an Apple Silicon Mac, or plain CPU.
+        </p>
+      </section>
 
-    <div class="section">
-      <h2>Firmware Targets</h2>
-      <p>The C inference core builds to two targets from the same source (<code>-DML_TARGET=host|pico</code>):</p>
-      <ul class="feature-list">
-        <li><strong>host</strong> — native greedy decoder for parity testing against the JAX reference (<code>verify_greedy.py</code>)</li>
-        <li><strong>pico</strong> — Shrike-Lite UF2 with weights + tokenizer baked into flash, streaming text over USB CDC</li>
-        <li><strong>XIP weights</strong> — model weights and the BPE tokenizer are embedded in QSPI flash and read in place, never copied to SRAM</li>
-        <li><strong>Soft-float RP2040</strong> — generation runs on the Cortex-M0+ without hardware floating point</li>
-        <li><strong>JAX ↔ C parity</strong> — the host decoder is verified to match greedy generation bit-for-bit</li>
-      </ul>
-    </div>
+      <section class="section">
+        <h2><span class="num">06</span>Firmware Targets</h2>
+        <p>The C inference core builds to two targets from the same source (<code>-DML_TARGET=host|pico</code>):</p>
+        <ul class="defs">
+          <li><span class="term">host</span><span class="desc">native greedy decoder for parity testing against the JAX reference (<code>verify_greedy.py</code>)</span></li>
+          <li><span class="term">pico</span><span class="desc">Shrike-Lite UF2 with weights + tokenizer baked into flash, streaming text over USB CDC</span></li>
+          <li><span class="term">XIP weights</span><span class="desc">model weights and the BPE tokenizer are embedded in QSPI flash and read in place, never copied to SRAM</span></li>
+          <li><span class="term">Soft-float RP2040</span><span class="desc">generation runs on the Cortex-M0+ without hardware floating point</span></li>
+          <li><span class="term">JAX ↔ C parity</span><span class="desc">the host decoder is verified to match greedy generation bit-for-bit</span></li>
+        </ul>
+      </section>
 
-    <div class="section">
-      <h2>Quick Start</h2>
-      <h3 class="subsection-title">Train (JAX / Flax)</h3>
-      <div class="code-block">
+      <section class="section">
+        <h2><span class="num">07</span>Quick Start</h2>
+        <h3>Train (JAX / Flax)</h3>
         <pre><code>uv sync
 uv pip install -U "jax[cuda12]"   # NVIDIA; Mac: jax-metal or CPU
 cp .env.example .env              # WANDB_API_KEY, HF_TOKEN, HF_REPO_ID
@@ -175,348 +177,412 @@ cp .env.example .env              # WANDB_API_KEY, HF_TOKEN, HF_REPO_ID
 uv run python train/train.py
 # dry run:
 uv run python train/train.py --no-wandb --no-hub --max-steps 100</code></pre>
-      </div>
-      <h3 class="subsection-title">Host inference + parity check</h3>
-      <div class="code-block">
+        <h3>Host inference + parity check</h3>
         <pre><code>bash firmware/scripts/download_weights.sh
 uv run python firmware/scripts/embed_tokenizer.py
 cmake -S firmware -B firmware/build-host -DML_TARGET=host && cmake --build firmware/build-host -j
 ./firmware/build-host/micro_llama_host \
   --checkpoint firmware/weights/micro_llama.bin --bos --max-new-tokens 32 --text
 uv run python firmware/scripts/verify_greedy.py</code></pre>
-      </div>
-      <p class="section-note">
-        For the Pico target, build with <code>-DML_TARGET=pico</code>, then hold BOOTSEL and run
-        <code>flash_uf2.sh</code>. Open the serial console before resetting so the CDC wait captures the full session.
-      </p>
-    </div>
+        <p class="note">
+          For the Pico target, build with <code>-DML_TARGET=pico</code>, then hold BOOTSEL and run
+          <code>flash_uf2.sh</code>. Open the serial console before resetting so the CDC wait captures the full session.
+        </p>
+      </section>
 
-    <div class="section">
-      <h2>Project Structure</h2>
-      <ul class="structure-list">
-        <li><code>train/train.py</code> — JAX/Flax pretraining loop with W&amp;B logging</li>
-        <li><code>train/runtime.py</code> — device selection (CUDA → Metal → CPU) before importing JAX</li>
-        <li><code>train/export.py</code> — Flax checkpoint → flat <code>micro_llama.bin</code></li>
-        <li><code>train/generate.py</code> — greedy generation in Python</li>
-        <li><code>train/hf_upload.py</code> — publish weights + tokenizer to the HuggingFace Hub</li>
-        <li><code>firmware/</code> — C inference core (host CLI + RP2040 UF2)</li>
-        <li><code>firmware/scripts/</code> — weight download, tokenizer embed, UF2 flash helpers</li>
-      </ul>
-    </div>
+      <section class="section">
+        <h2><span class="num">08</span>Project Structure</h2>
+        <ul class="defs">
+          <li><span class="term"><code>train/train.py</code></span><span class="desc">JAX/Flax pretraining loop with W&amp;B logging</span></li>
+          <li><span class="term"><code>train/runtime.py</code></span><span class="desc">device selection (CUDA → Metal → CPU) before importing JAX</span></li>
+          <li><span class="term"><code>train/export.py</code></span><span class="desc">Flax checkpoint → flat <code>micro_llama.bin</code></span></li>
+          <li><span class="term"><code>train/generate.py</code></span><span class="desc">greedy generation in Python</span></li>
+          <li><span class="term"><code>train/hf_upload.py</code></span><span class="desc">publish weights + tokenizer to the HuggingFace Hub</span></li>
+          <li><span class="term"><code>firmware/</code></span><span class="desc">C inference core (host CLI + RP2040 UF2)</span></li>
+          <li><span class="term"><code>firmware/scripts/</code></span><span class="desc">weight download, tokenizer embed, UF2 flash helpers</span></li>
+        </ul>
+      </section>
 
-    <div class="section">
-      <h2>Resources</h2>
-      <ul class="resource-list">
-        <li>
-          <a href="https://github.com/weights-and-wires/vicharak-llm" target="_blank" rel="noopener noreferrer" class="resource-link">
-            Source Code on GitHub
-          </a>
-        </li>
-        <li>
-          <a href="https://huggingface.co/weights-and-wires/vicharak-micro-llama" target="_blank" rel="noopener noreferrer" class="resource-link">
-            Model Weights on HuggingFace
-          </a>
-        </li>
-        <li>
-          <a href="https://api.wandb.ai/links/dotslasha/9zs6fx7t" target="_blank" rel="noopener noreferrer" class="resource-link">
-            Weights &amp; Biases Training Report
-          </a>
-        </li>
-        <li>
-          <a href="https://github.com/vicharak-in/shrike" target="_blank" rel="noopener noreferrer" class="resource-link">
-            Vicharak Shrike-Lite Board
-          </a>
-        </li>
-      </ul>
+      <section class="section">
+        <h2><span class="num">09</span>Resources</h2>
+        <ul class="linklist">
+          <li>
+            <a href="https://github.com/weights-and-wires/vicharak-llm" target="_blank" rel="noopener noreferrer">
+              Source Code on GitHub
+              <span class="arrow" aria-hidden="true">↗</span>
+            </a>
+          </li>
+          <li>
+            <a href="https://huggingface.co/weights-and-wires/vicharak-micro-llama" target="_blank" rel="noopener noreferrer">
+              Model Weights on HuggingFace
+              <span class="arrow" aria-hidden="true">↗</span>
+            </a>
+          </li>
+          <li>
+            <a href="https://api.wandb.ai/links/dotslasha/9zs6fx7t" target="_blank" rel="noopener noreferrer">
+              Weights &amp; Biases Training Report
+              <span class="arrow" aria-hidden="true">↗</span>
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/vicharak-in/shrike" target="_blank" rel="noopener noreferrer">
+              Vicharak Shrike-Lite Board
+              <span class="arrow" aria-hidden="true">↗</span>
+            </a>
+          </li>
+        </ul>
+      </section>
     </div>
-  </section>
-</div>
+  </div>
+</article>
 
 <style>
-  .page {
-    display: flex;
-    flex-direction: column;
-    gap: 3rem;
-    max-width: 48rem;
-    animation: fade-up var(--dur-base) var(--ease-out-quart);
+  /* ── Detail page (shared across project write-ups) ───────────── */
+
+  .page-title {
+    max-width: 18ch;
+    overflow-wrap: break-word;
   }
 
-  .page-header {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    padding-bottom: 2rem;
-    border-bottom: 1px solid var(--line-soft);
+  /* Sections carry their own top hairline, so the head drops its rule */
+  .page-head {
+    border-bottom: 0;
   }
 
-  .breadcrumb {
-    font-family: var(--font-mono-g);
-    font-size: 0.7rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--text-faint);
-  }
-
-  .breadcrumb a {
-    color: var(--text-faint);
-    transition: color var(--dur-instant) var(--ease-out-quart);
-  }
-
-  .breadcrumb a:hover {
-    color: var(--signal-hi);
-  }
-
-  .separator {
-    margin: 0 0.5rem;
-  }
-
-  .page-desc {
-    font-size: 1.0625rem;
-    line-height: 1.6;
-    color: var(--text-secondary);
+  .page-head .lead {
     margin: 0;
   }
 
-  .project-links {
-    display: flex;
-    gap: 1rem;
+  .page-head .btn-row {
+    margin-top: var(--s-2);
   }
 
-  .project-link {
-    font-family: var(--font-mono-g);
-    font-size: 0.7rem;
-    font-weight: 500;
-    color: var(--text-faint);
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    transition: color var(--dur-instant) var(--ease-out-quart),
-      background-color var(--dur-instant) var(--ease-out-quart),
-      border-color var(--dur-instant) var(--ease-out-quart);
-    padding: 0.5rem 1rem;
-    border: 1px solid var(--line-soft);
-    border-radius: var(--radius-sm);
+  .ext {
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    transition: color var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
   }
 
-  .project-link:hover {
-    background: var(--ink);
-    color: var(--void);
-    border-color: var(--ink);
+  .btn:hover .ext {
+    color: inherit;
+    transform: translate(2px, -2px);
   }
 
-  .content {
-    display: flex;
-    flex-direction: column;
-    gap: 2.5rem;
+  .detail-body {
+    display: grid;
+    gap: var(--s-7);
+  }
+
+  /* Facts: mono summary column */
+  .facts dl {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: var(--s-5);
+    margin: 0;
+    border-top: 1px solid var(--line);
+  }
+
+  .fact {
+    min-width: 0;
+    padding: var(--s-3) 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .fact dt {
+    margin-bottom: var(--s-1);
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    line-height: 1.4;
+  }
+
+  .fact dd {
+    display: grid;
+    gap: 2px;
+    margin: 0;
+    color: var(--ink);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    line-height: 1.5;
+    font-variant-numeric: tabular-nums;
+    overflow-wrap: anywhere;
+  }
+
+  .fact a {
+    display: inline-flex;
+    align-items: baseline;
+    gap: var(--s-2);
+    color: var(--ink);
+    text-decoration: none;
+  }
+
+  .fact a:hover {
+    color: var(--fjord);
+  }
+
+  .fact a span {
+    color: var(--ink-3);
+    transition: color var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+  }
+
+  .fact a:hover span {
+    color: var(--fjord);
+    transform: translate(2px, -2px);
+  }
+
+  /* Reading column (not .prose: that name belongs to Tailwind Typography) */
+  .copy {
+    min-width: 0;
+  }
+
+  .section {
+    padding-top: var(--s-4);
+    border-top: 1px solid var(--line);
+  }
+
+  .section + .section {
+    margin-top: var(--s-8);
+  }
+
+  .section > * {
+    margin: 0;
+  }
+
+  .section > * + * {
+    margin-top: var(--s-4);
   }
 
   .section h2 {
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: var(--text-primary);
+    display: flex;
+    align-items: baseline;
+    gap: var(--s-4);
+    font-size: var(--text-xl);
+    letter-spacing: -0.022em;
+  }
+
+  .num {
+    flex: none;
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-weight: 400;
     letter-spacing: 0.02em;
-    text-transform: uppercase;
-    margin-bottom: 1rem;
+    font-variant-numeric: tabular-nums;
   }
 
-  .section h3 {
-    font-size: 1.125rem;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin-bottom: 0.75rem;
-  }
-
-  .subsection-title {
-    margin-top: 1.5rem;
-    margin-bottom: 0.75rem;
+  .section > h2 + * {
+    margin-top: var(--s-5);
   }
 
   .section p {
-    font-size: 0.9375rem;
-    line-height: 1.7;
-    color: var(--text-secondary);
-    margin-bottom: 1rem;
+    line-height: 1.65;
   }
 
-  .section p:last-child {
-    margin-bottom: 0;
+  @media (min-width: 960px) {
+    .detail-body {
+      grid-template-columns: 240px minmax(0, var(--measure));
+      column-gap: var(--s-8);
+      align-items: start;
+      padding-top: var(--s-4);
+    }
+
+    .facts {
+      position: sticky;
+      top: calc(64px + var(--s-6));
+    }
+
+    .facts dl {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .section + .section {
+      margin-top: var(--s-9);
+    }
   }
 
-  .section-note {
-    margin-top: 1rem;
-    font-size: 0.875rem;
-    color: var(--text-faint);
+  /* Sub-headings inside a section */
+  .section > * + h3 {
+    margin-top: var(--s-7);
   }
 
-  .inline-link {
-    color: var(--text-secondary);
-    text-decoration: underline;
-    text-decoration-color: var(--text-faint);
-    transition: color var(--dur-instant) var(--ease-out-quart),
-      text-decoration-color var(--dur-instant) var(--ease-out-quart);
+  .section > h3 + * {
+    margin-top: var(--s-3);
   }
 
-  .inline-link:hover {
-    color: var(--signal);
-    text-decoration-color: var(--signal);
+  .section h3 {
+    font-size: var(--text-md);
+    letter-spacing: -0.01em;
   }
 
-  .stats-grid {
+  .page-title .mark {
+    font-size: 0.6em;
+    letter-spacing: 0;
+    vertical-align: 0.12em;
+  }
+
+  /* Aside paragraph set off by a hairline */
+  .note {
+    padding-left: var(--s-4);
+    border-left: 1px solid var(--line-strong);
+    color: var(--ink-2);
+  }
+
+  /* Key numbers: rows on mobile, a spec-sheet grid from 600px */
+  .stats {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 1rem;
+    border-top: 1px solid var(--line);
   }
 
   .stat {
     display: flex;
-    flex-direction: column;
-    gap: 0.375rem;
-    padding: 1rem;
-    background: var(--panel);
-    border: 1px solid var(--line-soft);
-    border-radius: var(--radius-sm);
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--s-4);
+    min-width: 0;
+    padding: var(--s-3) 0;
+    border-bottom: 1px solid var(--line);
   }
 
   .stat-label {
-    font-size: 0.75rem;
-    font-weight: 500;
-    color: var(--text-faint);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    line-height: 1.4;
   }
 
   .stat-value {
-    font-size: 1.125rem;
-    font-weight: 600;
-    color: var(--text-primary);
+    color: var(--ink);
+    font-family: var(--font-mono);
+    font-size: var(--text-lg);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
   }
 
-  .training-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
+  @media (min-width: 600px) {
+    .stats {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      border-left: 1px solid var(--line);
+    }
+
+    .stat {
+      flex-direction: column;
+      justify-content: flex-start;
+      gap: var(--s-3);
+      padding: var(--s-4);
+      border-right: 1px solid var(--line);
+    }
+
+    .stat-value {
+      font-size: var(--text-xl);
+      text-align: left;
+    }
   }
 
-  .training-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.875rem 1rem;
-    background: var(--panel);
-    border: 1px solid var(--line-soft);
-    border-radius: var(--radius-sm);
+  /* Key / value rows with mono values */
+  .kv {
+    border-top: 1px solid var(--line);
   }
 
-  .training-label {
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: var(--text-faint);
+  .kv > div {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+    gap: var(--s-5);
+    padding: var(--s-3) 0;
+    border-bottom: 1px solid var(--line);
   }
 
-  .training-value {
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: var(--text-secondary);
+  .kv dt {
+    color: var(--ink-2);
   }
 
-  .feature-list,
-  .structure-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    list-style: none;
-    padding: 0;
-  }
-
-  .feature-list li,
-  .structure-list li {
-    font-size: 0.9375rem;
-    line-height: 1.6;
-    color: var(--text-secondary);
-    padding-left: 1.5rem;
-    position: relative;
-  }
-
-  .feature-list li::before,
-  .structure-list li::before {
-    content: '→';
-    position: absolute;
-    left: 0;
-    color: var(--signal);
-  }
-
-  .resource-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    list-style: none;
-    padding: 0;
-  }
-
-  .resource-link {
-    display: inline-flex;
-    align-items: center;
-    font-family: var(--font-mono-g);
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    color: var(--text-secondary);
-    padding: 0.75rem 1rem;
-    background: var(--panel);
-    border: 1px solid var(--line-soft);
-    border-radius: var(--radius-sm);
-    transition: color var(--dur-instant) var(--ease-out-quart),
-      background-color var(--dur-instant) var(--ease-out-quart),
-      border-color var(--dur-instant) var(--ease-out-quart);
-  }
-
-  .resource-link:hover {
-    background: var(--ink);
-    color: var(--void);
-    border-color: var(--ink);
-  }
-
-  .code-block {
-    background: var(--code-bg);
-    border: 1px solid var(--line-soft);
-    border-radius: var(--radius-sm);
-    overflow-x: auto;
-  }
-
-  .code-block pre {
+  .kv dd {
     margin: 0;
-    padding: 1.25rem;
+    color: var(--ink);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    line-height: 1.7;
+    font-variant-numeric: tabular-nums;
   }
 
-  .code-block code {
-    font-family: var(--font-mono-g);
-    font-size: 0.875rem;
-    line-height: 1.6;
-    color: var(--text-secondary);
+  /* Term / description rows */
+  .defs {
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--line);
   }
 
-  .structure-list code,
-  .section-note code {
-    font-family: var(--font-mono-g);
-    font-size: 0.875rem;
-    color: var(--text-secondary);
-    background: var(--panel-hi);
-    border: 1px solid var(--line-soft);
-    padding: 0.125rem 0.375rem;
-    border-radius: var(--radius-sm);
+  .defs > li {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--s-1) var(--s-5);
+    padding: var(--s-3) 0;
+    border-bottom: 1px solid var(--line);
   }
 
-  @keyframes fade-up {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+  .term {
+    min-width: 0;
+    color: var(--ink);
+    font-weight: 500;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
   }
 
-  @media (max-width: 768px) {
-    .section h2 {
-      font-size: 1.25rem;
+
+  .desc {
+    color: var(--ink-2);
+    line-height: 1.55;
+  }
+
+  @media (min-width: 600px) {
+    .defs > li {
+      grid-template-columns: minmax(0, 12rem) minmax(0, 1fr);
     }
+  }
 
-    .stats-grid {
-      grid-template-columns: repeat(2, 1fr);
-    }
+  .term code {
+    padding: 0;
+    background: none;
+    color: var(--ink);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    font-weight: 400;
+  }
+
+  /* Outbound resource rows */
+  .linklist {
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--line);
+  }
+
+  .linklist a {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--s-4);
+    padding: var(--s-3) 0;
+    border-bottom: 1px solid var(--line);
+    color: var(--ink);
+    text-decoration: none;
+  }
+
+  .linklist a:hover {
+    color: var(--fjord);
+  }
+
+  .arrow {
+    flex: none;
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    transition: color var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+  }
+
+  .linklist a:hover .arrow {
+    color: var(--fjord);
+    transform: translate(2px, -2px);
   }
 </style>

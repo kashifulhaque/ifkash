@@ -3,136 +3,87 @@
   <meta name="description" content="Academic background." />
 </svelte:head>
 
-<header class="page-header">
-  <h1 class="section-title">Education</h1>
-  <p class="section-subtitle">Academic background</p>
+<header class="page-head">
+  <p class="eyebrow">05 / Education</p>
+  <h1 class="page-title">Education</h1>
+  <p class="lead">Academic background</p>
 </header>
 
-<section class="edu-list">
-  <article class="edu-row">
-    <span class="edu-led" aria-hidden="true"></span>
-    <div class="edu-main">
-      <h2 class="edu-school">Indian Institute of Technology Madras</h2>
-      <p class="edu-degree">BS, Data Science and Applications</p>
+<ol class="rows list">
+  <li class="row stagger">
+    <span class="row-period">2020 — 2024</span>
+    <div class="row-main">
+      <h2 class="row-school">Indian Institute of Technology Madras</h2>
+      <p class="row-degree">BS, Data Science and Applications</p>
     </div>
-    <span class="edu-period">2020 — 2024</span>
-    <span class="edu-location">Chennai, India</span>
-  </article>
-</section>
+    <span class="row-location">Chennai, India</span>
+  </li>
+</ol>
 
 <style>
-  .page-header {
-    padding-top: 16px;
+  .list {
+    margin-top: var(--s-7);
   }
 
-  .edu-list {
-    display: flex;
-    flex-direction: column;
-    border-top: 1px solid var(--line-soft);
-  }
-
-  .edu-row {
+  .row {
     display: grid;
-    grid-template-columns: 14px minmax(0, 1fr) auto auto;
+    grid-template-columns: 136px minmax(0, 1fr) auto;
     align-items: baseline;
-    gap: 24px;
-    padding: 22px 12px;
-    margin: 0 -12px;
-    border-bottom: 1px solid var(--line-soft);
+    column-gap: var(--s-5);
+    padding: var(--s-6) 0;
   }
 
-  .edu-led {
-    width: 9px;
-    height: 9px;
-    border-radius: 50%;
-    background: var(--ok);
-    border: 1px solid var(--ok);
-    box-shadow: 0 0 5px rgba(61, 220, 132, 0.4);
-    transform: translateY(1px);
-    justify-self: center;
+  .row-period,
+  .row-location {
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
   }
 
-  .edu-main {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
+  .row-main {
+    display: grid;
+    gap: var(--s-2);
     min-width: 0;
   }
 
-  .edu-school {
-    font-family: var(--font-dots);
-    font-size: 1.75rem;
-    font-weight: 600;
-    letter-spacing: 0.03em;
-    text-transform: uppercase;
-    color: var(--ink);
-    line-height: 1;
+  .row-school {
+    font-size: var(--text-xl);
+    line-height: 1.15;
+    letter-spacing: -0.025em;
   }
 
-  .edu-degree {
-    font-family: var(--font-mono-g);
-    font-size: 0.72rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--ink-soft);
-    line-height: 1.4;
+  .row-degree {
+    margin: 0;
+    color: var(--ink-2);
+    font-size: var(--text-base);
   }
 
-  .edu-period {
-    font-family: var(--font-mono-g);
-    font-size: 0.72rem;
-    letter-spacing: 0.08em;
-    color: var(--ink);
-    font-variant-numeric: tabular-nums;
-    white-space: nowrap;
-    text-align: right;
-  }
-
-  .edu-location {
-    font-family: var(--font-mono-g);
-    font-size: 0.66rem;
-    letter-spacing: 0.1em;
-    color: var(--ink-mute);
-    text-transform: uppercase;
-    white-space: nowrap;
-    min-width: 140px;
-    text-align: right;
-  }
-
-  @media (max-width: 768px) {
-    .edu-row {
-      grid-template-columns: 12px minmax(0, 1fr);
-      grid-template-rows: auto auto auto;
-      gap: 6px 16px;
-      padding: 18px 10px;
-      margin: 0 -10px;
+  @media (max-width: 720px) {
+    .list {
+      margin-top: var(--s-6);
     }
 
-    .edu-led {
-      grid-row: 1;
-      transform: translateY(6px);
+    .row {
+      grid-template-columns: minmax(0, 1fr) auto;
+      grid-template-areas:
+        'period location'
+        'main   main';
+      row-gap: var(--s-3);
+      padding: var(--s-5) 0;
     }
-
-    .edu-main {
-      grid-row: 1;
-      grid-column: 2;
+    .row-period {
+      grid-area: period;
     }
-
-    .edu-period {
-      grid-row: 2;
-      grid-column: 2;
-      text-align: left;
+    .row-location {
+      grid-area: location;
     }
-
-    .edu-location {
-      grid-row: 3;
-      grid-column: 2;
-      text-align: left;
-      min-width: 0;
+    .row-main {
+      grid-area: main;
     }
-
-    .edu-school {
-      font-size: 1.35rem;
+    .row-school {
+      font-size: var(--text-lg);
     }
   }
 </style>

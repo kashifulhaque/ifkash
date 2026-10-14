@@ -21,7 +21,7 @@
 
   import { onMount } from 'svelte';
   import { env } from '$env/dynamic/public';
-  import { LogOut, Trash2 } from 'lucide-svelte';
+  import { LogOut, Trash2, Bike } from 'lucide-svelte';
   import LoadingState from '$lib/components/LoadingState.svelte';
   import WeightChart from '$lib/components/WeightChart.svelte';
   import WorkoutReport from '$lib/components/WorkoutReport.svelte';
@@ -375,8 +375,9 @@
   });
 </script>
 
+
 <div class="page">
-  <header class="page-header">
+  <header class="head">
     <div class="breadcrumb">
       <a href="/fitness">Fitness</a>
       <span class="separator">/</span>
@@ -385,10 +386,10 @@
       <span>Insights</span>
     </div>
     <div class="header-top">
-      <h1 class="page-title">Insights 📈</h1>
+      <h1 class="title">Insights</h1>
       <div class="header-actions">
         {#if signedIn}
-          <button class="ghost-btn" on:click={signOut} title="Sign out">
+          <button class="btn btn-sm btn--ghost signout" on:click={signOut} title="Sign out">
             <LogOut size={15} /> Sign out
           </button>
         {/if}
@@ -412,40 +413,44 @@
   {:else}
     <!-- Progress: the three numbers that answer "is this working?" and the
          chart. Everything else is behind the details fold on purpose. -->
-    <section class="progress-card">
+    <section class="progress-card" class:has-data={insights.points.length > 0}>
       {#if insights.points.length}
-        <div class="trend-stats">
-          <div class="trend-stat">
-            <span class="ts-val">{insights.trendKg}<small> kg</small></span>
-            <span class="ts-label">trend weight</span>
-            <span class="ts-sub">scale {insights.latestKg} kg · {fmtDate(insights.latestDate)}</span>
+        <div class="progress-side">
+          <div class="trend-stats">
+            <div class="trend-stat">
+              <span class="ts-val">{insights.trendKg}<small> kg</small></span>
+              <span class="ts-label">trend weight</span>
+              <span class="ts-sub">scale {insights.latestKg} kg · {fmtDate(insights.latestDate)}</span>
+            </div>
+            <div
+              class="trend-stat"
+              class:down={(insights.primary.kgPerWeek ?? 0) < 0}
+              class:up={(insights.primary.kgPerWeek ?? 0) > 0}
+            >
+              <span class="ts-val">{fmtSigned(insights.primary.kgPerWeek, 2)}<small> kg/wk</small></span>
+              <span class="ts-label">{insights.primary.label}</span>
+              <span class="ts-sub">goal {fmtSigned(insights.targetKgPerWeek, 2)} kg/wk</span>
+            </div>
+            <div class="trend-stat" class:warn={insights.pace !== null && PACE_WARN.includes(insights.pace)}>
+              <span class="ts-val pace">{insights.pace ? PACE_LABEL[insights.pace] : '—'}</span>
+              <span class="ts-label">pace</span>
+              <span class="ts-sub">{cadence.perWeek} sessions/wk · last 4 weeks</span>
+            </div>
           </div>
-          <div
-            class="trend-stat"
-            class:down={(insights.primary.kgPerWeek ?? 0) < 0}
-            class:up={(insights.primary.kgPerWeek ?? 0) > 0}
-          >
-            <span class="ts-val">{fmtSigned(insights.primary.kgPerWeek, 2)}<small> kg/wk</small></span>
-            <span class="ts-label">{insights.primary.label}</span>
-            <span class="ts-sub">goal {fmtSigned(insights.targetKgPerWeek, 2)} kg/wk</span>
-          </div>
-          <div class="trend-stat" class:warn={insights.pace !== null && PACE_WARN.includes(insights.pace)}>
-            <span class="ts-val pace">{insights.pace ? PACE_LABEL[insights.pace] : '—'}</span>
-            <span class="ts-label">pace</span>
-            <span class="ts-sub">{cadence.perWeek} sessions/wk · last 4 weeks</span>
-          </div>
+
+          {#if insights.pace}
+            <p class="assess" class:warn={PACE_WARN.includes(insights.pace)}>{PACE_NOTE[insights.pace]}</p>
+          {/if}
         </div>
 
-        {#if insights.pace}
-          <p class="assess" class:warn={PACE_WARN.includes(insights.pace)}>{PACE_NOTE[insights.pace]}</p>
-        {/if}
-
-        <WeightChart
-          points={insights.points}
-          ema={insights.ema}
-          targetKg={normalBmiKg}
-          targetLabel={`BMI 25 · ${normalBmiKg} kg`}
-        />
+        <div class="progress-chart">
+          <WeightChart
+            points={insights.points}
+            ema={insights.ema}
+            targetKg={normalBmiKg}
+            targetLabel={`BMI 25 · ${normalBmiKg} kg`}
+          />
+        </div>
       {:else}
         <p class="hint">No bodyweight entries yet — add one up top and the trend appears here.</p>
       {/if}
@@ -467,227 +472,243 @@
       </div>
       <div class="numbers-body">
         {#if insights.points.length}
-          <h4 class="ins-head first">Bodyweight</h4>
-          <div class="rate-grid">
-            <div class="rate-cell" class:down={(weekDelta ?? 0) < 0} class:up={(weekDelta ?? 0) > 0}>
-              <span class="r-val">{fmtDelta(weekDelta)}<small> kg</small></span>
-              <span class="r-label">vs last week</span>
-              <span class="r-sub">weekly averages</span>
-            </div>
-            <div
-              class="rate-cell"
-              class:down={(insights.totalChange ?? 0) < 0}
-              class:up={(insights.totalChange ?? 0) > 0}
-            >
-              <span class="r-val">{fmtSigned(insights.totalChange)}<small> kg</small></span>
-              <span class="r-label">since start</span>
-              <span class="r-sub">
-                {fmtSigned(insights.totalChangePct)}% · {insights.consistency.spanDays} days · from {insights.startKg} kg
-              </span>
-            </div>
-          </div>
-
-          {#if insights.primary.band}
-            <p class="assess quiet" class:warn={BAND_WARN.includes(insights.primary.band)}>
-              <span class="assess-chip">
-                {BAND_LABEL[insights.primary.band]}
-                {#if insights.primary.pctPerWeek !== null}
-                  · {fmtSigned(insights.primary.pctPerWeek, 2)}%/wk
-                {/if}
-              </span>
-              {BAND_NOTE[insights.primary.band]}
-            </p>
-          {/if}
-
-          <h4 class="ins-head">Rate by window</h4>
-          <div class="rate-grid">
-            {#each insights.rates as r}
+          <div class="ins-block">
+            <h4 class="ins-head first">Bodyweight</h4>
+            <div class="rate-grid">
+              <div class="rate-cell" class:down={(weekDelta ?? 0) < 0} class:up={(weekDelta ?? 0) > 0}>
+                <span class="r-val">{fmtDelta(weekDelta)}<small> kg</small></span>
+                <span class="r-label">vs last week</span>
+                <span class="r-sub">weekly averages</span>
+              </div>
               <div
                 class="rate-cell"
-                class:muted={r.kgPerWeek === null}
-                class:down={(r.kgPerWeek ?? 0) < 0}
-                class:up={(r.kgPerWeek ?? 0) > 0}
+                class:down={(insights.totalChange ?? 0) < 0}
+                class:up={(insights.totalChange ?? 0) > 0}
               >
-                <span class="r-val">{fmtSigned(r.kgPerWeek, 2)}<small> kg/wk</small></span>
-                <span class="r-label">{r.label}</span>
+                <span class="r-val">{fmtSigned(insights.totalChange)}<small> kg</small></span>
+                <span class="r-label">since start</span>
                 <span class="r-sub">
-                  {#if r.kgPerWeek === null}
-                    not enough data
-                  {:else}
-                    {fmtSigned(r.pctPerWeek, 2)}%/wk · {r.n} weigh-ins · fit {r.r2}
-                  {/if}
+                  {fmtSigned(insights.totalChangePct)}% · {insights.consistency.spanDays} days · from {insights.startKg} kg
                 </span>
               </div>
-            {/each}
-          </div>
-          <p class="hint">
-            Each rate is a least-squares fit over its own window, not a first-to-last subtraction —
-            one heavy meal can't move it. <strong>Fit</strong> is r²: how much of the movement the
-            line explains, so a low number means the window is mostly noise.
-          </p>
+            </div>
 
-          <h4 class="ins-head">Energy balance</h4>
-          <div class="ins-rows">
-            <div class="ins-row">
-              <span>Deficit implied by the trend</span>
-              <strong>
-                {insights.primary.kcalPerDay === null ? '—' : `${insights.primary.kcalPerDay} kcal/day`}
-              </strong>
-            </div>
-            <div class="ins-row">
-              <span>Deficit this goal asks for</span>
-              <strong>{insights.plannedDeficit} kcal/day</strong>
-            </div>
-            <div class="ins-row">
-              <span>Gap</span>
-              <strong class:warn={Math.abs(insights.deficitGap ?? 0) > 200}>
-                {insights.deficitGap === null ? '—' : `${fmtSigned(insights.deficitGap, 0)} kcal/day`}
-              </strong>
-            </div>
+            {#if insights.primary.band}
+              <p class="assess quiet" class:warn={BAND_WARN.includes(insights.primary.band)}>
+                <span class="assess-chip">
+                  {BAND_LABEL[insights.primary.band]}
+                  {#if insights.primary.pctPerWeek !== null}
+                    · {fmtSigned(insights.primary.pctPerWeek, 2)}%/wk
+                  {/if}
+                </span>
+                {BAND_NOTE[insights.primary.band]}
+              </p>
+            {/if}
           </div>
-          {#if deficitNote}<p class="hint">{deficitNote}</p>{/if}
 
-          <h4 class="ins-head">
-            Projections
-            <small>at {fmtSigned(insights.primary.kgPerWeek, 2)} kg/wk</small>
-          </h4>
-          {#if (insights.primary.kgPerWeek ?? 0) < 0}
-            <div class="ins-rows">
-              {#each insights.projections as pr}
-                <div class="ins-row">
-                  <span>{pr.label} <em>{pr.targetKg} kg</em></span>
-                  <strong>
-                    {#if pr.reached}
-                      already there
-                    {:else if pr.date}
-                      {fmtDate(pr.date)} · {pr.weeks} wk
+          <div class="ins-block">
+            <h4 class="ins-head">Rate by window</h4>
+            <div class="rate-grid">
+              {#each insights.rates as r}
+                <div
+                  class="rate-cell"
+                  class:muted={r.kgPerWeek === null}
+                  class:down={(r.kgPerWeek ?? 0) < 0}
+                  class:up={(r.kgPerWeek ?? 0) > 0}
+                >
+                  <span class="r-val">{fmtSigned(r.kgPerWeek, 2)}<small> kg/wk</small></span>
+                  <span class="r-label">{r.label}</span>
+                  <span class="r-sub">
+                    {#if r.kgPerWeek === null}
+                      not enough data
                     {:else}
-                      not on this trend
+                      {fmtSigned(r.pctPerWeek, 2)}%/wk · {r.n} weigh-ins · fit {r.r2}
                     {/if}
-                  </strong>
+                  </span>
                 </div>
               {/each}
             </div>
-            {#if insights.forecast.length}
-              <div class="forecast">
-                {#each insights.forecast as f}
-                  <div class="fc">
-                    <span class="fc-val">{f.kg}<small> kg</small></span>
-                    <span class="fc-label">in {f.weeks} wk</span>
+            <p class="hint">
+              Each rate is a least-squares fit over its own window, not a first-to-last subtraction —
+              one heavy meal can't move it. <strong>Fit</strong> is r²: how much of the movement the
+              line explains, so a low number means the window is mostly noise.
+            </p>
+          </div>
+
+          <div class="ins-block">
+            <h4 class="ins-head">Energy balance</h4>
+            <div class="ins-rows">
+              <div class="ins-row">
+                <span>Deficit implied by the trend</span>
+                <strong>
+                  {insights.primary.kcalPerDay === null ? '—' : `${insights.primary.kcalPerDay} kcal/day`}
+                </strong>
+              </div>
+              <div class="ins-row">
+                <span>Deficit this goal asks for</span>
+                <strong>{insights.plannedDeficit} kcal/day</strong>
+              </div>
+              <div class="ins-row">
+                <span>Gap</span>
+                <strong class:warn={Math.abs(insights.deficitGap ?? 0) > 200}>
+                  {insights.deficitGap === null ? '—' : `${fmtSigned(insights.deficitGap, 0)} kcal/day`}
+                </strong>
+              </div>
+            </div>
+            {#if deficitNote}<p class="hint">{deficitNote}</p>{/if}
+          </div>
+
+          <div class="ins-block">
+            <h4 class="ins-head">
+              Projections
+              <small>at {fmtSigned(insights.primary.kgPerWeek, 2)} kg/wk</small>
+            </h4>
+            {#if (insights.primary.kgPerWeek ?? 0) < 0}
+              <div class="ins-rows">
+                {#each insights.projections as pr}
+                  <div class="ins-row">
+                    <span>{pr.label} <em>{pr.targetKg} kg</em></span>
+                    <strong>
+                      {#if pr.reached}
+                        already there
+                      {:else if pr.date}
+                        {fmtDate(pr.date)} · {pr.weeks} wk
+                      {:else}
+                        not on this trend
+                      {/if}
+                    </strong>
                   </div>
                 {/each}
               </div>
+              {#if insights.forecast.length}
+                <div class="forecast">
+                  {#each insights.forecast as f}
+                    <div class="fc">
+                      <span class="fc-val">{f.kg}<small> kg</small></span>
+                      <span class="fc-label">in {f.weeks} wk</span>
+                    </div>
+                  {/each}
+                </div>
+              {/if}
+            {:else}
+              <p class="hint">Projections need a downward trend — there is nothing to extrapolate yet.</p>
             {/if}
-          {:else}
-            <p class="hint">Projections need a downward trend — there is nothing to extrapolate yet.</p>
-          {/if}
-          <p class="hint">
-            Straight-line extrapolation of the {insights.primary.label} fit at 7700 kcal per kg, with
-            BMI targets taken from your height. A real cut slows as you get lighter, so read these as
-            the optimistic end.
-          </p>
+            <p class="hint">
+              Straight-line extrapolation of the {insights.primary.label} fit at 7700 kcal per kg, with
+              BMI targets taken from your height. A real cut slows as you get lighter, so read these as
+              the optimistic end.
+            </p>
+          </div>
 
-          <h4 class="ins-head">Signals</h4>
-          <ul class="signal-list">
-            {#if insights.stalled}
-              <li class="warn">
-                The last two weeks are flat while the whole log is down — either a normal water-weight
-                stall, or the deficit has drifted shut. Give it another week before changing anything.
-              </li>
-            {/if}
-            {#if insights.volatility !== null}
+          <div class="ins-block">
+            <h4 class="ins-head">Signals</h4>
+            <ul class="signal-list">
+              {#if insights.stalled}
+                <li class="warn">
+                  The last two weeks are flat while the whole log is down — either a normal water-weight
+                  stall, or the deficit has drifted shut. Give it another week before changing anything.
+                </li>
+              {/if}
+              {#if insights.volatility !== null}
+                <li>
+                  Day-to-day swing around the trend is ±{insights.volatility} kg, so a single weigh-in
+                  inside that range carries no information.
+                </li>
+              {/if}
               <li>
-                Day-to-day swing around the trend is ±{insights.volatility} kg, so a single weigh-in
-                inside that range carries no information.
+                Logged {insights.consistency.last30} of the last 30 days ({insights.consistency.coverage30}%)
+                · {insights.consistency.streak}-day streak · longest gap {insights.consistency.longestGap} days.
               </li>
-            {/if}
-            <li>
-              Logged {insights.consistency.last30} of the last 30 days ({insights.consistency.coverage30}%)
-              · {insights.consistency.streak}-day streak · longest gap {insights.consistency.longestGap} days.
-            </li>
-            {#if (insights.consistency.daysSinceLast ?? 0) > 2}
-              <li class="warn">
-                Last weigh-in was {insights.consistency.daysSinceLast} days ago — the trend weight goes
-                stale quickly.
-              </li>
-            {/if}
-            {#if insights.extremes.best && insights.extremes.best.delta < 0}
-              <li>
-                Best week: {insights.extremes.best.delta.toFixed(1)} kg, week of {insights.extremes.best.weekStart}.
-              </li>
-            {/if}
-            {#if insights.extremes.worst && insights.extremes.worst.delta > 0}
-              <li>
-                Biggest gain: +{insights.extremes.worst.delta.toFixed(1)} kg, week of {insights.extremes.worst.weekStart}.
-              </li>
-            {/if}
-          </ul>
+              {#if (insights.consistency.daysSinceLast ?? 0) > 2}
+                <li class="warn">
+                  Last weigh-in was {insights.consistency.daysSinceLast} days ago — the trend weight goes
+                  stale quickly.
+                </li>
+              {/if}
+              {#if insights.extremes.best && insights.extremes.best.delta < 0}
+                <li>
+                  Best week: {insights.extremes.best.delta.toFixed(1)} kg, week of {insights.extremes.best.weekStart}.
+                </li>
+              {/if}
+              {#if insights.extremes.worst && insights.extremes.worst.delta > 0}
+                <li>
+                  Biggest gain: +{insights.extremes.worst.delta.toFixed(1)} kg, week of {insights.extremes.worst.weekStart}.
+                </li>
+              {/if}
+            </ul>
+          </div>
 
-          <h4 class="ins-head">Weekly averages</h4>
-          <p class="hint">Track this, ignore daily swings.</p>
-          <div class="weekly-list">
-            {#each weeklyWithDelta as w}
-              <div class="weekly-row">
-                <span class="weekly-week">week of {w.weekStart}</span>
-                <span class="weekly-count">{w.count} {w.count === 1 ? 'entry' : 'entries'}</span>
-                <span class="weekly-delta" class:down={(w.delta ?? 0) < 0} class:up={(w.delta ?? 0) > 0}>
-                  {#if w.delta === null}—{:else}{w.delta < 0 ? '▼' : '▲'} {Math.abs(w.delta).toFixed(1)}{/if}
-                </span>
-                <span class="weekly-avg">{w.avgKg} kg</span>
-              </div>
-            {/each}
+          <div class="ins-block">
+            <h4 class="ins-head">Weekly averages</h4>
+            <p class="hint">Track this, ignore daily swings.</p>
+            <div class="weekly-list">
+              {#each weeklyWithDelta as w}
+                <div class="weekly-row">
+                  <span class="weekly-week">week of {w.weekStart}</span>
+                  <span class="weekly-count">{w.count} {w.count === 1 ? 'entry' : 'entries'}</span>
+                  <span class="weekly-delta" class:down={(w.delta ?? 0) < 0} class:up={(w.delta ?? 0) > 0}>
+                    {#if w.delta === null}—{:else}{w.delta < 0 ? '▼' : '▲'} {Math.abs(w.delta).toFixed(1)}{/if}
+                  </span>
+                  <span class="weekly-avg">{w.avgKg} kg</span>
+                </div>
+              {/each}
+            </div>
           </div>
         {/if}
 
         {#if cadence.total}
-          <h4 class="ins-head">Training cadence</h4>
-          <div class="rate-grid">
-            <div class="rate-cell">
-              <span class="r-val">{cadence.last7}</span>
-              <span class="r-label">last 7 days</span>
-              <span class="r-sub">sessions logged</span>
-            </div>
-            <div class="rate-cell">
-              <span class="r-val">{cadence.perWeek}<small> /wk</small></span>
-              <span class="r-label">last 4 weeks</span>
-              <span class="r-sub">{cadence.last28} sessions</span>
-            </div>
-            <div class="rate-cell" class:up={(cadence.daysSinceLast ?? 0) > 2}>
-              <span class="r-val">{cadence.daysSinceLast ?? '—'}</span>
-              <span class="r-label">days since last</span>
-              <span class="r-sub">{cadence.streak}-day streak</span>
-            </div>
-            <div class="rate-cell">
-              <span class="r-val">{cadence.total}</span>
-              <span class="r-label">all time</span>
-              <span class="r-sub">longest gap {cadence.longestGap} days</span>
+          <div class="ins-block">
+            <h4 class="ins-head">Training cadence</h4>
+            <div class="rate-grid">
+              <div class="rate-cell">
+                <span class="r-val">{cadence.last7}</span>
+                <span class="r-label">last 7 days</span>
+                <span class="r-sub">sessions logged</span>
+              </div>
+              <div class="rate-cell">
+                <span class="r-val">{cadence.perWeek}<small> /wk</small></span>
+                <span class="r-label">last 4 weeks</span>
+                <span class="r-sub">{cadence.last28} sessions</span>
+              </div>
+              <div class="rate-cell" class:up={(cadence.daysSinceLast ?? 0) > 2}>
+                <span class="r-val">{cadence.daysSinceLast ?? '—'}</span>
+                <span class="r-label">days since last</span>
+                <span class="r-sub">{cadence.streak}-day streak</span>
+              </div>
+              <div class="rate-cell">
+                <span class="r-val">{cadence.total}</span>
+                <span class="r-label">all time</span>
+                <span class="r-sub">longest gap {cadence.longestGap} days</span>
+              </div>
             </div>
           </div>
 
-          <h4 class="ins-head">Day balance <small>last 4 weeks</small></h4>
-          <div class="focus-bars">
-            {#each cadence.focus as f}
-              <div class="focus-row">
-                <span class="focus-label">{f.label}</span>
-                <span class="focus-track">
-                  <span
-                    class="focus-fill"
-                    style="width: {Math.max(...cadence.focus.map((x) => x.count), 1) > 0
-                      ? (f.count / Math.max(...cadence.focus.map((x) => x.count), 1)) * 100
-                      : 0}%"
-                  ></span>
-                </span>
-                <span class="focus-count">{f.count}</span>
-              </div>
-            {/each}
+          <div class="ins-block">
+            <h4 class="ins-head">Day balance <small>last 4 weeks</small></h4>
+            <div class="focus-bars">
+              {#each cadence.focus as f}
+                <div class="focus-row">
+                  <span class="focus-label">{f.label}</span>
+                  <span class="focus-track">
+                    <span
+                      class="focus-fill"
+                      style="width: {Math.max(...cadence.focus.map((x) => x.count), 1) > 0
+                        ? (f.count / Math.max(...cadence.focus.map((x) => x.count), 1)) * 100
+                        : 0}%"
+                    ></span>
+                  </span>
+                  <span class="focus-count">{f.count}</span>
+                </div>
+              {/each}
+            </div>
+            <p class="hint">
+              Each day runs once a week, so four weeks of the plan is four of each. Sessions from
+              the earlier push/pull/legs plan don't appear here.
+            </p>
           </div>
-          <p class="hint">
-            Each day runs once a week, so four weeks of the plan is four of each. Sessions from
-            the earlier push/pull/legs plan don't appear here.
-          </p>
         {/if}
         {#if !insights.points.length && !cadence.total}
-          <p class="hint">Nothing to read yet — log a bodyweight and a session on the workout page.</p>
+          <p class="hint empty">Nothing to read yet — log a bodyweight and a session on the workout page.</p>
         {/if}
       </div>
     </section>
@@ -702,7 +723,7 @@
       </summary>
       <div class="fold-body">
         {#if sessions.length === 0}
-          <p class="hint">No sessions logged yet.</p>
+          <p class="hint empty">No sessions logged yet.</p>
         {:else}
           <div class="history-list">
             {#each historyGroups as grp}
@@ -754,7 +775,7 @@
                         {/each}
                         {#if openDetail.cardio && openDetail.cardio.length}
                           <div class="detail-ex">
-                            <span class="detail-ex-name">🚴 Cardio</span>
+                            <span class="detail-ex-name"><Bike size={14} aria-hidden="true" /> Cardio</span>
                             <div class="detail-sets">
                               {#each openDetail.cardio as c}
                                 <span class="set-badge">
@@ -778,507 +799,661 @@
 </div>
 
 <style>
+  /* ── Page frame ─────────────────────────────────────────── */
   .page {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
-    max-width: 48rem;
-    animation: fade-up var(--dur-base, 0.4s) var(--ease-out-quart, ease);
+    gap: var(--s-6);
+    padding-top: var(--s-7);
+    animation: rise var(--dur-slow) var(--ease-out) both;
   }
 
   /* ── Header ─────────────────────────────────────────────── */
-  .page-header {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    padding-bottom: 1.25rem;
-    border-bottom: 1px solid var(--border);
+  .head {
+    display: grid;
+    gap: var(--s-3);
+    padding-bottom: var(--s-5);
+    border-bottom: 1px solid var(--line);
   }
-  .breadcrumb { font-size: 0.875rem; color: var(--text-tertiary); }
-  .breadcrumb a { color: var(--text-tertiary); transition: color 0.15s; }
-  .breadcrumb a:hover { color: var(--text-primary); }
-  .separator { margin: 0 0.5rem; }
-
+  .separator { color: var(--line-strong); }
   .header-top {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 1rem;
+    gap: var(--s-3) var(--s-4);
     flex-wrap: wrap;
+  }
+  .title {
+    margin: 0;
+    color: var(--ink);
+    font-size: var(--text-2xl);
+    font-weight: 500;
+    line-height: 1.05;
+    letter-spacing: -0.04em;
   }
   .header-actions {
     display: flex;
     align-items: center;
-    gap: 0.625rem;
+    gap: var(--s-2);
   }
-  /* Shares the global .page-title pen treatment; only the size is trimmed so
-     the title sits level with the save pill beside it. */
-  .page-title {
-    font-size: 2.25rem;
-  }
-
-  .ghost-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.375rem;
-    font-size: 0.8125rem;
-    color: var(--text-tertiary);
-    background: transparent;
-    border: 1px solid var(--border);
-    border-radius: 0.375rem;
-    padding: 0.4rem 0.75rem;
-    cursor: var(--cursor-pointer);
-  }
-  .ghost-btn:hover { color: var(--text-primary); border-color: var(--border-strong); }
-
+  .signout { color: var(--ink-2); }
   .page-desc {
-    font-size: 0.95rem;
-    line-height: 1.55;
-    color: var(--text-secondary);
+    max-width: var(--measure);
     margin: 0;
+    color: var(--ink-2);
+    font-size: var(--text-base);
+    line-height: 1.55;
   }
 
   .error-banner {
-    padding: 0.7rem 1rem;
-    border: 1px solid #c0392b;
-    background: rgba(192, 57, 43, 0.1);
-    border-radius: 0.5rem;
-    color: #e74c3c;
-    font-size: 0.875rem;
+    padding: var(--s-3) var(--s-4);
+    border: 1px solid var(--danger);
+    border-radius: var(--radius-sm);
+    background: color-mix(in srgb, var(--danger) 7%, transparent);
+    color: var(--danger);
+    font-size: var(--text-sm);
   }
 
-  /* ── Sign-in ────────────────────────────────────────────── */
   .signin-card {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
     align-items: flex-start;
-    padding: 1.5rem;
-    border: 1px solid var(--border);
-    border-radius: 0.625rem;
-    background: var(--surface-raised);
+    gap: var(--s-4);
+    max-width: 760px;
+    padding: var(--s-5);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    background: var(--surface);
   }
-  .signin-card p { color: var(--text-secondary); margin: 0; font-size: 0.95rem; }
+  .signin-card p { margin: 0; color: var(--ink-2); }
 
   .icon-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 0.375rem;
-    color: var(--text-faint);
+    width: 44px;
+    height: 44px;
+    border: 0;
+    border-radius: var(--radius-sm);
     background: transparent;
-    border: none;
-    cursor: var(--cursor-pointer);
-    border-radius: 0.25rem;
-    transition: color 0.15s;
+    color: var(--ink-3);
+    cursor: pointer;
+    transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease);
   }
-  .icon-btn:hover { color: #e74c3c; }
+  .icon-btn:hover {
+    background: var(--hover-wash);
+    color: var(--danger);
+  }
 
   /* ── Progress card ──────────────────────────────────────── */
   .progress-card {
-    border: 1px solid var(--border);
-    border-radius: 0.625rem;
-    padding: 1rem;
+    display: grid;
+    gap: var(--s-5);
+    padding: var(--s-5);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    background: var(--surface);
   }
-  .progress-card .trend-stats { grid-template-columns: repeat(3, 1fr); }
-  .ts-val.pace { font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.04em; }
-  .trend-stat.warn .ts-val { color: #e67e22; }
-  .progress-card .hint { margin: 0; }
+  .progress-side,
+  .progress-chart { min-width: 0; }
+  .progress-side { display: grid; gap: var(--s-4); align-content: start; }
 
-  /* ── The numbers ────────────────────────────────────────── */
-  .numbers { border: 1px solid var(--border); border-radius: 0.625rem; }
-  .numbers-head {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 1rem;
-    padding: 0.875rem 1rem;
-    border-bottom: 1px solid var(--border);
+  /* Wide screens: the three numbers stacked beside the chart. */
+  @media (min-width: 960px) {
+    .progress-card.has-data {
+      grid-template-columns: 17rem minmax(0, 1fr);
+      gap: var(--s-7);
+      padding: var(--s-6);
+    }
+    .progress-card .trend-stats { grid-template-columns: minmax(0, 1fr); }
   }
-  .numbers-head h2 { font-size: 1rem; font-weight: 600; color: var(--text-primary); margin: 0; }
-  .numbers-meta {
-    font-family: var(--font-mono);
-    font-size: 0.72rem;
-    color: var(--text-tertiary);
-    white-space: nowrap;
-  }
-  .numbers-body { padding: 0 1rem 1.25rem; }
-  .numbers-body .ins-head.first { margin-top: 1.25rem; }
 
-  /* ── Folds (rules / numbers / history) ──────────────────── */
-  .fold { border: 1px solid var(--border); border-radius: 0.625rem; }
-  .fold summary {
-    display: flex;
-    align-items: baseline;
-    gap: 0.75rem;
-    padding: 0.85rem 1rem;
-    font-family: var(--font-mono);
-    font-size: 0.78rem;
-    font-weight: 600;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--text-secondary);
-    cursor: var(--cursor-pointer);
-    list-style: none;
-  }
-  .fold summary::-webkit-details-marker { display: none; }
-  .fold-title { flex: none; }
-  .fold-meta {
-    margin-left: auto;
-    font-size: 0.7rem;
-    font-weight: 500;
-    letter-spacing: 0.02em;
-    text-transform: none;
-    color: var(--text-tertiary);
-  }
-  .fold summary::after { content: '+'; color: var(--text-tertiary); font-weight: 400; }
-  .fold[open] summary::after { content: '–'; }
-  .fold[open] summary { color: var(--text-primary); border-bottom: 1px solid var(--border-subtle); }
-
-  .fold-body { padding: 1.25rem 1rem; }
-
-  /* ── Bodyweight trend + insights ────────────────────────── */
   .trend-stats {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr));
-    gap: 0.75rem;
-    margin-bottom: 1rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    column-gap: var(--s-5);
   }
   .trend-stat {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: 0.15rem;
-    padding: 0.75rem 0.5rem;
-    border: 1px solid var(--border-subtle);
-    border-radius: 0.5rem;
-    text-align: center;
+    gap: 2px;
+    min-width: 0;
+    padding: var(--s-3) 0;
+    border-top: 1px solid var(--line);
   }
-  .ts-val { font-family: var(--font-mono); font-size: 1.15rem; font-weight: 700; color: var(--text-primary); }
-  .ts-val small { font-size: 0.68rem; font-weight: 500; color: var(--text-tertiary); }
-  .ts-label { font-size: 0.64rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-tertiary); }
-  .ts-sub {
+  .ts-label {
+    order: -1;
+    color: var(--ink-3);
     font-family: var(--font-mono);
-    font-size: 0.62rem;
-    line-height: 1.35;
-    color: var(--text-faint);
+    font-size: var(--text-xs);
   }
-  .trend-stat.down .ts-val { color: var(--blueprint, #6ea8fe); }
-  .trend-stat.up .ts-val { color: #e67e22; }
+  .ts-val {
+    color: var(--ink);
+    font-family: var(--font-mono);
+    font-size: var(--text-xl);
+    font-weight: 400;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.15;
+    letter-spacing: -0.03em;
+    white-space: nowrap;
+  }
+  .ts-val small {
+    color: var(--ink-3);
+    font-size: var(--text-xs);
+    letter-spacing: 0;
+  }
+  .ts-val.pace {
+    font-family: var(--font-sans);
+    font-size: var(--text-lg);
+    font-weight: 500;
+    line-height: 1.3;
+    letter-spacing: -0.015em;
+  }
+  .ts-val.pace::first-letter { text-transform: uppercase; }
+  .ts-sub {
+    color: var(--ink-3);
+    font-size: var(--text-xs);
+    line-height: 1.4;
+  }
+  .trend-stat.down .ts-val { color: var(--fjord); }
+  .trend-stat.up .ts-val,
+  .trend-stat.warn .ts-val { color: var(--clay); }
 
-  /* The one-line verdict on the current rate. */
+  /* The one-line verdict on the current rate: a quiet ruled note. */
   .assess {
     display: flex;
     flex-wrap: wrap;
     align-items: baseline;
-    gap: 0.5rem;
-    margin: 0 0 1.25rem;
-    padding: 0.7rem 0.85rem;
-    border: 1px solid var(--blueprint);
-    border-radius: 0.5rem;
-    background: var(--blueprint-tint);
-    font-size: 0.8125rem;
-    line-height: 1.5;
-    color: var(--text-secondary);
+    gap: 4px var(--s-2);
+    margin: 0;
+    padding: 2px 0 2px var(--s-3);
+    border-left: 2px solid var(--fjord);
+    color: var(--ink-2);
+    font-size: var(--text-sm);
+    line-height: 1.55;
   }
-  .assess.warn { border-color: #e67e22; background: rgb(230 126 34 / 10%); }
-  /* Inside the numbers fold the verdict is supporting detail, not a banner. */
-  .assess.quiet { margin-top: 0.85rem; border-color: var(--border-subtle); background: transparent; }
-  .assess.quiet.warn { border-color: #e67e22; }
+  .assess.warn { border-left-color: var(--clay); }
+  .assess.quiet { margin-top: var(--s-4); border-left-color: var(--line-strong); }
+  .assess.quiet.warn { border-left-color: var(--clay); }
   .assess-chip {
     flex: none;
+    color: var(--ink);
     font-family: var(--font-mono);
-    font-size: 0.68rem;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: var(--text-primary);
+    font-size: var(--text-xs);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ── All the numbers ────────────────────────────────────── */
+  .numbers {
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    background: var(--surface);
+  }
+  .numbers-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--s-3);
+    padding: var(--s-4) var(--s-5);
+    border-bottom: 1px solid var(--line);
+  }
+  .numbers-head h2 {
+    margin: 0;
+    font-size: var(--text-md);
+    letter-spacing: -0.01em;
+  }
+  .numbers-meta {
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .numbers-body { padding: 0 var(--s-5) var(--s-2); }
+
+  /* Each block is self-contained, so wide screens flow them into two ruled
+     columns rather than one long scroll. */
+  .ins-block {
+    padding: var(--s-5) 0;
+    border-top: 1px solid var(--line);
+    break-inside: avoid;
+  }
+  .ins-block:first-child { border-top: 0; }
+  @media (min-width: 1100px) {
+    .numbers-body {
+      columns: 2;
+      column-gap: var(--s-8);
+      column-rule: 1px solid var(--line);
+    }
+    .ins-block { border-top: 0; border-bottom: 1px solid var(--line); }
   }
 
   .ins-head {
     display: flex;
+    flex-wrap: wrap;
     align-items: baseline;
-    gap: 0.5rem;
-    margin: 1.5rem 0 0.6rem;
-    font-family: var(--font-mono);
-    font-size: 0.7rem;
-    font-weight: 600;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--text-secondary);
+    gap: 4px var(--s-2);
+    margin: 0 0 var(--s-3);
+    color: var(--ink);
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: -0.005em;
   }
   .ins-head small {
-    font-size: 0.66rem;
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
     font-weight: 400;
-    letter-spacing: 0.02em;
-    text-transform: none;
-    color: var(--text-faint);
+    letter-spacing: 0;
   }
-  .ins-head.first { margin-top: 0; }
 
   .rate-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr));
-    gap: 0.6rem;
+    grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+    column-gap: var(--s-5);
   }
   .rate-cell {
     display: flex;
     flex-direction: column;
-    gap: 0.15rem;
-    padding: 0.65rem 0.7rem;
-    border: 1px solid var(--border-subtle);
-    border-radius: 0.5rem;
+    gap: 2px;
+    min-width: 0;
+    padding: var(--s-3) 0;
+    border-top: 1px solid var(--line);
   }
-  .r-val { font-family: var(--font-mono); font-size: 1rem; font-weight: 700; color: var(--text-primary); }
-  .r-val small { font-size: 0.64rem; font-weight: 500; color: var(--text-tertiary); }
-  .r-label { font-size: 0.62rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-tertiary); }
-  .r-sub { font-family: var(--font-mono); font-size: 0.62rem; line-height: 1.35; color: var(--text-faint); }
-  .rate-cell.down .r-val { color: var(--blueprint, #6ea8fe); }
-  .rate-cell.up .r-val { color: #e67e22; }
-  .rate-cell.muted .r-val { color: var(--text-faint); }
+  .r-label {
+    order: -1;
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+  }
+  .r-val {
+    color: var(--ink);
+    font-family: var(--font-mono);
+    font-size: var(--text-xl);
+    font-weight: 400;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.15;
+    letter-spacing: -0.03em;
+    white-space: nowrap;
+  }
+  .r-val small {
+    color: var(--ink-3);
+    font-size: var(--text-xs);
+    letter-spacing: 0;
+  }
+  .r-sub {
+    color: var(--ink-3);
+    font-size: var(--text-xs);
+    line-height: 1.4;
+  }
+  .rate-cell.down .r-val { color: var(--fjord); }
+  .rate-cell.up .r-val { color: var(--clay); }
+  .rate-cell.muted .r-val { color: var(--ink-3); }
 
-  .ins-rows { display: flex; flex-direction: column; }
+  .ins-rows { display: flex; flex-direction: column; border-top: 1px solid var(--line); }
   .ins-row {
     display: flex;
     align-items: baseline;
     justify-content: space-between;
-    gap: 0.85rem;
-    padding: 0.45rem 0;
-    border-bottom: 1px solid var(--border-subtle);
-    font-size: 0.84rem;
-    color: var(--text-secondary);
+    gap: var(--s-3);
+    padding: var(--s-2) 0;
+    border-bottom: 1px solid var(--line);
+    color: var(--ink-2);
+    font-size: var(--text-sm);
+    line-height: 1.5;
   }
-  .ins-row:last-child { border-bottom: none; }
-  .ins-row em { font-family: var(--font-mono); font-style: normal; font-size: 0.72rem; color: var(--text-faint); }
+  .ins-row em {
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-style: normal;
+  }
   .ins-row strong {
     flex: none;
+    color: var(--ink);
     font-family: var(--font-mono);
-    font-size: 0.8rem;
-    font-weight: 600;
+    font-size: var(--text-sm);
+    font-weight: 400;
+    font-variant-numeric: tabular-nums;
     text-align: right;
-    color: var(--text-primary);
   }
-  .ins-row strong.warn { color: #e67e22; }
+  .ins-row strong.warn { color: var(--clay); }
 
   .forecast {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(4.75rem, 1fr));
-    gap: 0.5rem;
-    margin-top: 0.85rem;
+    grid-template-columns: repeat(auto-fit, minmax(5rem, 1fr));
+    gap: 1px;
+    margin-top: var(--s-4);
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: var(--line);
   }
   .fc {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: 0.1rem;
-    padding: 0.55rem 0.4rem;
-    border: 1px dashed var(--border-subtle);
-    border-radius: 0.5rem;
+    gap: 2px;
+    padding: var(--s-3);
+    background: var(--surface);
   }
-  .fc-val { font-family: var(--font-mono); font-size: 0.95rem; font-weight: 700; color: var(--text-primary); }
-  .fc-val small { font-size: 0.62rem; font-weight: 500; color: var(--text-tertiary); }
-  .fc-label { font-size: 0.62rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-tertiary); }
+  .fc-val {
+    color: var(--ink);
+    font-family: var(--font-mono);
+    font-size: var(--text-md);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .fc-val small { color: var(--ink-3); font-size: var(--text-xs); }
+  .fc-label {
+    order: -1;
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+  }
 
-  .signal-list { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; margin: 0; padding: 0; }
+  .signal-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
   .signal-list li {
     position: relative;
-    padding-left: 0.9rem;
-    font-size: 0.8125rem;
-    line-height: 1.5;
-    color: var(--text-secondary);
+    padding-left: var(--s-4);
+    color: var(--ink-2);
+    font-size: var(--text-sm);
+    line-height: 1.55;
   }
   .signal-list li::before {
-    content: '·';
+    content: '';
     position: absolute;
-    left: 0.2rem;
-    color: var(--text-faint);
+    top: 0.62em;
+    left: 2px;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--line-strong);
   }
-  .signal-list li.warn { color: #e67e22; }
-  .signal-list li.warn::before { color: #e67e22; }
+  .signal-list li.warn { color: var(--ink); }
+  .signal-list li.warn::before { background: var(--clay); }
 
   /* Day balance bars — one row per lifting day. */
-  .focus-bars { display: flex; flex-direction: column; gap: 0.4rem; }
-  .focus-row { display: flex; align-items: center; gap: 0.6rem; }
+  .focus-bars { display: flex; flex-direction: column; gap: var(--s-2); }
+  .focus-row { display: flex; align-items: center; gap: var(--s-3); }
   .focus-label {
     flex: none;
-    width: 4.2rem;
+    width: 4.5rem;
+    color: var(--ink-2);
     font-family: var(--font-mono);
-    font-size: 0.72rem;
-    color: var(--text-secondary);
+    font-size: var(--text-xs);
   }
   .focus-track {
     flex: 1;
-    height: 0.5rem;
-    border-radius: 0.25rem;
-    background: var(--blueprint-tint);
+    height: 6px;
     overflow: hidden;
+    border-radius: var(--radius-xs);
+    background: var(--surface-2);
   }
-  .focus-fill { display: block; height: 100%; background: var(--blueprint); }
+  .focus-fill {
+    display: block;
+    height: 100%;
+    background: var(--fjord);
+  }
   .focus-count {
     flex: none;
     min-width: 1.5rem;
+    color: var(--ink);
     font-family: var(--font-mono);
-    font-size: 0.75rem;
-    font-weight: 600;
+    font-size: var(--text-sm);
+    font-variant-numeric: tabular-nums;
     text-align: right;
-    color: var(--text-primary);
   }
 
-  .hint { font-size: 0.8125rem; color: var(--text-tertiary); margin: 0 0 0.75rem; }
+  .hint {
+    margin: 0 0 var(--s-3);
+    color: var(--ink-3);
+    font-size: var(--text-sm);
+    line-height: 1.55;
+  }
+  .hint.empty { margin: 0; padding: var(--s-5) 0; }
   /* A hint explaining the block above it needs air; one introducing the block
      below it (straight after a heading) does not. */
   .rate-grid + .hint,
   .ins-rows + .hint,
   .forecast + .hint,
-  .focus-bars + .hint { margin-top: 0.85rem; }
+  .focus-bars + .hint { margin-top: var(--s-3); }
+  .ins-block > .hint:last-child { margin-bottom: 0; }
+  .progress-card > .hint { margin: 0; }
 
-  .weekly-list { display: flex; flex-direction: column; }
+  .weekly-list { display: flex; flex-direction: column; border-top: 1px solid var(--line); }
   .weekly-row {
     display: flex;
     align-items: baseline;
-    gap: 0.85rem;
-    padding: 0.45rem 0;
-    border-bottom: 1px solid var(--border-subtle);
-    font-size: 0.875rem;
+    gap: var(--s-3);
+    padding: var(--s-2) 0;
+    border-bottom: 1px solid var(--line);
+    font-size: var(--text-sm);
   }
-  .weekly-row:last-child { border-bottom: none; }
-  .weekly-week { color: var(--text-secondary); flex: 1; }
-  .weekly-count { color: var(--text-faint); font-size: 0.72rem; }
+  .weekly-row:last-child { border-bottom: 0; }
+  .weekly-week { flex: 1; min-width: 0; color: var(--ink-2); }
+  .weekly-count {
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    white-space: nowrap;
+  }
   .weekly-delta {
+    min-width: 3.25rem;
+    color: var(--ink-3);
     font-family: var(--font-mono);
-    font-size: 0.72rem;
-    color: var(--text-tertiary);
-    min-width: 3rem;
+    font-size: var(--text-xs);
+    font-variant-numeric: tabular-nums;
     text-align: right;
+    white-space: nowrap;
   }
-  .weekly-delta.down { color: var(--blueprint, #6ea8fe); }
-  .weekly-delta.up { color: #e67e22; }
+  .weekly-delta.down { color: var(--fjord); }
+  .weekly-delta.up { color: var(--clay); }
   .weekly-avg {
+    min-width: 4.5rem;
+    color: var(--ink);
     font-family: var(--font-mono);
-    font-weight: 600;
-    color: var(--text-primary);
-    min-width: 4.25rem;
+    font-variant-numeric: tabular-nums;
     text-align: right;
+    white-space: nowrap;
   }
 
-  .history-list { display: flex; flex-direction: column; gap: 0.4rem; }
-  .history-month {
-    font-family: var(--font-mono);
-    font-size: 0.68rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--text-tertiary);
-    padding: 0.85rem 0.25rem 0.3rem;
-    margin-top: 0.4rem;
-    border-bottom: 1px solid var(--border-subtle);
+  /* ── History fold ───────────────────────────────────────── */
+  .fold {
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    background: var(--surface);
   }
-  .history-month:first-child { margin-top: 0; padding-top: 0; }
+  .fold :focus-visible { outline-offset: -2px; }
+  .fold summary {
+    display: flex;
+    align-items: center;
+    gap: var(--s-3);
+    min-height: 56px;
+    padding: 0 var(--s-5);
+    color: var(--ink);
+    list-style: none;
+    cursor: pointer;
+  }
+  .fold summary::-webkit-details-marker { display: none; }
+  .fold summary:hover .fold-title { color: var(--fjord); }
+  .fold-title {
+    flex: none;
+    font-size: var(--text-md);
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    transition: color var(--dur-fast) var(--ease);
+  }
+  .fold-meta {
+    margin-left: auto;
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-variant-numeric: tabular-nums;
+  }
+  .fold summary::after {
+    content: '+';
+    width: 1.25rem;
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-md);
+    text-align: center;
+  }
+  .fold[open] summary::after { content: '−'; }
+  .fold[open] summary { border-bottom: 1px solid var(--line); }
+  .fold-body { padding: 0 var(--s-5) var(--s-4); }
+
+  .history-list { display: flex; flex-direction: column; }
+  .history-month {
+    padding: var(--s-6) 0 var(--s-2);
+    border-bottom: 1px solid var(--line);
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+  }
+  .history-month:first-child { padding-top: var(--s-4); }
   .history-item {
     display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 0.5rem 0.75rem;
+    grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
-    padding: 0.6rem 0.75rem;
-    border: 1px solid var(--border-subtle);
-    border-radius: 0.5rem;
-    transition: border-color 0.15s, background 0.15s;
+    gap: 0 var(--s-2);
+    margin: 0 calc(-1 * var(--s-3));
+    padding: 0 var(--s-1) 0 var(--s-3);
+    border-bottom: 1px solid var(--line);
+    transition: background-color var(--dur-fast) var(--ease);
   }
-  .history-item:hover { border-color: var(--border-strong); }
-  .history-item.open { border-color: var(--blueprint); background: var(--blueprint-tint); }
+  .history-item:hover { background: var(--hover-wash); }
+  .history-item.open { background: var(--fjord-wash); }
   .history-head {
     display: flex;
     align-items: center;
-    gap: 0.85rem;
+    gap: var(--s-4);
     min-width: 0;
-    background: transparent;
-    border: none;
-    cursor: var(--cursor-pointer);
-    text-align: left;
+    min-height: 56px;
     padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
   }
   .hist-date {
     display: flex;
-    align-items: baseline;
-    gap: 0.35rem;
     flex: none;
+    align-items: baseline;
+    gap: var(--s-2);
+    min-width: 6.5rem;
     font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
   }
-  .hist-dom { font-size: 1.05rem; font-weight: 700; color: var(--text-primary); min-width: 1.1rem; }
-  .hist-sub { font-size: 0.68rem; color: var(--text-tertiary); }
-  .history-item.today .hist-dom { color: var(--blueprint, #6ea8fe); }
+  .hist-dom {
+    min-width: 1.4rem;
+    color: var(--ink);
+    font-size: var(--text-md);
+  }
+  .hist-sub { color: var(--ink-3); font-size: var(--text-xs); }
+  .history-item.today .hist-dom { color: var(--fjord); }
   .hist-day {
     flex: none;
-    font-size: 0.68rem;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--blueprint, #6ea8fe);
+    color: var(--ink-2);
+    font-size: var(--text-sm);
+    font-weight: 500;
   }
   .hist-bw {
     margin-left: auto;
+    color: var(--ink-2);
     font-family: var(--font-mono);
-    font-size: 0.78rem;
-    color: var(--text-tertiary);
+    font-size: var(--text-sm);
+    font-variant-numeric: tabular-nums;
     white-space: nowrap;
   }
-  .hist-bw small { font-size: 0.66rem; }
+  .hist-bw small { color: var(--ink-3); font-size: var(--text-xs); }
+  .hist-bw + .hist-chevron { margin-left: 0; }
+  /* The chevron sits at the far right whether or not the day has a weight. */
   .hist-chevron {
     flex: none;
-    width: 1.1rem;
-    text-align: center;
+    width: 1.25rem;
+    margin-left: auto;
+    color: var(--ink-3);
     font-family: var(--font-mono);
-    font-size: 1rem;
-    color: var(--text-faint);
+    font-size: var(--text-md);
+    text-align: center;
   }
-  .history-item.open .hist-chevron { color: var(--blueprint, #6ea8fe); }
+  .history-item.open .hist-chevron { color: var(--fjord); }
   .history-detail {
     grid-column: 1 / -1;
     display: flex;
     flex-direction: column;
-    gap: 0.625rem;
-    padding-top: 0.6rem;
-    border-top: 1px solid var(--border-subtle);
+    gap: var(--s-3);
+    padding: var(--s-3) 0 var(--s-4);
+    border-top: 1px solid var(--line);
   }
   .detail-stats {
+    color: var(--ink-3);
     font-family: var(--font-mono);
-    font-size: 0.7rem;
-    letter-spacing: 0.02em;
-    color: var(--text-tertiary);
+    font-size: var(--text-xs);
+    font-variant-numeric: tabular-nums;
   }
-  .detail-ex { display: flex; flex-direction: column; gap: 0.375rem; }
-  .detail-ex-name { font-size: 0.875rem; color: var(--text-secondary); }
+  .detail-ex { display: flex; flex-direction: column; gap: 6px; }
+  .detail-ex-name {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    color: var(--ink);
+    font-size: var(--text-sm);
+    font-weight: 500;
+  }
   .detail-ex-equip {
+    display: inline-flex;
+    align-items: center;
+    height: 20px;
+    padding: 0 7px;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-pill);
+    color: var(--ink-3);
     font-family: var(--font-mono);
-    font-size: 0.68rem;
-    color: var(--text-tertiary);
-    border: 1px solid var(--border-subtle);
-    border-radius: 999px;
-    padding: 0.05rem 0.4rem;
-    margin-left: 0.35rem;
+    font-size: 11px;
+    font-weight: 400;
   }
-  .detail-sets { display: flex; flex-wrap: wrap; gap: 0.375rem; }
+  .detail-sets { display: flex; flex-wrap: wrap; gap: 6px; }
   .set-badge {
+    padding: 3px var(--s-2);
+    border-radius: var(--radius-xs);
+    background: var(--surface-2);
+    color: var(--ink);
     font-family: var(--font-mono);
-    font-size: 0.75rem;
-    color: var(--text-primary);
-    background: var(--surface-raised);
-    padding: 0.25rem 0.5rem;
-    border-radius: 0.25rem;
+    font-size: var(--text-xs);
+    font-variant-numeric: tabular-nums;
   }
-
-  @keyframes fade-up {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
 
   @media (max-width: 640px) {
-    .page { gap: 1.15rem; }
-    .page-title { font-size: 1.75rem; }
+    .page { gap: var(--s-5); padding-top: var(--s-6); }
+    .signout { min-height: 40px; }
+
+    .progress-card { padding: var(--s-4); gap: var(--s-4); }
     /* Two numbers side by side, the pace verdict on its own full-width row. */
-    .progress-card .trend-stats { grid-template-columns: repeat(2, 1fr); }
-    .progress-card .trend-stat:last-child { grid-column: 1 / -1; }
+    .trend-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--s-4); }
+    .trend-stat:last-child { grid-column: 1 / -1; }
+
+    .numbers-head { padding: var(--s-4); }
+    .numbers-body { padding: 0 var(--s-4) var(--s-1); }
+    .rate-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--s-4); }
+    .r-val { font-size: var(--text-lg); }
 
     /* Four forecast cells in a tidy 2×2 rather than auto-fit's 3 + 1. */
-    .forecast { grid-template-columns: repeat(2, 1fr); }
+    .forecast { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+    .fold summary { padding: 0 var(--s-4); }
+    .fold-body { padding: 0 var(--s-4) var(--s-3); }
+    .history-head { gap: var(--s-3); }
+    .hist-date { min-width: 5.5rem; }
   }
 </style>

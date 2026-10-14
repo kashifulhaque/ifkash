@@ -3,138 +3,166 @@
   <meta name="description" content="Autograd engine and neural networks in ~500 lines of NumPy. Educational deep learning." />
 </svelte:head>
 
-<div class="page">
-  <header class="page-header">
-    <div class="breadcrumb">
+<article class="detail">
+  <header class="page-head">
+    <nav class="breadcrumb" aria-label="Breadcrumb">
       <a href="/projects">Projects</a>
-      <span class="separator">/</span>
-      <span>smoltorch</span>
-    </div>
-    <h1 class="page-title">smoltorch 🔥</h1>
-    <p class="page-desc">A tiny autograd engine and neural network library built from first principles. Implements automatic differentiation and deep learning in ~500 lines of readable Python code using only NumPy.</p>
-    <div class="project-links">
-      <a href="https://github.com/kashifulhaque/smoltorch" target="_blank" rel="noopener noreferrer" class="project-link">
-        Code
+      <span aria-hidden="true">/</span>
+      <span aria-current="page">smoltorch</span>
+    </nav>
+    <h1 class="page-title">smoltorch <span class="mark">🔥</span></h1>
+    <p class="lead">A tiny autograd engine and neural network library built from first principles. Implements automatic differentiation and deep learning in ~500 lines of readable Python code using only NumPy.</p>
+    <div class="btn-row">
+      <a href="https://github.com/kashifulhaque/smoltorch" target="_blank" rel="noopener noreferrer" class="btn btn-sm">
+        Code <span class="ext" aria-hidden="true">↗</span>
       </a>
-      <a href="https://pypi.org/project/smoltorch/" target="_blank" rel="noopener noreferrer" class="project-link">
-        PyPI
+      <a href="https://pypi.org/project/smoltorch/" target="_blank" rel="noopener noreferrer" class="btn btn-sm">
+        PyPI <span class="ext" aria-hidden="true">↗</span>
       </a>
-      <a href="https://blog.ifkash.dev/smoltorch" target="_blank" rel="noopener noreferrer" class="project-link">
-        Blog
+      <a href="https://blog.ifkash.dev/smoltorch" target="_blank" rel="noopener noreferrer" class="btn btn-sm">
+        Blog <span class="ext" aria-hidden="true">↗</span>
       </a>
     </div>
   </header>
 
-  <section class="content">
-    <div class="section">
-      <h2>Overview</h2>
-      <p>
-        smoltorch is a minimalist deep learning library that implements automatic differentiation (autograd) and neural networks 
-        from scratch using only NumPy. Inspired by Andrej Karpathy's micrograd, it's designed to be educational, transparent, 
-        and functional—you can train real models on real datasets with competitive performance.
-      </p>
-      <p>
-        The name comes from "Smol" + PyTorch: a tiny implementation that captures the essence of modern deep learning frameworks.
-      </p>
-    </div>
+  <div class="detail-body">
+    <aside class="facts" aria-label="Project facts">
+      <dl>
+        <div class="fact">
+          <dt>Stack</dt>
+          <dd><span>Python</span><span>NumPy</span></dd>
+        </div>
+        <div class="fact">
+          <dt>Size</dt>
+          <dd>~500 lines</dd>
+        </div>
+        <div class="fact">
+          <dt>Best result</dt>
+          <dd>96.5% · Breast Cancer</dd>
+        </div>
+        <div class="fact">
+          <dt>Inspired by</dt>
+          <dd>micrograd</dd>
+        </div>
+        <div class="fact">
+          <dt>Install</dt>
+          <dd>uv add smoltorch</dd>
+        </div>
+        <div class="fact">
+          <dt>Links</dt>
+          <dd>
+            <a href="https://github.com/kashifulhaque/smoltorch" target="_blank" rel="noopener noreferrer">GitHub <span aria-hidden="true">↗</span></a>
+            <a href="https://pypi.org/project/smoltorch/" target="_blank" rel="noopener noreferrer">PyPI <span aria-hidden="true">↗</span></a>
+            <a href="https://blog.ifkash.dev/smoltorch" target="_blank" rel="noopener noreferrer">Blog <span aria-hidden="true">↗</span></a>
+          </dd>
+        </div>
+      </dl>
+    </aside>
 
-    <div class="section">
-      <h2>Design Philosophy</h2>
-      <div class="philosophy-grid">
-        <div class="philosophy-item">
-          <div class="philosophy-icon">📚</div>
-          <div class="philosophy-title">Educational</div>
-          <div class="philosophy-desc">Understand how modern deep learning frameworks work under the hood</div>
-        </div>
-        <div class="philosophy-item">
-          <div class="philosophy-icon">🔍</div>
-          <div class="philosophy-title">Transparent</div>
-          <div class="philosophy-desc">Every operation is visible and understandable</div>
-        </div>
-        <div class="philosophy-item">
-          <div class="philosophy-icon">⚡</div>
-          <div class="philosophy-title">Functional</div>
-          <div class="philosophy-desc">Train real models on real datasets with competitive performance</div>
-        </div>
-        <div class="philosophy-item">
-          <div class="philosophy-icon">✨</div>
-          <div class="philosophy-title">Minimal</div>
-          <div class="philosophy-desc">~500 lines of readable, well-documented Python code</div>
-        </div>
-      </div>
-    </div>
+    <div class="copy">
+      <section class="section">
+        <h2><span class="num">01</span>Overview</h2>
+        <p>
+          smoltorch is a minimalist deep learning library that implements automatic differentiation (autograd) and neural networks
+          from scratch using only NumPy. Inspired by Andrej Karpathy's micrograd, it's designed to be educational, transparent,
+          and functional—you can train real models on real datasets with competitive performance.
+        </p>
+        <p>
+          The name comes from "Smol" + PyTorch: a tiny implementation that captures the essence of modern deep learning frameworks.
+        </p>
+      </section>
 
-    <div class="section">
-      <h2>Features</h2>
-      <div class="features-section">
-        <div class="feature-category">
-          <h3>Core Engine</h3>
-          <ul class="feature-list">
-            <li>Automatic differentiation with dynamic computational graphs</li>
-            <li>NumPy-backed tensors for efficient numerical computing</li>
-            <li>Broadcasting support with proper gradient handling</li>
-            <li>Topological sorting for correct backpropagation</li>
-          </ul>
+      <section class="section">
+        <h2><span class="num">02</span>Design Philosophy</h2>
+        <div class="tiles">
+          <div class="tile">
+            <h3>Educational</h3>
+            <p>Understand how modern deep learning frameworks work under the hood</p>
+          </div>
+          <div class="tile">
+            <h3>Transparent</h3>
+            <p>Every operation is visible and understandable</p>
+          </div>
+          <div class="tile">
+            <h3>Functional</h3>
+            <p>Train real models on real datasets with competitive performance</p>
+          </div>
+          <div class="tile">
+            <h3>Minimal</h3>
+            <p>~500 lines of readable, well-documented Python code</p>
+          </div>
         </div>
-        <div class="feature-category">
-          <h3>Operations</h3>
-          <ul class="feature-list">
-            <li><strong>Arithmetic</strong>: +, -, *, /, **</li>
-            <li><strong>Matrix operations</strong>: @ (matmul)</li>
-            <li><strong>Activations</strong>: ReLU, tanh, sigmoid</li>
-            <li><strong>Reductions</strong>: sum, mean</li>
-            <li><strong>Element-wise</strong>: log</li>
-          </ul>
-        </div>
-        <div class="feature-category">
-          <h3>Neural Networks</h3>
-          <ul class="feature-list">
-            <li><strong>Layers</strong>: Linear (fully connected)</li>
-            <li><strong>Models</strong>: Multi-layer perceptron (MLP)</li>
-            <li><strong>Loss functions</strong>: MSE, Binary Cross-Entropy</li>
-            <li><strong>Optimizers</strong>: SGD (Stochastic Gradient Descent)</li>
-          </ul>
-        </div>
-      </div>
-    </div>
+      </section>
 
-    <div class="section">
-      <h2>Performance</h2>
-      <p>smoltorch achieves competitive results on standard benchmarks:</p>
-      <div class="performance-table">
-        <div class="perf-row perf-header">
-          <div class="perf-cell">Dataset</div>
-          <div class="perf-cell">Task</div>
-          <div class="perf-cell">Accuracy</div>
-          <div class="perf-cell">Epochs</div>
-        </div>
-        <div class="perf-row">
-          <div class="perf-cell">Breast Cancer</div>
-          <div class="perf-cell">Binary Classification</div>
-          <div class="perf-cell">96.5%</div>
-          <div class="perf-cell">200</div>
-        </div>
-        <div class="perf-row">
-          <div class="perf-cell">Synthetic Regression</div>
-          <div class="perf-cell">Regression</div>
-          <div class="perf-cell">MSE: 95.7</div>
-          <div class="perf-cell">100</div>
-        </div>
-      </div>
-    </div>
+      <section class="section">
+        <h2><span class="num">03</span>Features</h2>
 
-    <div class="section">
-      <h2>Installation</h2>
-      <div class="code-block">
+        <h3>Core Engine</h3>
+        <ul class="ruled">
+          <li>Automatic differentiation with dynamic computational graphs</li>
+          <li>NumPy-backed tensors for efficient numerical computing</li>
+          <li>Broadcasting support with proper gradient handling</li>
+          <li>Topological sorting for correct backpropagation</li>
+        </ul>
+
+        <h3>Operations</h3>
+        <ul class="defs">
+          <li><span class="term">Arithmetic</span><span class="desc">+, -, *, /, **</span></li>
+          <li><span class="term">Matrix operations</span><span class="desc">@ (matmul)</span></li>
+          <li><span class="term">Activations</span><span class="desc">ReLU, tanh, sigmoid</span></li>
+          <li><span class="term">Reductions</span><span class="desc">sum, mean</span></li>
+          <li><span class="term">Element-wise</span><span class="desc">log</span></li>
+        </ul>
+
+        <h3>Neural Networks</h3>
+        <ul class="defs">
+          <li><span class="term">Layers</span><span class="desc">Linear (fully connected)</span></li>
+          <li><span class="term">Models</span><span class="desc">Multi-layer perceptron (MLP)</span></li>
+          <li><span class="term">Loss functions</span><span class="desc">MSE, Binary Cross-Entropy</span></li>
+          <li><span class="term">Optimizers</span><span class="desc">SGD (Stochastic Gradient Descent)</span></li>
+        </ul>
+      </section>
+
+      <section class="section">
+        <h2><span class="num">04</span>Performance</h2>
+        <p>smoltorch achieves competitive results on standard benchmarks:</p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Dataset</th>
+                <th scope="col">Task</th>
+                <th scope="col" class="r">Accuracy</th>
+                <th scope="col" class="r">Epochs</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="strong">Breast Cancer</td>
+                <td>Binary Classification</td>
+                <td class="mono r">96.5%</td>
+                <td class="mono r">200</td>
+              </tr>
+              <tr>
+                <td class="strong">Synthetic Regression</td>
+                <td>Regression</td>
+                <td class="mono r">MSE: 95.7</td>
+                <td class="mono r">100</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2><span class="num">05</span>Installation</h2>
         <pre><code>uv add smoltorch</code></pre>
-      </div>
-    </div>
+      </section>
 
-    <div class="section">
-      <h2>Quick Start</h2>
-      
-      <h3 class="subsection-title">Basic Tensor Operations</h3>
-      <div class="code-block">
+      <section class="section">
+        <h2><span class="num">06</span>Quick Start</h2>
+
+        <h3>Basic Tensor Operations</h3>
         <pre><code>from smoltorch import Tensor
 
 # Create tensors
@@ -149,10 +177,8 @@ a = x @ y.T         # Matrix multiplication
 # Backward pass
 a.backward()
 print(x.grad)       # Gradients computed automatically!</code></pre>
-      </div>
 
-      <h3 class="subsection-title">Training a Neural Network</h3>
-      <div class="code-block">
+        <h3>Training a Neural Network</h3>
         <pre><code>from smoltorch import Tensor, MLP, SGD
 from sklearn.datasets import make_regression
 import numpy as np
@@ -171,46 +197,42 @@ for epoch in range(100):
     X_tensor = Tensor(X)
     y_tensor = Tensor(y)
     y_pred = model(X_tensor)
-    
+
     # Compute loss (MSE)
     loss = ((y_pred - y_tensor) ** 2).mean()
-    
+
     # Backward pass
     optimizer.zero_grad()
     loss.backward()
-    
+
     # Update weights
     optimizer.step()
-    
+
     if (epoch + 1) % 10 == 0:
         print(f"Epoch {'{'}epoch + 1{'}'}, Loss: {'{'}loss.data:.4f{'}'}\")</code></pre>
-      </div>
-    </div>
+      </section>
 
-    <div class="section">
-      <h2>How Autograd Works</h2>
-      <p>smoltorch builds a dynamic computational graph during the forward pass:</p>
-      <ol class="autograd-steps">
-        <li><strong>Forward pass</strong>: Build computational graph with operations as nodes</li>
-        <li><strong>Topological sort</strong>: Order nodes for correct gradient flow</li>
-        <li><strong>Backward pass</strong>: Apply chain rule in reverse topological order</li>
-        <li><strong>Gradient accumulation</strong>: Sum gradients from multiple paths</li>
-      </ol>
-      
-      <div class="code-block">
+      <section class="section">
+        <h2><span class="num">07</span>How Autograd Works</h2>
+        <p>smoltorch builds a dynamic computational graph during the forward pass:</p>
+        <ol class="steps">
+          <li><span><strong>Forward pass</strong>: Build computational graph with operations as nodes</span></li>
+          <li><span><strong>Topological sort</strong>: Order nodes for correct gradient flow</span></li>
+          <li><span><strong>Backward pass</strong>: Apply chain rule in reverse topological order</span></li>
+          <li><span><strong>Gradient accumulation</strong>: Sum gradients from multiple paths</span></li>
+        </ol>
+
         <pre><code>x = Tensor([2.0])
 y = Tensor([3.0])
 z = (x * y) + (x ** 2)  # Graph: z -> [+] -> [*, **] -> [x, y]
 
 z.backward()  # Backpropagate through graph
 print(x.grad)  # dz/dx = y + 2x = 3 + 4 = 7.0</code></pre>
-      </div>
-    </div>
+      </section>
 
-    <div class="section">
-      <h2>Broadcasting Support</h2>
-      <p>smoltorch correctly handles broadcasting in both forward and backward passes:</p>
-      <div class="code-block">
+      <section class="section">
+        <h2><span class="num">08</span>Broadcasting Support</h2>
+        <p>smoltorch correctly handles broadcasting in both forward and backward passes:</p>
         <pre><code>x = Tensor([[1, 2, 3]])    # shape (1, 3)
 y = Tensor([[1], [2]])      # shape (2, 1)
 z = x + y                   # shape (2, 3) - broadcasting!
@@ -218,525 +240,477 @@ z = x + y                   # shape (2, 3) - broadcasting!
 z.backward()
 # x.grad sums over broadcast dimensions: shape (1, 3)
 # y.grad sums over broadcast dimensions: shape (2, 1)</code></pre>
-      </div>
-    </div>
+      </section>
 
-    <div class="section">
-      <h2>Supported Operations</h2>
-      <div class="ops-grid">
-        <div class="ops-category">
-          <div class="ops-title">Element-wise</div>
-          <div class="ops-list">
-            <code>x + y</code>
-            <code>x - y</code>
-            <code>x * y</code>
-            <code>x / y</code>
-            <code>x ** 2</code>
-          </div>
-        </div>
-        <div class="ops-category">
-          <div class="ops-title">Matrix Operations</div>
-          <div class="ops-list">
-            <code>x @ y</code>
-          </div>
-        </div>
-        <div class="ops-category">
-          <div class="ops-title">Activations</div>
-          <div class="ops-list">
-            <code>x.relu()</code>
-            <code>x.tanh()</code>
-            <code>x.sigmoid()</code>
-          </div>
-        </div>
-        <div class="ops-category">
-          <div class="ops-title">Reductions</div>
-          <div class="ops-list">
-            <code>x.sum()</code>
-            <code>x.sum(axis=0)</code>
-            <code>x.mean()</code>
-            <code>x.mean(axis=1)</code>
-          </div>
-        </div>
-        <div class="ops-category">
-          <div class="ops-title">Other</div>
-          <div class="ops-list">
-            <code>x.log()</code>
-          </div>
-        </div>
-      </div>
-    </div>
+      <section class="section">
+        <h2><span class="num">09</span>Supported Operations</h2>
+        <ul class="defs">
+          <li>
+            <span class="term">Element-wise</span>
+            <span class="chips">
+              <code>x + y</code>
+              <code>x - y</code>
+              <code>x * y</code>
+              <code>x / y</code>
+              <code>x ** 2</code>
+            </span>
+          </li>
+          <li>
+            <span class="term">Matrix Operations</span>
+            <span class="chips">
+              <code>x @ y</code>
+            </span>
+          </li>
+          <li>
+            <span class="term">Activations</span>
+            <span class="chips">
+              <code>x.relu()</code>
+              <code>x.tanh()</code>
+              <code>x.sigmoid()</code>
+            </span>
+          </li>
+          <li>
+            <span class="term">Reductions</span>
+            <span class="chips">
+              <code>x.sum()</code>
+              <code>x.sum(axis=0)</code>
+              <code>x.mean()</code>
+              <code>x.mean(axis=1)</code>
+            </span>
+          </li>
+          <li>
+            <span class="term">Other</span>
+            <span class="chips">
+              <code>x.log()</code>
+            </span>
+          </li>
+        </ul>
+      </section>
 
-    <div class="section">
-      <h2>Project Structure</h2>
-      <ul class="structure-list">
-        <li><code>smoltorch/tensor.py</code>: Core Tensor class with autograd implementation</li>
-        <li><code>smoltorch/nn.py</code>: Neural network layers and models (Linear, MLP)</li>
-        <li><code>smoltorch/optim.py</code>: Optimizers (SGD)</li>
-        <li><code>examples/train_regression.py</code>: Regression training example</li>
-        <li><code>examples/train_classification.py</code>: Classification training example</li>
-        <li><code>tests/</code>: Comprehensive test suite covering all operations</li>
-      </ul>
-    </div>
+      <section class="section">
+        <h2><span class="num">10</span>Project Structure</h2>
+        <ul class="defs">
+          <li><span class="term"><code>smoltorch/tensor.py</code></span><span class="desc">Core Tensor class with autograd implementation</span></li>
+          <li><span class="term"><code>smoltorch/nn.py</code></span><span class="desc">Neural network layers and models (Linear, MLP)</span></li>
+          <li><span class="term"><code>smoltorch/optim.py</code></span><span class="desc">Optimizers (SGD)</span></li>
+          <li><span class="term"><code>examples/train_regression.py</code></span><span class="desc">Regression training example</span></li>
+          <li><span class="term"><code>examples/train_classification.py</code></span><span class="desc">Classification training example</span></li>
+          <li><span class="term"><code>tests/</code></span><span class="desc">Comprehensive test suite covering all operations</span></li>
+        </ul>
+      </section>
 
-    <div class="section">
-      <h2>Roadmap</h2>
-      <div class="roadmap-section">
-        <div class="roadmap-category">
-          <h3>Coming Soon</h3>
-          <ul class="roadmap-list">
-            <li>More optimizers: Adam, RMSprop with momentum</li>
-            <li>More activations: Leaky ReLU, ELU, Softmax</li>
-            <li>Regularization: Dropout, L2 weight decay</li>
-            <li>Mini-batch training: Efficient batch processing</li>
-            <li>Multi-class classification: Softmax + Cross-Entropy loss</li>
-          </ul>
-        </div>
-        <div class="roadmap-category">
-          <h3>Future</h3>
-          <ul class="roadmap-list">
-            <li>Convolutional layers: CNN support for images</li>
-            <li>Model serialization: Save/load weights in safetensors format</li>
-            <li>GPU acceleration: Explore Metal Performance Shaders for Apple Silicon</li>
-            <li>Better initialization: He initialization for ReLU networks</li>
-            <li>Learning rate scheduling: Decay strategies</li>
-          </ul>
-        </div>
-      </div>
-    </div>
+      <section class="section">
+        <h2><span class="num">11</span>Roadmap</h2>
 
-    <div class="section">
-      <h2>Learning Resources</h2>
-      <ul class="resource-list">
-        <li>
-          <a href="https://github.com/karpathy/micrograd" target="_blank" rel="noopener noreferrer" class="resource-link">
-            Andrej Karpathy's micrograd — The original inspiration
-          </a>
-        </li>
-        <li>
-          <a href="https://www.youtube.com/playlist?list=PLAqhIrjkxbuWI23v9cThsA9GvCAUhRvKZ" target="_blank" rel="noopener noreferrer" class="resource-link">
-            Neural Networks: Zero to Hero — Video series by Andrej Karpathy
-          </a>
-        </li>
-        <li>
-          <a href="https://arxiv.org/abs/1802.01528" target="_blank" rel="noopener noreferrer" class="resource-link">
-            The Matrix Calculus You Need For Deep Learning — Paper on backpropagation math
-          </a>
-        </li>
-      </ul>
+        <h3>Coming Soon</h3>
+        <ul class="ruled">
+          <li>More optimizers: Adam, RMSprop with momentum</li>
+          <li>More activations: Leaky ReLU, ELU, Softmax</li>
+          <li>Regularization: Dropout, L2 weight decay</li>
+          <li>Mini-batch training: Efficient batch processing</li>
+          <li>Multi-class classification: Softmax + Cross-Entropy loss</li>
+        </ul>
+
+        <h3>Future</h3>
+        <ul class="ruled">
+          <li>Convolutional layers: CNN support for images</li>
+          <li>Model serialization: Save/load weights in safetensors format</li>
+          <li>GPU acceleration: Explore Metal Performance Shaders for Apple Silicon</li>
+          <li>Better initialization: He initialization for ReLU networks</li>
+          <li>Learning rate scheduling: Decay strategies</li>
+        </ul>
+      </section>
+
+      <section class="section">
+        <h2><span class="num">12</span>Learning Resources</h2>
+        <ul class="linklist">
+          <li>
+            <a href="https://github.com/karpathy/micrograd" target="_blank" rel="noopener noreferrer">
+              Andrej Karpathy's micrograd — The original inspiration
+              <span class="arrow" aria-hidden="true">↗</span>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.youtube.com/playlist?list=PLAqhIrjkxbuWI23v9cThsA9GvCAUhRvKZ" target="_blank" rel="noopener noreferrer">
+              Neural Networks: Zero to Hero — Video series by Andrej Karpathy
+              <span class="arrow" aria-hidden="true">↗</span>
+            </a>
+          </li>
+          <li>
+            <a href="https://arxiv.org/abs/1802.01528" target="_blank" rel="noopener noreferrer">
+              The Matrix Calculus You Need For Deep Learning — Paper on backpropagation math
+              <span class="arrow" aria-hidden="true">↗</span>
+            </a>
+          </li>
+        </ul>
+      </section>
     </div>
-  </section>
-</div>
+  </div>
+</article>
 
 <style>
-  .page {
-    display: flex;
-    flex-direction: column;
-    gap: 3rem;
-    max-width: 48rem;
-    animation: fade-up var(--dur-base) var(--ease-out-quart);
+  /* ── Detail page (shared across project write-ups) ───────────── */
+
+  .page-title {
+    max-width: 18ch;
+    overflow-wrap: break-word;
   }
 
-  .page-header {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    padding-bottom: 2rem;
-    border-bottom: 1px solid var(--line-soft);
+  /* Sections carry their own top hairline, so the head drops its rule */
+  .page-head {
+    border-bottom: 0;
   }
 
-  .breadcrumb {
-    font-family: var(--font-mono-g);
-    font-size: 0.75rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--ink-mute);
-  }
-
-  .breadcrumb a {
-    color: var(--ink-mute);
-    transition: color var(--dur-instant) var(--ease-out-quart);
-  }
-
-  .breadcrumb a:hover {
-    color: var(--signal-hi);
-  }
-
-  .separator {
-    margin: 0 0.5rem;
-  }
-
-  .page-desc {
-    font-size: 1.0625rem;
-    line-height: 1.6;
-    color: var(--ink-soft);
+  .page-head .lead {
     margin: 0;
   }
 
-  .project-links {
-    display: flex;
-    gap: 1rem;
+  .page-head .btn-row {
+    margin-top: var(--s-2);
   }
 
-  .project-link {
-    font-family: var(--font-mono-g);
-    font-size: 0.7rem;
-    font-weight: 500;
-    color: var(--ink-soft);
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    transition: color var(--dur-instant) var(--ease-out-quart),
-      background-color var(--dur-instant) var(--ease-out-quart),
-      border-color var(--dur-instant) var(--ease-out-quart);
-    padding: 0.5rem 1rem;
-    border: 1px solid var(--line-soft);
-    border-radius: var(--radius-sm);
+  .ext {
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    transition: color var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
   }
 
-  .project-link:hover {
-    background: var(--ink);
-    color: var(--void);
-    border-color: var(--ink);
+  .btn:hover .ext {
+    color: inherit;
+    transform: translate(2px, -2px);
   }
 
-  .content {
-    display: flex;
-    flex-direction: column;
-    gap: 2.5rem;
+  .detail-body {
+    display: grid;
+    gap: var(--s-7);
+  }
+
+  /* Facts: mono summary column */
+  .facts dl {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: var(--s-5);
+    margin: 0;
+    border-top: 1px solid var(--line);
+  }
+
+  .fact {
+    min-width: 0;
+    padding: var(--s-3) 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .fact dt {
+    margin-bottom: var(--s-1);
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    line-height: 1.4;
+  }
+
+  .fact dd {
+    display: grid;
+    gap: 2px;
+    margin: 0;
+    color: var(--ink);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    line-height: 1.5;
+    font-variant-numeric: tabular-nums;
+    overflow-wrap: anywhere;
+  }
+
+  .fact a {
+    display: inline-flex;
+    align-items: baseline;
+    gap: var(--s-2);
+    color: var(--ink);
+    text-decoration: none;
+  }
+
+  .fact a:hover {
+    color: var(--fjord);
+  }
+
+  .fact a span {
+    color: var(--ink-3);
+    transition: color var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+  }
+
+  .fact a:hover span {
+    color: var(--fjord);
+    transform: translate(2px, -2px);
+  }
+
+  /* Reading column (not .prose: that name belongs to Tailwind Typography) */
+  .copy {
+    min-width: 0;
+  }
+
+  .section {
+    padding-top: var(--s-4);
+    border-top: 1px solid var(--line);
+  }
+
+  .section + .section {
+    margin-top: var(--s-8);
+  }
+
+  .section > * {
+    margin: 0;
+  }
+
+  .section > * + * {
+    margin-top: var(--s-4);
   }
 
   .section h2 {
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: var(--ink);
+    display: flex;
+    align-items: baseline;
+    gap: var(--s-4);
+    font-size: var(--text-xl);
+    letter-spacing: -0.022em;
+  }
+
+  .num {
+    flex: none;
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-weight: 400;
     letter-spacing: 0.02em;
-    margin-bottom: 1rem;
+    font-variant-numeric: tabular-nums;
   }
 
-  .section h3 {
-    font-size: 1.125rem;
-    font-weight: 600;
-    color: var(--ink);
-    margin-bottom: 0.75rem;
-  }
-
-  .subsection-title {
-    margin-top: 1.5rem;
-    margin-bottom: 0.75rem;
+  .section > h2 + * {
+    margin-top: var(--s-5);
   }
 
   .section p {
-    font-size: 0.9375rem;
-    line-height: 1.7;
-    color: var(--ink-soft);
-    margin-bottom: 1rem;
+    line-height: 1.65;
   }
 
-  .section p:last-child {
-    margin-bottom: 0;
+  @media (min-width: 960px) {
+    .detail-body {
+      grid-template-columns: 240px minmax(0, var(--measure));
+      column-gap: var(--s-8);
+      align-items: start;
+      padding-top: var(--s-4);
+    }
+
+    .facts {
+      position: sticky;
+      top: calc(64px + var(--s-6));
+    }
+
+    .facts dl {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .section + .section {
+      margin-top: var(--s-9);
+    }
   }
 
-  .philosophy-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1.25rem;
+  /* Sub-headings inside a section */
+  .section > * + h3 {
+    margin-top: var(--s-7);
   }
 
-  .philosophy-item {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    padding: 1.25rem;
-    background: var(--panel);
-    border: 1px solid var(--line-soft);
-    border-radius: var(--radius-sm);
+  .section > h3 + * {
+    margin-top: var(--s-3);
   }
 
-  .philosophy-icon {
-    font-size: 2rem;
-    line-height: 1;
+  .section h3 {
+    font-size: var(--text-md);
+    letter-spacing: -0.01em;
   }
 
-  .philosophy-title {
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--ink);
+  .page-title .mark {
+    font-size: 0.6em;
+    letter-spacing: 0;
+    vertical-align: 0.12em;
   }
 
-  .philosophy-desc {
-    font-size: 0.875rem;
-    line-height: 1.5;
-    color: var(--ink-mute);
-  }
-
-  .features-section {
-    display: grid;
-    gap: 1.5rem;
-  }
-
-  .feature-category h3 {
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--ink);
-    margin-bottom: 0.75rem;
-  }
-
-  .feature-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    list-style: none;
+  /* Term / description rows */
+  .defs {
     padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--line);
   }
 
-  .feature-list li {
-    font-size: 0.9375rem;
-    line-height: 1.6;
-    color: var(--ink-soft);
-    padding-left: 1.5rem;
-    position: relative;
-  }
-
-  .feature-list li::before {
-    content: '→';
-    position: absolute;
-    left: 0;
-    color: var(--signal);
-  }
-
-  .performance-table {
-    display: flex;
-    flex-direction: column;
-    border: 1px solid var(--line-soft);
-    border-radius: var(--radius-sm);
-    overflow: hidden;
-  }
-
-  .perf-row {
+  .defs > li {
     display: grid;
-    grid-template-columns: 2fr 2fr 1.5fr 1fr;
-    gap: 1rem;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--s-1) var(--s-5);
+    padding: var(--s-3) 0;
+    border-bottom: 1px solid var(--line);
   }
 
-  .perf-header {
-    background: var(--panel-hi);
-    border-bottom: 1px solid var(--line-soft);
-  }
-
-  .perf-header .perf-cell {
-    font-family: var(--font-mono-g);
-    font-size: 0.75rem;
+  .term {
+    min-width: 0;
+    color: var(--ink);
     font-weight: 500;
-    color: var(--ink-soft);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
   }
 
-  .perf-row:not(.perf-header) {
-    border-bottom: 1px solid var(--line-soft);
+
+  .desc {
+    color: var(--ink-2);
+    line-height: 1.55;
   }
 
-  .perf-row:last-child {
-    border-bottom: none;
+  @media (min-width: 600px) {
+    .defs > li {
+      grid-template-columns: minmax(0, 12rem) minmax(0, 1fr);
+    }
   }
 
-  .perf-cell {
-    padding: 0.875rem 1rem;
-    font-size: 0.875rem;
-    color: var(--ink-soft);
-  }
-
-  .autograd-steps {
-    padding-left: 1.5rem;
-    margin: 1rem 0;
-  }
-
-  .autograd-steps li {
-    font-size: 0.9375rem;
-    line-height: 1.7;
-    color: var(--ink-soft);
-    margin-bottom: 0.5rem;
-  }
-
-  .ops-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 1rem;
-  }
-
-  .ops-category {
-    padding: 1rem;
-    background: var(--panel);
-    border: 1px solid var(--line-soft);
-    border-radius: var(--radius-sm);
-  }
-
-  .ops-title {
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: var(--ink-soft);
-    margin-bottom: 0.75rem;
-  }
-
-  .ops-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.375rem;
-  }
-
-  .ops-list code {
-    font-family: var(--font-mono-g);
-    font-size: 0.8125rem;
-    color: var(--ink-soft);
-    background: var(--code-bg);
-    border: 1px solid var(--line-soft);
-    padding: 0.25rem 0.5rem;
-    border-radius: var(--radius-sm);
-  }
-
-  .roadmap-section {
-    display: grid;
-    gap: 1.5rem;
-  }
-
-  .roadmap-category h3 {
-    font-size: 1rem;
-    font-weight: 600;
+  .term code {
+    padding: 0;
+    background: none;
     color: var(--ink);
-    margin-bottom: 0.75rem;
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    font-weight: 400;
   }
 
-  .roadmap-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    list-style: none;
+  /* Plain hairline-ruled rows */
+  .ruled {
     padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--line);
   }
 
-  .roadmap-list li {
-    font-size: 0.9375rem;
+  .ruled > li {
+    padding: var(--s-3) 0;
+    border-bottom: 1px solid var(--line);
+    color: var(--ink-2);
     line-height: 1.6;
-    color: var(--ink-soft);
-    padding-left: 1.5rem;
-    position: relative;
   }
 
-  .roadmap-list li::before {
-    content: '□';
-    position: absolute;
-    left: 0;
-    color: var(--signal);
-  }
-
-  .structure-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    list-style: none;
-    padding: 0;
-  }
-
-  .structure-list li {
-    font-size: 0.9375rem;
-    line-height: 1.6;
-    color: var(--ink-soft);
-    padding-left: 1.5rem;
-    position: relative;
-  }
-
-  .structure-list li::before {
-    content: '→';
-    position: absolute;
-    left: 0;
-    color: var(--signal);
-  }
-
-  .structure-list code {
-    font-family: var(--font-mono-g);
-    font-size: 0.875rem;
-    color: var(--ink-soft);
-    background: var(--panel-hi);
-    border: 1px solid var(--line-soft);
-    padding: 0.125rem 0.375rem;
-    border-radius: var(--radius-sm);
-  }
-
-  .resource-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    list-style: none;
-    padding: 0;
-  }
-
-  .resource-link {
-    display: inline-flex;
-    align-items: center;
-    font-family: var(--font-mono-g);
-    font-size: 0.7rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--ink-soft);
-    padding: 0.75rem 1rem;
-    background: var(--panel);
-    border: 1px solid var(--line-soft);
-    border-radius: var(--radius-sm);
-    transition: color var(--dur-instant) var(--ease-out-quart),
-      background-color var(--dur-instant) var(--ease-out-quart),
-      border-color var(--dur-instant) var(--ease-out-quart);
-  }
-
-  .resource-link:hover {
-    background: var(--ink);
-    color: var(--void);
-    border-color: var(--ink);
-  }
-
-  .code-block {
-    background: var(--code-bg);
-    border: 1px solid var(--line-soft);
-    border-radius: var(--radius-sm);
+  /* Hairline table */
+  .table-wrap {
     overflow-x: auto;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
   }
 
-  .code-block pre {
-    margin: 0;
-    padding: 1.25rem;
+  table {
+    width: 100%;
+    min-width: 32rem;
+    border-collapse: collapse;
+    font-size: var(--text-sm);
   }
 
-  .code-block code {
-    font-family: var(--font-mono-g);
-    font-size: 0.875rem;
-    line-height: 1.6;
-    color: var(--ink-soft);
+  th {
+    padding: var(--s-2) var(--s-4);
+    border-bottom: 1px solid var(--line);
+    background: var(--surface-2);
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-weight: 400;
+    text-align: left;
+    white-space: nowrap;
   }
 
-  @keyframes fade-up {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+  td {
+    padding: var(--s-3) var(--s-4);
+    border-bottom: 1px solid var(--line);
+    color: var(--ink-2);
+    line-height: 1.5;
+    vertical-align: top;
   }
 
-  @media (max-width: 768px) {
-    .section h2 {
-      font-size: 1.25rem;
-    }
+  tbody tr:last-child td {
+    border-bottom: 0;
+  }
 
-    .philosophy-grid {
-      grid-template-columns: 1fr;
-    }
+  td.strong {
+    color: var(--ink);
+    font-weight: 500;
+  }
 
-    .ops-grid {
-      grid-template-columns: 1fr;
-    }
+  td.mono {
+    color: var(--ink);
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
 
-    .perf-row {
-      grid-template-columns: 1fr 1fr;
-      gap: 0.5rem;
-    }
+  /* Outbound resource rows */
+  .linklist {
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--line);
+  }
 
-    .perf-cell:nth-child(3),
-    .perf-cell:nth-child(4) {
-      grid-column: span 1;
-    }
+  .linklist a {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--s-4);
+    padding: var(--s-3) 0;
+    border-bottom: 1px solid var(--line);
+    color: var(--ink);
+    text-decoration: none;
+  }
+
+  .linklist a:hover {
+    color: var(--fjord);
+  }
+
+  .arrow {
+    flex: none;
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    transition: color var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+  }
+
+  .linklist a:hover .arrow {
+    color: var(--fjord);
+    transform: translate(2px, -2px);
+  }
+
+  th.r,
+  td.r {
+    text-align: right;
+  }
+
+  /* Numbered hairline steps */
+  .steps {
+    padding: 0;
+    list-style: none;
+    counter-reset: step;
+    border-top: 1px solid var(--line);
+  }
+
+  .steps > li {
+    display: grid;
+    grid-template-columns: var(--s-7) minmax(0, 1fr);
+    padding: var(--s-3) 0;
+    border-bottom: 1px solid var(--line);
+    color: var(--ink-2);
+    line-height: 1.55;
+    counter-increment: step;
+  }
+
+  .steps > li::before {
+    content: counter(step, decimal-leading-zero);
+    padding-top: 0.2em;
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-2);
   }
 </style>

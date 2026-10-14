@@ -101,11 +101,12 @@ cd api && npx wrangler d1 migrations apply ifkash --local
 - **Migrations are append-only**, numbered `NNNN_name.sql` in `api/migrations/`. Add a new
   file; never edit an applied one. CI applies pending migrations to the remote D1 before
   each Worker deploy, so a migration ships with the `api/**` push that needs it.
-- **Theme is a single dark, monochrome palette** defined entirely as CSS variables at the
-  top of `src/app.css` (warm-graphite base, cream accent via `--blueprint`). Restyle by
-  editing the variables, not per-page colors. Careful with the legacy aliases: `--paper*`
-  tokens are dark *surface* colors — never use them as text colors on cards (past
-  dark-on-dark bug in the project pages).
+- **Design system ("Nordisk")** is documented in `DESIGN.md` and defined as CSS variables
+  at the top of `src/app.css`: a light birch-paper default and a "polar night" dark theme
+  under `[data-theme="dark"]` (chosen by `src/lib/stores/theme.ts`, defaulting to the
+  system preference). Use the canonical tokens (`--bg`, `--surface`, `--ink*`, `--line*`,
+  `--fjord*`, `--moss`, `--clay`, `--falu`) and restyle by editing them, not per-page
+  colors.
 - **Résumé rendering is fully client-side** — Typst → PDF happens in the browser via
   `typst.ts` WASM (`src/lib/typst.ts`); there is no compile server. It fetches its WASM
   compiler from a CDN on first compile (needs internet) and uses fonts from `static/fonts`.

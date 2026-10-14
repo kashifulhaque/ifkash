@@ -25,9 +25,9 @@
 </script>
 
 <li>
-  <button class="tree-dir" on:click={() => onToggle(node.path)}>
+  <button class="tree-dir" on:click={() => onToggle(node.path)} aria-expanded={isOpen}>
     {#if isOpen}<FolderOpen size={13} />{:else}<Folder size={13} />{/if}
-    {node.name}
+    <span class="tree-name">{node.name}</span>
   </button>
   {#if isOpen}
     <ul>
@@ -42,7 +42,7 @@
             on:click={() => onOpen(f.path)}
           >
             {#if f.path.endsWith(".md")}<FileText size={13} />{:else}<File size={13} />{/if}
-            {fileName(f.path)}
+            <span class="tree-name">{fileName(f.path)}</span>
           </button>
         </li>
       {/each}
@@ -51,10 +51,12 @@
 </li>
 
 <style>
+  /* Nested levels hang from a hairline guide. */
   ul {
+    margin: 0 0 0 calc(var(--s-2) + 6px);
+    padding: 0 0 0 var(--s-2);
+    border-left: 1px solid var(--line);
     list-style: none;
-    margin: 0;
-    padding-left: 14px;
   }
 
   li {
@@ -65,34 +67,50 @@
   .tree-file {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: var(--s-2);
     width: 100%;
-    padding: 3px 6px;
+    min-height: 28px;
+    padding: 0 var(--s-2);
     border: 0;
+    border-radius: var(--radius-xs);
     background: none;
+    color: var(--ink-2);
     font-family: var(--font-mono);
-    font-size: 0.78rem;
-    color: var(--ink-soft);
+    font-size: var(--text-xs);
     text-align: left;
-    cursor: var(--cursor-pointer);
     white-space: nowrap;
+    cursor: pointer;
+    transition: background-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+  }
+
+  .tree-dir :global(svg),
+  .tree-file :global(svg) {
+    flex-shrink: 0;
+    color: var(--ink-3);
+  }
+
+  .tree-name {
+    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
   }
 
   .tree-dir {
     color: var(--ink);
-    font-weight: 600;
+    font-weight: 500;
   }
 
   .tree-dir:hover,
   .tree-file:hover {
-    background: var(--blueprint-tint);
-    color: var(--blueprint);
+    background: var(--hover-wash);
+    color: var(--ink);
   }
 
   .tree-file.active {
-    background: var(--blueprint-tint);
-    color: var(--blueprint);
+    background: var(--fjord-wash);
+    color: var(--fjord);
+  }
+  .tree-file.active :global(svg) {
+    color: var(--fjord);
   }
 </style>

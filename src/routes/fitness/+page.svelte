@@ -30,128 +30,133 @@
   ];
 </script>
 
-<header class="page-header">
+<header class="page-head">
+  <p class="eyebrow"><span class="led" aria-hidden="true"></span>Private</p>
   <h1 class="section-title">Fitness</h1>
   <p class="section-subtitle">Training in one place. Sign in with Google to log your sessions.</p>
 </header>
 
-<section class="cards">
-  {#each cards as card, i}
-    <a class="card stagger" style="--i: {i}" href={card.href}>
-      <span class="card-icon" aria-hidden="true">
-        <svelte:component this={card.icon} size={18} strokeWidth={1.8} />
-      </span>
-      <div class="card-body">
-        <span class="card-name">{card.name}</span>
-        <p class="card-desc">{card.desc}</p>
-      </div>
-      <span class="card-arrow" aria-hidden="true">&rarr;</span>
-    </a>
-  {/each}
+<section class="entries" aria-label="Fitness tools">
+  <ol class="rows">
+    {#each cards as card, i}
+      <li class="stagger" style="--i: {i}">
+        <a class="entry" href={card.href}>
+          <span class="entry-index" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+          <div class="entry-body">
+            <span class="entry-name">
+              <span class="entry-icon" aria-hidden="true">
+                <svelte:component this={card.icon} size={16} strokeWidth={1.5} />
+              </span>
+              {card.name}
+            </span>
+            <p class="entry-desc">{card.desc}</p>
+          </div>
+          <span class="entry-arrow" aria-hidden="true">&rarr;</span>
+        </a>
+      </li>
+    {/each}
+  </ol>
 </section>
 
 <style>
-  .page-header {
-    padding-top: 16px;
+  .page-head .eyebrow {
+    margin: 0;
   }
 
-  .cards {
-    display: flex;
-    flex-direction: column;
-    margin-top: 8px;
+  .entries {
+    padding-top: var(--s-7);
   }
 
-  .card {
+  .entries .rows {
+    border-top-color: var(--ink);
+  }
+
+  .entry {
     display: grid;
-    grid-template-columns: 36px minmax(0, 1fr) 24px;
-    align-items: center;
-    gap: 20px;
-    padding: 22px 12px;
-    margin: 0 -12px;
-    border-bottom: 1px solid var(--line-soft);
+    grid-template-columns: 48px minmax(0, 1fr) 24px;
+    align-items: baseline;
+    gap: var(--s-5);
+    padding: var(--s-6) 0;
     color: var(--ink);
-    background: transparent;
-    transition:
-      background 0.15s,
-      color 0.15s;
+    transition: background-color var(--dur-fast) var(--ease);
   }
 
-  .card:first-child {
-    border-top: 1px solid var(--line-soft);
+  .entry-index {
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: 0.02em;
+    font-variant-numeric: tabular-nums;
   }
 
-  .card:hover {
-    background: var(--ink);
-    color: var(--void);
-    border-bottom-color: var(--ink);
-  }
-
-  .card-icon {
-    display: flex;
+  .entry-name {
+    display: inline-flex;
     align-items: center;
-    justify-content: center;
-    width: 36px;
-    height: 36px;
-    border: 1px solid var(--line-soft);
+    gap: var(--s-3);
+    color: var(--ink);
+    font-size: var(--text-xl);
+    font-weight: 500;
+    line-height: 1.1;
+    letter-spacing: -0.022em;
+    transition: color var(--dur-fast) var(--ease);
+  }
+
+  .entry-icon {
+    display: inline-grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border: 1px solid var(--line);
     border-radius: var(--radius-sm);
-    color: var(--signal);
-  }
-
-  .card:hover .card-icon {
-    border-color: var(--void);
-    color: var(--void);
-  }
-
-  .card-name {
-    font-family: var(--font-dots);
-    font-size: 1.75rem;
-    font-weight: 600;
-    letter-spacing: 0.03em;
-    text-transform: uppercase;
-    color: inherit;
-    line-height: 1;
-  }
-
-  .card-desc {
-    font-family: var(--font-sans-g);
-    font-size: 0.92rem;
-    line-height: 1.55;
-    color: var(--ink-soft);
-    margin: 8px 0 0;
-    max-width: 640px;
-  }
-
-  .card:hover .card-desc {
-    color: var(--void);
-  }
-
-  .card-arrow {
-    font-family: var(--font-mono-g);
-    font-size: 1rem;
-    color: var(--ink-mute);
+    color: var(--ink-3);
     transition:
-      color 0.15s,
-      transform 0.15s;
+      color var(--dur-fast) var(--ease),
+      border-color var(--dur-fast) var(--ease);
   }
 
-  .card:hover .card-arrow {
-    color: var(--void);
-    transform: translateX(4px);
+  .entry-desc {
+    max-width: var(--measure);
+    margin: var(--s-3) 0 0;
+    color: var(--ink-2);
+    font-size: var(--text-base);
+    line-height: 1.6;
   }
 
-  @media (max-width: 768px) {
-    .card {
-      grid-template-columns: 36px minmax(0, 1fr);
-      padding: 18px 10px;
-      margin: 0 -10px;
-      gap: 14px;
+  .entry-arrow {
+    justify-self: end;
+    color: var(--ink-3);
+    font-size: var(--text-md);
+    transition:
+      color var(--dur-fast) var(--ease),
+      transform var(--dur-fast) var(--ease);
+  }
+
+  .entry:hover .entry-name,
+  .entry:hover .entry-arrow {
+    color: var(--fjord);
+  }
+
+  .entry:hover .entry-icon {
+    border-color: var(--fjord);
+    color: var(--fjord);
+  }
+
+  .entry:hover .entry-arrow {
+    transform: translateX(3px);
+  }
+
+  @media (max-width: 640px) {
+    .entry {
+      grid-template-columns: 32px minmax(0, 1fr);
+      gap: var(--s-3);
+      padding: var(--s-5) 0;
     }
 
-    .card-name {
-      font-size: 1.4rem;
+    .entry-name {
+      font-size: var(--text-lg);
     }
 
-    .card-arrow {
+    .entry-arrow {
       display: none;
     }
   }

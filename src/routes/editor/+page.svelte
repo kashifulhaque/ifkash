@@ -9,7 +9,6 @@
     FileDown,
     History,
     ChevronDown,
-    CheckCircle,
     AlertTriangle,
     Play,
   } from "lucide-svelte";
@@ -156,12 +155,13 @@
 <svelte:window on:keydown={handleKeydown} />
 
 <div class="editor">
-  <!-- Toolbar -->
-  <header class="toolbar">
-    <div class="toolbar-left">
-      <a href="/" class="toolbar-logo">KH</a>
-      <div class="toolbar-title">
-        <span>Editor</span>
+  <!-- App bar -->
+  <header class="appbar">
+    <div class="appbar-left">
+      <a href="/" class="wordmark" aria-label="ifkash.dev home"><span class="dot" aria-hidden="true"></span> ifkash</a>
+      <div class="crumb">
+        <span class="sep" aria-hidden="true">/</span>
+        <span class="crumb-page">Editor</span>
         {#if resume.version}<span class="version">v{resume.version}</span>{/if}
       </div>
       <div class="status">
@@ -170,22 +170,22 @@
         {:else if compiling}
           <LoadingState label="Compiling" />
         {:else if hasUnsavedChanges}
-          <AlertTriangle size={12} /><span>Unsaved</span>
+          <span class="led led-hollow" aria-hidden="true"></span><span class="status-text">Unsaved</span>
         {:else}
-          <CheckCircle size={12} /><span>Saved</span>
+          <span class="led" aria-hidden="true"></span><span class="status-text">Saved</span>
         {/if}
       </div>
     </div>
 
-    <div class="toolbar-right">
-      <a href="/editor/history" class="tb-btn" title="History"><History size={16} /></a>
-      <div class="tb-divider"></div>
-      <button on:click={handleCompile} disabled={compiling || uploading} class="tb-btn" title="Compile">
+    <div class="appbar-actions">
+      <a href="/editor/history" class="btn btn-sm btn--ghost icon" title="History" aria-label="History"><History size={16} /></a>
+      <span class="divider" aria-hidden="true"></span>
+      <button on:click={handleCompile} disabled={compiling || uploading} class="btn btn-sm" title="Compile">
         <Play size={14} /><span class="tb-label">Run</span>
       </button>
       <div class="dropdown">
-        <button on:click={() => (isDownloadOpen = !isDownloadOpen)} class="tb-btn">
-          <FileDown size={16} /><ChevronDown size={12} />
+        <button on:click={() => (isDownloadOpen = !isDownloadOpen)} class="btn btn-sm" aria-label="Download" aria-expanded={isDownloadOpen}>
+          <FileDown size={15} /><ChevronDown size={12} />
         </button>
         {#if isDownloadOpen}
           <div class="dropdown-menu">
@@ -195,12 +195,12 @@
           <button class="dropdown-bg" on:click={() => (isDownloadOpen = false)} aria-label="Close"></button>
         {/if}
       </div>
-      <button on:click={handleUpload} disabled={uploading || compiling} class="tb-btn primary">
+      <button on:click={handleUpload} disabled={uploading || compiling} class="btn btn-sm btn-primary">
         <UploadCloud size={14} />
         <span class="tb-label">Upload</span>
       </button>
-      <div class="tb-divider"></div>
-      <button on:click={handleLogout} class="tb-btn logout" title="Logout"><LogOut size={16} /></button>
+      <span class="divider" aria-hidden="true"></span>
+      <button on:click={handleLogout} class="btn btn-sm btn--ghost icon" title="Logout" aria-label="Logout"><LogOut size={16} /></button>
     </div>
   </header>
 
@@ -211,254 +211,367 @@
 
   <!-- Error -->
   {#if compilationError}
-    <div class="error-bar"><AlertTriangle size={14} /> {compilationError}</div>
+    <div class="error-bar" role="alert"><AlertTriangle size={14} /> <span class="error-text">{compilationError}</span></div>
   {/if}
 
   <!-- Main -->
   <div class="main">
-    <div class="editor-pane">
-      {#if loading}
-        <div class="loading"><LoadingState label="Loading" /></div>
-      {/if}
-      <MonacoEditor bind:value={typstContent} language="plaintext" theme="vs-dark" onChange={handleEditorChange} />
-    </div>
-    <div class="preview-pane">
-      {#if compiling}
-        <div class="compiling"><LoadingState label="Compiling" /></div>
-      {/if}
-      {#if pdfUrl}
-        <iframe src={pdfUrl} title="PDF"></iframe>
-      {:else}
-        <div class="no-preview">No PDF. Compile to preview.</div>
-      {/if}
-    </div>
+    <section class="pane editor-pane">
+      <div class="pane-head" aria-hidden="true">
+        <span>Source</span>
+        <span class="pane-meta">{resume.typst_filename || "resume.typ"}</span>
+      </div>
+      <div class="pane-body">
+        {#if loading}
+          <div class="loading"><LoadingState label="Loading" /></div>
+        {/if}
+        <MonacoEditor bind:value={typstContent} language="plaintext" theme="auto" onChange={handleEditorChange} />
+      </div>
+    </section>
+    <section class="pane preview-pane">
+      <div class="pane-head" aria-hidden="true">
+        <span>Preview</span>
+        <span class="pane-meta">pdf</span>
+      </div>
+      <div class="pane-body">
+        {#if compiling}
+          <div class="compiling"><LoadingState label="Compiling" /></div>
+        {/if}
+        {#if pdfUrl}
+          <iframe src={pdfUrl} title="PDF"></iframe>
+        {:else}
+          <div class="no-preview"><span class="led led-hollow" aria-hidden="true"></span> No PDF. Compile to preview.</div>
+        {/if}
+      </div>
+    </section>
   </div>
 </div>
 
 <style>
   .editor {
-    height: 100vh;
     display: flex;
     flex-direction: column;
-    background: var(--paper);
+    height: 100vh;
+    height: 100dvh;
+    background: var(--bg);
+    color: var(--ink-2);
   }
 
-  .toolbar {
+  /* ── App bar ─────────────────────────────────────────── */
+
+  .appbar {
+    position: relative;
+    z-index: 30;
     display: flex;
+    flex-shrink: 0;
     align-items: center;
     justify-content: space-between;
-    padding: 0 1rem;
-    height: 52px;
-    background: var(--surface-raised);
-    border-bottom: 1px solid var(--border);
+    gap: var(--s-4);
+    height: 56px;
+    padding: 0 var(--s-4);
+    border-bottom: 1px solid var(--line);
+    background: var(--bg);
   }
 
-  .toolbar-left, .toolbar-right {
+  .appbar-left {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: var(--s-3);
+    min-width: 0;
   }
 
-  .toolbar-logo {
-    width: 28px;
-    height: 28px;
-    display: flex;
+  .wordmark {
+    display: inline-flex;
     align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    font-size: 0.875rem;
-    color: var(--paper);
-    background: var(--ink);
-    border-radius: var(--radius-sm);
-  }
-
-  .toolbar-title {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.875rem;
+    gap: 8px;
+    color: var(--ink);
+    font-size: 16px;
     font-weight: 500;
-    color: var(--text-primary);
+    letter-spacing: -0.025em;
+    white-space: nowrap;
+  }
+  .wordmark .dot {
+    width: 8px;
+    height: 8px;
+  }
+  .wordmark:hover {
+    color: var(--ink);
+  }
+
+  .crumb {
+    display: flex;
+    align-items: center;
+    gap: var(--s-2);
+    min-width: 0;
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    white-space: nowrap;
+  }
+  .sep {
+    color: var(--line-strong);
+  }
+  .crumb-page {
+    color: var(--ink);
   }
 
   .version {
-    font-size: 0.6875rem;
-    color: var(--text-tertiary);
-    padding: 0.125rem 0.375rem;
-    background: var(--surface-sunken);
-    border-radius: var(--radius-sm);
+    padding: 1px 6px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-pill);
+    color: var(--ink-3);
+    font-variant-numeric: tabular-nums;
   }
 
   .status {
     display: flex;
     align-items: center;
-    gap: 0.375rem;
-    font-size: 0.75rem;
-    color: var(--text-tertiary);
+    gap: var(--s-2);
+    margin-left: var(--s-2);
+    padding-left: var(--s-4);
+    border-left: 1px solid var(--line);
+    height: 20px;
+    min-width: 0;
+    overflow: hidden;
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    white-space: nowrap;
   }
 
-  .tb-btn {
+  .appbar-actions {
     display: flex;
+    flex-shrink: 0;
     align-items: center;
-    gap: 0.375rem;
-    padding: 0.5rem 0.625rem;
-    font-size: 0.8125rem;
-    color: var(--text-secondary);
-    background: transparent;
-    border: none;
-    border-radius: var(--radius-sm);
-    cursor: var(--cursor-pointer);
-    transition: all var(--dur-instant) var(--ease-out-quart);
+    gap: var(--s-2);
   }
 
-  .tb-btn:hover:not(:disabled) {
-    color: var(--text-primary);
-    background: var(--surface-sunken);
-  }
-
-  .tb-btn:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-  }
-
-  .tb-btn.primary {
-    color: var(--paper);
-    background: var(--ink);
-  }
-
-  .tb-btn.primary:hover:not(:disabled) {
-    background: var(--paper-dim);
-  }
-
-  .tb-btn.logout:hover {
-    color: var(--text-primary);
+  .btn.icon {
+    width: 32px;
+    padding: 0;
   }
 
   .tb-label {
     display: none;
   }
 
-  @media (min-width: 640px) {
-    .tb-label { display: inline; }
-  }
-
-  .tb-divider {
+  .divider {
     width: 1px;
     height: 20px;
-    background: var(--border);
+    margin: 0 var(--s-1);
+    background: var(--line);
   }
 
   .dropdown {
     position: relative;
   }
 
+  .dropdown .btn {
+    gap: var(--s-1);
+  }
+
   .dropdown-menu {
     position: absolute;
-    top: 100%;
+    top: calc(100% + var(--s-2));
     right: 0;
-    margin-top: 0.5rem;
-    padding: 0.375rem;
-    background: var(--surface-sunken);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
     z-index: 50;
+    min-width: 140px;
+    padding: var(--s-1);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    box-shadow: 0 12px 32px -12px var(--shadow-color);
+    animation: fade-in var(--dur-fast) var(--ease);
   }
 
   .dropdown-menu button {
     display: block;
     width: 100%;
-    padding: 0.5rem 0.75rem;
-    font-size: 0.8125rem;
-    color: var(--text-secondary);
-    background: transparent;
+    padding: var(--s-2) var(--s-3);
     border: none;
-    border-radius: var(--radius-sm);
+    border-radius: var(--radius-xs);
+    background: transparent;
+    color: var(--ink-2);
+    font-size: var(--text-sm);
     text-align: left;
-    cursor: var(--cursor-pointer);
+    cursor: pointer;
   }
 
   .dropdown-menu button:hover {
-    color: var(--text-primary);
-    background: var(--border);
+    background: var(--hover-wash);
+    color: var(--ink);
   }
 
   .dropdown-bg {
     position: fixed;
     inset: 0;
     z-index: 40;
-    background: transparent;
     border: none;
+    background: transparent;
   }
 
+  /* ── Progress and errors ─────────────────────────────── */
+
   .progress {
-    height: 2px;
-    background: var(--surface-sunken);
+    flex-shrink: 0;
+    height: 1px;
+    background: var(--line);
   }
 
   .progress-bar {
     height: 100%;
-    background: var(--ink);
-    transition: width 0.3s;
+    background: var(--fjord);
+    transition: width var(--dur) var(--ease);
   }
 
   .error-bar {
     display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.625rem 1rem;
-    font-size: 0.8125rem;
-    color: var(--text-primary);
-    background: var(--surface-sunken);
-    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+    align-items: flex-start;
+    gap: var(--s-2);
+    max-height: 30vh;
+    overflow: auto;
+    padding: var(--s-3) var(--s-4);
+    border-bottom: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--danger);
+    font-size: var(--text-sm);
+  }
+  .error-bar :global(svg) {
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .error-text {
+    min-width: 0;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    line-height: 1.6;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
   }
 
+  /* ── Panes ───────────────────────────────────────────── */
+
   .main {
-    flex: 1;
     display: flex;
+    flex: 1;
     flex-direction: column;
+    min-height: 0;
     overflow: hidden;
   }
 
-  @media (min-width: 768px) {
-    .main { flex-direction: row; }
+  .pane {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 300px;
+  }
+
+  .pane-head {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s-3);
+    height: 36px;
+    padding: 0 var(--s-4);
+    border-bottom: 1px solid var(--line);
+    color: var(--ink);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+  }
+  .pane-meta {
+    overflow: hidden;
+    color: var(--ink-3);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .pane-body {
+    position: relative;
+    flex: 1;
+    min-height: 0;
   }
 
   .editor-pane {
-    flex: 1;
-    position: relative;
-    border-bottom: 1px solid var(--border);
-    min-height: 300px;
-  }
-
-  @media (min-width: 768px) {
-    .editor-pane {
-      border-bottom: none;
-      border-right: 1px solid var(--border);
-    }
+    border-bottom: 1px solid var(--line);
+    background: var(--surface);
   }
 
   .preview-pane {
-    flex: 1;
-    position: relative;
-    background: var(--surface-raised);
-    min-height: 300px;
+    background: var(--surface-2);
+  }
+  .preview-pane .pane-head {
+    background: var(--bg);
   }
 
   .preview-pane iframe {
+    display: block;
     width: 100%;
     height: 100%;
     border: none;
   }
 
-  .loading, .compiling, .no-preview {
+  .loading,
+  .compiling,
+  .no-preview {
     position: absolute;
     inset: 0;
+    z-index: 10;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
-    color: var(--text-tertiary);
-    background: var(--surface-raised);
-    z-index: 10;
+    gap: var(--s-2);
+    color: var(--ink-3);
+    font-size: var(--text-sm);
+  }
+  .loading {
+    background: var(--surface);
+  }
+  .compiling {
+    background: color-mix(in srgb, var(--surface-2) 88%, transparent);
+  }
+
+  @media (max-width: 479px) {
+    .status-text,
+    .divider {
+      display: none;
+    }
+    .status {
+      margin-left: 0;
+      padding-left: var(--s-3);
+    }
+  }
+
+  @media (max-width: 400px) {
+    .crumb {
+      display: none;
+    }
+    .appbar-actions {
+      gap: var(--s-1);
+    }
+  }
+
+  @media (min-width: 640px) {
+    .tb-label {
+      display: inline;
+    }
+    .appbar {
+      padding: 0 var(--s-5);
+    }
+    .pane-head {
+      padding: 0 var(--s-5);
+    }
+  }
+
+  @media (min-width: 768px) {
+    .main {
+      flex-direction: row;
+    }
+    .editor-pane {
+      border-bottom: none;
+      border-right: 1px solid var(--line);
+    }
   }
 </style>

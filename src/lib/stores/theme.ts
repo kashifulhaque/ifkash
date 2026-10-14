@@ -6,15 +6,16 @@ export type Theme = 'light' | 'dark';
 const KEY = 'ifkash-theme';
 
 function initial(): Theme {
-	if (!browser) return 'dark';
-	const saved = localStorage.getItem(KEY);
-	return saved === 'light' || saved === 'dark' ? saved : 'dark';
+	if (!browser) return 'light';
+	// The inline script in app.html has already resolved the saved choice or
+	// the system preference onto <html data-theme>, so read it back from there.
+	return document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
 }
 
 function apply(t: Theme): void {
 	document.documentElement.setAttribute('data-theme', t);
 	const meta = document.querySelector('meta[name="theme-color"]');
-	if (meta) meta.setAttribute('content', t === 'dark' ? '#000000' : '#fdfcf8');
+	if (meta) meta.setAttribute('content', t === 'dark' ? '#15181b' : '#f4f1ea');
 }
 
 export const theme = writable<Theme>(initial());

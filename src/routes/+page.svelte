@@ -2,6 +2,7 @@
   import { onMount } from "svelte";
   import { dev } from "$app/environment";
   import EdgeField from "$lib/components/EdgeField.svelte";
+  import Horizon from "$lib/components/Horizon.svelte";
   import { loadProgress, WONDER_COUNT } from "$lib/game/progress";
   import { seedLink } from "$lib/game/seed";
 
@@ -24,43 +25,20 @@
 
   const indexRows = [
     { n: "01", name: "Work", desc: "Roles and companies", href: "/work" },
-    {
-      n: "02",
-      name: "Projects",
-      desc: "Open source and independent work",
-      href: "/projects",
-    },
-    {
-      n: "03",
-      name: "RL",
-      desc: "Reinforcement learning experiments",
-      href: "/rl",
-    },
-    {
-      n: "04",
-      name: "Tools",
-      desc: "Useful in-browser utilities",
-      href: "/tools",
-    },
-    {
-      n: "05",
-      name: "Education",
-      desc: "Academic background",
-      href: "/education",
-    },
-    {
-      n: "06",
-      name: "Blog",
-      desc: "Notes on engineering and ML",
-      href: "/blog",
-    },
+    { n: "02", name: "Projects", desc: "Open source and independent work", href: "/projects" },
+    { n: "03", name: "RL", desc: "Reinforcement learning experiments", href: "/rl" },
+    { n: "04", name: "Tools", desc: "Useful in-browser utilities", href: "/tools" },
+    { n: "05", name: "Education", desc: "Academic background", href: "/education" },
+    { n: "06", name: "Blog", desc: "Notes on engineering and ML", href: "/blog" },
     { n: "07", name: "Game", desc: "A tiny planet to wander", href: "/game" },
-    {
-      n: "08",
-      name: "Roadmap",
-      desc: "Interview course anchored to shipped work",
-      href: "/roadmap",
-    },
+    { n: "08", name: "Roadmap", desc: "Interview course anchored to shipped work", href: "/roadmap" },
+  ];
+
+  const facts = [
+    { k: "Focus", v: "LLM systems" },
+    { k: "Experience", v: "4+ years" },
+    { k: "Core stack", v: "C++, Rust, Python" },
+    { k: "Based in", v: "Bengaluru, India" },
   ];
 </script>
 
@@ -72,254 +50,258 @@
   />
 </svelte:head>
 
-<section class="intro">
-  <p class="intro-label">ML Engineer · Bangalore, India</p>
+<section class="hero">
+  <p class="eyebrow hero-eyebrow">ML engineer — ifkash.dev</p>
+
   <h1 class="display">
     Kashiful Haque<a href="/fitness" class="period" aria-label="Fitness dashboard">.</a>
   </h1>
-  <p class="intro-copy">
-    I build pre-training and post-training systems for large language models,
-    reinforcement learning pipelines, and high-performance inference software
-    in C++ and Rust.
-  </p>
 
-  <div class="actions">
-    <a href={resumeUrl} class="btn btn-primary">Read resume</a>
-    <a href="/game" class="btn btn--outline">Enter game mode</a>
-    {#if badge}
-      <a href={badge.href} class="wonder-badge" title="Every small wonder on the tiny planet has been found">
-        <span class="wonder-badge-spark" aria-hidden="true">✦</span>
-        {badge.text}
-      </a>
-    {/if}
+  <div class="hero-body">
+    <p class="hero-copy">
+      I build <em class="serif">pre-training and post-training</em> systems for
+      large language models, reinforcement learning pipelines, and
+      high-performance inference software in C++ and Rust.
+    </p>
+
+    <div class="hero-actions">
+      <a href={resumeUrl} class="btn btn-primary">Read résumé</a>
+      <a href="/game" class="btn">Visit the tiny planet</a>
+      {#if badge}
+        <a href={badge.href} class="tag wonder" title="Every small wonder on the tiny planet has been found">
+          <span aria-hidden="true">✦</span>
+          {badge.text}
+        </a>
+      {/if}
+    </div>
   </div>
-
-  <dl class="profile-facts">
-    <div>
-      <dt>Focus</dt>
-      <dd>LLM systems</dd>
-    </div>
-    <div>
-      <dt>Experience</dt>
-      <dd>4+ years</dd>
-    </div>
-    <div>
-      <dt>Core stack</dt>
-      <dd>C++, Rust, and Python</dd>
-    </div>
-  </dl>
 </section>
 
-<EdgeField />
+<Horizon />
 
-<section class="index-section" aria-labelledby="explore-heading">
-  <div class="section-heading">
-    <h2 id="explore-heading" class="section-title">Explore</h2>
+<dl class="facts">
+  {#each facts as f}
+    <div>
+      <dt>{f.k}</dt>
+      <dd>{f.v}</dd>
+    </div>
+  {/each}
+</dl>
+
+<section class="index" aria-labelledby="index-heading">
+  <header class="index-head">
+    <h2 id="index-heading">Index</h2>
     <p>Selected work, experiments, and tools.</p>
-  </div>
+  </header>
 
-  <ol class="index-list">
-    {#each indexRows as row}
-      <li>
+  <ol class="rows">
+    {#each indexRows as row, i}
+      <li class="stagger" style="--i: {i}">
         <a href={row.href} class="index-row">
-          <span class="index-n">{row.n}</span>
-          <span class="index-name">{row.name}</span>
-          <span class="index-desc">{row.desc}</span>
-          <span class="index-arrow" aria-hidden="true">↗</span>
+          <span class="n">{row.n}</span>
+          <span class="name">{row.name}</span>
+          <span class="desc">{row.desc}</span>
+          <span class="arrow" aria-hidden="true">→</span>
         </a>
       </li>
     {/each}
   </ol>
 </section>
 
+<EdgeField />
+
 <style>
-  .intro {
-    max-width: 800px;
-    padding: 72px 0 40px;
+  /* ── Hero ─────────────────────────────────────────────── */
+
+  .hero {
+    padding: clamp(56px, 9vw, 120px) 0 var(--s-7);
   }
 
-  .intro-label {
-    margin: 0 0 24px;
-    color: var(--ink-3);
-    font-family: var(--font-label);
-    font-size: 13px;
-    font-weight: 500;
+  .hero-eyebrow {
+    margin-bottom: var(--s-5);
   }
 
-  h1 {
-    max-width: 12ch;
+  .display {
+    font-size: clamp(3rem, 1.2rem + 7.6vw, 7.5rem);
+    line-height: 0.95;
+    letter-spacing: -0.055em;
   }
 
   .period {
-    color: var(--ink-3);
+    color: var(--falu);
+    transition: opacity var(--dur-fast) var(--ease);
   }
-
   .period:hover {
-    color: var(--foreground);
+    color: var(--falu);
+    opacity: 0.7;
   }
 
-  .intro-copy {
-    max-width: 62ch;
-    margin: 28px 0 0;
-    color: var(--ink-2);
-    font-size: 18px;
-    line-height: 1.6;
+  .hero-body {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    align-items: end;
+    gap: var(--s-6) var(--s-8);
+    margin-top: var(--s-7);
   }
 
-  .actions {
+  .hero-copy {
+    max-width: 34ch;
+    margin: 0;
+    color: var(--ink);
+    font-size: clamp(1.25rem, 1rem + 0.9vw, 1.625rem);
+    line-height: 1.35;
+    letter-spacing: -0.018em;
+  }
+
+  .hero-copy .serif {
+    font-size: 1.06em;
+  }
+
+  .hero-actions {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 32px;
-  }
-
-  .wonder-badge {
-    display: inline-flex;
+    justify-content: flex-end;
     align-items: center;
-    gap: 8px;
-    min-height: 40px;
-    padding: 0 14px;
-    border: 1px solid var(--border);
-    /* sketched frame rather than a geometric pill, so the badge sits in the
-       same hand as the buttons beside it */
-    border-radius: var(--r-frame-1);
-    animation: sketch-boil-radius 1200ms step-end infinite;
-    color: var(--ink-2);
-    font-family: var(--font-label);
-    font-size: 13px;
+    gap: var(--s-2);
+  }
+
+  .wonder {
+    height: 40px;
+    padding: 0 var(--s-4);
+    font-size: var(--text-xs);
     text-decoration: none;
-    transition: border-color 160ms var(--ease-inout), color 160ms var(--ease-inout);
+  }
+  .wonder span {
+    color: var(--clay);
+  }
+  .wonder:hover {
+    border-color: var(--line-strong);
+    color: var(--ink);
   }
 
-  .wonder-badge:hover {
-    border-color: var(--blueprint);
-    color: var(--foreground);
-  }
+  /* ── Facts ────────────────────────────────────────────── */
 
-  .wonder-badge-spark {
-    color: var(--blueprint);
-  }
-
-  .profile-facts {
+  .facts {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 24px;
-    margin: 64px 0 0;
-  }
-
-  .profile-facts div {
-    min-width: 0;
-  }
-
-  .profile-facts dt {
-    margin-bottom: 4px;
-    color: var(--ink-3);
-    font-size: 13px;
-    font-weight: 500;
-  }
-
-  .profile-facts dd {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     margin: 0;
-    color: var(--foreground);
-    font-size: 14px;
+    border-bottom: 1px solid var(--line);
   }
 
-  .index-section {
-    padding: 96px 0 24px;
+  .facts div {
+    padding: var(--s-5) var(--s-5) var(--s-5) 0;
+  }
+  .facts div + div {
+    padding-left: var(--s-5);
+    border-left: 1px solid var(--line);
   }
 
-  .section-heading {
+  .facts dt {
+    margin-bottom: var(--s-1);
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+  }
+
+  .facts dd {
+    margin: 0;
+    color: var(--ink);
+    font-size: 15px;
+  }
+
+  /* ── Index ────────────────────────────────────────────── */
+
+  .index {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    align-items: end;
-    gap: 24px;
-    margin-bottom: 32px;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 3fr);
+    gap: var(--s-6) var(--s-8);
+    padding: var(--s-9) 0;
   }
 
-  .section-heading h2 {
-    font-size: 28px;
+  .index-head h2 {
+    font-size: var(--text-xl);
   }
 
-  .section-heading p {
-    margin: 0;
+  .index-head p {
+    max-width: 22ch;
+    margin: var(--s-2) 0 0;
     color: var(--ink-3);
-    font-size: 13px;
-  }
-
-  .index-list {
-    margin: 0;
-    padding: 0;
-    border-top: 1px solid var(--border);
-    list-style: none;
+    font-size: 15px;
   }
 
   .index-row {
     display: grid;
-    grid-template-columns: 48px minmax(0, 1fr) minmax(180px, 0.8fr) 20px;
+    grid-template-columns: 48px minmax(0, 1fr) minmax(0, 1.2fr) 24px;
     align-items: baseline;
-    gap: 24px;
-    padding: 20px 0;
-    border-bottom: 1px solid var(--border);
-    color: var(--foreground);
+    gap: var(--s-5);
+    padding: var(--s-5) 0;
+    color: var(--ink);
+    text-decoration: none;
   }
 
-  .index-row:hover .index-name,
-  .index-row:hover .index-arrow {
-    color: var(--foreground);
-  }
-
-  .index-n,
-  .index-desc,
-  .index-arrow {
+  .n,
+  .desc {
     color: var(--ink-3);
-    font-size: 13px;
+    font-size: var(--text-sm);
   }
 
-  .index-n {
-    font-family: var(--font-label);
+  .n {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-variant-numeric: tabular-nums;
   }
 
-  .index-name {
-    font-size: 18px;
+  .name {
+    font-size: var(--text-lg);
     font-weight: 500;
+    letter-spacing: -0.02em;
+    transition: color var(--dur-fast) var(--ease), transform var(--dur) var(--ease-out);
   }
 
-  .index-arrow {
+  .arrow {
     justify-self: end;
-    transition: transform 160ms var(--ease-inout);
+    color: var(--ink-3);
+    transition: transform var(--dur) var(--ease-out), color var(--dur-fast) var(--ease);
   }
 
-  .index-row:hover .index-arrow {
-    transform: translate(2px, -2px);
+  .index-row:hover .name {
+    color: var(--fjord);
+    transform: translateX(4px);
+  }
+  .index-row:hover .arrow {
+    color: var(--fjord);
+    transform: translateX(3px);
   }
 
-  @media (max-width: 720px) {
-    .intro {
-      padding-top: 32px;
-    }
-
-    .profile-facts {
+  @media (max-width: 900px) {
+    .hero-body {
       grid-template-columns: 1fr;
-      gap: 20px;
-      margin-top: 48px;
     }
-
-    .index-section {
-      padding-top: 72px;
+    .hero-actions {
+      justify-content: flex-start;
     }
-
-    .section-heading {
+    .facts {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .facts div:nth-child(3) {
+      padding-left: 0;
+      border-left: 0;
+    }
+    .facts div:nth-child(n + 3) {
+      border-top: 1px solid var(--line);
+    }
+    .index {
       grid-template-columns: 1fr;
-      gap: 8px;
+      padding: var(--s-8) 0;
     }
+  }
 
+  @media (max-width: 560px) {
     .index-row {
-      grid-template-columns: 36px minmax(0, 1fr) 20px;
-      gap: 12px;
-      padding: 18px 0;
+      grid-template-columns: 32px minmax(0, 1fr) 20px;
+      gap: var(--s-3);
     }
-
-    .index-desc {
+    .desc {
       display: none;
     }
   }

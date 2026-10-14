@@ -435,45 +435,51 @@
 <svelte:window on:keydown={handleKeydown} on:beforeunload={handleBeforeUnload} />
 
 <div class="notes-shell">
-  <header class="notes-header">
-    <div class="header-left">
-      <a href="/admin" class="back-link">&larr; Admin</a>
-      <h1>Notes{#if branch}<span class="branch"> · {branch}</span>{/if}</h1>
+  <header class="appbar">
+    <div class="appbar-left">
+      <a href="/" class="wordmark" aria-label="ifkash.dev home"><span class="dot" aria-hidden="true"></span> ifkash</a>
+      <nav class="crumb" aria-label="Breadcrumb">
+        <span class="sep" aria-hidden="true">/</span>
+        <a href="/admin" class="back-link">Admin</a>
+        <span class="sep" aria-hidden="true">/</span>
+        <h1>Notes{#if branch}<span class="branch"> · {branch}</span>{/if}</h1>
+      </nav>
       <span class="signed-in">{data.email}</span>
     </div>
-    <div class="header-actions">
-      <button class="btn" on:click={newFile} title="New note">
-        <Plus size={14} /> New
+    <div class="appbar-actions">
+      <button class="btn btn-sm" on:click={newFile} title="New note">
+        <Plus size={14} /> <span class="lbl">New</span>
       </button>
       <button
-        class="btn"
+        class="btn btn-sm"
         on:click={() => uploadInput.click()}
         disabled={uploading}
         title="Upload a file (image, PDF, …) to the vault"
       >
-        {#if uploading}<LoadingState label="Uploading" />{:else}<Upload size={14} /> Upload{/if}
+        {#if uploading}<LoadingState label="Uploading" />{:else}<Upload size={14} /> <span class="lbl">Upload</span>{/if}
       </button>
-      <button class="btn" on:click={loadTree} disabled={loadingTree} title="Re-fetch the file tree from GitHub">
-        <RefreshCw size={14} /> Refresh
+      <button class="btn btn-sm" on:click={loadTree} disabled={loadingTree} title="Re-fetch the file tree from GitHub">
+        <RefreshCw size={14} /> <span class="lbl">Refresh</span>
       </button>
       <button
-        class="btn"
+        class="btn btn-sm"
         on:click={() => (view = view === "source" ? "preview" : "source")}
         disabled={!currentPath || !currentPath.endsWith(".md")}
         title="Toggle source / rendered view"
       >
-        {#if view === "source"}<Eye size={14} /> Preview{:else}<Code size={14} /> Source{/if}
+        {#if view === "source"}<Eye size={14} /> <span class="lbl">Preview</span>{:else}<Code size={14} /> <span class="lbl">Source</span>{/if}
       </button>
       <button
-        class="btn danger"
+        class="btn btn-sm danger"
         on:click={deleteFile}
         disabled={!currentPath || saving}
         title="Delete this file from the vault"
       >
-        <Trash2 size={14} /> Delete
+        <Trash2 size={14} /> <span class="lbl">Delete</span>
       </button>
+      <span class="divider" aria-hidden="true"></span>
       <button
-        class="btn primary"
+        class="btn btn-sm btn-primary"
         on:click={saveFile}
         disabled={!currentPath || binary || !dirty || saving}
       >
@@ -489,9 +495,9 @@
   </header>
 
   {#if errorMsg}
-    <div class="banner error"><AlertTriangle size={14} /> {errorMsg}</div>
+    <div class="banner error" role="alert"><AlertTriangle size={14} /> {errorMsg}</div>
   {:else if statusMsg}
-    <div class="banner ok">{statusMsg}</div>
+    <div class="banner ok" role="status"><span class="led" aria-hidden="true"></span> {statusMsg}</div>
   {/if}
 
   <div class="notes-body">
@@ -499,6 +505,10 @@
       {#if loadingTree}
         <div class="tree-hint"><LoadingState label="Loading vault" /></div>
       {:else if root}
+        <div class="tree-head" aria-hidden="true">
+          <span>Vault</span>
+          <span class="tree-count">{files.length}</span>
+        </div>
         <ul class="tree-root">
           {#each sortedDirs(root) as dir (dir.path)}
             <TreeDir node={dir} {expanded} {currentPath} onToggle={toggleDir} onOpen={openFile} />
@@ -511,7 +521,7 @@
                 on:click={() => openFile(f.path)}
               >
                 {#if f.path.endsWith(".md")}<FileText size={13} />{:else}<File size={13} />{/if}
-                {fileName(f.path)}
+                <span class="tree-name">{fileName(f.path)}</span>
               </button>
             </li>
           {/each}
@@ -521,11 +531,11 @@
 
     <main class="editor-pane">
       {#if !currentPath}
-        <div class="empty-state">Select a note from the vault, or create a new one.</div>
+        <div class="empty-state"><span class="led led-hollow" aria-hidden="true"></span> Select a note from the vault, or create a new one.</div>
       {:else if loadingFile}
         <div class="empty-state"><LoadingState label="Loading file" /></div>
       {:else if binary}
-        <div class="doc-title">{currentPath}</div>
+        <div class="doc-title"><span class="doc-path">{currentPath}</span></div>
         <div class="binary-pane">
           {#if IMAGE_EXTENSIONS.includes(currentExt)}
             <img class="binary-preview" src={rawUrl(currentPath)} alt={currentPath} />
@@ -539,13 +549,14 @@
           {:else}
             <p class="binary-note">No preview for .{currentExt} files.</p>
           {/if}
-          <a class="btn download-btn" href="{rawUrl(currentPath)}&download=1">
+          <a class="btn btn-sm download-btn" href="{rawUrl(currentPath)}&download=1">
             <Download size={14} /> Download {fileName(currentPath)}
           </a>
         </div>
       {:else}
         <div class="doc-title">
-          {currentPath}{#if dirty}<span class="dirty-dot" title="Unsaved changes">●</span>{/if}
+          <span class="doc-path">{currentPath}</span>{#if dirty}<span class="dirty-dot" title="Unsaved changes">●</span>{/if}
+          <span class="doc-mode">{view === "source" || !currentPath.endsWith(".md") ? "Source" : "Preview"}</span>
         </div>
         {#if view === "source" || !currentPath.endsWith(".md")}
           <textarea class="source-editor" bind:value={content} spellcheck="false" placeholder="Write…"
@@ -564,159 +575,149 @@
     display: flex;
     flex-direction: column;
     height: 100vh;
-    background: var(--paper, #fff);
+    height: 100dvh;
+    background: var(--bg);
+    color: var(--ink-2);
   }
 
-  .notes-header {
+  /* ── App bar ─────────────────────────────────────────── */
+
+  .appbar {
     display: flex;
+    flex-shrink: 0;
     align-items: center;
     justify-content: space-between;
-    gap: 16px;
-    padding: 10px 16px;
-    border-bottom: 1px solid var(--rule-soft);
-    flex-wrap: wrap;
+    gap: var(--s-4);
+    min-height: 56px;
+    padding: 0 var(--s-5);
+    border-bottom: 1px solid var(--line);
+    background: var(--bg);
   }
 
-  .header-left {
+  .appbar-left {
     display: flex;
-    align-items: baseline;
-    gap: 12px;
+    align-items: center;
+    gap: var(--s-3);
     min-width: 0;
   }
 
-  .back-link {
-    font-family: var(--font-mono);
-    font-size: 0.78rem;
-    color: var(--ink-mute);
+  .wordmark {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 8px;
+    color: var(--ink);
+    font-size: 16px;
+    font-weight: 500;
+    letter-spacing: -0.025em;
+    white-space: nowrap;
+  }
+  .wordmark .dot {
+    width: 8px;
+    height: 8px;
+  }
+  .wordmark:hover {
+    color: var(--ink);
   }
 
+  .crumb {
+    display: flex;
+    align-items: center;
+    gap: var(--s-2);
+    min-width: 0;
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    white-space: nowrap;
+  }
+  .sep {
+    color: var(--line-strong);
+  }
+
+  .back-link {
+    color: var(--ink-3);
+  }
   .back-link:hover {
-    color: var(--blueprint);
+    color: var(--ink);
   }
 
   h1 {
     margin: 0;
-    font-family: var(--font-mono);
-    font-size: 0.95rem;
-    font-weight: 600;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+    overflow: hidden;
     color: var(--ink);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-weight: 400;
+    letter-spacing: 0;
+    line-height: 1.4;
+    text-overflow: ellipsis;
   }
 
   .branch {
-    color: var(--blueprint);
-    text-transform: none;
-    letter-spacing: 0;
+    color: var(--ink-3);
   }
 
   .signed-in {
+    overflow: hidden;
+    margin-left: var(--s-2);
+    padding-left: var(--s-3);
+    border-left: 1px solid var(--line);
+    color: var(--ink-3);
     font-family: var(--font-mono);
-    font-size: 0.72rem;
-    color: var(--ink-mute);
+    font-size: var(--text-xs);
+    line-height: 20px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
-  .header-actions {
+  .appbar-actions {
     display: flex;
-    gap: 8px;
-  }
-
-  .btn {
-    display: inline-flex;
+    flex-shrink: 0;
     align-items: center;
+    gap: var(--s-2);
+  }
+
+  .appbar-actions .btn {
     gap: 6px;
-    padding: 6px 12px;
-    border: 1px solid var(--rule-soft);
-    background: none;
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    color: var(--ink-soft);
-    cursor: var(--cursor-pointer);
-    transition: background 0.15s, color 0.15s;
   }
 
-  .btn:hover:not(:disabled) {
-    background: var(--blueprint-tint);
-    color: var(--blueprint);
-  }
-
-  .btn:disabled {
-    opacity: 0.45;
-    cursor: var(--cursor-default);
-  }
-
-  .btn.primary {
-    border-color: var(--blueprint);
-    color: var(--blueprint);
+  .divider {
+    width: 1px;
+    height: 20px;
+    margin: 0 var(--s-1);
+    background: var(--line);
   }
 
   .btn.danger:hover:not(:disabled) {
-    background: var(--signal-dim);
-    border-color: var(--signal);
-    color: var(--signal-hi);
+    border-color: var(--danger);
+    color: var(--danger);
+    background: transparent;
   }
 
-  .binary-pane {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 20px;
-    padding: 24px;
-    overflow: auto;
-    min-height: 0;
-  }
-
-  .binary-preview {
-    max-width: 100%;
-    max-height: 70vh;
-    object-fit: contain;
-    border-radius: 4px;
-  }
-
-  .binary-frame {
-    width: 100%;
-    flex: 1;
-    min-height: 0;
-    border: 1px solid var(--rule-soft);
-  }
-
-  .binary-pane video {
-    max-width: 100%;
-    max-height: 70vh;
-  }
-
-  .binary-note {
-    font-family: var(--font-mono);
-    font-size: 0.85rem;
-    color: var(--ink-mute);
-  }
-
-  .download-btn {
-    text-decoration: none;
-    flex-shrink: 0;
-  }
+  /* ── Banners ─────────────────────────────────────────── */
 
   .banner {
     display: flex;
+    flex-shrink: 0;
     align-items: center;
-    gap: 8px;
-    padding: 8px 16px;
+    gap: var(--s-2);
+    padding: var(--s-2) var(--s-5);
+    border-bottom: 1px solid var(--line);
+    background: var(--surface);
     font-family: var(--font-mono);
-    font-size: 0.75rem;
-    border-bottom: 1px solid var(--rule-soft);
+    font-size: var(--text-xs);
+    line-height: 1.6;
   }
 
   .banner.error {
-    color: var(--signal-hi);
-    background: var(--signal-dim);
+    color: var(--danger);
   }
 
   .banner.ok {
-    color: var(--blueprint);
-    background: var(--blueprint-tint);
+    color: var(--ink-2);
   }
+
+  /* ── Body ────────────────────────────────────────────── */
 
   .notes-body {
     display: flex;
@@ -725,24 +726,35 @@
   }
 
   .file-tree {
-    width: 280px;
     flex-shrink: 0;
+    width: 280px;
     overflow-y: auto;
-    border-right: 1px solid var(--rule-soft);
-    padding: 10px 8px;
+    padding: var(--s-4) var(--s-3) var(--s-6);
+    border-right: 1px solid var(--line);
+    background: var(--bg);
+  }
+
+  .tree-head {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 var(--s-2) var(--s-3);
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+  }
+  .tree-count {
+    font-variant-numeric: tabular-nums;
   }
 
   .tree-hint {
-    font-family: var(--font-mono);
-    font-size: 0.78rem;
-    color: var(--ink-mute);
-    padding: 4px 6px;
+    padding: var(--s-1) var(--s-2);
+    color: var(--ink-3);
   }
 
   .tree-root {
-    list-style: none;
     margin: 0;
     padding: 0;
+    list-style: none;
   }
 
   .tree-root > li {
@@ -752,202 +764,332 @@
   .tree-file {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: var(--s-2);
     width: 100%;
-    padding: 3px 6px;
+    min-height: 28px;
+    padding: 0 var(--s-2);
     border: 0;
+    border-radius: var(--radius-xs);
     background: none;
+    color: var(--ink-2);
     font-family: var(--font-mono);
-    font-size: 0.78rem;
-    color: var(--ink-soft);
+    font-size: var(--text-xs);
     text-align: left;
-    cursor: var(--cursor-pointer);
     white-space: nowrap;
+    cursor: pointer;
+    transition: background-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+  }
+  .tree-file :global(svg) {
+    flex-shrink: 0;
+    color: var(--ink-3);
+  }
+  .tree-name {
+    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
   }
 
-  .tree-file:hover,
+  .tree-file:hover {
+    background: var(--hover-wash);
+    color: var(--ink);
+  }
+
   .tree-file.active {
-    background: var(--blueprint-tint);
-    color: var(--blueprint);
+    background: var(--fjord-wash);
+    color: var(--fjord);
+  }
+  .tree-file.active :global(svg) {
+    color: var(--fjord);
   }
 
   .editor-pane {
-    flex: 1;
     display: flex;
+    flex: 1;
     flex-direction: column;
     min-width: 0;
+    background: var(--surface);
   }
 
   .empty-state {
-    flex: 1;
     display: flex;
+    flex: 1;
     align-items: center;
     justify-content: center;
-    font-family: var(--font-mono);
-    font-size: 0.85rem;
-    color: var(--ink-mute);
+    gap: var(--s-2);
+    padding: var(--s-6);
+    color: var(--ink-3);
+    font-size: var(--text-sm);
+    text-align: center;
   }
 
   .doc-title {
-    padding: 8px 20px;
-    border-bottom: 1px solid var(--rule-soft);
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: var(--s-2);
+    height: 40px;
+    padding: 0 var(--s-5);
+    border-bottom: 1px solid var(--line);
+    color: var(--ink-3);
     font-family: var(--font-mono);
-    font-size: 0.78rem;
-    color: var(--ink-mute);
+    font-size: var(--text-xs);
+  }
+  .doc-path {
+    min-width: 0;
+    overflow: hidden;
+    color: var(--ink);
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .dirty-dot {
-    margin-left: 8px;
-    color: var(--blueprint);
+    flex-shrink: 0;
+    color: var(--clay);
+    font-size: 8px;
+  }
+
+  .doc-mode {
+    flex-shrink: 0;
+    margin-left: auto;
+    color: var(--ink-3);
   }
 
   .source-editor {
     flex: 1;
     width: 100%;
-    padding: 20px;
+    padding: var(--s-6) max(var(--s-5), calc((100% - 76ch) / 2)) var(--s-9);
     border: 0;
-    resize: none;
     outline: none;
+    resize: none;
     background: none;
-    font-family: var(--font-mono);
-    font-size: 0.9rem;
-    line-height: 1.7;
     color: var(--ink);
+    font-family: var(--font-mono);
+    font-size: 14px;
+    line-height: 1.75;
+    tab-size: 2;
+  }
+  .source-editor::placeholder {
+    color: var(--ink-3);
   }
 
-  /* Notion-style rendered view: centered measure, calm typography. */
+  .binary-pane {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--s-5);
+    min-height: 0;
+    overflow: auto;
+    padding: var(--s-6) var(--s-5);
+    background: var(--surface-2);
+  }
+
+  .binary-preview {
+    max-width: 100%;
+    max-height: 70vh;
+    object-fit: contain;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+  }
+
+  .binary-frame {
+    flex: 1;
+    width: 100%;
+    min-height: 0;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+  }
+
+  .binary-pane video {
+    max-width: 100%;
+    max-height: 70vh;
+    border-radius: var(--radius-sm);
+  }
+
+  .binary-note {
+    margin: 0;
+    color: var(--ink-3);
+    font-size: var(--text-sm);
+  }
+
+  .download-btn {
+    flex-shrink: 0;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* ── Rendered note: a calm reading column ────────────── */
+
   .preview {
     flex: 1;
     overflow-y: auto;
-    padding: 40px max(32px, calc((100% - 720px) / 2)) 120px;
-    font-size: 1rem;
-    line-height: 1.65;
-    color: var(--ink);
-    cursor: var(--cursor-default);
+    padding: var(--s-7) max(var(--s-5), calc((100% - var(--measure)) / 2)) var(--s-10);
+    color: var(--ink-2);
+    font-size: 17px;
+    line-height: 1.7;
   }
 
   .preview :global(h1),
   .preview :global(h2),
   .preview :global(h3),
   .preview :global(h4) {
-    font-weight: 650;
-    line-height: 1.3;
+    margin: 1.8em 0 0.5em;
     color: var(--ink);
-    margin: 1.6em 0 0.4em;
+    font-weight: 500;
+    line-height: 1.2;
   }
 
   .preview :global(h1) {
-    font-size: 1.8em;
-    margin-top: 0.5em;
+    margin-top: 0;
+    font-size: var(--text-2xl);
+    line-height: 1.08;
+    letter-spacing: -0.03em;
   }
 
   .preview :global(h2) {
-    font-size: 1.4em;
+    font-size: var(--text-xl);
+    letter-spacing: -0.022em;
   }
 
   .preview :global(h3) {
-    font-size: 1.15em;
+    font-size: var(--text-lg);
+    letter-spacing: -0.015em;
   }
 
   .preview :global(h4) {
-    font-size: 1em;
+    font-size: var(--text-md);
   }
 
   .preview :global(p) {
-    margin: 0.5em 0;
+    margin: 0 0 1em;
+    color: var(--ink-2);
+  }
+
+  .preview :global(strong) {
+    color: var(--ink);
   }
 
   .preview :global(a) {
-    color: var(--blueprint);
+    color: var(--ink);
     text-decoration: underline;
-    text-decoration-color: color-mix(in srgb, var(--blueprint) 35%, transparent);
-    text-underline-offset: 3px;
+    text-decoration-color: var(--line-strong);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.22em;
   }
 
   .preview :global(a:hover) {
-    text-decoration-color: var(--blueprint);
+    color: var(--fjord);
+    text-decoration-color: var(--fjord);
   }
 
   .preview :global(img) {
     display: block;
     max-width: 100%;
     height: auto;
-    margin: 1em 0;
-    border-radius: 4px;
+    margin: var(--s-5) 0;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
   }
 
   .preview :global(ul),
   .preview :global(ol) {
-    margin: 0.4em 0;
-    padding-left: 1.5em;
+    margin: 0 0 1em;
+    padding-left: 1.4em;
   }
 
   .preview :global(li) {
-    margin: 0.2em 0;
+    margin: 0.25em 0;
+  }
+
+  .preview :global(li::marker) {
+    color: var(--ink-3);
   }
 
   .preview :global(li > input[type="checkbox"]) {
-    margin-right: 8px;
-    accent-color: var(--blueprint);
+    margin-right: var(--s-2);
+    accent-color: var(--moss);
   }
 
   .preview :global(pre) {
-    background: color-mix(in srgb, var(--ink) 5%, transparent);
-    border: 1px solid var(--rule-soft);
-    border-radius: 6px;
-    padding: 14px 16px;
+    margin: var(--s-5) 0;
+    padding: var(--s-4) var(--s-5);
     overflow-x: auto;
-    font-size: 0.85rem;
-    line-height: 1.55;
-    margin: 1em 0;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: var(--code-surface);
+    font-size: var(--text-sm);
+    line-height: 1.6;
   }
 
   .preview :global(code) {
     font-family: var(--font-mono);
-    font-size: 0.85em;
+    font-size: 0.86em;
   }
 
   .preview :global(:not(pre) > code) {
-    background: color-mix(in srgb, var(--ink) 6%, transparent);
-    border-radius: 4px;
-    padding: 0.15em 0.4em;
-    color: #c4554d;
+    padding: 0.1em 0.35em;
+    border-radius: var(--radius-xs);
+    background: var(--code-surface);
+    color: var(--ink);
   }
 
   .preview :global(blockquote) {
-    border-left: 3px solid var(--ink);
-    margin: 0.8em 0;
-    padding: 0.1em 0 0.1em 16px;
-    color: var(--ink-soft);
+    margin: var(--s-5) 0;
+    padding: 0 0 0 var(--s-4);
+    border-left: 2px solid var(--line-strong);
+    color: var(--ink-2);
+    font-family: var(--font-serif);
+    font-size: 1.1em;
+    font-style: italic;
   }
 
   .preview :global(hr) {
+    margin: var(--s-7) 0;
     border: 0;
-    border-top: 1px solid var(--rule-soft);
-    margin: 2em 0;
+    border-top: 1px solid var(--line);
   }
 
   .preview :global(table) {
-    border-collapse: collapse;
-    margin: 1em 0;
-    font-size: 0.92em;
     width: 100%;
+    margin: var(--s-5) 0;
+    border-collapse: collapse;
+    font-size: var(--text-sm);
   }
 
   .preview :global(th),
   .preview :global(td) {
-    border: 1px solid var(--rule-soft);
-    padding: 6px 12px;
+    padding: var(--s-2) var(--s-3);
+    border-bottom: 1px solid var(--line);
     text-align: left;
   }
 
   .preview :global(th) {
-    background: color-mix(in srgb, var(--ink) 4%, transparent);
-    font-weight: 600;
+    background: var(--surface-2);
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-weight: 400;
   }
 
+  /* ── Responsive ──────────────────────────────────────── */
+
+  @media (max-width: 1100px) {
+    .signed-in {
+      display: none;
+    }
+  }
+
+  @media (max-width: 960px) {
+    .appbar-actions .btn:not(.btn-primary) .lbl {
+      display: none;
+    }
+    .appbar-actions .btn:not(.btn-primary) {
+      min-width: 32px;
+      padding: 0 var(--s-2);
+    }
+  }
 
   @media (max-width: 768px) {
     .notes-body {
@@ -958,7 +1100,38 @@
       width: 100%;
       max-height: 35vh;
       border-right: 0;
-      border-bottom: 1px solid var(--rule-soft);
+      border-bottom: 1px solid var(--line);
+    }
+  }
+
+  @media (max-width: 640px) {
+    .appbar {
+      flex-wrap: wrap;
+      gap: 0;
+      padding: 0 var(--s-4);
+    }
+    .appbar-left {
+      height: 56px;
+    }
+    .appbar-actions {
+      width: calc(100% + 2 * var(--s-4));
+      margin: 0 calc(-1 * var(--s-4));
+      padding: var(--s-2) var(--s-4);
+      overflow-x: auto;
+      border-top: 1px solid var(--line);
+      scrollbar-width: none;
+    }
+    .appbar-actions::-webkit-scrollbar {
+      display: none;
+    }
+    .appbar-actions .divider {
+      margin-left: auto;
+      visibility: hidden;
+    }
+    .banner,
+    .doc-title {
+      padding-left: var(--s-4);
+      padding-right: var(--s-4);
     }
   }
 </style>

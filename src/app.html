@@ -3,31 +3,20 @@
   <head>
     <meta charset="utf-8" />
     <link rel="icon" href="%sveltekit.assets%/favicon.png" />
-    <!-- Drawably Pen is the body face and is declared font-display: block, so the
-         page holds its text until the file lands. Preloading the 31 KB TTF keeps
-         that hold to a frame or two instead of a visible blank. -->
-    <link
-      rel="preload"
-      href="%sveltekit.assets%/fonts/DrawablyPen.ttf"
-      as="font"
-      type="font/ttf"
-      crossorigin
-    />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#000000" />
+    <meta name="theme-color" content="#f4f1ea" />
     <script>
       (function () {
+        var t = "light";
         try {
-          var k = "ifkash-theme";
-          var s = localStorage.getItem(k);
-          var t = s === "light" || s === "dark" ? s : "dark";
-          document.documentElement.setAttribute("data-theme", t);
-          document
-            .querySelector('meta[name="theme-color"]')
-            ?.setAttribute("content", t === "dark" ? "#000000" : "#fdfcf8");
-        } catch (e) {
-          document.documentElement.setAttribute("data-theme", "dark");
-        }
+          var s = localStorage.getItem("ifkash-theme");
+          if (s === "light" || s === "dark") t = s;
+          else if (matchMedia("(prefers-color-scheme: dark)").matches) t = "dark";
+        } catch (e) {}
+        document.documentElement.setAttribute("data-theme", t);
+        document
+          .querySelector('meta[name="theme-color"]')
+          ?.setAttribute("content", t === "dark" ? "#15181b" : "#f4f1ea");
       })();
     </script>
     %sveltekit.head%

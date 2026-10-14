@@ -59,13 +59,18 @@
     return items.filter((item) => item.kind === kind);
   }
 
+  function share(finished: number, total: number): number {
+    return total === 0 ? 0 : Math.round((finished / total) * 100);
+  }
+
   $: doneCount = done.size;
   $: percent = TOTAL_ITEMS === 0 ? 0 : Math.round((doneCount / TOTAL_ITEMS) * 100);
 </script>
 
-<header class="page-header">
-  <h1 class="section-title">Roadmap</h1>
-  <p class="section-subtitle">
+<header class="page-head">
+  <p class="eyebrow">08 / Roadmap</p>
+  <h1 class="page-title">Roadmap</h1>
+  <p class="lead">
     What has been built, and the course that turns it into interview answers
   </p>
 </header>
@@ -80,6 +85,20 @@
   <div class="progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow={percent}>
     <span class="progress-fill" style="width: {percent}%"></span>
   </div>
+
+  <!-- Per-module overview: one short track per module, in course order. -->
+  <ol class="meter" aria-hidden="true">
+    {#each MODULES as mod}
+      {@const finished = countDone(mod.items, done)}
+      <li class:complete={finished === mod.items.length && mod.items.length > 0}>
+        <span class="meter-track">
+          <span class="meter-fill" style="width: {share(finished, mod.items.length)}%"></span>
+        </span>
+        <span class="meter-n">{mod.n}</span>
+      </li>
+    {/each}
+  </ol>
+
   <p class="progress-note">
     Progress is stored in this browser. Work through the modules in order. Check an item when
     you can do it or answer it without notes, and uncheck it when you cannot.
@@ -88,7 +107,7 @@
 
 <section class="block" aria-labelledby="built-heading">
   <div class="block-heading">
-    <h2 id="built-heading">Built so far</h2>
+    <h2 id="built-heading"><span class="block-n" aria-hidden="true">A</span>Built so far</h2>
     <p>The numbers to have ready. Every module that follows points back to these.</p>
   </div>
 
@@ -116,18 +135,24 @@
               </a>
             {/each}
           </div>
-          <p class="group-label">Talking points</p>
-          <ul class="fact-list">
-            {#each artifact.facts as fact}
-              <li>{fact}</li>
-            {/each}
-          </ul>
-          <p class="group-label gap-label">Shore up</p>
-          <ul class="fact-list gap-list">
-            {#each artifact.gaps as gap}
-              <li>{gap}</li>
-            {/each}
-          </ul>
+          <div class="artifact-cols">
+            <div>
+              <p class="group-label">Talking points</p>
+              <ul class="fact-list">
+                {#each artifact.facts as fact}
+                  <li>{fact}</li>
+                {/each}
+              </ul>
+            </div>
+            <div>
+              <p class="group-label gap-label">Shore up</p>
+              <ul class="fact-list gap-list">
+                {#each artifact.gaps as gap}
+                  <li>{gap}</li>
+                {/each}
+              </ul>
+            </div>
+          </div>
         </div>
       </details>
     {/each}
@@ -136,7 +161,7 @@
 
 <section class="block" aria-labelledby="course-heading">
   <div class="block-heading">
-    <h2 id="course-heading">Course</h2>
+    <h2 id="course-heading"><span class="block-n" aria-hidden="true">B</span>Course</h2>
     <p>Twelve modules, in order. Each one lists what you already did, what to read, what to build, and the questions to answer cold.</p>
   </div>
 
@@ -145,6 +170,7 @@
       {@const total = mod.items.length}
       {@const finished = countDone(mod.items, done)}
       {@const isOpen = open.has(mod.id)}
+      {@const complete = finished === total && total > 0}
       <li class="module stagger" class:open={isOpen} style="--i: {i}">
         <button
           type="button"
@@ -158,7 +184,10 @@
             <span class="module-title">{mod.title}</span>
             <span class="module-why">{mod.why}</span>
           </span>
-          <span class="module-progress" class:complete={finished === total && total > 0}>
+          <span class="module-progress" class:complete>
+            <span class="module-track" aria-hidden="true">
+              <span class="module-fill" style="width: {share(finished, total)}%"></span>
+            </span>
             {finished}/{total}
           </span>
           <span class="chev" aria-hidden="true">{isOpen ? '−' : '+'}</span>
@@ -167,69 +196,73 @@
         {#if isOpen}
           <div class="module-body" id="module-{mod.id}">
             {#if mod.anchors.length}
-              <p class="group-label">You already did</p>
-              <ul class="anchor-list">
-                {#each mod.anchors as anchor}
-                  <li>
-                    <a
-                      href={anchor.href}
-                      class="anchor-link"
-                      target={anchor.href.startsWith('http') ? '_blank' : undefined}
-                      rel={anchor.href.startsWith('http') ? 'noopener noreferrer' : undefined}
-                    >
-                      {anchor.label}
-                    </a>
-                    <span class="anchor-note">{anchor.note}</span>
-                  </li>
-                {/each}
-              </ul>
+              <div class="group">
+                <p class="group-label">You already did</p>
+                <ul class="anchor-list">
+                  {#each mod.anchors as anchor}
+                    <li>
+                      <a
+                        href={anchor.href}
+                        class="anchor-link"
+                        target={anchor.href.startsWith('http') ? '_blank' : undefined}
+                        rel={anchor.href.startsWith('http') ? 'noopener noreferrer' : undefined}
+                      >
+                        {anchor.label}
+                      </a>
+                      <span class="anchor-note">{anchor.note}</span>
+                    </li>
+                  {/each}
+                </ul>
+              </div>
             {/if}
 
             {#each KIND_ORDER as kind}
               {@const items = ofKind(mod.items, kind)}
               {#if items.length}
-                <p class="group-label">
-                  {KIND_LABEL[kind]}
-                  <span class="group-count">{countDone(items, done)}/{items.length}</span>
-                </p>
-                <ul class="item-list">
-                  {#each items as item}
-                    <li class="item" class:done={done.has(item.id)}>
-                      <label class="item-row">
-                        <input
-                          type="checkbox"
-                          checked={done.has(item.id)}
-                          on:change={() => toggleItem(item.id)}
-                        />
-                        <span class="item-title">{item.title}</span>
-                      </label>
-                      {#if item.links?.length}
-                        <div class="item-links">
-                          {#each item.links as link}
-                            <a
-                              href={link.url}
-                              class="chip"
-                              target="_blank"
-                              rel="noopener noreferrer"
-                            >
-                              {link.label}
-                            </a>
-                          {/each}
-                        </div>
-                      {/if}
-                      {#if item.detail}
-                        {#if item.kind === 'question'}
-                          <details class="answer">
-                            <summary>Answer sketch</summary>
-                            <p class="detail">{item.detail}</p>
-                          </details>
-                        {:else}
-                          <p class="detail">{item.detail}</p>
+                <div class="group">
+                  <p class="group-label">
+                    {KIND_LABEL[kind]}
+                    <span class="group-count">{countDone(items, done)}/{items.length}</span>
+                  </p>
+                  <ul class="item-list">
+                    {#each items as item}
+                      <li class="item" class:done={done.has(item.id)}>
+                        <label class="item-row">
+                          <input
+                            type="checkbox"
+                            checked={done.has(item.id)}
+                            on:change={() => toggleItem(item.id)}
+                          />
+                          <span class="item-title">{item.title}</span>
+                        </label>
+                        {#if item.links?.length}
+                          <div class="item-links">
+                            {#each item.links as link}
+                              <a
+                                href={link.url}
+                                class="chip"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                {link.label}
+                              </a>
+                            {/each}
+                          </div>
                         {/if}
-                      {/if}
-                    </li>
-                  {/each}
-                </ul>
+                        {#if item.detail}
+                          {#if item.kind === 'question'}
+                            <details class="answer">
+                              <summary>Answer sketch</summary>
+                              <p class="detail">{item.detail}</p>
+                            </details>
+                          {:else}
+                            <p class="detail">{item.detail}</p>
+                          {/if}
+                        {/if}
+                      </li>
+                    {/each}
+                  </ul>
+                </div>
               {/if}
             {/each}
           </div>
@@ -244,209 +277,274 @@
     To add a question from an interview, append it to
     <code>src/lib/roadmap/curriculum.ts</code> under the module it belongs to.
   </p>
-  <button type="button" class="btn btn--ghost" on:click={resetProgress}>Reset progress</button>
+  <button type="button" class="btn btn--ghost btn-sm" on:click={resetProgress}>Reset progress</button>
 </footer>
 
 <style>
-  .page-header {
-    padding-top: 16px;
-  }
+  /* ── Overall progress ─────────────────────────────────────── */
 
-  .section-subtitle {
-    margin-bottom: 32px;
-  }
-
-  /* Overall progress */
   .progress {
-    max-width: 720px;
-    padding-bottom: 40px;
+    display: grid;
+    gap: var(--s-4);
+    padding: var(--s-7) 0 0;
   }
 
   .progress-row {
     display: flex;
+    flex-wrap: wrap;
     align-items: baseline;
     justify-content: space-between;
-    gap: 16px;
-    margin-bottom: 10px;
+    gap: var(--s-2) var(--s-4);
   }
 
   .progress-count {
-    color: var(--ink-2);
-    font-size: 14px;
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    font-variant-numeric: tabular-nums;
   }
 
   .progress-count strong {
-    color: var(--foreground);
+    margin-right: var(--s-1);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-size: var(--text-2xl);
     font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    letter-spacing: -0.04em;
   }
 
   .progress-pct {
-    color: var(--ink-3);
-    font-family: var(--font-label);
-    font-size: 12px;
+    color: var(--ink-2);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
     font-variant-numeric: tabular-nums;
   }
 
   .progress-bar {
     position: relative;
-    height: 6px;
+    height: 2px;
     overflow: hidden;
-    border: 1px solid var(--border);
-    border-radius: 3px;
-    background: var(--fill);
+    background: var(--line);
   }
 
   .progress-fill {
     display: block;
     height: 100%;
-    background: var(--accent);
-    transition: width 240ms var(--ease-inout);
+    background: var(--moss);
+    transition: width var(--dur-slow) var(--ease-out);
+  }
+
+  .meter {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: var(--s-2);
+    margin: var(--s-2) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .meter li {
+    display: grid;
+    gap: var(--s-2);
+  }
+
+  .meter-track {
+    display: block;
+    height: 2px;
+    overflow: hidden;
+    background: var(--line);
+  }
+
+  .meter-fill {
+    display: block;
+    height: 100%;
+    background: var(--ink-3);
+    transition: width var(--dur-slow) var(--ease-out);
+  }
+
+  .meter-n {
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .meter li.complete .meter-fill {
+    background: var(--moss);
+  }
+  .meter li.complete .meter-n {
+    color: var(--moss);
   }
 
   .progress-note {
-    margin: 14px 0 0;
+    max-width: var(--measure);
+    margin: var(--s-2) 0 0;
     color: var(--ink-3);
-    font-size: 13px;
+    font-size: var(--text-sm);
     line-height: 1.6;
   }
 
-  /* Section blocks */
+  /* ── Section blocks ───────────────────────────────────────── */
+
   .block {
-    padding: 40px 0 0;
+    padding-top: var(--s-9);
   }
 
   .block-heading {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 44ch);
     align-items: end;
-    gap: 24px;
-    margin-bottom: 24px;
+    gap: var(--s-5);
+    margin-bottom: var(--s-6);
   }
 
   .block-heading h2 {
-    font-size: 28px;
+    display: flex;
+    align-items: baseline;
+    gap: var(--s-3);
+    font-size: var(--text-xl);
+  }
+
+  .block-n {
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-weight: 400;
+    letter-spacing: 0;
   }
 
   .block-heading p {
-    max-width: 48ch;
     margin: 0;
     color: var(--ink-3);
-    font-size: 13px;
-    text-align: right;
+    font-size: var(--text-sm);
+    line-height: 1.55;
   }
 
   .chev {
     justify-self: end;
+    width: 20px;
     color: var(--ink-3);
-    font-family: var(--font-label);
-    font-size: 14px;
+    font-family: var(--font-mono);
+    font-size: var(--text-base);
     line-height: 1;
+    text-align: center;
+    transition: color var(--dur-fast) var(--ease);
   }
 
   .chip {
-    display: inline-block;
-    padding: 4px 10px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    color: var(--muted-foreground);
-    font-family: var(--font-label);
-    font-size: 11px;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    height: 24px;
+    padding: 0 var(--s-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-xs);
+    color: var(--ink-2);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
     text-decoration: none;
     transition:
-      color 0.15s var(--ease-inout),
-      border-color 0.15s var(--ease-inout);
+      color var(--dur-fast) var(--ease),
+      border-color var(--dur-fast) var(--ease);
   }
 
   .chip:hover {
-    border-color: var(--border-strong);
-    color: var(--foreground);
+    border-color: var(--fjord);
+    color: var(--fjord);
+  }
+
+  .group + .group {
+    margin-top: var(--s-6);
   }
 
   .group-label {
     display: flex;
     align-items: baseline;
-    gap: 10px;
-    margin: 28px 0 10px;
+    gap: var(--s-3);
+    margin: 0 0 var(--s-3);
     color: var(--ink-3);
-    font-family: var(--font-label);
-    font-size: 11px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-  }
-
-  .group-label:first-child {
-    margin-top: 0;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
   }
 
   .group-count {
     color: var(--ink-3);
     font-variant-numeric: tabular-nums;
-    letter-spacing: 0;
+  }
+  .group-count::before {
+    content: '·';
+    margin-right: var(--s-3);
   }
 
-  /* Built so far */
+  /* ── Built so far ─────────────────────────────────────────── */
+
   .artifact-list {
-    border-top: 1px solid var(--border);
+    border-top: 1px solid var(--line);
   }
 
   .artifact {
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--line);
   }
 
   .artifact-summary {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto 20px;
     align-items: baseline;
-    gap: 24px;
-    padding: 18px 12px;
-    margin: 0 -12px;
+    gap: var(--s-5);
+    padding: var(--s-5) 0;
+    color: var(--ink);
     list-style: none;
-    color: var(--foreground);
+    cursor: pointer;
   }
 
   .artifact-summary::-webkit-details-marker {
     display: none;
   }
 
-  .artifact-summary:hover {
-    background: var(--fill);
-  }
-
-  .artifact[open] .chev {
-    color: var(--accent);
-  }
-
   .artifact-title {
-    font-size: 18px;
+    font-size: var(--text-lg);
     font-weight: 500;
+    line-height: 1.25;
+    letter-spacing: -0.015em;
+    transition: color var(--dur-fast) var(--ease);
+  }
+
+  .artifact-summary:hover .artifact-title,
+  .artifact-summary:hover .chev,
+  .artifact[open] .chev {
+    color: var(--fjord);
   }
 
   .artifact-meta {
     color: var(--ink-3);
-    font-family: var(--font-label);
-    font-size: 11px;
-    letter-spacing: 0.04em;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-variant-numeric: tabular-nums;
     white-space: nowrap;
   }
 
   .artifact-body {
-    padding: 4px 0 26px 0;
+    padding: 0 0 var(--s-6);
+    animation: rise var(--dur) var(--ease-out) both;
   }
 
   .artifact-links {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 8px;
+    gap: var(--s-2);
+    margin-bottom: var(--s-5);
+  }
+
+  .artifact-cols {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: var(--s-6) var(--s-7);
   }
 
   .fact-list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    max-width: 78ch;
+    display: grid;
+    gap: var(--s-2);
     margin: 0;
     padding: 0;
     list-style: none;
@@ -454,9 +552,9 @@
 
   .fact-list li {
     position: relative;
-    padding-left: 18px;
+    padding-left: var(--s-5);
     color: var(--ink-2);
-    font-size: 14.5px;
+    font-size: 15px;
     line-height: 1.6;
   }
 
@@ -468,100 +566,124 @@
   }
 
   .gap-label {
-    color: var(--accent);
+    color: var(--clay);
   }
 
   .gap-list li::before {
-    content: '!';
-    color: var(--accent);
-    font-family: var(--font-label);
+    content: '';
+    top: 0.68em;
+    left: 2px;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    border: 1px solid var(--clay);
   }
 
-  /* Course */
+  /* ── Course ───────────────────────────────────────────────── */
+
   .module-list {
     margin: 0;
     padding: 0;
-    border-top: 1px solid var(--border);
+    border-top: 1px solid var(--line);
     list-style: none;
   }
 
   .module {
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--line);
   }
 
   .module-head {
     display: grid;
-    grid-template-columns: 40px minmax(0, 1fr) auto 20px;
+    grid-template-columns: 48px minmax(0, 1fr) auto 20px;
     align-items: baseline;
-    gap: 24px;
+    column-gap: var(--s-5);
     width: 100%;
-    padding: 20px 12px;
-    margin: 0 -12px;
+    padding: var(--s-5) 0;
     border: 0;
     background: transparent;
-    color: var(--foreground);
+    color: var(--ink);
     font: inherit;
     text-align: left;
-  }
-
-  .module-head:hover {
-    background: var(--fill);
-  }
-
-  .module.open .module-head {
-    background: transparent;
+    cursor: pointer;
   }
 
   .module-n {
     color: var(--ink-3);
-    font-family: var(--font-label);
-    font-size: 13px;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-variant-numeric: tabular-nums;
   }
 
   .module-main {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
+    display: grid;
+    gap: var(--s-1);
     min-width: 0;
   }
 
   .module-title {
-    font-size: 20px;
+    color: var(--ink);
+    font-size: var(--text-lg);
     font-weight: 500;
     line-height: 1.25;
+    letter-spacing: -0.015em;
+    transition: color var(--dur-fast) var(--ease);
   }
 
   .module-why {
-    max-width: 72ch;
+    max-width: var(--measure);
     color: var(--ink-3);
-    font-size: 13.5px;
+    font-size: var(--text-sm);
     line-height: 1.55;
   }
 
+  .module-head:hover .module-title,
+  .module-head:hover .chev,
+  .module.open .chev {
+    color: var(--fjord);
+  }
+
   .module-progress {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-3);
     color: var(--ink-3);
-    font-family: var(--font-label);
-    font-size: 12px;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
   }
 
+  .module-track {
+    display: block;
+    width: 56px;
+    height: 2px;
+    overflow: hidden;
+    background: var(--line);
+  }
+
+  .module-fill {
+    display: block;
+    height: 100%;
+    background: var(--ink-3);
+    transition: width var(--dur-slow) var(--ease-out);
+  }
+
   .module-progress.complete {
-    color: var(--ok);
+    color: var(--moss);
+  }
+  .module-progress.complete .module-fill {
+    background: var(--moss);
   }
 
-  .module.open .chev {
-    color: var(--accent);
-  }
-
+  /* Body aligns with the title column: 48px index + 24px gap. */
   .module-body {
-    padding: 4px 0 32px 64px;
+    padding: 0 0 var(--s-7) calc(48px + var(--s-5));
+    animation: rise var(--dur) var(--ease-out) both;
   }
 
   .anchor-list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+    display: grid;
+    gap: var(--s-2);
     max-width: 78ch;
     margin: 0;
     padding: 0;
@@ -570,21 +692,26 @@
 
   .anchor-list li {
     color: var(--ink-2);
-    font-size: 14.5px;
+    font-size: 15px;
     line-height: 1.6;
   }
 
   .anchor-link {
-    margin-right: 8px;
-    color: var(--foreground);
+    margin-right: var(--s-2);
+    color: var(--ink);
     font-weight: 500;
     text-decoration: underline;
-    text-decoration-color: var(--border-strong);
-    text-underline-offset: 3px;
+    text-decoration-color: var(--line-strong);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.22em;
+    transition:
+      color var(--dur-fast) var(--ease),
+      text-decoration-color var(--dur-fast) var(--ease);
   }
 
   .anchor-link:hover {
-    text-decoration-color: var(--accent);
+    color: var(--fjord);
+    text-decoration-color: var(--fjord);
   }
 
   .anchor-note {
@@ -592,55 +719,87 @@
   }
 
   .item-list {
-    display: flex;
-    flex-direction: column;
     margin: 0;
     padding: 0;
+    border-top: 1px solid var(--line);
     list-style: none;
   }
 
   .item {
-    padding: 12px 0;
-    border-bottom: 1px solid var(--input);
-  }
-
-  .item:last-child {
-    border-bottom: 0;
+    padding: var(--s-3) 0;
+    border-bottom: 1px solid var(--line);
   }
 
   .item-row {
     display: grid;
-    grid-template-columns: 18px minmax(0, 1fr);
+    grid-template-columns: 16px minmax(0, 1fr);
     align-items: start;
-    gap: 12px;
-    color: var(--foreground);
+    gap: var(--s-3);
+    color: var(--ink);
     font-size: 15px;
     line-height: 1.55;
+    cursor: pointer;
   }
 
+  /* A quiet square checkbox: hairline when open, moss when done. */
   .item-row input {
+    position: relative;
     width: 16px;
     height: 16px;
     margin: 4px 0 0;
-    accent-color: var(--accent);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-xs);
+    background: var(--surface);
+    appearance: none;
+    -webkit-appearance: none;
+    cursor: pointer;
+    transition:
+      background-color var(--dur-fast) var(--ease),
+      border-color var(--dur-fast) var(--ease);
+  }
+
+  .item-row:hover input {
+    border-color: var(--ink-3);
+  }
+
+  .item-row input:checked {
+    border-color: var(--moss);
+    background: var(--moss);
+  }
+
+  .item-row input:checked::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 4.5px;
+    width: 4px;
+    height: 8px;
+    border: solid var(--ink-inverse);
+    border-width: 0 1.5px 1.5px 0;
+    transform: rotate(45deg);
+  }
+
+  .item-title {
+    transition: color var(--dur-fast) var(--ease);
   }
 
   .item.done .item-title {
     color: var(--ink-3);
     text-decoration: line-through;
-    text-decoration-color: var(--ink-3);
+    text-decoration-color: var(--line-strong);
+    text-decoration-thickness: 1px;
   }
 
   .item-links {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px;
-    margin: 8px 0 0 30px;
+    gap: var(--s-2);
+    margin: var(--s-2) 0 0 28px;
   }
 
   .detail {
     max-width: 76ch;
-    margin: 8px 0 0 30px;
+    margin: var(--s-2) 0 0 28px;
     color: var(--ink-2);
     font-size: 14px;
     line-height: 1.65;
@@ -648,17 +807,18 @@
   }
 
   .answer {
-    margin: 8px 0 0 30px;
+    margin: var(--s-2) 0 0 28px;
   }
 
   .answer summary {
-    width: fit-content;
+    display: inline-flex;
+    gap: var(--s-2);
     color: var(--ink-3);
-    font-family: var(--font-label);
-    font-size: 11px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
     list-style: none;
+    cursor: pointer;
+    transition: color var(--dur-fast) var(--ease);
   }
 
   .answer summary::-webkit-details-marker {
@@ -666,91 +826,107 @@
   }
 
   .answer summary::before {
-    content: '+ ';
+    content: '+';
   }
 
   .answer[open] summary::before {
-    content: '− ';
+    content: '−';
   }
 
   .answer summary:hover,
   .answer[open] summary {
-    color: var(--accent);
+    color: var(--fjord);
   }
 
   .answer .detail {
-    margin-left: 0;
-    padding: 10px 14px;
-    border-left: 2px solid var(--border-strong);
+    margin: var(--s-2) 0 var(--s-1);
+    padding: var(--s-1) 0 var(--s-1) var(--s-4);
+    border-left: 1px solid var(--line-strong);
   }
 
-  /* Footer */
+  /* ── Footer ───────────────────────────────────────────────── */
+
   .page-foot {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    gap: 16px;
-    margin-top: 48px;
-    padding-top: 24px;
-    border-top: 1px solid var(--border);
+    gap: var(--s-4);
+    margin-top: var(--s-8);
+    padding-top: var(--s-5);
+    border-top: 1px solid var(--line);
   }
 
   .page-foot p {
     margin: 0;
     color: var(--ink-3);
-    font-size: 13px;
+    font-size: var(--text-sm);
   }
 
   .page-foot code {
-    padding: 1px 6px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    background: var(--code-bg);
-    color: var(--ink-2);
-    font-family: var(--font-mono);
-    font-size: 12px;
+    overflow-wrap: anywhere;
   }
 
-  @media (max-width: 768px) {
-    .block-heading {
-      grid-template-columns: 1fr;
-      gap: 8px;
+  @media (max-width: 900px) {
+    .artifact-cols {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  @media (max-width: 720px) {
+    .progress {
+      padding-top: var(--s-6);
     }
 
-    .block-heading p {
-      text-align: left;
+    .meter {
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      row-gap: var(--s-3);
+    }
+
+    .block {
+      padding-top: var(--s-8);
+    }
+
+    .block-heading {
+      grid-template-columns: minmax(0, 1fr);
+      gap: var(--s-2);
     }
 
     .artifact-summary {
       grid-template-columns: minmax(0, 1fr) 20px;
-      gap: 12px 16px;
-      padding: 16px 10px;
-      margin: 0 -10px;
+      gap: var(--s-2) var(--s-4);
+      padding: var(--s-4) 0;
     }
 
     .artifact-meta {
       grid-column: 1;
+      grid-row: 2;
       white-space: normal;
     }
 
     .module-head {
       grid-template-columns: 32px minmax(0, 1fr) 20px;
-      gap: 8px 12px;
-      padding: 16px 10px;
-      margin: 0 -10px;
+      gap: var(--s-2) var(--s-3);
+      padding: var(--s-4) 0;
     }
 
     .module-progress {
       grid-column: 2;
+      grid-row: 2;
+    }
+
+    .module-head .chev {
+      grid-column: 3;
+      grid-row: 1;
     }
 
     .module-body {
       padding-left: 0;
     }
 
-    .module-title {
-      font-size: 18px;
+    .module-title,
+    .artifact-title {
+      font-size: var(--text-md);
     }
   }
 </style>

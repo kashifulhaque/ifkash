@@ -6,7 +6,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { env } from '$env/dynamic/public';
-  import { LogOut, Check, Plus, Trash2 } from 'lucide-svelte';
+  import { LogOut, Check, Plus, Trash2, Bike } from 'lucide-svelte';
   import LoadingState from '$lib/components/LoadingState.svelte';
   import { patchLog } from '$lib/workoutReport';
   import { loadTarget, type LoadTarget } from '$lib/workoutTargets';
@@ -706,15 +706,15 @@
   });
 </script>
 
-<div class="page">
-  <header class="page-header">
+<div class="page" class:split={signedIn}>
+  <header class="head">
     <div class="breadcrumb">
       <a href="/fitness">Fitness</a>
       <span class="separator">/</span>
       <span>Workout</span>
     </div>
     <div class="header-top">
-      <h1 class="page-title">Workout 🏋️</h1>
+      <h1 class="title">Workout</h1>
       <div class="header-actions">
         {#if signedIn}
           <span class="save-pill" class:on={saveStatus !== 'idle'} data-status={saveStatus}>
@@ -726,7 +726,7 @@
               Save failed
             {/if}
           </span>
-          <button class="ghost-btn" on:click={signOut} title="Sign out">
+          <button class="btn btn-sm btn--ghost signout" on:click={signOut} title="Sign out">
             <LogOut size={15} /> Sign out
           </button>
         {/if}
@@ -742,1086 +742,1349 @@
     <div class="error-banner">{errorMsg}</div>
   {/if}
 
-  <!-- The week: each chip jumps to that day's exercises and ticks once the day
-       is logged this week. Four ticks is a finished week; the fifth is a bonus. -->
-  <div class="week-block">
-    <div class="week-strip">
-      {#each DAY_LABELS as label}
-        <button
-          class="day-chip"
-          class:active={label === active}
-          class:done={signedIn && week.done.includes(label)}
-          class:optional={DAY_INFO[label].optional}
-          on:click={() => selectDay(label)}
-          title={DAY_INFO[label].detail}
-        >
-          <span class="chip-day">{DAY_INFO[label].day}</span>
-          <span class="chip-focus">
-            {label}
-            {#if signedIn && week.done.includes(label)}<Check size={13} strokeWidth={2.5} />{/if}
-          </span>
-        </button>
-      {/each}
-    </div>
-    {#if signedIn}
-      <p class="week-line" class:complete={week.complete}>
-        {#if week.complete}
-          Week done — {week.liftsDone} of {week.liftsTotal} lifts logged. Anything more is extra.
-        {:else}
-          {week.liftsDone} of {week.liftsTotal} lifts logged this week.
-        {/if}
-      </p>
-    {/if}
-  </div>
-
-  {#if !signedIn}
-    <div class="signin-card">
-      <p>Sign in with Google to log and sync your sets, reps and bodyweight.</p>
-      <div bind:this={gisButton}></div>
-    </div>
-  {:else}
-    <!-- Session bar: date + bodyweight -->
-    <div class="session-bar">
-      <label>
-        Date
-        <input type="date" bind:value={sessionDate} on:change={onDateChange} />
-      </label>
-      <label>
-        Bodyweight (kg)
-        <input
-          type="number"
-          inputmode="decimal"
-          min="0"
-          step="0.1"
-          placeholder="e.g. 87.5"
-          class:suggested={bwSuggested}
-          bind:value={bw}
-          on:focus={onBwFocus}
-          on:input={onBwInput}
-        />
-      </label>
-    </div>
-  {/if}
-
-  <!-- Active day's exercises -->
-  <section class="day-card">
-    <div class="day-card-head">
-      <h2>{active}</h2>
-      <span class="cardio-pill">🚴 {DAY_INFO[active].cardio}</span>
-    </div>
-
-    {#if DAY_INFO[active].optional && exercises.length}
-      <p class="empty-day">
-        Do the cardio first. The lifts are optional: do as many as you have time for, and log only
-        the sets you do.
-      </p>
-    {/if}
-    {#if exercises.length === 0}
-      <p class="empty-day">
-        No lifting today. Log the cardio bout below{signedIn ? '' : ' once signed in'}, or add an
-        exercise if you end up doing one.
-      </p>
-    {/if}
-
-    {#if !signedIn}
-      <!-- read-only plan view -->
-      <ul class="exercise-list">
-        {#each exercises as ex, i}
-          <li class:key-lift={ex.priority}>
-            <span class="ex-num">{i + 1}</span>
-            <span class="ex-name">{ex.name}</span>
-            {#if ex.priority}<span class="key-tag" title="Priority lift — progress this first">key</span>{/if}
-            <span class="ex-scheme">{ex.scheme}</span>
-            {#if ex.alt}<span class="ex-alt">{ex.alt}</span>{/if}
-          </li>
-        {/each}
-      </ul>
-      {#if exercises.length}
-        <p class="key-legend">
-          <span class="key-tag">key</span> — the lifts that drive the result. Progress these first;
-          the rest are accessories and are what to cut when you're short on time.
-        </p>
-      {/if}
-    {:else}
-      <!-- interactive logging view -->
-      <div class="log-list">
-        {#each exercises as ex, i}
-          <div class="log-ex" class:open={expanded[rowKey(ex, i)]} class:key-lift={ex.priority}>
+  <div class="layout">
+    <div class="main-col">
+      <!-- The week: each chip jumps to that day's exercises and ticks once the day
+           is logged this week. Four ticks is a finished week; the fifth is a bonus. -->
+      <div class="week-block">
+        <div class="week-strip">
+          {#each DAY_LABELS as label}
             <button
-              type="button"
-              class="log-ex-head"
-              on:click={() => (expanded = { ...expanded, [rowKey(ex, i)]: !expanded[rowKey(ex, i)] })}
+              class="day-chip"
+              class:active={label === active}
+              class:done={signedIn && week.done.includes(label)}
+              class:optional={DAY_INFO[label].optional}
+              on:click={() => selectDay(label)}
+              title={DAY_INFO[label].detail}
             >
-              <span class="ex-num">{i + 1}</span>
-              {#if ex.scheme}
+              <span class="chip-day">{DAY_INFO[label].day}</span>
+              <span class="chip-focus">
+                {label}
+                {#if signedIn && week.done.includes(label)}<Check size={13} strokeWidth={2.5} />{/if}
+              </span>
+            </button>
+          {/each}
+        </div>
+        {#if signedIn}
+          <p class="week-line" class:complete={week.complete}>
+            <span class="led" class:led-hollow={!week.complete} aria-hidden="true"></span>
+            {#if week.complete}
+              Week done — {week.liftsDone} of {week.liftsTotal} lifts logged. Anything more is extra.
+            {:else}
+              {week.liftsDone} of {week.liftsTotal} lifts logged this week.
+            {/if}
+          </p>
+        {/if}
+      </div>
+
+      {#if !signedIn}
+        <div class="signin-card">
+          <p>Sign in with Google to log and sync your sets, reps and bodyweight.</p>
+          <div bind:this={gisButton}></div>
+        </div>
+      {:else}
+        <!-- Session bar: date + bodyweight -->
+        <div class="session-bar">
+          <label>
+            Date
+            <input class="field" type="date" bind:value={sessionDate} on:change={onDateChange} />
+          </label>
+          <label>
+            Bodyweight (kg)
+            <input
+              class="field num-field"
+              type="number"
+              inputmode="decimal"
+              min="0"
+              step="0.1"
+              placeholder="e.g. 87.5"
+              class:suggested={bwSuggested}
+              bind:value={bw}
+              on:focus={onBwFocus}
+              on:input={onBwInput}
+            />
+          </label>
+        </div>
+      {/if}
+
+      <!-- Active day's exercises -->
+      <section class="day-card">
+        <div class="day-card-head">
+          <h2>{active}</h2>
+          <span class="cardio-pill"><Bike size={14} aria-hidden="true" /> {DAY_INFO[active].cardio}</span>
+        </div>
+
+        {#if DAY_INFO[active].optional && exercises.length}
+          <p class="empty-day">
+            Do the cardio first. The lifts are optional: do as many as you have time for, and log only
+            the sets you do.
+          </p>
+        {/if}
+        {#if exercises.length === 0}
+          <p class="empty-day">
+            No lifting today. Log the cardio bout below{signedIn ? '' : ' once signed in'}, or add an
+            exercise if you end up doing one.
+          </p>
+        {/if}
+
+        {#if !signedIn}
+          <!-- read-only plan view -->
+          <ul class="exercise-list">
+            {#each exercises as ex, i}
+              <li class:key-lift={ex.priority}>
+                <span class="ex-num">{i + 1}</span>
                 <span class="ex-name">{ex.name}</span>
-                {#if ex.priority}
-                  <span class="key-tag" title="Priority lift — progress this first">key</span>
-                {/if}
-                <span class="ex-target">
-                  {ex.scheme}{#if loadTargets[i]}<span class="ex-load" title={loadTargets[i]?.reason}>@ {gramsToKg(Math.round((loadTargets[i]?.kg ?? 0) * 1000))} kg</span>{/if}
-                </span>
-              {:else}
-                <input
-                  class="ex-name-input"
-                  placeholder="Exercise name"
-                  bind:value={ex.name}
-                  on:click|stopPropagation
-                  on:input={() => onExerciseName(i)}
-                />
-              {/if}
-              {#if ex.kind === 'weighted'}
-                <!-- Which implement — loads are only comparable within one. -->
-                <!-- svelte-ignore a11y-click-events-have-key-events -->
-                <select
-                  class="ex-equip"
-                  class:unset={!ex.equipment}
-                  bind:value={ex.equipment}
-                  on:click|stopPropagation
-                  on:change={() => {
-                    applyTargets();
-                    scheduleSave();
-                  }}
-                  title="Equipment used"
-                  aria-label="Equipment for {ex.name || 'this exercise'}"
+                {#if ex.priority}<span class="key-tag" title="Priority lift — progress this first">key</span>{/if}
+                <span class="ex-scheme">{ex.scheme}</span>
+                {#if ex.alt}<span class="ex-alt">{ex.alt}</span>{/if}
+              </li>
+            {/each}
+          </ul>
+          {#if exercises.length}
+            <p class="key-legend">
+              <span class="key-tag">key</span> — the lifts that drive the result. Progress these first;
+              the rest are accessories and are what to cut when you're short on time.
+            </p>
+          {/if}
+        {:else}
+          <!-- interactive logging view -->
+          <div class="log-list">
+            {#each exercises as ex, i}
+              <div class="log-ex" class:open={expanded[rowKey(ex, i)]} class:key-lift={ex.priority}>
+                <button
+                  type="button"
+                  class="log-ex-head"
+                  on:click={() => (expanded = { ...expanded, [rowKey(ex, i)]: !expanded[rowKey(ex, i)] })}
                 >
-                  <option value="">—</option>
-                  {#each EQUIPMENT_OPTIONS as opt}
-                    <option value={opt}>{opt}</option>
+                  <span class="ex-num">{i + 1}</span>
+                  {#if ex.scheme}
+                    <span class="ex-title">
+                      <span class="ex-name">{ex.name}</span>
+                      {#if ex.priority}
+                        <span class="key-tag" title="Priority lift — progress this first">key</span>
+                      {/if}
+                    </span>
+                    <span class="ex-target">
+                      {ex.scheme}{#if loadTargets[i]}<span class="ex-load" title={loadTargets[i]?.reason}>@ {gramsToKg(Math.round((loadTargets[i]?.kg ?? 0) * 1000))} kg</span>{/if}
+                    </span>
+                  {:else}
+                    <input
+                      class="field ex-name-input"
+                      placeholder="Exercise name"
+                      bind:value={ex.name}
+                      on:click|stopPropagation
+                      on:input={() => onExerciseName(i)}
+                    />
+                  {/if}
+                  {#if ex.alt}<span class="ex-alt">{ex.alt}</span>{/if}
+                  {#if ex.kind === 'weighted'}
+                    <!-- Which implement — loads are only comparable within one. -->
+                    <!-- svelte-ignore a11y-click-events-have-key-events -->
+                    <select
+                      class="ex-equip"
+                      class:unset={!ex.equipment}
+                      bind:value={ex.equipment}
+                      on:click|stopPropagation
+                      on:change={() => {
+                        applyTargets();
+                        scheduleSave();
+                      }}
+                      title="Equipment used"
+                      aria-label="Equipment for {ex.name || 'this exercise'}"
+                    >
+                      <option value="">—</option>
+                      {#each EQUIPMENT_OPTIONS as opt}
+                        <option value={opt}>{opt}</option>
+                      {/each}
+                    </select>
+                  {/if}
+                  <span class="chevron" aria-hidden="true">{expanded[rowKey(ex, i)] ? '−' : '+'}</span>
+                </button>
+
+                {#if expanded[rowKey(ex, i)]}
+                  <div class="sets">
+                    {#if loadTargets[i]}
+                      {@const t = loadTargets[i]}
+                      <p class="load-note">
+                        {t?.reason}
+                        {#if t?.warmups.length}
+                          Warm up first with {t.warmups.map((w, k) => `${k === t.warmups.length - 1 ? 5 : 8} × ${gramsToKg(Math.round(w * 1000))} kg`).join(', then ')}, and don't log the warm-ups.
+                        {/if}
+                      </p>
+                    {/if}
+                    {#each ex.sets as s, j}
+                      <div class="set-row" class:bare={ex.kind !== 'weighted'}>
+                        <span class="set-num">{j + 1}</span>
+                        {#if ex.kind === 'weighted'}
+                          <input
+                            class="field num"
+                            class:suggested={s.suggested}
+                            type="number"
+                            inputmode="decimal"
+                            min="0"
+                            step="0.5"
+                            placeholder="kg"
+                            bind:value={s.weight}
+                            on:input={() => touchSet(s)}
+                          />
+                          <span class="times">×</span>
+                        {/if}
+                        <input
+                          class="field num"
+                          class:suggested={s.suggested}
+                          type="number"
+                          inputmode="numeric"
+                          min="0"
+                          placeholder={ex.kind === 'time' ? 'sec' : 'reps'}
+                          bind:value={s.reps}
+                          on:input={() => touchSet(s)}
+                        />
+                        <button class="icon-btn" on:click={() => removeSet(i, j)} title="Remove set">
+                          <Trash2 size={15} />
+                        </button>
+                      </div>
+                    {/each}
+                    <div class="set-actions">
+                      <button class="btn btn-sm btn--ghost" on:click={() => addSet(i)}>
+                        <Plus size={14} /> set
+                      </button>
+                      {#if !ex.scheme}
+                        <button class="btn btn-sm btn--ghost danger" on:click={() => removeExercise(i)}>
+                          <Trash2 size={13} /> remove exercise
+                        </button>
+                      {/if}
+                    </div>
+                  </div>
+                {/if}
+              </div>
+            {/each}
+
+            <button class="add-ex" on:click={addExercise}>
+              <Plus size={15} /> add exercise
+            </button>
+          </div>
+
+          <!-- Cardio log — kind + minutes + kcal (auto-estimated, editable). -->
+          <div class="cardio-log">
+            <div class="cardio-log-head">
+              <span class="cardio-log-title"><Bike size={15} aria-hidden="true" /> Cardio</span>
+              <span class="cardio-log-hint">kcal auto-estimates from time &amp; bodyweight — tap to override</span>
+            </div>
+            {#each cardioRows as c, i}
+              <div class="cardio-row">
+                <select class="field cardio-kind" bind:value={c.kind} on:change={() => onCardioChange(c)}>
+                  <!-- A restored bout may name a machine no longer on the list
+                       (the gym only has three). Keep its own value selectable so
+                       editing an old session doesn't silently retype it. -->
+                  {#if c.kind && !CARDIO_OPTIONS.some((o) => o.value === c.kind)}
+                    <option value={c.kind}>{c.kind}</option>
+                  {/if}
+                  {#each CARDIO_OPTIONS as o}
+                    <option value={o.value}>{o.value}</option>
                   {/each}
                 </select>
-              {/if}
-              <span class="chevron" aria-hidden="true">{expanded[rowKey(ex, i)] ? '−' : '+'}</span>
-              {#if ex.alt}<span class="ex-alt">{ex.alt}</span>{/if}
-            </button>
-
-            {#if expanded[rowKey(ex, i)]}
-              <div class="sets">
-                {#if loadTargets[i]}
-                  {@const t = loadTargets[i]}
-                  <p class="load-note">
-                    {t?.reason}
-                    {#if t?.warmups.length}
-                      Warm up first with {t.warmups.map((w, k) => `${k === t.warmups.length - 1 ? 5 : 8} × ${gramsToKg(Math.round(w * 1000))} kg`).join(', then ')}, and don't log the warm-ups.
-                    {/if}
-                  </p>
-                {/if}
-                {#each ex.sets as s, j}
-                  <div class="set-row">
-                    <span class="set-num">{j + 1}</span>
-                    {#if ex.kind === 'weighted'}
-                      <input
-                        class="num"
-                        class:suggested={s.suggested}
-                        type="number"
-                        inputmode="decimal"
-                        min="0"
-                        step="0.5"
-                        placeholder="kg"
-                        bind:value={s.weight}
-                        on:input={() => touchSet(s)}
-                      />
-                      <span class="times">×</span>
-                    {/if}
-                    <input
-                      class="num"
-                      class:suggested={s.suggested}
-                      type="number"
-                      inputmode="numeric"
-                      min="0"
-                      placeholder={ex.kind === 'time' ? 'sec' : 'reps'}
-                      bind:value={s.reps}
-                      on:input={() => touchSet(s)}
-                    />
-                    <button class="icon-btn" on:click={() => removeSet(i, j)} title="Remove set">
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
-                {/each}
-                <div class="set-actions">
-                  <button class="text-btn" on:click={() => addSet(i)}>
-                    <Plus size={14} /> set
-                  </button>
-                  {#if !ex.scheme}
-                    <button class="text-btn danger" on:click={() => removeExercise(i)}>
-                      <Trash2 size={13} /> remove exercise
-                    </button>
-                  {/if}
+                <div class="cardio-field">
+                  <input
+                    class="field num"
+                    type="number"
+                    inputmode="numeric"
+                    min="0"
+                    placeholder="min"
+                    bind:value={c.minutes}
+                    on:input={() => onCardioChange(c)}
+                  />
+                  <span class="unit">min</span>
                 </div>
+                <div class="cardio-field">
+                  <input
+                    class="field num"
+                    class:suggested={!c.kcalEdited}
+                    type="number"
+                    inputmode="numeric"
+                    min="0"
+                    placeholder={cardioEstimate(c) > 0 ? `≈${cardioEstimate(c)}` : 'kcal'}
+                    bind:value={c.kcal}
+                    on:input={() => onCardioKcal(c)}
+                  />
+                  <span class="unit">kcal</span>
+                </div>
+                <button class="icon-btn" on:click={() => removeCardio(i)} title="Remove cardio">
+                  <Trash2 size={15} />
+                </button>
               </div>
-            {/if}
-          </div>
-        {/each}
-
-        <button class="text-btn add-ex" on:click={addExercise}>
-          <Plus size={15} /> add exercise
-        </button>
-      </div>
-
-      <!-- Cardio log — kind + minutes + kcal (auto-estimated, editable). -->
-      <div class="cardio-log">
-        <div class="cardio-log-head">
-          <span class="cardio-log-title">🚴 Cardio</span>
-          <span class="cardio-log-hint">kcal auto-estimates from time &amp; bodyweight — tap to override</span>
-        </div>
-        {#each cardioRows as c, i}
-          <div class="cardio-row">
-            <select class="cardio-kind" bind:value={c.kind} on:change={() => onCardioChange(c)}>
-              <!-- A restored bout may name a machine no longer on the list
-                   (the gym only has three). Keep its own value selectable so
-                   editing an old session doesn't silently retype it. -->
-              {#if c.kind && !CARDIO_OPTIONS.some((o) => o.value === c.kind)}
-                <option value={c.kind}>{c.kind}</option>
-              {/if}
-              {#each CARDIO_OPTIONS as o}
-                <option value={o.value}>{o.value}</option>
-              {/each}
-            </select>
-            <div class="cardio-field">
-              <input
-                class="num"
-                type="number"
-                inputmode="numeric"
-                min="0"
-                placeholder="min"
-                bind:value={c.minutes}
-                on:input={() => onCardioChange(c)}
-              />
-              <span class="unit">min</span>
-            </div>
-            <div class="cardio-field">
-              <input
-                class="num"
-                class:suggested={!c.kcalEdited}
-                type="number"
-                inputmode="numeric"
-                min="0"
-                placeholder={cardioEstimate(c) > 0 ? `≈${cardioEstimate(c)}` : 'kcal'}
-                bind:value={c.kcal}
-                on:input={() => onCardioKcal(c)}
-              />
-              <span class="unit">kcal</span>
-            </div>
-            <button class="icon-btn" on:click={() => removeCardio(i)} title="Remove cardio">
-              <Trash2 size={14} />
+            {/each}
+            <button class="add-ex cardio-add" on:click={addCardio}>
+              <Plus size={14} /> cardio
             </button>
           </div>
-        {/each}
-        <button class="text-btn add-ex cardio-add" on:click={addCardio}>
-          <Plus size={14} /> cardio
-        </button>
-      </div>
-    {/if}
-  </section>
+        {/if}
+      </section>
 
-  <!-- The whole week on one screen: every day's lifts and cardio, ticked once
-       logged this week. Each row opens that day above. -->
-  <details class="fold">
-    <summary>
-      <span class="fold-title">Week overview</span>
-      <span class="fold-meta">{LIFT_DAYS.length} lifts + 1 spare</span>
-    </summary>
-    <div class="fold-body overview">
-      {#each DAY_LABELS as label}
-        {@const done = signedIn && week.done.includes(label)}
-        <button
-          type="button"
-          class="ov-day"
-          class:done
-          class:optional={DAY_INFO[label].optional}
-          class:active={label === active}
-          on:click={() => selectDay(label)}
-          title="Open {label}"
-        >
-          <span class="ov-when">{DAY_INFO[label].day}</span>
-          <span class="ov-body">
-            <span class="ov-title">
-              {label}
-              {#if done}<Check size={13} strokeWidth={2.5} />{/if}
-            </span>
-            <span class="ov-lifts">
-              {#if DAY_TEMPLATES[label].length}
-                {#each DAY_TEMPLATES[label] as ex}
-                  <span class="ov-lift" class:key={ex.priority}>{ex.name} <em>{ex.scheme}</em></span>
-                {/each}
-              {:else}
-                <span class="ov-lift">{DAY_INFO[label].detail}</span>
-              {/if}
-            </span>
-            <span class="ov-cardio">🚴 {DAY_INFO[label].cardio}</span>
-          </span>
-        </button>
-      {/each}
+      <!-- The whole week on one screen: every day's lifts and cardio, ticked once
+           logged this week. Each row opens that day above. -->
+      <details class="fold">
+        <summary>
+          <span class="fold-title">Week overview</span>
+          <span class="fold-meta">{LIFT_DAYS.length} lifts + 1 spare</span>
+        </summary>
+        <div class="fold-body overview">
+          {#each DAY_LABELS as label}
+            {@const done = signedIn && week.done.includes(label)}
+            <button
+              type="button"
+              class="ov-day"
+              class:done
+              class:optional={DAY_INFO[label].optional}
+              class:active={label === active}
+              on:click={() => selectDay(label)}
+              title="Open {label}"
+            >
+              <span class="ov-when">{DAY_INFO[label].day}</span>
+              <span class="ov-body">
+                <span class="ov-title">
+                  {label}
+                  {#if done}<Check size={13} strokeWidth={2.5} />{/if}
+                </span>
+                <span class="ov-lifts">
+                  {#if DAY_TEMPLATES[label].length}
+                    {#each DAY_TEMPLATES[label] as ex}
+                      <span class="ov-lift" class:key={ex.priority}>{ex.name} <em>{ex.scheme}</em></span>
+                    {/each}
+                  {:else}
+                    <span class="ov-lift">{DAY_INFO[label].detail}</span>
+                  {/if}
+                </span>
+                <span class="ov-cardio"><Bike size={12} aria-hidden="true" /> {DAY_INFO[label].cardio}</span>
+              </span>
+            </button>
+          {/each}
+        </div>
+      </details>
     </div>
-  </details>
 
-  {#if signedIn}
-    <!-- My details: the profile the body maths runs on, and the numbers it
-         gives at the current bodyweight. -->
-    <section class="info-card">
-      <div class="info-head">
-        <h2>My details</h2>
-        {#if metrics}<span class="info-meta">at {metricKg.toFixed(1)} kg</span>{/if}
-      </div>
-      <div class="profile-grid">
-        <label>
-          Height (cm)
-          <input type="number" min="50" max="300" bind:value={profile.height_cm} on:input={onProfileChange} />
-        </label>
-        <label>
-          Age
-          <input type="number" min="1" max="120" bind:value={profile.age_years} on:input={onProfileChange} />
-        </label>
-        <label>
-          Sex
-          <select bind:value={profile.sex} on:change={onProfileChange}>
-            <option value="male">male</option>
-            <option value="female">female</option>
-          </select>
-        </label>
-        <label>
-          Activity
-          <select bind:value={profile.activity} on:change={onProfileChange}>
-            {#each ACTIVITY_OPTIONS as a}
-              <option value={a.value}>{a.label}</option>
-            {/each}
-          </select>
-        </label>
-        <label class="wide">
-          Goal
-          <select bind:value={profile.goal} on:change={onProfileChange}>
-            {#each GOALS as g}
-              <option value={g}>{GOAL_LABELS[g]}</option>
-            {/each}
-          </select>
-        </label>
-      </div>
-      {#if metrics && targets}
-        <div class="rate-grid">
-          <div class="rate-cell">
-            <span class="r-val">{metrics.bmi}</span>
-            <span class="r-label">BMI</span>
-            <span class="r-sub">{metrics.bmiCategory}</span>
+    {#if signedIn}
+      <aside class="side-col">
+        <!-- My details: the profile the body maths runs on, and the numbers it
+             gives at the current bodyweight. -->
+        <section class="panel">
+          <div class="panel-head">
+            <h2>My details</h2>
+            {#if metrics}<span class="info-meta">at {metricKg.toFixed(1)} kg</span>{/if}
           </div>
-          <div class="rate-cell">
-            <span class="r-val">{metrics.bmr}</span>
-            <span class="r-label">BMR</span>
-            <span class="r-sub">kcal/day</span>
+          <div class="profile-grid">
+            <label>
+              Height (cm)
+              <input class="field num-field" type="number" min="50" max="300" bind:value={profile.height_cm} on:input={onProfileChange} />
+            </label>
+            <label>
+              Age
+              <input class="field num-field" type="number" min="1" max="120" bind:value={profile.age_years} on:input={onProfileChange} />
+            </label>
+            <label>
+              Sex
+              <select class="field" bind:value={profile.sex} on:change={onProfileChange}>
+                <option value="male">male</option>
+                <option value="female">female</option>
+              </select>
+            </label>
+            <label>
+              Activity
+              <select class="field" bind:value={profile.activity} on:change={onProfileChange}>
+                {#each ACTIVITY_OPTIONS as a}
+                  <option value={a.value}>{a.label}</option>
+                {/each}
+              </select>
+            </label>
+            <label class="wide">
+              Goal
+              <select class="field" bind:value={profile.goal} on:change={onProfileChange}>
+                {#each GOALS as g}
+                  <option value={g}>{GOAL_LABELS[g]}</option>
+                {/each}
+              </select>
+            </label>
           </div>
-          <div class="rate-cell">
-            <span class="r-val">{metrics.tdee}</span>
-            <span class="r-label">TDEE</span>
-            <span class="r-sub">maintenance</span>
-          </div>
-          <div class="rate-cell">
-            <span class="r-val">{targets.protein_g}<small> g</small></span>
-            <span class="r-label">protein</span>
-            <span class="r-sub">per day · 2 g/kg</span>
-          </div>
-        </div>
-        <p class="hint">
-          The calorie target ({targets.calories} kcal) and macros are here if you want them, but the
-          plan is run on the trend weight and the food rules, not on counting.
-      {/if}
-    </section>
+          {#if metrics && targets}
+            <div class="rate-grid">
+              <div class="rate-cell">
+                <span class="r-val">{metrics.bmi}</span>
+                <span class="r-label">BMI</span>
+                <span class="r-sub">{metrics.bmiCategory}</span>
+              </div>
+              <div class="rate-cell">
+                <span class="r-val">{metrics.bmr}</span>
+                <span class="r-label">BMR</span>
+                <span class="r-sub">kcal/day</span>
+              </div>
+              <div class="rate-cell">
+                <span class="r-val">{metrics.tdee}</span>
+                <span class="r-label">TDEE</span>
+                <span class="r-sub">maintenance</span>
+              </div>
+              <div class="rate-cell">
+                <span class="r-val">{targets.protein_g}<small> g</small></span>
+                <span class="r-label">protein</span>
+                <span class="r-sub">per day · 2 g/kg</span>
+              </div>
+            </div>
+            <p class="hint">
+              The calorie target ({targets.calories} kcal) and macros are here if you want them, but the
+              plan is run on the trend weight and the food rules, not on counting.
+            </p>
+          {/if}
+        </section>
 
-    <!-- Burned today: a rough burn for this date. The active day's rows count
-         live; any other session already logged on the same date comes from
-         the log. -->
-    <section class="info-card">
-      <div class="info-head">
-        <h2>Burned today</h2>
-        <span class="info-meta">rough estimate</span>
-      </div>
-      <div class="rate-grid">
-        <div class="rate-cell">
-          <span class="r-val">{dayLiftKcal}<small> kcal</small></span>
-          <span class="r-label">lifting</span>
-          <span class="r-sub">{daySets} {daySets === 1 ? 'set' : 'sets'} · ~2.5 min each</span>
-        </div>
-        <div class="rate-cell">
-          <span class="r-val">{dayCardioKcal}<small> kcal</small></span>
-          <span class="r-label">cardio</span>
-          <span class="r-sub">logged or estimated</span>
-        </div>
-        <div class="rate-cell">
-          <span class="r-val">{dayKcal}<small> kcal</small></span>
-          <span class="r-label">today</span>
-          <span class="r-sub">total</span>
-        </div>
-      </div>
-      {#if otherSetsToday || otherCardioToday}
-        <p class="hint">Includes the other session logged on this date.</p>
-      {/if}
-    </section>
+        <!-- Burned today: a rough burn for this date. The active day's rows count
+             live; any other session already logged on the same date comes from
+             the log. -->
+        <section class="panel">
+          <div class="panel-head">
+            <h2>Burned today</h2>
+            <span class="info-meta">rough estimate</span>
+          </div>
+          <div class="rate-grid">
+            <div class="rate-cell">
+              <span class="r-val">{dayLiftKcal}<small> kcal</small></span>
+              <span class="r-label">lifting</span>
+              <span class="r-sub">{daySets} {daySets === 1 ? 'set' : 'sets'} · ~2.5 min each</span>
+            </div>
+            <div class="rate-cell">
+              <span class="r-val">{dayCardioKcal}<small> kcal</small></span>
+              <span class="r-label">cardio</span>
+              <span class="r-sub">logged or estimated</span>
+            </div>
+            <div class="rate-cell total">
+              <span class="r-val">{dayKcal}<small> kcal</small></span>
+              <span class="r-label">today</span>
+              <span class="r-sub">total</span>
+            </div>
+          </div>
+          {#if otherSetsToday || otherCardioToday}
+            <p class="hint">Includes the other session logged on this date.</p>
+          {/if}
+        </section>
 
-    <!-- Everything else — the trend, the training report, every fitted number
-         and the history — lives on its own page. -->
-    <a class="link-card" href="/fitness/workout/insights">
-      <span class="link-title">Insights &amp; history</span>
-      <span class="link-meta">trend · report · all the numbers · past sessions</span>
-      <span class="link-arrow" aria-hidden="true">&rarr;</span>
-    </a>
-  {/if}
+        <!-- Everything else — the trend, the training report, every fitted number
+             and the history — lives on its own page. -->
+        <a class="link-card" href="/fitness/workout/insights">
+          <span class="link-title">Insights &amp; history</span>
+          <span class="link-meta">trend · report · all the numbers · past sessions</span>
+          <span class="go-arrow" aria-hidden="true">&rarr;</span>
+        </a>
+      </aside>
+    {/if}
+  </div>
 </div>
 
 <style>
+  /* ── Page frame ─────────────────────────────────────────── */
   .page {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
-    max-width: 48rem;
-    animation: fade-up var(--dur-base, 0.4s) var(--ease-out-quart, ease);
+    gap: var(--s-6);
+    padding-top: var(--s-7);
+    animation: rise var(--dur-slow) var(--ease-out) both;
+  }
+
+  /* Signed out: one calm column. Signed in, on wide screens: the logger on
+     the left, the body maths and the insights link in a narrow column. */
+  .layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--s-6);
+    align-items: start;
+  }
+  .page:not(.split) .main-col { max-width: 760px; }
+  .main-col,
+  .side-col {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-5);
+    min-width: 0;
+  }
+
+  @media (min-width: 1024px) {
+    .split .layout {
+      grid-template-columns: minmax(0, 1fr) 340px;
+      gap: var(--s-7);
+    }
   }
 
   /* ── Header ─────────────────────────────────────────────── */
-  .page-header {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    padding-bottom: 1.25rem;
-    border-bottom: 1px solid var(--border);
+  .head {
+    display: grid;
+    gap: var(--s-3);
+    padding-bottom: var(--s-5);
+    border-bottom: 1px solid var(--line);
   }
-  .breadcrumb { font-size: 0.875rem; color: var(--text-tertiary); }
-  .breadcrumb a { color: var(--text-tertiary); transition: color 0.15s; }
-  .breadcrumb a:hover { color: var(--text-primary); }
-  .separator { margin: 0 0.5rem; }
+  .separator { color: var(--line-strong); }
 
   .header-top {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 1rem;
+    gap: var(--s-3) var(--s-4);
     flex-wrap: wrap;
+  }
+  .title {
+    margin: 0;
+    color: var(--ink);
+    font-size: var(--text-2xl);
+    font-weight: 500;
+    line-height: 1.05;
+    letter-spacing: -0.04em;
   }
   .header-actions {
     display: flex;
     align-items: center;
-    gap: 0.625rem;
-  }
-  /* Shares the global .page-title pen treatment; only the size is trimmed so
-     the title sits level with the save pill beside it. */
-  .page-title {
-    font-size: 2.25rem;
+    gap: var(--s-2);
   }
 
+  /* Fixed width so the sign-out button never shifts as the status changes. */
   .save-pill {
     display: inline-flex;
     align-items: center;
-    justify-content: flex-start;
-    gap: 0.3rem;
-    width: 5.75rem;
-    height: 1.125rem;
+    justify-content: flex-end;
+    gap: 6px;
+    width: 6.5rem;
+    height: 20px;
+    overflow: hidden;
+    color: var(--ink-3);
     font-family: var(--font-mono);
-    font-size: 0.7rem;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: var(--text-tertiary);
+    font-size: var(--text-xs);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
     opacity: 0;
-    transition: opacity 0.2s;
+    transition: opacity var(--dur) var(--ease);
   }
   .save-pill.on { opacity: 1; }
   .save-pill :global(.loader) {
     transform: scale(0.78);
-    transform-origin: left center;
+    transform-origin: right center;
   }
-  .save-pill[data-status='saved'] { color: var(--blueprint); }
-  .save-pill[data-status='error'] { color: #e74c3c; }
+  .save-pill[data-status='saved'] { color: var(--moss); }
+  .save-pill[data-status='error'] { color: var(--danger); }
 
-  .ghost-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.375rem;
-    font-size: 0.8125rem;
-    color: var(--text-tertiary);
-    background: transparent;
-    border: 1px solid var(--border);
-    border-radius: 0.375rem;
-    padding: 0.4rem 0.75rem;
-    cursor: var(--cursor-pointer);
-  }
-  .ghost-btn:hover { color: var(--text-primary); border-color: var(--border-strong); }
+  .signout { color: var(--ink-2); }
 
   .page-desc {
-    font-size: 0.95rem;
-    line-height: 1.55;
-    color: var(--text-secondary);
+    max-width: var(--measure);
     margin: 0;
+    color: var(--ink-2);
+    font-size: var(--text-base);
+    line-height: 1.55;
   }
 
   .error-banner {
-    padding: 0.7rem 1rem;
-    border: 1px solid #c0392b;
-    background: rgba(192, 57, 43, 0.1);
-    border-radius: 0.5rem;
-    color: #e74c3c;
-    font-size: 0.875rem;
+    padding: var(--s-3) var(--s-4);
+    border: 1px solid var(--danger);
+    border-radius: var(--radius-sm);
+    background: color-mix(in srgb, var(--danger) 7%, transparent);
+    color: var(--danger);
+    font-size: var(--text-sm);
   }
 
   /* ── Week strip ─────────────────────────────────────────── */
-  .week-block { display: flex; flex-direction: column; gap: 0.6rem; }
+  .week-block { display: grid; gap: var(--s-3); }
+
+  /* One hairline-ruled strip: the 1px gap shows the container's line colour
+     between cells, so every arrangement (5 across, 4 + 1) stays crisp. */
   .week-strip {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 0.5rem;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 1px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: var(--line);
   }
-  /* A logged day keeps its outline but earns the accent tick; the optional day
-     is dashed so the eye reads four solid slots plus one spare. */
-  .day-chip.optional { border-style: dashed; }
-  .day-chip.done { border-color: var(--blueprint); }
-  .day-chip.done .chip-focus { color: var(--blueprint); }
-  .chip-focus { display: inline-flex; align-items: center; gap: 0.3rem; }
-  .week-line {
-    margin: 0;
-    font-family: var(--font-mono);
-    font-size: 0.72rem;
-    letter-spacing: 0.03em;
-    color: var(--text-tertiary);
-  }
-  .week-line.complete { color: var(--blueprint); }
   .day-chip {
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: 0.25rem;
-    padding: 0.6rem 0.65rem;
-    background: transparent;
-    border: 1px solid var(--border);
-    border-radius: 0.5rem;
-    cursor: var(--cursor-pointer);
+    justify-content: space-between;
+    gap: var(--s-2);
+    min-height: 72px;
+    padding: var(--s-3);
+    border: 0;
+    background: var(--surface);
     text-align: left;
-    transition: border-color 0.15s, background 0.15s;
+    cursor: pointer;
+    transition: background-color var(--dur-fast) var(--ease);
   }
-  .day-chip:hover:not(:disabled) { border-color: var(--blueprint); }
-  .day-chip.active { border-color: var(--blueprint); background: var(--blueprint-tint); }
+  .day-chip::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 2px;
+    background: transparent;
+    transition: background-color var(--dur-fast) var(--ease);
+  }
+  .day-chip:focus-visible { outline-offset: -3px; }
+  /* The spare slot sits on the page colour, so the eye reads four slots plus one. */
+  .day-chip.optional { background: var(--bg); }
+  .day-chip:hover { background: color-mix(in srgb, var(--ink) 4%, var(--surface)); }
+  .day-chip.active { background: color-mix(in srgb, var(--fjord) 9%, var(--surface)); }
+  .day-chip.active::after { background: var(--fjord); }
+
   .chip-day {
+    color: var(--ink-3);
     font-family: var(--font-mono);
-    font-size: 0.6rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--text-tertiary);
+    font-size: var(--text-xs);
+    line-height: 1.2;
+    white-space: nowrap;
   }
-  .chip-focus { font-size: 0.85rem; font-weight: 600; color: var(--text-primary); }
-  .day-chip.active .chip-focus { color: var(--blueprint); }
+  .chip-focus {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--ink);
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+  }
+  .day-chip.active .chip-focus { color: var(--fjord); }
+  .day-chip.done .chip-focus :global(svg) { color: var(--moss); }
+
+  .week-line {
+    display: flex;
+    align-items: center;
+    gap: var(--s-2);
+    margin: 0;
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-variant-numeric: tabular-nums;
+  }
+  .week-line.complete { color: var(--moss); }
 
   /* ── Sign-in ────────────────────────────────────────────── */
   .signin-card {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
     align-items: flex-start;
-    padding: 1.5rem;
-    border: 1px solid var(--border);
-    border-radius: 0.625rem;
-    background: var(--surface-raised);
+    gap: var(--s-4);
+    padding: var(--s-5);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    background: var(--surface);
   }
-  .signin-card p { color: var(--text-secondary); margin: 0; font-size: 0.95rem; }
+  .signin-card p { margin: 0; color: var(--ink-2); }
 
-  /* ── Session bar ────────────────────────────────────────── */
+  /* ── Fields ─────────────────────────────────────────────── */
   .session-bar {
-    display: flex;
-    gap: 1rem;
-    flex-wrap: wrap;
-  }
-  .session-bar label {
-    display: flex;
-    flex-direction: column;
-    gap: 0.35rem;
-    font-size: 0.75rem;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: var(--text-tertiary);
-    flex: 1;
-    min-width: 9rem;
-  }
-
-  input {
-    font-family: inherit;
-    font-size: 0.9375rem;
-    color: var(--text-primary);
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 0.375rem;
-    padding: 0.5rem 0.625rem;
-    width: 100%;
-  }
-  input:focus { outline: none; border-color: var(--border-strong); }
-
-  /* ── Profile (inside the numbers fold) ──────────────────── */
-  .profile-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.75rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--s-3);
   }
+  .session-bar label,
   .profile-grid label {
-    display: flex;
-    flex-direction: column;
-    gap: 0.35rem;
-    font-size: 0.72rem;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: var(--text-tertiary);
+    display: grid;
+    gap: 6px;
+    min-width: 0;
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    line-height: 1.3;
   }
-  .profile-grid label.wide { grid-column: 1 / -1; }
-  .profile-grid select {
-    font-family: inherit;
-    font-size: 0.9rem;
-    color: var(--text-primary);
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 0.375rem;
-    padding: 0.5rem 0.625rem;
-    width: 100%;
-  }
-  .profile-grid select:focus { outline: none; border-color: var(--border-strong); }
 
-  input.suggested { color: var(--text-tertiary); font-style: italic; }
+  .field {
+    min-height: 44px;
+    font-family: var(--font-sans);
+    font-size: 16px;
+  }
+  select.field { padding-right: var(--s-2); }
+  .num-field,
+  .num {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+  /* A prefilled hint from a previous day: dashed and faint until it is edited. */
+  .field.suggested {
+    border-style: dashed;
+    color: var(--ink-3);
+  }
+
+  /* Numbers are typed, not spun: hide the steppers so the digits get the room. */
+  .num::-webkit-inner-spin-button,
+  .num::-webkit-outer-spin-button,
+  .num-field::-webkit-inner-spin-button,
+  .num-field::-webkit-outer-spin-button {
+    margin: 0;
+    -webkit-appearance: none;
+  }
+  .num,
+  .num-field {
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
 
   /* ── Day card ───────────────────────────────────────────── */
   .day-card {
-    border: 1px solid var(--border);
-    border-radius: 0.625rem;
     overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    background: var(--surface);
   }
+  .day-card :focus-visible { outline-offset: -2px; }
   .day-card-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-    flex-wrap: wrap;
-    padding: 0.85rem 1rem;
-    border-bottom: 1px solid var(--border-subtle);
-    background: var(--blueprint-tint);
+    display: grid;
+    gap: var(--s-1);
+    padding: var(--s-5) var(--s-5) var(--s-4);
+    border-bottom: 1px solid var(--line);
   }
-  .day-card-head h2 { font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin: 0; }
-  .cardio-pill { font-size: 0.78rem; color: var(--text-secondary); font-style: italic; }
+  .day-card-head h2 {
+    margin: 0;
+    font-size: var(--text-xl);
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+  }
+  .cardio-pill {
+    display: inline-flex;
+    align-items: flex-start;
+    gap: 6px;
+    color: var(--ink-3);
+    font-size: var(--text-sm);
+    line-height: 1.45;
+  }
+  .cardio-pill :global(svg) { flex: none; margin-top: 2px; }
+
   .empty-day {
     margin: 0;
-    padding: 0.9rem 1rem;
-    font-size: 0.875rem;
+    padding: var(--s-4) var(--s-5);
+    border-bottom: 1px solid var(--line);
+    color: var(--ink-3);
+    font-size: var(--text-sm);
     line-height: 1.5;
-    color: var(--text-tertiary);
-    border-bottom: 1px solid var(--border-subtle);
   }
 
-  /* read-only plan list */
-  .exercise-list { display: flex; flex-direction: column; list-style: none; padding: 0; margin: 0; }
-  /* Flex, not a fixed grid: the key tag and scheme are both optional, and a
-     fixed column count pushes later children onto a second row when one is
-     absent. */
+  /* Shared row vocabulary */
+  .ex-num {
+    flex: none;
+    width: 1.5rem;
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-variant-numeric: tabular-nums;
+  }
+  .ex-name {
+    color: var(--ink-2);
+    font-size: 15px;
+    line-height: 1.35;
+  }
+  .key-lift .ex-name {
+    color: var(--ink);
+    font-weight: 500;
+  }
+  .key-tag {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    height: 18px;
+    padding: 0 6px;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-pill);
+    color: var(--ink-2);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 400;
+    line-height: 1;
+    letter-spacing: 0.02em;
+  }
+  .ex-alt {
+    color: var(--ink-3);
+    font-size: var(--text-xs);
+    line-height: 1.45;
+  }
+
+  /* Read-only plan list. Flex, not a fixed grid: the key tag and the scheme
+     are both optional, and a fixed column count would push later children
+     onto a second row when one is absent. */
+  .exercise-list { margin: 0; padding: 0; list-style: none; }
   .exercise-list li {
     display: flex;
+    flex-wrap: wrap;
     align-items: baseline;
-    gap: 0.75rem;
-    padding: 0.7rem 1rem;
-    border-bottom: 1px solid var(--border-subtle);
-    border-left: 2px solid transparent;
+    gap: 2px var(--s-3);
+    padding: var(--s-4) var(--s-5);
+    border-bottom: 1px solid var(--line);
   }
-  .exercise-list li .ex-num { flex: none; width: 1.5rem; }
-  .exercise-list li .ex-name { flex: 1; min-width: 0; }
-  .exercise-list li:last-child { border-bottom: none; }
-  .ex-num { font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-tertiary); }
-  .ex-name { font-size: 0.9375rem; line-height: 1.4; color: var(--text-secondary); }
+  .exercise-list li:last-child { border-bottom: 0; }
+  .exercise-list .ex-name { flex: 1; min-width: 0; }
   .ex-scheme {
-    flex-shrink: 0;
-    font-family: var(--font-mono);
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: var(--text-primary);
-    background: var(--surface-raised);
-    padding: 0.2rem 0.5rem;
-    border-radius: 0.25rem;
-  }
-
-  /* interactive log list */
-  .log-list { display: flex; flex-direction: column; }
-  .log-ex { border-bottom: 1px solid var(--border-subtle); border-left: 2px solid transparent; }
-  .log-ex:last-of-type { border-bottom: none; }
-  .log-ex-head .ex-num { flex: none; width: 1.5rem; }
-  .log-ex-head .ex-name { flex: 1; min-width: 0; }
-  .log-ex-head .chevron { margin-left: auto; }
-  /* Flex for the same reason as the plan list — the target, equipment picker
-     and key tag are each conditional, so a fixed column count wrapped the
-     chevron onto its own row whenever one was missing. */
-  .log-ex-head {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    width: 100%;
-    padding: 0.75rem 1rem;
-    background: transparent;
-    border: none;
-    cursor: var(--cursor-pointer);
-    text-align: left;
-  }
-  .log-ex.open .log-ex-head { background: var(--blueprint-tint); }
-  .log-ex-head .ex-name { color: var(--text-primary); }
-  .ex-target {
-    font-family: var(--font-mono);
-    font-size: 0.72rem;
-    color: var(--text-tertiary);
-  }
-  .ex-load { margin-left: 0.4em; color: var(--blueprint); }
-  .load-note {
-    margin: 0 0 0.5rem;
-    font-size: 0.75rem;
-    line-height: 1.45;
-    color: var(--text-tertiary);
-  }
-  .ex-name-input { font-weight: 600; }
-  /* The fallback for a contested implement: a full-width footnote under the
-     row header, so the name, target, and picker keep their single line. */
-  .ex-alt {
-    flex-basis: 100%;
-    padding-left: 2.25rem;
-    font-size: 0.72rem;
-    line-height: 1.4;
-    color: var(--text-tertiary);
-    font-style: italic;
-  }
-  .log-ex-head { flex-wrap: wrap; row-gap: 0.15rem; }
-  .exercise-list li { flex-wrap: wrap; row-gap: 0.15rem; }
-
-  /* Priority lifts — the compounds that carry the session. Marked with an
-     accent rail rather than a colour swap, so the list still scans as one
-     group and the tag stays readable next to the exercise name. */
-  .key-tag {
-    font-family: var(--font-mono);
-    font-size: 0.62rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--blueprint);
-    border: 1px solid var(--blueprint);
-    border-radius: 999px;
-    padding: 0.05rem 0.35rem;
     flex: none;
+    color: var(--ink);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    font-variant-numeric: tabular-nums;
   }
-  .log-ex.key-lift,
-  .exercise-list li.key-lift { border-left-color: var(--blueprint); }
-  .exercise-list li.key-lift .ex-name { color: var(--text-primary); }
+  .exercise-list .ex-alt {
+    flex-basis: 100%;
+    padding-left: calc(1.5rem + var(--s-3));
+  }
   .key-legend {
     display: flex;
-    align-items: center;
-    gap: 0.4rem;
     flex-wrap: wrap;
-    margin: 0.75rem 0 0;
-    font-size: 0.75rem;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    padding: var(--s-4) var(--s-5);
+    border-top: 1px solid var(--line);
+    color: var(--ink-3);
+    font-size: var(--text-xs);
     line-height: 1.5;
-    color: var(--text-tertiary);
   }
-  /* Implement picker — quiet until set, since loads only compare within one. */
+
+  /* ── Interactive log list ───────────────────────────────── */
+  .log-list { display: flex; flex-direction: column; }
+  .log-ex { border-bottom: 1px solid var(--line); }
+
+  /* Name on the first line; target, implement and the fallback note under
+     it. The picker and chevron span both lines on wide screens. */
+  .log-ex-head {
+    display: grid;
+    grid-template-columns: 1.5rem minmax(0, 1fr) auto 1.25rem;
+    grid-template-areas:
+      'num title equip chev'
+      '. target equip chev'
+      '. alt alt .';
+    align-items: center;
+    gap: 2px var(--s-3);
+    width: 100%;
+    min-height: 64px;
+    padding: var(--s-3) var(--s-5);
+    border: 0;
+    background: transparent;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color var(--dur-fast) var(--ease);
+  }
+  .log-ex-head:hover { background: var(--hover-wash); }
+  .log-ex-head .ex-num { grid-area: num; }
+  .log-ex-head .ex-alt { grid-area: alt; margin-top: 2px; }
+  .ex-title {
+    grid-area: title;
+    min-width: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px var(--s-2);
+  }
+  .log-ex-head .ex-name {
+    color: var(--ink);
+    font-size: var(--text-base);
+  }
+  .ex-target {
+    grid-area: target;
+    min-width: 0;
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-variant-numeric: tabular-nums;
+  }
+  .ex-load { margin-left: 0.5em; color: var(--fjord); }
+  .ex-name-input { grid-area: title; font-weight: 500; }
+
+  /* Implement picker: quiet until set, since loads only compare within one. */
   .ex-equip {
+    grid-area: equip;
+    min-height: 40px;
+    max-width: 8.5rem;
+    padding: 0 var(--s-2);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    color: var(--ink-2);
     font-family: var(--font-mono);
-    font-size: 0.7rem;
-    color: var(--text-secondary);
-    background: var(--surface-raised);
-    border: 1px solid var(--border-subtle);
-    border-radius: 999px;
-    padding: 0.15rem 0.4rem;
-    cursor: var(--cursor-pointer);
-    max-width: 7.5rem;
+    font-size: var(--text-xs);
+    cursor: pointer;
   }
-  .ex-equip.unset { color: var(--text-tertiary); border-style: dashed; }
-  .ex-equip:focus-visible { outline: 2px solid var(--blueprint); outline-offset: 2px; }
+  .ex-equip.unset {
+    border-style: dashed;
+    color: var(--ink-3);
+  }
   .chevron {
+    grid-area: chev;
+    color: var(--ink-3);
     font-family: var(--font-mono);
-    font-size: 1rem;
-    color: var(--text-tertiary);
-    width: 1rem;
+    font-size: var(--text-md);
+    line-height: 1;
+    text-align: center;
+  }
+  .log-ex.open .chevron { color: var(--ink); }
+
+  /* Sets: indented to the name column so the numbers hang under the lift. */
+  .sets {
+    display: grid;
+    gap: var(--s-2);
+    padding: var(--s-1) var(--s-5) var(--s-5) calc(var(--s-5) + 1.5rem + var(--s-3));
+  }
+  .load-note {
+    max-width: var(--measure);
+    margin: 0 0 var(--s-1);
+    color: var(--ink-3);
+    font-size: var(--text-sm);
+    line-height: 1.5;
+  }
+  .set-row {
+    display: grid;
+    grid-template-columns: 1.5rem minmax(0, 1fr) 1rem minmax(0, 1fr) 44px;
+    align-items: center;
+    gap: var(--s-2);
+    max-width: 26rem;
+  }
+  .set-row.bare { grid-template-columns: 1.5rem minmax(0, 1fr) 44px; max-width: 16rem; }
+  .set-num {
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-variant-numeric: tabular-nums;
+  }
+  .num {
+    width: 100%;
+    min-width: 0;
+    padding: 0 var(--s-2);
+    font-size: var(--text-md);
+    text-align: center;
+  }
+  .times {
+    color: var(--ink-3);
     text-align: center;
   }
 
-  .sets {
+  .set-actions {
     display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem 0.9rem 1rem;
+    flex-wrap: wrap;
+    gap: var(--s-2);
+    margin-top: var(--s-1);
+    margin-left: calc(-1 * var(--s-3));
   }
-  .set-row { display: flex; align-items: center; gap: 0.5rem; }
-  .set-num {
-    width: 1.25rem;
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    color: var(--text-faint);
-    flex-shrink: 0;
-  }
-  .num { width: 5rem; text-align: center; }
-  .times { color: var(--text-faint); }
-
-  .set-actions { display: flex; gap: 1rem; flex-wrap: wrap; padding-left: 1.75rem; }
+  .set-actions .btn { min-height: 40px; }
+  .set-actions .btn.danger:hover:not(:disabled) { color: var(--danger); }
 
   .icon-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 0.375rem;
-    color: var(--text-faint);
+    width: 44px;
+    height: 44px;
+    border: 0;
+    border-radius: var(--radius-sm);
     background: transparent;
-    border: none;
-    cursor: var(--cursor-pointer);
-    border-radius: 0.25rem;
-    transition: color 0.15s;
+    color: var(--ink-3);
+    cursor: pointer;
+    transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease);
   }
-  .icon-btn:hover { color: #e74c3c; }
+  .icon-btn:hover {
+    background: var(--hover-wash);
+    color: var(--danger);
+  }
 
-  .text-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
-    font-size: 0.8125rem;
-    color: var(--text-secondary);
-    background: transparent;
-    border: none;
-    cursor: var(--cursor-pointer);
-    padding: 0.25rem 0;
-  }
-  .text-btn:hover { color: var(--text-primary); }
-  .text-btn.danger:hover { color: #e74c3c; }
   .add-ex {
-    margin: 0.5rem 1rem 0.9rem;
-    border: 1px dashed var(--border);
-    border-radius: 0.375rem;
-    padding: 0.5rem 0.75rem;
-    align-self: flex-start;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--s-2);
+    min-height: 48px;
+    margin: var(--s-4) var(--s-5);
+    border: 1px dashed var(--line-strong);
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--ink-2);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease),
+      background-color var(--dur-fast) var(--ease);
+  }
+  .add-ex:hover {
+    border-color: var(--ink-3);
+    background: var(--hover-wash);
+    color: var(--ink);
   }
 
   /* ── Cardio log ─────────────────────────────────────────── */
   .cardio-log {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    padding: 0.9rem 1rem 1rem;
-    border-top: 1px solid var(--border-subtle);
-    background: var(--blueprint-tint);
+    display: grid;
+    gap: var(--s-3);
+    padding: var(--s-5);
+    border-top: 1px solid var(--line);
+    background: var(--bg);
   }
   .cardio-log-head {
     display: flex;
+    flex-wrap: wrap;
     align-items: baseline;
     justify-content: space-between;
-    gap: 0.75rem;
-    flex-wrap: wrap;
+    gap: 4px var(--s-3);
   }
   .cardio-log-title {
-    font-family: var(--font-mono);
-    font-size: 0.78rem;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: var(--text-secondary);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--ink);
+    font-size: 15px;
+    font-weight: 500;
   }
-  .cardio-log-hint { font-size: 0.72rem; color: var(--text-tertiary); font-style: italic; }
-  .cardio-row { display: flex; align-items: center; gap: 0.5rem; }
-  .cardio-kind {
-    flex: 1;
-    min-width: 0;
-    font-family: inherit;
-    font-size: 0.9rem;
-    color: var(--text-primary);
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 0.375rem;
-    padding: 0.5rem 0.5rem;
+  .cardio-log-hint {
+    color: var(--ink-3);
+    font-size: var(--text-xs);
   }
-  .cardio-kind:focus { outline: none; border-color: var(--border-strong); }
-  .cardio-field { display: flex; align-items: center; gap: 0.3rem; }
-  .cardio-field .unit { font-size: 0.72rem; color: var(--text-faint); }
-  .cardio-add { margin: 0.25rem 0 0; align-self: flex-start; }
-
-  /* ── Week overview ──────────────────────────────────────── */
-  .overview { display: flex; flex-direction: column; gap: 0.5rem; padding: 0.75rem; }
-  .ov-day {
+  .cardio-row {
     display: grid;
-    grid-template-columns: 4rem minmax(0, 1fr);
-    gap: 0.75rem;
-    width: 100%;
-    padding: 0.7rem 0.85rem;
-    text-align: left;
-    background: transparent;
-    border: 1px solid var(--border-subtle);
-    border-left: 2px solid transparent;
-    border-radius: 0.5rem;
-    cursor: var(--cursor-pointer);
-    transition: border-color 0.15s, background 0.15s;
+    grid-template-columns: minmax(0, 1fr) 7.5rem 7.5rem 44px;
+    align-items: center;
+    gap: var(--s-2);
   }
-  .ov-day:hover { border-color: var(--border-strong); }
-  .ov-day.active { border-left-color: var(--blueprint); background: var(--blueprint-tint); }
-  .ov-day.optional { border-style: dashed; border-left-style: solid; }
-  .ov-when {
+  .cardio-kind { min-width: 0; }
+  .cardio-field { position: relative; min-width: 0; }
+  .cardio-field .num {
+    padding-right: 2.9rem;
+    text-align: right;
+  }
+  .cardio-field .unit {
+    position: absolute;
+    top: 50%;
+    right: var(--s-3);
+    color: var(--ink-3);
     font-family: var(--font-mono);
-    font-size: 0.66rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--text-tertiary);
-    padding-top: 0.15rem;
+    font-size: var(--text-xs);
+    pointer-events: none;
+    transform: translateY(-50%);
   }
-  .ov-body { display: flex; flex-direction: column; gap: 0.35rem; min-width: 0; }
+  .add-ex.cardio-add { margin: 0; }
+
+  /* ── Week overview fold ─────────────────────────────────── */
+  .fold {
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    background: var(--surface);
+  }
+  .fold :focus-visible { outline-offset: -2px; }
+  .fold summary {
+    display: flex;
+    align-items: center;
+    gap: var(--s-3);
+    min-height: 56px;
+    padding: 0 var(--s-5);
+    color: var(--ink);
+    list-style: none;
+    cursor: pointer;
+  }
+  .fold summary::-webkit-details-marker { display: none; }
+  .fold summary:hover .fold-title { color: var(--fjord); }
+  .fold-title {
+    flex: none;
+    font-size: 15px;
+    font-weight: 500;
+    transition: color var(--dur-fast) var(--ease);
+  }
+  .fold-meta {
+    margin-left: auto;
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+  }
+  .fold summary::after {
+    content: '+';
+    width: 1.25rem;
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-md);
+    text-align: center;
+  }
+  .fold[open] summary::after { content: '−'; }
+  .fold[open] summary { border-bottom: 1px solid var(--line); }
+
+  .overview { display: flex; flex-direction: column; }
+  .ov-day {
+    position: relative;
+    display: grid;
+    grid-template-columns: 5.5rem minmax(0, 1fr);
+    gap: var(--s-4);
+    width: 100%;
+    padding: var(--s-4) var(--s-5);
+    border: 0;
+    border-bottom: 1px solid var(--line);
+    background: transparent;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color var(--dur-fast) var(--ease);
+  }
+  .ov-day:last-child { border-bottom: 0; }
+  .ov-day:hover { background: var(--hover-wash); }
+  .ov-day::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 2px;
+    background: transparent;
+  }
+  .ov-day.active { background: var(--fjord-wash); }
+  .ov-day.active::before { background: var(--fjord); }
+  .ov-when {
+    padding-top: 3px;
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+  }
+  .ov-body {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+  }
   .ov-title {
     display: inline-flex;
     align-items: center;
-    gap: 0.35rem;
-    font-size: 0.95rem;
-    font-weight: 600;
-    color: var(--text-primary);
+    gap: 6px;
+    color: var(--ink);
+    font-size: 15px;
+    font-weight: 500;
   }
-  .ov-day.done .ov-title { color: var(--blueprint); }
-  .ov-lifts { display: flex; flex-wrap: wrap; gap: 0.25rem 0.75rem; }
-  .ov-lift { font-size: 0.8rem; line-height: 1.45; color: var(--text-secondary); }
-  .ov-lift.key { color: var(--text-primary); }
+  .ov-day.active .ov-title { color: var(--fjord); }
+  .ov-day.done .ov-title :global(svg) { color: var(--moss); }
+  .ov-day.optional .ov-title { color: var(--ink-2); }
+  .ov-lifts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px var(--s-3);
+  }
+  .ov-lift {
+    color: var(--ink-2);
+    font-size: var(--text-sm);
+    line-height: 1.45;
+  }
+  .ov-lift.key { color: var(--ink); }
   .ov-lift em {
+    color: var(--ink-3);
     font-family: var(--font-mono);
+    font-size: 11px;
     font-style: normal;
-    font-size: 0.68rem;
-    color: var(--text-tertiary);
   }
-  .ov-cardio { font-size: 0.74rem; font-style: italic; color: var(--text-tertiary); }
+  .ov-cardio {
+    display: inline-flex;
+    align-items: flex-start;
+    gap: 6px;
+    color: var(--ink-3);
+    font-size: var(--text-xs);
+    line-height: 1.45;
+  }
+  .ov-cardio :global(svg) { flex: none; margin-top: 2px; }
 
-  /* ── Folds (rules / numbers / history) ──────────────────── */
-  .fold { border: 1px solid var(--border); border-radius: 0.625rem; }
-  .fold summary {
+  /* ── Side panels (details, burned today) ────────────────── */
+  .panel {
+    padding: var(--s-5);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    background: var(--surface);
+  }
+  .panel-head {
     display: flex;
     align-items: baseline;
-    gap: 0.75rem;
-    padding: 0.85rem 1rem;
+    justify-content: space-between;
+    gap: var(--s-3);
+    margin-bottom: var(--s-4);
+  }
+  .panel-head h2 {
+    margin: 0;
+    font-size: var(--text-md);
+    letter-spacing: -0.01em;
+  }
+  .info-meta {
+    color: var(--ink-3);
     font-family: var(--font-mono);
-    font-size: 0.78rem;
-    font-weight: 600;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--text-secondary);
-    cursor: var(--cursor-pointer);
-    list-style: none;
+    font-size: var(--text-xs);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
   }
-  .fold summary::-webkit-details-marker { display: none; }
-  .fold-title { flex: none; }
-  .fold-meta {
-    margin-left: auto;
-    font-size: 0.7rem;
-    font-weight: 500;
-    letter-spacing: 0.02em;
-    text-transform: none;
-    color: var(--text-tertiary);
+
+  .profile-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--s-3);
+    margin-bottom: var(--s-5);
   }
-  .fold summary::after { content: '+'; color: var(--text-tertiary); font-weight: 400; }
-  .fold[open] summary::after { content: '–'; }
-  .fold[open] summary { color: var(--text-primary); border-bottom: 1px solid var(--border-subtle); }
+  .profile-grid label.wide { grid-column: 1 / -1; }
 
-  .fold-body { padding: 1.25rem 1rem; }
-
-  /* ── Body maths grid (details card, burned today) ──────── */
+  /* Stats: label above a large mono value, ruled with hairlines. */
   .rate-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr));
-    gap: 0.6rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: var(--s-5);
   }
   .rate-cell {
     display: flex;
     flex-direction: column;
-    gap: 0.15rem;
-    padding: 0.65rem 0.7rem;
-    border: 1px solid var(--border-subtle);
-    border-radius: 0.5rem;
+    gap: 2px;
+    min-width: 0;
+    padding: var(--s-3) 0;
+    border-top: 1px solid var(--line);
   }
-  .r-val { font-family: var(--font-mono); font-size: 1rem; font-weight: 700; color: var(--text-primary); }
-  .r-val small { font-size: 0.64rem; font-weight: 500; color: var(--text-tertiary); }
-  .r-label { font-size: 0.62rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-tertiary); }
-  .r-sub { font-family: var(--font-mono); font-size: 0.62rem; line-height: 1.35; color: var(--text-faint); }
-
-  .hint { font-size: 0.8125rem; color: var(--text-tertiary); margin: 0 0 0.75rem; }
-  .rate-grid + .hint { margin-top: 0.85rem; }
-
-  /* ── Info cards (details, burned today) + insights link ─── */
-  .info-card {
-    border: 1px solid var(--border);
-    border-radius: 0.625rem;
-    padding: 1rem;
-  }
-  .info-head {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 1rem;
-    margin-bottom: 0.875rem;
-  }
-  .info-head h2 { font-size: 1rem; font-weight: 600; color: var(--text-primary); margin: 0; }
-  .info-meta {
+  .rate-cell.total { grid-column: 1 / -1; }
+  .r-label {
+    order: -1;
+    color: var(--ink-3);
     font-family: var(--font-mono);
-    font-size: 0.72rem;
-    color: var(--text-tertiary);
+    font-size: var(--text-xs);
+  }
+  .r-val {
+    color: var(--ink);
+    font-family: var(--font-mono);
+    font-size: var(--text-xl);
+    font-weight: 400;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.15;
+    letter-spacing: -0.03em;
     white-space: nowrap;
   }
-  .info-card .profile-grid { margin-bottom: 1rem; }
-  .info-card .hint { margin: 0.85rem 0 0; }
+  .r-val small {
+    color: var(--ink-3);
+    font-size: var(--text-xs);
+    letter-spacing: 0;
+  }
+  .r-sub {
+    color: var(--ink-3);
+    font-size: var(--text-xs);
+    line-height: 1.4;
+  }
+  .hint {
+    margin: var(--s-4) 0 0;
+    color: var(--ink-3);
+    font-size: var(--text-sm);
+    line-height: 1.5;
+  }
 
   .link-card {
-    display: flex;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas: 'title arrow' 'meta arrow';
     align-items: center;
-    gap: 0.75rem;
-    padding: 0.875rem 1rem;
-    border: 1px solid var(--border);
-    border-radius: 0.625rem;
-    color: var(--text-primary);
+    gap: 2px var(--s-3);
+    min-height: 64px;
+    padding: var(--s-4) var(--s-5);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    background: var(--surface);
+    color: var(--ink);
     text-decoration: none;
-    transition: border-color 0.15s;
+    transition: border-color var(--dur-fast) var(--ease);
   }
-  .link-card:hover { border-color: var(--border-strong); }
-  .link-title { font-size: 0.95rem; font-weight: 600; }
+  .link-card:hover { border-color: var(--line-strong); color: var(--ink); }
+  .link-title {
+    grid-area: title;
+    font-size: 15px;
+    font-weight: 500;
+    transition: color var(--dur-fast) var(--ease);
+  }
+  .link-card:hover .link-title { color: var(--fjord); }
   .link-meta {
-    flex: 1;
-    min-width: 0;
+    grid-area: meta;
+    color: var(--ink-3);
     font-family: var(--font-mono);
-    font-size: 0.72rem;
-    color: var(--text-tertiary);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    font-size: var(--text-xs);
   }
-  .link-arrow { color: var(--text-tertiary); transition: transform 0.15s; }
-  .link-card:hover .link-arrow { transform: translateX(3px); }
+  .go-arrow {
+    grid-area: arrow;
+    color: var(--ink-3);
+    transition: transform var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+  }
+  .link-card:hover .go-arrow {
+    color: var(--fjord);
+    transform: translateX(3px);
+  }
 
+  /* Mid widths: the side column is full width, so spread the stats out. */
+  @media (min-width: 641px) and (max-width: 1023px) {
+    .rate-grid { grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); }
+    .rate-cell.total { grid-column: auto; }
+  }
+
+  /* ── Phone (the gym) ────────────────────────────────────── */
   @media (max-width: 640px) {
-    .page { gap: 1.15rem; }
-    .page-title { font-size: 1.75rem; }
-    .week-strip { grid-template-columns: repeat(3, 1fr); gap: 0.4rem; }
-    .day-chip { padding: 0.5rem 0.5rem; }
-    .link-meta { display: none; }
-
-    /* Session bar: stack date + bodyweight so neither gets squeezed. */
-    .session-bar { gap: 0.75rem; }
-    .session-bar label { min-width: 100%; }
-
-    /* Exercise rows: switch the header from grid to wrapping flex so a long
-       name keeps the chevron on the first line and the target/scheme drops to
-       its own line instead of crushing everything. */
-    .log-ex-head {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      padding: 0.75rem 0.75rem;
+    .page { gap: var(--s-5); padding-top: var(--s-6); }
+    .layout,
+    .main-col,
+    .side-col { gap: var(--s-4); }
+    .signout { min-height: 40px; }
+    /* Keep the title and sign-out on one line: the status floats in the gap
+       to the button's left instead of claiming its own width. */
+    .header-actions { position: relative; }
+    .save-pill {
+      position: absolute;
+      top: 50%;
+      right: 100%;
+      width: 6rem;
+      margin-right: var(--s-1);
+      transform: translateY(-50%);
     }
-    .log-ex-head .ex-name,
-    .log-ex-head .ex-name-input { flex: 1; min-width: 0; }
-    .chevron { order: 2; }
-    .ex-equip { order: 1; }
-    .ex-target { order: 3; flex-basis: 100%; padding-left: 2rem; }
-    .ex-alt { order: 4; padding-left: 2rem; }
-    /* Weekday above the body rather than beside it at phone width. */
-    .ov-day { grid-template-columns: 1fr; gap: 0.3rem; padding: 0.65rem 0.75rem; }
-    .overview { padding: 0.5rem; }
 
-    /* Cardio: the machine name shares a row with two number fields and a
-       delete button, which crushes the select to a bare chevron at this width
-       — and the names are long ("Crosstrainer (intervals)"). Give it its own
-       line and let the numbers share the next. */
-    .cardio-row { flex-wrap: wrap; }
-    .cardio-kind { flex-basis: 100%; }
-    .day-card-head { padding: 0.75rem 0.75rem; }
-    .sets { padding: 0.5rem 0.75rem 0.9rem; }
-    .set-row { gap: 0.4rem; }
-    .num { width: 100%; min-width: 0; flex: 1; }
-    .set-num { width: 1rem; }
+    /* Four lifts across, the spare slot as a full-width row beneath. */
+    .week-strip { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .day-chip { min-height: 64px; padding: var(--s-3) var(--s-2) var(--s-3) var(--s-3); }
+    .day-chip.optional {
+      grid-column: 1 / -1;
+      flex-direction: row;
+      align-items: center;
+      min-height: 48px;
+    }
+
+    .day-card-head { padding: var(--s-4); }
+    .empty-day,
+    .exercise-list li,
+    .key-legend { padding-right: var(--s-4); padding-left: var(--s-4); }
+
+    /* The implement picker drops under the name so a long lift name keeps
+       the full width of the row. */
+    /* The name takes the full first line; the implement picker drops to
+       the target's line so a long lift name never gets squeezed. */
+    .log-ex-head {
+      grid-template-columns: 1.25rem minmax(0, 1fr) auto 1.25rem;
+      grid-template-areas:
+        'num title title chev'
+        '. target equip chev'
+        '. alt alt .';
+      column-gap: var(--s-2);
+      padding: var(--s-3) var(--s-4);
+    }
+    .log-ex-head .ex-num { width: 1.25rem; }
+    .ex-equip {
+      max-width: 8rem;
+      font-size: 16px;
+    }
+
+    .sets { padding: 0 var(--s-4) var(--s-4); }
+    .set-row,
+    .set-row.bare { max-width: none; }
+    .set-actions { margin-left: 0; }
+    .add-ex { margin: var(--s-4); }
+
+    .cardio-log { padding: var(--s-4); }
+    .cardio-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 44px; }
+    .cardio-kind { grid-column: 1 / -1; }
+
+    .fold summary { padding: 0 var(--s-4); }
+    .ov-day {
+      grid-template-columns: 1fr;
+      gap: var(--s-1);
+      padding: var(--s-3) var(--s-4);
+    }
+
+    .panel { padding: var(--s-4); }
+    .link-card { padding: var(--s-4); }
   }
 
   @media (max-width: 380px) {
-    .week-strip { grid-template-columns: repeat(2, 1fr); }
+    .chip-focus { font-size: 14px; }
+    .day-chip { padding-left: var(--s-2); }
   }
 </style>

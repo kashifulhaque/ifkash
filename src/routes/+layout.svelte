@@ -1,9 +1,9 @@
 <script lang="ts">
   import "../app.css";
+  import { onMount } from "svelte";
   import { page } from "$app/stores";
   import AiAgent from "$lib/components/AiAgent.svelte";
   import CommandDeck from "$lib/components/CommandDeck.svelte";
-  import CursorGlow from "$lib/components/CursorGlow.svelte";
   import WeatherHeadsUp from "$lib/components/WeatherHeadsUp.svelte";
   import { theme, toggleTheme } from "$lib/stores/theme";
 
@@ -15,7 +15,6 @@
     (currentPath.startsWith("/tools/") && currentPath !== "/tools");
 
   const navItems = [
-    { href: "/", label: "Home" },
     { href: "/work", label: "Work" },
     { href: "/projects", label: "Projects" },
     { href: "/rl", label: "RL" },
@@ -26,54 +25,40 @@
   ];
 
   function isActive(href: string, path: string) {
-    return href === "/" ? path === "/" : path.startsWith(href);
+    return path === href || path.startsWith(href + "/");
   }
+
+  // Local time in Bangalore, shown in the footer's coordinate line.
+  let clock = "";
+  onMount(() => {
+    const fmt = new Intl.DateTimeFormat("en-GB", {
+      hour: "2-digit",
+      minute: "2-digit",
+      timeZone: "Asia/Kolkata",
+    });
+    const tick = () => (clock = fmt.format(new Date()));
+    tick();
+    const id = setInterval(tick, 15_000);
+    return () => clearInterval(id);
+  });
+
+  const year = new Date().getFullYear();
 </script>
 
 {#if isFullWidth}
   <slot />
 {:else}
-  <div class="site-wrapper">
-    <header class="masthead" id="top">
-      <div class="masthead-brand">
-        <a href="/" class="site-name" aria-label="ifkash.dev home">/ifkash.dev</a>
-        <p>ML systems, open source, and useful tools.</p>
-      </div>
+  <a class="skip" href="#main">Skip to content</a>
 
-      <div class="masthead-actions">
-        <a
-          href="https://github.com/kashifulhaque"
-          target="_blank"
-          rel="noopener noreferrer">GitHub</a
-        >
-        <a href="/api/cv?format=view">Resume</a>
-        <CommandDeck />
-        <button
-          type="button"
-          class="theme-toggle"
-          on:click={toggleTheme}
-          aria-label={$theme === "dark" ? "Use light theme" : "Use dark theme"}
-          title={$theme === "dark" ? "Use light theme" : "Use dark theme"}
-        >
-          {#if $theme === "dark"}
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <circle cx="12" cy="12" r="4" />
-              <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
-            </svg>
-          {:else}
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-            </svg>
-          {/if}
-        </button>
-        <WeatherHeadsUp />
-      </div>
-    </header>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a href="/" class="wordmark" aria-label="ifkash.dev home">
+        <span class="dot" aria-hidden="true"></span>
+        <span>ifkash</span>
+      </a>
 
-    <div class="shell">
-      <nav class="sites" aria-label="Primary">
-        <p class="nav-label">Pages</p>
-        <ol>
+      <nav class="nav" aria-label="Primary">
+        <ul>
           {#each navItems as item}
             <li>
               <a
@@ -84,306 +69,339 @@
               </a>
             </li>
           {/each}
-        </ol>
+        </ul>
       </nav>
 
-      <main class="stage">
-        <div class="stage-inner">
-          <slot />
-        </div>
-
-        <footer class="site-footer">
-          <div>
-            <p class="footer-heading">ifkash.dev</p>
-            <p>Built in Bangalore by Kashiful Haque.</p>
-          </div>
-          <div class="footer-links">
-            <a
-              href="https://hf.co/ifkash"
-              target="_blank"
-              rel="noopener noreferrer">Hugging Face</a
-            >
-            <a
-              href="https://linkedin.com/in/kashifulhaque"
-              target="_blank"
-              rel="noopener noreferrer">LinkedIn</a
-            >
-            <a href="/admin">Admin</a>
-          </div>
-          <p class="copyright">© {new Date().getFullYear()} Kashiful Haque</p>
-        </footer>
-      </main>
+      <div class="tools">
+        <WeatherHeadsUp />
+        <CommandDeck />
+        <button
+          type="button"
+          class="theme-toggle"
+          on:click={toggleTheme}
+          aria-label={$theme === "dark" ? "Switch to daylight" : "Switch to polar night"}
+          title={$theme === "dark" ? "Daylight" : "Polar night"}
+        >
+          <!-- A sun on the horizon: risen in daylight, set at night. -->
+          <svg viewBox="0 0 24 24" aria-hidden="true" class:night={$theme === "dark"}>
+            <defs>
+              <clipPath id="horizon-clip"><rect x="0" y="0" width="24" height="16" /></clipPath>
+            </defs>
+            <g clip-path="url(#horizon-clip)">
+              <circle class="sun" cx="12" cy="12" r="5" />
+            </g>
+            <path d="M3 16h18" />
+            <path class="water" d="M7 19.5h10" />
+          </svg>
+        </button>
+      </div>
     </div>
+  </header>
 
-    <AiAgent />
-  </div>
+  <main id="main" class="main">
+    <slot />
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-sign">
+        <p class="footer-name">Kashiful Haque</p>
+        <p class="footer-line">
+          ML engineer building language-model systems, reinforcement learning
+          pipelines, and fast inference in C++ and Rust.
+        </p>
+      </div>
+
+      <nav class="footer-cols" aria-label="Footer">
+        <div>
+          <p class="eyebrow">Elsewhere</p>
+          <ul>
+            <li><a href="https://github.com/kashifulhaque" target="_blank" rel="noopener noreferrer">GitHub</a></li>
+            <li><a href="https://hf.co/ifkash" target="_blank" rel="noopener noreferrer">Hugging Face</a></li>
+            <li><a href="https://linkedin.com/in/kashifulhaque" target="_blank" rel="noopener noreferrer">LinkedIn</a></li>
+          </ul>
+        </div>
+        <div>
+          <p class="eyebrow">Here</p>
+          <ul>
+            <li><a href="/api/cv?format=view">Résumé</a></li>
+            <li><a href="/game">Tiny planet</a></li>
+            <li><a href="/fitness">Fitness</a></li>
+            <li><a href="/admin">Admin</a></li>
+          </ul>
+        </div>
+      </nav>
+
+      <div class="footer-base">
+        <span>© {year} Kashiful Haque</span>
+        <span class="coords">
+          Bengaluru 12.97° N, 77.59° E{#if clock}<span class="sep">·</span><time>{clock} IST</time>{/if}
+        </span>
+      </div>
+    </div>
+  </footer>
+
+  <AiAgent />
 {/if}
 
-<CursorGlow />
-
 <style>
-  .site-wrapper {
-    min-height: 100vh;
+  .skip {
+    position: absolute;
+    top: -100px;
+    left: var(--gutter);
+    z-index: 100;
+    padding: var(--s-2) var(--s-3);
+    border-radius: var(--radius-sm);
+    background: var(--ink);
+    color: var(--ink-inverse);
+    font-size: var(--text-sm);
+  }
+  .skip:focus {
+    top: var(--s-2);
   }
 
-  .masthead {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 24px 48px;
-    padding: 40px 48px 32px;
-    background: var(--background);
-  }
+  /* ── Top bar ─────────────────────────────────────────────── */
 
-  .masthead-brand {
-    min-width: 0;
-  }
-
-  .site-name {
-    display: inline-block;
-    color: var(--foreground);
-    font-size: 22px;
-    font-weight: 400;
-    line-height: 1.1;
-    letter-spacing: -0.02em;
-  }
-
-  .masthead-brand p {
-    margin: 5px 0 0;
-    color: var(--ink-3);
-    font-size: 13px;
-    line-height: 1.5;
-  }
-
-  .masthead-actions {
-    display: flex;
-    flex-shrink: 0;
-    align-items: center;
-    gap: 16px;
-  }
-
-  .masthead-actions a,
-  .theme-toggle {
-    color: var(--ink-2);
-    font-size: 13px;
-    font-weight: 500;
-  }
-
-  .masthead-actions a:hover,
-  .theme-toggle:hover {
-    color: var(--foreground);
-  }
-
-  .theme-toggle {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 28px;
-    height: 28px;
-    margin-left: -4px;
-    padding: 0;
-    border: 0;
-    border-radius: 6px;
-    background: transparent;
-  }
-
-  .theme-toggle:hover {
-    background: var(--hover);
-  }
-
-  .theme-toggle svg {
-    width: 14px;
-    height: 14px;
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 1.8;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-  }
-
-  .shell {
-    display: grid;
-    grid-template-columns: 220px minmax(0, 1fr);
-    align-items: start;
-    width: 100%;
-    min-width: 0;
-  }
-
-  .sites {
+  .topbar {
     position: sticky;
     top: 0;
-    z-index: 20;
-    width: 100%;
-    min-width: 0;
-    max-height: 100vh;
-    padding: 24px 24px 48px 48px;
-    overflow: auto;
-    background: var(--background);
+    z-index: 40;
+    border-bottom: 1px solid var(--line);
+    background: color-mix(in srgb, var(--bg) 90%, transparent);
+    backdrop-filter: saturate(1.2) blur(12px);
+    -webkit-backdrop-filter: saturate(1.2) blur(12px);
   }
 
-  .nav-label {
-    margin: 0 0 16px;
-    color: var(--ink-3);
-    font-size: 13px;
+  .topbar-inner {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--s-6);
+    max-width: calc(var(--content-max) + 2 * var(--gutter));
+    height: 64px;
+    margin: 0 auto;
+    padding: 0 var(--gutter);
+  }
+
+  .wordmark {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    color: var(--ink);
+    font-size: 17px;
     font-weight: 500;
+    letter-spacing: -0.025em;
+  }
+  .wordmark .dot {
+    width: 9px;
+    height: 9px;
+    transition: transform var(--dur) var(--ease-out);
+  }
+  .wordmark:hover {
+    color: var(--ink);
+  }
+  .wordmark:hover .dot {
+    transform: scale(1.25);
   }
 
-  .sites ol {
-    margin: 0;
-    padding: 0;
+  .nav ul {
+    display: flex;
+    justify-content: center;
+    gap: var(--s-1);
     list-style: none;
   }
 
-  .sites li + li {
-    margin-top: 8px;
-  }
-
-  .sites a {
-    display: block;
+  .nav a {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    height: 32px;
+    padding: 0 var(--s-3);
+    border-radius: var(--radius-sm);
     color: var(--ink-2);
-    font-size: 16px;
-    font-weight: 500;
+    font-size: 14px;
+    letter-spacing: -0.005em;
+  }
+  .nav a:hover {
+    color: var(--ink);
+    background: var(--hover-wash);
+  }
+  .nav a[aria-current="page"] {
+    color: var(--ink);
+  }
+  .nav a[aria-current="page"]::after {
+    content: "";
+    position: absolute;
+    bottom: -16px;
+    left: var(--s-3);
+    right: var(--s-3);
+    height: 1px;
+    background: var(--ink);
   }
 
-  .sites a:hover,
-  .sites a[aria-current="page"] {
-    color: var(--foreground);
+  .tools {
+    display: flex;
+    align-items: center;
+    gap: var(--s-2);
   }
 
-  .stage {
-    width: 100%;
-    min-width: 0;
-    padding: 24px 48px 56px 0;
+  .theme-toggle {
+    display: inline-grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--ink-2);
+    cursor: pointer;
+    transition: color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
+  }
+  .theme-toggle:hover {
+    color: var(--ink);
+    background: var(--hover-wash);
+  }
+  .theme-toggle svg {
+    width: 20px;
+    height: 20px;
+    overflow: visible;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+  }
+  .theme-toggle .sun {
+    fill: currentColor;
+    stroke: none;
+    transform: translateY(-1px);
+    transition: transform var(--dur-slow) var(--ease-out);
+  }
+  .theme-toggle .night .sun {
+    transform: translateY(7px);
+  }
+  .theme-toggle .water {
+    opacity: 0.5;
   }
 
-  .stage-inner,
-  .site-footer {
-    width: min(100%, 1120px);
+  /* ── Main ────────────────────────────────────────────────── */
+
+  .main {
+    max-width: calc(var(--content-max) + 2 * var(--gutter));
+    min-height: 60vh;
+    margin: 0 auto;
+    padding: 0 var(--gutter) var(--s-9);
   }
 
-  .site-footer {
+  /* ── Footer ──────────────────────────────────────────────── */
+
+  .footer {
+    border-top: 1px solid var(--line);
+    background: var(--surface-2);
+  }
+
+  .footer-inner {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
-    gap: 32px 64px;
-    margin-top: 112px;
-    padding-top: 32px;
-    border-top: 1px solid var(--border);
+    gap: var(--s-7) var(--s-8);
+    max-width: calc(var(--content-max) + 2 * var(--gutter));
+    margin: 0 auto;
+    padding: var(--s-8) var(--gutter) var(--s-6);
   }
 
-  .footer-heading {
-    margin-bottom: 4px;
-    color: var(--foreground);
-    font-size: 14px;
+  .footer-name {
+    margin: 0 0 var(--s-2);
+    color: var(--ink);
+    font-size: var(--text-lg);
     font-weight: 500;
+    letter-spacing: -0.02em;
   }
 
-  .site-footer p,
-  .footer-links a {
+  .footer-line {
+    max-width: 44ch;
     margin: 0;
     color: var(--ink-2);
-    font-size: 13px;
+    font-size: 15px;
   }
 
-  .footer-links {
+  .footer-cols {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(140px, auto));
+    gap: var(--s-7);
+  }
+
+  .footer-cols ul {
+    margin-top: var(--s-3);
+    list-style: none;
+  }
+  .footer-cols li + li {
+    margin-top: var(--s-2);
+  }
+  .footer-cols a {
+    color: var(--ink);
+    font-size: 15px;
+    text-decoration: none;
+  }
+  .footer-cols a:hover {
+    color: var(--fjord);
+  }
+
+  .footer-base {
+    grid-column: 1 / -1;
     display: flex;
     flex-wrap: wrap;
-    justify-content: flex-end;
-    gap: 8px 16px;
+    justify-content: space-between;
+    gap: var(--s-2) var(--s-5);
+    padding-top: var(--s-5);
+    border-top: 1px solid var(--line);
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-variant-numeric: tabular-nums;
   }
-
-  .footer-links a:hover {
-    color: var(--foreground);
-  }
-
-  .copyright {
-    grid-column: 1 / -1;
-    padding-top: 32px;
-    color: var(--ink-3) !important;
+  .sep {
+    margin: 0 0.6em;
   }
 
   @media (max-width: 960px) {
-    .masthead {
-      flex-direction: column;
-      gap: 20px;
-      padding: 24px 24px 16px;
+    .topbar-inner {
+      grid-template-columns: minmax(0, 1fr) auto;
+      grid-template-rows: 56px auto;
+      height: auto;
+      gap: 0 var(--s-4);
     }
-
-    .shell {
-      grid-template-columns: 1fr;
+    .tools {
+      justify-self: end;
     }
-
-    .sites {
-      top: 0;
-      max-height: none;
-      padding: 8px 0 12px;
-      overflow: visible;
-      border-bottom: 1px solid var(--border);
-      background: var(--header-bg);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-    }
-
-    .nav-label {
-      display: none;
-    }
-
-    .sites ol {
-      width: 100%;
+    .nav {
       min-width: 0;
-      max-width: 100%;
-      display: flex;
-      gap: 4px;
-      padding: 0 12px;
+      grid-column: 1 / -1;
+      grid-row: 2;
+      margin: 0 calc(-1 * var(--gutter));
+      border-top: 1px solid var(--line);
+    }
+    .nav ul {
+      justify-content: flex-start;
+      gap: 0;
+      padding: var(--s-1) calc(var(--gutter) - var(--s-3));
       overflow-x: auto;
-      overscroll-behavior-x: contain;
       scrollbar-width: none;
     }
-
-    .sites ol::-webkit-scrollbar {
+    .nav ul::-webkit-scrollbar {
       display: none;
     }
-
-    .sites li,
-    .sites li + li {
-      flex: 0 0 auto;
-      margin: 0;
-    }
-
-    .sites a {
-      min-height: 40px;
-      padding: 8px 12px;
+    .nav a {
+      height: 40px;
       white-space: nowrap;
     }
-
-    .stage {
-      padding: 32px 24px 48px;
-    }
-
-    .site-footer {
-      margin-top: 80px;
+    .nav a[aria-current="page"]::after {
+      bottom: 4px;
     }
   }
 
-  @media (max-width: 560px) {
-    .masthead-actions {
-      width: 100%;
-    }
-
-    .theme-toggle {
-      margin-left: auto;
-    }
-
-    .site-footer {
+  @media (max-width: 640px) {
+    .footer-inner {
       grid-template-columns: 1fr;
-      gap: 24px;
-    }
-
-    .footer-links {
-      justify-content: flex-start;
-    }
-
-    .copyright {
-      grid-column: 1;
     }
   }
 </style>

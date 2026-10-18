@@ -23,9 +23,9 @@ _Backend AI / ML Engineer_ #h(1fr) 11/2025 -- Present \
 
 *#cardo[American Express]* #h(1fr) _Bangalore_ \
 _Engineer III_ #h(1fr) 02/2025 -- 11/2025 \
-- Built a hybrid retrieval system over 200k+ internal docs combining dense embeddings and keyword retrieval; cut p95 query latency from 30s to 2s via caching and query optimizations.
-- Shipped a live Webex meeting-summary bot (headless Chrome + Webex SDK as virtual participant); streamed real-time transcripts, generated rolling LLM summaries, and posted updates to Slack every 5 minutes.
-- Profiled large-scale transformer training and inference (FlashAttention, KV-cache, batching) to improve embedding throughput and serving efficiency.
+- Built live Webex captioning: Webex webhooks launch headless Chromium running the browser-only Webex SDK, which streams transcripts through Node.js into Redis in real time.
+- Contributed to an incident assistant that merged captions, Slack, and an internal portal into 5-minute LLM summaries.
+- Replaced Confluence search with hybrid retrieval over 200k+ incident runbooks: a chunk, keyword, and embedding ingestion pipeline feeds Elasticsearch BM25 + vector search; cut p95 query latency from 30s+ to under 2s.
 
 *#cardo[Fiery]* #h(1fr) _Bangalore_ \
 _Associate Software Engineer_ #h(1fr) 01/2023 -- 02/2025 \

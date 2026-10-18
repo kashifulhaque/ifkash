@@ -15,11 +15,11 @@ ML Engineer with 4 YOE across LLM pre-training, post-training with RL, and high-
 
 *#cardo[wand.ai]* #h(1fr) _Bangalore_ \
 _Backend AI / ML Engineer_ #h(1fr) 11/2025 -- Present \
-- Built observability for agent workflows: span hierarchy, trace IDs, and Kafka-based monitoring events for e2e run visibility.
-- Implemented OAuth/OIDC credential flows with deferred auth, token refresh, and variable propagation across agentic tasks.
-- Built workflow specs: generates auth gateways, OAuth triggers, and injects credential references into tool environments.
-- Added dynamic tool support: agents can define, reference, and execute tools that resolve workflow state variables at runtime.
-- Maintain a Go service and contribute to a gRPC-based internal API powering agent execution.
+- Built Temporal-backed agent scheduling in Go: schedule APIs, overlap policies, Kafka events, and an agent scheduling tool.
+- Hardened the agent loop: context compaction, tool-argument validation, prompt-injection-safe attachments, and citations.
+- Built agent observability: conversation-scoped trace IDs, span hierarchy, and Kafka monitoring events with error context.
+- Implemented deferred OAuth/OIDC credentials: a spec transpiler emits auth gateways, OAuth triggers, and token refresh.
+- Added dynamic tools that agents define in the workflow spec and execute against workflow state variables at runtime.
 
 *#cardo[American Express]* #h(1fr) _Bangalore_ \
 _Engineer III_ #h(1fr) 02/2025 -- 11/2025 \
@@ -64,4 +64,3 @@ BS, _Data Science and Applications_ #h(1fr) 2020 -- 2024
 
 - Python, C++, Rust, Go
 - PyTorch, FlashAttention, CUDA, vLLM, SGLang, Ray Serve, gRPC, TRL, QLoRA, Docker, Kubernetes, Redis, PostgreSQL
-

@@ -9,7 +9,7 @@
 = #cardo_headings[Kashiful Haque]
 +91 8240868544 • #link("mailto:me@ifkash.dev")[me\@ifkash.dev] • #link("https://github.com/kashifulhaque")[github] • #link("https://hf.co/ifkash")[huggingface] • #link("https://www.linkedin.com/in/kashifulhaque")[linkedin] • #link("https://ifkash.dev")[ifkash.dev]
 
-ML Engineer with 4 YOE across LLM pre-training, post-training with RL, and high-performance inference in C++ and Rust. Pre-trained a 360M LLaMA from scratch, fine-tuned production LLMs, and applied GRPO/ORPO for behavioral alignment. Targeting roles in pre-training, RL-based post-training, and GPU inference — CUDA, HPC, and low-level runtime work.
+ML Engineer with 4 YOE shipping production LLM systems: agent runtimes in Go and Python, hybrid retrieval, and fine-tuned LLMs on vLLM. Pre-trained a 360M LLaMA from scratch, aligned Llama-3.2 3B with ORPO, and built an LLM inference engine in C++. Targeting pre-training, RL post-training, and GPU inference roles: CUDA, HPC, and low-level runtimes.
 
 = #cardo_headings[Work Experience]
 
@@ -29,11 +29,10 @@ _Engineer III_ #h(1fr) 02/2025 -- 11/2025 \
 
 *#cardo[Fiery]* #h(1fr) _Bangalore_ \
 _Associate Software Engineer_ #h(1fr) 01/2023 -- 02/2025 \
-- Built Fiery Scribe: translates natural-language print requests to printer XML using ModernBERT + LLM, replacing brittle rule-based parsing.
-- Built AskDB: an LLM agent that maps natural language to SQL over production DBs and generates business reports for non-technical users.
-- Built Fiery Chat: internal RAG assistant on the company knowledge base; fine-tuned the base model with SFT to eliminate acronym hallucinations across new-hire onboarding and query routing.
-- Fine-tuned domain LLMs using SFT/QLoRA, served via vLLM on T4 clusters with sub-second p95 TTFT; evaluated SGLang but chose vLLM for tool-calling support at the time.
-- Deployed multi-GPU inference (4x 1080 Ti) using Ray Serve for request routing and scaling.
+- Built Fiery Scribe (flagship): turns customer print requests into printer XML, work that needed trained operators. Moved from LLM tool calling to fine-tuning, then to an in-browser ModernBERT classifier with the LLM only verifying.
+- Built AskDB: a local LLM agent that turns management's questions into SQL, then writes Python to build business reports, so managers no longer wait on engineers.
+- Built Fiery Chat, a hackathon winner that became internal and customer-facing products; fixed acronym hallucinations with QLoRA SFT on a hand-curated dataset, merged into a 7B model.
+- Served models via vLLM on T4 clusters (customers, sub-second p95 TTFT) and Ray Serve on 4x 1080 Ti (internal); trained on an RTX 4070 Ti.
 
 = #cardo_headings[ML Engineering Work]
 

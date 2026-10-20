@@ -1,21 +1,27 @@
 import { getApiBase } from '$lib/apiBase';
 import type { Profile } from '$lib/fitnessMetrics';
+import { AuthError, OfflineError } from '$lib/splitterApi';
 
 // Client for the /api/profile endpoint. The token is passed in rather than read
 // from a fixed key so fitness pages can use their own credential storage.
 
 /** Thrown on a 401 so the caller can drop the token and re-show sign-in. */
-export class ProfileAuthError extends Error {}
+export class ProfileAuthError extends AuthError {}
 
 async function request<T>(token: string, init: RequestInit = {}): Promise<T> {
-  const res = await fetch(`${getApiBase()}/api/profile`, {
-    ...init,
-    headers: {
-      ...(init.body ? { 'Content-Type': 'application/json' } : {}),
-      Authorization: `Bearer ${token}`,
-      ...(init.headers ?? {})
-    }
-  });
+  let res: Response;
+  try {
+    res = await fetch(`${getApiBase()}/api/profile`, {
+      ...init,
+      headers: {
+        ...(init.body ? { 'Content-Type': 'application/json' } : {}),
+        Authorization: `Bearer ${token}`,
+        ...(init.headers ?? {})
+      }
+    });
+  } catch {
+    throw new OfflineError('offline');
+  }
   if (res.status === 401) throw new ProfileAuthError('session expired');
   if (!res.ok) {
     let msg = `request failed (${res.status})`;

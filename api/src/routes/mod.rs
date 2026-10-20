@@ -9,6 +9,7 @@ pub mod game;
 pub mod splitter;
 pub mod workout;
 pub mod profile;
+pub mod auth;
 
 use worker::*;
 
@@ -35,6 +36,10 @@ pub fn register_routes(router: Router<'_, ()>) -> Router<'_, ()> {
     .get_async("/api/game/leaderboard", game::leaderboard)
     .post_async("/api/game/daily/score", game::submit_daily_score)
     .get_async("/api/game/daily/leaderboard", game::daily_leaderboard)
+    // Exchange a Google ID token for a longer session. The session is what the
+    // fitness and splitter routes accept when the ID token has expired.
+    .post_async("/api/auth/session", auth::create_session)
+    .delete_async("/api/auth/session", auth::delete_session)
     // Expense splitter — all endpoints require a Google ID token in the
     // `Authorization: Bearer <token>` header; data is scoped to that user.
     .get_async("/api/splitter/groups", splitter::list_groups)
@@ -45,8 +50,8 @@ pub fn register_routes(router: Router<'_, ()>) -> Router<'_, ()> {
     .delete_async("/api/splitter/members/:id", splitter::delete_member)
     .post_async("/api/splitter/groups/:id/expenses", splitter::add_expense)
     .delete_async("/api/splitter/expenses/:id", splitter::delete_expense)
-    // Workout tracker — all endpoints require a Google ID token in the
-    // `Authorization: Bearer <token>` header; data is scoped to that user.
+    // Workout tracker — bearer is a Google ID token or a session minted from
+    // one. Data is scoped to that user.
     .get_async("/api/workout/sessions", workout::list_sessions)
     .post_async("/api/workout/sessions", workout::create_session)
     .put_async("/api/workout/sessions", workout::upsert_session)
@@ -57,7 +62,7 @@ pub fn register_routes(router: Router<'_, ()>) -> Router<'_, ()> {
     .post_async("/api/workout/bodyweight", workout::add_bodyweight)
     .delete_async("/api/workout/bodyweight/:id", workout::delete_bodyweight)
     // Body profile — drives the BMI/BMR/TDEE metrics and daily nutrition targets.
-    // Requires a Google ID token; data is scoped to that user.
+    // Same bearer as the workout routes; data is scoped to that user.
     .get_async("/api/profile", profile::get_profile)
     .put_async("/api/profile", profile::upsert_profile)
 }

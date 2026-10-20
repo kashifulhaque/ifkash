@@ -4,15 +4,32 @@
 </svelte:head>
 
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount, tick } from 'svelte';
   import { env } from '$env/dynamic/public';
   import { LogOut, Check, Plus, Trash2, Bike } from 'lucide-svelte';
   import LoadingState from '$lib/components/LoadingState.svelte';
   import { patchLog } from '$lib/workoutReport';
   import { loadTarget, type LoadTarget } from '$lib/workoutTargets';
-  import { setToken, loadToken, AuthError } from '$lib/splitterApi';
-  import { isLocalDev } from '$lib/apiBase';
-  import { scheduleTokenRefresh, loadGis, renderGoogleButton } from '$lib/fitnessAuth';
+  import { setToken, loadToken, AuthError, OfflineError } from '$lib/splitterApi';
+  import { getApiBase, isLocalDev } from '$lib/apiBase';
+  import { adoptSession, startAuthWatch, loadGis, renderGoogleButton } from '$lib/fitnessAuth';
+  import {
+    ackBwDraft,
+    ackDraft,
+    bwDraftFor,
+    cacheDetail,
+    cachedDetail,
+    draftDetail,
+    draftFor,
+    hasPending,
+    listBwDrafts,
+    listDrafts,
+    mergeDraftSessions,
+    putBwDraft,
+    putDraft,
+    readCache,
+    writeCache
+  } from '$lib/workoutSync';
   import { workoutApi, type ExercisePayload, type CardioPayload } from '$lib/workoutApi';
   import { profileApi } from '$lib/profileApi';
   import {
@@ -99,7 +116,18 @@
   type CardioRow = { kind: string; minutes: string; kcal: string; kcalEdited: boolean };
   let cardioRows: CardioRow[] = [];
 
-  let saveStatus: 'idle' | 'saving' | 'saved' | 'error' = 'idle';
+  let saveStatus: 'idle' | 'saving' | 'saved' | 'local' | 'error' = 'idle';
+  /** The date and day the form is showing. Saves stamp this, not whatever the
+   *  chip says after a switch, so a slow save cannot file Upper A under Lower A. */
+  let formDate = sessionDate;
+  let formDay: Focus = active;
+  let formDirty = false;
+  let loadGen = 0;
+  let dayTouched = false;
+  let booted = false;
+  let needsReauth = false;
+  let reauthButton: HTMLDivElement;
+  let stopAuthWatch: (() => void) | undefined;
 
   // ---- body profile + live metrics -----------------------------------------
 
@@ -118,7 +146,10 @@
 
   async function loadProfile() {
     const p = await guard(() => profileApi.get(loadToken() ?? ''));
-    if (p) profile = p;
+    if (p) {
+      profile = p;
+      persistCache();
+    }
   }
 
   let profileSaveTimer: ReturnType<typeof setTimeout> | undefined;
@@ -271,10 +302,11 @@
     logLoading = true;
     try {
       log = await workoutApi.listLog();
+      persistCache();
     } catch (e) {
       if (e instanceof AuthError) {
-        await guard(() => Promise.reject(e));
-      } else {
+        await promptReauth();
+      } else if (!(e instanceof OfflineError)) {
         // A Worker without the /log route yet (Pages can deploy first): build
         // the log from per-session detail instead, which the cache shares.
         log = await logFromDetails();
@@ -307,54 +339,115 @@
 
   const detailCache = new Map<number, SessionDetail>();
   async function detailFor(id: number): Promise<SessionDetail | undefined> {
+    if (id <= 0) return undefined;
     if (detailCache.has(id)) return detailCache.get(id);
+    const stored = cachedDetail(id);
+    if (stored) {
+      detailCache.set(id, stored);
+      return stored;
+    }
     const d = await guard(() => workoutApi.getSession(id));
-    if (d) detailCache.set(id, d);
+    if (d) {
+      detailCache.set(id, d);
+      persistCache();
+    }
     return d;
   }
 
+  /** Bodyweight for `date`: an unsynced local entry, then today's server entry,
+   *  then the latest earlier one as a faded hint. */
+  function applyBw(date: string) {
+    const local = bwDraftFor(date);
+    if (local) {
+      bw = gramsToKg(local.weight_g);
+      bwSuggested = false;
+      // Still unsynced. Matching lastSavedBw keeps a later set-edit from
+      // writing a second copy; the draft itself is what gets uploaded.
+      lastSavedBw = bw;
+      return;
+    }
+    const bwToday = bodyweight.find((b) => b.date === date);
+    if (bwToday) {
+      bw = gramsToKg(bwToday.weight_g);
+      bwSuggested = false;
+      lastSavedBw = bw;
+    } else if (bodyweight.length) {
+      bw = gramsToKg(bodyweight[bodyweight.length - 1].weight_g);
+      bwSuggested = true;
+      lastSavedBw = '';
+    } else {
+      bw = '';
+      bwSuggested = true;
+      lastSavedBw = '';
+    }
+  }
+
   /**
-   * Build the editable rows for the active day. If a session already exists for
-   * (date, active) restore it as committed values; otherwise prefill each
-   * exercise's weights from the last session that contains it, whatever day it
-   * was logged under. Bodyweight is prefilled from today's entry or the latest
-   * prior one.
+   * Paint `focus` immediately, from the local draft when there is one. The
+   * chip and the exercise list update in the same turn, so a slow history
+   * fetch cannot leave Lower A selected over Upper A's rows.
+   */
+  function showDay(focus: Focus) {
+    const rows = templateRows(focus);
+    let cardio: CardioRow[] = [defaultCardio(focus)];
+    const draft = draftFor(sessionDate, focus);
+    if (draft) {
+      fillRows(rows, draftDetail(draft), true);
+      const restored = cardioFromDetail(draftDetail(draft));
+      if (restored.length) cardio = restored;
+    }
+    exercises = rows;
+    cardioRows = cardio;
+    applyBw(sessionDate);
+    formDate = sessionDate;
+    formDay = focus;
+    formDirty = false;
+    if (!draft && log.sets.length) applyTargets();
+  }
+
+  /**
+   * Fill the active day from the server when this device has no newer draft.
+   * A generation counter drops the result if the user has moved on: the
+   * history scan is a chain of requests, and the one that finishes last used
+   * to overwrite the day they had since selected.
    */
   async function loadDayData() {
-    const rows = templateRows(active);
-    let cardio: CardioRow[] = [defaultCardio(active)];
+    const gen = ++loadGen;
+    const focus = active;
+    const date = sessionDate;
+    if (draftFor(date, focus)) {
+      if (gen === loadGen) showDay(focus);
+      return;
+    }
+    const rows = templateRows(focus);
+    let cardio: CardioRow[] = [defaultCardio(focus)];
 
     if (signedIn) {
-      const todays = sessions.find((s) => s.date === sessionDate && s.day_label === active);
+      const todays = sessions.find((s) => s.date === date && s.day_label === focus && s.id > 0);
       if (todays) {
         const d = await detailFor(todays.id);
+        if (gen !== loadGen) return;
         if (d) {
           fillRows(rows, d, true);
           const restored = cardioFromDetail(d);
           if (restored.length) cardio = restored;
         }
       } else {
-        await prefillFromHistory(rows);
-      }
-
-      const bwToday = bodyweight.find((b) => b.date === sessionDate);
-      if (bwToday) {
-        bw = gramsToKg(bwToday.weight_g);
-        bwSuggested = false;
-        lastSavedBw = bw;
-      } else if (bodyweight.length) {
-        bw = gramsToKg(bodyweight[bodyweight.length - 1].weight_g);
-        bwSuggested = true;
-        lastSavedBw = '';
-      } else {
-        bw = '';
-        bwSuggested = true;
-        lastSavedBw = '';
+        await prefillFromHistory(rows, () => gen !== loadGen);
+        if (gen !== loadGen) return;
       }
     }
 
+    if (gen !== loadGen) return;
+    // They already started logging on this day. Replacing the rows now would
+    // drop the sets they just typed.
+    if (formDirty && formDate === date && formDay === focus) return;
     exercises = rows;
     cardioRows = cardio;
+    applyBw(date);
+    formDate = date;
+    formDay = focus;
+    formDirty = false;
     if (log.sets.length) applyTargets();
   }
 
@@ -370,7 +463,7 @@
    * suggestion or after `PREFILL_LOOKBACK` sessions, whichever comes first.
    */
   const PREFILL_LOOKBACK = 20;
-  async function prefillFromHistory(rows: ExerciseRow[]) {
+  async function prefillFromHistory(rows: ExerciseRow[], cancelled: () => boolean) {
     const pending = new Map(rows.filter((r) => r.name).map((r) => [r.name, r.equipment]));
     if (pending.size === 0) return;
     const matches = (x: { exercise: string; equipment: Equipment }) => {
@@ -379,7 +472,7 @@
     };
     const prior = sessions.filter((s) => s.date < sessionDate).slice(0, PREFILL_LOOKBACK);
     for (const s of prior) {
-      if (pending.size === 0) break;
+      if (cancelled() || pending.size === 0) break;
       const d = await detailFor(s.id);
       if (!d) continue;
       const wanted = { ...d, sets: d.sets.filter(matches) };
@@ -490,9 +583,15 @@
 
   function selectDay(focus: Focus) {
     if (focus === active) return;
+    dayTouched = true;
+    rememberDraft();
     active = focus;
     expanded = {};
-    loadDayData();
+    // Swap the list in this turn. The fetch that fills weights in is allowed
+    // to finish later, and a stale one is discarded.
+    showDay(focus);
+    void loadDayData();
+    void flush();
   }
 
   /**
@@ -512,7 +611,12 @@
   }
 
   function onDateChange() {
-    loadDayData();
+    // `sessionDate` is already the new value; `formDate` is still the old one,
+    // so this files the edits under the day they were typed on.
+    rememberDraft();
+    showDay(active);
+    void loadDayData();
+    void flush();
   }
 
   // ---- auto-save -----------------------------------------------------------
@@ -520,9 +624,32 @@
   let saveTimer: ReturnType<typeof setTimeout> | undefined;
   function scheduleSave() {
     if (!signedIn) return;
+    formDirty = true;
+    rememberDraft();
     saveStatus = 'saving';
     clearTimeout(saveTimer);
     saveTimer = setTimeout(flush, 700);
+  }
+
+  /** Copy the form into local storage under the day it belongs to. */
+  function rememberDraft() {
+    if (!formDirty) return;
+    const payload = buildPayload();
+    const cardio = buildCardio();
+    putDraft(
+      payload.length || cardio.length
+        ? { date: formDate, day_label: formDay, exercises: payload, cardio, updated: Date.now() }
+        : null,
+      { date: formDate, day: formDay }
+    );
+    if (!bwSuggested && str(bw).trim() !== '' && str(bw) !== str(lastSavedBw)) {
+      const grams = kgToGrams(str(bw));
+      if (grams > 0) {
+        putBwDraft({ date: formDate, weight_g: grams, updated: Date.now() });
+        lastSavedBw = bw;
+      }
+    }
+    sessions = mergeDraftSessions(sessions.filter((s) => s.id > 0));
   }
 
   // Number inputs can hand back numbers (not strings) via bind:value, so coerce
@@ -579,40 +706,111 @@
   }
 
   async function doFlush() {
-    const payload = buildPayload();
-    const cardio = buildCardio();
-    let ok = true;
-
-    if (payload.length > 0 || cardio.length > 0) {
-      const r = await guard(() =>
-        workoutApi.upsertSession({
-          day_label: active,
-          date: sessionDate,
-          notes: '',
-          exercises: payload,
-          cardio
-        })
-      );
-      ok = ok && r !== undefined;
-      if (r) {
-        log = patchLog(log, { session_id: r.id, date: sessionDate, day_label: active }, payload, cardio);
-      }
-    }
-
-    if (!bwSuggested && str(bw).trim() !== '' && str(bw) !== str(lastSavedBw)) {
-      const grams = kgToGrams(str(bw));
-      if (grams > 0) {
-        const r = await guard(() => workoutApi.addBodyweight(sessionDate, grams));
-        if (r !== undefined) lastSavedBw = bw;
-        else ok = false;
-      }
-    }
-
-    saveStatus = ok ? 'saved' : 'error';
-    if (ok) {
-      detailCache.clear();
+    rememberDraft();
+    const result = await syncPending();
+    if (result === 'synced') {
       await refreshLists();
+      saveStatus = hasPending() ? 'local' : 'saved';
+    } else if (result === 'idle') {
+      if (saveStatus === 'saving') saveStatus = hasPending() ? 'local' : 'saved';
+    } else if (result === 'local') {
+      saveStatus = 'local';
+    } else if (result === 'auth') {
+      saveStatus = 'local';
+      await promptReauth();
+    } else {
+      saveStatus = 'error';
     }
+  }
+
+  /**
+   * Upload every draft, oldest edit first. A draft is removed only when the
+   * copy that was sent is still the latest one on the device.
+   */
+  async function syncPending(): Promise<'synced' | 'idle' | 'local' | 'auth' | 'error'> {
+    const drafts = [...listDrafts()].sort((a, b) => a.updated - b.updated);
+    const weights = [...listBwDrafts()].sort((a, b) => a.updated - b.updated);
+    if (!drafts.length && !weights.length) return 'idle';
+    if (!loadToken()) return 'auth';
+
+    for (const d of drafts) {
+      try {
+        const r = await workoutApi.upsertSession({
+          day_label: d.day_label,
+          date: d.date,
+          notes: '',
+          exercises: d.exercises,
+          cardio: d.cardio
+        });
+        log = patchLog(
+          log,
+          { session_id: r.id, date: d.date, day_label: d.day_label },
+          d.exercises,
+          d.cardio
+        );
+        const detail = draftDetail(d);
+        detail.session.id = r.id;
+        detailCache.set(r.id, detail);
+        const idx = sessions.findIndex((s) => s.date === d.date && s.day_label === d.day_label);
+        const summary = {
+          id: r.id,
+          day_label: d.day_label,
+          date: d.date,
+          notes: '',
+          created: sessions[idx]?.created ?? new Date(d.updated).toISOString()
+        };
+        sessions = idx >= 0 ? sessions.map((s, i) => (i === idx ? summary : s)) : [summary, ...sessions];
+        ackDraft(d.date, d.day_label, d.updated);
+      } catch (e) {
+        persistCache();
+        if (e instanceof OfflineError) return 'local';
+        if (e instanceof AuthError) return 'auth';
+        return 'error';
+      }
+    }
+
+    for (const w of [...listBwDrafts()].sort((a, b) => a.updated - b.updated)) {
+      try {
+        const r = await workoutApi.addBodyweight(w.date, w.weight_g);
+        bodyweight = [
+          ...bodyweight.filter((b) => b.date !== w.date),
+          { id: r.id, date: w.date, weight_g: w.weight_g }
+        ];
+        ackBwDraft(w.date, w.updated);
+        if (w.date === formDate) lastSavedBw = gramsToKg(w.weight_g);
+      } catch (e) {
+        persistCache();
+        if (e instanceof OfflineError) return 'local';
+        if (e instanceof AuthError) return 'auth';
+        return 'error';
+      }
+    }
+
+    sessions = mergeDraftSessions(sessions.filter((s) => s.id > 0));
+    persistCache();
+    return 'synced';
+  }
+
+  function persistCache() {
+    let cache = readCache();
+    cache = {
+      ...cache,
+      sessions: sessions.filter((s) => s.id > 0),
+      bodyweight,
+      log,
+      profile
+    };
+    for (const d of detailCache.values()) cache = cacheDetail(d, cache);
+    writeCache(cache);
+  }
+
+  function hydrateFromCache() {
+    const cache = readCache();
+    sessions = mergeDraftSessions(cache.sessions);
+    if (cache.bodyweight.length) bodyweight = cache.bodyweight;
+    if (cache.log.sets.length || cache.log.cardio.length) log = cache.log;
+    for (const d of cache.details) detailCache.set(d.session.id, d);
+    if (cache.profile) profile = cache.profile;
   }
 
   /** This week's lifts, for the day chips and the opening day. */
@@ -623,30 +821,48 @@
       guard(() => workoutApi.listSessions()),
       guard(() => workoutApi.listBodyweight())
     ]);
-    if (s) sessions = s;
+    if (s) sessions = mergeDraftSessions(s);
+    else sessions = mergeDraftSessions(sessions.filter((row) => row.id > 0));
     if (b) bodyweight = b;
+    if (s || b) persistCache();
   }
 
-  // ---- auth (mirrors the splitter / tracker Google Identity flow) ----------
-
-  let refreshTimer: ReturnType<typeof setTimeout> | undefined;
-  function scheduleRefresh() {
-    clearTimeout(refreshTimer);
-    refreshTimer = scheduleTokenRefresh(loadToken(), clientId, onCredential);
-  }
+  // ---- auth ----------------------------------------------------------------
 
   function onCredential(resp: { credential: string }) {
     setToken(resp.credential);
     signedIn = true;
-    scheduleRefresh();
-    bootSignedIn();
+    needsReauth = false;
+    // A silent refresh must not reload the day they are logging.
+    void adoptSession().then(() => flush());
+    if (!booted) {
+      booted = true;
+      void bootSignedIn();
+    }
   }
 
   const showSignIn = () => setTimeout(() => renderGoogleButton(gisButton, clientId, onCredential), 0);
 
+  async function promptReauth() {
+    if (needsReauth) return;
+    needsReauth = true;
+    if (hasPending()) saveStatus = 'local';
+    await tick();
+    renderGoogleButton(reauthButton, clientId, onCredential);
+  }
+
   function signOut() {
+    const token = loadToken();
     setToken(null);
+    if (token && token !== 'local-dev') {
+      void fetch(`${getApiBase()}/api/auth/session`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      }).catch(() => {});
+    }
     signedIn = false;
+    needsReauth = false;
+    booted = false;
     sessions = [];
     bodyweight = [];
     log = { sets: [], cardio: [] };
@@ -663,43 +879,77 @@
       return await fn();
     } catch (e) {
       if (e instanceof AuthError) {
-        signedIn = false;
-        sessions = [];
-        bodyweight = [];
-        saveStatus = 'idle';
-        showSignIn();
-      } else {
-        errorMsg = e instanceof Error ? e.message : 'something went wrong';
+        // Keep the form. The sets are on this device; signing out here used
+        // to hide them behind the sign-in card.
+        await promptReauth();
+        return undefined;
       }
+      if (e instanceof OfflineError) return undefined;
+      errorMsg = e instanceof Error ? e.message : 'something went wrong';
       return undefined;
     }
   }
 
   async function bootSignedIn() {
-    await refreshLists();
+    hydrateFromCache();
     active = pickDay();
+    showDay(active);
+    await refreshLists();
+    if (!dayTouched) {
+      const next = pickDay();
+      if (next !== active) {
+        active = next;
+        showDay(active);
+      }
+    }
     await loadProfile();
     await loadDayData();
     await loadLog();
     applyTargets();
+    void adoptSession();
+    void flush();
   }
 
+  onMount(() => {
+    const onOnline = () => void flush();
+    const onHide = () => {
+      if (formDirty) rememberDraft();
+    };
+    window.addEventListener('online', onOnline);
+    window.addEventListener('pagehide', onHide);
+    return () => {
+      window.removeEventListener('online', onOnline);
+      window.removeEventListener('pagehide', onHide);
+      stopAuthWatch?.();
+    };
+  });
+
   onMount(async () => {
-    exercises = templateRows(active);
-    cardioRows = [defaultCardio(active)];
+    hydrateFromCache();
+    if (sessions.length) active = pickDay();
+    showDay(active);
     if (isLocalDev()) {
       // Local dev: the Worker bypasses Google auth (LOCAL_DEV in api/.dev.vars),
       // so skip sign-in entirely and boot straight into the data.
       setToken('local-dev');
       signedIn = true;
+      booted = true;
       await bootSignedIn();
       return;
     }
-    await loadGis();
-    if (loadToken()) {
+    try {
+      await loadGis();
+    } catch {
+      // Google's script needs a network. A session stored earlier can still
+      // open the log, and new sets stay on the device.
+    }
+    stopAuthWatch = startAuthWatch(clientId, onCredential);
+    if (loadToken() || hasPending()) {
       signedIn = true;
-      scheduleRefresh();
+      booted = true;
+      if (!loadToken()) needsReauth = true;
       await bootSignedIn();
+      if (needsReauth) await promptReauth();
     } else {
       renderGoogleButton(gisButton, clientId, onCredential);
     }
@@ -717,11 +967,20 @@
       <h1 class="title">Workout</h1>
       <div class="header-actions">
         {#if signedIn}
-          <span class="save-pill" class:on={saveStatus !== 'idle'} data-status={saveStatus}>
+          <span
+            class="save-pill"
+            class:on={saveStatus !== 'idle'}
+            data-status={saveStatus}
+            title={saveStatus === 'local'
+              ? 'Saved on this device. Syncs when the connection returns.'
+              : undefined}
+          >
             {#if saveStatus === 'saving'}
               <LoadingState label="Saving" />
             {:else if saveStatus === 'saved'}
               <Check size={13} /> Saved
+            {:else if saveStatus === 'local'}
+              <Check size={13} /> Saved here
             {:else if saveStatus === 'error'}
               Save failed
             {/if}
@@ -733,10 +992,17 @@
       </div>
     </div>
     <p class="page-desc">
-      Four lifts a week, upper/lower. Pick a day, then {signedIn ? 'tap an exercise and log your sets — it saves as you type.' : 'sign in to log your sets right here.'}
+      Four lifts a week, upper/lower. Pick a day, then {signedIn ? 'tap an exercise and log your sets — it saves as you type, on this device if the connection drops.' : 'sign in to log your sets right here.'}
       {#if signedIn}The trend, report and history are on the <a href="/fitness/workout/insights">insights page</a>.{/if}
     </p>
   </header>
+
+  {#if needsReauth}
+    <div class="reauth">
+      <p>Sign in again to sync. Sets you log stay on this device until then.</p>
+      <div bind:this={reauthButton}></div>
+    </div>
+  {/if}
 
   {#if errorMsg}
     <div class="error-banner">{errorMsg}</div>
@@ -1246,7 +1512,7 @@
     align-items: center;
     justify-content: flex-end;
     gap: 6px;
-    width: 6.5rem;
+    width: 7.25rem;
     height: 20px;
     overflow: hidden;
     color: var(--ink-3);
@@ -1263,7 +1529,20 @@
     transform-origin: right center;
   }
   .save-pill[data-status='saved'] { color: var(--moss); }
+  .save-pill[data-status='local'] { color: var(--clay); }
   .save-pill[data-status='error'] { color: var(--danger); }
+
+  .reauth {
+    display: grid;
+    gap: var(--s-3);
+    padding: var(--s-4);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    color: var(--ink-2);
+    font-size: var(--text-sm);
+  }
+  .reauth p { margin: 0; }
 
   .signout { color: var(--ink-2); }
 
@@ -2023,7 +2302,7 @@
       position: absolute;
       top: 50%;
       right: 100%;
-      width: 6rem;
+      width: 6.75rem;
       margin-right: var(--s-1);
       transform: translateY(-50%);
     }

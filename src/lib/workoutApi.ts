@@ -1,5 +1,5 @@
 import { getApiBase } from '$lib/apiBase';
-import { loadToken, AuthError } from '$lib/splitterApi';
+import { loadToken, AuthError, OfflineError } from '$lib/splitterApi';
 import type {
   SessionSummary,
   SessionDetail,
@@ -15,14 +15,19 @@ import type {
 async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
   const token = loadToken();
   if (!token) throw new AuthError('not signed in');
-  const res = await fetch(`${getApiBase()}/api/workout${path}`, {
-    ...init,
-    headers: {
-      ...(init.body ? { 'Content-Type': 'application/json' } : {}),
-      Authorization: `Bearer ${token}`,
-      ...(init.headers ?? {})
-    }
-  });
+  let res: Response;
+  try {
+    res = await fetch(`${getApiBase()}/api/workout${path}`, {
+      ...init,
+      headers: {
+        ...(init.body ? { 'Content-Type': 'application/json' } : {}),
+        Authorization: `Bearer ${token}`,
+        ...(init.headers ?? {})
+      }
+    });
+  } catch {
+    throw new OfflineError('offline');
+  }
   if (res.status === 401) {
     throw new AuthError('session expired');
   }

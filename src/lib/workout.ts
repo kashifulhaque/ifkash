@@ -53,9 +53,10 @@ export const EQUIPMENT_OPTIONS: Equipment[] = [
 // day's 8 exercises done, core skipped every time, deadlift dropped after the
 // heavy-single weeks, and loads flat or falling on every priority lift.
 // Attendance was never the problem; the sessions were too long to finish and
-// the week too long to recover from. Each day here is 6 exercises and 16-18
-// working sets, about 45 minutes of lifting plus a short cardio bout, so a
-// complete week is four finished sessions rather than six partial ones.
+// the week too long to recover from. Each lifting day is 6 exercises, or 7 on
+// Upper B, and 16-18 working sets, about 45 minutes of lifting plus a short
+// cardio bout, so a complete week is four finished sessions rather than six
+// partial ones.
 //
 // Volume lands at 10-14 weekly sets per muscle group, which holds muscle in a
 // deficit; extra sets on a cut cost recovery without adding shape. Every
@@ -136,12 +137,21 @@ export const UPPER_B: Exercise[] = [
     equipment: 'Dumbbell',
     priority: true
   },
+  // Chest isolation after the incline press. The machine is the load to
+  // progress; dumbbells are the fallback when it is taken.
+  {
+    name: 'Pec fly',
+    scheme: '2×12-15',
+    kind: 'weighted',
+    equipment: 'Machine',
+    alt: 'dumbbells if the machine is taken'
+  },
   { name: 'Lat pulldown', scheme: '3×10-12', kind: 'weighted', equipment: 'Machine' },
-  { name: 'Lateral raises', scheme: '3×12-15', kind: 'weighted', equipment: 'Dumbbell' },
+  { name: 'Lateral raises', scheme: '2×12-15', kind: 'weighted', equipment: 'Dumbbell' },
   // Posture and rear delts. Cheap to do, and it changes how the upper body
   // reads standing still.
   { name: 'Face pulls', scheme: '2×15', kind: 'weighted', equipment: 'Cable' },
-  { name: 'Bicep curls', scheme: '2×10-12', kind: 'weighted', equipment: 'Dumbbell' }
+  { name: 'Bicep curls', scheme: '1×10-12', kind: 'weighted', equipment: 'Dumbbell' }
 ];
 
 /** Day 4: deadlift and leg press, hamstring emphasis. */
@@ -166,17 +176,17 @@ export const LOWER_B: Exercise[] = [
 
 /**
  * Optional day 5: cardio first, then a few light accessories if you want them.
- * Logging it is a bonus, not a debt. Only small single-joint lifts, so the day
- * adds arm and shoulder work without costing recovery for Monday's Upper A:
- * no legs, no heavy presses or pulls, and nothing marked as a key lift. These
- * sets stay out of the plan's weekly volume target (`PLAN_WEEKLY_SETS` counts
- * the four lifting days only), so skipping them never shows up as a shortfall.
+ * Logging it is a bonus, not a debt. Lateral raises, then three core moves, so
+ * the day adds shoulder and trunk work without costing recovery for Monday's
+ * Upper A: no legs, no presses or pulls, and nothing marked as a key lift.
+ * These sets stay out of the plan's weekly volume target (`PLAN_WEEKLY_SETS`
+ * counts the four lifting days only), so skipping them never shows up as a
+ * shortfall.
  */
 export const CARDIO_DAY: Exercise[] = [
   { name: 'Lateral raises', scheme: '3×12-15', kind: 'weighted', equipment: 'Dumbbell' },
-  { name: 'Face pulls', scheme: '2×15', kind: 'weighted', equipment: 'Cable' },
-  { name: 'Bicep curls', scheme: '2×10-12', kind: 'weighted', equipment: 'Dumbbell' },
-  { name: 'Cable tricep pushdown', scheme: '2×12-15', kind: 'weighted', equipment: 'Cable' }
+  { name: 'Crunches', scheme: '2×12-15', kind: 'bodyweight', equipment: 'Bodyweight' },
+  { name: 'Side plank', scheme: '2×30s', kind: 'time', equipment: 'Bodyweight', alt: 'each side' }
 ];
 
 export type DayLabel = 'Upper A' | 'Lower A' | 'Upper B' | 'Lower B' | 'Cardio';
@@ -229,7 +239,7 @@ export const DAY_INFO: Record<DayLabel, DayInfo> = {
   },
   Cardio: {
     day: 'Sat / Sun',
-    detail: 'the spare slot: a missed lift if there is one, otherwise cardio plus light arms and shoulders',
+    detail: 'the spare slot: a missed lift if there is one, otherwise cardio plus shoulders and core',
     cardio: '30 min crosstrainer intervals, or a long walk outside',
     optional: true
   }

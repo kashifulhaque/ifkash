@@ -246,6 +246,9 @@ type MuscleShare = Partial<Record<Muscle, number>>;
 const MUSCLE_MAP: Record<string, MuscleShare> = {
   'Bench press': { chest: 1, triceps: 0.5, shoulders: 0.5 },
   'Incline dumbbell press': { chest: 1, shoulders: 0.5, triceps: 0.5 },
+  // Isolation: the chest does the work, so this does not add triceps volume
+  // the way a press does.
+  'Pec fly': { chest: 1 },
   'Shoulder press': { shoulders: 1, triceps: 0.5 },
   'Lat pulldown': { back: 1, biceps: 0.5 },
   'Row machine': { back: 1, biceps: 0.5 },
@@ -261,7 +264,10 @@ const MUSCLE_MAP: Record<string, MuscleShare> = {
   'Leg curls': { hamstrings: 1 },
   'Calf raises': { calves: 1 },
   'Hanging leg raise': { core: 1 },
-  Plank: { core: 1 }
+  Plank: { core: 1 },
+  'Dead bug': { core: 1 },
+  Crunches: { core: 1 },
+  'Side plank': { core: 1 }
 };
 
 /**

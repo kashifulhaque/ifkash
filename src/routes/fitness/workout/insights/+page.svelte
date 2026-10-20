@@ -26,9 +26,9 @@
   import WeightChart from '$lib/components/WeightChart.svelte';
   import WorkoutReport from '$lib/components/WorkoutReport.svelte';
   import { dropSession } from '$lib/workoutReport';
-  import { setToken, loadToken, AuthError } from '$lib/splitterApi';
+  import { setToken, loadToken, AuthError, OfflineError } from '$lib/splitterApi';
   import { isLocalDev } from '$lib/apiBase';
-  import { scheduleTokenRefresh, loadGis, renderGoogleButton } from '$lib/fitnessAuth';
+  import { adoptSession, startAuthWatch, loadGis, renderGoogleButton } from '$lib/fitnessAuth';
   import { workoutApi } from '$lib/workoutApi';
   import { profileApi } from '$lib/profileApi';
   import { DEFAULT_PROFILE, type Profile } from '$lib/fitnessMetrics';
@@ -305,17 +305,17 @@
 
   // ---- auth (mirrors the workout page's Google Identity flow) --------------
 
-  let refreshTimer: ReturnType<typeof setTimeout> | undefined;
-  function scheduleRefresh() {
-    clearTimeout(refreshTimer);
-    refreshTimer = scheduleTokenRefresh(loadToken(), clientId, onCredential);
-  }
+  let booted = false;
+  let stopAuthWatch: (() => void) | undefined;
 
   function onCredential(resp: { credential: string }) {
     setToken(resp.credential);
     signedIn = true;
-    scheduleRefresh();
-    bootSignedIn();
+    void adoptSession();
+    if (!booted) {
+      booted = true;
+      void bootSignedIn();
+    }
   }
 
   const showSignIn = () => setTimeout(() => renderGoogleButton(gisButton, clientId, onCredential), 0);
@@ -323,6 +323,7 @@
   function signOut() {
     setToken(null);
     signedIn = false;
+    booted = false;
     sessions = [];
     bodyweight = [];
     log = { sets: [], cardio: [] };
@@ -339,9 +340,9 @@
     } catch (e) {
       if (e instanceof AuthError) {
         signedIn = false;
-        sessions = [];
-        bodyweight = [];
         showSignIn();
+      } else if (e instanceof OfflineError) {
+        errorMsg = "Couldn't reach the server. This page updates when the connection returns.";
       } else {
         errorMsg = e instanceof Error ? e.message : 'something went wrong';
       }
@@ -353,7 +354,10 @@
     await refreshLists();
     await loadProfile();
     await loadLog();
+    void adoptSession();
   }
+
+  onMount(() => () => stopAuthWatch?.());
 
   onMount(async () => {
     if (isLocalDev()) {
@@ -361,13 +365,19 @@
       // so skip sign-in entirely and boot straight into the data.
       setToken('local-dev');
       signedIn = true;
+      booted = true;
       await bootSignedIn();
       return;
     }
-    await loadGis();
+    try {
+      await loadGis();
+    } catch {
+      /* Google's script needs a network. A stored session can still load. */
+    }
+    stopAuthWatch = startAuthWatch(clientId, onCredential);
     if (loadToken()) {
       signedIn = true;
-      scheduleRefresh();
+      booted = true;
       await bootSignedIn();
     } else {
       renderGoogleButton(gisButton, clientId, onCredential);

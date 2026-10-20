@@ -623,6 +623,7 @@ version = "0.1.0"
 dependencies = [
  "chrono",
  "futures",
+ "getrandom 0.2.16",
  "reqwest",
  "serde",
  "serde_json",

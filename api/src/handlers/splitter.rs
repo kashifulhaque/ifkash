@@ -1,4 +1,4 @@
-use super::google_auth::verify_google;
+use super::google_auth::identity_from_bearer;
 use serde::{Deserialize, Serialize};
 use worker::*;
 
@@ -24,7 +24,8 @@ async fn resolve_owner(
         return Ok(Err(Response::error("unauthorized", 401)?));
     }
     let client_id = ctx.env.var("GOOGLE_CLIENT_ID")?.to_string();
-    let info = match verify_google(token, &client_id).await {
+    let d1 = ctx.d1("IFKASH_D1")?;
+    let info = match identity_from_bearer(token, &client_id, &d1).await {
         Ok(i) => i,
         Err(resp) => return Ok(Err(resp)),
     };

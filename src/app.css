@@ -1,16 +1,19 @@
 @import "@fontsource-variable/schibsted-grotesk";
+@import "@fontsource-variable/newsreader/opsz.css";
 @import "@fontsource-variable/newsreader/opsz-italic.css";
 @import "@fontsource-variable/jetbrains-mono";
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
 /* ────────────────────────────────────────────────────────────────
-   Nordisk — ifkash.dev design system.
+   ifkash.dev design system. Two designs, one token set.
 
-   Daylight (default): birch-paper ground, charcoal ink, one fjord-blue
-   accent, and a single Falu-red dot as the signature mark.
-   Polar night: the same system at dusk — slate ground, snow ink,
-   glacier accent, ember dot.
+   Nordisk (default): birch-paper ground, charcoal ink, one fjord-blue
+   accent, and a single Falu-red dot. Polar night is the same system
+   at dusk — slate ground, snow ink, glacier accent, ember dot.
+   Broadsheet: newsprint, crimson accent, square corners, serif headlines.
+   `data-design` on <html> selects the design; `data-theme` selects light
+   or dark. See DESIGN.md.
 
    Rules: hairlines instead of shadows, small radii, one accent at a
    time, generous whitespace, quiet motion. See DESIGN.md.
@@ -49,10 +52,13 @@
   --scrim: rgb(37 34 31 / 38%);
   --code-surface: #efebe2;
 
-  /* Type */
+  /* Type. --font-display follows --font-sans in Nordisk and the serif
+     stack in Broadsheet, so headlines can change face without
+     restyling buttons and body copy. */
   --font-sans: "Schibsted Grotesk Variable", "Schibsted Grotesk", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-serif: "Newsreader Variable", "Newsreader", "Iowan Old Style", Georgia, serif;
   --font-mono: "JetBrains Mono Variable", "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --font-display: var(--font-sans);
 
   --text-xs: 0.75rem;   /* 12 */
   --text-sm: 0.8125rem; /* 13 */
@@ -137,6 +143,77 @@
   --scrim: rgb(8 10 12 / 62%);
   --code-surface: #101315;
   --shadow-color: rgb(0 0 0 / 40%);
+}
+
+/* Broadsheet — day edition. Newsprint, crimson accent, square corners.
+   UI chrome stays in the sans; headlines use --font-display. */
+[data-design="broadsheet"] {
+  --bg: #f3ecdf;
+  --surface: #fbf7ef;
+  --surface-2: #e6dcc9;
+  --surface-ink: #1a140f;
+
+  --ink: #1a140f;
+  --ink-2: #4e433a;
+  --ink-3: #5c5146;
+  --ink-inverse: #f3ecdf;
+
+  --line: #d4c6af;
+  --line-strong: #6f6254;
+
+  --fjord: #8f1d1d;
+  --fjord-strong: #6e1212;
+  --fjord-wash: rgb(143 29 29 / 10%);
+  --falu: #9c2b1a;
+  --moss: #2f6b45;
+  --moss-wash: rgb(47 107 69 / 12%);
+  --clay: #9a4e1a;
+  --danger: #8f1d2a;
+  --success: #2a6840;
+
+  --hover-wash: rgb(26 20 15 / 5%);
+  --press-wash: rgb(26 20 15 / 9%);
+  --scrim: rgb(26 20 15 / 45%);
+  --code-surface: #efe6d4;
+  --shadow-color: rgb(26 20 15 / 18%);
+
+  --font-display: var(--font-serif);
+  --radius-xs: 0px;
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-pill: 0px;
+}
+
+/* Broadsheet — night edition. */
+[data-design="broadsheet"][data-theme="dark"] {
+  --bg: #14110e;
+  --surface: #1c1814;
+  --surface-2: #0e0c0a;
+  --surface-ink: #f3ecdf;
+
+  --ink: #f3ecdf;
+  --ink-2: #cbbfae;
+  --ink-3: #a89884;
+  --ink-inverse: #14110e;
+
+  --line: #3a322a;
+  --line-strong: #5c5146;
+
+  --fjord: #f0a090;
+  --fjord-strong: #f6c4b4;
+  --fjord-wash: rgb(240 160 144 / 14%);
+  --falu: #e07058;
+  --moss: #9dbea4;
+  --moss-wash: rgb(157 190 164 / 14%);
+  --clay: #e0a56a;
+  --danger: #f0a098;
+  --success: #a8c9a0;
+
+  --hover-wash: rgb(243 236 223 / 6%);
+  --press-wash: rgb(243 236 223 / 10%);
+  --scrim: rgb(8 6 4 / 68%);
+  --code-surface: #0e0c0a;
+  --shadow-color: rgb(0 0 0 / 45%);
 }
 
 @theme {
@@ -228,7 +305,7 @@ h4,
 h5,
 h6 {
   color: var(--ink);
-  font-family: var(--font-sans);
+  font-family: var(--font-display);
   font-weight: 500;
   text-wrap: balance;
 }
@@ -377,7 +454,7 @@ hr {
 .page-title {
   margin: 0;
   color: var(--ink);
-  font-family: var(--font-sans);
+  font-family: var(--font-display);
   font-size: var(--text-3xl);
   font-weight: 500;
   line-height: 1.02;
@@ -706,4 +783,71 @@ body::after {
 /* The tiny planet draws its own world; keep the grain off it. */
 body:has(.game-root)::after {
   display: none;
+}
+
+/* ── Broadsheet structure ──────────────────────────────────────────
+   Same markup as Nordisk. Serif headlines, tracked kickers, and square
+   corners (from the radius tokens). The double rule on the top bar and
+   footer lives in +layout.svelte, where it can outrank scoped styles. */
+
+html[data-design="broadsheet"] :is(
+  h1,
+  h2,
+  h3,
+  .page-title,
+  .section-title,
+  .display,
+  .wordmark,
+  .footer-name
+) {
+  font-family: var(--font-display);
+  font-weight: 450;
+  letter-spacing: -0.02em;
+  font-variation-settings: "opsz" 32;
+}
+
+html[data-design="broadsheet"] :is(h1, .page-title, .section-title, .display) {
+  font-variation-settings: "opsz" 60;
+  letter-spacing: -0.025em;
+}
+
+html[data-design="broadsheet"] .display {
+  line-height: 0.96;
+  letter-spacing: -0.03em;
+  font-variation-settings: "opsz" 72;
+}
+
+html[data-design="broadsheet"] :is(.lead, .section-subtitle, .hero-copy, .footer-line) {
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: -0.011em;
+}
+
+html[data-design="broadsheet"] :is(.eyebrow, .label) {
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+html[data-design="broadsheet"] .dot {
+  border-radius: 0;
+}
+
+html[data-design="broadsheet"] .card {
+  border-color: var(--line-strong);
+}
+
+html[data-design="broadsheet"] .index-row .name {
+  font-family: var(--font-display);
+  font-weight: 450;
+  letter-spacing: -0.02em;
+}
+
+html[data-design="broadsheet"] body::after {
+  opacity: 0.07;
+}
+
+html[data-design="broadsheet"][data-theme="dark"] body::after {
+  opacity: 0.05;
+  mix-blend-mode: screen;
+  filter: invert(1);
 }

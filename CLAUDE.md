@@ -101,12 +101,14 @@ cd api && npx wrangler d1 migrations apply ifkash --local
 - **Migrations are append-only**, numbered `NNNN_name.sql` in `api/migrations/`. Add a new
   file; never edit an applied one. CI applies pending migrations to the remote D1 before
   each Worker deploy, so a migration ships with the `api/**` push that needs it.
-- **Design system ("Nordisk")** is documented in `DESIGN.md` and defined as CSS variables
-  at the top of `src/app.css`: a light birch-paper default and a "polar night" dark theme
-  under `[data-theme="dark"]` (chosen by `src/lib/stores/theme.ts`, defaulting to the
-  system preference). Use the canonical tokens (`--bg`, `--surface`, `--ink*`, `--line*`,
-  `--fjord*`, `--moss`, `--clay`, `--falu`) and restyle by editing them, not per-page
-  colors.
+- **Design system** is documented in `DESIGN.md` and defined as CSS variables at the
+  top of `src/app.css`. Two designs share those tokens: **Nordisk** (default,
+  Scandinavian) and **Broadsheet** (newsprint, serif headlines), selected with
+  `data-design` on `<html>` (`src/lib/stores/design.ts`, saved as `ifkash-design`).
+  Each design has a light theme and a dark theme under `[data-theme="dark"]`
+  (`src/lib/stores/theme.ts`, defaulting to the system preference). Use the canonical
+  tokens (`--bg`, `--surface`, `--ink*`, `--line*`, `--fjord*`, `--moss`, `--clay`,
+  `--falu`, `--font-display`) and restyle by editing them, not per-page colors.
 - **Résumé rendering is fully client-side** — Typst → PDF happens in the browser via
   `typst.ts` WASM (`src/lib/typst.ts`); there is no compile server. It fetches its WASM
   compiler from a CDN on first compile (needs internet) and uses fonts from `static/fonts`.

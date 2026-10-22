@@ -1,8 +1,17 @@
-# Nordisk: the ifkash.dev design system
+# ifkash.dev design system
 
-ifkash.dev uses a Scandinavian design language: functional, light, warm, and
-restrained. Every page draws from the tokens in `src/app.css`. Edit the tokens
-to restyle the site; don't hardcode colors in pages.
+The site has two designs. Both read the tokens in `src/app.css`. Edit the
+tokens to restyle a design; don't hardcode colors in pages.
+
+The **Design** control in the top bar saves the choice in `localStorage`
+under `ifkash-design`. An inline script in `app.html` applies it before
+paint as `data-design` on `<html>` (`nordisk` or `broadsheet`). Light and
+dark are a separate choice (`ifkash-theme`, `data-theme`).
+
+## Nordisk
+
+Nordisk is the default. It is a Scandinavian design language: functional,
+light, warm, and restrained.
 
 ## Principles
 
@@ -91,8 +100,8 @@ are sentence case in mono at 12px. Avoid uppercase except for 2-3 letter codes.
 
 ## Page patterns
 
-- **Shell.** `+layout.svelte` provides a 64px top bar (wordmark, text nav, theme
-  toggle), the content column (`max-width: var(--content-max)`, side padding
+- **Shell.** `+layout.svelte` provides a 64px top bar (wordmark, text nav, design
+  control, theme toggle), the content column (`max-width: var(--content-max)`, side padding
   `var(--gutter)`), and the footer. Pages render only their content; don't add
   outer padding or a max-width wrapper.
 - **Index pages** (work, projects, rl, tools, education, blog, roadmap): a
@@ -111,6 +120,22 @@ are sentence case in mono at 12px. Avoid uppercase except for 2-3 letter codes.
   `.btn-sm`, and stat values use mono tabular numerals at `--text-xl`.
 - **Empty and loading states:** one line of `--ink-3` text, optionally with a
   `.led-hollow`. No spinners with color; use a 1px indeterminate line if needed.
+
+## Broadsheet
+
+Broadsheet is the editorial alternative: newsprint, square corners, and
+Newsreader headlines. UI chrome (buttons, navigation, forms) stays in the
+sans. Kickers are uppercase and widely tracked. The masthead and the footer
+use a double rule in `--ink`. The accent (the `--fjord` slot) is crimson.
+The signature dot is a small square.
+
+Day edition and night edition override the same color tokens under
+`[data-design="broadsheet"]` and
+`[data-design="broadsheet"][data-theme="dark"]`. Broadsheet also sets
+`--font-display` to the serif stack and every `--radius-*` token to `0`.
+Rules at the end of `app.css` restyle headlines and leads. The top bar and
+the footer rules live in `+layout.svelte`, because scoped styles there
+would otherwise win. Page templates stay the same in both designs.
 
 ## Don'ts
 

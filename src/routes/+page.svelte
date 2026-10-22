@@ -127,6 +127,12 @@
     letter-spacing: -0.055em;
   }
 
+  :global(html[data-design="broadsheet"]) .display {
+    line-height: 0.96;
+    letter-spacing: -0.03em;
+    font-variation-settings: "opsz" 72;
+  }
+
   .period {
     color: var(--falu);
     transition: opacity var(--dur-fast) var(--ease);
@@ -256,6 +262,11 @@
     font-weight: 500;
     letter-spacing: -0.02em;
     transition: color var(--dur-fast) var(--ease), transform var(--dur) var(--ease-out);
+  }
+
+  :global(html[data-design="broadsheet"]) .index-row .name {
+    font-family: var(--font-display);
+    font-weight: 450;
   }
 
   .arrow {

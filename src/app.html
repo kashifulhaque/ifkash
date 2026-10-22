@@ -7,16 +7,25 @@
     <meta name="theme-color" content="#f4f1ea" />
     <script>
       (function () {
-        var t = "light";
+        // Keep the color table in sync with THEME_COLORS in src/lib/stores/appearance.ts.
+        var colors = {
+          nordisk: { light: "#f4f1ea", dark: "#15181b" },
+          broadsheet: { light: "#f3ecdf", dark: "#14110e" }
+        };
+        var theme = "light";
+        var design = "nordisk";
         try {
-          var s = localStorage.getItem("ifkash-theme");
-          if (s === "light" || s === "dark") t = s;
-          else if (matchMedia("(prefers-color-scheme: dark)").matches) t = "dark";
+          var savedTheme = localStorage.getItem("ifkash-theme");
+          if (savedTheme === "light" || savedTheme === "dark") theme = savedTheme;
+          else if (matchMedia("(prefers-color-scheme: dark)").matches) theme = "dark";
+          var savedDesign = localStorage.getItem("ifkash-design");
+          if (savedDesign === "nordisk" || savedDesign === "broadsheet") design = savedDesign;
         } catch (e) {}
-        document.documentElement.setAttribute("data-theme", t);
-        document
-          .querySelector('meta[name="theme-color"]')
-          ?.setAttribute("content", t === "dark" ? "#15181b" : "#f4f1ea");
+        var root = document.documentElement;
+        root.setAttribute("data-theme", theme);
+        root.setAttribute("data-design", design);
+        var meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.setAttribute("content", colors[design][theme]);
       })();
     </script>
     %sveltekit.head%

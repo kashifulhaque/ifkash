@@ -50,7 +50,8 @@
   }
 
   // Board palette, read from the theme tokens so the board follows
-  // daylight / polar night. Re-read whenever <html data-theme> changes.
+  // the active design and light or dark theme. Re-read whenever
+  // <html data-theme> or <html data-design> changes.
   const palette = {
     surface: '',
     line: '',
@@ -158,7 +159,7 @@
     });
     themeObserver.observe(document.documentElement, {
       attributes: true,
-      attributeFilter: ['data-theme']
+      attributeFilter: ['data-theme', 'data-design']
     });
 
     start();

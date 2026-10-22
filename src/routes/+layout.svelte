@@ -5,6 +5,8 @@
   import AiAgent from "$lib/components/AiAgent.svelte";
   import CommandDeck from "$lib/components/CommandDeck.svelte";
   import WeatherHeadsUp from "$lib/components/WeatherHeadsUp.svelte";
+  import DesignSwitch from "$lib/components/DesignSwitch.svelte";
+  import { design } from "$lib/stores/design";
   import { theme, toggleTheme } from "$lib/stores/theme";
 
   $: currentPath = $page.url.pathname;
@@ -43,6 +45,21 @@
   });
 
   const year = new Date().getFullYear();
+
+  $: themeCopy =
+    $design === "broadsheet"
+      ? {
+          toLight: "Switch to day edition",
+          toDark: "Switch to night edition",
+          light: "Day edition",
+          dark: "Night edition",
+        }
+      : {
+          toLight: "Switch to daylight",
+          toDark: "Switch to polar night",
+          light: "Daylight",
+          dark: "Polar night",
+        };
 </script>
 
 {#if isFullWidth}
@@ -75,12 +92,13 @@
       <div class="tools">
         <WeatherHeadsUp />
         <CommandDeck />
+        <DesignSwitch />
         <button
           type="button"
           class="theme-toggle"
           on:click={toggleTheme}
-          aria-label={$theme === "dark" ? "Switch to daylight" : "Switch to polar night"}
-          title={$theme === "dark" ? "Daylight" : "Polar night"}
+          aria-label={$theme === "dark" ? themeCopy.toLight : themeCopy.toDark}
+          title={$theme === "dark" ? themeCopy.light : themeCopy.dark}
         >
           <!-- A sun on the horizon: risen in daylight, set at night. -->
           <svg viewBox="0 0 24 24" aria-hidden="true" class:night={$theme === "dark"}>
@@ -202,6 +220,27 @@
   }
   .wordmark:hover .dot {
     transform: scale(1.25);
+  }
+
+  /* Component selectors repeat their scope class, so the Broadsheet
+     masthead has to live here to outrank the Nordisk top bar. */
+  :global(html[data-design="broadsheet"]) .topbar {
+    background: var(--bg);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border-bottom: 3px double var(--ink);
+  }
+
+  :global(html[data-design="broadsheet"]) .wordmark,
+  :global(html[data-design="broadsheet"]) .footer-name {
+    font-family: var(--font-display);
+    font-weight: 450;
+    letter-spacing: -0.02em;
+  }
+
+  :global(html[data-design="broadsheet"]) .footer {
+    background: var(--bg);
+    border-top: 3px double var(--ink);
   }
 
   .nav ul {

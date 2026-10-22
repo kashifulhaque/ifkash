@@ -1,7 +1,8 @@
 import { writable } from 'svelte/store';
 import { browser } from '$app/environment';
+import { applyThemeColor, readDesign, type Theme } from './appearance';
 
-export type Theme = 'light' | 'dark';
+export type { Theme };
 
 const KEY = 'ifkash-theme';
 
@@ -14,8 +15,7 @@ function initial(): Theme {
 
 function apply(t: Theme): void {
 	document.documentElement.setAttribute('data-theme', t);
-	const meta = document.querySelector('meta[name="theme-color"]');
-	if (meta) meta.setAttribute('content', t === 'dark' ? '#15181b' : '#f4f1ea');
+	applyThemeColor(readDesign(), t);
 }
 
 export const theme = writable<Theme>(initial());

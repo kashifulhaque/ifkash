@@ -10,7 +10,8 @@
         // Keep the color table in sync with THEME_COLORS in src/lib/stores/appearance.ts.
         var colors = {
           nordisk: { light: "#f4f1ea", dark: "#15181b" },
-          broadsheet: { light: "#f3ecdf", dark: "#14110e" }
+          broadsheet: { light: "#f3ecdf", dark: "#14110e" },
+          atelier: { light: "#eef2ea", dark: "#121614" }
         };
         var theme = "light";
         var design = "nordisk";
@@ -19,7 +20,7 @@
           if (savedTheme === "light" || savedTheme === "dark") theme = savedTheme;
           else if (matchMedia("(prefers-color-scheme: dark)").matches) theme = "dark";
           var savedDesign = localStorage.getItem("ifkash-design");
-          if (savedDesign === "nordisk" || savedDesign === "broadsheet") design = savedDesign;
+          if (savedDesign === "nordisk" || savedDesign === "broadsheet" || savedDesign === "atelier") design = savedDesign;
         } catch (e) {}
         var root = document.documentElement;
         root.setAttribute("data-theme", theme);

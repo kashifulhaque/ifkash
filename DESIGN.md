@@ -1,12 +1,12 @@
 # ifkash.dev design system
 
-The site has two designs. Both read the tokens in `src/app.css`. Edit the
-tokens to restyle a design; don't hardcode colors in pages.
+The site has three designs. All three read the tokens in `src/app.css`.
+Edit the tokens to restyle a design; don't hardcode colors in pages.
 
 The **Design** control in the top bar saves the choice in `localStorage`
 under `ifkash-design`. An inline script in `app.html` applies it before
-paint as `data-design` on `<html>` (`nordisk` or `broadsheet`). Light and
-dark are a separate choice (`ifkash-theme`, `data-theme`).
+paint as `data-design` on `<html>` (`nordisk`, `broadsheet`, or `atelier`).
+Light and dark are a separate choice (`ifkash-theme`, `data-theme`).
 
 ## Nordisk
 
@@ -135,7 +135,25 @@ Day edition and night edition override the same color tokens under
 `--font-display` to the serif stack and every `--radius-*` token to `0`.
 Rules at the end of `app.css` restyle headlines and leads. The top bar and
 the footer rules live in `+layout.svelte`, because scoped styles there
-would otherwise win. Page templates stay the same in both designs.
+would otherwise win.
+
+## Atelier
+
+Atelier is the workshop alternative: sage plaster, pine ink, an indigo
+accent, and softer corners. Headlines and the footer name use Fraunces.
+UI chrome (buttons, navigation, forms, and leads) stays in the sans. The
+wordmark is Fraunces italic. Kickers stay sentence case, tracked a little
+wider than Nordisk. The signature mark is a persimmon ring.
+
+Lamp light and kiln override the same color tokens under
+`[data-design="atelier"]` and
+`[data-design="atelier"][data-theme="dark"]`. Atelier sets
+`--font-display` to Fraunces and raises `--radius-xs`, `--radius-sm`, and
+`--radius-md` (`6`, `10`, and `16`; pills stay round). Rules at the end of
+`app.css` restyle headlines, the signature ring, and emphasized phrases.
+The top bar and the footer rules live in `+layout.svelte`, because scoped
+styles there would otherwise win. Page templates stay the same in every
+design.
 
 ## Don'ts
 

@@ -1,19 +1,17 @@
 import { writable } from 'svelte/store';
 import { browser } from '$app/environment';
-import { applyThemeColor, readTheme, type Design } from './appearance';
+import { applyThemeColor, isDesign, readTheme, type Design } from './appearance';
 
 export type { Design };
+export { isDesign };
 
 export const DESIGNS: { id: Design; label: string; short: string }[] = [
 	{ id: 'nordisk', label: 'Nordisk', short: 'N' },
 	{ id: 'broadsheet', label: 'Broadsheet', short: 'B' },
+	{ id: 'atelier', label: 'Atelier', short: 'A' },
 ];
 
 const KEY = 'ifkash-design';
-
-export function isDesign(value: string | null): value is Design {
-	return value === 'nordisk' || value === 'broadsheet';
-}
 
 function initial(): Design {
 	if (!browser) return 'nordisk';

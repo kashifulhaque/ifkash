@@ -69,7 +69,7 @@
     display: none;
   }
 
-  @media (max-width: 640px) {
+  @media (max-width: 880px) {
     .full {
       display: none;
     }

@@ -133,6 +133,12 @@
     font-variation-settings: "opsz" 72;
   }
 
+  :global(html[data-design="atelier"]) .display {
+    line-height: 1;
+    letter-spacing: -0.034em;
+    font-variation-settings: "SOFT" 45, "WONK" 1, "opsz" 144, "wght" 560;
+  }
+
   .period {
     color: var(--falu);
     transition: opacity var(--dur-fast) var(--ease);
@@ -267,6 +273,13 @@
   :global(html[data-design="broadsheet"]) .index-row .name {
     font-family: var(--font-display);
     font-weight: 450;
+  }
+
+  :global(html[data-design="atelier"]) .index-row .name {
+    font-family: var(--font-display);
+    font-weight: 520;
+    letter-spacing: -0.02em;
+    font-variation-settings: "SOFT" 30, "WONK" 1, "opsz" 32, "wght" 520;
   }
 
   .arrow {

@@ -6,7 +6,7 @@
   import CommandDeck from "$lib/components/CommandDeck.svelte";
   import WeatherHeadsUp from "$lib/components/WeatherHeadsUp.svelte";
   import DesignSwitch from "$lib/components/DesignSwitch.svelte";
-  import { design } from "$lib/stores/design";
+  import { design, type Design } from "$lib/stores/design";
   import { theme, toggleTheme } from "$lib/stores/theme";
 
   $: currentPath = $page.url.pathname;
@@ -46,20 +46,31 @@
 
   const year = new Date().getFullYear();
 
-  $: themeCopy =
-    $design === "broadsheet"
-      ? {
-          toLight: "Switch to day edition",
-          toDark: "Switch to night edition",
-          light: "Day edition",
-          dark: "Night edition",
-        }
-      : {
-          toLight: "Switch to daylight",
-          toDark: "Switch to polar night",
-          light: "Daylight",
-          dark: "Polar night",
-        };
+  const themeCopyFor: Record<
+    Design,
+    { toLight: string; toDark: string; light: string; dark: string }
+  > = {
+    nordisk: {
+      toLight: "Switch to daylight",
+      toDark: "Switch to polar night",
+      light: "Daylight",
+      dark: "Polar night",
+    },
+    broadsheet: {
+      toLight: "Switch to day edition",
+      toDark: "Switch to night edition",
+      light: "Day edition",
+      dark: "Night edition",
+    },
+    atelier: {
+      toLight: "Switch to lamp light",
+      toDark: "Switch to the kiln",
+      light: "Lamp light",
+      dark: "Kiln",
+    },
+  };
+
+  $: themeCopy = themeCopyFor[$design];
 </script>
 
 {#if isFullWidth}
@@ -241,6 +252,34 @@
   :global(html[data-design="broadsheet"]) .footer {
     background: var(--bg);
     border-top: 3px double var(--ink);
+  }
+
+  /* Atelier reads as a plaster sheet: solid bar, stronger rule, italic wordmark. */
+  :global(html[data-design="atelier"]) .topbar {
+    background: var(--bg);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border-bottom: 1px solid var(--line-strong);
+  }
+
+  :global(html[data-design="atelier"]) .wordmark,
+  :global(html[data-design="atelier"]) .footer-name {
+    font-family: var(--font-display);
+    font-weight: 560;
+    letter-spacing: -0.02em;
+    font-optical-sizing: none;
+    font-variation-settings: "SOFT" 20, "WONK" 0, "opsz" 48, "wght" 560;
+  }
+
+  :global(html[data-design="atelier"]) .wordmark {
+    font-style: italic;
+    font-weight: 520;
+    font-variation-settings: "SOFT" 70, "WONK" 1, "opsz" 48, "wght" 520;
+  }
+
+  :global(html[data-design="atelier"]) .footer {
+    background: var(--bg);
+    border-top: 1px solid var(--line-strong);
   }
 
   .nav ul {

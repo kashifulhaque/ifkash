@@ -1,17 +1,21 @@
 @import "@fontsource-variable/schibsted-grotesk";
 @import "@fontsource-variable/newsreader/opsz.css";
 @import "@fontsource-variable/newsreader/opsz-italic.css";
+@import "@fontsource-variable/fraunces/full.css";
+@import "@fontsource-variable/fraunces/full-italic.css";
 @import "@fontsource-variable/jetbrains-mono";
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
 /* ────────────────────────────────────────────────────────────────
-   ifkash.dev design system. Two designs, one token set.
+   ifkash.dev design system. Three designs, one token set.
 
    Nordisk (default): birch-paper ground, charcoal ink, one fjord-blue
    accent, and a single Falu-red dot. Polar night is the same system
    at dusk — slate ground, snow ink, glacier accent, ember dot.
    Broadsheet: newsprint, crimson accent, square corners, serif headlines.
+   Atelier: sage plaster, indigo accent, softer corners, Fraunces
+   headlines, and a persimmon ring. Lamp light and kiln are the themes.
    `data-design` on <html> selects the design; `data-theme` selects light
    or dark. See DESIGN.md.
 
@@ -52,9 +56,9 @@
   --scrim: rgb(37 34 31 / 38%);
   --code-surface: #efebe2;
 
-  /* Type. --font-display follows --font-sans in Nordisk and the serif
-     stack in Broadsheet, so headlines can change face without
-     restyling buttons and body copy. */
+  /* Type. --font-display follows --font-sans in Nordisk, the serif
+     stack in Broadsheet, and Fraunces in Atelier, so headlines can
+     change face without restyling buttons and body copy. */
   --font-sans: "Schibsted Grotesk Variable", "Schibsted Grotesk", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-serif: "Newsreader Variable", "Newsreader", "Iowan Old Style", Georgia, serif;
   --font-mono: "JetBrains Mono Variable", "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
@@ -213,6 +217,78 @@
   --press-wash: rgb(243 236 223 / 10%);
   --scrim: rgb(8 6 4 / 68%);
   --code-surface: #0e0c0a;
+  --shadow-color: rgb(0 0 0 / 45%);
+}
+
+/* Atelier — lamp light. Sage plaster, pine ink, indigo accent,
+   persimmon seal. UI chrome stays in the sans; headlines use
+   --font-display (Fraunces). Corners are softer than Nordisk. */
+[data-design="atelier"] {
+  --bg: #eef2ea;
+  --surface: #f7f9f4;
+  --surface-2: #dce3d6;
+  --surface-ink: #1a211c;
+
+  --ink: #1a211c;
+  --ink-2: #3d4b3f;
+  --ink-3: #4c5b4e;
+  --ink-inverse: #f7f9f4;
+
+  --line: #c9d4c4;
+  --line-strong: #8b9e88;
+
+  --fjord: #2a3878;
+  --fjord-strong: #1c2758;
+  --fjord-wash: rgb(42 56 120 / 10%);
+  --falu: #b33e22;
+  --moss: #2a6842;
+  --moss-wash: rgb(42 104 66 / 12%);
+  --clay: #9a5a22;
+  --danger: #8e2e3b;
+  --success: #2a6840;
+
+  --hover-wash: rgb(26 33 28 / 5%);
+  --press-wash: rgb(26 33 28 / 9%);
+  --scrim: rgb(26 33 28 / 42%);
+  --code-surface: #e4ebdf;
+  --shadow-color: rgb(26 33 28 / 14%);
+
+  --font-display: "Fraunces Variable", Fraunces, "Iowan Old Style", Palatino, "Palatino Linotype", Georgia, serif;
+  --radius-xs: 6px;
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-pill: 999px;
+}
+
+/* Atelier — kiln. Pine ground, pale plaster ink, soft indigo. */
+[data-design="atelier"][data-theme="dark"] {
+  --bg: #121614;
+  --surface: #1a201c;
+  --surface-2: #0c100e;
+  --surface-ink: #e8f0e4;
+
+  --ink: #e8f0e4;
+  --ink-2: #b7c6b4;
+  --ink-3: #8fa58c;
+  --ink-inverse: #121614;
+
+  --line: #2a342e;
+  --line-strong: #445246;
+
+  --fjord: #b4c0f2;
+  --fjord-strong: #d5dbf8;
+  --fjord-wash: rgb(180 192 242 / 16%);
+  --falu: #f09a7c;
+  --moss: #a3c9a8;
+  --moss-wash: rgb(163 201 168 / 14%);
+  --clay: #e2b17a;
+  --danger: #f0a3a8;
+  --success: #a8cba6;
+
+  --hover-wash: rgb(232 240 228 / 6%);
+  --press-wash: rgb(232 240 228 / 10%);
+  --scrim: rgb(6 8 7 / 68%);
+  --code-surface: #0c100e;
   --shadow-color: rgb(0 0 0 / 45%);
 }
 
@@ -847,6 +923,82 @@ html[data-design="broadsheet"] body::after {
 }
 
 html[data-design="broadsheet"][data-theme="dark"] body::after {
+  opacity: 0.05;
+  mix-blend-mode: screen;
+  filter: invert(1);
+}
+
+/* ── Atelier structure ─────────────────────────────────────────────
+   Same markup as Nordisk. Fraunces headlines, a softer radius (from
+   the radius tokens), and a hollow persimmon ring for the signature
+   mark. The top bar and footer live in +layout.svelte. */
+
+html[data-design="atelier"] :is(
+  h1,
+  h2,
+  h3,
+  .page-title,
+  .section-title,
+  .display,
+  .footer-name
+) {
+  font-family: var(--font-display);
+  font-weight: 560;
+  letter-spacing: -0.028em;
+  font-optical-sizing: none;
+  font-variation-settings: "SOFT" 20, "WONK" 0, "opsz" 48, "wght" 560;
+}
+
+html[data-design="atelier"] :is(h1, .page-title, .section-title, .display) {
+  letter-spacing: -0.032em;
+  font-variation-settings: "SOFT" 40, "WONK" 1, "opsz" 144, "wght" 560;
+}
+
+html[data-design="atelier"] .display {
+  line-height: 1;
+  letter-spacing: -0.034em;
+  font-variation-settings: "SOFT" 45, "WONK" 1, "opsz" 144, "wght" 560;
+}
+
+html[data-design="atelier"] .wordmark {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 520;
+  letter-spacing: -0.02em;
+  font-optical-sizing: none;
+  font-variation-settings: "SOFT" 70, "WONK" 1, "opsz" 48, "wght" 520;
+}
+
+html[data-design="atelier"] :is(em.serif, .serif) {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 500;
+  font-optical-sizing: none;
+  font-variation-settings: "SOFT" 80, "WONK" 1, "opsz" 36, "wght" 500;
+}
+
+html[data-design="atelier"] :is(.eyebrow, .label) {
+  letter-spacing: 0.06em;
+}
+
+html[data-design="atelier"] .dot:not(circle) {
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px var(--falu);
+}
+
+html[data-design="atelier"] .index-row .name {
+  font-family: var(--font-display);
+  font-weight: 520;
+  letter-spacing: -0.02em;
+  font-optical-sizing: none;
+  font-variation-settings: "SOFT" 30, "WONK" 1, "opsz" 32, "wght" 520;
+}
+
+html[data-design="atelier"] body::after {
+  opacity: 0.06;
+}
+
+html[data-design="atelier"][data-theme="dark"] body::after {
   opacity: 0.05;
   mix-blend-mode: screen;
   filter: invert(1);

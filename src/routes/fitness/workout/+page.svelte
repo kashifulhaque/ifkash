@@ -37,7 +37,9 @@
     computeMetrics,
     nutritionTargets,
     metKcal,
-    strengthKcal,
+    setsKcal,
+    DEFAULT_BODY_KG,
+    type SetForKcal,
     GOAL_LABELS,
     ACTIVITY_OPTIONS,
     type Profile,
@@ -252,23 +254,45 @@
 
   // ---- session burn totals -------------------------------------------------
 
-  $: totalSets = exercises.reduce(
-    (n, ex) => n + ex.sets.filter((s) => !s.suggested && (str(s.reps).trim() !== '' || str(s.weight).trim() !== '')).length,
-    0
+  // Every set the active day will save, in the shape the burn estimate reads.
+  // Same filter and parsing as `buildPayload`, so the count matches the save.
+  $: loggedSets = exercises.flatMap((ex): SetForKcal[] =>
+    ex.sets
+      .filter((s) => !s.suggested && (str(s.reps).trim() !== '' || str(s.weight).trim() !== ''))
+      .map((s) => ({
+        exercise: ex.name,
+        equipment: ex.equipment,
+        kind: ex.kind,
+        reps: Math.max(0, parseInt(str(s.reps), 10) || 0),
+        weight_g: kgToGrams(str(s.weight))
+      }))
   );
-  $: liftKcal = metricKg > 0 ? strengthKcal(metricKg, totalSets) : 0;
+  $: totalSets = loggedSets.length;
+  // The burn uses the same bodyweight as the metrics, or a default before one
+  // is logged, so the lifting number is never blank.
+  $: burnKg = metricKg > 0 ? metricKg : DEFAULT_BODY_KG;
+  $: liftKcal = setsKcal(loggedSets, burnKg);
   $: cardioBurn = cardioRows.reduce((n, r) => n + cardioKcal(r), 0);
   $: sessionKcal = liftKcal + cardioBurn;
 
   // The rest of the date: a second session already saved under another day
   // label (a cardio day after a lift, say). Read from the log, which is
   // patched after every save, so it never double-counts the active day.
-  $: otherSetsToday = log.sets.filter((s) => s.date === sessionDate && s.day_label !== active).length;
+  $: otherSetsList = log.sets
+    .filter((s) => s.date === sessionDate && s.day_label !== active)
+    .map((s): SetForKcal => ({
+      exercise: s.exercise,
+      equipment: s.equipment || exerciseEquipment(s.exercise),
+      kind: exerciseKind(s.exercise),
+      reps: s.reps,
+      weight_g: s.weight_g
+    }));
+  $: otherSetsToday = otherSetsList.length;
   $: otherCardioToday = log.cardio
     .filter((c) => c.date === sessionDate && c.day_label !== active)
     .reduce((n, c) => n + c.kcal, 0);
   $: daySets = totalSets + otherSetsToday;
-  $: dayLiftKcal = metricKg > 0 ? strengthKcal(metricKg, daySets) : 0;
+  $: dayLiftKcal = liftKcal + setsKcal(otherSetsList, burnKg);
   $: dayCardioKcal = cardioBurn + otherCardioToday;
   $: dayKcal = dayLiftKcal + dayCardioKcal;
 
@@ -1425,7 +1449,7 @@
             <div class="rate-cell">
               <span class="r-val">{dayLiftKcal}<small> kcal</small></span>
               <span class="r-label">lifting</span>
-              <span class="r-sub">{daySets} {daySets === 1 ? 'set' : 'sets'} · ~2.5 min each</span>
+              <span class="r-sub">{daySets} {daySets === 1 ? 'set' : 'sets'} · by load, reps &amp; implement</span>
             </div>
             <div class="rate-cell">
               <span class="r-val">{dayCardioKcal}<small> kcal</small></span>

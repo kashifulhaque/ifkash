@@ -1,5 +1,8 @@
 // Pure body-metric math shared by the fitness pages. No auth, no I/O — just the
-// profile shape plus BMI / BMR / TDEE and daily nutrition targets.
+// profile shape plus BMI / BMR / TDEE, daily nutrition targets, and the MET
+// and per-set burn estimates.
+
+import type { Equipment, ExerciseKind } from '$lib/workout';
 
 export type Sex = 'male' | 'female';
 export type Goal = 'cut_moderate' | 'cut_aggressive' | 'maintain';
@@ -89,18 +92,140 @@ export function metKcal(met: number, weightKg: number, minutes: number): number 
   return Math.round(((met * 3.5 * weightKg) / 200) * minutes);
 }
 
-// General resistance training with multiple exercises at 8-15 reps lands at
-// ~3.5 MET (Compendium of Physical Activities code 20024). We don't time the
-// lift, so estimate gym time as ~2.5 min per logged set (the work plus its
-// rest). Earlier this used 5.0 MET (the "explosive squats" entry), which
-// over-counted a hypertrophy session by ~40%.
-const STRENGTH_MET = 3.5;
-const MINUTES_PER_SET = 2.5;
+// ---- strength-set burn ------------------------------------------------------
 
-/** Rough burn for a strength session from its total number of logged sets. */
-export function strengthKcal(weightKg: number, totalSets: number): number {
-  if (totalSets <= 0) return 0;
-  return metKcal(STRENGTH_MET, weightKg, totalSets * MINUTES_PER_SET);
+// A rough burn for one logged set, from what the set actually was: the load,
+// the reps (or seconds for a hold), the implement, and the lifter's
+// bodyweight. Approximate by design. The goal is that a heavy squat set
+// reads higher than a light lateral raise, not a number to trust to the kcal.
+//
+// Per set, three parts, all gross (resting metabolism included, like every
+// MET figure in this file):
+//   1. Active time: reps × SECONDS_PER_REP (or the hold's seconds) at the
+//      movement's MET. Big compounds sit near 6 MET, isolation near 3.5.
+//   2. Mechanical work: (load + the share of bodyweight the lift also moves)
+//      × reps × range of motion × g, divided by muscle efficiency, in kcal,
+//      times an implement factor (a guided machine or Smith path asks less of
+//      the stabilisers than free weights).
+//   3. Rest: the rest that follows the set at REST_MET, using the plan's rest
+//      times (about 2 min after compounds, 1 min after isolation).
+//
+// Dumbbell loads are logged per dumbbell, so a two-dumbbell lift counts twice
+// the logged weight. Per-side moves (split squats, dead bugs, side planks)
+// are logged per side and count twice.
+
+/** Used when the app has no bodyweight for the user yet. */
+export const DEFAULT_BODY_KG = 85;
+/** Lifting tempo: about 1 s up, 2 s down, a beat at the ends. */
+const SECONDS_PER_REP = 3.5;
+/** Standing or sitting between sets. */
+const REST_MET = 1.5;
+/** Share of the metabolic energy that ends up as mechanical work. */
+const MUSCLE_EFFICIENCY = 0.2;
+const G = 9.81;
+const J_PER_KCAL = 4184;
+/** Assumed when a set has a load but no reps (or a hold with no seconds). */
+const DEFAULT_REPS = 10;
+const DEFAULT_HOLD_S = 30;
+
+/** Mechanical-work multiplier per implement. */
+const EQUIPMENT_FACTOR: Record<Equipment, number> = {
+  '': 1,
+  Barbell: 1,
+  Dumbbell: 1,
+  Bodyweight: 1,
+  Smith: 0.9,
+  Cable: 0.9,
+  Machine: 0.85
+};
+
+type MoveProfile = {
+  /** MET while the set is under way. */
+  met: number;
+  /** How far the load travels per rep, metres. */
+  rom: number;
+  /** Share of bodyweight lifted along with the load (torso in a squat). */
+  body: number;
+  /** Rest credited after the set, seconds. */
+  rest: number;
+  /** Logged per side, so the work happens twice. */
+  sides?: 2;
+};
+
+// First match wins, so the specific patterns sit above the general ones
+// ("leg curl" before "curl", "split squat" before "squat").
+const MOVES: [RegExp, MoveProfile][] = [
+  [/calf/, { met: 4, rom: 0.08, body: 0, rest: 60 }],
+  [/side plank/, { met: 3.8, rom: 0, body: 0, rest: 45, sides: 2 }],
+  [/plank|hold|hang\b/, { met: 3.8, rom: 0, body: 0, rest: 60 }],
+  [/dead ?bug|bird ?dog/, { met: 3.8, rom: 0.3, body: 0.15, rest: 45, sides: 2 }],
+  [/leg raise|knee raise/, { met: 3.8, rom: 0.4, body: 0.3, rest: 60 }],
+  [/crunch|sit-?up/, { met: 3.8, rom: 0.25, body: 0.3, rest: 60 }],
+  [/back extension|hyperextension/, { met: 4.5, rom: 0.4, body: 0.5, rest: 75 }],
+  [/split squat|lunge|step-?up/, { met: 6, rom: 0.45, body: 0.6, rest: 90, sides: 2 }],
+  [/squat/, { met: 6, rom: 0.6, body: 0.7, rest: 150 }],
+  [/deadlift|rdl/, { met: 6, rom: 0.5, body: 0.4, rest: 150 }],
+  [/leg press/, { met: 6, rom: 0.5, body: 0, rest: 120 }],
+  [/leg extension|leg curl/, { met: 4, rom: 0.4, body: 0, rest: 75 }],
+  [/push-?up/, { met: 5, rom: 0.35, body: 0.65, rest: 90 }],
+  [/bench|incline press|chest press|dip/, { met: 5.5, rom: 0.4, body: 0, rest: 120 }],
+  [/row/, { met: 5.5, rom: 0.45, body: 0, rest: 120 }],
+  [/pull-?up|chin-?up/, { met: 6, rom: 0.5, body: 1, rest: 120 }],
+  [/pulldown/, { met: 5, rom: 0.55, body: 0, rest: 120 }],
+  [/shoulder press|overhead press|military/, { met: 5, rom: 0.5, body: 0, rest: 120 }],
+  [/fly|pec deck|face pull|rear delt/, { met: 3.5, rom: 0.4, body: 0, rest: 60 }],
+  [/lateral|front raise/, { met: 3.5, rom: 0.3, body: 0, rest: 60 }],
+  [/curl/, { met: 3.5, rom: 0.35, body: 0, rest: 60 }],
+  [/tricep|pushdown|extension|skull/, { met: 3.5, rom: 0.35, body: 0, rest: 60 }]
+];
+/** Anything unrecognised: a middling accessory. */
+const DEFAULT_MOVE: MoveProfile = { met: 4.5, rom: 0.4, body: 0, rest: 90 };
+
+/** A lift that takes one dumbbell (or one per side, logged as such). */
+const ONE_DUMBBELL = /single|one[- ]arm|goblet/;
+
+export type SetForKcal = {
+  exercise: string;
+  equipment: Equipment;
+  kind: ExerciseKind;
+  /** Reps, or seconds for a timed hold. 0 when not entered. */
+  reps: number;
+  /** Logged load in grams (per dumbbell for dumbbells). 0 when not entered. */
+  weight_g: number;
+};
+
+/** kcal per minute at a MET for a bodyweight: MET × 3.5 × kg / 200. */
+const kcalPerMin = (met: number, kg: number) => (met * 3.5 * kg) / 200;
+
+/**
+ * Estimated kcal for one set, unrounded so a session can be summed and
+ * rounded once. `bodyKg` falls back to `DEFAULT_BODY_KG` when not positive.
+ */
+export function setKcal(set: SetForKcal, bodyKg: number): number {
+  const kg = bodyKg > 0 ? bodyKg : DEFAULT_BODY_KG;
+  const name = set.exercise.toLowerCase();
+  const move = MOVES.find(([re]) => re.test(name))?.[1] ?? DEFAULT_MOVE;
+  const sides = move.sides ?? 1;
+
+  const timed = set.kind === 'time';
+  const count = set.reps > 0 ? set.reps : timed ? DEFAULT_HOLD_S : DEFAULT_REPS;
+  const activeS = (timed ? count : count * SECONDS_PER_REP) * sides;
+  const active = kcalPerMin(move.met, kg) * (activeS / 60);
+  const rest = kcalPerMin(REST_MET, kg) * (move.rest / 60);
+  if (timed) return active + rest;
+
+  // Bodyweight-kind moves never carry a logged load; weighted ones might not.
+  const loggedKg = set.kind === 'weighted' ? Math.max(0, set.weight_g) / 1000 : 0;
+  const hands = set.equipment === 'Dumbbell' && !ONE_DUMBBELL.test(name) ? 2 : 1;
+  const massKg = loggedKg * hands + move.body * kg;
+  const joules = massKg * count * sides * move.rom * G;
+  const work = (joules / MUSCLE_EFFICIENCY / J_PER_KCAL) * (EQUIPMENT_FACTOR[set.equipment] ?? 1);
+  return active + work + rest;
+}
+
+/** Rounded kcal for a list of sets. */
+export function setsKcal(sets: SetForKcal[], bodyKg: number): number {
+  return Math.round(sets.reduce((n, s) => n + setKcal(s, bodyKg), 0));
 }
 
 export type NutritionTargets = {

@@ -28,6 +28,11 @@ export type Exercise = {
    * upgrade rather than the other way round.
    */
   alt?: string;
+  /**
+   * A cue for how to run the slot: grip, setup, a per-side count, or which
+   * lift it is supersetted with. Not a substitute; that is `alt`.
+   */
+  note?: string;
 };
 
 // Which implement a set was performed with. The same exercise name can be run
@@ -45,40 +50,79 @@ export const EQUIPMENT_OPTIONS: Equipment[] = [
   'Bodyweight'
 ];
 
-// Four lifting days a week (upper / lower / upper / lower) plus an optional
-// cardio day with a few light accessories, replacing the six-day push / pull /
-// legs split.
+// Four lifting days a week (Upper A / Lower A / Upper B / Lower B) plus a
+// light fifth day of conditioning and pump work, laid out so no more than two
+// lifting days ever run back to back:
 //
-// Why: thirteen weeks of logs showed 5-6 gym days a week but only 5-6 of each
-// day's 8 exercises done, core skipped every time, deadlift dropped after the
-// heavy-single weeks, and loads flat or falling on every priority lift.
-// Attendance was never the problem; the sessions were too long to finish and
-// the week too long to recover from. Each lifting day is 6 exercises, or 7 on
-// Upper B, and 16-18 working sets, about 45 minutes of lifting plus a short
-// cardio bout, so a complete week is four finished sessions rather than six
-// partial ones.
+//   Mon Upper A · Tue Lower A · Wed rest (walk) · Thu Upper B · Fri Lower B
+//   Sat Conditioning + pump · Sun rest
 //
-// Volume lands at 10-14 weekly sets per muscle group, which holds muscle in a
-// deficit; extra sets on a cut cost recovery without adding shape. Every
-// weighted slot names one implement and keeps it for the block, because the
-// same exercise had been logged on barbell, dumbbell, Smith, and machine in
-// turn and no load progression was readable. The barbell and Smith machine
-// are contested here, so the pressing and squatting slots prescribe dumbbells
-// and machines, which are always free, and name the barbell as the upgrade
-// when it is. No heavy singles anywhere: straight sets in a rep range, add
-// load when every set hits the top of it.
+// A missed lifting day moves to Wednesday or Saturday rather than doubling
+// up; Saturday's own work is the part to drop when it does.
+//
+// Why: a six-day push / pull / legs split run back to back was too much to
+// recover from, and the first four-day version left gaps: chest, arms, calves
+// and core under target, the only two hinges 48 hours apart, a squat stacked
+// behind leg press, and no single-leg or glute work. Fat loss has also slowed
+// after the first 10 kg (95 kg to 85 kg in three months), which is mostly a
+// food and daily-steps question, so the fifth day adds 35-40 minutes of easy
+// cardio and some pump work rather than another heavy session, and the plan
+// asks for 8-10k steps a day outside the gym.
+//
+// Each lifting day is one heavy compound per pattern, then a second compound
+// or a single-leg lift, then isolation, so one hinge (Friday) and one squat
+// (Tuesday) a week. Counted the way the report counts them (full sets for
+// the target muscle, half for helpers, Saturday included), chest, triceps,
+// quads, hamstrings and biceps land at 10-13 weekly sets, calves at 8 and
+// glutes at 9; back (17) and shoulders (20.5) run higher because the side
+// and rear delt work lands there. That holds muscle in a deficit without
+// costing more recovery than a cut can afford. Every weighted slot names one implement and
+// keeps it for the block so the loads stay comparable; the `alt` names the
+// substitute when that implement is taken, on the same scheme. An exercise
+// that appears on two days has the same scheme on both, or is a separate
+// entry, so the load suggestions never read a 4-set day against a 3-set one.
+//
+// The gym: shoulder press machine (also an incline press, not flat), lat
+// pulldown station with a seated cable row, pec fly / rear delt machine, leg
+// extension / leg curl machine, leg press (also the calf raise), cable
+// stack, Smith machine, back extension, benches, dumbbells, barbells, bands,
+// mats, and a crosstrainer, cycle and treadmill. No hanging bar, no flat chest
+// machine, no separate row or calf machine.
 
-/** Day 1: horizontal press and vertical pull lead. */
+/**
+ * How to run every session, shown with the plan. Kept as plain text: the
+ * load suggestions in `workoutTargets.ts` apply the progression rule, and
+ * the rest is on you.
+ */
+export const PLAN_RULES: string[] = [
+  'Warm up: 5 min easy cardio, then band pull-aparts and hip / shoulder mobility. Ramp-up sets on key lifts are not logged.',
+  'Rest 2-3 min on compounds, 60-90 s on isolation.',
+  'Compounds: stop 1-2 reps short of failure. Isolation: the last set can go to 0-1 reps in reserve.',
+  'Double progression: stay at a load until every set hits the top of the range, then add the smallest step (2 kg on dumbbells, 2.5 kg elsewhere).',
+  'Timed and bodyweight moves: add 5-10 s or 1-2 reps a session up to the top of the range, then move to a harder variant.',
+  'Deload every 6-8 weeks, or sooner if most key lifts stall two sessions running: half the sets, same loads, for one week.',
+  'After 21+ days away from a lift, start 10 % lighter.',
+  'Outside the gym: 8-10k steps a day. Slow fat loss is fixed in the kitchen and in daily steps, not with more sets.'
+];
+
+/** Day 1 (Mon): horizontal press and horizontal pull lead. */
 export const UPPER_A: Exercise[] = [
   {
     name: 'Bench press',
-    scheme: '4×8-10',
+    scheme: '4×6-10',
     kind: 'weighted',
     equipment: 'Dumbbell',
     priority: true,
-    alt: 'barbell 4×6-8 if a bench is free'
+    alt: 'Smith or barbell bench, same 4×6-10, if one is free'
   },
-  { name: 'Lat pulldown', scheme: '3×8-10', kind: 'weighted', equipment: 'Machine', priority: true },
+  {
+    name: 'Seated cable row',
+    scheme: '4×8-10',
+    kind: 'weighted',
+    equipment: 'Machine',
+    priority: true,
+    note: 'on the lat pulldown station'
+  },
   {
     name: 'Shoulder press',
     scheme: '3×8-10',
@@ -86,115 +130,163 @@ export const UPPER_A: Exercise[] = [
     equipment: 'Machine',
     priority: true
   },
-  { name: 'Row machine', scheme: '3×10-12', kind: 'weighted', equipment: 'Machine' },
+  { name: 'Lat pulldown', scheme: '3×8-10', kind: 'weighted', equipment: 'Machine', note: 'wide grip' },
   // Side delts widen the shoulder line; the V-taper does more for a lean read
-  // than arm size does, so they run on both upper days.
+  // than arm size does, so they show up three times a week.
   { name: 'Lateral raises', scheme: '3×12-15', kind: 'weighted', equipment: 'Dumbbell' },
-  { name: 'Cable tricep pushdown', scheme: '2×12-15', kind: 'weighted', equipment: 'Cable' }
-];
-
-/** Day 2: quad emphasis. Leg press leads because it is the heaviest quad
- *  load that never needs a rack; the squat is dumbbell-limited, so it runs
- *  second at higher reps. */
-export const LOWER_A: Exercise[] = [
-  { name: 'Leg press', scheme: '3×8-10', kind: 'weighted', equipment: 'Machine', priority: true },
   {
-    name: 'Squat',
-    scheme: '3×8-10',
+    name: 'Cable tricep pushdown',
+    scheme: '2×10-12',
     kind: 'weighted',
-    equipment: 'Dumbbell',
-    priority: true,
-    alt: 'goblet or two dumbbells; barbell 3×6-8 if the rack is free'
+    equipment: 'Cable',
+    note: 'rope; superset with bicep curls'
   },
   {
-    name: 'Romanian deadlift',
-    scheme: '3×8-10',
+    name: 'Bicep curls',
+    scheme: '2×10-12',
     kind: 'weighted',
     equipment: 'Dumbbell',
-    priority: true,
-    alt: 'barbell if one is free'
-  },
-  { name: 'Leg curls', scheme: '3×10-12', kind: 'weighted', equipment: 'Machine' },
-  { name: 'Calf raises', scheme: '3×12-15', kind: 'weighted', equipment: 'Machine' },
-  // Logged sets reached 2-4 straight-leg reps, so 10-12 was out of reach.
-  // Knees bent is the same movement at a load that fits the range.
-  {
-    name: 'Hanging leg raise',
-    scheme: '3×8-12',
-    kind: 'bodyweight',
-    equipment: 'Bodyweight',
-    alt: 'knees bent until straight legs reach 8 reps'
+    note: 'superset with pushdowns'
   }
 ];
 
-/** Day 3: horizontal pull and incline press lead. */
-export const UPPER_B: Exercise[] = [
-  { name: 'Row machine', scheme: '4×8-10', kind: 'weighted', equipment: 'Machine', priority: true },
+/** Day 2 (Tue): quad emphasis. The Smith squat leads while it is fresh; the
+ *  split squat adds the single-leg and glute work the plan had none of. */
+export const LOWER_A: Exercise[] = [
   {
-    name: 'Incline dumbbell press',
-    scheme: '3×8-10',
+    name: 'Squat',
+    scheme: '3×6-10',
+    kind: 'weighted',
+    equipment: 'Smith',
+    priority: true,
+    alt: 'barbell back squat, same 3×6-10, if the Smith is taken'
+  },
+  {
+    name: 'Bulgarian split squat',
+    scheme: '3×8-10 each leg',
     kind: 'weighted',
     equipment: 'Dumbbell',
     priority: true
   },
-  // Chest isolation after the incline press. The machine is the load to
-  // progress; dumbbells are the fallback when it is taken.
-  {
-    name: 'Pec fly',
-    scheme: '2×12-15',
-    kind: 'weighted',
-    equipment: 'Machine',
-    alt: 'dumbbells if the machine is taken'
-  },
-  { name: 'Lat pulldown', scheme: '3×10-12', kind: 'weighted', equipment: 'Machine' },
-  { name: 'Lateral raises', scheme: '2×12-15', kind: 'weighted', equipment: 'Dumbbell' },
-  // Posture and rear delts. Cheap to do, and it changes how the upper body
-  // reads standing still.
-  { name: 'Face pulls', scheme: '2×15', kind: 'weighted', equipment: 'Cable' },
-  { name: 'Bicep curls', scheme: '1×10-12', kind: 'weighted', equipment: 'Dumbbell' }
+  { name: 'Leg extension', scheme: '3×10-15', kind: 'weighted', equipment: 'Machine' },
+  // Same entry and scheme on both lower days, so progression reads cleanly.
+  { name: 'Leg curls', scheme: '3×10-12', kind: 'weighted', equipment: 'Machine' },
+  { name: 'Calf raises', scheme: '4×12-15', kind: 'weighted', equipment: 'Machine', note: 'on the leg press' },
+  // No hanging bar here; lying on a mat is the version that fits.
+  { name: 'Lying leg raise', scheme: '3×10-15', kind: 'bodyweight', equipment: 'Bodyweight' }
 ];
 
-/** Day 4: deadlift and leg press, hamstring emphasis. */
-export const LOWER_B: Exercise[] = [
-  // Straight sets, not a pyramid to a single. The singles were the most
-  // fatiguing thing in the old week and the lift was dropped within a month.
-  // The one slot that still wants a bar: do it first, while one is free.
+/** Day 3 (Thu): incline press and vertical pull lead. */
+export const UPPER_B: Exercise[] = [
   {
-    name: 'Deadlift',
-    scheme: '3×5',
+    name: 'Incline press',
+    scheme: '3×8-10',
+    kind: 'weighted',
+    equipment: 'Machine',
+    priority: true,
+    note: 'shoulder press machine in incline mode',
+    alt: 'incline dumbbell press, same 3×8-10, if the machine is taken'
+  },
+  // A separate entry from Upper A's wide-grip pulldown: different grip,
+  // different loads, different scheme.
+  {
+    name: 'Close-grip lat pulldown',
+    scheme: '4×8-10',
+    kind: 'weighted',
+    equipment: 'Machine',
+    priority: true,
+    note: 'neutral (V-handle) or close grip'
+  },
+  {
+    name: 'Chest-supported row',
+    scheme: '3×10-12',
+    kind: 'weighted',
+    equipment: 'Dumbbell',
+    note: 'chest on an incline bench'
+  },
+  { name: 'Pec fly', scheme: '3×12-15', kind: 'weighted', equipment: 'Machine' },
+  // Rear delts and posture. Cheap to do, and it changes how the upper body
+  // reads standing still.
+  {
+    name: 'Reverse pec deck',
+    scheme: '3×15-20',
+    kind: 'weighted',
+    equipment: 'Machine',
+    note: 'pec fly machine set for rear delts'
+  },
+  { name: 'Cable lateral raise', scheme: '2×12-15', kind: 'weighted', equipment: 'Cable' },
+  {
+    name: 'Incline dumbbell curl',
+    scheme: '2×10-12',
+    kind: 'weighted',
+    equipment: 'Dumbbell',
+    note: 'superset with overhead extensions'
+  },
+  {
+    name: 'Overhead cable tricep extension',
+    scheme: '2×10-12',
+    kind: 'weighted',
+    equipment: 'Cable',
+    note: 'superset with incline curls'
+  }
+];
+
+/** Day 4 (Fri): the week's one hinge, then hamstrings and glutes. */
+export const LOWER_B: Exercise[] = [
+  // Straight sets in a rep range, not a pyramid to a single. The one slot that
+  // wants a bar: do it first, while one is free.
+  {
+    name: 'Romanian deadlift',
+    scheme: '3×6-10',
     kind: 'weighted',
     equipment: 'Barbell',
     priority: true,
-    alt: 'no bar: dumbbell Romanian deadlift 3×8-10'
+    alt: 'dumbbells, same 3×6-10, if no bar is free'
   },
   { name: 'Leg press', scheme: '3×10-12', kind: 'weighted', equipment: 'Machine', priority: true },
-  { name: 'Leg extension', scheme: '2×12-15', kind: 'weighted', equipment: 'Machine' },
-  { name: 'Leg curls', scheme: '2×12-15', kind: 'weighted', equipment: 'Machine' },
-  { name: 'Calf raises', scheme: '3×12-15', kind: 'weighted', equipment: 'Machine' },
-  { name: 'Plank', scheme: '3×45s', kind: 'time', equipment: 'Bodyweight' }
+  {
+    name: 'Back extension',
+    scheme: '3×12-15',
+    kind: 'weighted',
+    equipment: 'Machine',
+    note: 'glute-biased: round the upper back, squeeze the glutes; hold a plate once 15 is easy'
+  },
+  { name: 'Leg curls', scheme: '3×10-12', kind: 'weighted', equipment: 'Machine' },
+  { name: 'Calf raises', scheme: '4×12-15', kind: 'weighted', equipment: 'Machine', note: 'on the leg press' },
+  { name: 'Cable crunch', scheme: '3×10-15', kind: 'weighted', equipment: 'Cable' },
+  { name: 'Side plank', scheme: '2×30-45s', kind: 'time', equipment: 'Bodyweight', note: 'each side' }
 ];
 
 /**
- * Optional day 5: cardio first, then a few light accessories if you want them.
- * Logging it is a bonus, not a debt. Lateral raises, then three core moves, so
- * the day adds shoulder and trunk work without costing recovery for Monday's
- * Upper A: no legs, no presses or pulls, and nothing marked as a key lift.
- * These sets stay out of the plan's weekly volume target (`PLAN_WEEKLY_SETS`
- * counts the four lifting days only), so skipping them never shows up as a
- * shortfall.
+ * Day 5 (Sat): conditioning and pump. Zone 2 cardio first (35-40 min at a
+ * pace you could talk through), then light shoulder, arm and core work. No
+ * legs and no heavy presses or pulls, so Monday's Upper A starts fresh, and
+ * nothing here is a key lift. Its sets count toward the weekly volume, but it
+ * doesn't count toward a complete week of lifting, and it is the slot to give
+ * up when a missed lifting day needs it. The label stays 'Cardio' because
+ * logged sessions are stored under it.
  */
 export const CARDIO_DAY: Exercise[] = [
-  { name: 'Lateral raises', scheme: '3×12-15', kind: 'weighted', equipment: 'Dumbbell' },
-  { name: 'Crunches', scheme: '2×12-15', kind: 'bodyweight', equipment: 'Bodyweight' },
-  { name: 'Side plank', scheme: '2×30s', kind: 'time', equipment: 'Bodyweight', alt: 'each side' }
+  // A separate entry from Upper B's 2×12-15: lighter, higher reps.
+  { name: 'Cable lateral raise (pump)', scheme: '3×15-20', kind: 'weighted', equipment: 'Cable' },
+  { name: 'Face pulls', scheme: '3×15-20', kind: 'weighted', equipment: 'Cable' },
+  { name: 'Cable curl', scheme: '2×12-15', kind: 'weighted', equipment: 'Cable' },
+  {
+    name: 'Single-arm cable tricep extension',
+    scheme: '2×12-15',
+    kind: 'weighted',
+    equipment: 'Cable'
+  },
+  { name: 'Dead bug', scheme: '3×10', kind: 'bodyweight', equipment: 'Bodyweight', note: 'each side' },
+  { name: 'Plank', scheme: '3×30-60s', kind: 'time', equipment: 'Bodyweight' }
 ];
 
 export type DayLabel = 'Upper A' | 'Lower A' | 'Upper B' | 'Lower B' | 'Cardio';
 
-/** Every day in week order, including the optional one. */
+/** Every day in week order, including the conditioning day. */
 export const DAY_LABELS: DayLabel[] = ['Upper A', 'Lower A', 'Upper B', 'Lower B', 'Cardio'];
 
-/** The four days that make a complete week. */
+/** The four lifting days that make a complete week. */
 export const LIFT_DAYS: DayLabel[] = ['Upper A', 'Lower A', 'Upper B', 'Lower B'];
 
 export const DAY_TEMPLATES: Record<DayLabel, Exercise[]> = {
@@ -219,38 +311,51 @@ export type DayInfo = {
 export const DAY_INFO: Record<DayLabel, DayInfo> = {
   'Upper A': {
     day: 'Mon',
-    detail: 'chest / back / shoulders / triceps',
-    cardio: '20 min crosstrainer intervals: 30s hard / 90s easy'
+    detail: 'chest / back / shoulders / arms',
+    cardio: '15 min crosstrainer or cycle intervals: 30s hard / 90s easy'
   },
   'Lower A': {
     day: 'Tue',
-    detail: 'quads / hamstrings / calves / core',
-    cardio: '10 min crosstrainer, easy: legs are already done'
+    detail: 'quads / glutes / hamstrings / calves / core',
+    cardio: '10 min cycle, easy: legs are already done'
   },
   'Upper B': {
-    day: 'Wed',
-    detail: 'back / chest / shoulders / biceps',
-    cardio: '20 min crosstrainer, steady'
+    day: 'Thu',
+    detail: 'chest / back / rear delts / shoulders / arms',
+    cardio: '15 min incline treadmill walk'
   },
   'Lower B': {
-    day: 'Thu',
-    detail: 'hamstrings / quads / calves / core',
-    cardio: '10 min crosstrainer, easy'
+    day: 'Fri',
+    detail: 'hamstrings / glutes / quads / calves / core',
+    cardio: '10 min cycle, easy'
   },
   Cardio: {
-    day: 'Sat / Sun',
-    detail: 'the spare slot: a missed lift if there is one, otherwise cardio plus shoulders and core',
-    cardio: '30 min crosstrainer intervals, or a long walk outside',
+    day: 'Sat',
+    detail: 'conditioning + pump: zone 2 cardio, then shoulders, arms and core; or a missed lifting day',
+    cardio: '35-40 min zone 2: incline walk, cycle or crosstrainer at a talking pace',
     optional: true
   }
 };
 
+// Older names that are no longer on any day but still sit in the log, so
+// history keeps the right units and implement.
+const LEGACY_KIND: Record<string, ExerciseKind> = {
+  'Hanging leg raise': 'bodyweight',
+  Crunches: 'bodyweight'
+};
+const LEGACY_EQUIPMENT: Record<string, Equipment> = {
+  'Row machine': 'Machine',
+  'Incline dumbbell press': 'Dumbbell',
+  Deadlift: 'Barbell',
+  'Hanging leg raise': 'Bodyweight',
+  Crunches: 'Bodyweight'
+};
 
 // Name → kind lookup across every template, so history / restored off-template
 // rows can be rendered with the right units without a DB column. Defaults to
 // 'weighted' for custom-added exercises not in any template.
 const EXERCISE_KIND: Record<string, ExerciseKind> = (() => {
-  const m: Record<string, ExerciseKind> = {};
+  const m: Record<string, ExerciseKind> = { ...LEGACY_KIND };
   for (const list of Object.values(DAY_TEMPLATES)) {
     for (const ex of list) m[ex.name] = ex.kind;
   }
@@ -264,7 +369,7 @@ export function exerciseKind(name: string): ExerciseKind {
 // Name → default implement, so restored off-template rows and newly added
 // exercises start on the right equipment instead of blank.
 const EXERCISE_EQUIPMENT: Record<string, Equipment> = (() => {
-  const m: Record<string, Equipment> = {};
+  const m: Record<string, Equipment> = { ...LEGACY_EQUIPMENT };
   for (const list of Object.values(DAY_TEMPLATES)) {
     for (const ex of list) if (ex.equipment) m[ex.name] = ex.equipment;
   }
@@ -323,18 +428,17 @@ export function cardioMet(kind: string): number {
   return CARDIO_OPTIONS.find((o) => o.value === kind)?.met ?? 6.0;
 }
 
-// The day's suggested cardio bout, matching `DAY_INFO[...].cardio`. Every
-// bout is on the crosstrainer: the cycle and treadmill are the two machines
-// here that won't get used, and cardio you skip burns nothing. Upper days
-// carry the real work; lower days get a short easy spin because the legs
-// have just been trained. The optional day is where a longer bout belongs.
-// Daily steps happen outside the gym and aren't logged here.
+// The day's suggested cardio bout, matching `DAY_INFO[...].cardio`. Upper days
+// carry the harder work (intervals on Monday, an incline walk on Thursday);
+// lower days get a short easy spin because the legs have just been trained.
+// Saturday is the long, easy zone 2 bout. Daily steps happen outside the gym
+// and aren't logged here.
 export const CARDIO_DEFAULTS: Record<DayLabel, { kind: string; minutes: number }> = {
-  'Upper A': { kind: 'Crosstrainer (intervals)', minutes: 20 },
-  'Lower A': { kind: 'Crosstrainer', minutes: 10 },
-  'Upper B': { kind: 'Crosstrainer', minutes: 20 },
-  'Lower B': { kind: 'Crosstrainer', minutes: 10 },
-  Cardio: { kind: 'Crosstrainer (intervals)', minutes: 30 }
+  'Upper A': { kind: 'Crosstrainer (intervals)', minutes: 15 },
+  'Lower A': { kind: 'Cycle', minutes: 10 },
+  'Upper B': { kind: 'Treadmill (incline walk)', minutes: 15 },
+  'Lower B': { kind: 'Cycle', minutes: 10 },
+  Cardio: { kind: 'Treadmill (incline walk)', minutes: 35 }
 };
 
 // ---- API types -------------------------------------------------------------

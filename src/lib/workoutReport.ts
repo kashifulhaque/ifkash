@@ -244,30 +244,50 @@ type MuscleShare = Partial<Record<Muscle, number>>;
 // A set counts fully toward the muscle it's for and half toward the ones that
 // assist, the usual way weekly volume is tallied.
 const MUSCLE_MAP: Record<string, MuscleShare> = {
+  // Presses
   'Bench press': { chest: 1, triceps: 0.5, shoulders: 0.5 },
-  'Incline dumbbell press': { chest: 1, shoulders: 0.5, triceps: 0.5 },
+  'Incline press': { chest: 1, shoulders: 0.5, triceps: 0.5 },
+  'Shoulder press': { shoulders: 1, triceps: 0.5 },
   // Isolation: the chest does the work, so this does not add triceps volume
   // the way a press does.
   'Pec fly': { chest: 1 },
-  'Shoulder press': { shoulders: 1, triceps: 0.5 },
+  // Pulls
+  'Seated cable row': { back: 1, biceps: 0.5 },
+  'Chest-supported row': { back: 1, biceps: 0.5 },
   'Lat pulldown': { back: 1, biceps: 0.5 },
-  'Row machine': { back: 1, biceps: 0.5 },
+  'Close-grip lat pulldown': { back: 1, biceps: 0.5 },
+  // Shoulders (side and rear delts both count as shoulders)
   'Lateral raises': { shoulders: 1 },
+  'Cable lateral raise': { shoulders: 1 },
+  'Cable lateral raise (pump)': { shoulders: 1 },
+  'Reverse pec deck': { shoulders: 1, back: 0.5 },
   'Face pulls': { shoulders: 1, back: 0.5 },
+  // Arms
   'Cable tricep pushdown': { triceps: 1 },
+  'Overhead cable tricep extension': { triceps: 1 },
+  'Single-arm cable tricep extension': { triceps: 1 },
   'Bicep curls': { biceps: 1 },
-  'Leg press': { quads: 1, glutes: 0.5 },
+  'Incline dumbbell curl': { biceps: 1 },
+  'Cable curl': { biceps: 1 },
+  // Legs
   Squat: { quads: 1, glutes: 0.5 },
+  'Bulgarian split squat': { quads: 1, glutes: 0.5 },
+  'Leg press': { quads: 1, glutes: 0.5 },
   'Leg extension': { quads: 1 },
   'Romanian deadlift': { hamstrings: 1, glutes: 0.5 },
-  Deadlift: { hamstrings: 1, glutes: 0.5, back: 0.5 },
+  'Back extension': { glutes: 1, hamstrings: 0.5 },
   'Leg curls': { hamstrings: 1 },
   'Calf raises': { calves: 1 },
-  'Hanging leg raise': { core: 1 },
+  // Core
+  'Lying leg raise': { core: 1 },
+  'Cable crunch': { core: 1 },
   Plank: { core: 1 },
+  'Side plank': { core: 1 },
   'Dead bug': { core: 1 },
-  Crunches: { core: 1 },
-  'Side plank': { core: 1 }
+  // Older names still in the log. The keyword fallback below covers the
+  // rest (row machine, deadlift, hanging leg raise, crunches) but would miss
+  // this one entirely.
+  'Incline dumbbell press': { chest: 1, shoulders: 0.5, triceps: 0.5 }
 };
 
 /**
@@ -292,10 +312,13 @@ export function musclesFor(name: string): MuscleShare {
   return {};
 }
 
-/** Weekly sets per muscle the four lifting days prescribe — the volume target. */
+/**
+ * Weekly sets per muscle the plan prescribes across all five days — the
+ * volume target. Saturday's pump work is part of the plan now, so it counts.
+ */
 export const PLAN_WEEKLY_SETS: Record<Muscle, number> = (() => {
   const out = Object.fromEntries(MUSCLES.map((m) => [m, 0])) as Record<Muscle, number>;
-  for (const day of LIFT_DAYS) {
+  for (const day of DAY_LABELS) {
     for (const ex of DAY_TEMPLATES[day]) {
       const sets = setsFromScheme(ex.scheme);
       for (const [m, share] of Object.entries(musclesFor(ex.name))) out[m as Muscle] += sets * (share ?? 0);
@@ -304,14 +327,17 @@ export const PLAN_WEEKLY_SETS: Record<Muscle, number> = (() => {
   return out;
 })();
 
-/** Weekly cardio minutes the plan's four lifting days add up to. */
-export const PLAN_WEEKLY_CARDIO = LIFT_DAYS.reduce((n, d) => n + CARDIO_DEFAULTS[d].minutes, 0);
+/** Weekly cardio minutes the plan's five days add up to. */
+export const PLAN_WEEKLY_CARDIO = DAY_LABELS.reduce((n, d) => n + CARDIO_DEFAULTS[d].minutes, 0);
 
 // ---- rep ranges ------------------------------------------------------------
 
 export type RepRange = { sets: number; lo: number; hi: number };
 
-/** "4×8-10" → 4 sets of 8–10; "3×5" → 3 of 5; "3×45s" → 3 of 45 (seconds). */
+/**
+ * "4×8-10" → 4 sets of 8–10; "3×5" → 3 of 5; "3×45s" → 3 of 45 (seconds).
+ * Trailing words ("3×8-10 each leg") are ignored.
+ */
 export function parseScheme(scheme: string): RepRange | null {
   const m = scheme.match(/^(\d+)\s*×\s*(\d+)(?:\s*[-–]\s*(\d+))?/);
   if (!m) return null;
@@ -323,7 +349,7 @@ export function parseScheme(scheme: string): RepRange | null {
 function schemeFor(exercise: string, dayLabel: string): string {
   const onDay = DAY_TEMPLATES[dayLabel as DayLabel]?.find((e) => e.name === exercise);
   if (onDay) return onDay.scheme;
-  for (const d of LIFT_DAYS) {
+  for (const d of DAY_LABELS) {
     const e = DAY_TEMPLATES[d].find((x) => x.name === exercise);
     if (e) return e.scheme;
   }
@@ -331,7 +357,7 @@ function schemeFor(exercise: string, dayLabel: string): string {
 }
 
 const PRIORITY = new Set(
-  LIFT_DAYS.flatMap((d) => DAY_TEMPLATES[d].filter((e) => e.priority).map((e) => e.name))
+  DAY_LABELS.flatMap((d) => DAY_TEMPLATES[d].filter((e) => e.priority).map((e) => e.name))
 );
 /**
  * A key lift on its prescribed implement (or an untagged older set). The same
@@ -512,15 +538,15 @@ export function buildReport(log: TrainingLog, range: Range, bodyweight: Bodyweig
   }
 
   // Plan adherence: what each plan-day session prescribed against what got
-  // logged. Only the four lifting days count; the cardio day's accessories are
-  // optional, so skipping them isn't a miss.
+  // logged, on all five days. A Saturday that isn't logged at all is never a
+  // miss; one that is logged is read against its template like any other.
   let plannedSets = 0;
   let doneSets = 0;
   let plannedExercises = 0;
   let doneExercises = 0;
   const missed: MissedLift[] = [];
   for (const s of sessions) {
-    if (!(LIFT_DAYS as string[]).includes(s.day_label)) continue;
+    if (!(DAY_LABELS as string[]).includes(s.day_label)) continue;
     const template = DAY_TEMPLATES[s.day_label as DayLabel];
     for (const ex of template) {
       const want = setsFromScheme(ex.scheme);
@@ -690,7 +716,7 @@ export function progressions(log: TrainingLog, onlyDay?: string): Progression[] 
   }
 
   const out: Progression[] = [];
-  const days = onlyDay ? [onlyDay as DayLabel] : LIFT_DAYS;
+  const days = onlyDay ? [onlyDay as DayLabel] : DAY_LABELS;
   const seen = new Set<string>();
   for (const day of days) {
     for (const ex of DAY_TEMPLATES[day] ?? []) {
@@ -743,8 +769,8 @@ export function progressions(log: TrainingLog, onlyDay?: string): Progression[] 
           kind: 'up',
           text:
             ex.kind === 'time'
-              ? `${label}: every hold reached ${range.hi}s. Add 15 seconds.`
-              : `${label}: every set hit ${range.hi}. Add reps, slow the lowering, or hold a weight.`
+              ? `${label}: every hold reached ${range.hi}s. Move to a harder variant and build back up 5-10 s a session.`
+              : `${label}: every set hit ${range.hi}. Move to a harder variant (slower lowering, longer lever, or a weight) and build back up 1-2 reps a session.`
         });
         continue;
       }
@@ -758,7 +784,7 @@ export function progressions(log: TrainingLog, onlyDay?: string): Progression[] 
           out.push({
             ...base,
             kind: 'stall',
-            text: `${label}: no gain in 4 sessions. Add one rep to one set each session before adding load.`
+            text: `${label}: no gain in 4 sessions. Add one rep to one set each session before adding load; if most key lifts are stuck too, take a deload week (half the sets, same loads).`
           });
         }
       }
@@ -879,7 +905,7 @@ export function reportNotes(r: Report, cmp: Report | null, log: TrainingLog): No
   if (r.range.period === 'week' && r.legacySessions === 0) {
     const left = LIFT_DAYS.filter((d) => !r.liftLabels.includes(d));
     if (left.length && r.range.past) {
-      add(improve, `Missed ${list(left)}. The weekend slot is there for a missed lift.`);
+      add(improve, `Missed ${list(left)}. Wednesday or Saturday is there for a missed lift.`);
     } else if (left.length && r.range.current) {
       add(improve, `Still to do this week: ${list(left)}.`);
     }

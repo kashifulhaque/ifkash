@@ -10,7 +10,12 @@
 //     the top of the range means one step up; otherwise stay and add reps.
 //   - After a ramped or partial session, estimate a max from the best recent
 //     set (Epley) and take the load that max supports for the top of the range
-//     plus one rep in reserve.
+//     plus reps in reserve: two on key lifts (the compounds, run at 1-2 RIR),
+//     one on accessories (isolation, whose last set can go to 0-1 RIR).
+// The step up is 2 kg on dumbbells and 2.5 kg on everything else, and a lift
+// not done for 21+ days restarts 10 % lighter. Deloads (every 6-8 weeks, or
+// when most key lifts stall) are a plan rule, `PLAN_RULES` in `workout.ts`,
+// rather than something this picks.
 // Loads snap to weights already logged on that implement, because machine
 // stacks and cable columns move in odd steps (3.75 kg, 2.27 kg) that rounding
 // to 2.5 kg misses.
@@ -32,7 +37,11 @@ const ALIASES: Record<string, string[]> = {
   Squat: ['Barbell squat', 'Smith barbell squat'],
   'Bicep curls': ['Dumbbell bicep curls'],
   'Shoulder press': ['Shoulder press (machine)'],
-  'Incline dumbbell press': ['Incline dumbbell press (adjustable bench)']
+  // The old "row machine" was the seated row on the lat pulldown station.
+  'Seated cable row': ['Row machine'],
+  // Dumbbell history carries over when the machine is taken and the slot is
+  // run on dumbbells (equipment must still match).
+  'Incline press': ['Incline dumbbell press', 'Incline dumbbell press (adjustable bench)']
 };
 
 /** Sessions of a lift to read for the estimate. */
@@ -128,7 +137,8 @@ export function loadTarget(
   }
   if (!best) return null;
   const max = setScore('weighted', best.reps, best.weight_g);
-  let raw = max / (1 + (range.hi + 1) / 30);
+  const inReserve = keyLift ? 2 : 1;
+  let raw = max / (1 + (range.hi + inReserve) / 30);
   let reason = `Estimated from your best recent set, ${kgText(best.weight_g / 1000)} kg × ${best.reps}. Use it for every set.`;
   if (daysAway > STALE_DAYS) {
     raw *= 0.9;

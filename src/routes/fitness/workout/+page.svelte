@@ -49,6 +49,7 @@
     DAY_LABELS,
     LIFT_DAYS,
     DAY_INFO,
+    PLAN_RULES,
     setsFromScheme,
     kgToGrams,
     gramsToKg,
@@ -106,6 +107,8 @@
     priority: boolean;
     /** Fallback or upgrade for when the prescribed implement is taken or free. */
     alt: string;
+    /** How to run the slot: grip, setup, per-side count, superset partner. */
+    note: string;
     sets: SetRow[];
   };
   let exercises: ExerciseRow[] = [];
@@ -182,6 +185,11 @@
     return ex.name ? `${ex.name}|${ex.equipment}` : `_${i}`;
   }
 
+  /** The note and the substitute on one line, e.g. "each side · alt: dumbbells". */
+  function exCue(ex: { note: string; alt: string }): string {
+    return [ex.note, ex.alt && `alt: ${ex.alt}`].filter(Boolean).join(' · ');
+  }
+
   function templateRows(focus: Focus): ExerciseRow[] {
     return DAY_TEMPLATES[focus].map((ex) => ({
       name: ex.name,
@@ -190,6 +198,7 @@
       equipment: ex.equipment ?? '',
       priority: ex.priority ?? false,
       alt: ex.alt ?? '',
+      note: ex.note ?? '',
       sets: Array.from({ length: setsFromScheme(ex.scheme) }, blankSet)
     }));
   }
@@ -510,6 +519,7 @@
           equipment: g.equipment || exerciseEquipment(g.exercise),
           priority: false,
           alt: '',
+          note: '',
           sets: []
         };
         rows.push(row);
@@ -560,7 +570,7 @@
   function addExercise() {
     exercises = [
       ...exercises,
-      { name: '', scheme: '', kind: 'weighted', equipment: '', priority: false, alt: '', sets: [blankSet()] }
+      { name: '', scheme: '', kind: 'weighted', equipment: '', priority: false, alt: '', note: '', sets: [blankSet()] }
     ];
   }
 
@@ -1082,8 +1092,8 @@
 
         {#if DAY_INFO[active].optional && exercises.length}
           <p class="empty-day">
-            Do the cardio first. The lifts are optional: do as many as you have time for, and log only
-            the sets you do.
+            Zone 2 cardio first, then the pump work: light, high reps, nothing to failure. If a lifting
+            day was missed this week, do that here instead.
           </p>
         {/if}
         {#if exercises.length === 0}
@@ -1102,7 +1112,7 @@
                 <span class="ex-name">{ex.name}</span>
                 {#if ex.priority}<span class="key-tag" title="Priority lift — progress this first">key</span>{/if}
                 <span class="ex-scheme">{ex.scheme}</span>
-                {#if ex.alt}<span class="ex-alt">{ex.alt}</span>{/if}
+                {#if ex.note || ex.alt}<span class="ex-alt">{exCue(ex)}</span>{/if}
               </li>
             {/each}
           </ul>
@@ -1142,7 +1152,7 @@
                       on:input={() => onExerciseName(i)}
                     />
                   {/if}
-                  {#if ex.alt}<span class="ex-alt">{ex.alt}</span>{/if}
+                  {#if ex.note || ex.alt}<span class="ex-alt">{exCue(ex)}</span>{/if}
                   {#if ex.kind === 'weighted'}
                     <!-- Which implement — loads are only comparable within one. -->
                     <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -1291,7 +1301,7 @@
       <details class="fold">
         <summary>
           <span class="fold-title">Week overview</span>
-          <span class="fold-meta">{LIFT_DAYS.length} lifts + 1 spare</span>
+          <span class="fold-meta">{LIFT_DAYS.length} lifts + conditioning</span>
         </summary>
         <div class="fold-body overview">
           {#each DAY_LABELS as label}
@@ -1324,6 +1334,9 @@
               </span>
             </button>
           {/each}
+          <ul class="plan-rules">
+            {#each PLAN_RULES as rule}<li>{rule}</li>{/each}
+          </ul>
         </div>
       </details>
     </div>
@@ -2133,6 +2146,13 @@
   .ov-day.active .ov-title { color: var(--fjord); }
   .ov-day.done .ov-title :global(svg) { color: var(--moss); }
   .ov-day.optional .ov-title { color: var(--ink-2); }
+  .plan-rules {
+    margin: 8px 0 0;
+    padding-left: 18px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--ink-2);
+  }
   .ov-lifts {
     display: flex;
     flex-wrap: wrap;

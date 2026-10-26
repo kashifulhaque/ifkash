@@ -8,6 +8,7 @@
   import DesignSwitch from "$lib/components/DesignSwitch.svelte";
   import { design, type Design } from "$lib/stores/design";
   import { theme, toggleTheme } from "$lib/stores/theme";
+  import { playDayNightCycle } from "$lib/dayNightCycle";
 
   $: currentPath = $page.url.pathname;
   $: isFullWidth =
@@ -71,6 +72,25 @@
   };
 
   $: themeCopy = themeCopyFor[$design];
+
+  // Plays the full sunset or sunrise, and flips the theme partway through.
+  let cycling = false;
+  async function onThemeClick(event: MouseEvent) {
+    if (cycling) return;
+    cycling = true;
+    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+    const to = $theme === "dark" ? "light" : "dark";
+    try {
+      await playDayNightCycle({
+        origin: { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 },
+        to,
+        label: to === "dark" ? themeCopy.dark : themeCopy.light,
+        onSwitch: toggleTheme,
+      });
+    } finally {
+      cycling = false;
+    }
+  }
 </script>
 
 {#if isFullWidth}
@@ -107,7 +127,7 @@
         <button
           type="button"
           class="theme-toggle"
-          on:click={toggleTheme}
+          on:click={onThemeClick}
           aria-label={$theme === "dark" ? themeCopy.toLight : themeCopy.toDark}
           title={$theme === "dark" ? themeCopy.light : themeCopy.dark}
         >

@@ -23,9 +23,10 @@ export const tagline =
   'and building high-performance inference systems in C++ and Rust. ' +
   'Also building LLM apps on the day job.';
 
+// Public résumé PDF (`/api/resume` itself is behind Cloudflare Access).
 // Resolved at render time: dev worker runs on :8787
-export const resumePath = '/api/resume?format=view';
-export const resumeDevUrl = 'http://localhost:8787/api/resume?format=view';
+export const resumePath = '/api/cv?format=view';
+export const resumeDevUrl = 'http://localhost:8787/api/cv?format=view';
 
 export const sections: Section[] = [
   {

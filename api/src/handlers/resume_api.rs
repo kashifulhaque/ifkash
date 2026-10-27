@@ -90,7 +90,7 @@ fn js_opt(value: &Option<String>) -> JsValue {
     )
 )]
 pub async fn get_latest(req: Request, ctx: RouteContext<()>) -> Result<Response> {
-    if !access::is_authorized(&req, &ctx) {
+    if !access::is_authorized(&req, &ctx).await {
         return access::unauthorized();
     }
 
@@ -155,7 +155,7 @@ pub async fn get_latest(req: Request, ctx: RouteContext<()>) -> Result<Response>
     )
 )]
 pub async fn upload(mut req: Request, ctx: RouteContext<()>) -> Result<Response> {
-    if !access::is_authorized(&req, &ctx) {
+    if !access::is_authorized(&req, &ctx).await {
         return access::unauthorized();
     }
 
@@ -233,7 +233,7 @@ pub async fn upload(mut req: Request, ctx: RouteContext<()>) -> Result<Response>
     )
 )]
 pub async fn get_history(req: Request, ctx: RouteContext<()>) -> Result<Response> {
-    if !access::is_authorized(&req, &ctx) {
+    if !access::is_authorized(&req, &ctx).await {
         return access::unauthorized();
     }
 
@@ -277,7 +277,7 @@ pub async fn get_history(req: Request, ctx: RouteContext<()>) -> Result<Response
     )
 )]
 pub async fn get_by_id(req: Request, ctx: RouteContext<()>) -> Result<Response> {
-    if !access::is_authorized(&req, &ctx) {
+    if !access::is_authorized(&req, &ctx).await {
         return access::unauthorized();
     }
 

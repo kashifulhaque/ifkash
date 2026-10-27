@@ -41,10 +41,10 @@ OWNER_EMAIL = "haque.kashiful7@gmail.com"
 # The Worker verifies the signed Cloudflare Access JWT on every protected
 # request. Leaving either value empty locks the editor (fails closed).
 # Zero Trust team domain, for example "<team>.cloudflareaccess.com".
-ACCESS_TEAM_DOMAIN = ""
+ACCESS_TEAM_DOMAIN = "ifkash.cloudflareaccess.com"
 # Application Audience (AUD) tag from each Access application's Overview tab.
 # Separate several applications with commas.
-ACCESS_AUD = ""
+ACCESS_AUD = "5d5a42191621ecc74645746eba4661361ae29a79ebb3c57823fdef6bc3163768"
 # Google OAuth client ID for the /game leaderboard (audience check on ID tokens).
 # Must match PUBLIC_GOOGLE_CLIENT_ID in the web app's environment.
 GOOGLE_CLIENT_ID = "589199944334-at0seduhfggnrnmncrnnke6asstd13fc.apps.googleusercontent.com"

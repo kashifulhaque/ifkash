@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { FileText, History, NotebookPen } from "lucide-svelte";
+  import { FileText, History, NotebookPen, SquareTerminal } from "lucide-svelte";
   import type { PageData } from "./$types";
 
   export let data: PageData;
@@ -29,6 +29,12 @@
       desc: "Browse previously published resume versions and load any of them back into the editor.",
       href: "/editor/history",
       icon: History,
+    },
+    {
+      name: "VM console",
+      desc: "Run Claude Code on the VM from anywhere: chat, tmux sessions, a web terminal, system stats and files.",
+      href: "/vm",
+      icon: SquareTerminal,
     },
   ];
 </script>

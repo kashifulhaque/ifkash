@@ -1,0 +1,17 @@
+[Unit]
+Description=claude-remote VM agent (API for ifkash.dev/vm)
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+User=ifkash
+WorkingDirectory=/home/ifkash
+EnvironmentFile=/home/ifkash/docs/infra/claude-remote/.env
+ExecStart=/usr/bin/node /home/ifkash/docs/infra/claude-remote/server.mjs
+# Leave tmux servers and Claude runs started by the agent alive on restart.
+KillMode=process
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

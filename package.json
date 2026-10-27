@@ -35,6 +35,8 @@
     "@pdf-lib/fontkit": "^1.1.1",
     "@tailwindcss/vite": "^4.1.18",
     "@types/three": "^0.182.0",
+    "@xterm/addon-fit": "^0.11.0",
+    "@xterm/xterm": "^6.0.0",
     "axios": "^1.13.2",
     "dompurify": "^3.3.1",
     "dotenv": "^17.2.3",

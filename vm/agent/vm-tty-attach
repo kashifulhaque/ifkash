@@ -1,0 +1,11 @@
+#!/bin/sh
+# ttyd runs this for each web terminal. ttyd's --url-arg passes the `arg` query
+# parameter as $1: the tmux session to attach to, created if it doesn't exist.
+# Anything that isn't a plain session name falls back to "main".
+name="${1:-main}"
+case "$name" in
+  *[!A-Za-z0-9_-]*) name=main ;;
+esac
+[ "${#name}" -le 32 ] || name=main
+cd "$HOME" || exit 1
+exec tmux new-session -A -s "$name"

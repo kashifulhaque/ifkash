@@ -1,0 +1,21 @@
+[Unit]
+Description=claude-remote web terminal (ttyd on a Unix socket)
+After=network.target
+
+[Service]
+User=ifkash
+WorkingDirectory=/home/ifkash
+Environment=PATH=/home/ifkash/.local/bin:/usr/local/bin:/usr/bin:/bin
+ExecStartPre=/usr/bin/install -d -m 700 /home/ifkash/.local/run/claude-remote
+ExecStartPre=/usr/bin/rm -f /home/ifkash/.local/run/claude-remote/ttyd.sock
+# Only the agent reaches this socket; it checks Access and the Origin first.
+ExecStart=/usr/bin/ttyd --interface /home/ifkash/.local/run/claude-remote/ttyd.sock \
+  --base-path /tty --writable --url-arg --terminal-type xterm-256color \
+  /home/ifkash/docs/infra/claude-remote/vm-tty-attach
+# Leave tmux servers started from the terminal alive on restart.
+KillMode=process
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

@@ -18,6 +18,12 @@ Beyond the résumé editor the README centers on, the app has several
 Google-authenticated mini-apps: `/fitness` (workout and cardio tracker), `/tools/splitter`
 (expense splitter), and `/game` (a cozy low-poly tiny-planet explorer whose seven "small wonders" open portfolio sections; built on Three.js in `src/lib/game`). Beyond the wonders the game has per-planet starlight shards (`shards.ts`), animal companions that follow after a second pat (`critters.ts`), fireworks for the big finds (`fireworks.ts`), and a cross-planet traveller's journal of biomes, species, milestones, and stats (`journal.ts`, persisted in `localStorage` with no Three.js import so other pages can read it).
 
+A third, smaller piece lives in `/vm`: the **VM agent**, a dependency-free Node server
+that runs on the owner's VM behind a Cloudflare Tunnel at `claude.ifkash.dev` and backs
+the `/vm` console (chat with headless Claude Code, tmux sessions, a ttyd web terminal,
+system stats, and files). Its API contract is `vm/API.md`; deploy it with
+`vm/deploy.sh`, not CI. See `vm/README.md`.
+
 ## Toolchain & commands
 
 Tool versions are pinned by [mise](https://mise.jdx.dev) (`mise.toml`): Rust, Bun, Node

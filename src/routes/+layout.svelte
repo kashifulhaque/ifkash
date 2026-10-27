@@ -15,6 +15,7 @@
     currentPath === "/game" ||
     currentPath === "/editor" ||
     currentPath === "/admin/notes" ||
+    currentPath === "/vm" ||
     (currentPath.startsWith("/tools/") && currentPath !== "/tools");
 
   const navItems = [

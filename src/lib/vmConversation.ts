@@ -10,12 +10,15 @@ export type ConvItem =
   | { id: number; kind: 'text'; text: string }
   | { id: number; kind: 'thinking'; text: string }
   | { id: number; kind: 'tool'; toolId: string; tool: string; input: any; summary: string; result?: ToolResult }
-  | { id: number; kind: 'result'; isError: boolean; text: string; cost: number | null; turns: number | null; durationMs: number | null }
+  | { id: number; kind: 'result'; isError: boolean; text: string; model: string | null; cost: number | null; turns: number | null; durationMs: number | null }
   | { id: number; kind: 'stderr'; text: string }
   | { id: number; kind: 'note'; text: string; isError: boolean };
 
 let nextId = 1;
 export const newId = () => nextId++;
+
+// The model a run reported in its init event, shown later in its result footer.
+const runModel = new WeakMap<ConvItem[], string>();
 
 export function userItem(text: string): ConvItem {
   return { id: newId(), kind: 'user', text };
@@ -70,7 +73,9 @@ export function applyEvent(items: ConvItem[], ev: any): string | null {
   if (!ev || typeof ev !== 'object') return null;
   switch (ev.type) {
     case 'system':
-      return ev.subtype === 'init' && ev.session_id ? ev.session_id : null;
+      if (ev.subtype !== 'init') return null;
+      if (str(ev.model)) runModel.set(items, ev.model);
+      return ev.session_id || null;
     case 'assistant': {
       const blocks = ev.message?.content;
       if (!Array.isArray(blocks)) return null;
@@ -110,6 +115,7 @@ export function applyEvent(items: ConvItem[], ev: any): string | null {
         kind: 'result',
         isError: !!ev.is_error,
         text: ev.is_error ? str(ev.result) : '',
+        model: runModel.get(items) ?? null,
         cost: typeof ev.total_cost_usd === 'number' ? ev.total_cost_usd : null,
         turns: typeof ev.num_turns === 'number' ? ev.num_turns : null,
         durationMs: typeof ev.duration_ms === 'number' ? ev.duration_ms : null

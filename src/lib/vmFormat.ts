@@ -1,5 +1,12 @@
 // Small display helpers for the /vm page. Pure, no I/O.
 
+/** "claude-sonnet-5-5" → "Sonnet 5.5". Unknown strings pass through unchanged. */
+export function modelLabel(id: string | null | undefined): string {
+  if (!id) return '';
+  const m = id.match(/^claude-([a-z]+)-(\d+)-(\d+)/);
+  return m ? `${m[1][0].toUpperCase()}${m[1].slice(1)} ${m[2]}.${m[3]}` : id;
+}
+
 export function humanBytes(n: number): string {
   if (!Number.isFinite(n) || n < 0) return '–';
   const units = ['B', 'KB', 'MB', 'GB', 'TB'];

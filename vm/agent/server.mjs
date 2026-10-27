@@ -50,7 +50,8 @@ const CLOCK_SKEW_SEC = 30;
 const SESSION_NAME = /^[A-Za-z0-9_-]{1,32}$/;
 const SESSION_ID = /^[0-9a-f-]{36}$/;
 const PERMISSION_MODES = new Set(['plan', 'acceptEdits', 'auto', 'bypassPermissions', 'dontAsk', 'manual']);
-const MODELS = new Set(['sonnet', 'opus', 'haiku']);
+// Exact IDs; the CLI's `haiku` alias was seen answering with Sonnet.
+const MODELS = new Set(['claude-fable-5-1', 'claude-opus-5-5', 'claude-sonnet-5-5', 'claude-haiku-5-5']);
 const TMUX_KEYS = new Set(['Escape', 'Enter', 'Tab', 'BTab', 'C-c', 'Up', 'Down', 'Left', 'Right']);
 
 // Child processes need ~/.local/bin for claude, whatever PATH systemd gave us.

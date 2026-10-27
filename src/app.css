@@ -7,6 +7,17 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
+/* Nerd Font icon glyphs (prompt, tmux, and tool icons) as a fallback in the
+   mono stack. The unicode-range keeps browsers from fetching it unless a page
+   actually shows one of these glyphs, which in practice is the VM console.
+   Symbols Nerd Font Mono v3.4.0 (MIT), converted to woff2. */
+@font-face {
+  font-family: "Symbols Nerd Font Mono";
+  src: url("/fonts/SymbolsNerdFontMono-Regular.woff2") format("woff2");
+  font-display: swap;
+  unicode-range: U+23FB-23FE, U+2665, U+26A1, U+2B58, U+E000-F8FF, U+F0000-F1AF0;
+}
+
 /* ────────────────────────────────────────────────────────────────
    ifkash.dev design system. Three designs, one token set.
 
@@ -61,7 +72,7 @@
      change face without restyling buttons and body copy. */
   --font-sans: "Schibsted Grotesk Variable", "Schibsted Grotesk", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-serif: "Newsreader Variable", "Newsreader", "Iowan Old Style", Georgia, serif;
-  --font-mono: "JetBrains Mono Variable", "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --font-mono: "JetBrains Mono Variable", "JetBrains Mono", "Symbols Nerd Font Mono", ui-monospace, "SF Mono", Menlo, monospace;
   --font-display: var(--font-sans);
 
   --text-xs: 0.75rem;   /* 12 */
@@ -295,7 +306,7 @@
 @theme {
   --font-sans: "Schibsted Grotesk Variable", "Schibsted Grotesk", ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-serif: "Newsreader Variable", "Newsreader", Georgia, serif;
-  --font-mono: "JetBrains Mono Variable", "JetBrains Mono", ui-monospace, monospace;
+  --font-mono: "JetBrains Mono Variable", "JetBrains Mono", "Symbols Nerd Font Mono", ui-monospace, monospace;
 }
 
 /* ── Base ────────────────────────────────────────────────────────── */

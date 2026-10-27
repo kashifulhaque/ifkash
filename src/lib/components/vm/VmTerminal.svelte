@@ -211,7 +211,14 @@
     let cancelled = false;
     (async () => {
       const [{ Terminal }, { FitAddon }] = await Promise.all([import('@xterm/xterm'), import('@xterm/addon-fit')]);
-      try { await document.fonts.load(`13px ${fontFamily().split(',')[0]}`); } catch {}
+      // Load the Nerd Font before xterm measures cells. Its unicode-range means
+      // it only loads when asked for one of its glyphs, so pass a sample one.
+      try {
+        await Promise.all([
+          document.fonts.load(`13px ${fontFamily().split(',')[0]}`),
+          document.fonts.load('13px "Symbols Nerd Font Mono"', '')
+        ]);
+      } catch {}
       if (cancelled) return;
       term = new Terminal({
         fontFamily: fontFamily(),

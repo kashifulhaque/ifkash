@@ -191,7 +191,7 @@
     {:else}
       <ul class="cards">
         {#each tmux as s (s.name)}
-          <li class="card tcard">
+          <li class="card tcard" class:open={peek === s.name}>
             <div class="ttop">
               <span class="led" class:led-hollow={!s.attached} aria-hidden="true"></span>
               <strong class="tn">{s.name}</strong>
@@ -308,11 +308,16 @@
   .hint { margin: 0; color: var(--ink-3); font-size: var(--text-xs); }
   .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
-  .cards { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s-3); grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); }
-  .tcard { padding: var(--s-3); display: flex; flex-direction: column; gap: var(--s-2); min-width: 0; }
+  /* align-items: start keeps a card from stretching to match a peeking neighbour;
+     the peeking card itself takes the full row so its pane has room. */
+  .cards { list-style: none; margin: 0; padding: 0; display: grid; align-items: start; gap: var(--s-3); grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); }
+  .tcard { padding: var(--s-4); display: flex; flex-direction: column; gap: var(--s-2); min-width: 0; }
+  .tcard.open { grid-column: 1 / -1; }
   .ttop { display: flex; align-items: center; gap: var(--s-2); min-width: 0; }
-  .tn { font-family: var(--font-mono); font-size: 14px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; }
-  .ttop .tag { margin-left: auto; }
+  .tn { min-width: 0; font-family: var(--font-mono); font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ttop .tag { flex-shrink: 0; margin-left: auto; }
+  .tcard .btn-row { margin-top: var(--s-1, 4px); }
+  .kill { margin-left: auto; }
   .tmeta { display: flex; flex-direction: column; gap: 2px; margin: 0; color: var(--ink-3); font-family: var(--font-mono); font-size: var(--text-xs); }
   .path { overflow-wrap: anywhere; }
   .btn-row .btn { min-height: 40px; }
@@ -344,12 +349,17 @@
   .keys .btn { min-height: 40px; min-width: 44px; font-family: var(--font-mono); }
 
   .newform { padding: var(--s-4); }
-  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-3); margin-bottom: var(--s-3); }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-3); }
   .lbl { display: flex; flex-direction: column; gap: 4px; min-width: 0; color: var(--ink-3); font-size: var(--text-xs); }
   .wide { grid-column: 1 / -1; }
-  .newform .btn-row { margin-top: var(--s-3); }
+  .newform .hint, .newform .err { margin-top: var(--s-2); }
+  .newform .btn-row { margin-top: var(--s-4); }
 
-  .filter { min-width: 0; max-width: 60%; }
+  /* The header wraps on phones: the title on one line, the filter full width below. */
+  .bh { flex-wrap: wrap; }
+  h2 { white-space: nowrap; }
+  .filter { flex: 1 1 220px; min-width: 0; max-width: 360px; }
+  .filter .field { width: 100%; }
   .filter .field { font-size: 14px; }
   .trlist { margin: 0; }
   .trrow { display: flex; flex-direction: column; gap: 4px; width: 100%; padding: var(--s-3) 0; border: 0; background: none; text-align: left; cursor: pointer; min-height: 56px; }

@@ -86,8 +86,10 @@ with the `sessionId` from the previous run.
 - `permissionMode` is one of `plan`, `acceptEdits`, `auto`, `bypassPermissions`,
   `dontAsk`, or `manual`. It defaults to `acceptEdits`. A headless run can't ask
   for permission, so in `manual` mode Claude can't use tools that need approval.
-- `model` is an alias such as `sonnet`, `opus`, or `haiku`. Omit it for the
-  VM's default.
+- `model` is an exact model ID: `claude-fable-5-1`, `claude-opus-5-5`,
+  `claude-sonnet-5-5`, or `claude-haiku-5-5`. Omit it for the VM's default.
+  Aliases such as `haiku` are rejected, because the CLI was seen answering a
+  `haiku` run with Sonnet.
 - `cwd` defaults to the home directory and must be inside it.
 - `Run` is `{ runId, sessionId, cwd, prompt, permissionMode, model, status,
   startedAt, endedAt, costUsd }`. `status` is `running`, `done`, `error`, or

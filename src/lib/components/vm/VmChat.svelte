@@ -10,7 +10,7 @@
     type Run
   } from '$lib/vmApi';
   import { applyEvent, fromMessages, userItem, type ConvItem } from '$lib/vmConversation';
-  import { clip, fmtCost, relTime } from '$lib/vmFormat';
+  import { clip, fmtCost, modelLabel, relTime } from '$lib/vmFormat';
 
   export let active = true;
   /** Set by the Sessions tab to continue a transcript here. `nonce` makes repeats fire. */
@@ -24,11 +24,13 @@
     { value: 'dontAsk', label: "Don't ask", hint: 'Denies anything not already allowed, without prompting.' },
     { value: 'manual', label: 'Manual', hint: "Needs approval that a headless run can't give, so most tools are blocked." }
   ];
+  // Exact model IDs, not aliases: the CLI's `haiku` alias answered with Sonnet.
   const MODELS = [
-    { value: '', label: 'Default' },
-    { value: 'sonnet', label: 'Sonnet' },
-    { value: 'opus', label: 'Opus' },
-    { value: 'haiku', label: 'Haiku' }
+    { value: '', label: 'VM default (Opus 5.5)' },
+    ...['claude-fable-5-1', 'claude-opus-5-5', 'claude-sonnet-5-5', 'claude-haiku-5-5'].map((value) => ({
+      value,
+      label: modelLabel(value)
+    }))
   ];
 
   let prompt = '';

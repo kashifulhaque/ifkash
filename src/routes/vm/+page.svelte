@@ -1,6 +1,13 @@
 <svelte:head>
   <title>VM console — Kashif</title>
   <meta name="robots" content="noindex" />
+  <!-- Lets "Add to Home Screen" install the console as its own app that opens on /vm. -->
+  <link rel="manifest" href="/vm.webmanifest" />
+  <link rel="apple-touch-icon" href="/vm-apple-touch-icon.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="VM" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
 </svelte:head>
 
 <script lang="ts">

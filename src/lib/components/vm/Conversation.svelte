@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Brain, Wrench, ChevronRight } from 'lucide-svelte';
   import Markdown from './Markdown.svelte';
-  import { fmtCost, fmtDuration } from '$lib/vmFormat';
+  import { fmtCost, fmtDuration, modelLabel } from '$lib/vmFormat';
   import type { ConvItem } from '$lib/vmConversation';
 
   export let items: ConvItem[] = [];
@@ -49,6 +49,7 @@
         {#if item.isError}<strong>Run failed.</strong>{/if}
         {#if item.text}<span class="ftext">{item.text}</span>{/if}
         <span class="fmeta">
+          {#if item.model}<span>{modelLabel(item.model)}</span>{/if}
           {#if item.cost !== null}<span>{fmtCost(item.cost)}</span>{/if}
           {#if item.turns !== null}<span>{item.turns} {item.turns === 1 ? 'turn' : 'turns'}</span>{/if}
           {#if item.durationMs !== null}<span>{fmtDuration(item.durationMs)}</span>{/if}

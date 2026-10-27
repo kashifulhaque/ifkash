@@ -1,0 +1,14 @@
+{
+  "name": "VM console",
+  "short_name": "VM",
+  "description": "Run Claude Code on the ifkash VM.",
+  "start_url": "/vm",
+  "scope": "/vm",
+  "display": "standalone",
+  "background_color": "#15181b",
+  "theme_color": "#15181b",
+  "icons": [
+    { "src": "/vm-icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/vm-icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

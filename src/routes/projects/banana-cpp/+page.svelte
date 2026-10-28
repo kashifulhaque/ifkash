@@ -1,3 +1,7 @@
+<script lang="ts">
+  import { reveal, splitReveal, countUp } from '$lib/motion';
+</script>
+
 <svelte:head>
   <title>banana.cpp — LLM Inference Engine</title>
   <meta name="description" content="A modular, pure C++ implementation of a small language model inference engine." />
@@ -10,7 +14,7 @@
       <span aria-hidden="true">/</span>
       <span aria-current="page">banana.cpp</span>
     </nav>
-    <h1 class="page-title">banana.cpp</h1>
+    <h1 class="page-title" use:splitReveal>banana.cpp</h1>
     <p class="lead">A modular, pure C++ implementation of a small language model inference engine supporting multiple model architectures.</p>
     <div class="btn-row">
       <a href="https://github.com/kashifulhaque/banana.cpp" target="_blank" rel="noopener noreferrer" class="btn btn-sm">
@@ -21,7 +25,7 @@
 
   <div class="detail-body">
     <aside class="facts" aria-label="Project facts">
-      <dl>
+      <dl use:reveal={{ children: ".fact", gap: 70 }}>
         <div class="fact">
           <dt>Stack</dt>
           <dd><span>C++</span><span>CMake</span></dd>
@@ -44,7 +48,7 @@
     </aside>
 
     <div class="copy">
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">01</span>Overview</h2>
         <p>
           banana.cpp is a pure C++ LLM inference engine designed for modularity and extensibility.
@@ -53,7 +57,7 @@
         </p>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">02</span>Supported Models</h2>
         <ul class="defs">
           <li><span class="term">SmolLM2</span><span class="desc">135M, 360M, 1.7B parameter variants</span></li>
@@ -62,7 +66,7 @@
         </ul>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">03</span>Key Features</h2>
         <ul class="defs">
           <li><span class="term">Modular Architecture</span><span class="desc">Layer-based design makes it easy to add new architectures</span></li>
@@ -76,7 +80,7 @@
         </ul>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">04</span>Architecture</h2>
         <p>The engine uses a clean, modular layer-based architecture:</p>
         <ul class="defs">
@@ -91,7 +95,7 @@
         </p>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">05</span>Usage</h2>
         <pre><code># List supported models
 ./banana-cpp --list-models
@@ -111,14 +115,14 @@
     --max-tokens 512</code></pre>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">06</span>Building</h2>
         <pre><code>mkdir build && cd build
 cmake ..
 make -j$(nproc)</code></pre>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">07</span>Project Structure</h2>
         <ul class="defs">
           <li><span class="term"><code>include/config/</code></span><span class="desc">Model and tokenizer configuration structures</span></li>

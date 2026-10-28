@@ -5,6 +5,69 @@
   import Horizon from "$lib/components/Horizon.svelte";
   import { loadProgress, WONDER_COUNT } from "$lib/game/progress";
   import { seedLink } from "$lib/game/seed";
+  import { animate, createTimeline } from "animejs";
+  import { countUp, magnetic, prefersReducedMotion, reveal, splitReveal, springOut } from "$lib/motion";
+
+  /**
+   * Brings the hero in as one sequence: eyebrow, then the name (rolled up by
+   * splitReveal), then the copy, the full stop, and the actions.
+   * @param {HTMLElement} node
+   */
+  function heroIntro(node) {
+    if (prefersReducedMotion()) return {};
+    const q = (/** @type {string} */ sel) => node.querySelector(sel);
+    const lift = { opacity: [0, 1], translateY: [14, 0], duration: 700, ease: "outExpo" };
+    const settle = () => node.querySelectorAll("[data-intro]").forEach((el) => {
+      /** @type {HTMLElement} */ (el).style.removeProperty("opacity");
+      /** @type {HTMLElement} */ (el).style.removeProperty("transform");
+    });
+    const tl = createTimeline({ onComplete: settle });
+    const parts = [".hero-eyebrow", ".hero-copy", ".period", ".hero-actions"];
+    parts.forEach((sel) => {
+      const el = /** @type {HTMLElement | null} */ (q(sel));
+      if (!el) return;
+      el.dataset.intro = "";
+      el.style.opacity = "0";
+    });
+    tl.add(".hero-eyebrow", lift, 0)
+      .add(".hero-copy", lift, 450)
+      .add(".period", { opacity: [0, 1], duration: 500, ease: "outQuad" }, 900)
+      .add(".hero-actions", lift, 600);
+    // Show the hero even if a throttled renderer never runs the frames.
+    const fallback = setTimeout(() => { tl.cancel(); settle(); }, 2500);
+    return {
+      destroy() {
+        clearTimeout(fallback);
+        tl.cancel();
+      },
+    };
+  }
+
+  /**
+   * Nudges the row arrow with a spring on hover and focus.
+   * @param {HTMLElement} node
+   */
+  function arrowNudge(node) {
+    if (prefersReducedMotion()) return {};
+    const arrow = node.querySelector(".arrow");
+    if (!arrow) return {};
+    const to = (/** @type {number} */ x) => () =>
+      animate(arrow, { translateX: x, ease: springOut });
+    const enter = to(8);
+    const leave = to(0);
+    node.addEventListener("pointerenter", enter);
+    node.addEventListener("focus", enter);
+    node.addEventListener("pointerleave", leave);
+    node.addEventListener("blur", leave);
+    return {
+      destroy() {
+        node.removeEventListener("pointerenter", enter);
+        node.removeEventListener("focus", enter);
+        node.removeEventListener("pointerleave", leave);
+        node.removeEventListener("blur", leave);
+      },
+    };
+  }
 
   // Progress from the tiny-planet game lives in localStorage, so it is read
   // after mount; the server render never shows the badge.
@@ -50,11 +113,11 @@
   />
 </svelte:head>
 
-<section class="hero">
+<section class="hero" use:heroIntro>
   <p class="eyebrow hero-eyebrow">ML engineer — ifkash.dev</p>
 
   <h1 class="display">
-    Kashiful Haque<a href="/fitness" class="period" aria-label="Fitness dashboard">.</a>
+    <span use:splitReveal={{ delay: 120 }}>Kashiful Haque</span><a href="/fitness" class="period" aria-label="Fitness dashboard">.</a>
   </h1>
 
   <div class="hero-body">
@@ -65,8 +128,8 @@
     </p>
 
     <div class="hero-actions">
-      <a href={resumeUrl} class="btn btn-primary">Read résumé</a>
-      <a href="/game" class="btn">Visit the tiny planet</a>
+      <a href={resumeUrl} class="btn btn-primary" use:magnetic>Read résumé</a>
+      <a href="/game" class="btn" use:magnetic>Visit the tiny planet</a>
       {#if badge}
         <a href={badge.href} class="tag wonder" title="Every small wonder on the tiny planet has been found">
           <span aria-hidden="true">✦</span>
@@ -79,11 +142,11 @@
 
 <Horizon />
 
-<dl class="facts">
+<dl class="facts" use:reveal={{ children: "div", gap: 80 }}>
   {#each facts as f}
     <div>
       <dt>{f.k}</dt>
-      <dd>{f.v}</dd>
+      <dd use:countUp>{f.v}</dd>
     </div>
   {/each}
 </dl>
@@ -94,10 +157,10 @@
     <p>Selected work, experiments, and tools.</p>
   </header>
 
-  <ol class="rows">
-    {#each indexRows as row, i}
-      <li class="stagger" style="--i: {i}">
-        <a href={row.href} class="index-row">
+  <ol class="rows" use:reveal={{ children: "li", gap: 55, y: 14 }}>
+    {#each indexRows as row}
+      <li>
+        <a href={row.href} class="index-row" use:arrowNudge>
           <span class="n">{row.n}</span>
           <span class="name">{row.name}</span>
           <span class="desc">{row.desc}</span>
@@ -285,7 +348,7 @@
   .arrow {
     justify-self: end;
     color: var(--ink-3);
-    transition: transform var(--dur) var(--ease-out), color var(--dur-fast) var(--ease);
+    transition: color var(--dur-fast) var(--ease);
   }
 
   .index-row:hover .name {
@@ -294,7 +357,6 @@
   }
   .index-row:hover .arrow {
     color: var(--fjord);
-    transform: translateX(3px);
   }
 
   @media (max-width: 900px) {

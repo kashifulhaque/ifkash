@@ -1,3 +1,7 @@
+<script lang="ts">
+  import { reveal, splitReveal, countUp } from '$lib/motion';
+</script>
+
 <svelte:head>
   <title>Micro-Llama on Vicharak Shrike-Lite — Bare-Metal Edge Inference</title>
   <meta name="description" content="Train a tiny Llama on TinyStories, then run bare-metal inference on the Vicharak Shrike-Lite (RP2040 + FPGA, 264KB SRAM). 213K params, C firmware." />
@@ -10,7 +14,7 @@
       <span aria-hidden="true">/</span>
       <span aria-current="page">vicharak</span>
     </nav>
-    <h1 class="page-title">Micro-Llama on Shrike-Lite <span class="mark">🔌</span></h1>
+    <h1 class="page-title" use:splitReveal>Micro-Llama on Shrike-Lite <span class="mark">🔌</span></h1>
     <p class="lead">A tiny Llama-style language model trained from scratch on TinyStories, then deployed for bare-metal inference on the Vicharak Shrike-Lite — an RP2040 + Renesas FPGA board with only 264KB of SRAM.</p>
     <div class="btn-row">
       <a href="https://github.com/weights-and-wires/vicharak-llm" target="_blank" rel="noopener noreferrer" class="btn btn-sm">
@@ -27,7 +31,7 @@
 
   <div class="detail-body">
     <aside class="facts" aria-label="Project facts">
-      <dl>
+      <dl use:reveal={{ children: ".fact", gap: 70 }}>
         <div class="fact">
           <dt>Board</dt>
           <dd><span>Shrike-Lite</span><span>RP2040 + FPGA</span></dd>
@@ -64,7 +68,7 @@
     </aside>
 
     <div class="copy">
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">01</span>Overview</h2>
         <p>
           The goal was to push a transformer language model to the absolute edge: train a small Llama from scratch, then run
@@ -79,7 +83,7 @@
         </p>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">02</span>Pipeline</h2>
         <pre><code>TinyStories → JAX train (RunPod) → micro_llama.bin → C firmware → UF2 on Shrike-Lite</code></pre>
         <p class="note">
@@ -88,9 +92,9 @@
         </p>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">03</span>Model Architecture</h2>
-        <div class="stats">
+        <div class="stats" use:reveal={{ children: ".stat", gap: 80 }}>
           <div class="stat">
             <span class="stat-label">Parameters</span>
             <span class="stat-value">213,312</span>
@@ -101,7 +105,7 @@
           </div>
           <div class="stat">
             <span class="stat-label">Layers</span>
-            <span class="stat-value">2</span>
+            <span class="stat-value" use:countUp>2</span>
           </div>
           <div class="stat">
             <span class="stat-label">Attention Heads</span>
@@ -109,7 +113,7 @@
           </div>
           <div class="stat">
             <span class="stat-label">Context Length</span>
-            <span class="stat-value">128</span>
+            <span class="stat-value" use:countUp>128</span>
           </div>
           <div class="stat">
             <span class="stat-label">Vocab Size</span>
@@ -122,7 +126,7 @@
         </p>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">04</span>The 264KB SRAM Constraint</h2>
         <p>
           Everything has to fit on a chip with 264KB of total SRAM and no FPU. The architecture is locked by that budget:
@@ -139,7 +143,7 @@
         </dl>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">05</span>Training Details</h2>
         <dl class="kv">
           <div><dt>GPU</dt><dd>1× NVIDIA RTX 3090 (RunPod)</dd></div>
@@ -155,7 +159,7 @@
         </p>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">06</span>Firmware Targets</h2>
         <p>The C inference core builds to two targets from the same source (<code>-DML_TARGET=host|pico</code>):</p>
         <ul class="defs">
@@ -167,7 +171,7 @@
         </ul>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">07</span>Quick Start</h2>
         <h3>Train (JAX / Flax)</h3>
         <pre><code>uv sync
@@ -190,7 +194,7 @@ uv run python firmware/scripts/verify_greedy.py</code></pre>
         </p>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">08</span>Project Structure</h2>
         <ul class="defs">
           <li><span class="term"><code>train/train.py</code></span><span class="desc">JAX/Flax pretraining loop with W&amp;B logging</span></li>
@@ -203,7 +207,7 @@ uv run python firmware/scripts/verify_greedy.py</code></pre>
         </ul>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">09</span>Resources</h2>
         <ul class="linklist">
           <li>

@@ -4,6 +4,7 @@
 </svelte:head>
 
 <script lang="ts">
+  import { reveal, splitReveal } from '$lib/motion';
   type Tool = {
     name: string;
     desc: string;
@@ -34,13 +35,13 @@
 
 <header class="page-head">
   <p class="eyebrow">04 / Tools</p>
-  <h1 class="page-title">Tools</h1>
+  <h1 class="page-title" use:splitReveal>Tools</h1>
   <p class="lead">Small utilities — most run entirely in your browser</p>
 </header>
 
-<ol class="rows list">
+<ol class="rows list" use:reveal={{ children: 'li', gap: 60 }}>
   {#each tools as tool, i}
-    <li class="stagger" style="--i: {i}">
+    <li>
       <a href={tool.page} class="row">
         <span class="row-n">{pad(i + 1)}</span>
         <span class="row-body">

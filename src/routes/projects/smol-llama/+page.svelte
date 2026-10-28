@@ -1,3 +1,7 @@
+<script lang="ts">
+  import { reveal, splitReveal, countUp } from '$lib/motion';
+</script>
+
 <svelte:head>
   <title>smol-llama — 360M LLaMA from Scratch</title>
   <meta name="description" content="360M parameter LLaMA trained from scratch on 6B tokens. GQA, RoPE, SwiGLU." />
@@ -10,7 +14,7 @@
       <span aria-hidden="true">/</span>
       <span aria-current="page">smol-llama</span>
     </nav>
-    <h1 class="page-title">smol-llama <span class="mark">🦙</span></h1>
+    <h1 class="page-title" use:splitReveal>smol-llama <span class="mark">🦙</span></h1>
     <p class="lead">A 360M parameter LLaMA-style language model trained from scratch on 6B tokens. Built with GQA, RoPE, and SwiGLU on a single H100 GPU in 22 hours for $53.</p>
     <div class="btn-row">
       <a href="https://huggingface.co/weights-and-wires/smol-llama" target="_blank" rel="noopener noreferrer" class="btn btn-sm">
@@ -24,7 +28,7 @@
 
   <div class="detail-body">
     <aside class="facts" aria-label="Project facts">
-      <dl>
+      <dl use:reveal={{ children: ".fact", gap: 70 }}>
         <div class="fact">
           <dt>Parameters</dt>
           <dd>~360M</dd>
@@ -61,7 +65,7 @@
     </aside>
 
     <div class="copy">
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">01</span>Overview</h2>
         <p>
           smol-llama is a minimal, from-scratch implementation of a LLaMA-style language model for pre-training on custom data.
@@ -70,20 +74,20 @@
         </p>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">02</span>Model Architecture</h2>
-        <div class="stats">
+        <div class="stats" use:reveal={{ children: ".stat", gap: 80 }}>
           <div class="stat">
             <span class="stat-label">Parameters</span>
-            <span class="stat-value">~360M</span>
+            <span class="stat-value" use:countUp>~360M</span>
           </div>
           <div class="stat">
             <span class="stat-label">Hidden Dimension</span>
-            <span class="stat-value">960</span>
+            <span class="stat-value" use:countUp>960</span>
           </div>
           <div class="stat">
             <span class="stat-label">Layers</span>
-            <span class="stat-value">32</span>
+            <span class="stat-value" use:countUp>32</span>
           </div>
           <div class="stat">
             <span class="stat-label">Attention Heads</span>
@@ -91,7 +95,7 @@
           </div>
           <div class="stat">
             <span class="stat-label">Context Length</span>
-            <span class="stat-value">2048</span>
+            <span class="stat-value" use:countUp>2048</span>
           </div>
           <div class="stat">
             <span class="stat-label">Vocab Size</span>
@@ -100,7 +104,7 @@
         </div>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">03</span>Key Features</h2>
         <ul class="defs">
           <li><span class="term">Grouped Query Attention (GQA)</span><span class="desc">Efficient inference with 15 query heads and 5 key-value heads</span></li>
@@ -113,7 +117,7 @@
         </ul>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">04</span>Training Details</h2>
         <dl class="kv">
           <div><dt>GPU</dt><dd>1× NVIDIA H100 (80GB PCIe)</dd></div>
@@ -125,7 +129,7 @@
         </dl>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">05</span>Dataset</h2>
         <p>
           The model is trained on <a href="https://huggingface.co/datasets/weights-and-wires/fineweb-6b" target="_blank" rel="noopener noreferrer">fineweb-6b</a>,
@@ -134,7 +138,7 @@
         </p>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">06</span>Quick Start</h2>
         <pre><code># Install dependencies
 uv sync
@@ -147,7 +151,7 @@ uv run ./pretrain.py</code></pre>
         </p>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">07</span>Using the Pre-trained Model</h2>
         <pre><code>from transformers import AutoModelForCausalLM, AutoTokenizer
 import torch
@@ -175,7 +179,7 @@ outputs = model.generate(
 print(tokenizer.decode(outputs[0], skip_special_tokens=True))</code></pre>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">08</span>Training Configuration</h2>
         <dl class="kv">
           <div><dt>Batch Size</dt><dd>64</dd></div>
@@ -188,7 +192,7 @@ print(tokenizer.decode(outputs[0], skip_special_tokens=True))</code></pre>
         </dl>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">09</span>Project Structure</h2>
         <ul class="defs">
           <li><span class="term"><code>pretrain.py</code></span><span class="desc">Main training script with gradient accumulation and checkpointing</span></li>
@@ -202,7 +206,7 @@ print(tokenizer.decode(outputs[0], skip_special_tokens=True))</code></pre>
         </ul>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">10</span>Resources</h2>
         <ul class="linklist">
           <li>

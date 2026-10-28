@@ -1,3 +1,7 @@
+<script lang="ts">
+  import { reveal, splitReveal, countUp } from '$lib/motion';
+</script>
+
 <svelte:head>
   <title>Boo — Discord AI Bot</title>
   <meta name="description" content="AI Discord bot. Natural conversations, image understanding, and generation." />
@@ -10,7 +14,7 @@
       <span aria-hidden="true">/</span>
       <span aria-current="page">Boo</span>
     </nav>
-    <h1 class="page-title">Boo — the (un)friendly Discord AI bot</h1>
+    <h1 class="page-title" use:splitReveal>Boo — the (un)friendly Discord AI bot</h1>
     <p class="lead">A snark-powered Discord bot that blends LLM chat, image understanding, and handy utilities into a single docker-compose stack. Built for servers that want a fast, context-aware assistant with guardrails, a tiny admin API, and a smooth UX.</p>
     <div class="btn-row">
       <a href="https://github.com/VVIP-Kitchen/boo" target="_blank" rel="noopener noreferrer" class="btn btn-sm">
@@ -24,7 +28,7 @@
 
   <div class="detail-body">
     <aside class="facts" aria-label="Project facts">
-      <dl>
+      <dl use:reveal={{ children: ".fact", gap: 70 }}>
         <div class="fact">
           <dt>Status</dt>
           <dd><span class="status"><span class="led" aria-hidden="true"></span>Production-ready</span></dd>
@@ -56,7 +60,7 @@
     </aside>
 
     <div class="copy">
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">01</span>Overview</h2>
         <p>
           Boo is a production-ready Discord bot that brings AI-powered conversations, automatic image analysis, and useful
@@ -68,7 +72,7 @@
         </p>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">02</span>Key Features</h2>
         <div class="tiles">
           <div class="tile">
@@ -111,7 +115,7 @@
         </div>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">03</span>Architecture</h2>
         <p>Boo is built as a multi-service architecture running in Docker Compose:</p>
         <ul class="defs">
@@ -122,7 +126,7 @@
         </ul>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">04</span>Quick Start</h2>
         <pre><code># Clone the repository
 git clone https://github.com/VVIP-Kitchen/boo.git
@@ -138,7 +142,7 @@ docker compose up -d
 # Open admin panel at http://localhost:8080</code></pre>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">05</span>Commands</h2>
         <ul class="defs">
           <li><span class="term mono">/ping</span><span class="desc">Check bot latency and response time</span></li>
@@ -153,7 +157,7 @@ docker compose up -d
         </ul>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">06</span>Configuration</h2>
         <p>Boo requires several API keys and configuration options:</p>
         <pre><code># Discord
@@ -175,7 +179,7 @@ POSTGRES_PASSWORD=db-password
 POSTGRES_DB=db-name</code></pre>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">07</span>Manager API</h2>
         <p>The Go-based manager API provides a RESTful interface for managing prompts and viewing analytics:</p>
         <ul class="defs">
@@ -193,7 +197,7 @@ POSTGRES_DB=db-name</code></pre>
         </p>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">08</span>Tech Stack</h2>
         <ul class="defs">
           <li>
@@ -237,7 +241,7 @@ POSTGRES_DB=db-name</code></pre>
         </ul>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">09</span>Features in Detail</h2>
 
         <h3>Context Management</h3>
@@ -266,7 +270,7 @@ POSTGRES_DB=db-name</code></pre>
         </p>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">10</span>Extensibility</h2>
         <ul class="defs">
           <li><span class="term">Add commands</span><span class="desc">Create a new cog in <code>src/commands</code> and load it in <code>bot/bot.py</code></span></li>
@@ -276,7 +280,7 @@ POSTGRES_DB=db-name</code></pre>
         </ul>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">11</span>Repository Structure</h2>
         <ul class="defs">
           <li><span class="term"><code>compose.yml</code></span><span class="desc">4-service orchestration (postgres, redis, manager, bot)</span></li>

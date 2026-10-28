@@ -6,13 +6,17 @@
   />
 </svelte:head>
 
+<script lang="ts">
+  import { reveal, splitReveal } from '$lib/motion';
+</script>
+
 <header class="page-head">
   <p class="eyebrow">06 / Blog</p>
-  <h1 class="page-title">Blog</h1>
+  <h1 class="page-title" use:splitReveal>Blog</h1>
   <p class="lead">Writing, notes, and experiments</p>
 </header>
 
-<section class="archive" aria-labelledby="archive-heading">
+<section class="archive" aria-labelledby="archive-heading" use:reveal={{ delay: 150 }}>
   <p class="eyebrow archive-label">External archive</p>
   <div class="archive-body">
     <h2 id="archive-heading">Writing lives on <em class="serif">Hashnode</em></h2>

@@ -1,3 +1,7 @@
+<script lang="ts">
+  import { reveal, splitReveal, countUp } from '$lib/motion';
+</script>
+
 <svelte:head>
   <title>NoPokeDB — Lightweight Vector Database</title>
   <meta name="description" content="Lightweight vector DB with hnswlib + SQLite. Crash recovery, 2K+ PyPI downloads." />
@@ -10,7 +14,7 @@
       <span aria-hidden="true">/</span>
       <span aria-current="page">NoPokeDB</span>
     </nav>
-    <h1 class="page-title">NoPokeDB <span class="mark">🐹</span></h1>
+    <h1 class="page-title" use:splitReveal>NoPokeDB <span class="mark">🐹</span></h1>
     <p class="lead">A tiny, disk-backed vector database built on hnswlib and SQLite. Simple, lightweight, and crash-safe—perfect for prototypes, side projects, or when you don't want a heavyweight vector DB service.</p>
     <div class="btn-row">
       <a href="https://github.com/kashifulhaque/nopokedb" target="_blank" rel="noopener noreferrer" class="btn btn-sm">
@@ -24,7 +28,7 @@
 
   <div class="detail-body">
     <aside class="facts" aria-label="Project facts">
-      <dl>
+      <dl use:reveal={{ children: ".fact", gap: 70 }}>
         <div class="fact">
           <dt>Stack</dt>
           <dd><span>Python</span><span>hnswlib</span><span>SQLite</span></dd>
@@ -56,7 +60,7 @@
     </aside>
 
     <div class="copy">
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">01</span>Overview</h2>
         <p>
           NoPokeDB is a minimalist vector database that combines the speed of hnswlib's approximate nearest neighbor search
@@ -69,7 +73,7 @@
         </p>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">02</span>Key Features</h2>
         <ul class="defs">
           <li><span class="term">Durable</span><span class="desc">HNSW index + SQLite metadata, fully persisted on disk</span></li>
@@ -81,12 +85,12 @@
         </ul>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">03</span>Installation</h2>
         <pre><code>pip install nopokedb</code></pre>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">04</span>Quick Start</h2>
         <pre><code>import numpy as np
 from nopokedb import NoPokeDB
@@ -119,7 +123,7 @@ db.save()
 db.close()</code></pre>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">05</span>Example Query Result</h2>
         <pre><code>{'{'}
   'id': 0,
@@ -129,7 +133,7 @@ db.close()</code></pre>
 {'}'}</code></pre>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">06</span>Architecture</h2>
         <div class="tiles">
           <div class="tile">
@@ -163,7 +167,7 @@ db.close()</code></pre>
         </div>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">07</span>API Reference</h2>
 
         <h3>Initialization</h3>
@@ -190,7 +194,7 @@ db.close()</code></pre>
         </ul>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">08</span>Use Cases</h2>
         <ul class="defs">
           <li><span class="term">Semantic Search</span><span class="desc">Find similar documents or passages using text embeddings</span></li>
@@ -202,7 +206,7 @@ db.close()</code></pre>
         </ul>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">09</span>Distance Metrics</h2>
         <div class="table-wrap">
           <table>
@@ -234,7 +238,7 @@ db.close()</code></pre>
         </div>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">10</span>Why NoPokeDB?</h2>
         <div class="tiles">
           <div class="tile">
@@ -256,16 +260,16 @@ db.close()</code></pre>
         </div>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">11</span>Project Stats</h2>
-        <div class="stats">
+        <div class="stats" use:reveal={{ children: ".stat", gap: 80 }}>
           <div class="stat">
             <span class="stat-label">PyPI Downloads</span>
             <span class="stat-value">2,000+</span>
           </div>
           <div class="stat">
             <span class="stat-label">Lines of Code</span>
-            <span class="stat-value">~500</span>
+            <span class="stat-value" use:countUp>~500</span>
           </div>
           <div class="stat">
             <span class="stat-label">External Services</span>

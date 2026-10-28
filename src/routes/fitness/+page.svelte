@@ -6,6 +6,35 @@
 
 <script lang="ts">
   import { Dumbbell, TrendingUp } from "lucide-svelte";
+  import { animate } from 'animejs';
+  import { reveal, splitReveal, prefersReducedMotion, springOut } from '$lib/motion';
+
+  // Springy nudge of the arrow and icon while a tile is hovered or focused.
+  function springHover(node: HTMLElement) {
+    if (prefersReducedMotion()) return {};
+    const arrow = node.querySelector<HTMLElement>('.entry-arrow');
+    const icon = node.querySelector<HTMLElement>('.entry-icon');
+    const enter = () => {
+      if (arrow) animate(arrow, { translateX: 8, ease: springOut });
+      if (icon) animate(icon, { scale: 1.15, rotate: -6, ease: springOut });
+    };
+    const leave = () => {
+      if (arrow) animate(arrow, { translateX: 0, ease: springOut });
+      if (icon) animate(icon, { scale: 1, rotate: 0, ease: springOut });
+    };
+    node.addEventListener('pointerenter', enter);
+    node.addEventListener('pointerleave', leave);
+    node.addEventListener('focus', enter);
+    node.addEventListener('blur', leave);
+    return {
+      destroy() {
+        node.removeEventListener('pointerenter', enter);
+        node.removeEventListener('pointerleave', leave);
+        node.removeEventListener('focus', enter);
+        node.removeEventListener('blur', leave);
+      }
+    };
+  }
 
   type Card = {
     name: string;
@@ -32,15 +61,15 @@
 
 <header class="page-head">
   <p class="eyebrow"><span class="led" aria-hidden="true"></span>Private</p>
-  <h1 class="section-title">Fitness</h1>
+  <h1 class="section-title" use:splitReveal>Fitness</h1>
   <p class="section-subtitle">Training in one place. Sign in with Google to log your sessions.</p>
 </header>
 
 <section class="entries" aria-label="Fitness tools">
-  <ol class="rows">
+  <ol class="rows" use:reveal={{ children: 'li', gap: 90, delay: 150 }}>
     {#each cards as card, i}
-      <li class="stagger" style="--i: {i}">
-        <a class="entry" href={card.href}>
+      <li>
+        <a class="entry" href={card.href} use:springHover>
           <span class="entry-index" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
           <div class="entry-body">
             <span class="entry-name">
@@ -126,9 +155,7 @@
     justify-self: end;
     color: var(--ink-3);
     font-size: var(--text-md);
-    transition:
-      color var(--dur-fast) var(--ease),
-      transform var(--dur-fast) var(--ease);
+    transition: color var(--dur-fast) var(--ease);
   }
 
   .entry:hover .entry-name,
@@ -139,10 +166,6 @@
   .entry:hover .entry-icon {
     border-color: var(--fjord);
     color: var(--fjord);
-  }
-
-  .entry:hover .entry-arrow {
-    transform: translateX(3px);
   }
 
   @media (max-width: 640px) {

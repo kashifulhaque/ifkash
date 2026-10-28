@@ -1,3 +1,7 @@
+<script lang="ts">
+  import { reveal, splitReveal, countUp } from '$lib/motion';
+</script>
+
 <svelte:head>
   <title>smoltorch — Autograd Engine & Neural Networks</title>
   <meta name="description" content="Autograd engine and neural networks in ~500 lines of NumPy. Educational deep learning." />
@@ -10,7 +14,7 @@
       <span aria-hidden="true">/</span>
       <span aria-current="page">smoltorch</span>
     </nav>
-    <h1 class="page-title">smoltorch <span class="mark">🔥</span></h1>
+    <h1 class="page-title" use:splitReveal>smoltorch <span class="mark">🔥</span></h1>
     <p class="lead">A tiny autograd engine and neural network library built from first principles. Implements automatic differentiation and deep learning in ~500 lines of readable Python code using only NumPy.</p>
     <div class="btn-row">
       <a href="https://github.com/kashifulhaque/smoltorch" target="_blank" rel="noopener noreferrer" class="btn btn-sm">
@@ -27,7 +31,7 @@
 
   <div class="detail-body">
     <aside class="facts" aria-label="Project facts">
-      <dl>
+      <dl use:reveal={{ children: ".fact", gap: 70 }}>
         <div class="fact">
           <dt>Stack</dt>
           <dd><span>Python</span><span>NumPy</span></dd>
@@ -60,7 +64,7 @@
     </aside>
 
     <div class="copy">
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">01</span>Overview</h2>
         <p>
           smoltorch is a minimalist deep learning library that implements automatic differentiation (autograd) and neural networks
@@ -72,7 +76,7 @@
         </p>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">02</span>Design Philosophy</h2>
         <div class="tiles">
           <div class="tile">
@@ -94,7 +98,7 @@
         </div>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">03</span>Features</h2>
 
         <h3>Core Engine</h3>
@@ -123,7 +127,7 @@
         </ul>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">04</span>Performance</h2>
         <p>smoltorch achieves competitive results on standard benchmarks:</p>
         <div class="table-wrap">
@@ -154,12 +158,12 @@
         </div>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">05</span>Installation</h2>
         <pre><code>uv add smoltorch</code></pre>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">06</span>Quick Start</h2>
 
         <h3>Basic Tensor Operations</h3>
@@ -212,7 +216,7 @@ for epoch in range(100):
         print(f"Epoch {'{'}epoch + 1{'}'}, Loss: {'{'}loss.data:.4f{'}'}\")</code></pre>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">07</span>How Autograd Works</h2>
         <p>smoltorch builds a dynamic computational graph during the forward pass:</p>
         <ol class="steps">
@@ -230,7 +234,7 @@ z.backward()  # Backpropagate through graph
 print(x.grad)  # dz/dx = y + 2x = 3 + 4 = 7.0</code></pre>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">08</span>Broadcasting Support</h2>
         <p>smoltorch correctly handles broadcasting in both forward and backward passes:</p>
         <pre><code>x = Tensor([[1, 2, 3]])    # shape (1, 3)
@@ -242,7 +246,7 @@ z.backward()
 # y.grad sums over broadcast dimensions: shape (2, 1)</code></pre>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">09</span>Supported Operations</h2>
         <ul class="defs">
           <li>
@@ -287,7 +291,7 @@ z.backward()
         </ul>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">10</span>Project Structure</h2>
         <ul class="defs">
           <li><span class="term"><code>smoltorch/tensor.py</code></span><span class="desc">Core Tensor class with autograd implementation</span></li>
@@ -299,7 +303,7 @@ z.backward()
         </ul>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">11</span>Roadmap</h2>
 
         <h3>Coming Soon</h3>
@@ -321,7 +325,7 @@ z.backward()
         </ul>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">12</span>Learning Resources</h2>
         <ul class="linklist">
           <li>

@@ -4,6 +4,7 @@
 </svelte:head>
 
 <script lang="ts">
+  import { reveal, splitReveal } from '$lib/motion';
   type Experiment = {
     name: string;
     desc: string;
@@ -30,13 +31,13 @@
 
 <header class="page-head">
   <p class="eyebrow">03 / RL</p>
-  <h1 class="page-title">RL</h1>
+  <h1 class="page-title" use:splitReveal>RL</h1>
   <p class="lead">Reinforcement learning experiments</p>
 </header>
 
-<ol class="rows list">
+<ol class="rows list" use:reveal={{ children: '.row', gap: 45 }}>
   {#each experiments as experiment, i}
-    <li class="row stagger" class:linked={!!experiment.page} style="--i: {i}">
+    <li class="row" class:linked={!!experiment.page}>
       <span class="row-n">{pad(i + 1)}</span>
 
       <div class="row-body">

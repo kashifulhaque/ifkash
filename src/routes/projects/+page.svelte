@@ -4,6 +4,7 @@
 </svelte:head>
 
 <script lang="ts">
+  import { reveal, splitReveal } from '$lib/motion';
   type Project = {
     name: string;
     desc: string;
@@ -116,13 +117,13 @@
 
 <header class="page-head">
   <p class="eyebrow">02 / Projects</p>
-  <h1 class="page-title">Projects</h1>
+  <h1 class="page-title" use:splitReveal>Projects</h1>
   <p class="lead">Things I've built or am actively shaping</p>
 </header>
 
-<ol class="rows list">
+<ol class="rows list" use:reveal={{ children: '.row', gap: 45 }}>
   {#each projects as project, i}
-    <li class="row stagger" class:linked={!!project.page} style="--i: {i}">
+    <li class="row" class:linked={!!project.page}>
       <span class="row-n">{pad(i + 1)}</span>
 
       <div class="row-body">

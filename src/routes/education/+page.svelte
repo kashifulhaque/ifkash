@@ -3,14 +3,18 @@
   <meta name="description" content="Academic background." />
 </svelte:head>
 
+<script lang="ts">
+  import { reveal, splitReveal } from '$lib/motion';
+</script>
+
 <header class="page-head">
   <p class="eyebrow">05 / Education</p>
-  <h1 class="page-title">Education</h1>
+  <h1 class="page-title" use:splitReveal>Education</h1>
   <p class="lead">Academic background</p>
 </header>
 
-<ol class="rows list">
-  <li class="row stagger">
+<ol class="rows list" use:reveal={{ children: '.row' }}>
+  <li class="row">
     <span class="row-period">2020 — 2024</span>
     <div class="row-main">
       <h2 class="row-school">Indian Institute of Technology Madras</h2>

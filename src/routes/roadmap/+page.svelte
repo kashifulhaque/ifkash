@@ -18,6 +18,7 @@
     type Item,
     type ItemKind
   } from '$lib/roadmap/curriculum';
+  import { reveal, splitReveal } from '$lib/motion';
   import { loadDone, saveDone, loadOpen, saveOpen } from '$lib/roadmap/progress';
 
   // Progress lives in localStorage, so it is read after mount. The server
@@ -69,7 +70,7 @@
 
 <header class="page-head">
   <p class="eyebrow">08 / Roadmap</p>
-  <h1 class="page-title">Roadmap</h1>
+  <h1 class="page-title" use:splitReveal>Roadmap</h1>
   <p class="lead">
     What has been built, and the course that turns it into interview answers
   </p>
@@ -111,9 +112,9 @@
     <p>The numbers to have ready. Every module that follows points back to these.</p>
   </div>
 
-  <div class="artifact-list">
-    {#each ARTIFACTS as artifact, i}
-      <details class="artifact stagger" style="--i: {i}">
+  <div class="artifact-list" use:reveal={{ children: '.artifact', gap: 70 }}>
+    {#each ARTIFACTS as artifact}
+      <details class="artifact">
         <summary class="artifact-summary">
           <span class="artifact-title">{artifact.title}</span>
           <span class="artifact-meta">
@@ -165,13 +166,13 @@
     <p>Twelve modules, in order. Each one lists what you already did, what to read, what to build, and the questions to answer cold.</p>
   </div>
 
-  <ol class="module-list">
-    {#each MODULES as mod, i}
+  <ol class="module-list" use:reveal={{ children: '.module', gap: 45, y: 14 }}>
+    {#each MODULES as mod}
       {@const total = mod.items.length}
       {@const finished = countDone(mod.items, done)}
       {@const isOpen = open.has(mod.id)}
       {@const complete = finished === total && total > 0}
-      <li class="module stagger" class:open={isOpen} style="--i: {i}">
+      <li class="module" class:open={isOpen}>
         <button
           type="button"
           class="module-head"

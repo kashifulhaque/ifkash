@@ -1,3 +1,7 @@
+<script lang="ts">
+  import { reveal, splitReveal, countUp } from '$lib/motion';
+</script>
+
 <svelte:head>
   <title>ferray — NumPy-like Array in Rust</title>
   <meta name="description" content="NumPy-like ndarray in Rust with Python bindings. Learning project." />
@@ -10,7 +14,7 @@
       <span aria-hidden="true">/</span>
       <span aria-current="page">ferray</span>
     </nav>
-    <h1 class="page-title">ferray</h1>
+    <h1 class="page-title" use:splitReveal>ferray</h1>
     <p class="lead">A tiny NumPy-like library for Python, written in Rust. Built to learn the inner workings of NumPy and explore Rust-Python interoperability with PyO3 and maturin.</p>
     <div class="btn-row">
       <a href="https://github.com/kashifulhaque/ferray" target="_blank" rel="noopener noreferrer" class="btn btn-sm">
@@ -21,7 +25,7 @@
 
   <div class="detail-body">
     <aside class="facts" aria-label="Project facts">
-      <dl>
+      <dl use:reveal={{ children: ".fact", gap: 70 }}>
         <div class="fact">
           <dt>Status</dt>
           <dd><span class="status"><span class="led" aria-hidden="true"></span>Work in progress</span></dd>
@@ -44,7 +48,7 @@
     </aside>
 
     <div class="copy">
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">01</span>Overview</h2>
         <p>
           ferray is an educational project that implements a NumPy-like multidimensional array library in Rust with Python bindings.
@@ -56,7 +60,7 @@
         </p>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">02</span>Key Features</h2>
         <ul class="defs">
           <li><span class="term">NumPy-like API</span><span class="desc">Familiar interface for Python developers with array operations</span></li>
@@ -68,7 +72,7 @@
         </ul>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">03</span>Supported Operations</h2>
 
         <h3>Array Creation</h3>
@@ -107,7 +111,7 @@
         </ul>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">04</span>Installation</h2>
 
         <h3>Prerequisites</h3>
@@ -149,7 +153,7 @@ maturin develop --release
 uv run maturin develop --release</code></pre>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">05</span>Usage Examples</h2>
 
         <h3>Basic Array Creation</h3>
@@ -214,7 +218,7 @@ a_back = a_rust.to_numpy()
 print(np.allclose(a_np, a_back))  # True</code></pre>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">06</span>Using mise (Optional)</h2>
         <p>If you have mise installed, you can use the provided task commands:</p>
         <ul class="defs">
@@ -225,7 +229,7 @@ print(np.allclose(a_np, a_back))  # True</code></pre>
         </ul>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">07</span>Project Structure</h2>
         <ul class="defs">
           <li><span class="term"><code>src/lib.rs</code></span><span class="desc">PyO3 module definition and exports</span></li>
@@ -239,7 +243,7 @@ print(np.allclose(a_np, a_back))  # True</code></pre>
         </ul>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">08</span>Tech Stack</h2>
         <dl class="kv">
           <div><dt>Language</dt><dd>Rust</dd></div>
@@ -250,7 +254,7 @@ print(np.allclose(a_np, a_back))  # True</code></pre>
         </dl>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">09</span>Learning Goals</h2>
         <ul class="ruled">
           <li>Understanding NumPy's internal architecture and memory layout</li>
@@ -262,7 +266,7 @@ print(np.allclose(a_np, a_back))  # True</code></pre>
         </ul>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">10</span>Status</h2>
         <div class="callout">
           <p class="callout-title"><span class="led" aria-hidden="true"></span>Work in Progress</p>

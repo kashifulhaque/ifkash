@@ -1,7 +1,10 @@
 <script lang="ts">
   import "../app.css";
-  import { onMount } from "svelte";
+  import { onMount, tick } from "svelte";
   import { page } from "$app/stores";
+  import { afterNavigate } from "$app/navigation";
+  import { animate, utils } from "animejs";
+  import { prefersReducedMotion } from "$lib/motion";
   import AiAgent from "$lib/components/AiAgent.svelte";
   import CommandDeck from "$lib/components/CommandDeck.svelte";
   import WeatherHeadsUp from "$lib/components/WeatherHeadsUp.svelte";
@@ -32,9 +35,71 @@
     return path === href || path.startsWith(href + "/");
   }
 
+  // A short fade and lift for the page content on client-side navigation.
+  let mainEl: HTMLElement | undefined;
+  afterNavigate(({ from, to }) => {
+    if (!mainEl || !from || !to || from.url.pathname === to.url.pathname) return;
+    if (prefersReducedMotion()) return;
+    const el = mainEl;
+    const anim = animate(el, {
+      opacity: [0, 1],
+      translateY: [10, 0],
+      duration: 450,
+      ease: "outExpo",
+      onComplete: (a) => utils.cleanInlineStyles(a),
+    });
+    // Never leave the page hidden if a throttled renderer skips the frames.
+    setTimeout(() => {
+      if (anim.completed) return;
+      anim.cancel();
+      el.style.removeProperty("opacity");
+      el.style.removeProperty("transform");
+    }, 1200);
+  });
+
+  // The nav underline slides between items instead of jumping. It is placed
+  // in the browser only, so the CSS underline still marks the page without JS.
+  let navList: HTMLElement | undefined;
+  let indicator: HTMLElement | undefined;
+  let mounted = false;
+  let placed = false;
+  let enhanced = false;
+
+  function placeIndicator(instant = false) {
+    if (!navList || !indicator) {
+      placed = false;
+      return;
+    }
+    const link = navList.querySelector<HTMLElement>('a[aria-current="page"]');
+    if (!link) {
+      indicator.style.opacity = "0";
+      placed = false;
+      return;
+    }
+    const inset = parseFloat(getComputedStyle(link).paddingLeft) || 0;
+    const x = link.offsetLeft + inset;
+    const width = link.offsetWidth - inset * 2;
+    enhanced = true;
+    indicator.style.opacity = "1";
+    if (instant || !placed || prefersReducedMotion()) {
+      utils.set(indicator, { translateX: x, width });
+    } else {
+      animate(indicator, { translateX: x, width, duration: 500, ease: "outExpo" });
+    }
+    placed = true;
+  }
+
+  $: if (mounted && navList) {
+    currentPath;
+    tick().then(() => placeIndicator());
+  }
+  $: if (!navList) placed = false;
+
   // Local time in Bangalore, shown in the footer's coordinate line.
   let clock = "";
   onMount(() => {
+    mounted = true;
+    document.fonts?.ready.then(() => placeIndicator(true));
     const fmt = new Intl.DateTimeFormat("en-GB", {
       hour: "2-digit",
       minute: "2-digit",
@@ -94,6 +159,8 @@
   }
 </script>
 
+<svelte:window on:resize={() => placeIndicator(true)} />
+
 {#if isFullWidth}
   <slot />
 {:else}
@@ -106,8 +173,8 @@
         <span>ifkash</span>
       </a>
 
-      <nav class="nav" aria-label="Primary">
-        <ul>
+      <nav class="nav" class:enhanced aria-label="Primary">
+        <ul bind:this={navList}>
           {#each navItems as item}
             <li>
               <a
@@ -118,6 +185,7 @@
               </a>
             </li>
           {/each}
+          <span class="indicator" bind:this={indicator} aria-hidden="true"></span>
         </ul>
       </nav>
 
@@ -148,7 +216,7 @@
     </div>
   </header>
 
-  <main id="main" class="main">
+  <main id="main" class="main" bind:this={mainEl}>
     <slot />
   </main>
 
@@ -305,6 +373,7 @@
   }
 
   .nav ul {
+    position: relative;
     display: flex;
     justify-content: center;
     gap: var(--s-1);
@@ -337,6 +406,20 @@
     right: var(--s-3);
     height: 1px;
     background: var(--ink);
+  }
+
+  .nav.enhanced a[aria-current="page"]::after {
+    display: none;
+  }
+  .indicator {
+    position: absolute;
+    bottom: -16px;
+    left: 0;
+    width: 0;
+    height: 1px;
+    background: var(--ink);
+    opacity: 0;
+    pointer-events: none;
   }
 
   .tools {
@@ -496,6 +579,9 @@
     }
     .nav a[aria-current="page"]::after {
       bottom: 4px;
+    }
+    .indicator {
+      bottom: 8px;
     }
   }
 

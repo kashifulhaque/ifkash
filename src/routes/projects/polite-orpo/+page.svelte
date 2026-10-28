@@ -1,3 +1,7 @@
+<script lang="ts">
+  import { reveal, splitReveal, countUp } from '$lib/motion';
+</script>
+
 <svelte:head>
   <title>Llama-3.2-3B-Polite-ORPO — Projects</title>
   <meta
@@ -13,7 +17,7 @@
       <span aria-hidden="true">/</span>
       <span aria-current="page">polite-orpo</span>
     </nav>
-    <h1 class="page-title">PoliteLlama</h1>
+    <h1 class="page-title" use:splitReveal>PoliteLlama</h1>
     <p class="lead">
       A powerful open-source Large Language Model fine-tuned to
       fundamentally alter its behavior, instilling a strict constraint:
@@ -34,7 +38,7 @@
 
   <div class="detail-body">
     <aside class="facts" aria-label="Project facts">
-      <dl>
+      <dl use:reveal={{ children: ".fact", gap: 70 }}>
         <div class="fact">
           <dt>Base model</dt>
           <dd>Llama-3.2-3B-Instruct</dd>
@@ -74,7 +78,7 @@
     </aside>
 
     <div class="copy">
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">01</span>The Objective</h2>
         <p>
           The goal of this project was to take a powerful open-source
@@ -93,7 +97,7 @@
         </p>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">02</span>What We Did</h2>
 
         <h3>The Dataset</h3>
@@ -183,7 +187,7 @@
         </ul>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">03</span>Why We Did It This Way</h2>
 
         <h3>Why ORPO?</h3>
@@ -220,7 +224,7 @@
         </p>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">04</span>What We Achieved</h2>
         <p>
           We successfully created the <strong
@@ -237,7 +241,7 @@
         </p>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">05</span>Observed Failure Modes & Limitations</h2>
         <p>
           While the adapter learned the "say please" boundary extremely
@@ -278,7 +282,7 @@
         </p>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">06</span>How to Move Further</h2>
         <p>
           Now that the core behavior is trained, here are the logical next
@@ -322,7 +326,7 @@
         </ul>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">07</span>Some training curves from W&B</h2>
         <div class="figures">
           <img
@@ -490,7 +494,7 @@ The colors of the rainbow are red, orange, yellow, green, blue, indigo, and viol
         </p>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal>
         <h2><span class="num">08</span>Resources</h2>
         <ul class="linklist">
           <li>

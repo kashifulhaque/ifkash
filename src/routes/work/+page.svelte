@@ -4,6 +4,7 @@
 </svelte:head>
 
 <script lang="ts">
+  import { reveal, splitReveal } from '$lib/motion';
   type Job = {
     role: string;
     company: string;
@@ -51,13 +52,13 @@
 
 <header class="page-head">
   <p class="eyebrow">01 / Work</p>
-  <h1 class="page-title">Work</h1>
+  <h1 class="page-title" use:splitReveal>Work</h1>
   <p class="lead">Roles and companies</p>
 </header>
 
-<ol class="timeline">
+<ol class="timeline" use:reveal={{ children: '.stop', gap: 90 }}>
   {#each jobs as job, i}
-    <li class="stop stagger" class:current={job.status === 'current'} style="--i: {i}">
+    <li class="stop" class:current={job.status === 'current'}>
       <a href={job.url} target="_blank" rel="noopener noreferrer" class="job">
         <span class="job-period">{job.period}</span>
         <span class="job-node" aria-hidden="true">

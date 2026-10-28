@@ -6,6 +6,10 @@
   />
 </svelte:head>
 
+<script lang="ts">
+  import { reveal, splitReveal } from '$lib/motion';
+</script>
+
 <article class="detail">
   <header class="page-head">
     <nav class="breadcrumb" aria-label="Breadcrumb">
@@ -13,7 +17,7 @@
       <span aria-hidden="true">/</span>
       <span aria-current="page">Snake DQN</span>
     </nav>
-    <h1 class="page-title">Snake RL</h1>
+    <h1 class="page-title" use:splitReveal>Snake RL</h1>
     <p class="lead">
       A snake agent trained from scratch with Dueling Double Deep Q-Networks
       (DDQN) in PyTorch. The policy learns to survive, chase food, and avoid
@@ -34,7 +38,7 @@
 
   <div class="layout">
     <aside class="facts" aria-label="Experiment facts">
-      <dl>
+      <dl use:reveal={{ children: '.fact', gap: 60, y: 12 }}>
         <div class="fact">
           <dt>Method</dt>
           <dd>Dueling Double DQN</dd>
@@ -63,7 +67,7 @@
     </aside>
 
     <div class="prose">
-      <section class="section">
+      <section class="section" use:reveal={{ y: 20, threshold: 0.08 }}>
         <h2><span class="num" aria-hidden="true">01</span>Overview</h2>
         <p>
           The environment is a headless-friendly pygame implementation
@@ -93,7 +97,7 @@
         </p>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal={{ y: 20, threshold: 0.08 }}>
         <h2><span class="num" aria-hidden="true">02</span>Results</h2>
         <div class="stats-grid">
           <div class="stat">
@@ -130,7 +134,7 @@
         </p>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal={{ y: 20, threshold: 0.08 }}>
         <h2><span class="num" aria-hidden="true">03</span>Run it yourself</h2>
         <div class="code-block">
           <pre><code>uv run train.py   # train a new agent headless (~1500 steps/s)
@@ -145,7 +149,7 @@ uv run plot.py    # render checkpoints/log.csv -&gt; progress.png</code></pre>
         </p>
       </section>
 
-      <section class="section">
+      <section class="section" use:reveal={{ y: 20, threshold: 0.08 }}>
         <h2><span class="num" aria-hidden="true">04</span>Notes &amp; next steps</h2>
         <ul class="feature-list">
           <li>

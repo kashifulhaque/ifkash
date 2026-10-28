@@ -1,7 +1,6 @@
 <script>
   import { onMount } from "svelte";
   import { dev } from "$app/environment";
-  import EdgeField from "$lib/components/EdgeField.svelte";
   import Horizon from "$lib/components/Horizon.svelte";
   import { loadProgress, WONDER_COUNT } from "$lib/game/progress";
   import { seedLink } from "$lib/game/seed";
@@ -170,8 +169,6 @@
     {/each}
   </ol>
 </section>
-
-<EdgeField />
 
 <style>
   /* ── Hero ─────────────────────────────────────────────── */

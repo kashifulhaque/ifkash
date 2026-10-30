@@ -27,6 +27,13 @@
       page: '/tools/splitter',
       status: 'active',
       links: []
+    },
+    {
+      name: 'Token Lens',
+      desc: 'Watch a language model choose its next token. A small model runs on your device and streams the real probability of each candidate, step by step, so you can see that tokens are not words.',
+      page: '/tools/token-lens',
+      status: 'active',
+      links: []
     }
   ];
 

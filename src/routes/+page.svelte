@@ -150,26 +150,6 @@
   {/each}
 </dl>
 
-<section class="index" aria-labelledby="index-heading">
-  <header class="index-head">
-    <h2 id="index-heading">Index</h2>
-    <p>Selected work, experiments, and tools.</p>
-  </header>
-
-  <ol class="rows" use:reveal={{ children: "li", gap: 55, y: 14 }}>
-    {#each indexRows as row}
-      <li>
-        <a href={row.href} class="index-row" use:arrowNudge>
-          <span class="n">{row.n}</span>
-          <span class="name">{row.name}</span>
-          <span class="desc">{row.desc}</span>
-          <span class="arrow" aria-hidden="true">→</span>
-        </a>
-      </li>
-    {/each}
-  </ol>
-</section>
-
 <style>
   /* ── Hero ─────────────────────────────────────────────── */
 

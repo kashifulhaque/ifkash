@@ -10,7 +10,14 @@
   import WeatherHeadsUp from "$lib/components/WeatherHeadsUp.svelte";
   import DesignSwitch from "$lib/components/DesignSwitch.svelte";
   import { design, type Design } from "$lib/stores/design";
-  import { theme, toggleTheme } from "$lib/stores/theme";
+  import {
+    theme,
+    themeChoice,
+    nextThemeChoice,
+    resolveTheme,
+    setThemeChoice,
+    type ThemeChoice,
+  } from "$lib/stores/theme";
   import { playDayNightCycle } from "$lib/dayNightCycle";
 
   $: currentPath = $page.url.pathname;
@@ -138,20 +145,45 @@
   };
 
   $: themeCopy = themeCopyFor[$design];
+  $: upcoming = nextThemeChoice($themeChoice, $theme);
+  $: upcomingTheme = resolveTheme(upcoming);
+  $: themeAction =
+    upcoming === "system"
+      ? "Use system theme"
+      : upcomingTheme === "dark"
+        ? themeCopy.toDark
+        : themeCopy.toLight;
+  $: themeTitle =
+    $themeChoice === "system"
+      ? `System, ${$theme === "dark" ? themeCopy.dark : themeCopy.light}`
+      : $theme === "dark"
+        ? themeCopy.dark
+        : themeCopy.light;
+
+  function themeLabel(next: ThemeChoice, to: "light" | "dark"): string {
+    if (next === "system") return "System";
+    return to === "dark" ? themeCopy.dark : themeCopy.light;
+  }
 
   // Plays the full sunset or sunrise, and flips the theme partway through.
+  // Choosing the system again skips the sky when the page is already that color.
   let cycling = false;
   async function onThemeClick(event: MouseEvent) {
     if (cycling) return;
+    const next = nextThemeChoice($themeChoice, $theme);
+    const to = resolveTheme(next);
+    if (to === $theme) {
+      setThemeChoice(next);
+      return;
+    }
     cycling = true;
     const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
-    const to = $theme === "dark" ? "light" : "dark";
     try {
       await playDayNightCycle({
         origin: { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 },
         to,
-        label: to === "dark" ? themeCopy.dark : themeCopy.light,
-        onSwitch: toggleTheme,
+        label: themeLabel(next, to),
+        onSwitch: () => setThemeChoice(next),
       });
     } finally {
       cycling = false;
@@ -196,9 +228,10 @@
         <button
           type="button"
           class="theme-toggle"
+          data-choice={$themeChoice}
           on:click={onThemeClick}
-          aria-label={$theme === "dark" ? themeCopy.toLight : themeCopy.toDark}
-          title={$theme === "dark" ? themeCopy.light : themeCopy.dark}
+          aria-label={themeAction}
+          title={themeTitle}
         >
           <!-- A sun on the horizon: risen in daylight, set at night. -->
           <svg viewBox="0 0 24 24" aria-hidden="true" class:night={$theme === "dark"}>
@@ -440,6 +473,9 @@
     color: var(--ink-2);
     cursor: pointer;
     transition: color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
+  }
+  .theme-toggle[data-choice="system"] {
+    border-color: var(--line);
   }
   .theme-toggle:hover {
     color: var(--ink);

@@ -17,6 +17,7 @@
         var design = "nordisk";
         try {
           var savedTheme = localStorage.getItem("ifkash-theme");
+          // "light" and "dark" are explicit. Anything else follows the system theme.
           if (savedTheme === "light" || savedTheme === "dark") theme = savedTheme;
           else if (matchMedia("(prefers-color-scheme: dark)").matches) theme = "dark";
           var savedDesign = localStorage.getItem("ifkash-design");

@@ -109,19 +109,18 @@ export const PLAN_RULES: string[] = [
 export const UPPER_A: Exercise[] = [
   {
     name: 'Bench press',
-    scheme: '4×6-10',
+    scheme: '3×8-10',
     kind: 'weighted',
     equipment: 'Dumbbell',
     priority: true,
-    alt: 'Smith or barbell bench, same 4×6-10, if one is free'
+    alt: 'Smith or barbell bench, same 3×8-10, if one is free'
   },
   {
     name: 'Seated cable row',
-    scheme: '4×8-10',
+    scheme: '3×8-10',
     kind: 'weighted',
     equipment: 'Machine',
-    priority: true,
-    note: 'on the lat pulldown station'
+    priority: true
   },
   {
     name: 'Shoulder press',
@@ -133,7 +132,7 @@ export const UPPER_A: Exercise[] = [
   { name: 'Lat pulldown', scheme: '3×8-10', kind: 'weighted', equipment: 'Machine', note: 'wide grip' },
   // Side delts widen the shoulder line; the V-taper does more for a lean read
   // than arm size does, so they show up three times a week.
-  { name: 'Lateral raises', scheme: '3×12-15', kind: 'weighted', equipment: 'Dumbbell' },
+  { name: 'Lateral raises', scheme: '3×10-12', kind: 'weighted', equipment: 'Dumbbell' },
   {
     name: 'Cable tricep pushdown',
     scheme: '2×10-12',
@@ -155,18 +154,11 @@ export const UPPER_A: Exercise[] = [
 export const LOWER_A: Exercise[] = [
   {
     name: 'Squat',
-    scheme: '3×6-10',
+    scheme: '3×8-10',
     kind: 'weighted',
     equipment: 'Smith',
     priority: true,
-    alt: 'barbell back squat, same 3×6-10, if the Smith is taken'
-  },
-  {
-    name: 'Bulgarian split squat',
-    scheme: '3×8-10 each leg',
-    kind: 'weighted',
-    equipment: 'Dumbbell',
-    priority: true
+    alt: 'barbell back squat, same 3×8-10, if the Smith is taken'
   },
   { name: 'Leg extension', scheme: '3×10-15', kind: 'weighted', equipment: 'Machine' },
   // Same entry and scheme on both lower days, so progression reads cleanly.
@@ -197,24 +189,17 @@ export const UPPER_B: Exercise[] = [
     priority: true,
     note: 'neutral (V-handle) or close grip'
   },
-  {
-    name: 'Chest-supported row',
-    scheme: '3×10-12',
-    kind: 'weighted',
-    equipment: 'Dumbbell',
-    note: 'chest on an incline bench'
-  },
-  { name: 'Pec fly', scheme: '3×12-15', kind: 'weighted', equipment: 'Machine' },
+  { name: 'Pec fly', scheme: '3×10-12', kind: 'weighted', equipment: 'Machine' },
   // Rear delts and posture. Cheap to do, and it changes how the upper body
   // reads standing still.
   {
     name: 'Reverse pec deck',
-    scheme: '3×15-20',
+    scheme: '3×10-12',
     kind: 'weighted',
     equipment: 'Machine',
     note: 'pec fly machine set for rear delts'
   },
-  { name: 'Cable lateral raise', scheme: '2×12-15', kind: 'weighted', equipment: 'Cable' },
+  { name: 'Cable lateral raise', scheme: '2×10-12', kind: 'weighted', equipment: 'Cable' },
   {
     name: 'Incline dumbbell curl',
     scheme: '2×10-12',
@@ -237,7 +222,7 @@ export const LOWER_B: Exercise[] = [
   // wants a bar: do it first, while one is free.
   {
     name: 'Romanian deadlift',
-    scheme: '3×6-10',
+    scheme: '3×8-10',
     kind: 'weighted',
     equipment: 'Barbell',
     priority: true,
@@ -246,7 +231,7 @@ export const LOWER_B: Exercise[] = [
   { name: 'Leg press', scheme: '3×10-12', kind: 'weighted', equipment: 'Machine', priority: true },
   {
     name: 'Back extension',
-    scheme: '3×12-15',
+    scheme: '3×10-12',
     kind: 'weighted',
     equipment: 'Machine',
     note: 'glute-biased: round the upper back, squeeze the glutes; hold a plate once 15 is easy'
@@ -268,16 +253,15 @@ export const LOWER_B: Exercise[] = [
  */
 export const CARDIO_DAY: Exercise[] = [
   // A separate entry from Upper B's 2×12-15: lighter, higher reps.
-  { name: 'Cable lateral raise (pump)', scheme: '3×15-20', kind: 'weighted', equipment: 'Cable' },
-  { name: 'Face pulls', scheme: '3×15-20', kind: 'weighted', equipment: 'Cable' },
-  { name: 'Cable curl', scheme: '2×12-15', kind: 'weighted', equipment: 'Cable' },
+  { name: 'Cable lateral raise', scheme: '3×10-12', kind: 'weighted', equipment: 'Cable' },
+  { name: 'Face pulls', scheme: '3×15-18', kind: 'weighted', equipment: 'Cable' },
+  { name: 'Cable curl', scheme: '2×10-12', kind: 'weighted', equipment: 'Cable' },
   {
     name: 'Single-arm cable tricep extension',
     scheme: '2×12-15',
     kind: 'weighted',
     equipment: 'Cable'
   },
-  { name: 'Dead bug', scheme: '3×10', kind: 'bodyweight', equipment: 'Bodyweight', note: 'each side' },
   { name: 'Plank', scheme: '3×30-60s', kind: 'time', equipment: 'Bodyweight' }
 ];
 
@@ -312,27 +296,27 @@ export const DAY_INFO: Record<DayLabel, DayInfo> = {
   'Upper A': {
     day: 'Mon',
     detail: 'chest / back / shoulders / arms',
-    cardio: '15 min crosstrainer or cycle intervals: 30s hard / 90s easy'
+    cardio: '15-min crosstrainer'
   },
   'Lower A': {
     day: 'Tue',
     detail: 'quads / glutes / hamstrings / calves / core',
-    cardio: '10 min cycle, easy: legs are already done'
+    cardio: '10-min crosstrainer'
   },
   'Upper B': {
     day: 'Thu',
     detail: 'chest / back / rear delts / shoulders / arms',
-    cardio: '15 min incline treadmill walk'
+    cardio: '15-min crosstrainer'
   },
   'Lower B': {
     day: 'Fri',
     detail: 'hamstrings / glutes / quads / calves / core',
-    cardio: '10 min cycle, easy'
+    cardio: '10-min crosstrainer'
   },
   Cardio: {
     day: 'Sat',
     detail: 'conditioning + pump: zone 2 cardio, then shoulders, arms and core; or a missed lifting day',
-    cardio: '35-40 min zone 2: incline walk, cycle or crosstrainer at a talking pace',
+    cardio: '15-20 min crosstrainer',
     optional: true
   }
 };
@@ -434,11 +418,11 @@ export function cardioMet(kind: string): number {
 // Saturday is the long, easy zone 2 bout. Daily steps happen outside the gym
 // and aren't logged here.
 export const CARDIO_DEFAULTS: Record<DayLabel, { kind: string; minutes: number }> = {
-  'Upper A': { kind: 'Crosstrainer (intervals)', minutes: 15 },
-  'Lower A': { kind: 'Cycle', minutes: 10 },
-  'Upper B': { kind: 'Treadmill (incline walk)', minutes: 15 },
-  'Lower B': { kind: 'Cycle', minutes: 10 },
-  Cardio: { kind: 'Treadmill (incline walk)', minutes: 35 }
+  'Upper A': { kind: 'Crosstrainer', minutes: 15 },
+  'Lower A': { kind: 'Crosstrainer', minutes: 10 },
+  'Upper B': { kind: 'Crosstrainer', minutes: 15 },
+  'Lower B': { kind: 'Crosstrainer', minutes: 10 },
+  Cardio: { kind: 'Crosstrainer', minutes: 15 }
 };
 
 // ---- API types -------------------------------------------------------------

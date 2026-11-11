@@ -109,15 +109,14 @@ export const PLAN_RULES: string[] = [
 export const UPPER_A: Exercise[] = [
   {
     name: 'Bench press',
-    scheme: '3×8-10',
+    scheme: '3×10-12',
     kind: 'weighted',
     equipment: 'Dumbbell',
-    priority: true,
-    alt: 'Smith or barbell bench, same 3×8-10, if one is free'
+    priority: true
   },
   {
     name: 'Seated cable row',
-    scheme: '3×8-10',
+    scheme: '3×10-12',
     kind: 'weighted',
     equipment: 'Machine',
     priority: true
@@ -129,7 +128,7 @@ export const UPPER_A: Exercise[] = [
     equipment: 'Machine',
     priority: true
   },
-  { name: 'Lat pulldown', scheme: '3×8-10', kind: 'weighted', equipment: 'Machine', note: 'wide grip' },
+  { name: 'Lat pulldown', scheme: '3×10-12', kind: 'weighted', equipment: 'Machine', note: 'wide grip' },
   // Side delts widen the shoulder line; the V-taper does more for a lean read
   // than arm size does, so they show up three times a week.
   { name: 'Lateral raises', scheme: '3×10-12', kind: 'weighted', equipment: 'Dumbbell' },
@@ -154,65 +153,59 @@ export const UPPER_A: Exercise[] = [
 export const LOWER_A: Exercise[] = [
   {
     name: 'Squat',
-    scheme: '3×8-10',
+    scheme: '3×10-12',
     kind: 'weighted',
     equipment: 'Smith',
-    priority: true,
-    alt: 'barbell back squat, same 3×8-10, if the Smith is taken'
+    priority: true
   },
-  { name: 'Leg extension', scheme: '3×10-15', kind: 'weighted', equipment: 'Machine' },
+  { name: 'Leg extension', scheme: '3×10-12', kind: 'weighted', equipment: 'Machine' },
   // Same entry and scheme on both lower days, so progression reads cleanly.
-  { name: 'Leg curls', scheme: '3×10-12', kind: 'weighted', equipment: 'Machine' },
-  { name: 'Calf raises', scheme: '4×12-15', kind: 'weighted', equipment: 'Machine', note: 'on the leg press' },
+  { name: 'Leg curls', scheme: '3×8-10', kind: 'weighted', equipment: 'Machine' },
+  { name: 'Calf raises', scheme: '3×12-15', kind: 'weighted', equipment: 'Machine' },
   // No hanging bar here; lying on a mat is the version that fits.
-  { name: 'Lying leg raise', scheme: '3×10-15', kind: 'bodyweight', equipment: 'Bodyweight' }
+  { name: 'Lying leg raise', scheme: '3×10-12', kind: 'bodyweight', equipment: 'Bodyweight' }
 ];
 
 /** Day 3 (Thu): incline press and vertical pull lead. */
 export const UPPER_B: Exercise[] = [
   {
     name: 'Incline press',
-    scheme: '3×8-10',
+    scheme: '3×10-12',
     kind: 'weighted',
     equipment: 'Machine',
-    priority: true,
-    note: 'shoulder press machine in incline mode',
-    alt: 'incline dumbbell press, same 3×8-10, if the machine is taken'
+    priority: true
   },
   // A separate entry from Upper A's wide-grip pulldown: different grip,
   // different loads, different scheme.
   {
     name: 'Close-grip lat pulldown',
-    scheme: '4×8-10',
+    scheme: '3×10-12',
     kind: 'weighted',
     equipment: 'Machine',
     priority: true,
     note: 'neutral (V-handle) or close grip'
   },
-  { name: 'Pec fly', scheme: '3×10-12', kind: 'weighted', equipment: 'Machine' },
+  { name: 'Pec fly', scheme: '3×8-10', kind: 'weighted', equipment: 'Machine' },
   // Rear delts and posture. Cheap to do, and it changes how the upper body
   // reads standing still.
   {
     name: 'Reverse pec deck',
-    scheme: '3×10-12',
+    scheme: '3×8-10',
     kind: 'weighted',
-    equipment: 'Machine',
-    note: 'pec fly machine set for rear delts'
+    equipment: 'Machine'
   },
-  { name: 'Cable lateral raise', scheme: '2×10-12', kind: 'weighted', equipment: 'Cable' },
+  { name: 'Lateral raise', scheme: '2×10-12', kind: 'weighted', equipment: 'Cable' },
   {
     name: 'Incline dumbbell curl',
     scheme: '2×10-12',
     kind: 'weighted',
-    equipment: 'Dumbbell',
-    note: 'superset with overhead extensions'
+    equipment: 'Dumbbell'
   },
   {
     name: 'Overhead cable tricep extension',
     scheme: '2×10-12',
     kind: 'weighted',
-    equipment: 'Cable',
-    note: 'superset with incline curls'
+    equipment: 'Cable'
   }
 ];
 
@@ -225,21 +218,18 @@ export const LOWER_B: Exercise[] = [
     scheme: '3×8-10',
     kind: 'weighted',
     equipment: 'Barbell',
-    priority: true,
-    alt: 'dumbbells, same 3×6-10, if no bar is free'
+    priority: true
   },
   { name: 'Leg press', scheme: '3×10-12', kind: 'weighted', equipment: 'Machine', priority: true },
   {
     name: 'Back extension',
-    scheme: '3×10-12',
+    scheme: '3×8-10',
     kind: 'weighted',
-    equipment: 'Machine',
-    note: 'glute-biased: round the upper back, squeeze the glutes; hold a plate once 15 is easy'
+    equipment: 'Machine'
   },
-  { name: 'Leg curls', scheme: '3×10-12', kind: 'weighted', equipment: 'Machine' },
-  { name: 'Calf raises', scheme: '4×12-15', kind: 'weighted', equipment: 'Machine', note: 'on the leg press' },
-  { name: 'Cable crunch', scheme: '3×10-15', kind: 'weighted', equipment: 'Cable' },
-  { name: 'Side plank', scheme: '2×30-45s', kind: 'time', equipment: 'Bodyweight', note: 'each side' }
+  { name: 'Leg curls', scheme: '3×8-10', kind: 'weighted', equipment: 'Machine' },
+  { name: 'Calf raises', scheme: '3×12-15', kind: 'weighted', equipment: 'Machine' },
+  { name: 'Plank', scheme: '2×30-45s', kind: 'time', equipment: 'Bodyweight' }
 ];
 
 /**

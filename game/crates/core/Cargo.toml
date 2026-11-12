@@ -1,0 +1,22 @@
+[package]
+name = "lf-core"
+description = "Latticefall deterministic simulation core."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+serde.workspace = true
+postcard.workspace = true
+xxhash-rust.workspace = true
+libm.workspace = true
+# Same math crate as rapier3d 0.36.1 (WP-010 adds Rapier). `libm-force` routes nalgebra's
+# transcendental functions through libm, matching Rapier's `enhanced-determinism`.
+nalgebra = { version = "0.35", default-features = false, features = ["std", "libm-force"] }
+
+[dev-dependencies]
+proptest = "1"

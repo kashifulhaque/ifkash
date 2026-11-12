@@ -1,0 +1,34 @@
+// Registry: string ID -> stable numeric ID (u32).
+//
+// APPEND-ONLY. Never renumber, reuse, or delete an entry: replays and saved games
+// store the numbers. The loader fails on a duplicate string, a duplicate number, or
+// any content ID that has no entry here.
+//
+// Number blocks (a convention, not enforced): 100s attributes, 1000s weapons,
+// 2000s straight-sword moves.
+(
+  entries: [
+    (id: "attr_vitality", num: 100),
+    (id: "attr_focus", num: 101),
+    (id: "attr_endurance", num: 102),
+    (id: "attr_might", num: 103),
+    (id: "attr_finesse", num: 104),
+    (id: "attr_insight", num: 105),
+    (id: "attr_devotion", num: 106),
+
+    (id: "wpn_wayfarer_blade", num: 1000),
+
+    (id: "ss_light_1", num: 2000),
+    (id: "ss_light_2", num: 2001),
+    (id: "ss_light_3", num: 2002),
+    (id: "ss_heavy", num: 2003),
+    (id: "ss_heavy_charged", num: 2004),
+    (id: "ss_running", num: 2005),
+    (id: "ss_rolling", num: 2006),
+    (id: "ss_backstep", num: 2007),
+    (id: "ss_jump_light", num: 2008),
+    (id: "ss_jump_heavy", num: 2009),
+    (id: "ss_plunge", num: 2010),
+    (id: "ss_guard_counter", num: 2011),
+  ],
+)

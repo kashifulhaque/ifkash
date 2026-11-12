@@ -1,0 +1,21 @@
+[package]
+name = "lf-tools"
+description = "Latticefall command-line tools."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+
+[[bin]]
+name = "lf-tools"
+path = "src/main.rs"
+
+[dependencies]
+clap.workspace = true
+lf-core.workspace = true
+lf-content = { workspace = true, features = ["ts"] }
+serde_json = "1"
+ts-rs = "12"

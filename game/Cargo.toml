@@ -1,0 +1,33 @@
+[workspace]
+resolver = "3"
+members = [
+  "crates/core",
+  "crates/content",
+  "crates/wasm",
+  "crates/py",
+  "crates/tools",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+license = "UNLICENSED"
+publish = false
+
+[workspace.dependencies]
+clap = { version = "4", features = ["derive"] }
+lf-core = { path = "crates/core" }
+lf-content = { path = "crates/content" }
+# Shared by several crates. Pinned through Cargo.lock; upgrading any of these can
+# change state or content hashes (see docs/game/01-architecture.md#determinism-contract).
+serde = { version = "1", features = ["derive"] }
+postcard = { version = "1", default-features = false, features = ["alloc"] }
+xxhash-rust = { version = "0.8", features = ["xxh3"] }
+libm = "0.2"
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+
+[profile.release]
+# Determinism contract: no fast-math style surprises; keep defaults explicit.
+opt-level = 3

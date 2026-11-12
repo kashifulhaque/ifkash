@@ -1,0 +1,28 @@
+// Straight-sword weapons. Source: docs/game/04-arsenal-and-builds.md, "Weapon list".
+// Scaling is Might / Finesse / Insight / Devotion.
+#![enable(implicit_some)]
+[
+  (
+    id: "wpn_wayfarer_blade",
+    name: "Wayfarer's Blade",
+    class: StraightSword,
+    base_damage: 105,
+    phys: Neutral,
+    scaling: (might: 0.6, finesse: 0.6, insight: 0.0, devotion: 0.0),
+    requirements: (might: 10, finesse: 10, insight: 0, devotion: 0),
+    weight_tenths: 40,
+    unique: false,
+    moveset: (
+      light_chain: ["ss_light_1", "ss_light_2", "ss_light_3"],
+      heavy: "ss_heavy",
+      charged_heavy: "ss_heavy_charged",
+      running: "ss_running",
+      rolling: "ss_rolling",
+      backstep: "ss_backstep",
+      jump_light: "ss_jump_light",
+      jump_heavy: "ss_jump_heavy",
+      plunge: "ss_plunge",
+      guard_counter: "ss_guard_counter",
+    ),
+  ),
+]

@@ -1,0 +1,58 @@
+// Portfolio mapping: which game object each portfolio entry becomes.
+//
+// Entries are referenced ONLY by (section, slug); the slugs live in src/lib/content.ts
+// and are exported to gen/portfolio_content.json by scripts/export-content.ts. The text
+// of a fact never appears here, only game-side fields and in-world flavor.
+//
+// The relic and page item IDs below (`relic_*`, `chronicle_page_*`) are NOT in
+// registry.ron yet and are not checked against it. Later WPs add them as stubs.
+//
+// This file is not part of Content's hash, so editing it never invalidates replays.
+(
+  relics: [
+    (project: "politellama", item: "relic_politellama", kind: "echo_summon",
+     flavor: "A courteous llama spirit that bows before each attack.",
+     bridge: "It was taught to refuse anyone who forgets to ask nicely."),
+    (project: "banana-cpp", item: "relic_banana_cpp", kind: "curved_sword",
+     flavor: "A crescent blade forged without a single borrowed part, so light it seems to answer before it's asked.",
+     bridge: "Its smith built every piece by hand: the edge, the grip, the way it turns."),
+    (project: "smol-llama", item: "relic_smol_llama", kind: "charm",
+     flavor: "A small charm, trained hard until it weighs almost nothing.",
+     bridge: "Its maker taught a tiny model from scratch on a single night's rented fire."),
+    (project: "vicharak-micro-llama", item: "relic_shrike_lite_circuit", kind: "charm",
+     flavor: "A bare circuit that hums faster than its size allows.",
+     bridge: "It runs a whole language model in the memory of a thimble."),
+    (project: "smoltorch", item: "relic_smoltorch", kind: "key_tool_light",
+     flavor: "A small flame that lights the dark.",
+     bridge: "Its keeper learned how learning works by building it in about five hundred lines."),
+    (project: "nopokedb", item: "relic_nopokedb", kind: "medium_shield",
+     flavor: "A vault of a shield that keeps whatever it holds.",
+     bridge: "It remembers what it stored even after the lights go out."),
+    (project: "boo", item: "relic_boo", kind: "head_armor",
+     flavor: "A friendly ghost's mask; the world looks away a moment longer.",
+     bridge: "It was made to chat with a whole hall of friends."),
+    (project: "ferray", item: "relic_ferray", kind: "spear",
+     flavor: "Iron and rays: a spear that hums with stored lightning.",
+     bridge: "Forged in Rust as an apprentice's lesson in how arrays are shaped."),
+    (project: "endark", item: "relic_endark", kind: "body_armor",
+     flavor: "A cloak that only knows the dark, and hides you in it.",
+     bridge: "Nothing was borrowed to make it: no thread from anywhere else."),
+    (project: "opencode-theme", item: "relic_opencode", kind: "dye",
+     flavor: "A pigment that recolors armor and the lantern's glow.",
+     bridge: "Its maker distilled a whole palette from a single reference scroll."),
+  ],
+  // Slot order: Ninefold Chapel, Stillwater Village, Castellan's desk, Frozen Foundry,
+  // Spire top. With four work entries the Frozen Foundry slot is empty (no entry).
+  pages: [
+    (slot: "ninefold_chapel", item: "chronicle_page_1", work: Some("corteva"),
+     framing: "A first page, written in a field-hand's careful script."),
+    (slot: "stillwater_village", item: "chronicle_page_2", work: Some("fiery"),
+     framing: "A page smelling of ink and printer's oil, left in the chief's house."),
+    (slot: "castellans_desk", item: "chronicle_page_3", work: Some("american-express"),
+     framing: "A ledger leaf, pinned under the Castellan's seal."),
+    (slot: "frozen_foundry", item: "chronicle_page_4", work: None,
+     framing: "An empty frame; the foundry's page is not yet written."),
+    (slot: "spire_top", item: "chronicle_page_5", work: Some("wand-ai"),
+     framing: "The newest page, still wet, at the top of the Spire."),
+  ],
+)

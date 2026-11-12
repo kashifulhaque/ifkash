@@ -1,0 +1,258 @@
+{
+  "attributes": {
+    "attributes": [
+      {
+        "id": "attr_vitality",
+        "name": "Vitality"
+      },
+      {
+        "id": "attr_focus",
+        "name": "Focus"
+      },
+      {
+        "id": "attr_endurance",
+        "name": "Endurance"
+      },
+      {
+        "id": "attr_might",
+        "name": "Might"
+      },
+      {
+        "id": "attr_finesse",
+        "name": "Finesse"
+      },
+      {
+        "id": "attr_insight",
+        "name": "Insight"
+      },
+      {
+        "id": "attr_devotion",
+        "name": "Devotion"
+      }
+    ],
+    "level_offset": 60,
+    "max": 60,
+    "max_equip_load": {
+      "base_tenths": 400,
+      "segments": [
+        {
+          "per_point_tenths": 12,
+          "until": 20
+        },
+        {
+          "per_point_tenths": 12,
+          "until": 40
+        },
+        {
+          "per_point_tenths": 6,
+          "until": 60
+        }
+      ]
+    },
+    "max_fp": {
+      "base_tenths": 400,
+      "segments": [
+        {
+          "per_point_tenths": 50,
+          "until": 20
+        },
+        {
+          "per_point_tenths": 30,
+          "until": 40
+        },
+        {
+          "per_point_tenths": 10,
+          "until": 60
+        }
+      ]
+    },
+    "max_hp": {
+      "base_tenths": 3000,
+      "segments": [
+        {
+          "per_point_tenths": 300,
+          "until": 20
+        },
+        {
+          "per_point_tenths": 250,
+          "until": 40
+        },
+        {
+          "per_point_tenths": 80,
+          "until": 60
+        }
+      ]
+    },
+    "max_stamina": {
+      "base_tenths": 800,
+      "segments": [
+        {
+          "per_point_tenths": 20,
+          "until": 20
+        },
+        {
+          "per_point_tenths": 10,
+          "until": 40
+        },
+        {
+          "per_point_tenths": 5,
+          "until": 60
+        }
+      ]
+    },
+    "min": 1,
+    "resistance": {
+      "base_tenths": 830,
+      "segments": [
+        {
+          "per_point_tenths": 30,
+          "until": 60
+        }
+      ]
+    },
+    "spell_slots": {
+      "base": 2,
+      "every": 8,
+      "from": 10
+    },
+    "start_max": 16,
+    "start_min": 4
+  },
+  "contentHash": "17281492028328341515",
+  "contentHashHex": "efd431704141700b",
+  "moves": [
+    {
+      "anim": "sword_slash_r",
+      "file": "moves/straight_sword.ron",
+      "fp": 0,
+      "id": "ss_light_1",
+      "num": 2000,
+      "stamina": 12,
+      "stub": false,
+      "totalFrames": 27
+    },
+    {
+      "anim": "sword_slash_l",
+      "file": "moves/straight_sword.ron",
+      "fp": 0,
+      "id": "ss_light_2",
+      "num": 2001,
+      "stamina": 12,
+      "stub": false,
+      "totalFrames": 27
+    },
+    {
+      "anim": "sword_thrust",
+      "file": "moves/straight_sword.ron",
+      "fp": 0,
+      "id": "ss_light_3",
+      "num": 2002,
+      "stamina": 12,
+      "stub": false,
+      "totalFrames": 27
+    },
+    {
+      "anim": "sword_overhead",
+      "file": "moves/straight_sword.ron",
+      "fp": 0,
+      "id": "ss_heavy",
+      "num": 2003,
+      "stamina": 22,
+      "stub": false,
+      "totalFrames": 42
+    },
+    {
+      "anim": "sword_overhead_charged",
+      "file": "moves/straight_sword.ron",
+      "fp": 0,
+      "id": "ss_heavy_charged",
+      "num": 2004,
+      "stamina": 28,
+      "stub": false,
+      "totalFrames": 44
+    },
+    {
+      "anim": "sword_lunge_run",
+      "file": "moves/straight_sword.ron",
+      "fp": 0,
+      "id": "ss_running",
+      "num": 2005,
+      "stamina": 14,
+      "stub": false,
+      "totalFrames": 30
+    },
+    {
+      "anim": "sword_roll_slash",
+      "file": "moves/straight_sword.ron",
+      "fp": 0,
+      "id": "ss_rolling",
+      "num": 2006,
+      "stamina": 12,
+      "stub": false,
+      "totalFrames": 25
+    },
+    {
+      "anim": "sword_backstep_slash",
+      "file": "moves/straight_sword.ron",
+      "fp": 0,
+      "id": "ss_backstep",
+      "num": 2007,
+      "stamina": 12,
+      "stub": false,
+      "totalFrames": 24
+    },
+    {
+      "anim": "sword_jump_slash",
+      "file": "moves/straight_sword.ron",
+      "fp": 0,
+      "id": "ss_jump_light",
+      "num": 2008,
+      "stamina": 18,
+      "stub": false,
+      "totalFrames": 30
+    },
+    {
+      "anim": "sword_jump_overhead",
+      "file": "moves/straight_sword.ron",
+      "fp": 0,
+      "id": "ss_jump_heavy",
+      "num": 2009,
+      "stamina": 18,
+      "stub": false,
+      "totalFrames": 30
+    },
+    {
+      "anim": "sword_plunge",
+      "file": "moves/straight_sword.ron",
+      "fp": 0,
+      "id": "ss_plunge",
+      "num": 2010,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 28
+    },
+    {
+      "anim": "sword_counter",
+      "file": "moves/straight_sword.ron",
+      "fp": 0,
+      "id": "ss_guard_counter",
+      "num": 2011,
+      "stamina": 18,
+      "stub": false,
+      "totalFrames": 30
+    }
+  ],
+  "weapons": [
+    {
+      "baseDamage": 105,
+      "class": "StraightSword",
+      "file": "weapons/straight_sword.ron",
+      "id": "wpn_wayfarer_blade",
+      "name": "Wayfarer's Blade",
+      "num": 1000,
+      "stub": false,
+      "unique": false,
+      "weightTenths": 40
+    }
+  ]
+}

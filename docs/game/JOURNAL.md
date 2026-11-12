@@ -46,6 +46,7 @@ Copy this block to the top of the entries and fill it in as you go:
   - WP-035.a: sonnet, worktree; `2ec2d05`; 281K. No WASM or simulation change.
   - WP-040: opus, worktree; `02ec373`; 248K. Golden conflict with WP-030.a resolved by one rehash (content hash only).
   - WP-049: sonnet, worktree; `fd0287e`; 234K. Orchestrator gated the landing card behind `engine=lf`.
+  - WP-041: sonnet, worktree; `5ec93b7`; 172K.
 
 ### 2026-11-12: latticefall-m3 (M3)
 

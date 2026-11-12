@@ -31,7 +31,7 @@ Copy this block to the top of the entries and fill it in as you go:
 ### 2026-11-12: latticefall-m3 (M3)
 
 - **Orchestrator:** Opus 5.5, low effort
-- **Branch:** `game/m3-enemies`
+- **Branch:** `game/m3-enemies`; first commit on `main` `8836362`, last WP commit `c40bdfb`
 - **Started from:** `origin/main` at `4a41d3e`
 - **Reservations (to avoid M2's merge clashes):** registry numbers: enemies 7000-7099,
   WP-030 test enemies 7100-7199, enemy moves WP-030 8900-8999, WP-032 8000-8299,
@@ -45,10 +45,45 @@ Copy this block to the top of the entries and fill it in as you go:
   - WP-033: sonnet, worktree; `cc074cd`; 295K. Merged onto WP-032 by the orchestrator (18 conflicts, keep-both, then a rehash; only the boss golden's final hash moved).
   - WP-034: sonnet (moved up from haiku: first real boss on a new framework, plus a scripted bot), worktree; `35c7083`; 169K.
   - WP-035: sonnet; `81fd4c0`, plus the orchestrator's fix `fb4d1e4` (B01 keyed to its body's number 9011); 194K.
-- **Context:** orchestrator 173K after WP-033, about 215K after WP-035.
+  - WP-039: opus; `f3519e0`; 216K.
+  - WP-036: sonnet, worktree; `850590a`, `0919903`; 320K, including a follow-up after the orchestrator sent it back once for the missing Bell Acolyte.
+  - WP-037: sonnet (moved up from haiku: wolf packs and the mimic need new AI code outside its Touch list), worktree; `c40bdfb`; 252K.
+  - Merge of WP-036 and WP-037: sonnet merge worker in a worktree; 100K. No conflicts when the result was cherry-picked onto WP-039.
+- **Context:** orchestrator 173K after WP-033, about 215K after WP-035, about 275K at the end (budget 500K per context window). Largest worker: WP-036 at 320K.
+- **Lessons:**
+  - `AiState.def` stores an index into the enemy table, not the registry number, so
+    adding any enemy shifts it and changes golden hashes of unrelated fights (it
+    happened three times this session). Store the registry number instead.
+  - Reserving registry blocks and WASM event kinds per WP worked: no number clashes.
+  - A merge worker in its own worktree, while another worker held the main checkout,
+    kept the orchestrator's context low (one merge took the orchestrator about 20K
+    by hand, the delegated one about 5K).
 - **Not verified:**
-- **Waiting on the owner:**
+  - The 30-minute PPO run itself (the orchestrator re-ran 1 minute).
+  - Browser checks for batches 2 and 3 and the elites: they have no models yet.
+    The renderer doesn't read the new `CLOAKED` and `HIDDEN` flags.
+  - Combat feel of any enemy, and enemy strike alignment against the hitbox overlay.
+  - The M3 exit gate is met by WP-039's numbers, but B01 is beaten by guarding and
+    heavy attacks without dodging.
+- **Waiting on the owner (spec readings the workers chose):**
+  - B01 tuning: PPO and the scripted bot both win easily; the fight doesn't force
+    rolling (WP-034, WP-039). Decide whether to tune it now or in WP-089.
+  - ADR 0006 (Python extras `env` and `train`: gymnasium, numpy, torch) and its spec
+    edits to `09-rl-environment.md` (four move-timing slots on `target`, button rules).
+  - Enemy readings: the hearing model and return-and-heal (WP-030), the revive rule's
+    lit-Lantern stand-in for braziers and unlimited revives (WP-032), boss phase
+    numbering and runtime tracking stop (WP-033), the Lamp Mite fuse split and the
+    thief not stealing (WP-036, WP-037), and elite approximations (WP-037).
 - **Next steps:**
+  1. Make `AiState.def` a registry number (one small core WP or a fix at the start of
+     M4), then rehash the goldens once.
+  2. Start M4: WP-040 (opus, level format) first; it must take over scenario-data
+     Lanterns, water and reed zones, and fog gates. Then WP-041, WP-042, WP-045,
+     WP-047, WP-048 in parallel where Touch lists allow.
+  3. Procedural models for enemy batches 2 and 3 and the elites have no card yet;
+     add one to the roadmap (render lane) or fold it into WP-041 or WP-058.
+  4. Keep reserving registry blocks and event kinds per WP. Free WASM kinds: 10, 12,
+     14, 15, 16 (reserved this session but unused), and 17 and up.
 
 ### 2026-11-12: latticefall-m2 (M2)
 

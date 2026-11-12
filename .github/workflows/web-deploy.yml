@@ -122,6 +122,18 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
     steps:
+      # The server output imports packages (@sveltejs/kit, devalue, and others) that
+      # Wrangler bundles at deploy time, so this job needs node_modules too.
+      - uses: actions/checkout@v7
+
+      - name: Install Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install frontend dependencies
+        run: bun install --frozen-lockfile
+
       - name: Download build output
         uses: actions/download-artifact@v7
         with:
@@ -143,6 +155,18 @@ jobs:
     if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     steps:
+      # The server output imports packages (@sveltejs/kit, devalue, and others) that
+      # Wrangler bundles at deploy time, so this job needs node_modules too.
+      - uses: actions/checkout@v7
+
+      - name: Install Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install frontend dependencies
+        run: bun install --frozen-lockfile
+
       - name: Download build output
         uses: actions/download-artifact@v7
         with:

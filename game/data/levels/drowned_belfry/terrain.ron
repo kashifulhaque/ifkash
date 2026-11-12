@@ -1,0 +1,11 @@
+// The Drowned Belfry terrain: flat ground at 0 m, and the bell shaft: a pit 12 m deep under
+// room K (x 18..34, z 0..18). The lift runs in it from the doorway at x 17 (top stop, y 0) to the
+// floor of the pit (bottom stop, y -12). The pit's banks are sheer and sit under K's walls.
+#![enable(implicit_some)]
+(
+  spacing_m: 2.0,
+  base_y: 0.0,
+  ops: [
+    SetRect(min: (18.0, 0.0), max: (34.0, 18.0), height: -12.0),
+  ],
+)

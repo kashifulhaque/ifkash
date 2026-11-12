@@ -315,6 +315,20 @@ pub enum LeverTarget {
     Lift { id: String, stop: u8 },
     /// Toggles the pool with this ID between its normal and raised depth.
     Water(String),
+    /// Raises the world flag with this name, once and for good (WP-061). Pulling it again
+    /// leaves the flag set. A pool's `lowered_by` and an enemy's `wakes_on` name such flags:
+    /// the Sunken Ossuary's drain levers and the Drowned Belfry's sluice
+    /// (`sluice.mirrormere.open`) work this way.
+    Flag(String),
+    /// A bell (WP-061): ringing it stuns every living enemy within `radius_m` for
+    /// `stun_ticks` (they kneel, open to a riposte) and, if `opens` names a door, opens that
+    /// door for good. Ringing is the same `INTERACT` as pulling a lever.
+    Bell {
+        radius_m: f32,
+        stun_ticks: u8,
+        #[serde(default)]
+        opens: Option<String>,
+    },
 }
 
 /// A lever. Pulling it flips the flag `lever.<id>.pulled` and works its target.
@@ -463,6 +477,11 @@ pub struct EnemySpawn {
     /// Waypoints it walks in a loop while Idle. Empty: it stands at its spawn.
     #[serde(default)]
     pub patrol: Vec<[f32; 3]>,
+    /// A world flag that wakes it (WP-061). Until the flag is set the enemy stands where it
+    /// is, unaware and not thinking, so it can be backstabbed asleep; once set it fights as
+    /// usual. The Sunken Ossuary's Drowned wake when a lever drains the water.
+    #[serde(default)]
+    pub wakes_on: Option<String>,
 }
 
 /// An enemy's status resistances (docs/game/05-enemies-and-bosses.md, `resist`). In the
@@ -705,11 +724,24 @@ impl Scenario {
                     .pools
                     .iter()
                     .any(|p| &p.name == id && p.raised_depth_m.is_some()),
+                LeverTarget::Flag(flag) => !flag.is_empty(),
+                LeverTarget::Bell {
+                    radius_m,
+                    stun_ticks,
+                    opens,
+                } => {
+                    *radius_m > 0.0
+                        && *stun_ticks > 0
+                        && opens
+                            .as_ref()
+                            .is_none_or(|id| self.doors.iter().any(|d| &d.id == id))
+                }
             };
             if !ok {
                 return Err(format!(
                     "lever {:?}: its target doesn't exist (a lift stop is 0 or 1, and a water \
-                     target needs a pool with raised_depth_m)",
+                     target needs a pool with raised_depth_m, a flag lever a flag name, and a bell \
+                     a positive radius and stun and a door that exists)",
                     l.id
                 ));
             }

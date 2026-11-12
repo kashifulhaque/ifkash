@@ -1,0 +1,94 @@
+// The Sunken Ossuary entities (WP-061, D2). Yaw is in radians from +Z toward +X: 0 faces +Z
+// (north, deeper in), 3.1415927 faces -Z, 1.5707964 faces +X, -1.5707964 faces -X.
+//
+// Critical path: E (the stair) -> T (pull lever 1: the basin drains) -> H (four Drowned asleep
+// in the knee-deep water; walk past or backstab them) -> L (lever 2 drains the Flooded Crypt
+// and wakes every Drowned) -> back through H -> F (the twist: more Drowned rise) -> the Keeper's
+// Vault (B05's arena, behind a fog gate). The shortcut leaves F's east door and ends at a
+// one-way door in the entry hall. L08 (Mirrormere's Ossuary Stair) is the Lantern outside.
+//
+// WATER and the Drowned. Both flooded rooms are deep pools (2 m, an invisible wall at the
+// lip) with `lowered_by` set to the flag their lever raises (`ossuary.drain_t`,
+// `ossuary.drain_f`): drained, they are 0.4 m and 0.5 m (shallow, slows 20%). The Drowned are
+// `water_only`, so each `Water` zone is the room they stay in. They sleep (`wakes_on`) until
+// `ossuary.drain_f`: lowering the water wakes the Drowned.
+//
+// Registry numbers used here (22000 block): sunken_ossuary 22000.
+(
+  // The foot of the stair, facing north into the entry hall.
+  spawn: (pos: (0.0, 0.0, -74.0), yaw: 0.0),
+  entities: [
+    // --- Water -------------------------------------------------------------------------------
+    // T: the teaching basin. Deep (an invisible wall at the lip) until lever 1 is pulled.
+    Pool(name: "flood_t", center: (0.0, -40.0), half_extents: (12.0, 6.0), depth_m: 2.0, lowered_by: "ossuary.drain_t", lowered_depth_m: 0.4),
+    // H: the hall, knee-deep. The Drowned stay in it.
+    Pool(name: "hall_wade", center: (0.0, -18.0), half_extents: (16.0, 12.0), depth_m: 0.5),
+    // F: the Flooded Crypt, deep until lever 2 is pulled.
+    Pool(name: "flood_f", center: (0.0, 9.0), half_extents: (16.0, 13.0), depth_m: 2.0, lowered_by: "ossuary.drain_f", lowered_depth_m: 0.5),
+    // V: the Keeper's Vault, a flooded crypt with raised platforms (B05's arena).
+    Pool(name: "vault_wade", center: (0.0, 40.0), half_extents: (16.0, 16.0), depth_m: 0.4),
+    Water(name: "water_hall", center: (0.0, -18.0), half_extents: (16.0, 12.0)),
+    Water(name: "water_f", center: (0.0, 9.0), half_extents: (16.0, 13.0)),
+
+    // --- Doors and levers --------------------------------------------------------------------
+    // The shortcut: opens only from the corridor side (it faces +X, the corridor).
+    Door(id: "door_shortcut", pos: (13.0, 0.0, -66.0), yaw: 1.5707964, half_width_m: 2.0, height_m: 4.0, kind: OneWay),
+    // Lever 1 (the teaching room): drains the basin. Lever 2 (the lever room): drains F.
+    Lever(id: "lever_drain_t", pos: (-9.0, 0.0, -50.6), yaw: 0.0, target: Flag("ossuary.drain_t")),
+    Lever(id: "lever_drain_f", pos: (30.0, 0.0, -17.6), yaw: 3.1415927, target: Flag("ossuary.drain_f")),
+    // The branch's secret: a hollow wall fills the gap in the branch crypt's west wall.
+    HollowWall(id: "wall_ossuary_closet", center: (-35.0, 3.0, -16.0), half_extents: (1.0, 3.0, 2.0)),
+
+    // --- Authored messages -------------------------------------------------------------------
+    Message(id: "msg_ossuary_stair", pos: (0.0, 0.0, -70.0),
+      text: "The Sunken Ossuary. The bones of the shore's dead were stacked here, and the lake came for them. Dry rooms are safe. Water is a wall when it is deep and a drag when it is not."),
+    Message(id: "msg_ossuary_lever", pos: (-5.0, 0.0, -50.0),
+      text: "A lever at the basin's edge. The water behind it is deep; deep water is a wall. Pull the lever, and the sluice below opens."),
+    Message(id: "msg_ossuary_hall", pos: (0.0, 0.0, -33.0),
+      text: "The hall beyond holds the dead in the water, standing. They don't stir for a quiet step. They will for a drained crypt."),
+    Message(id: "msg_ossuary_lever_room", pos: (24.0, 0.0, -12.0),
+      text: "A second lever, for the crypt to the north. The Drowned in the hall behind you will hear the water go."),
+    Message(id: "msg_ossuary_crypt", pos: (0.0, 0.0, -8.0),
+      text: "The Flooded Crypt, still deep. The way to the Keeper runs through it."),
+    Message(id: "msg_ossuary_shortcut", pos: (22.0, 0.0, 10.0),
+      text: "A corridor, long and dry. It runs back to the entry hall, to a door that opens from this side only."),
+    Message(id: "msg_ossuary_vault", pos: (0.0, 0.0, 20.0),
+      text: "The Keeper's Vault. A bell-lantern burns beyond the fog, and something in the water counts the dead."),
+
+    // --- Enemies: Husks, and the Drowned asleep until the water goes --------------------------
+    // H: four Drowned in the knee-deep water; they sleep until lever 2 is pulled.
+    Enemy(name: "drowned_hall_a", enemy: "drowned", pos: (-9.0, 0.0, -17.0), yaw: 1.5707964, wakes_on: Some("ossuary.drain_f")),
+    Enemy(name: "drowned_hall_b", enemy: "drowned", pos: (9.0, 0.0, -17.0), yaw: -1.5707964, wakes_on: Some("ossuary.drain_f")),
+    Enemy(name: "drowned_hall_c", enemy: "drowned", pos: (-12.0, 0.0, -9.0), yaw: 0.0, wakes_on: Some("ossuary.drain_f")),
+    Enemy(name: "drowned_hall_d", enemy: "drowned", pos: (12.0, 0.0, -25.0), yaw: 3.1415927, wakes_on: Some("ossuary.drain_f")),
+    // B: a Husk guards the branch.
+    Enemy(name: "husk_branch", enemy: "husk", pos: (-25.0, 0.0, -15.0), yaw: 3.1415927),
+    // F: the twist. Three Drowned rise from the drained crypt.
+    Enemy(name: "drowned_crypt_a", enemy: "drowned", pos: (-6.0, 0.0, 8.0), yaw: 3.1415927, wakes_on: Some("ossuary.drain_f")),
+    Enemy(name: "drowned_crypt_b", enemy: "drowned", pos: (7.0, 0.0, 14.0), yaw: 3.1415927, wakes_on: Some("ossuary.drain_f")),
+    Enemy(name: "drowned_crypt_c", enemy: "drowned", pos: (-8.0, 0.0, 19.0), yaw: 3.1415927, wakes_on: Some("ossuary.drain_f")),
+    // The shortcut corridor: one Husk on the long run.
+    Enemy(name: "husk_corridor", enemy: "husk", pos: (38.0, 0.0, -42.0), yaw: 3.1415927),
+
+    // --- Items, materials, and a secret ---------------------------------------------------------
+    // The lever room: oil left by whoever pulled it last.
+    Pickup(id: "oil_ossuary_lever", item: "itm_spark_oil", pos: (22.0, 0.0, -11.0), count: 2, interact: true),
+    // The branch crypt: Forgeglass Shards (a chest in every region).
+    Chest(id: "chest_ossuary_branch", pos: (-30.0, 0.0, -20.0), yaw: 3.1415927, loot: (item: "itm_forgeglass_shard", count: 3, glimmer: 200)),
+    // The secret closet behind the hollow wall.
+    Chest(id: "chest_ossuary_closet", pos: (-40.0, 0.0, -16.0), yaw: 1.5707964, loot: (item: "itm_glimmer_vial_large", count: 1, glimmer: 400)),
+    // The shortcut corridor: a vial for the long run.
+    Pickup(id: "vial_ossuary_corridor", item: "itm_glimmer_vial", pos: (38.0, 0.0, -50.0), interact: true),
+
+    // --- B05's arena: the Keeper's Vault (x -16..16, z 24..56) ----------------------------------
+    // The boss: PLACEHOLDER. B05 (the Ossuary Keeper, an M7 work package, WP-073) has no boss
+    // definition yet, so no Boss entity is placed. When it exists, add:
+    //   Boss(name: "b05", boss: "<b05 id>", pos: (0.0, 0.0, 44.0), yaw: 3.1415927,
+    //     gate: (pos: (0.0, 0.0, 23.0), yaw: 0.0, half_width_m: 3.0, depth_m: 3.0)),
+    // The fog gate is the plane z = 23 across the doorway (x -3..3), opening north into the vault;
+    // the Keeper waits at (0, 0, 44) facing it. The reward is the Bone Sentinel Echo
+    // (`echo_bone_sentinel`), given by the boss's rewards, so no pedestal is placed here.
+    // The Echo Stone stands just inside the door, west of the first pillar.
+    EchoStone(id: "stone_b05", pos: (-9.0, 0.0, 27.0), yaw: 0.7854),
+  ],
+)

@@ -148,6 +148,7 @@ pub fn extend_layout(
                 pos: [b.pos[0] + off[0], b.pos[1] + off[1], b.pos[2] + off[2]],
                 yaw: b.yaw,
                 patrol: Vec::new(),
+                wakes_on: None,
             });
         }
         let transitions = def

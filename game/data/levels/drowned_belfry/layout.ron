@@ -1,0 +1,96 @@
+// Drowned Belfry layout (WP-061): greybox blocks (scaled `block_unit`, centered on `pos`). Y is
+// up; the ground is terrain.ron's 0 m, with one pit: the bell shaft. 6 m walls, 2 m thick.
+// Rooms (interior rectangles, x then z):
+//   A   Landing          x -12..12   z -76..-56   the stair up to Mirrormere (south gap), L07 outside
+//   T1  Bell Chamber     x -12..12   z -54..-32   the teaching room: bell A, one Husk; door_t1 opens by the bell
+//   G   Choir Gallery    x -16..16   z -30..-6    the test room: bell B stuns the choir; door_g opens by it
+//   S   Side Chapel      x -34..-18  z -22..-10   the branch: the Greatanchor; a hollow wall hides closet C
+//   C   Secret closet    x -42..-36  z -18..-14   Mirror Ward
+//   TH  Tide Hall        x -16..16   z  -4..22    the twist: a dry causeway between two deep channels of Drowned
+//   K   Bell shaft       x  18..34   z   0..18    a 12 m well; the lift's top stop is the doorway (x 17), the
+//                        Hollowdeep exit at the bottom; door_shaft opens when bell C rings
+//   LO  Belfry Loft      x -16..16   z  24..52    the elite: the Choir Knight, bell D, the sluice lever, Choir Litany
+//   R   Return           corridor from the loft's east door (x 17, z 36..40), east to x 42..46, south to
+//                        z -68..-64, west to a one-way door in A's east wall (x 13)
+// Walks are checked by world_state/belfry_tests.rs.
+(
+  landmarks: [
+    // --- Walls ---
+    (name: "w_at_w_0", kit: "block_unit", pos: (-13.00, 3.00, -54.00), scale: (2.00, 6.00, 46.00)),
+    (name: "w_at_e_0", kit: "block_unit", pos: (13.00, 3.00, -72.50), scale: (2.00, 6.00, 9.00)),
+    (name: "w_at_e_1", kit: "block_unit", pos: (13.00, 3.00, -47.50), scale: (2.00, 6.00, 33.00)),
+    (name: "w_at_e_lintel0", kit: "block_unit", pos: (13.00, 5.00, -66.00), scale: (2.00, 2.00, 4.00)),
+    (name: "w_g_w_0", kit: "block_unit", pos: (-17.00, 3.00, -24.50), scale: (2.00, 6.00, 13.00)),
+    (name: "w_g_w_1", kit: "block_unit", pos: (-17.00, 3.00, -9.50), scale: (2.00, 6.00, 9.00)),
+    (name: "w_g_w_lintel0", kit: "block_unit", pos: (-17.00, 5.00, -16.00), scale: (2.00, 2.00, 4.00)),
+    (name: "w_g_e_0", kit: "block_unit", pos: (17.00, 3.00, -18.00), scale: (2.00, 6.00, 26.00)),
+    (name: "w_th_w_0", kit: "block_unit", pos: (-17.00, 3.00, 9.00), scale: (2.00, 6.00, 28.00)),
+    (name: "w_th_e_0", kit: "block_unit", pos: (17.00, 3.00, 0.50), scale: (2.00, 6.00, 11.00)),
+    (name: "w_th_e_1", kit: "block_unit", pos: (17.00, 3.00, 17.50), scale: (2.00, 6.00, 11.00)),
+    (name: "w_lo_w_0", kit: "block_unit", pos: (-17.00, 3.00, 38.00), scale: (2.00, 6.00, 30.00)),
+    (name: "w_lo_e_0", kit: "block_unit", pos: (17.00, 3.00, 29.50), scale: (2.00, 6.00, 13.00)),
+    (name: "w_lo_e_1", kit: "block_unit", pos: (17.00, 3.00, 46.50), scale: (2.00, 6.00, 13.00)),
+    (name: "w_lo_e_lintel0", kit: "block_unit", pos: (17.00, 5.00, 38.00), scale: (2.00, 2.00, 4.00)),
+    (name: "w_a_s_0", kit: "block_unit", pos: (-8.00, 3.00, -77.00), scale: (10.00, 6.00, 2.00)),
+    (name: "w_a_s_1", kit: "block_unit", pos: (8.00, 3.00, -77.00), scale: (10.00, 6.00, 2.00)),
+    (name: "w_a_s_lintel0", kit: "block_unit", pos: (0.00, 5.00, -77.00), scale: (6.00, 2.00, 2.00)),
+    (name: "w_at_0", kit: "block_unit", pos: (-8.00, 3.00, -55.00), scale: (10.00, 6.00, 2.00)),
+    (name: "w_at_1", kit: "block_unit", pos: (8.00, 3.00, -55.00), scale: (10.00, 6.00, 2.00)),
+    (name: "w_at_lintel0", kit: "block_unit", pos: (0.00, 5.00, -55.00), scale: (6.00, 2.00, 2.00)),
+    (name: "w_tg_0", kit: "block_unit", pos: (-10.00, 3.00, -31.00), scale: (14.00, 6.00, 2.00)),
+    (name: "w_tg_1", kit: "block_unit", pos: (10.00, 3.00, -31.00), scale: (14.00, 6.00, 2.00)),
+    (name: "w_tg_lintel0", kit: "block_unit", pos: (0.00, 5.00, -31.00), scale: (6.00, 2.00, 2.00)),
+    (name: "w_gt_0", kit: "block_unit", pos: (-10.00, 3.00, -5.00), scale: (14.00, 6.00, 2.00)),
+    (name: "w_gt_1", kit: "block_unit", pos: (10.00, 3.00, -5.00), scale: (14.00, 6.00, 2.00)),
+    (name: "w_gt_lintel0", kit: "block_unit", pos: (0.00, 5.00, -5.00), scale: (6.00, 2.00, 2.00)),
+    (name: "w_thl_0", kit: "block_unit", pos: (-10.00, 3.00, 23.00), scale: (14.00, 6.00, 2.00)),
+    (name: "w_thl_1", kit: "block_unit", pos: (10.00, 3.00, 23.00), scale: (14.00, 6.00, 2.00)),
+    (name: "w_thl_lintel0", kit: "block_unit", pos: (0.00, 5.00, 23.00), scale: (6.00, 2.00, 2.00)),
+    (name: "w_lo_n_0", kit: "block_unit", pos: (0.00, 3.00, 53.00), scale: (34.00, 6.00, 2.00)),
+    (name: "w_s_w_0", kit: "block_unit", pos: (-35.00, 3.00, -20.50), scale: (2.00, 6.00, 5.00)),
+    (name: "w_s_w_1", kit: "block_unit", pos: (-35.00, 3.00, -11.50), scale: (2.00, 6.00, 5.00)),
+    (name: "w_s_s_0", kit: "block_unit", pos: (-26.00, 3.00, -23.00), scale: (18.00, 6.00, 2.00)),
+    (name: "w_s_n_0", kit: "block_unit", pos: (-26.00, 3.00, -9.00), scale: (18.00, 6.00, 2.00)),
+    (name: "w_c_w_0", kit: "block_unit", pos: (-43.00, 3.00, -16.00), scale: (2.00, 6.00, 6.00)),
+    (name: "w_c_s_0", kit: "block_unit", pos: (-39.00, 3.00, -19.00), scale: (8.00, 6.00, 2.00)),
+    (name: "w_c_n_0", kit: "block_unit", pos: (-39.00, 3.00, -13.00), scale: (8.00, 6.00, 2.00)),
+    (name: "w_k_e_0", kit: "block_unit", pos: (35.00, -3.00, 9.00), scale: (2.00, 18.00, 20.00)),
+    (name: "w_k_s_0", kit: "block_unit", pos: (26.00, -3.00, -1.00), scale: (18.00, 18.00, 2.00)),
+    (name: "w_k_n_0", kit: "block_unit", pos: (26.00, -3.00, 19.00), scale: (18.00, 18.00, 2.00)),
+    (name: "w_k_w_s_0", kit: "block_unit", pos: (17.00, -3.00, 2.50), scale: (2.00, 18.00, 7.00)),
+    (name: "w_k_w_n_0", kit: "block_unit", pos: (17.00, -3.00, 15.50), scale: (2.00, 18.00, 7.00)),
+    (name: "k_doorway_floor", kit: "block_unit", pos: (17.00, -0.25, 9.00), scale: (2.00, 0.50, 6.00)),
+    (name: "k_doorway_lintel", kit: "block_unit", pos: (17.00, 5.00, 9.00), scale: (2.00, 2.00, 6.00)),
+    (name: "w_r_w_0", kit: "block_unit", pos: (41.00, 3.00, -14.00), scale: (2.00, 6.00, 98.00)),
+    (name: "w_r_e_0", kit: "block_unit", pos: (47.00, 3.00, -14.00), scale: (2.00, 6.00, 110.00)),
+    (name: "w_r_top_s_0", kit: "block_unit", pos: (29.00, 3.00, 35.00), scale: (24.00, 6.00, 2.00)),
+    (name: "w_r_top_n_0", kit: "block_unit", pos: (32.00, 3.00, 41.00), scale: (30.00, 6.00, 2.00)),
+    (name: "w_r_bot_s_0", kit: "block_unit", pos: (30.00, 3.00, -69.00), scale: (34.00, 6.00, 2.00)),
+    (name: "w_r_bot_n_0", kit: "block_unit", pos: (27.00, 3.00, -63.00), scale: (28.00, 6.00, 2.00)),
+    // --- Furniture: the bells ---
+    (name: "bell_a_post", kit: "block_unit", pos: (0.00, 1.10, -44.00), scale: (0.80, 2.20, 0.80)),
+    (name: "bell_a_cup", kit: "block_unit", pos: (0.00, 2.80, -44.00), scale: (1.60, 1.00, 1.60)),
+    (name: "bell_b_post", kit: "block_unit", pos: (0.00, 1.10, -18.00), scale: (0.80, 2.20, 0.80)),
+    (name: "bell_b_cup", kit: "block_unit", pos: (0.00, 2.80, -18.00), scale: (1.60, 1.00, 1.60)),
+    (name: "bell_c_post", kit: "block_unit", pos: (0.00, 1.10, 18.00), scale: (0.80, 2.20, 0.80)),
+    (name: "bell_c_cup", kit: "block_unit", pos: (0.00, 2.80, 18.00), scale: (1.60, 1.00, 1.60)),
+    (name: "bell_d_post", kit: "block_unit", pos: (-10.00, 1.10, 30.00), scale: (0.80, 2.20, 0.80)),
+    (name: "bell_d_cup", kit: "block_unit", pos: (-10.00, 2.80, 30.00), scale: (1.60, 1.00, 1.60)),
+    // --- Furniture: rooms ---
+    (name: "g_pillar_0", kit: "block_unit", pos: (-9.00, 3.00, -24.00), scale: (1.60, 6.00, 1.60)),
+    (name: "g_pillar_1", kit: "block_unit", pos: (9.00, 3.00, -24.00), scale: (1.60, 6.00, 1.60)),
+    (name: "g_pillar_2", kit: "block_unit", pos: (-9.00, 3.00, -12.00), scale: (1.60, 6.00, 1.60)),
+    (name: "g_pillar_3", kit: "block_unit", pos: (9.00, 3.00, -12.00), scale: (1.60, 6.00, 1.60)),
+    (name: "a_bench_w", kit: "block_unit", pos: (-10.50, 0.40, -72.00), scale: (2.00, 0.80, 6.00)),
+    (name: "a_bench_e", kit: "block_unit", pos: (10.50, 0.40, -72.00), scale: (2.00, 0.80, 6.00)),
+    (name: "s_altar", kit: "block_unit", pos: (-26.00, 0.60, -21.60), scale: (5.00, 1.20, 0.80)),
+    (name: "th_parapet_w", kit: "block_unit", pos: (-6.40, 0.40, 9.00), scale: (0.40, 0.80, 24.00)),
+    (name: "th_parapet_e", kit: "block_unit", pos: (6.40, 0.40, 9.00), scale: (0.40, 0.80, 24.00)),
+    (name: "lo_pedestal", kit: "block_unit", pos: (-12.00, 0.50, 48.00), scale: (2.00, 1.00, 2.00)),
+    (name: "lo_plinth", kit: "block_unit", pos: (12.00, 0.50, 49.60), scale: (1.40, 1.00, 1.00)),
+    (name: "lo_pillar_0", kit: "block_unit", pos: (-12.00, 3.00, 34.00), scale: (1.60, 6.00, 1.60)),
+    (name: "lo_pillar_1", kit: "block_unit", pos: (12.00, 3.00, 34.00), scale: (1.60, 6.00, 1.60)),
+    (name: "lo_pillar_2", kit: "block_unit", pos: (-12.00, 3.00, 44.00), scale: (1.60, 6.00, 1.60)),
+    (name: "lo_pillar_3", kit: "block_unit", pos: (12.00, 3.00, 44.00), scale: (1.60, 6.00, 1.60)),
+  ],
+)

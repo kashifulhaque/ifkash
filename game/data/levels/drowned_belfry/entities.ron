@@ -1,0 +1,109 @@
+// The Drowned Belfry entities (WP-061, D3). Yaw is in radians from +Z toward +X: 0 faces +Z
+// (north, deeper in), 3.1415927 faces -Z, 1.5707964 faces +X, -1.5707964 faces -X.
+//
+// Critical path: A (the stair) -> T1 (ring bell A: it opens door_t1 and stuns the Husk) -> G
+// (ring bell B: it stuns the choir and opens door_g) -> TH (the causeway between two channels of
+// Drowned; ring bell C: it opens the bell shaft's gate) -> LO (ring bell D to stun the Choir
+// Knight; pull the sluice lever behind it, take Choir Litany). The shortcut leaves the loft's
+// east door and ends at a one-way door in the landing. The bell-shaft lift is optional: from
+// the doorway at TH's east wall it goes down 12 m to the shaft's floor, which leads on to
+// Hollowdeep's Fungal Shore. L07 (Stillwater Village) is the Lantern outside.
+//
+// THE BELLS. A bell is a lever whose target is `Bell(radius_m:, stun_ticks:, opens:)`: ringing
+// it stuns every living enemy within the radius (they kneel, open to a riposte) and opens the
+// door it names. See world_state/mechanics/bell.rs.
+// THE SLUICE. The loft's lever raises `sluice.mirrormere.open`, which drains Mirrormere's lake
+// by 1.5 m (the lake pools' `lowered_by`) and also the Tide Hall's channels here.
+//
+// Registry numbers used here (22000 block): drowned_belfry 22001.
+(
+  // The foot of the stair, facing north into the landing.
+  spawn: (pos: (0.0, 0.0, -74.0), yaw: 0.0),
+  entities: [
+    // --- Water -------------------------------------------------------------------------------
+    // TH: two deep channels beside the dry causeway (x -6..6). The sluice lowers them to knee-deep.
+    Pool(name: "tide_w", center: (-11.0, 9.0), half_extents: (5.0, 13.0), depth_m: 2.0, lowered_by: "sluice.mirrormere.open", lowered_depth_m: 0.5),
+    Pool(name: "tide_e", center: (11.0, 9.0), half_extents: (5.0, 13.0), depth_m: 2.0, lowered_by: "sluice.mirrormere.open", lowered_depth_m: 0.5),
+    Water(name: "water_tide_w", center: (-11.0, 9.0), half_extents: (5.0, 13.0)),
+    Water(name: "water_tide_e", center: (11.0, 9.0), half_extents: (5.0, 13.0)),
+
+    // --- Doors -------------------------------------------------------------------------------
+    // Opened by bells A, B and C. The shortcut door faces +X, the corridor.
+    Door(id: "door_t1", pos: (0.0, 0.0, -31.0), yaw: 0.0, half_width_m: 3.0, height_m: 4.0, kind: Locked),
+    Door(id: "door_g", pos: (0.0, 0.0, -5.0), yaw: 0.0, half_width_m: 3.0, height_m: 4.0, kind: Locked),
+    Door(id: "door_shaft", pos: (16.6, 0.0, 9.0), yaw: 1.5707964, half_width_m: 3.0, height_m: 4.0, kind: Locked),
+    Door(id: "door_return", pos: (13.0, 0.0, -66.0), yaw: 1.5707964, half_width_m: 2.0, height_m: 4.0, kind: OneWay),
+
+    // --- Bells (levers whose target is a bell) -----------------------------------------------
+    // A: the teaching bell. Rings out to 9 m for 3.3 s (200 ticks) and opens door_t1.
+    Lever(id: "bell_a", pos: (0.0, 0.0, -42.4), yaw: 0.0, target: Bell(radius_m: 9.0, stun_ticks: 200, opens: Some("door_t1"))),
+    // B: the gallery's bell, in the middle of the choir.
+    Lever(id: "bell_b", pos: (0.0, 0.0, -16.6), yaw: 0.0, target: Bell(radius_m: 10.0, stun_ticks: 200, opens: Some("door_g"))),
+    // C: the tide hall's bell, at the causeway's end: it opens the bell shaft's gate.
+    Lever(id: "bell_c", pos: (0.0, 0.0, 16.6), yaw: 0.0, target: Bell(radius_m: 9.0, stun_ticks: 200, opens: Some("door_shaft"))),
+    // D: the loft's bell. It stuns the Choir Knight for 4.2 s (the most a stun can last).
+    Lever(id: "bell_d", pos: (-10.0, 0.0, 28.6), yaw: 0.0, target: Bell(radius_m: 12.0, stun_ticks: 255)),
+
+    // --- The bell-shaft lift: down 12 m to the shaft's floor, and back -----------------------
+    // The platform lies at the top stop (y 0) flush with the doorway, and starts at the bottom.
+    Lift(id: "bell_lift", pos: (20.0, 9.0), bottom_y: -12.0, top_y: 0.0, half_extents: (2.0, 2.0)),
+    // Top: in the doorway, reached from TH's side and from the platform. Bottom: on the floor.
+    Lever(id: "lever_lift_top", pos: (17.8, 0.0, 9.6), yaw: 1.5707964, target: Lift(id: "bell_lift", stop: 1)),
+    Lever(id: "lever_lift_bottom", pos: (23.0, -12.0, 9.0), yaw: -1.5707964, target: Lift(id: "bell_lift", stop: 0)),
+
+    // --- The sluice -------------------------------------------------------------------------
+    // Raises `sluice.mirrormere.open`: Mirrormere's lake drops 1.5 m and the ford wades.
+    Lever(id: "lever_sluice", pos: (12.0, 0.0, 48.6), yaw: 3.1415927, target: Flag("sluice.mirrormere.open")),
+    // The branch's secret: a hollow wall fills the gap in the side chapel's west wall.
+    HollowWall(id: "wall_belfry_closet", center: (-35.0, 3.0, -16.0), half_extents: (1.0, 3.0, 2.0)),
+
+    // --- Authored messages -------------------------------------------------------------------
+    Message(id: "msg_belfry_stair", pos: (0.0, 0.0, -70.0),
+      text: "The Drowned Belfry. The tower fell into the shore and the choir went down with it. Something still rings the bells below."),
+    Message(id: "msg_belfry_bell_a", pos: (-4.0, 0.0, -48.0),
+      text: "A bell on a post. Ring it, and anything near it falls to its knees. The door to the north opens to the sound."),
+    Message(id: "msg_belfry_gallery", pos: (0.0, 0.0, -33.0),
+      text: "The Choir Gallery. The choir stands in rows, singing to nobody. A bell hangs in the middle of them."),
+    Message(id: "msg_belfry_chapel", pos: (-20.0, 0.0, -14.0),
+      text: "A side chapel, and an altar with something heavy on it. A draught comes through one wall."),
+    Message(id: "msg_belfry_tide", pos: (0.0, 0.0, -2.0),
+      text: "The Tide Hall. A causeway runs between two channels. What lives in the water cannot leave it, but it reaches."),
+    Message(id: "msg_belfry_shaft", pos: (15.0, 0.0, 9.0),
+      text: "The bell shaft. The gate opens to the third bell; beyond it a lift runs down twelve meters to the roots, toward Hollowdeep. Do not step off the edge."),
+    Message(id: "msg_belfry_shaft_bottom", pos: (26.0, -12.0, 9.0),
+      text: "The shaft's floor. The lever by the lift calls it down, and sends it up. A cold, green light comes from the east."),
+    Message(id: "msg_belfry_loft", pos: (0.0, 0.0, 21.0),
+      text: "The Belfry Loft. The Knight guards the sluice. The lake behind you is held back by one lever."),
+    Message(id: "msg_belfry_return", pos: (22.0, 0.0, 38.0),
+      text: "A corridor, long and dry. It runs back to the landing, to a door that opens from this side only."),
+
+    // --- Enemies: Husks, Bell Acolytes, the Drowned, and the Choir Knight (elite) --------------
+    // T1: one Husk, to be stunned by bell A.
+    Enemy(name: "husk_bell_room", enemy: "husk", pos: (6.0, 0.0, -38.0), yaw: 3.1415927),
+    // G: the choir. Two Husks and two Bell Acolytes around bell B.
+    Enemy(name: "husk_gallery_a", enemy: "husk", pos: (-6.0, 0.0, -24.0), yaw: 3.1415927),
+    Enemy(name: "husk_gallery_b", enemy: "husk", pos: (6.0, 0.0, -24.0), yaw: 3.1415927),
+    Enemy(name: "acolyte_gallery_a", enemy: "acolyte_bell", pos: (-10.0, 0.0, -10.0), yaw: 3.1415927),
+    Enemy(name: "acolyte_gallery_b", enemy: "acolyte_bell", pos: (10.0, 0.0, -10.0), yaw: 3.1415927),
+    // S: a Husk guards the side chapel.
+    Enemy(name: "husk_chapel", enemy: "husk", pos: (-25.0, 0.0, -15.0), yaw: 3.1415927),
+    // TH: the twist. Two Drowned in the channels reach for the causeway, a Bell Acolyte at its end.
+    Enemy(name: "drowned_tide_w", enemy: "drowned", pos: (-11.0, 0.0, 6.0), yaw: 1.5707964),
+    Enemy(name: "drowned_tide_e", enemy: "drowned", pos: (11.0, 0.0, 12.0), yaw: -1.5707964),
+    Enemy(name: "acolyte_tide", enemy: "acolyte_bell", pos: (0.0, 0.0, 20.5), yaw: 3.1415927),
+    // LO: the elite, in front of the sluice lever. Bell D is 8.5 m from it.
+    Enemy(name: "choir_knight_loft", enemy: "choir_knight", pos: (-4.0, 0.0, 36.0), yaw: 3.1415927),
+
+    // --- Items, materials, and a secret ---------------------------------------------------------
+    // The loft: Choir Litany on its pedestal (the D3 reward; the spell's table entry is a later WP's).
+    Pickup(id: "spell_choir_litany", item: "spl_choir_litany", pos: (-11.6, 1.0, 48.0), interact: true),
+    // The side chapel: the Greatanchor on the altar, and Forgeglass Shards in a chest.
+    Pickup(id: "wpn_greatanchor_chapel", item: "wpn_greatanchor", pos: (-26.0, 1.2, -20.0), interact: true),
+    Chest(id: "chest_belfry_chapel", pos: (-30.0, 0.0, -12.0), yaw: 3.1415927, loot: (item: "itm_forgeglass_shard", count: 3, glimmer: 200)),
+    // The secret closet behind the hollow wall: Mirror Ward.
+    Pickup(id: "spell_mirror_ward", item: "spl_mirror_ward", pos: (-40.0, 0.0, -16.0), interact: true),
+    // The tide hall's causeway: a vial. The landing: oil.
+    Pickup(id: "vial_belfry_tide", item: "itm_glimmer_vial", pos: (3.0, 0.0, 1.0), interact: true),
+    Pickup(id: "oil_belfry_landing", item: "itm_spark_oil", pos: (-8.0, 0.0, -72.0), count: 2, interact: true),
+  ],
+)

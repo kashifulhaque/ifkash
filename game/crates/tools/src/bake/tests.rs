@@ -56,6 +56,7 @@ fn problem_entities_produce_warnings() {
             pos: [0.0, 3.0, 35.0],
             yaw: 0.0,
             patrol: vec![],
+            wakes_on: None,
         }));
         // Out past the terrain's edge, over the void.
         es.push(Entity::Lantern(Lantern {

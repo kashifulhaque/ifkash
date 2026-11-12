@@ -92,7 +92,34 @@ const MIRRORMERE: Record<string, SpawnPoint> = {
   side_door: { x: 66, z: 23, yaw: -HALF_PI, note: "the Cathedral's side door, where the ford lands" }
 };
 
+// Sunken Ossuary (WP-061): the key rooms, in critical-path order.
+const SUNKEN_OSSUARY: Record<string, SpawnPoint> = {
+  stair: { x: 0, z: -72, yaw: 0, note: 'the foot of the stair, facing the entry hall' },
+  basin: { x: 0, z: -50, yaw: 0, note: 'the teaching room, at the deep basin (lever 1 on the left)' },
+  hall: { x: 0, z: -29, yaw: 0, note: 'the doorway of the Ossuary Hall, the sleeping Drowned ahead' },
+  lever_room: { x: 24, z: -16, yaw: HALF_PI, note: 'the lever room (lever 2 drains the Flooded Crypt)' },
+  branch: { x: -20, z: -16, yaw: -HALF_PI, note: 'the branch crypt, its hollow wall ahead' },
+  crypt: { x: 0, z: -8, yaw: 0, note: 'the doorway of the Flooded Crypt, deep until lever 2' },
+  corridor: { x: 22, z: 10, yaw: HALF_PI, note: "the shortcut corridor's mouth, east of the Flooded Crypt" },
+  vault: { x: 0, z: 20, yaw: 0, note: "before the Keeper's Vault's fog gate" },
+  arena: { x: 0, z: 30, yaw: 0, note: "inside B05's vault, facing the far dais" }
+};
+
+// Drowned Belfry (WP-061): the key rooms, in critical-path order.
+const DROWNED_BELFRY: Record<string, SpawnPoint> = {
+  stair: { x: 0, z: -72, yaw: 0, note: 'the foot of the stair, facing the landing' },
+  bell_room: { x: 0, z: -50, yaw: 0, note: 'the teaching room, bell A ahead' },
+  gallery: { x: 0, z: -28, yaw: 0, note: 'the Choir Gallery, bell B in the middle of the choir' },
+  tide: { x: 0, z: -2, yaw: 0, note: 'the Tide Hall: the causeway between the two channels' },
+  shaft: { x: 14, z: 9, yaw: HALF_PI, note: "the bell shaft's gate, beside the lift's doorway" },
+  shaft_bottom: { x: 26, z: 9, yaw: -HALF_PI, note: "the shaft's floor, 12 m down, facing the lift" },
+  loft: { x: 0, z: 26, yaw: 0, note: 'the Belfry Loft, before the Choir Knight and bell D' },
+  sluice: { x: 12, z: 46, yaw: Math.PI, note: 'beside the sluice lever, behind the Knight' }
+};
+
 const TABLES: Record<string, Record<string, SpawnPoint>> = {
+  sunken_ossuary: SUNKEN_OSSUARY,
+  drowned_belfry: DROWNED_BELFRY,
   test_field: TEST_FIELD,
   waking_hollow: WAKING_HOLLOW,
   verge: VERGE,

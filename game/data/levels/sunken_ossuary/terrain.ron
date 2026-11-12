@@ -1,0 +1,8 @@
+// The Sunken Ossuary terrain: flat ground at 0 m. The flooded rooms are water (entities.ron's
+// pools) standing on it, not basins: a pool's surface is the ground plus its depth.
+#![enable(implicit_some)]
+(
+  spacing_m: 2.0,
+  base_y: 0.0,
+  ops: [],
+)

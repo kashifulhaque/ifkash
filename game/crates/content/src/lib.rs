@@ -884,6 +884,39 @@ const EMBEDDED_LEVELS: &[(&str, &str)] = &[
         "levels/hollowhearth/entities.ron",
         include_str!("../../../data/levels/hollowhearth/entities.ron"),
     ),
+    // WP-061: the Mirrormere mini-dungeons.
+    (
+        "levels/sunken_ossuary/area.ron",
+        include_str!("../../../data/levels/sunken_ossuary/area.ron"),
+    ),
+    (
+        "levels/sunken_ossuary/terrain.ron",
+        include_str!("../../../data/levels/sunken_ossuary/terrain.ron"),
+    ),
+    (
+        "levels/sunken_ossuary/layout.ron",
+        include_str!("../../../data/levels/sunken_ossuary/layout.ron"),
+    ),
+    (
+        "levels/sunken_ossuary/entities.ron",
+        include_str!("../../../data/levels/sunken_ossuary/entities.ron"),
+    ),
+    (
+        "levels/drowned_belfry/area.ron",
+        include_str!("../../../data/levels/drowned_belfry/area.ron"),
+    ),
+    (
+        "levels/drowned_belfry/terrain.ron",
+        include_str!("../../../data/levels/drowned_belfry/terrain.ron"),
+    ),
+    (
+        "levels/drowned_belfry/layout.ron",
+        include_str!("../../../data/levels/drowned_belfry/layout.ron"),
+    ),
+    (
+        "levels/drowned_belfry/entities.ron",
+        include_str!("../../../data/levels/drowned_belfry/entities.ron"),
+    ),
 ];
 
 /// All parsed content.

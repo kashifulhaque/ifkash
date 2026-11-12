@@ -334,6 +334,7 @@ fn summon(world: &mut World) {
             ],
             yaw: stone.yaw,
             patrol: Vec::new(),
+            wakes_on: None,
         };
         let Some(mut actor) = super::enemy_actor(&spawn, NO_SPAWN, &world.ai, hurtbox) else {
             continue;

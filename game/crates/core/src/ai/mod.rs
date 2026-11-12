@@ -377,6 +377,10 @@ pub fn run(world: &mut World) {
         if boss::benched(world, id) {
             continue;
         }
+        // A sleeper waits for its wake flag (WP-061).
+        if crate::world_state::mechanics::slumber::asleep(world, id) {
+            continue;
+        }
         tokens::release_finished(world, id);
         if world.actors.get(id).is_some_and(|a| a.dead) {
             special::tick_dead(world, id);

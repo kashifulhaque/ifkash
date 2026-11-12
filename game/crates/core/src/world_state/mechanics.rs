@@ -590,6 +590,10 @@ fn pull_lever(world: &mut World, i: usize) {
             let raised = !world.state.flags.is_set(&key);
             world.state.flags.set(&key, u32::from(raised));
         }
+        // Flag levers and bells (WP-061).
+        LeverTarget::Flag(_) | LeverTarget::Bell { .. } => {
+            bell::pull(world, i);
+        }
     }
 }
 
@@ -946,6 +950,9 @@ pub fn render_state(world: &World) -> Vec<f32> {
 }
 
 pub mod water_level;
+// WP-061: bells, flag levers, and sleeping enemies.
+pub mod bell;
+pub mod slumber;
 
 #[cfg(test)]
 mod tests;

@@ -342,6 +342,9 @@ The following mechanics are available to every area. Each lives in
 | Water | Shallow (under 0.6 m): slows 20%. Deep (over 1.4 m): blocks with an invisible wall at the edge, no swimming | |
 | Blight water | Shallow water that builds Blight status | Reed Marsh only |
 | Water level | A pool's depth follows a lever (`raised_depth_m`) or a world flag (`lowered_by`, `lowered_depth_m`); a pool's surface is `floor_y_m` plus its depth | Mirrormere's lake drops 1.5 m when the Belfry raises `sluice.mirrormere.open`; see `mechanics/water_level.rs` |
+| Flag lever | A lever with target `Flag(name)` raises a world flag for good (WP-061) | The Ossuary's drain levers (`ossuary.drain_t`, `ossuary.drain_f`) and the Belfry's sluice; see `mechanics/bell.rs` |
+| Bell | A lever with target `Bell(radius_m:, stun_ticks:, opens:)`: ringing it stuns every living enemy in range (they kneel, open to a riposte) and opens the door it names (WP-061) | The Belfry's four bells; the bell-shaft lift's gate opens to bell C; see `mechanics/bell.rs` |
+| Sleeping enemy | An enemy spawn with `wakes_on: Some(flag)` doesn't think until the flag is set, so it can be backstabbed asleep (WP-061) | The Ossuary's Drowned wake when lever 2 drains the Flooded Crypt; see `mechanics/slumber.rs` |
 | Deep snow | Slows 25%, sprint costs 1.5x stamina | Rimeshelf |
 | Fall damage | Over 8 m: 4% of max HP per meter above 8; over 20 m: death | Except into deep water, which isn't reachable |
 | Darkness | Visibility reduced to 6 m outside light sources | Hollowdeep only, never on the critical path |

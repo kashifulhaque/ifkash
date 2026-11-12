@@ -1,6 +1,6 @@
 # Vision and scope
 
-*Latticefall* (working title) is a small, original, souls-like 3D action RPG that runs
+*Cinderheart* is a small, original, souls-like 3D action RPG that runs
 in the browser at `ifkash.dev/game`. It replaces the tiny-planet explorer that lives in
 `src/lib/game/` today. It has two jobs:
 
@@ -135,7 +135,7 @@ The [README glossary](README.md#glossary) lists them with their genre equivalent
 
 ## IP rules
 
-*Latticefall* is a genre homage, not a copy. Mechanics and genre conventions are fine to
+*Cinderheart* is a genre homage, not a copy. Mechanics and genre conventions are fine to
 use: stamina combat, lock-on, rolls with invincibility frames, checkpoints that respawn
 enemies, dropping currency on death, asynchronous messages, and boss fog gates are
 shared across dozens of games.

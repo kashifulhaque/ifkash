@@ -1,6 +1,6 @@
 # Architecture
 
-This document defines how *Latticefall* is built: the simulation core, the browser
+This document defines how *Cinderheart* is built: the simulation core, the browser
 renderer, the Python bindings, the data pipeline, and the rules that keep all of them
 deterministic. Read it before any WP in the `core`, `render`, `rl`, or `infra` lanes.
 

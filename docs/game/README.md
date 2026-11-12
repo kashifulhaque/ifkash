@@ -1,6 +1,6 @@
-# Latticefall design docs
+# Cinderheart design docs
 
-*Latticefall* (working title) is the souls-like action RPG that replaces the
+*Cinderheart* is the souls-like action RPG that replaces the
 tiny-planet game at `ifkash.dev/game`. It's a portfolio you can play, and an RL
 environment you can train agents on. These documents are the complete plan, written so
 AI coding agents can build it one work package at a time.
@@ -12,7 +12,7 @@ AI coding agents can build it one work package at a time.
   `M1`, or with `next`:
 
   ```text
-  You are the orchestrator for Latticefall, the game in this repo. Work on: TARGET.
+  You are the orchestrator for Cinderheart, the game in this repo. Work on: TARGET.
   Follow docs/game/11-agent-playbook.md, section "Run a milestone as an orchestrator",
   exactly, including the context budget.
 
@@ -62,9 +62,9 @@ These need an answer before the WPs that depend on them:
 | Decision | Needed before | Default if no answer |
 |---|---|---|
 | Finish the [ADR 0003](decisions/0003-frontend-deploy.md) rollout (approved 2026-11-12): add the `CLOUDFLARE_PAGES_API_TOKEN` secret, then disconnect the Pages Git integration | Merging the M0 branch to `main` | None. Until it's done, merging breaks Pages deploys, because the WASM module isn't committed |
-| Confirm the working title *Latticefall*, after a trademark search | [WP-086](10-roadmap.md#wp-086) (launch) | Keep it as a working title |
 | Confirm the Rust-core decision at gate G1 | [M2](10-roadmap.md#m2-combat-core) | Continue with Rust |
 | Approve each new asset pack (license check) | The WP that adds it | Use only packs already verified in [the presentation spec](07-presentation.md#sources) |
+| Rename code identifiers to Cinderheart ([ADR 0007](decisions/0007-name-cinderheart.md)): crates, `src/lib/latticefall/`, the `latticefall` Python package, Gymnasium IDs | [WP-086](10-roadmap.md#wp-086) (launch) | Keep the old identifiers; only player-facing strings change |
 | Choose whether research replays are collected at all | [WP-098](10-roadmap.md#wp-098) | Don't collect |
 
 ## Glossary

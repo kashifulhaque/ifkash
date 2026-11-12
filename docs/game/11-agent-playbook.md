@@ -1,7 +1,7 @@
 # Agent playbook
 
 This document tells AI coding agents (Claude Code, Cursor, Codex, or similar) how to
-build *Latticefall* from [the roadmap](10-roadmap.md). The default way to work is an
+build *Cinderheart* from [the roadmap](10-roadmap.md). The default way to work is an
 **orchestrator** session that picks ready work packages (WPs), hands each one to a
 **worker** subagent, verifies the result, and records it, until it reaches its context
 budget and hands off to the next session.
@@ -25,7 +25,7 @@ session, using Opus as the model. Replace `TARGET` with a milestone (for example
 a list of WPs, or `next` to let the orchestrator choose.
 
 ```text
-You are the orchestrator for Latticefall, the game in this repo. Work on: TARGET.
+You are the orchestrator for Cinderheart, the game in this repo. Work on: TARGET.
 Follow docs/game/11-agent-playbook.md, section "Run a milestone as an orchestrator",
 exactly, including the context budget.
 
@@ -166,7 +166,7 @@ To run one WP without an orchestrator, paste the following prompt into a fresh s
 replacing `WP_ID` with the card's ID, for example `WP-020`:
 
 ```text
-You are implementing one work package of Latticefall, the souls-like game in this
+You are implementing one work package of Cinderheart, the souls-like game in this
 repo. Follow docs/game/11-agent-playbook.md exactly.
 
 1. Read docs/game/README.md (glossary and reading order), then docs/game/STATUS.md.

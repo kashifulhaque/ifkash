@@ -51,6 +51,7 @@ Copy this block to the top of the entries and fill it in as you go:
   - WP-050: haiku, worktree; `cbccd54`; 189K. Touched `wasm/src/menu.rs` (signature change). Goldens rehashed (content hash only).
 - **Context:**
 - **Not verified:**
+- **Owner decision:** the game is named *Cinderheart* (ADR 0007); docs prose renamed, code identifiers unchanged.
 - **Waiting on the owner:**
 - **Next steps:**
 

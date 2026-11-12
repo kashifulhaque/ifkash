@@ -1,6 +1,6 @@
 # Roadmap
 
-This document breaks *Latticefall* into milestones and work packages (WPs). Each WP is
+This document breaks *Cinderheart* into milestones and work packages (WPs). Each WP is
 sized for one AI coding session and has everything an agent needs: what to read, what
 to touch, what to build, how to prove it works, and what it depends on.
 
@@ -1162,7 +1162,7 @@ possible. The owner plays it end to end before M8 starts.
 - **Read:** [Home page](08-portfolio-integration.md#home-page).
 - **Touch:** `src/routes/game/`, `src/routes/+page.svelte`, `src/lib/game/` (delete),
   `CLAUDE.md`, `README.md`.
-- **Do:** Make Latticefall the default `/game`; move the home page to the codex store;
+- **Do:** Make Cinderheart the default `/game`; move the home page to the codex store;
   delete `src/lib/game/` and its assets that nothing else uses; update `CLAUDE.md` and the
   README to describe the new game.
 - **Acceptance:** No import of `$lib/game` remains; the home page shows relic progress.

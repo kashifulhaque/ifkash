@@ -1,6 +1,6 @@
 # RL environment
 
-This document defines how *Latticefall* becomes a reinforcement-learning environment:
+This document defines how *Cinderheart* becomes a reinforcement-learning environment:
 scenarios, observation and action spaces, rewards, the Python API, vectorization,
 human demonstrations, interfaces for LLM and VLM agents, and a first experiment plan.
 Read it before any WP in the `rl` lane.

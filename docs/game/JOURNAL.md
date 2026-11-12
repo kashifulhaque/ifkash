@@ -47,6 +47,7 @@ Copy this block to the top of the entries and fill it in as you go:
   - WP-040: opus, worktree; `02ec373`; 248K. Golden conflict with WP-030.a resolved by one rehash (content hash only).
   - WP-049: sonnet, worktree; `fd0287e`; 234K. Orchestrator gated the landing card behind `engine=lf`.
   - WP-041: sonnet, worktree; `5ec93b7`; 172K.
+  - WP-046: sonnet, worktree; `7f8d8a7`; 335K. Edited `world_state/` (LevelUp, Travel) while WP-042 held it; WP-042 rebases onto it.
 
 ### 2026-11-12: latticefall-m3 (M3)
 

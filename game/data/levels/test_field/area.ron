@@ -1,0 +1,29 @@
+// The WP-010 movement test field, rebuilt from level data by WP-040. Y is up; the
+// player spawns at the origin facing +Z. The terrain covers x from -32 to 32 and z from
+// -32 to 64; past the edges is the void (kill_y).
+(
+  id: "test_field",
+  name: "Test Field",
+  seed: 20261112,
+  bounds: (min: (-32.0, -32.0), max: (32.0, 64.0)),
+  kill_y: -50.0,
+  // WP-029: Glimmer to lose on a death.
+  start_glimmer: 500,
+  ambient: (
+    sky: "day",
+    fog_color: (0.75, 0.8, 0.85),
+    fog_near_m: 40.0,
+    fog_far_m: 160.0,
+    sun_dir: (-0.4, -1.0, -0.3),
+    sun_color: (1.0, 0.96, 0.9),
+    sun_intensity: 1.0,
+    ambient_color: (0.6, 0.65, 0.75),
+    ambient_intensity: 0.5,
+  ),
+  regions: [
+    // Flat ground behind and to the right of the spawn, clear of every test feature.
+    (name: "meadow", points: [(-31.0, -31.0), (-6.0, -31.0), (-6.0, -8.0), (-31.0, -8.0)]),
+    // The flats beyond the drop at the far end.
+    (name: "far_flats", points: [(-30.0, 42.0), (30.0, 42.0), (30.0, 63.0), (-30.0, 63.0)]),
+  ],
+)

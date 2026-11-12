@@ -59,6 +59,12 @@ fn embedded_matches_data_dir() {
     );
     assert_eq!(dir.ai, embedded.ai);
     assert!(embedded.ai.is_some());
+    assert_eq!(dir.kits, embedded.kits);
+    assert_eq!(
+        dir.levels.keys().collect::<Vec<_>>(),
+        embedded.levels.keys().collect::<Vec<_>>()
+    );
+    assert_eq!(dir.levels, embedded.levels);
 }
 
 #[test]
@@ -128,6 +134,16 @@ fn hash_ignores_comments_and_whitespace() {
             )?
             .with_bosses(
                 ron_files("bosses")
+                    .into_iter()
+                    .map(|(p, t)| (p, format!("// noise\n{t}")))
+                    .collect(),
+            )?
+            .with_levels(
+                ron_files("kits")
+                    .into_iter()
+                    .map(|(p, t)| (p, format!("// noise\n{t}")))
+                    .collect(),
+                ron_files("levels/test_field")
                     .into_iter()
                     .map(|(p, t)| (p, format!("// noise\n{t}")))
                     .collect(),

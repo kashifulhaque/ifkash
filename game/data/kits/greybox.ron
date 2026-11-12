@@ -1,0 +1,39 @@
+// Greybox kit (docs/game/02-world.md, "Build an area", step 3): plain blocks for laying
+// out an area before art exists. Greybox pieces have no model; the renderer draws them
+// from their colliders. Piece origins are at the base center, except `block_unit`.
+// Every piece ID is registered in registry.ron (10100s).
+(
+  pieces: [
+    // A 1 m cube centered on its origin. Landmarks scale it into any box, which is how
+    // the test field's ledge and steps are built.
+    (
+      id: "block_unit",
+      tags: ["block"],
+      colliders: [Box(center: (0.0, 0.0, 0.0), half_extents: (0.5, 0.5, 0.5))],
+    ),
+    // A 2 m cube that fills one grid cell.
+    (
+      id: "block_2",
+      tags: ["block"],
+      colliders: [Box(center: (0.0, 1.0, 0.0), half_extents: (1.0, 1.0, 1.0))],
+    ),
+    // A 2 m by 2 m floor tile, 0.5 m thick, with its top at the origin.
+    (
+      id: "block_floor_2",
+      tags: ["block"],
+      colliders: [Box(center: (0.0, -0.25, 0.0), half_extents: (1.0, 0.25, 1.0))],
+    ),
+    // A wall 2 m wide along x, 3 m tall, and 0.5 m thick.
+    (
+      id: "block_wall_2",
+      tags: ["block"],
+      colliders: [Box(center: (0.0, 1.5, 0.0), half_extents: (1.0, 1.5, 0.25))],
+    ),
+    // A 0.6 m square pillar, 3 m tall.
+    (
+      id: "block_pillar",
+      tags: ["block"],
+      colliders: [Box(center: (0.0, 1.5, 0.0), half_extents: (0.3, 1.5, 0.3))],
+    ),
+  ],
+)

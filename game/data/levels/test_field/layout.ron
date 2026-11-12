@@ -1,0 +1,16 @@
+// Test field layout: greybox landmarks (scaled `block_unit` boxes, centered on `pos`).
+(
+  landmarks: [
+    // Ledge: top at 10 m, 1 m above the 9 m landing at the top of the ramp: too high to
+    // step up, low enough to jump (1.1 m jump height). Spans the ramp lane plus its side
+    // slopes so the steep strip under its near edge can't be reached. Its far edge, at
+    // z = 40, is a 10 m drop to flat ground.
+    (name: "ledge", kit: "block_unit", pos: (0.0, 5.0, 35.0), scale: (32.0, 10.0, 10.0)),
+    // Steps: four 0.3 m steps at x = -26..-20 starting at z = 2.6, each 0.6 m deep, under
+    // the 0.4 m autostep. The top step continues to z = 10.
+    (name: "step_1", kit: "block_unit", pos: (-23.0, 0.15, 6.0), scale: (6.0, 0.3, 8.0)),
+    (name: "step_2", kit: "block_unit", pos: (-23.0, 0.45, 6.3), scale: (6.0, 0.3, 7.4)),
+    (name: "step_3", kit: "block_unit", pos: (-23.0, 0.75, 6.6), scale: (6.0, 0.3, 6.8)),
+    (name: "step_4", kit: "block_unit", pos: (-23.0, 1.05, 6.9), scale: (6.0, 0.3, 6.2)),
+  ],
+)

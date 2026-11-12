@@ -396,19 +396,33 @@ the text interface. The full design is in [the RL environment spec](09-rl-enviro
 Levels are data, not Blender scenes. This lets an agent with no art tools build them.
 Each area directory in `game/data/levels/` holds:
 
-- `area.ron`: bounds, cells, ambient settings, music, Lantern list, and connections.
-- `terrain.ron`: heightfield generation parameters (seeded noise, then sculpt operations
-  such as `raise_circle`, `flatten_path`, `carve_river`, and `cliff_line`).
-- `layout.ron`: modular kit pieces placed on a 2-meter grid with a rotation, plus
-  freely placed landmarks.
-- `entities.ron`: spawns, items, doors, levers, lifts, triggers, messages, and Lanterns.
+- `area.ron`: ID, seed, bounds (the activity cells follow from them), kill height,
+  ambient settings, music, named region polygons, and connections.
+- `terrain.ron`: a heightfield over the bounds: a vertex spacing, seeded noise, then
+  sculpt operations applied in order (`SetRect`, `Ramp`, `RaiseCircle`, `FlattenPath`,
+  `CarveRiver`, and `CliffLine`). Indoor areas omit it.
+- `layout.ron`: modular kit pieces placed on a 2-meter grid with a quarter-turn
+  rotation, plus freely placed, scalable landmarks.
+- `entities.ron`: the player spawn and a list of entities: Lanterns, enemies, bosses
+  with their fog gates, dummies, water, and reeds. Doors, levers, lifts, items, and
+  messages join this list as new entity kinds.
 - `dressing.ron`: scatter rules (Poisson-disk sampled props by tag and density, masked
-  by terrain slope and paths). The renderer applies these; the core ignores them unless
-  a rule marks props as colliders.
+  by region, terrain slope, and paths) and a few hand-placed props. The renderer
+  applies these; the core ignores them unless a rule marks props as colliders.
 
-`lf-tools bake AREA` produces the collision set, the navigation grid, and a render
-manifest. The kit catalogs in `game/data/kits/` give each modular piece its glTF path
-and its simplified collider shapes, so the core never loads a glTF file.
+The format is documented in `game/crates/content/src/level.rs`. The content loader
+compiles every level into the scenario the core runs, so the core finds `test_field` the
+same way it finds a file in `scenarios/`. Kit colliders become axis-aligned boxes, which
+is why pieces turn only in quarter turns; a capsule becomes its bounding box until the
+core supports more shapes.
+
+`lf-tools bake AREA` runs the same compiler, then writes the collision set and the
+navigation grid to `game/target/levels/AREA/` for tools, and the render manifest to
+`static/latticefall/levels/AREA.json` for the renderer. It warns about unreachable
+Lanterns, spawns off the navigation grid, spawns inside colliders, and spawns outside the
+bounds; `--deny-warnings` turns warnings into a failure. The kit catalogs in
+`game/data/kits/` give each modular piece its glTF path and its simplified collider
+shapes, so the core never loads a glTF file.
 
 ## Persistence
 

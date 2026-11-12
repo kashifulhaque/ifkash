@@ -17,6 +17,7 @@ pub mod attributes;
 pub mod boss;
 pub mod consumables;
 pub mod enemy;
+pub mod level;
 pub mod locomotion;
 pub mod moves;
 pub mod nav;
@@ -32,6 +33,7 @@ pub use attributes::Attributes;
 pub use boss::BossDef;
 pub use consumables::{Consumables, Flask, Item, ItemKind};
 pub use enemy::{AiTuning, EnemyDef};
+pub use level::{KitCatalog, Kits, Level};
 pub use locomotion::{Death, EquipLoad, Guard, LockOn, Locomotion, Poise};
 pub use moves::Move;
 pub use nav::NavConfig;
@@ -65,6 +67,10 @@ const ENEMIES_DIR: &str = "enemies";
 const BOSSES_DIR: &str = "bosses";
 /// The shared AI tuning file (relative to the data root).
 const AI_FILE: &str = "ai.ron";
+/// Directory (relative to the data root) holding kit catalogs, one per file.
+const KITS_DIR: &str = "kits";
+/// Directory (relative to the data root) holding one directory per level (area).
+const LEVELS_DIR: &str = "levels";
 
 /// Embedded copies of every data file, as `(path relative to the data root, text)`.
 /// A new data file needs a line here; the `embedded_matches_data_dir` test fails if one
@@ -211,10 +217,6 @@ const EMBEDDED_SCENARIOS: &[(&str, &str)] = &[
     (
         "scenarios/m2_range.ron",
         include_str!("../../../data/scenarios/m2_range.ron"),
-    ),
-    (
-        "scenarios/test_field.ron",
-        include_str!("../../../data/scenarios/test_field.ron"),
     ),
     (
         "scenarios/duel_parry.ron",
@@ -459,6 +461,40 @@ const EMBEDDED_ENEMIES: &[(&str, &str)] = &[
     ),
 ];
 
+const EMBEDDED_KITS: &[(&str, &str)] = &[
+    (
+        "kits/greybox.ron",
+        include_str!("../../../data/kits/greybox.ron"),
+    ),
+    (
+        "kits/meadow.ron",
+        include_str!("../../../data/kits/meadow.ron"),
+    ),
+];
+/// Level files as `(levels/<area>/<file>, text)`.
+const EMBEDDED_LEVELS: &[(&str, &str)] = &[
+    (
+        "levels/test_field/area.ron",
+        include_str!("../../../data/levels/test_field/area.ron"),
+    ),
+    (
+        "levels/test_field/terrain.ron",
+        include_str!("../../../data/levels/test_field/terrain.ron"),
+    ),
+    (
+        "levels/test_field/layout.ron",
+        include_str!("../../../data/levels/test_field/layout.ron"),
+    ),
+    (
+        "levels/test_field/entities.ron",
+        include_str!("../../../data/levels/test_field/entities.ron"),
+    ),
+    (
+        "levels/test_field/dressing.ron",
+        include_str!("../../../data/levels/test_field/dressing.ron"),
+    ),
+];
+
 /// All parsed content.
 ///
 /// `moves` and `weapons` are keyed by file path relative to the data root (for example
@@ -475,7 +511,7 @@ pub struct Content {
     #[cfg_attr(feature = "ts", ts(skip))]
     pub locomotion: Option<Locomotion>,
     /// Scenarios keyed by file path relative to the data root, for example
-    /// `scenarios/test_field.ron`. Look one up by name with [`Content::scenario`].
+    /// `scenarios/m0_flat.ron`, plus every compiled level under `levels/<area>`. Look one up by name with [`Content::scenario`].
     #[cfg_attr(feature = "ts", ts(skip))]
     pub scenarios: BTreeMap<String, Scenario>,
     /// Items and flask numbers from `consumables.ron`. `None` only for partial data
@@ -502,6 +538,15 @@ pub struct Content {
     /// body and parts are also in `enemies`, so the AI table builds them like any enemy.
     #[cfg_attr(feature = "ts", ts(skip))]
     pub bosses: BTreeMap<String, BossDef>,
+    /// Kit catalogs keyed by file path relative to the data root, for example
+    /// `kits/greybox.ron` (WP-040).
+    #[cfg_attr(feature = "ts", ts(skip))]
+    pub kits: BTreeMap<String, KitCatalog>,
+    /// Levels keyed by directory relative to the data root, for example
+    /// `levels/test_field` (WP-040). Each is also compiled into `scenarios` under the
+    /// same key, so [`Content::scenario`] finds it by name.
+    #[cfg_attr(feature = "ts", ts(skip))]
+    pub levels: BTreeMap<String, Level>,
 }
 
 /// A failure to load content. Validation problems are [`Issue`]s instead.
@@ -545,6 +590,38 @@ fn parse<T: serde::de::DeserializeOwned>(file: &str, text: &str) -> Result<T, Co
         file: file.to_owned(),
         message: e.to_string(),
     })
+}
+
+/// Every file in `levels/<area>/` directories as `(levels/<area>/<file>, text)`, sorted.
+/// Only the files in [`level::LEVEL_FILES`] are read. No `levels/` directory is no levels.
+fn list_levels(dir: &Path) -> Result<Vec<(String, String)>, ContentError> {
+    let io = |path: &Path, e: std::io::Error| ContentError::Io {
+        path: path.display().to_string(),
+        message: e.to_string(),
+    };
+    let root = dir.join(LEVELS_DIR);
+    if !root.is_dir() {
+        return Ok(Vec::new());
+    }
+    let mut areas = Vec::new();
+    for entry in std::fs::read_dir(&root).map_err(|e| io(&root, e))? {
+        let entry = entry.map_err(|e| io(&root, e))?;
+        if entry.path().is_dir() {
+            areas.push(entry.file_name().to_string_lossy().into_owned());
+        }
+    }
+    areas.sort();
+    let mut out = Vec::new();
+    for area in areas {
+        for file in level::LEVEL_FILES {
+            let path = root.join(&area).join(file);
+            if path.is_file() {
+                let text = std::fs::read_to_string(&path).map_err(|e| io(&path, e))?;
+                out.push((format!("{LEVELS_DIR}/{area}/{file}"), text));
+            }
+        }
+    }
+    Ok(out)
 }
 
 impl Content {
@@ -636,7 +713,8 @@ impl Content {
         .with_projectiles(projectiles.as_deref())?
         .with_status(status.as_deref())?
         .with_enemies(ai.as_deref(), list(ENEMIES_DIR)?)?
-        .with_bosses(list(BOSSES_DIR)?)
+        .with_bosses(list(BOSSES_DIR)?)?
+        .with_levels(list(KITS_DIR)?, list_levels(dir)?)
     }
 
     /// Loads the content baked into this crate with `include_str!`.
@@ -658,7 +736,8 @@ impl Content {
         .with_projectiles(Some(EMBEDDED_PROJECTILES))?
         .with_status(Some(EMBEDDED_STATUS))?
         .with_enemies(Some(EMBEDDED_AI), own(EMBEDDED_ENEMIES))?
-        .with_bosses(own(EMBEDDED_BOSSES))
+        .with_bosses(own(EMBEDDED_BOSSES))?
+        .with_levels(own(EMBEDDED_KITS), own(EMBEDDED_LEVELS))
     }
 
     /// Builds content from RON text. `moves` and `weapons` are `(relative path, text)`.
@@ -694,6 +773,8 @@ impl Content {
             ai: None,
             enemies: BTreeMap::new(),
             bosses: BTreeMap::new(),
+            kits: BTreeMap::new(),
+            levels: BTreeMap::new(),
         };
         content.check_registered()?;
         Ok(content)
@@ -809,6 +890,79 @@ impl Content {
         Ok(self)
     }
 
+    /// Adds kit catalogs as `(kits/<name>.ron, text)` and level files as
+    /// `(levels/<area>/<file>, text)`, then compiles each level into `scenarios` under
+    /// `levels/<area>`. Fails on a parse or compile error, an unregistered area or kit
+    /// piece ID, or a level whose name a `scenarios/` file already uses.
+    pub fn with_levels(
+        mut self,
+        kits: Vec<(String, String)>,
+        levels: Vec<(String, String)>,
+    ) -> Result<Self, ContentError> {
+        for (path, text) in kits {
+            let cat: KitCatalog =
+                level::parse_ron(&text).map_err(|message| ContentError::Parse {
+                    file: path.clone(),
+                    message,
+                })?;
+            for (i, p) in cat.pieces.iter().enumerate() {
+                self.check_id(&path, format!("pieces[{i}].id"), &p.id)?;
+            }
+            self.kits.insert(path, cat);
+        }
+        let mut by_dir: BTreeMap<String, BTreeMap<String, String>> = BTreeMap::new();
+        for (path, text) in levels {
+            let (dir, file) = path.rsplit_once('/').ok_or_else(|| ContentError::Parse {
+                file: path.clone(),
+                message: "a level file must be levels/<area>/<file>".to_owned(),
+            })?;
+            by_dir
+                .entry(dir.to_owned())
+                .or_default()
+                .insert(file.to_owned(), text);
+        }
+        let index =
+            Kits::new(self.kits.iter().map(|(f, c)| (f.as_str(), c))).map_err(|message| {
+                ContentError::Parse {
+                    file: KITS_DIR.to_owned(),
+                    message,
+                }
+            })?;
+        let mut compiled = Vec::new();
+        for (dir, files) in &by_dir {
+            let name = dir.strip_prefix(&format!("{LEVELS_DIR}/")).unwrap_or(dir);
+            let err = |message: String| ContentError::Parse {
+                file: dir.clone(),
+                message,
+            };
+            let lvl = Level::parse(|f| files.get(f).cloned()).map_err(|(f, message)| {
+                ContentError::Parse {
+                    file: format!("{dir}/{f}"),
+                    message,
+                }
+            })?;
+            self.check_id(&format!("{dir}/area.ron"), "id".to_owned(), &lvl.area.id)?;
+            lvl.check(name, &index).map_err(err)?;
+            let scenario = lvl.compile(&index).map_err(err)?;
+            if self.scenario(name).is_some() {
+                return Err(err(format!(
+                    "{SCENARIOS_DIR}/{name}.ron already defines a scenario with this name"
+                )));
+            }
+            compiled.push((dir.clone(), lvl, scenario));
+        }
+        for (dir, lvl, scenario) in compiled {
+            self.scenarios.insert(dir.clone(), scenario);
+            self.levels.insert(dir, lvl);
+        }
+        Ok(self)
+    }
+
+    /// Finds a level by area ID: `test_field` is `levels/test_field`.
+    pub fn level(&self, name: &str) -> Option<&Level> {
+        self.levels.get(&format!("{LEVELS_DIR}/{name}"))
+    }
+
     /// Finds a boss definition by string ID.
     pub fn boss_by_id(&self, id: &str) -> Option<&BossDef> {
         self.bosses.values().find(|b| b.id == id)
@@ -831,9 +985,12 @@ impl Content {
         }
     }
 
-    /// Finds a scenario by name: `test_field` is `scenarios/test_field.ron`.
+    /// Finds a scenario by name: `m0_flat` is `scenarios/m0_flat.ron`, and a compiled
+    /// level such as `test_field` is `levels/test_field`.
     pub fn scenario(&self, name: &str) -> Option<&Scenario> {
-        self.scenarios.get(&format!("{SCENARIOS_DIR}/{name}.ron"))
+        self.scenarios
+            .get(&format!("{SCENARIOS_DIR}/{name}.ron"))
+            .or_else(|| self.scenarios.get(&format!("{LEVELS_DIR}/{name}")))
     }
 
     /// Fails on the first content ID that has no registry entry.

@@ -1,0 +1,17 @@
+// Meadow scatter kit: grass, stones, and dead trees for dressing.ron scatter rules.
+// No models exist yet; WP-041 adds them (paths are relative to static/latticefall/).
+// Until then the renderer draws a placeholder per piece. Every piece ID is registered
+// in registry.ron (10150s).
+(
+  pieces: [
+    (id: "grass_tuft_a", tags: ["ash_grass"]),
+    (id: "grass_tuft_b", tags: ["ash_grass"]),
+    (id: "stone_small", tags: ["stone"]),
+    // A trunk capsule 4 m tall. Scatter rules with `collider: true` give it to the core.
+    (
+      id: "dead_tree",
+      tags: ["dead_tree"],
+      colliders: [Capsule(center: (0.0, 2.0, 0.0), half_height: 1.7, radius: 0.3)],
+    ),
+  ],
+)

@@ -1,0 +1,16 @@
+// Test field terrain: flat ground at 0 m with two features (docs/game/02-world.md,
+// "Traversal and world mechanics"). Vertices are 2 m apart, 33 columns by 49 rows.
+(
+  spacing_m: 2.0,
+  base_y: 0.0,
+  noise: None,
+  ops: [
+    // Slope: in the lane x = -14..14 the ground ramps from 0 m at z = 10 to 9 m at z = 28
+    // (26.6 degrees, under the 45 degree climb limit), then is flat to z = 30.
+    Ramp(min: (-14.0, 10.0), max: (14.0, 28.0), axis: Z, from: 0.0, to: 9.0),
+    SetRect(min: (-14.0, 28.0), max: (14.0, 30.0), height: 9.0),
+    // Steep ridge: x = 20..28, z = -6..-4 stands 4 m above the ground around it, with
+    // 63 degree sides (4 m over one 2 m vertex step): too steep to walk up.
+    SetRect(min: (20.0, -6.0), max: (28.0, -4.0), height: 4.0),
+  ],
+)

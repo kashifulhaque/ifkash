@@ -57,11 +57,8 @@ enum Command {
         #[arg(long)]
         out: Option<PathBuf>,
     },
-    /// Bake derived level data (the navigation grid).
-    Bake {
-        #[command(subcommand)]
-        action: bake::Action,
-    },
+    /// Bake an area's collision set, navigation grid, and render manifest.
+    Bake(bake::BakeArgs),
     /// Generate TypeScript types and a UI digest from the content data.
     GenTs {
         /// The data directory. Defaults to `game/data/`.
@@ -86,7 +83,7 @@ fn main() -> ExitCode {
             &out.unwrap_or_else(assets::default_out),
         ),
         Command::Bench { ticks } => bench::run(ticks),
-        Command::Bake { action } => bake::run(action, &default_data()),
+        Command::Bake(args) => bake::run(args, &default_data()),
         Command::Replay { action } => replay::run(action, &default_data()),
     }
 }

@@ -1,0 +1,23 @@
+// Test field dressing: render-only scatter (no rule here adds colliders, so the core's
+// test field is just the terrain and the layout).
+(
+  rules: [
+    (
+      tag: "ash_grass",
+      density: 0.4,
+      min_spacing: 0.8,
+      max_slope_deg: 30.0,
+      avoid: [Lantern(radius: 3.0), Spawn(radius: 2.0)],
+      region_mask: Some("meadow"),
+      scale: (0.8, 1.3),
+    ),
+    (
+      tag: "stone",
+      density: 0.02,
+      min_spacing: 3.0,
+      max_slope_deg: 20.0,
+      region_mask: Some("far_flats"),
+      scale: (0.6, 1.4),
+    ),
+  ],
+)

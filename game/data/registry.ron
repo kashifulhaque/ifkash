@@ -199,5 +199,17 @@
     (id: "bw_strike_2", num: 8671),
     (id: "bw_wave", num: 8672),
     (id: "proj_pitch_bomb", num: 8899),
+
+    // WP-040: areas (10000s) and kit pieces (10100s).
+    (id: "test_field", num: 10000),
+    (id: "block_unit", num: 10100),
+    (id: "block_2", num: 10101),
+    (id: "block_floor_2", num: 10102),
+    (id: "block_wall_2", num: 10103),
+    (id: "block_pillar", num: 10104),
+    (id: "grass_tuft_a", num: 10150),
+    (id: "grass_tuft_b", num: 10151),
+    (id: "stone_small", num: 10152),
+    (id: "dead_tree", num: 10153),
   ],
 )

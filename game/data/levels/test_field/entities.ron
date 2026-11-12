@@ -1,0 +1,15 @@
+// Test field entities. +X is to the player's left while facing +Z.
+(
+  spawn: (pos: (0.0, 0.0, 0.0), yaw: 0.0),
+  entities: [
+    // WP-029: a Lantern 3 m behind the spawn.
+    Lantern(id: "lantern_field", pos: (0.0, 0.0, -3.0), yaw: 0.0),
+    // Lock-on practice dummies (WP-015) on the flat ground in front of the spawn. They
+    // stand still. They are padded: flat defense 500 keeps a Wayfarer's Blade light to
+    // about 25 damage a hit, so a 100 HP dummy survives the three-hit chain and falls to
+    // the fourth light.
+    Dummy(name: "dummy_ahead", pos: (0.0, 0.0, 6.0), yaw: 3.1415927, hp: 100, defense: (flat: 500)),
+    Dummy(name: "dummy_left", pos: (4.0, 0.0, 8.0), yaw: 3.1415927, hp: 100, defense: (flat: 500)),
+    Dummy(name: "dummy_right", pos: (-4.0, 0.0, 8.0), yaw: 3.1415927, hp: 100, defense: (flat: 500)),
+  ],
+)

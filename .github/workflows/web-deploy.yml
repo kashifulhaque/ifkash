@@ -43,9 +43,8 @@ permissions:
 
 env:
   GAME_RUST_VERSION: '1.99.1' # Keep in sync with game/rust-toolchain.toml.
-  # TODO(owner): PLACEHOLDER. Replace PAGES_PROJECT_NAME with the real Pages project name
-  # from the Cloudflare dashboard (Workers & Pages). The deploy jobs fail until you do.
-  PAGES_PROJECT: PAGES_PROJECT_NAME
+  # The Cloudflare Pages project (production branch: main).
+  PAGES_PROJECT: ifkash
 
 jobs:
   build:
@@ -117,13 +116,6 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
     steps:
-      - name: Check the Pages project name is set
-        run: |
-          if [ "$PAGES_PROJECT" = "PAGES_PROJECT_NAME" ]; then
-            echo "::error::PAGES_PROJECT is still the placeholder. Set it in .github/workflows/web-deploy.yml."
-            exit 1
-          fi
-
       - name: Download build output
         uses: actions/download-artifact@v7
         with:
@@ -145,13 +137,6 @@ jobs:
     if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     steps:
-      - name: Check the Pages project name is set
-        run: |
-          if [ "$PAGES_PROJECT" = "PAGES_PROJECT_NAME" ]; then
-            echo "::error::PAGES_PROJECT is still the placeholder. Set it in .github/workflows/web-deploy.yml."
-            exit 1
-          fi
-
       - name: Download build output
         uses: actions/download-artifact@v7
         with:

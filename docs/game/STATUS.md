@@ -22,7 +22,7 @@ Status values are `todo`, `in progress`, `blocked`, `split`, `review`, and `done
 | 002 | Deterministic math, RNG, tick skeleton | core | done | claude/game-m0-1730d5 | 2026-11-12 | nalgebra 0.35 (rapier3d 0.36.1's math crate) with libm-force; own PCG32 with splitmix64-derived streams; state hash = xxh3_64 over postcard, events excluded. clippy.toml in lf-core denies HashMap/HashSet and std transcendental f32 methods. |
 | 003 | Content crate | core | done | claude/game-m0-1730d5 | 2026-11-12 | u32 numeric IDs; content hash = xxh3_64 over postcard of parsed Content (efd431704141700b). Curves stored as integer tenths. Added game/data/weapons/straight_sword.ron (wpn_wayfarer_blade) and an optional move 'charge' field. New data files need an include_str! line in lf-content (a test catches misses). |
 | 004 | Inputs, replays, golden tests | core | done | claude/game-m0-1730d5 | 2026-11-12 | Replay = postcard .lfr (header, RLE frames, commands, hash every 30 ticks). Golden m0_random_3000.lfr: 3,196 bytes, final hash 81ea2bbe90c69441. Placeholder kinematic player movement (walk 1.6, run 4.5 m/s) until WP-010. lf-tools replay run/rehash/record-random and a minimal bench. |
-| 005 | CI and frontend deploy proposal | infra | done | claude/game-m0-1730d5 | 2026-11-12 | game.yml passes actionlint and its steps run locally; not yet run on GitHub (branch not pushed). ADR 0003 accepted 2026-11-12; web-deploy.yml added with the PAGES_PROJECT_NAME placeholder. Installed actionlint to ~/go/bin. |
+| 005 | CI and frontend deploy proposal | infra | done | claude/game-m0-1730d5 | 2026-11-12 | game.yml passes actionlint and its steps run locally; not yet run on GitHub (branch not pushed). ADR 0003 accepted 2026-11-12; web-deploy.yml added; deploys to the `ifkash` Pages project. Installed actionlint to ~/go/bin. |
 | 006 | Browser bridge | render | done | claude/game-m0-1730d5 | 2026-11-12 | WASM and native hashes match for the golden replay and content. lf_wasm_bg.wasm is 349,267 bytes raw, 130,806 gzipped. Uses wasm-bindgen 0.2.106 and wasm-opt 126 from the worker-build cache (no installs). WASM output rebuilds byte-identically; it was committed until ADR 0003 was accepted and is gitignored again. /game?engine=lf shows the new engine; old game moved unchanged to OldGame.svelte. The 60 fps check was not measured: the hidden Browser pane throttles rAF. |
 | 007 | Python binding stub | rl | done | claude/game-m0-1730d5 | 2026-11-12 | pyo3 0.30.1 (abi3-py311), maturin 1.16.0 in the project venv game/python/.venv (created with uv; maturin and pytest installed there). Python hash equals native (81ea2bbe90c69441). Bench: step 17-20M steps/s, step_many 157-181M steps/s on the near-empty M0 sim. CI python job installs uv. |
 | 008 | Portfolio slugs | ui | done | claude/game-m0-1730d5 | 2026-11-12 | Slugs on all 20 content.ts items; scripts/export-content.ts writes game/data/gen/portfolio_content.json, run by game:validate before lf-tools validate (CI rust job now installs Bun). Portfolio is validated separately and is not in the content hash. Nine of ten relic flavor lines are new wording that needs owner review. |
@@ -135,9 +135,9 @@ Status values are `todo`, `in progress`, `blocked`, `split`, `review`, and `done
   `PATH`. CI installs binaryen 126 from its GitHub release.
 - **ADR 0003 accepted (2026-11-12).** `.github/workflows/web-deploy.yml` builds the WASM
   module and deploys the site, so `src/lib/latticefall/wasm/` is gitignored again. **Until
-  the owner sets the Pages project name (placeholder `PAGES_PROJECT_NAME`), adds the
-  `CLOUDFLARE_PAGES_API_TOKEN` secret, and disconnects the Pages Git integration, merging
-  this branch breaks Pages deploys**, because the Git integration can't build the WASM
+  the owner adds the `CLOUDFLARE_PAGES_API_TOKEN` secret and disconnects the Pages Git
+  integration (`cf pages projects disconnect-source ifkash`), merging this branch breaks
+  Pages deploys**, because the Git integration can't build the WASM
   module.
 - **Roadmap fix (2026-11-12):** WP-004 now also depends on WP-003, because the replay
   header stores the content hash. M0 already ran WP-004 after WP-003.

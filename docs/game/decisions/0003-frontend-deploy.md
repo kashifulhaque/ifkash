@@ -37,14 +37,10 @@ The workflow is [`.github/workflows/web-deploy.yml`](../../../.github/workflows/
 It has a build job (Rust toolchain, `wasm-bindgen-cli` matching `Cargo.lock`, binaryen 126,
 `mise run game:wasm`, `bun install --frozen-lockfile`, `bun run build`), a production
 deploy job for pushes to `main`, and a preview deploy job for pull requests from this
-repository. Both deploy jobs fail on purpose while the project name is the
-`PAGES_PROJECT_NAME` placeholder.
+repository. Both deploy jobs deploy to the `ifkash` Pages project.
 
-Two details in the listing need attention before the first deploy:
+One detail needs attention before the first deploy:
 
-- **Project name.** The repository doesn't record the Pages project name. The
-  `PAGES_PROJECT` value is the placeholder `PAGES_PROJECT_NAME`. Copy the real name from the Cloudflare
-  dashboard under **Workers & Pages**.
 - **Environment variables.** The Pages dashboard may define build-time variables such as
   `PUBLIC_GOOGLE_CLIENT_ID`. Move each one to a GitHub repository variable (or secret)
   and pass it to the **Build site** step. A variable left behind in the dashboard isn't
@@ -72,12 +68,13 @@ single token, add the **Cloudflare Pages: Edit** scope to
 
 1. Create the `CLOUDFLARE_PAGES_API_TOKEN` secret, the `PUBLIC_GOOGLE_CLIENT_ID`
    variable, and a `production` environment in the GitHub repository settings.
-2. Replace the `PAGES_PROJECT_NAME` placeholder in `web-deploy.yml`. Open a pull request
-   and confirm that the preview job deploys and the preview site loads.
+2. Open a pull request and confirm that the preview job deploys to the `ifkash` project
+   and that the preview site loads.
 3. Merge. Wait for the production deploy to finish, then check `ifkash.dev` (home,
    `/fitness`, `/game`, and a hard refresh on a deep link).
-4. Disconnect the Git integration in the Cloudflare dashboard under the project's
-   **Settings** > **Builds & deployments**. Don't disconnect before step 3 passes.
+4. Disconnect the Git integration with `cf pages projects disconnect-source ifkash`, or
+   in the Cloudflare dashboard under the project's **Settings** >
+   **Builds & deployments**. Don't disconnect before step 3 passes.
    Until you disconnect, the Git integration keeps building on each push, and those
    builds fail because the WASM module isn't committed.
 5. Update the README deploy runbook and the "Deploy (brief)" section in `CLAUDE.md` to
@@ -116,8 +113,8 @@ single token, add the **Cloudflare Pages: Edit** scope to
 
 You approved this ADR. Before merging the branch that adds `web-deploy.yml`:
 
-1. Replace `PAGES_PROJECT_NAME` in `.github/workflows/web-deploy.yml` with the Pages
-   project name.
-2. Create the `CLOUDFLARE_PAGES_API_TOKEN` secret and the `PUBLIC_GOOGLE_CLIENT_ID`
-   variable, and check that `CLOUDFLARE_ACCOUNT_ID` exists.
-3. After the first successful Actions deploy, disconnect the Pages Git integration.
+1. Create the `CLOUDFLARE_PAGES_API_TOKEN` secret (a token with **Cloudflare Pages:
+   Edit**) and the `PUBLIC_GOOGLE_CLIENT_ID` variable. `CLOUDFLARE_ACCOUNT_ID` already
+   exists.
+2. After the first successful Actions deploy, disconnect the Pages Git integration with
+   `cf pages projects disconnect-source ifkash`.

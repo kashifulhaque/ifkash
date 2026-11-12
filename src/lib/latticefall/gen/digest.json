@@ -118,9 +118,49 @@
     "start_max": 16,
     "start_min": 4
   },
-  "contentHash": "949464711314851809",
-  "contentHashHex": "0d2d2d1fdcb0c7e1",
+  "contentHash": "9097020054217734454",
+  "contentHashHex": "7e3f1b8a8e40b936",
   "moves": [
+    {
+      "anim": "roll_quick",
+      "file": "moves/common.ron",
+      "fp": 0,
+      "id": "dodge_roll_light",
+      "num": 3000,
+      "stamina": 14,
+      "stub": false,
+      "totalFrames": 20
+    },
+    {
+      "anim": "roll",
+      "file": "moves/common.ron",
+      "fp": 0,
+      "id": "dodge_roll_medium",
+      "num": 3001,
+      "stamina": 14,
+      "stub": false,
+      "totalFrames": 24
+    },
+    {
+      "anim": "roll_heavy",
+      "file": "moves/common.ron",
+      "fp": 0,
+      "id": "dodge_roll_heavy",
+      "num": 3002,
+      "stamina": 14,
+      "stub": false,
+      "totalFrames": 30
+    },
+    {
+      "anim": "backstep",
+      "file": "moves/common.ron",
+      "fp": 0,
+      "id": "dodge_backstep",
+      "num": 3003,
+      "stamina": 10,
+      "stub": false,
+      "totalFrames": 15
+    },
     {
       "anim": "sword_slash_r",
       "file": "moves/straight_sword.ron",
@@ -240,26 +280,6 @@
       "stamina": 18,
       "stub": false,
       "totalFrames": 30
-    },
-    {
-      "anim": "roll",
-      "file": "moves/straight_sword.ron",
-      "fp": 0,
-      "id": "ss_roll",
-      "num": 2012,
-      "stamina": 14,
-      "stub": false,
-      "totalFrames": 24
-    },
-    {
-      "anim": "backstep",
-      "file": "moves/straight_sword.ron",
-      "fp": 0,
-      "id": "ss_backstep_dodge",
-      "num": 2013,
-      "stamina": 10,
-      "stub": false,
-      "totalFrames": 15
     }
   ],
   "weapons": [

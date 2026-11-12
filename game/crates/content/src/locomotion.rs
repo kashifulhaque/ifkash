@@ -71,6 +71,44 @@ pub struct Locomotion {
     pub snap_to_ground: f32,
     /// Lock-on targeting numbers.
     pub lock_on: LockOn,
+    /// Armor weight in tenths of a unit until equipment exists (stub).
+    pub stub_armor_weight_tenths: u16,
+    /// Equip load tier thresholds.
+    pub equip_load: EquipLoad,
+    /// Guard timings and numbers.
+    pub guard: Guard,
+}
+
+/// Equip load tiers (docs/game/03-combat.md, "Equip load and roll tiers"). Percentages
+/// are of the maximum equip load.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct EquipLoad {
+    /// Under this is the Light tier.
+    pub light_below_percent: u16,
+    /// From this up to `overloaded_over_percent` is the Heavy tier.
+    pub heavy_from_percent: u16,
+    /// Over this is Overloaded: no roll, no sprint.
+    pub overloaded_over_percent: u16,
+    /// Stamina regeneration at Heavy load, as a percent of the normal rate.
+    pub heavy_regen_percent: u16,
+}
+
+/// Guard tuning (docs/game/03-combat.md, "Combat verbs", "Regeneration", and "Guard and
+/// guard counter").
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Guard {
+    /// Ticks `GUARD` is held before blocks count.
+    pub raise_ticks: u8,
+    /// Ticks after releasing during which the guard can't be raised and no move starts.
+    pub lower_ticks: u8,
+    /// Ticks a broken guard staggers.
+    pub break_stagger_ticks: u8,
+    /// Ticks after a block in which `HEAVY` is a guard counter.
+    pub counter_window_ticks: u8,
+    /// Stamina regeneration while guarding, as a percent of the normal rate.
+    pub regen_percent: u16,
 }
 
 /// Lock-on tuning (docs/game/03-combat.md, "Lock-on").

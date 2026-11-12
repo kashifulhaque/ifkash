@@ -5,7 +5,8 @@
 // any content ID that has no entry here.
 //
 // Number blocks (a convention, not enforced): 100s attributes, 1000s weapons,
-// 2000s straight-sword moves.
+// 2000s straight-sword moves, 3000s common moves (dodges). ss_roll (2012) and
+// ss_backstep_dodge (2013) are retired: WP-022 moved the dodges to moves/common.ron.
 (
   entries: [
     (id: "attr_vitality", num: 100),
@@ -32,5 +33,10 @@
     (id: "ss_guard_counter", num: 2011),
     (id: "ss_roll", num: 2012),
     (id: "ss_backstep_dodge", num: 2013),
+
+    (id: "dodge_roll_light", num: 3000),
+    (id: "dodge_roll_medium", num: 3001),
+    (id: "dodge_roll_heavy", num: 3002),
+    (id: "dodge_backstep", num: 3003),
   ],
 )

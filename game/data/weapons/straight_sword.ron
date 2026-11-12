@@ -12,6 +12,8 @@
     requirements: (might: 10, finesse: 10, insight: 0, devotion: 0),
     weight_tenths: 40,
     unique: false,
+    // Guard, Guard and guard counter: weapons guard at about 50 percent physical.
+    guard: (absorb_phys_percent: 50, absorb_elem_percent: 0, guard_boost: 40), // elem and boost: tuning
     moveset: (
       light_chain: ["ss_light_1", "ss_light_2", "ss_light_3"],
       heavy: "ss_heavy",
@@ -23,8 +25,10 @@
       jump_heavy: "ss_jump_heavy",
       plunge: "ss_plunge",
       guard_counter: "ss_guard_counter",
-      dodge_roll: "ss_roll",
-      dodge_backstep: "ss_backstep_dodge",
+      roll_light: "dodge_roll_light",
+      roll_medium: "dodge_roll_medium",
+      roll_heavy: "dodge_roll_heavy",
+      dodge_backstep: "dodge_backstep",
     ),
   ),
 ]

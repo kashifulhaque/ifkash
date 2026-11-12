@@ -23,13 +23,13 @@ pub mod validate;
 pub mod weapons;
 
 pub use attributes::Attributes;
-pub use locomotion::{LockOn, Locomotion};
+pub use locomotion::{EquipLoad, Guard, LockOn, Locomotion};
 pub use moves::Move;
 pub use portfolio::{Portfolio, PortfolioContent};
 pub use registry::{NumId, Registry};
 pub use scenario::Scenario;
 pub use validate::{Issue, Severity, Validate};
-pub use weapons::Weapon;
+pub use weapons::{GuardStats, Weapon};
 
 use registry::RegistryFile;
 
@@ -45,10 +45,16 @@ const LOCOMOTION_FILE: &str = "locomotion.ron";
 /// Embedded copies of every data file, as `(path relative to the data root, text)`.
 /// A new data file needs a line here; the `embedded_matches_data_dir` test fails if one
 /// is missing.
-const EMBEDDED_MOVES: &[(&str, &str)] = &[(
-    "moves/straight_sword.ron",
-    include_str!("../../../data/moves/straight_sword.ron"),
-)];
+const EMBEDDED_MOVES: &[(&str, &str)] = &[
+    (
+        "moves/common.ron",
+        include_str!("../../../data/moves/common.ron"),
+    ),
+    (
+        "moves/straight_sword.ron",
+        include_str!("../../../data/moves/straight_sword.ron"),
+    ),
+];
 const EMBEDDED_WEAPONS: &[(&str, &str)] = &[(
     "weapons/straight_sword.ron",
     include_str!("../../../data/weapons/straight_sword.ron"),

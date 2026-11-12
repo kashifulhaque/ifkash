@@ -60,11 +60,15 @@ fn hash_ignores_comments_and_whitespace() {
     let noisy = format!("// extra comment\n\n{}\n\n", registry.replace(",", " ,  "));
     let attrs = std::fs::read_to_string(data_dir().join("attributes.ron")).unwrap();
     let moves = std::fs::read_to_string(data_dir().join("moves/straight_sword.ron")).unwrap();
+    let common = std::fs::read_to_string(data_dir().join("moves/common.ron")).unwrap();
     let weapons = std::fs::read_to_string(data_dir().join("weapons/straight_sword.ron")).unwrap();
     let other = Content::from_sources(
         &noisy,
         &attrs,
-        vec![("moves/straight_sword.ron".into(), moves)],
+        vec![
+            ("moves/common.ron".into(), common),
+            ("moves/straight_sword.ron".into(), moves),
+        ],
         vec![("weapons/straight_sword.ron".into(), weapons)],
     )
     .and_then(|c| {

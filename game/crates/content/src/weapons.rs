@@ -61,8 +61,11 @@ pub struct Moveset {
     pub jump_heavy: String,
     pub plunge: String,
     pub guard_counter: String,
-    /// Roll: `DODGE` tapped with a direction (docs/game/03-combat.md, "Combat verbs").
-    pub dodge_roll: String,
+    /// Roll at Light, Medium, and Heavy equip load: `DODGE` tapped with a direction
+    /// (docs/game/03-combat.md, "Combat verbs" and "Equip load and roll tiers").
+    pub roll_light: String,
+    pub roll_medium: String,
+    pub roll_heavy: String,
     /// Backstep: `DODGE` tapped with no direction.
     pub dodge_backstep: String,
 }
@@ -86,13 +89,28 @@ impl Moveset {
             ("jump_heavy", &self.jump_heavy),
             ("plunge", &self.plunge),
             ("guard_counter", &self.guard_counter),
-            ("dodge_roll", &self.dodge_roll),
+            ("roll_light", &self.roll_light),
+            ("roll_medium", &self.roll_medium),
+            ("roll_heavy", &self.roll_heavy),
             ("dodge_backstep", &self.dodge_backstep),
         ] {
             out.push((format!("moveset.{field}"), id.as_str()));
         }
         out
     }
+}
+
+/// How a weapon blocks (docs/game/03-combat.md, "Guard and guard counter").
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "ts", derive(ts_rs::TS))]
+#[serde(deny_unknown_fields)]
+pub struct GuardStats {
+    /// Percent of physical damage a block absorbs.
+    pub absorb_phys_percent: u8,
+    /// Percent of elemental damage a block absorbs.
+    pub absorb_elem_percent: u8,
+    /// Divides the stamina a block costs: `poise_damage * 100 / guard_boost`.
+    pub guard_boost: u16,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -110,6 +128,7 @@ pub struct Weapon {
     pub weight_tenths: u16,
     #[serde(default)]
     pub unique: bool,
+    pub guard: GuardStats,
     pub moveset: Moveset,
     /// A placeholder for an item a later WP implements; the validator warns on it.
     #[serde(default)]

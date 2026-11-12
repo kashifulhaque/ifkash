@@ -1,6 +1,7 @@
 //! The move system: per-actor move state, frame advance, chains, cancel windows, the
 //! input buffer, root motion, tracking toward the lock target, hyperarmor and i-frame
-//! flags, and stamina and FP costs. See docs/game/03-combat.md, "Combat verbs", "Input
+//! flags, and stamina and FP costs (see [`super::stamina`]), dodges (see
+//! [`super::dodge`]), and the guard (see [`super::guard`]). See docs/game/03-combat.md, "Combat verbs", "Input
 //! buffer", and "Move data schema".
 //!
 //! # Frames
@@ -27,11 +28,14 @@
 //! While a move locks movement, `actor::controller::intent` leaves the velocity and
 //! facing alone (see [`MoveState::locks_movement`]).
 
-use lf_content::{Content, Locomotion, Move, NumId};
+use lf_content::{Content, GuardStats, Locomotion, Move, NumId};
 use serde::{Deserialize, Serialize};
 
 use crate::actor::Actor;
 use crate::actor::targeting::{bearing, wrap_pi};
+use crate::combat::dodge::{self, LoadTier};
+use crate::combat::guard::GuardState;
+use crate::combat::stamina;
 use crate::input::{ActionFrame, buttons};
 use crate::math::dmath::{atan2, cos, sin};
 use crate::world::DT;
@@ -106,15 +110,19 @@ pub struct MoveState {
     pub dodge_hold: u16,
     /// Buttons of the previous tick, for press edges.
     pub prev_buttons: u16,
+    /// Guard, guard counter window, and guard-break stagger. See `combat::guard`.
+    pub guard: GuardState,
 }
 
 impl MoveState {
     /// True while the current move ignores the stick: until the frame about to execute
-    /// next tick reaches `cancel_any_from`. Player intent runs before this system, so it
-    /// asks about next tick's frame.
+    /// next tick reaches `cancel_any_from`, or while a broken guard staggers. Player
+    /// intent runs before this system, so it asks about next tick's frame.
     pub fn locks_movement(&self) -> bool {
-        self.current
-            .is_some_and(|c| c.frame.saturating_add(1) < c.free_from)
+        self.guard.stagger > 0
+            || self
+                .current
+                .is_some_and(|c| c.frame.saturating_add(1) < c.free_from)
     }
 
     /// True if the flag in [`flags`] is set for this tick's frame.
@@ -122,8 +130,8 @@ impl MoveState {
         self.flags & flag != 0
     }
 
-    /// Ends the current move and clears the buffer. The hook for stagger, guard break,
-    /// and death (WP-022, WP-023).
+    /// Ends the current move and clears the buffer. The hook for stagger, guard break
+    /// (`guard::apply_incoming_hit` calls it), and death (WP-023).
     pub fn interrupt(&mut self) {
         self.current = None;
         self.buffer = None;
@@ -163,14 +171,24 @@ pub struct Moveset {
     pub running: MoveNum,
     pub rolling: MoveNum,
     pub backstep: MoveNum,
-    /// Jump, plunge, and guard counter moves are resolved but not started yet: they
-    /// need airborne attacks (jump, plunge) and guarding (WP-022).
+    /// Jump and plunge moves are resolved but not started yet: they need airborne
+    /// attacks.
     pub jump_light: MoveNum,
     pub jump_heavy: MoveNum,
     pub plunge: MoveNum,
+    /// Started by `HEAVY` within `counter_window_ticks` after a block.
     pub guard_counter: MoveNum,
-    pub dodge_roll: MoveNum,
+    /// The roll for each equip load tier (there is none when overloaded).
+    pub roll_light: MoveNum,
+    pub roll_medium: MoveNum,
+    pub roll_heavy: MoveNum,
     pub dodge_backstep: MoveNum,
+    /// The wielder's equip load tier. A stand-in until equipment exists: the weapon's
+    /// weight plus `stub_armor_weight_tenths`, over the max equip load at
+    /// `stub_endurance`.
+    pub load_tier: LoadTier,
+    /// How the weapon blocks.
+    pub guard: GuardStats,
 }
 
 /// Every move in the content, by numeric ID, plus the player's moveset. Built from
@@ -219,6 +237,18 @@ impl MoveTable {
         let player_moveset = match content.all_weapons().next() {
             Some((_, w)) => {
                 let s = &w.moveset;
+                // Equip load stub: the armor is a constant until equipment exists.
+                let load_tier = match content.locomotion {
+                    Some(t) => dodge::load_tier(
+                        u32::from(w.weight_tenths) + u32::from(t.stub_armor_weight_tenths),
+                        content
+                            .attributes
+                            .max_equip_load_tenths(t.stub_endurance)
+                            .max(0) as u32,
+                        &t.equip_load,
+                    ),
+                    None => LoadTier::Medium,
+                };
                 Some(Moveset {
                     light_chain: s
                         .light_chain
@@ -234,8 +264,12 @@ impl MoveTable {
                     jump_heavy: defined(&s.jump_heavy)?,
                     plunge: defined(&s.plunge)?,
                     guard_counter: defined(&s.guard_counter)?,
-                    dodge_roll: defined(&s.dodge_roll)?,
+                    roll_light: defined(&s.roll_light)?,
+                    roll_medium: defined(&s.roll_medium)?,
+                    roll_heavy: defined(&s.roll_heavy)?,
                     dodge_backstep: defined(&s.dodge_backstep)?,
+                    load_tier,
+                    guard: w.guard,
                 })
             }
             None => None,
@@ -336,6 +370,7 @@ fn resolve(
     b: Buffered,
     current: Option<ActiveMove>,
     sprinting: bool,
+    counter: bool,
     set: &Moveset,
     table: &MoveTable,
 ) -> Option<MoveNum> {
@@ -352,33 +387,17 @@ fn resolve(
     }
     let num = match b.action {
         Action::Light => match cur {
-            Some((c, _)) if c.num == set.dodge_roll => set.rolling,
+            Some((c, _)) if dodge::is_roll(set, c.num) => set.rolling,
             Some((c, _)) if c.num == set.dodge_backstep => set.backstep,
             Some((_, d)) if d.next_chain.is_some() => d.next_chain?,
             _ if sprinting => set.running,
             _ => *set.light_chain.first()?,
         },
+        Action::Heavy if counter => set.guard_counter,
         Action::Heavy => set.heavy,
-        Action::Dodge if b.dir == [0, 0] => set.dodge_backstep,
-        Action::Dodge => set.dodge_roll,
+        Action::Dodge => dodge::select(set, set.load_tier, b.dir != [0, 0])?,
     };
     Some(num)
-}
-
-/// Spends a move's costs. Stamina is a stub until WP-022: a move needs more than 0
-/// stamina (not the full cost) and drains to 0 at worst. FP must cover the full cost.
-fn try_spend(a: &mut Actor, d: &Move) -> bool {
-    let stamina = f32::from(d.stamina);
-    let fp = f32::from(d.fp);
-    if (stamina > 0.0 && a.stamina <= 0.0) || a.fp < fp {
-        return false;
-    }
-    if stamina > 0.0 {
-        a.stamina = (a.stamina - stamina).max(0.0);
-        a.motor.stamina_idle = 0;
-    }
-    a.fp -= fp;
-    true
 }
 
 /// Advances one actor's move by a tick. `input` is the actor's action frame (`None` for
@@ -430,10 +449,7 @@ pub fn step(
                 .data
                 .stamina
                 .saturating_sub(def.map_or(0, |d| d.data.stamina));
-            a.stamina = (a.stamina - f32::from(extra)).max(0.0);
-            if extra > 0 {
-                a.motor.stamina_idle = 0;
-            }
+            stamina::spend(a, f32::from(extra));
             c.num = s.charged_heavy;
             c.free_from = ch.data.cancel_any_from.unwrap_or(ch.data.total_frames);
         }
@@ -446,13 +462,30 @@ pub fn step(
         };
     }
 
-    // 3. Fire the buffered action if the current move allows it.
+    // The guard raises and lowers (see `combat::guard`). Whether a move may start is read
+    // before the update, so a stagger of N ticks blocks exactly N ticks of starts.
+    let can_act = a.moves.guard.can_act();
+    let wants_guard = held & buttons::GUARD != 0;
+    a.moves
+        .guard
+        .update(wants_guard, a.moves.current.is_none(), &t.guard);
+
+    // 3. Fire the buffered action if the current move allows it. A broken guard or a
+    // lowering one blocks starting anything.
     if let (Some(b), Some(s)) = (a.moves.buffer, set) {
         let grounded = a.motor.grounded && a.motor.jump_startup == 0 && a.motor.landing == 0;
-        let num = resolve(b, a.moves.current, a.motor.sprinting, s, table);
-        if let (true, Some(d)) = (grounded, num.and_then(|n| table.get(n)))
-            && try_spend(a, &d.data)
+        let counter = a.moves.guard.counter > 0;
+        let num = resolve(b, a.moves.current, a.motor.sprinting, counter, s, table);
+        if grounded
+            && can_act
+            && let Some(d) = num.and_then(|n| table.get(n))
+            && stamina::try_spend(a, &d.data)
         {
+            // Starting a move drops the guard, and uses up the counter window.
+            a.moves.guard.drop_guard();
+            if d.num == s.guard_counter {
+                a.moves.guard.counter = 0;
+            }
             if b.action == Action::Dodge && b.dir != [0, 0] {
                 a.yaw = atan2(f32::from(b.dir[0]), f32::from(b.dir[1]));
             }
@@ -477,6 +510,9 @@ pub fn step(
             a.moves.buffer = None;
         }
     }
+    // The counter window counts down after the buffered action had its chance, so a block
+    // on tick T allows a counter on ticks T+1 through T+`counter_window_ticks`.
+    a.moves.guard.counter = a.moves.guard.counter.saturating_sub(1);
 
     // 4. Flags, tracking, and root motion for the frame executed this tick.
     a.moves.flags = 0;
@@ -615,7 +651,7 @@ mod tests {
             assert_eq!((c.num, c.frame), (light, f));
         }
         let c = step(&mut w, 0, 127, 0).unwrap();
-        assert_eq!((c.num, c.frame), (num(&w, "ss_roll"), 0));
+        assert_eq!((c.num, c.frame), (num(&w, "dodge_roll_medium"), 0));
         assert!(player(&w).moves.buffer.is_none());
         // The roll faces the stick, and its i-frames start on frame 2.
         let yaw = player(&w).yaw;
@@ -626,7 +662,7 @@ mod tests {
         assert!(player(&w).moves.has(flags::IFRAMES));
         let mut snap = Vec::new();
         write_snapshot(&w, &mut snap);
-        assert_eq!(u32::from(snap[0].move_id), num(&w, "ss_roll"));
+        assert_eq!(u32::from(snap[0].move_id), num(&w, "dodge_roll_medium"));
         assert_eq!(snap[0].move_frame, 2);
         assert_ne!(snap[0].flags & snapshot::flags::INVULNERABLE, 0);
     }
@@ -683,7 +719,7 @@ mod tests {
         let start = player(&w).pos;
         step(&mut w, buttons::DODGE, 0, 0);
         let c = step(&mut w, 0, 0, 0).unwrap();
-        assert_eq!(c.num, num(&w, "ss_backstep_dodge"));
+        assert_eq!(c.num, num(&w, "dodge_backstep"));
         idle(&mut w, 30);
         let dz = player(&w).pos[2] - start[2];
         assert!((dz + 1.8).abs() < KCC_TOLERANCE_M, "moved {dz} m");

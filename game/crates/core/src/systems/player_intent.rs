@@ -3,6 +3,7 @@
 //! `actor::controller::intent`).
 
 use crate::actor::{controller, targeting};
+use crate::combat::dodge::LoadTier;
 use crate::input::TickInput;
 use crate::world::World;
 
@@ -21,7 +22,13 @@ pub fn run(world: &mut World, input: &TickInput) {
         .and_then(|p| p.lock_target)
         .and_then(|id| world.actors.get(id))
         .map(|t| t.pos);
+    // Overloaded is walk only.
+    let can_sprint = world
+        .moves
+        .player_moveset
+        .as_ref()
+        .is_none_or(|s| s.load_tier != LoadTier::Overloaded);
     if let Some(actor) = world.actors.get_mut(world.player) {
-        controller::intent(actor, input.frame, target_pos, &tuning);
+        controller::intent(actor, input.frame, target_pos, can_sprint, &tuning);
     }
 }

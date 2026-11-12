@@ -26,6 +26,9 @@
   stub_vitality: 10, // stub until characters have attributes
   stub_endurance: 10, // stub until characters have attributes
   stub_focus: 10, // stub until characters have attributes
+  // Armor weight until equipment exists: with the 4.0 weapon this is 24.0 of 50.8 max load
+  // (47 percent, the Medium roll tier).
+  stub_armor_weight_tenths: 200, // stub
   input_buffer_ticks: 8, // Input buffer: buffered for up to 8 ticks
   fall_damage_from_m: 8.0, // Traversal, Fall damage: over 8 m
   fall_damage_per_m: 0.04, // Traversal, Fall damage: 4% of max HP per meter above 8
@@ -45,5 +48,20 @@
     break_range_m: 30.0, // Lock-on: breaks beyond 30 m
     retarget_range_m: 8.0, // Lock-on: auto-pick the next target within 8 m
     eye_height_m: 1.5, // tuning: line-of-sight ray height; the capsule is 1.8 m tall
+  ),
+  // Equip load and roll tiers (docs/game/03-combat.md)
+  equip_load: (
+    light_below_percent: 30, // Roll tiers: under 30% is Light
+    heavy_from_percent: 70, // Roll tiers: 70% to 100% is Heavy
+    overloaded_over_percent: 100, // Roll tiers: over 100% is Overloaded
+    heavy_regen_percent: 80, // Roll tiers: at heavy load, stamina regeneration -20 percent
+  ),
+  // Guard and guard counter, Combat verbs (Guard), Regeneration
+  guard: (
+    raise_ticks: 3, // Combat verbs, Guard: 3 to raise
+    lower_ticks: 4, // Combat verbs, Guard: 4 to lower
+    break_stagger_ticks: 30, // Guard: a broken guard staggers for 30 ticks
+    counter_window_ticks: 12, // Guard: HEAVY within 12 ticks after a block
+    regen_percent: 40, // Regeneration: while guarding, 40 percent of the rate
   ),
 )

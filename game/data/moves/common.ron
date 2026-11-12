@@ -1,0 +1,83 @@
+// Moves every actor shares: the dodges. Source: docs/game/03-combat.md, "Combat verbs"
+// (Roll, Backstep) and "Equip load and roll tiers". Weapon movesets point at these.
+// Schema: crates/content/src/moves.rs. Recovery is the frames after the i-frames; the
+// rolling and backstep attacks start from there.
+#![enable(implicit_some)]
+[
+  (
+    // Light load (under 30%): quick roll, 20 frames, 3.4 m.
+    id: "dodge_roll_light",
+    anim: "roll_quick",
+    total_frames: 20, // Roll tiers, Light: 20 frames
+    stamina: 14, // Combat verbs, Roll: 14
+    fp: 0,
+    root_motion: [(0, 0.0), (2, 0.3), (14, 3.2), (17, 3.4), (20, 3.4)], // travels 3.4 m
+    track_deg_per_tick: 0.0,
+    hyperarmor: None,
+    iframes: (from: 2, to: 14), // Roll tiers, Light: i-frames 2-14
+    cancel_attack_from: 15, // the rolling attack: LIGHT during roll recovery
+    cancel_dodge_from: 16, // tuning
+    cancel_any_from: 17, // tuning
+    next_chain: None,
+    hitboxes: [],
+    sfx: [],
+    vfx: [],
+  ),
+  (
+    // Medium load (30% to under 70%): roll, 24 frames, 3.2 m.
+    id: "dodge_roll_medium",
+    anim: "roll",
+    total_frames: 24, // Roll tiers, Medium: 24 frames
+    stamina: 14, // Combat verbs, Roll: 14
+    fp: 0,
+    root_motion: [(0, 0.0), (2, 0.3), (14, 2.9), (18, 3.2), (24, 3.2)], // travels 3.2 m
+    track_deg_per_tick: 0.0,
+    hyperarmor: None,
+    iframes: (from: 2, to: 14), // Roll tiers, Medium: i-frames 2-14
+    cancel_attack_from: 15, // the rolling attack: LIGHT during roll recovery
+    cancel_dodge_from: 18, // tuning
+    cancel_any_from: 20, // tuning
+    next_chain: None,
+    hitboxes: [],
+    sfx: [],
+    vfx: [],
+  ),
+  (
+    // Heavy load (70% to 100%): heavy roll, 30 frames, 2.4 m, one fewer i-frame.
+    id: "dodge_roll_heavy",
+    anim: "roll_heavy",
+    total_frames: 30, // Roll tiers, Heavy: 30 frames
+    stamina: 14, // Combat verbs, Roll: 14
+    fp: 0,
+    root_motion: [(0, 0.0), (2, 0.2), (13, 2.1), (20, 2.4), (30, 2.4)], // travels 2.4 m
+    track_deg_per_tick: 0.0,
+    hyperarmor: None,
+    iframes: (from: 2, to: 13), // Roll tiers, Heavy: i-frames 2-13
+    cancel_attack_from: 14, // the rolling attack: LIGHT during roll recovery
+    cancel_dodge_from: 24, // tuning
+    cancel_any_from: 27, // tuning
+    next_chain: None,
+    hitboxes: [],
+    sfx: [],
+    vfx: [],
+  ),
+  (
+    // Backstep (Combat verbs, Backstep): DODGE tapped with no direction. Moves backward.
+    id: "dodge_backstep",
+    anim: "backstep",
+    total_frames: 15, // to 15
+    stamina: 10, // Combat verbs, Backstep: 10
+    fp: 0,
+    root_motion: [(0, 0.0), (2, -0.3), (7, -1.4), (10, -1.8), (15, -1.8)], // travels 1.8 m
+    track_deg_per_tick: 0.0,
+    hyperarmor: None,
+    iframes: (from: 2, to: 7), // i-frames 2-7
+    cancel_attack_from: 8, // the backstep attack: LIGHT during backstep recovery
+    cancel_dodge_from: 10, // tuning
+    cancel_any_from: 12, // tuning
+    next_chain: None,
+    hitboxes: [],
+    sfx: [],
+    vfx: [],
+  ),
+]

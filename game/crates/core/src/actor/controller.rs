@@ -47,7 +47,14 @@ pub fn jump_speed(t: &Locomotion) -> f32 {
 /// sprint, and jump requests. `lock_pos` is the position of the locked-on target, if any:
 /// while it's set the actor strafes, facing the target whichever way it moves
 /// (docs/game/03-combat.md, "Lock-on"). The move direction is the stick's, unchanged.
-pub fn intent(a: &mut Actor, frame: ActionFrame, lock_pos: Option<[f32; 3]>, t: &Locomotion) {
+/// `can_sprint` is false when overloaded (walk only; "Equip load and roll tiers").
+pub fn intent(
+    a: &mut Actor,
+    frame: ActionFrame,
+    lock_pos: Option<[f32; 3]>,
+    can_sprint: bool,
+    t: &Locomotion,
+) {
     let m = &mut a.motor;
     let pressed = frame.buttons & !m.prev_buttons;
     m.prev_buttons = frame.buttons;
@@ -93,7 +100,11 @@ pub fn intent(a: &mut Actor, frame: ActionFrame, lock_pos: Option<[f32; 3]>, t: 
     } else {
         let mut speed = stick_speed(mag, t);
         // Sprint starts once DODGE has been held for more than `sprint_delay_ticks`.
-        if m.dodge_held > t.sprint_delay_ticks && a.stamina > 0.0 && m.jump_startup == 0 {
+        if can_sprint
+            && m.dodge_held > t.sprint_delay_ticks
+            && a.stamina > 0.0
+            && m.jump_startup == 0
+        {
             m.sprinting = true;
             speed = t.sprint_speed;
             a.stamina = (a.stamina - t.sprint_stamina_per_tick).max(0.0);
@@ -113,21 +124,6 @@ pub fn intent(a: &mut Actor, frame: ActionFrame, lock_pos: Option<[f32; 3]>, t: 
     }
     if spent {
         m.stamina_idle = 0;
-    }
-}
-
-/// Stamina regeneration (tick system 8): `stamina_regen_per_tick` once
-/// `stamina_regen_delay_ticks` have passed without spending (docs/game/03-combat.md,
-/// "Regeneration").
-pub fn regen(a: &mut Actor, t: &Locomotion) {
-    if a.dead {
-        return;
-    }
-    let m = &mut a.motor;
-    if m.stamina_idle >= t.stamina_regen_delay_ticks {
-        a.stamina = (a.stamina + t.stamina_regen_per_tick).min(a.max_stamina);
-    } else {
-        m.stamina_idle += 1;
     }
 }
 

@@ -5,9 +5,10 @@
  */
 export type Moveset = { light_chain: Array<string>, heavy: string, charged_heavy: string, running: string, rolling: string, backstep: string, jump_light: string, jump_heavy: string, plunge: string, guard_counter: string, 
 /**
- * Roll: `DODGE` tapped with a direction (docs/game/03-combat.md, "Combat verbs").
+ * Roll at Light, Medium, and Heavy equip load: `DODGE` tapped with a direction
+ * (docs/game/03-combat.md, "Combat verbs" and "Equip load and roll tiers").
  */
-dodge_roll: string, 
+roll_light: string, roll_medium: string, roll_heavy: string, 
 /**
  * Backstep: `DODGE` tapped with no direction.
  */

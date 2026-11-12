@@ -49,7 +49,7 @@ The orchestrator owns this file. It follows these rules, from
 | 023 | Damage pipeline | combat | sonnet | todo |  |  | | | |
 | 024 | Poise, stance, parries, criticals | combat | sonnet | todo |  |  | | | |
 | 025 | Status effects and buffs | combat | sonnet | todo |  |  | | | |
-| 026 | Inventory, items, flasks | combat | sonnet | todo |  |  | | | |
+| 026 | Inventory, items, flasks | combat | sonnet | in progress |  | latticefall-m2 | game/m2-combat | 2026-11-12 | |
 | 027 | Projectiles | combat | sonnet | todo |  |  | | | |
 | 028 | Combat VFX | render | sonnet | todo |  |  | | | |
 | 029 | Death, Remnants, Lanterns | core | sonnet | todo |  |  | | | |

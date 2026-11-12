@@ -1,0 +1,32 @@
+// The WP-056 Purge scenario: the thorn-hound pack of fight_thorn_hounds, with a Pilgrim's
+// Reliquary and all nine Litanies known. The hounds' bites build Rupture; Purge cures it.
+(
+  spawn: (0.0, 0.0, 0.0),
+  spawn_yaw: 0.0,
+  kill_y: -50.0,
+  heightfield: None,
+  start_glimmer: 400000,
+  player_weapon: Some("wpn_pilgrims_reliquary"),
+  player_spells: [
+    "spl_mend",
+    "spl_wide_mend",
+    "spl_ember_toss",
+    "spl_pyre_breath",
+    "spl_storm_spear",
+    "spl_radiant_edge",
+    "spl_choir_litany",
+    "spl_purge",
+    "spl_steadfast",
+  ],
+  boxes: [
+    (name: "floor", center: (0.0, -0.5, 0.0), half_extents: (25.0, 0.5, 25.0)),
+  ],
+  lanterns: [
+    (id: "lantern_hounds", pos: (0.0, 0.0, -1.0), yaw: 0.0),
+  ],
+  enemies: [
+    (name: "hound_a", enemy: "thorn_hound", pos: (-3.0, 0.0, 10.0), yaw: 3.1415927),
+    (name: "hound_b", enemy: "thorn_hound", pos: (0.0, 0.0, 12.0), yaw: 3.1415927),
+    (name: "hound_c", enemy: "thorn_hound", pos: (3.0, 0.0, 10.0), yaw: 3.1415927),
+  ],
+)

@@ -1,0 +1,40 @@
+// The WP-056 Wide Mend scenario: a flat floor, a Lantern, an Echo Bell on the ground two
+// meters ahead of the player, and an Echo Stone at (-3, 0, 4). The player owns the
+// PoliteLlama Echo (`echoes_unlocked`), and two Husks stand 12 and 13 m ahead to fight them both.
+// The player holds a Pilgrim's Reliquary and knows all nine Litanies.
+(
+  spawn: (0.0, 0.0, 0.0),
+  spawn_yaw: 0.0,
+  kill_y: -50.0,
+  heightfield: None,
+  start_glimmer: 400000,
+  player_weapon: Some("wpn_pilgrims_reliquary"),
+  player_spells: [
+    "spl_mend",
+    "spl_wide_mend",
+    "spl_ember_toss",
+    "spl_pyre_breath",
+    "spl_storm_spear",
+    "spl_radiant_edge",
+    "spl_choir_litany",
+    "spl_purge",
+    "spl_steadfast",
+  ],
+  lanterns: [
+    (id: "lantern_echo", pos: (0.0, 0.0, -1.0), yaw: 0.0),
+  ],
+  boxes: [
+    (name: "floor", center: (0.0, -0.5, 0.0), half_extents: (25.0, 0.5, 25.0)),
+  ],
+  pickups: [
+    (id: "echo_bell", item: "itm_echo_bell", pos: (0.0, 0.0, 2.0)),
+  ],
+  echo_stones: [
+    (id: "stone_echo", pos: (-3.0, 0.0, 4.0), yaw: 0.0),
+  ],
+  echoes_unlocked: ["echo_politellama"],
+  enemies: [
+    (name: "husk", enemy: "husk", pos: (2.0, 0.0, 12.0), yaw: 3.1415927),
+    (name: "husk_b", enemy: "husk", pos: (-1.0, 0.0, 13.0), yaw: 3.1415927),
+  ],
+)

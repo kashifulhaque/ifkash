@@ -148,8 +148,8 @@
     "start_max": 16,
     "start_min": 4
   },
-  "contentHash": "1184244451297460829",
-  "contentHashHex": "106f480dd6d0025d",
+  "contentHash": "1665983652677766156",
+  "contentHashHex": "171ec34e2b774c0c",
   "moves": [
     {
       "anim": "ep_sentinel_thrust",
@@ -2840,6 +2840,96 @@
       "stamina": 0,
       "stub": false,
       "totalFrames": 72
+    },
+    {
+      "anim": "cast_buff",
+      "file": "spells/litanies.ron",
+      "fp": 18,
+      "id": "spm_mend",
+      "num": 15150,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 36
+    },
+    {
+      "anim": "cast_buff",
+      "file": "spells/litanies.ron",
+      "fp": 32,
+      "id": "spm_wide_mend",
+      "num": 15151,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 44
+    },
+    {
+      "anim": "cast_formula",
+      "file": "spells/litanies.ron",
+      "fp": 8,
+      "id": "spm_ember_toss",
+      "num": 15152,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 30
+    },
+    {
+      "anim": "cast_formula",
+      "file": "spells/litanies.ron",
+      "fp": 0,
+      "id": "spm_pyre_breath",
+      "num": 15153,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 30
+    },
+    {
+      "anim": "cast_formula",
+      "file": "spells/litanies.ron",
+      "fp": 16,
+      "id": "spm_storm_spear",
+      "num": 15154,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 36
+    },
+    {
+      "anim": "cast_buff",
+      "file": "spells/litanies.ron",
+      "fp": 14,
+      "id": "spm_radiant_edge",
+      "num": 15155,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 34
+    },
+    {
+      "anim": "cast_formula",
+      "file": "spells/litanies.ron",
+      "fp": 28,
+      "id": "spm_choir_litany",
+      "num": 15156,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 42
+    },
+    {
+      "anim": "cast_buff",
+      "file": "spells/litanies.ron",
+      "fp": 12,
+      "id": "spm_purge",
+      "num": 15157,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 34
+    },
+    {
+      "anim": "cast_buff",
+      "file": "spells/litanies.ron",
+      "fp": 14,
+      "id": "spm_steadfast",
+      "num": 15158,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 34
     }
   ],
   "weapons": [

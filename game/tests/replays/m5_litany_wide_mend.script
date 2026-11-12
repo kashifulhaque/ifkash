@@ -1,0 +1,44 @@
+# WP-056 golden: Wide Mend heals the caster and the Echo within 6 m by 30% of max HP (record with `lf-tools replay record-script`). Each line:
+# <ticks> <move_x> <move_z> [BUTTONS], plus `cmd` lines. The player rests at the Lantern,
+# raises Devotion by 20 (the spell's requirement; base Focus gives its two slots), attunes Wide Mend,
+# picks up the Echo Bell, equips it to quick slot 2, rings it at the Echo Stone to summon
+# PoliteLlama, and casts Wide Mend once the Husk has hurt them both. The scenario is
+# `litany_echo`.
+seed 5610
+scenario litany_echo
+10 0 0            # settle on the ground
+cmd Rest
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd Equip 32 15021      # attune Wide Mend (two slots)
+2 0 0
+20 0 127                # walk up to the Echo Bell and take it
+2 0 0
+cmd Equip 12 17000      # the Bell in quick slot 2
+12 -127 127            # walk over to the Echo Stone, which stands at (-3, 0, 4)
+7 -127 0
+4 0 0
+cmd UseItem 2           # ring the Bell: PoliteLlama is summoned by the stone
+60 0 0                  # the Husks come up and fight the Echo
+45 0 127                # step up to them, into the reach of their blows
+45 0 0                  # the Echo trades blows; the player takes some too
+1 0 0 LIGHT             # cast Wide Mend
+60 0 0

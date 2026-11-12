@@ -80,10 +80,12 @@ pub struct PoiseEffect {
 
 /// Applies a landed, unblocked hit to `a`'s poise and stance. `poise_damage` is the
 /// hitbox's and `stance_mult_milli` the move's `stance_mult` in thousandths.
+/// `poise_percent` scales the actor's poise (Steadfast: 150; 100 changes nothing).
 pub fn apply_hit(
     a: &mut Actor,
     poise_damage: u32,
     stance_mult_milli: u32,
+    poise_percent: u32,
     t: &Poise,
 ) -> PoiseEffect {
     let mut fx = PoiseEffect::default();
@@ -113,7 +115,7 @@ pub fn apply_hit(
         } else {
             1
         };
-        let poise = u32::from(p.poise) * mult;
+        let poise = u32::from(p.poise) * mult * poise_percent / 100;
         if p.accum > poise {
             let margin = p.accum - poise;
             let heavy = margin * 100 > poise * u32::from(t.heavy_margin_percent);
@@ -238,6 +240,13 @@ pub fn apply_landing(world: &mut World, target: Id, move_num: MoveNum, poise_dam
     let mult = world.moves.get(move_num).map_or(1000, |d| {
         (d.data.stance_mult * 1000.0).round().max(0.0) as u32
     });
+    // Steadfast (a body buff) raises the target's poise (WP-056).
+    let poise_percent = world.actors.get(target).map_or(100, |a| {
+        a.status
+            .body_buff
+            .and_then(|b| world.status.buff(b.num))
+            .map_or(100, |d| u32::from(d.poise_percent))
+    });
     let Some(a) = world.actors.get_mut(target) else {
         return;
     };
@@ -245,7 +254,7 @@ pub fn apply_landing(world: &mut World, target: Id, move_num: MoveNum, poise_dam
     let fx = if a.hp == 0 {
         PoiseEffect::default()
     } else {
-        apply_hit(a, poise_damage, mult, &t)
+        apply_hit(a, poise_damage, mult, poise_percent, &t)
     };
     if let Some(ticks) = fx.stance_break {
         world
@@ -320,10 +329,10 @@ mod tests {
         let t = tuning();
         let mut a = actor(40, 0);
         for _ in 0..3 {
-            assert_eq!(apply_hit(&mut a, 12, 1000, &t).stagger, None);
+            assert_eq!(apply_hit(&mut a, 12, 1000, 100, &t).stagger, None);
         }
         // 36 so far; the fourth light makes 48, a margin of 8 of 40: light.
-        let fx = apply_hit(&mut a, 12, 1000, &t);
+        let fx = apply_hit(&mut a, 12, 1000, 100, &t);
         assert_eq!(fx.stagger, Some((false, t.light_stagger_ticks)));
         assert_eq!(a.poise.accum, 0);
         assert_eq!(a.moves.guard.stagger, t.light_stagger_ticks);
@@ -333,9 +342,9 @@ mod tests {
     fn exactly_the_poise_does_not_stagger() {
         let t = tuning();
         let mut a = actor(40, 0);
-        assert_eq!(apply_hit(&mut a, 40, 1000, &t).stagger, None);
+        assert_eq!(apply_hit(&mut a, 40, 1000, 100, &t).stagger, None);
         assert_eq!(
-            apply_hit(&mut a, 1, 1000, &t).stagger.map(|s| s.0),
+            apply_hit(&mut a, 1, 1000, 100, &t).stagger.map(|s| s.0),
             Some(false)
         );
     }
@@ -346,12 +355,12 @@ mod tests {
         // Margin 20 of 40 is exactly 50 percent: still light. 21 is heavy.
         let mut a = actor(40, 0);
         assert_eq!(
-            apply_hit(&mut a, 60, 1000, &t).stagger,
+            apply_hit(&mut a, 60, 1000, 100, &t).stagger,
             Some((false, t.light_stagger_ticks))
         );
         let mut b = actor(40, 0);
         assert_eq!(
-            apply_hit(&mut b, 61, 1000, &t).stagger,
+            apply_hit(&mut b, 61, 1000, 100, &t).stagger,
             Some((true, t.heavy_stagger_ticks))
         );
         assert!(b.poise.heavy_stagger);
@@ -363,7 +372,7 @@ mod tests {
         let t = tuning();
         let mut a = actor(10, 0);
         swing(&mut a);
-        apply_hit(&mut a, 12, 1000, &t);
+        apply_hit(&mut a, 12, 1000, 100, &t);
         assert_eq!(a.moves.current, None);
     }
 
@@ -371,7 +380,7 @@ mod tests {
     fn the_accumulator_resets_after_a_quiet_spell() {
         let t = tuning();
         let mut a = actor(40, 0);
-        apply_hit(&mut a, 30, 1000, &t);
+        apply_hit(&mut a, 30, 1000, 100, &t);
         for _ in 0..t.reset_ticks - 1 {
             tick(&mut a, &t);
         }
@@ -379,7 +388,7 @@ mod tests {
         tick(&mut a, &t);
         assert_eq!(a.poise.accum, 0);
         // So a second 30 doesn't stagger.
-        assert_eq!(apply_hit(&mut a, 30, 1000, &t).stagger, None);
+        assert_eq!(apply_hit(&mut a, 30, 1000, 100, &t).stagger, None);
     }
 
     #[test]
@@ -390,18 +399,21 @@ mod tests {
         swing(&mut armored);
         armored.moves.flags = flags::HYPERARMOR;
         // 60 staggers the plain actor (60 > 40) but not the armored one (60 <= 80).
-        assert!(apply_hit(&mut plain, 60, 1000, &t).stagger.is_some());
-        assert_eq!(apply_hit(&mut armored, 60, 1000, &t).stagger, None);
+        assert!(apply_hit(&mut plain, 60, 1000, 100, &t).stagger.is_some());
+        assert_eq!(apply_hit(&mut armored, 60, 1000, 100, &t).stagger, None);
         assert!(armored.moves.current.is_some());
         // It still staggers once the doubled poise is passed.
-        assert!(apply_hit(&mut armored, 30, 1000, &t).stagger.is_some());
+        assert!(apply_hit(&mut armored, 30, 1000, 100, &t).stagger.is_some());
     }
 
     #[test]
     fn no_poise_meter_never_staggers() {
         let t = tuning();
         let mut a = actor(0, 0);
-        assert_eq!(apply_hit(&mut a, 500, 1000, &t), PoiseEffect::default());
+        assert_eq!(
+            apply_hit(&mut a, 500, 1000, 100, &t),
+            PoiseEffect::default()
+        );
     }
 
     #[test]
@@ -409,9 +421,9 @@ mod tests {
         let t = tuning();
         let mut a = actor(1000, 120);
         // Charged heavies: 34 poise damage times 2.0.
-        assert_eq!(apply_hit(&mut a, 34, 2000, &t).stance_break, None);
+        assert_eq!(apply_hit(&mut a, 34, 2000, 100, &t).stance_break, None);
         assert_eq!(a.poise.stance_dmg, 68);
-        let fx = apply_hit(&mut a, 34, 2000, &t);
+        let fx = apply_hit(&mut a, 34, 2000, 100, &t);
         assert_eq!(fx.stance_break, Some(t.stance_break_ticks));
         assert_eq!(a.poise.kneel, t.stance_break_ticks);
         assert_eq!(a.moves.guard.stagger, t.stance_break_ticks);
@@ -426,7 +438,7 @@ mod tests {
     fn stance_damage_waits_then_decays() {
         let t = tuning();
         let mut a = actor(1000, 100);
-        apply_hit(&mut a, 50, 1000, &t);
+        apply_hit(&mut a, 50, 1000, 100, &t);
         for _ in 0..t.stance_decay_after_ticks {
             tick(&mut a, &t);
         }
@@ -440,7 +452,7 @@ mod tests {
     fn a_meterless_actor_takes_no_stance_damage() {
         let t = tuning();
         let mut a = actor(1000, 0);
-        apply_hit(&mut a, 50, 2000, &t);
+        apply_hit(&mut a, 50, 2000, 100, &t);
         assert_eq!(a.poise.stance_dmg, 0);
     }
 
@@ -449,7 +461,7 @@ mod tests {
         let t = tuning();
         let mut a = actor(1000, 0);
         a.poise.unaware = true;
-        apply_hit(&mut a, 1, 1000, &t);
+        apply_hit(&mut a, 1, 1000, 100, &t);
         assert!(!a.poise.unaware);
     }
 

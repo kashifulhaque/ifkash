@@ -1,0 +1,33 @@
+# WP-056 golden: Purge cures Rupture: the hounds' bites build it up, and Purge clears it (record with `lf-tools replay record-script`). Each line:
+# <ticks> <move_x> <move_z> [BUTTONS], plus `cmd` lines. The player rests at the Lantern and
+# raises Devotion by 20 (every Litany's requirement is at most 20), then attunes Purge, waits for the hounds to bite, then casts it. The reliquary
+# and the Litanies come from the `litany_hounds` scenario.
+seed 5627
+scenario litany_hounds
+10 0 0            # settle on the ground
+cmd Rest
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd Equip 32 15027     # attune Purge
+2 0 0
+150 0 0             # the pack closes in and bites
+1 0 0 LIGHT          # cast Purge
+60 0 0

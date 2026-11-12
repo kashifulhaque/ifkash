@@ -427,6 +427,22 @@ const EMBEDDED_SCENARIOS: &[(&str, &str)] = &[
         include_str!("../../../data/scenarios/spell_ward.ron"),
     ),
     (
+        "scenarios/litany_range.ron",
+        include_str!("../../../data/scenarios/litany_range.ron"),
+    ),
+    (
+        "scenarios/litany_ward.ron",
+        include_str!("../../../data/scenarios/litany_ward.ron"),
+    ),
+    (
+        "scenarios/litany_hounds.ron",
+        include_str!("../../../data/scenarios/litany_hounds.ron"),
+    ),
+    (
+        "scenarios/litany_echo.ron",
+        include_str!("../../../data/scenarios/litany_echo.ron"),
+    ),
+    (
         "scenarios/boss_gate.ron",
         include_str!("../../../data/scenarios/boss_gate.ron"),
     ),

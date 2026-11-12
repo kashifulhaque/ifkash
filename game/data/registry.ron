@@ -384,6 +384,32 @@
     (id: "spb_mirror_ward", num: 15400),
     (id: "spb_veil", num: 15401),
 
+    // WP-056: the Litanies. Spells 15020-15028, cast moves 15150-15189, projectiles
+    // 15350-15369, buffs 15450-15469.
+    (id: "spl_mend", num: 15020),
+    (id: "spl_wide_mend", num: 15021),
+    (id: "spl_ember_toss", num: 15022),
+    (id: "spl_pyre_breath", num: 15023),
+    (id: "spl_storm_spear", num: 15024),
+    (id: "spl_radiant_edge", num: 15025),
+    (id: "spl_choir_litany", num: 15026),
+    (id: "spl_purge", num: 15027),
+    (id: "spl_steadfast", num: 15028),
+    (id: "spm_mend", num: 15150),
+    (id: "spm_wide_mend", num: 15151),
+    (id: "spm_ember_toss", num: 15152),
+    (id: "spm_pyre_breath", num: 15153),
+    (id: "spm_storm_spear", num: 15154),
+    (id: "spm_radiant_edge", num: 15155),
+    (id: "spm_choir_litany", num: 15156),
+    (id: "spm_purge", num: 15157),
+    (id: "spm_steadfast", num: 15158),
+    (id: "spp_ember_toss", num: 15350),
+    (id: "spp_pyre_breath", num: 15351),
+    (id: "spp_storm_spear", num: 15352),
+    (id: "spb_radiant_edge", num: 15450),
+    (id: "spb_steadfast", num: 15451),
+
     // WP-059 (Echo summons): 17000-17499. 17000 the Echo Bell, 17010s the Echoes, 17020s
     // their bodies, 17100s and up their moves.
     (id: "itm_echo_bell", num: 17000),

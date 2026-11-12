@@ -310,6 +310,20 @@ fn landing_for(
             crate::ai::special::reflect::is_formula(def),
         )
     });
+    // A projectile with a water bonus (Storm Spear, WP-056) scales its damage against a
+    // target standing in a `water` zone.
+    let dealt = if def.vs_water_percent != 100
+        && crate::ai::special::water::in_any(&world.layout.water, target.pos[0], target.pos[2])
+    {
+        let pct = u64::from(def.vs_water_percent);
+        damage::Damage {
+            total: (u64::from(dealt.total) * pct / 100) as u32,
+            phys_milli: dealt.phys_milli * pct / 100,
+            elem_milli: dealt.elem_milli * pct / 100,
+        }
+    } else {
+        dealt
+    };
     // The knockback direction is the way the projectile was flying, flattened.
     let flat = [heading[0], 0.0, heading[2]];
     let dir = if len(flat) > EPS {

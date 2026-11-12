@@ -1,0 +1,32 @@
+// The WP-056 Litany ward: the spell ward's Lantern and one Husk 16 m ahead, facing the
+// player, outside the 14 m it sees. The player holds a Pilgrim's Reliquary and knows all
+// nine Litanies. Mend heals after the Husk's combo lands; Steadfast's +50% poise keeps the
+// combo from staggering the player.
+(
+  spawn: (0.0, 0.0, 0.0),
+  spawn_yaw: 0.0,
+  kill_y: -50.0,
+  heightfield: None,
+  start_glimmer: 400000,
+  player_weapon: Some("wpn_pilgrims_reliquary"),
+  player_spells: [
+    "spl_mend",
+    "spl_wide_mend",
+    "spl_ember_toss",
+    "spl_pyre_breath",
+    "spl_storm_spear",
+    "spl_radiant_edge",
+    "spl_choir_litany",
+    "spl_purge",
+    "spl_steadfast",
+  ],
+  lanterns: [
+    (id: "lantern_ward", pos: (0.0, 0.0, -1.0), yaw: 0.0),
+  ],
+  boxes: [
+    (name: "floor", center: (0.0, -0.5, 0.0), half_extents: (60.0, 0.5, 60.0)),
+  ],
+  enemies: [
+    (name: "husk", enemy: "husk", pos: (0.0, 0.0, 16.0), yaw: 3.1415927),
+  ],
+)

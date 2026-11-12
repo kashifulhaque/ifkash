@@ -1,0 +1,32 @@
+# WP-056 golden: Choir Litany bursts Radiance 5 m around the caster: dummy_near is inside it, dummy_front is outside (record with `lf-tools replay record-script`). Each line:
+# <ticks> <move_x> <move_z> [BUTTONS], plus `cmd` lines. The player rests at the Lantern and
+# raises Devotion by 20 (every Litany's requirement is at most 20), then attunes Choir Litany and casts it, with dummy_near 2.6 m away and dummy_front 7 m. The reliquary
+# and the Litanies come from the `litany_range` scenario.
+seed 5626
+scenario litany_range
+10 0 0            # settle on the ground
+cmd Rest
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd Equip 32 15026     # attune Choir Litany (two slots)
+2 0 0
+1 0 0 LIGHT         # the burst
+90 0 0

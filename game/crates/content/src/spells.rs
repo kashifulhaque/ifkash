@@ -53,8 +53,9 @@ pub struct SpellRules {
 /// What a timed effect does.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum SpellEffect {
-    /// Heals the caster by a share of max HP. `radius_m` above 0 also reaches friendly
-    /// actors in that radius; the simulation has none yet, so only the caster heals.
+    /// Heals the caster by a share of max HP. `radius_m` above 0 also heals the Echoes
+    /// (allies) within that many meters of the caster, by the same share of their max HP
+    /// (Wide Mend, WP-056).
     Heal { max_hp_percent: u8, radius_m: f32 },
     /// Applies a buff defined in this spell's `buffs`, replacing the one in its slot.
     Buff { buff: String },

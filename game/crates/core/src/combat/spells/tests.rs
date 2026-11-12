@@ -659,6 +659,7 @@ fn a_buff_spell_applies_its_own_buff_in_its_slot() {
         absorb_percent: 0,
         absorb_hits: 0,
         notice_percent: 100,
+        poise_percent: 100,
     });
     s.effects.push(TimedEffect {
         frame: 8,

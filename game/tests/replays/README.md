@@ -138,6 +138,15 @@ lf-tools replay record-script tests/replays/m1_movement.script --out tests/repla
   and casts it on `spell_range` (the ward and the Veil on `spell_ward`, against a Husk). The
   assertion tests are in `game/crates/tools/tests/golden_spells.rs`; the rules have unit tests
   in `game/crates/core/src/combat/spells/tests.rs`.
+- `m5_litany_mend`, `m5_litany_wide_mend`, `m5_litany_ember_toss`, `m5_litany_pyre_breath`,
+  `m5_litany_storm_spear`, `m5_litany_radiant_edge`, `m5_litany_choir_litany`,
+  `m5_litany_purge`, `m5_litany_steadfast`: the WP-056 goldens, one per Litany, each from its
+  `.script`. The player rests at the Lantern, raises Devotion to 20, attunes the Litany with
+  `cmd Equip 32 <spell number>`, and casts it on `litany_range` (Mend and Steadfast on
+  `litany_ward`, against a Husk; Purge on `litany_hounds`, against thorn hounds; Wide Mend on
+  `litany_echo`, where the Echo Bell is rung with `cmd UseItem 2`). The assertion tests are in
+  `game/crates/tools/tests/golden_litanies.rs`; the rules have unit tests in
+  `game/crates/core/src/combat/spells/tests.rs`.
 
 - `m5_echo_helps_beat_test_boss.lfr`: the WP-059 golden on `echo_boss_gate`, recorded by the
   ignored test `record_the_echo_golden` (`game/crates/core/src/ai/echo/tests.rs`) because the

@@ -53,4 +53,12 @@ pub struct ProjectileDef {
     /// end point takes the hit too. 0 means no burst (WP-057, the Pitch Bomb's 2 m).
     #[serde(default)]
     pub area_radius_m: f32,
+    /// Damage against a target standing in a `water` zone, in percent of the hit (Storm
+    /// Spear: 150, WP-056). 100 changes nothing.
+    #[serde(default = "full_percent")]
+    pub vs_water_percent: u16,
+}
+
+fn full_percent() -> u16 {
+    100
 }

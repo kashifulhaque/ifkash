@@ -43,6 +43,7 @@ use super::damage::AttackRating;
 use super::moves::{MoveNum, Moveset, flags};
 use super::{projectile, status};
 use crate::actor::Actor;
+use crate::arena::Id;
 use crate::items::slot;
 use crate::world::World;
 
@@ -53,8 +54,11 @@ pub const MAX_ATTUNED: usize = slot::SPELL_COUNT as usize;
 /// What a timed effect does, with its references resolved.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub enum Effect {
+    /// Heals the caster by `max_hp_percent` of its max HP, and each Echo within `radius_m`
+    /// of the caster by the same share of its own (Wide Mend, WP-056).
     Heal {
         max_hp_percent: u8,
+        radius_m: f32,
     },
     Buff(NumId),
     /// Cures these statuses; an empty list cures all of them.
@@ -138,8 +142,12 @@ impl SpellTable {
                 let Some(move_num) = m else { continue };
                 for e in list {
                     let effect = match &e.effect {
-                        SpellEffect::Heal { max_hp_percent, .. } => Effect::Heal {
+                        SpellEffect::Heal {
+                            max_hp_percent,
+                            radius_m,
+                        } => Effect::Heal {
                             max_hp_percent: *max_hp_percent,
+                            radius_m: *radius_m,
                         },
                         SpellEffect::Buff { buff } => Effect::Buff(num(buff)?),
                         SpellEffect::Cure { statuses } => Effect::Cure(statuses.clone()),
@@ -394,11 +402,20 @@ pub fn power(world: &World, a: &Actor, move_num: MoveNum) -> Option<AttackRating
 
 /// What a tick's spell step does, decided from the unchanged world.
 enum Pending {
-    Heal(u8),
+    /// A heal: the share of max HP, and the radius that also reaches Echoes.
+    Heal(u8, f32),
     Buff(NumId),
     Cure(Vec<StatusKind>),
     /// A channel interval: pay `fp` and launch the spawn.
     Channel(u16, ProjectileSpawn),
+}
+
+/// Heals `id` by `percent` of its max HP, up to its max.
+fn heal_share(world: &mut World, id: Id, percent: u8) {
+    if let Some(a) = world.actors.get_mut(id) {
+        let heal = (u64::from(a.max_hp) * u64::from(percent) / 100) as u32;
+        a.hp = a.hp.saturating_add(heal).min(a.max_hp);
+    }
 }
 
 /// Tick system 6, before projectiles launch: fires the player's spell effects for the frame
@@ -435,7 +452,10 @@ pub fn run(world: &mut World) {
             .filter(|e| e.frame == c.frame)
         {
             pending.push(match &e.effect {
-                Effect::Heal { max_hp_percent } => Pending::Heal(*max_hp_percent),
+                Effect::Heal {
+                    max_hp_percent,
+                    radius_m,
+                } => Pending::Heal(*max_hp_percent, *radius_m),
                 Effect::Buff(b) => Pending::Buff(*b),
                 Effect::Cure(k) => Pending::Cure(k.clone()),
             });
@@ -443,10 +463,28 @@ pub fn run(world: &mut World) {
     }
     for p in pending {
         match p {
-            Pending::Heal(percent) => {
-                if let Some(a) = world.actors.get_mut(id) {
-                    let heal = (u64::from(a.max_hp) * u64::from(percent) / 100) as u32;
-                    a.hp = a.hp.saturating_add(heal).min(a.max_hp);
+            Pending::Heal(percent, radius) => {
+                heal_share(world, id, percent);
+                // Wide Mend: the living Echoes within the radius heal by the same share.
+                let Some(center) = world.actors.get(id).map(|a| a.pos) else {
+                    continue;
+                };
+                let r2 = radius * radius;
+                let echoes: Vec<Id> = world
+                    .actors
+                    .iter()
+                    .filter(|(aid, a)| {
+                        *aid != id && a.is_ally() && !a.dead && {
+                            let (dx, dz) = (a.pos[0] - center[0], a.pos[2] - center[2]);
+                            dx * dx + dz * dz <= r2
+                        }
+                    })
+                    .map(|(aid, _)| aid)
+                    .collect();
+                if radius > 0.0 {
+                    for aid in echoes {
+                        heal_share(world, aid, percent);
+                    }
                 }
             }
             Pending::Buff(b) => {

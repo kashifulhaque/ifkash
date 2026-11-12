@@ -198,10 +198,13 @@ pub fn parse_script(text: &str) -> Result<Script, String> {
                     ("Unequip", Some(v)) => Command::Unequip {
                         slot: v.parse().map_err(|_| err("bad slot number"))?,
                     },
+                    ("UseItem", Some(v)) => Command::UseItem {
+                        slot: v.parse().map_err(|_| err("bad quick slot index"))?,
+                    },
                     _ => {
                         return Err(err(
                             "unknown command (Rest, SplitFlasks <vigil>, LevelUp <attribute>, \
-                             Equip <slot> <item>, Unequip <slot>)",
+                             Equip <slot> <item>, Unequip <slot>, UseItem <quick slot>)",
                         ));
                     }
                 };

@@ -1,0 +1,35 @@
+# WP-056 golden: Steadfast's +50% poise keeps the Husk's combo from staggering the player (record with `lf-tools replay record-script`). Each line:
+# <ticks> <move_x> <move_z> [BUTTONS], plus `cmd` lines. The player rests at the Lantern and
+# raises Devotion by 20 (every Litany's requirement is at most 20), then attunes Steadfast and casts it, then walks up to the Husk and takes its combo. The reliquary
+# and the Litanies come from the `litany_ward` scenario.
+seed 5628
+scenario litany_ward
+10 0 0            # settle on the ground
+cmd Rest
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd Equip 32 15028     # attune Steadfast
+2 0 0
+1 0 0 LIGHT         # cast Steadfast: 600 ticks of +50% poise
+2 0 0
+60 0 127            # walk up to the Husk: it notices and walks up
+270 0 0                # it swings its combo, and again
+60 0 0

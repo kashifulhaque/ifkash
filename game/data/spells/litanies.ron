@@ -1,7 +1,369 @@
-// The nine Litanies (Devotion, cast with a reliquary): WP-056 fills this in. The schema is
-// the same as formulae.ron (crates/content/src/spells.rs) and needs no `rules` here. Registry
-// numbers: spells 15020-15039, moves 15150-15199, projectiles 15350-15399, buffs 15450-15499.
+// The nine Litanies (Devotion, cast with a reliquary). Source: docs/game/04-arsenal-and-builds.md,
+// "Litanies (Devotion, reliquary)", and docs/game/03-combat.md, "Spells". Schema:
+// crates/content/src/spells.rs, the same as formulae.ron. Each spell carries its own cast
+// moves, projectiles, and buffs; the loader merges them into the move, projectile, and buff
+// tables. FP costs are the moves' `fp`, except a channel, which pays per interval.
+//
+// Registry numbers: spells 15020-15028, moves 15150-15189, projectiles 15350-15369, and buffs
+// 15450-15469 (the Litanies' halves of the blocks WP-055 started).
+//
+// Every number marked "tuning" is a first guess; the spec gives the FP cost, slots,
+// requirement, and effect of each Litany. Where the spec leaves a number out (a buff's
+// duration, an element's share of the hit), the value is marked too.
 #![enable(implicit_some)]
 (
-  spells: [],
+  spells: [
+    (
+      // Heals 35% of max HP. Starting spell (Acolyte).
+      id: "spl_mend",
+      name: "Mend",
+      school: Litany,
+      slots: 1,
+      requirements: (might: 0, finesse: 0, insight: 0, devotion: 10),
+      cast: (
+        id: "spm_mend",
+        anim: "cast_buff",
+        total_frames: 36, // tuning
+        stamina: 0, // casting costs FP only
+        fp: 18, // docs/game/04-arsenal-and-builds.md, "Litanies"
+        root_motion: [],
+        track_deg_per_tick: 0.0,
+        hyperarmor: None,
+        iframes: None,
+        cancel_attack_from: 30, // tuning
+        cancel_dodge_from: 22, // tuning
+        cancel_any_from: 30, // tuning
+        next_chain: None,
+        hitboxes: [],
+        projectiles: [],
+        sfx: [(14, "cast_formula")],
+        vfx: [],
+      ),
+      effects: [(frame: 14, effect: Heal(max_hp_percent: 35, radius_m: 0.0))],
+    ),
+    (
+      // Heals 30% in a 6 m radius: the caster and every Echo within it.
+      id: "spl_wide_mend",
+      name: "Wide Mend",
+      school: Litany,
+      slots: 2,
+      requirements: (might: 0, finesse: 0, insight: 0, devotion: 20),
+      cast: (
+        id: "spm_wide_mend",
+        anim: "cast_buff",
+        total_frames: 44, // tuning
+        stamina: 0, // casting costs FP only
+        fp: 32, // docs/game/04-arsenal-and-builds.md, "Litanies"
+        root_motion: [],
+        track_deg_per_tick: 0.0,
+        hyperarmor: None,
+        iframes: None,
+        cancel_attack_from: 38, // tuning
+        cancel_dodge_from: 30, // tuning
+        cancel_any_from: 38, // tuning
+        next_chain: None,
+        hitboxes: [],
+        projectiles: [],
+        sfx: [(18, "cast_formula")],
+        vfx: [],
+      ),
+      effects: [(frame: 18, effect: Heal(max_hp_percent: 30, radius_m: 6.0))],
+    ),
+    (
+      // An arcing Fire projectile, the Litany's ranged attack. Starting spell (Acolyte).
+      id: "spl_ember_toss",
+      name: "Ember Toss",
+      school: Litany,
+      slots: 1,
+      requirements: (might: 0, finesse: 0, insight: 0, devotion: 10),
+      cast: (
+        id: "spm_ember_toss",
+        anim: "cast_formula",
+        total_frames: 30, // tuning
+        stamina: 0, // casting costs FP only
+        fp: 8, // docs/game/04-arsenal-and-builds.md, "Litanies"
+        root_motion: [],
+        track_deg_per_tick: 10.0, // aims at the lock target until the spell leaves
+        hyperarmor: None,
+        iframes: None,
+        cancel_attack_from: 24, // tuning
+        cancel_dodge_from: 16, // tuning
+        cancel_any_from: 24, // tuning
+        next_chain: None,
+        hitboxes: [],
+        projectiles: [(frame: 10, projectile: "spp_ember_toss", offset: (0.0, 1.5, 0.5), yaw_deg: 0.0, pitch_deg: 30.0)],
+        sfx: [(10, "cast_formula")],
+        vfx: [],
+      ),
+      projectiles: [
+        (
+          // Thrown up at 30 degrees; gravity brings it down about 7 m out, through a dummy's body at 7 m.
+          id: "spp_ember_toss",
+          speed: 13.5, // tuning
+          gravity: 22.0, // tuning
+          radius: 0.25, // tuning
+          lifetime_ticks: 90, // tuning
+          pierce: 0,
+          homing: None,
+          motion_value: 1.0, // tuning
+          phys: Neutral,
+          element: Fire,
+          poise_damage: 10, // tuning
+          knockback: 0.3, // tuning
+          hitstop: 2,
+          tags: [],
+        ),
+      ],
+    ),
+    (
+      // A channeled Fire cone: while LIGHT is held, 6 FP a second (2 every 10 ticks), each
+      // interval a wide, short projectile.
+      id: "spl_pyre_breath",
+      name: "Pyre Breath",
+      school: Litany,
+      slots: 1,
+      requirements: (might: 0, finesse: 0, insight: 0, devotion: 16),
+      cast: (
+        id: "spm_pyre_breath",
+        anim: "cast_formula",
+        total_frames: 30, // tuning
+        stamina: 0, // casting costs FP only
+        fp: 0, // the channel pays FP per interval (see `channel`)
+        root_motion: [],
+        track_deg_per_tick: 10.0, // aims at the lock target until the spell leaves
+        hyperarmor: None,
+        iframes: None,
+        cancel_attack_from: 24, // tuning
+        cancel_dodge_from: 16, // tuning
+        cancel_any_from: 24, // tuning
+        // Held at frame 8 while the button stays down, for up to 150 ticks (5 seconds).
+        charge: (charge_from: 8, max_frames: 150, motion_value_max: 1.0), // tuning
+        next_chain: None,
+        hitboxes: [],
+        projectiles: [],
+        sfx: [(8, "cast_formula")],
+        vfx: [],
+      ),
+      channel: (
+        interval_ticks: 10, // tuning: three breaths a second
+        fp: 2, // 6 FP a second, at 3 intervals a second
+        projectile: "spp_pyre_breath",
+        offset: (0.0, 1.3, 0.6),
+        yaw_deg: 0.0,
+        pitch_deg: 0.0,
+      ),
+      projectiles: [
+        (
+          // A wide, fast, short-lived flame: each interval's breath reaches about 4 m.
+          id: "spp_pyre_breath",
+          speed: 22.0, // tuning
+          gravity: 0.0, // tuning
+          radius: 0.9, // tuning: the cone's width, as one sphere
+          lifetime_ticks: 10, // tuning
+          pierce: 8, // tuning
+          homing: None,
+          motion_value: 0.5, // tuning
+          phys: Neutral,
+          element: Fire,
+          poise_damage: 4, // tuning
+          knockback: 0.1, // tuning
+          hitstop: 0,
+          tags: [],
+        ),
+      ],
+    ),
+    (
+      // A Storm projectile, 1.5 times as strong against a target standing in water.
+      id: "spl_storm_spear",
+      name: "Storm Spear",
+      school: Litany,
+      slots: 1,
+      requirements: (might: 0, finesse: 0, insight: 0, devotion: 16),
+      cast: (
+        id: "spm_storm_spear",
+        anim: "cast_formula",
+        total_frames: 36, // tuning
+        stamina: 0, // casting costs FP only
+        fp: 16, // docs/game/04-arsenal-and-builds.md, "Litanies"
+        root_motion: [],
+        track_deg_per_tick: 10.0, // aims at the lock target until the spell leaves
+        hyperarmor: None,
+        iframes: None,
+        cancel_attack_from: 30, // tuning
+        cancel_dodge_from: 22, // tuning
+        cancel_any_from: 30, // tuning
+        next_chain: None,
+        hitboxes: [],
+        projectiles: [(frame: 14, projectile: "spp_storm_spear", offset: (0.0, 1.4, 0.5), yaw_deg: 0.0, pitch_deg: 0.0)],
+        sfx: [(14, "cast_formula")],
+        vfx: [],
+      ),
+      projectiles: [
+        (
+          id: "spp_storm_spear",
+          speed: 26.0, // tuning
+          gravity: 0.0, // tuning
+          radius: 0.15, // tuning
+          lifetime_ticks: 60, // tuning
+          pierce: 0,
+          homing: None,
+          motion_value: 1.1, // tuning
+          phys: Neutral,
+          element: Storm,
+          poise_damage: 12, // tuning
+          knockback: 0.2, // tuning
+          hitstop: 2,
+          tags: [],
+          vs_water_percent: 150, // docs/game/04-arsenal-and-builds.md: 1.5x in water
+        ),
+      ],
+    ),
+    (
+      // Weapon buff: the weapon's hits also deal Radiance.
+      id: "spl_radiant_edge",
+      name: "Radiant Edge",
+      school: Litany,
+      slots: 1,
+      requirements: (might: 0, finesse: 0, insight: 0, devotion: 12),
+      cast: (
+        id: "spm_radiant_edge",
+        anim: "cast_buff",
+        total_frames: 34, // tuning
+        stamina: 0, // casting costs FP only
+        fp: 14, // docs/game/04-arsenal-and-builds.md, "Litanies"
+        root_motion: [],
+        track_deg_per_tick: 0.0,
+        hyperarmor: None,
+        iframes: None,
+        cancel_attack_from: 28, // tuning
+        cancel_dodge_from: 20, // tuning
+        cancel_any_from: 28, // tuning
+        next_chain: None,
+        hitboxes: [],
+        projectiles: [],
+        sfx: [(14, "cast_formula")],
+        vfx: [],
+      ),
+      effects: [(frame: 14, effect: Buff(buff: "spb_radiant_edge"))],
+      buffs: [
+        (
+          id: "spb_radiant_edge",
+          slot: Weapon,
+          damage_percent: 100,
+          status: [],
+          duration_ticks: 900, // tuning: the spec gives no time; the oils' 900
+          vfx: "edge_radiance",
+          element: Some((Radiance, 20)), // tuning: the spec gives no share; the oils' 20 percent of AR
+        ),
+      ],
+    ),
+    (
+      // A Radiance burst around the caster, 5 m across.
+      id: "spl_choir_litany",
+      name: "Choir Litany",
+      school: Litany,
+      slots: 2,
+      requirements: (might: 0, finesse: 0, insight: 0, devotion: 20),
+      cast: (
+        id: "spm_choir_litany",
+        anim: "cast_formula",
+        total_frames: 42, // tuning
+        stamina: 0, // casting costs FP only
+        fp: 28, // docs/game/04-arsenal-and-builds.md, "Litanies"
+        root_motion: [],
+        track_deg_per_tick: 0.0,
+        hyperarmor: None,
+        iframes: None,
+        cancel_attack_from: 36, // tuning
+        cancel_dodge_from: 28, // tuning
+        cancel_any_from: 36, // tuning
+        next_chain: None,
+        hitboxes: [
+          (
+            // A sphere of 5 m radius about the caster's middle.
+            frames: (16, 19),
+            shape: Sphere(center: (0.0, 1.0, 0.0), radius: 5.0),
+            motion_value: 1.6, // tuning
+            phys: Neutral,
+            element: Radiance,
+            poise_damage: 30, // tuning
+            status: [],
+            knockback: 0.8, // tuning
+            hitstop: 4,
+            tags: [],
+          ),
+        ],
+        projectiles: [],
+        sfx: [(16, "cast_formula")],
+        vfx: [],
+      ),
+    ),
+    (
+      // Cures every status and resets the buildup meters.
+      id: "spl_purge",
+      name: "Purge",
+      school: Litany,
+      slots: 1,
+      requirements: (might: 0, finesse: 0, insight: 0, devotion: 14),
+      cast: (
+        id: "spm_purge",
+        anim: "cast_buff",
+        total_frames: 34, // tuning
+        stamina: 0, // casting costs FP only
+        fp: 12, // docs/game/04-arsenal-and-builds.md, "Litanies"
+        root_motion: [],
+        track_deg_per_tick: 0.0,
+        hyperarmor: None,
+        iframes: None,
+        cancel_attack_from: 28, // tuning
+        cancel_dodge_from: 20, // tuning
+        cancel_any_from: 28, // tuning
+        next_chain: None,
+        hitboxes: [],
+        projectiles: [],
+        sfx: [(14, "cast_formula")],
+        vfx: [],
+      ),
+      effects: [(frame: 14, effect: Cure(statuses: []))],
+    ),
+    (
+      // Body buff: +50% poise for 600 ticks.
+      id: "spl_steadfast",
+      name: "Steadfast",
+      school: Litany,
+      slots: 1,
+      requirements: (might: 0, finesse: 0, insight: 0, devotion: 14),
+      cast: (
+        id: "spm_steadfast",
+        anim: "cast_buff",
+        total_frames: 34, // tuning
+        stamina: 0, // casting costs FP only
+        fp: 14, // docs/game/04-arsenal-and-builds.md, "Litanies"
+        root_motion: [],
+        track_deg_per_tick: 0.0,
+        hyperarmor: None,
+        iframes: None,
+        cancel_attack_from: 28, // tuning
+        cancel_dodge_from: 20, // tuning
+        cancel_any_from: 28, // tuning
+        next_chain: None,
+        hitboxes: [],
+        projectiles: [],
+        sfx: [(14, "cast_formula")],
+        vfx: [],
+      ),
+      effects: [(frame: 14, effect: Buff(buff: "spb_steadfast"))],
+      buffs: [
+        (
+          id: "spb_steadfast",
+          slot: Body,
+          damage_percent: 100,
+          status: [],
+          duration_ticks: 600, // 600 ticks (the spec)
+          vfx: "steadfast",
+          poise_percent: 150, // +50% poise
+        ),
+      ],
+    ),
+  ],
 )

@@ -109,6 +109,10 @@ pub struct BuffDef {
     /// and by hearing (Veil: 50). 100 changes nothing.
     #[serde(default = "full_percent")]
     pub notice_percent: u16,
+    /// Body buffs only: the holder's poise, in percent of its listed value. Steadfast takes
+    /// 150 (+50% poise, WP-056). 100 changes nothing. Read by `combat::poise`.
+    #[serde(default = "full_percent")]
+    pub poise_percent: u16,
 }
 
 fn full_percent() -> u16 {

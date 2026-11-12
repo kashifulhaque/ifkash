@@ -1,0 +1,25 @@
+# WP-056 golden: Mend heals 35% of max HP after the Husk's combo (record with `lf-tools replay record-script`). Each line:
+# <ticks> <move_x> <move_z> [BUTTONS], plus `cmd` lines. The player rests at the Lantern,
+# raises Devotion by 10 (the spell's requirement), attunes Mend to the first attunement slot
+# (slot 32), walks up to the Husk and takes its combo, then casts Mend. The reliquary, all
+# nine Litanies, and the Husk come from the `litany_ward` scenario.
+seed 5601
+scenario litany_ward
+10 0 0            # settle on the ground
+cmd Rest
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd LevelUp 6
+cmd Equip 32 15020      # attune Mend
+2 0 0
+60 0 127                # run toward the Husk: it notices at 14 m and walks up
+270 0 0                 # it swings its combo, and again: 282 damage, more than 35% of max HP
+1 0 0 LIGHT             # cast Mend, below the max, so the heal is not capped
+60 0 0

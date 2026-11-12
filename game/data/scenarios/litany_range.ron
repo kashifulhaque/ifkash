@@ -1,0 +1,44 @@
+// The WP-056 Litany range: the spell range (a flat floor, a Lantern at the spawn, padded
+// dummies) with a Pilgrim's Reliquary, all nine Litanies known, and a pool of water under
+// dummy_front, so Storm Spear's water bonus can be checked against the same target dry.
+// The player spawns at the origin facing +Z, and holds enough Glimmer to level Devotion at
+// the Lantern (`cmd Rest`, `cmd LevelUp 6`). Positions and dummy stats are as in spell_range:
+//   - dummy_front: 7 m dead ahead, standing in the pool.
+//   - dummy_far: 14 m dead ahead, on dry ground.
+//   - dummy_near: 2.6 m ahead and 1.3 m to the left (within a 5 m burst).
+//   - dummy_left and dummy_right: 8 m ahead, 3 m to either side.
+(
+  spawn: (0.0, 0.0, 0.0),
+  spawn_yaw: 0.0,
+  kill_y: -50.0,
+  heightfield: None,
+  start_glimmer: 400000,
+  player_weapon: Some("wpn_pilgrims_reliquary"),
+  player_spells: [
+    "spl_mend",
+    "spl_wide_mend",
+    "spl_ember_toss",
+    "spl_pyre_breath",
+    "spl_storm_spear",
+    "spl_radiant_edge",
+    "spl_choir_litany",
+    "spl_purge",
+    "spl_steadfast",
+  ],
+  lanterns: [
+    (id: "lantern_range", pos: (0.0, 0.0, -1.0), yaw: 0.0),
+  ],
+  boxes: [
+    (name: "floor", center: (0.0, -0.5, 0.0), half_extents: (60.0, 0.5, 60.0)),
+  ],
+  water: [
+    (name: "pool", center: (0.0, 7.0), half_extents: (1.5, 1.5)),
+  ],
+  dummies: [
+    (name: "dummy_front", pos: (0.0, 0.0, 7.0), yaw: 3.1415927, hp: 9000, defense: (flat: 100), poise: 0, unaware: false),
+    (name: "dummy_near", pos: (1.3, 0.0, 2.3), yaw: 3.1415927, hp: 9000, defense: (flat: 100), poise: 0, unaware: false),
+    (name: "dummy_far", pos: (0.0, 0.0, 14.0), yaw: 3.1415927, hp: 9000, defense: (flat: 100), poise: 0, unaware: false),
+    (name: "dummy_left", pos: (3.0, 0.0, 8.0), yaw: 3.1415927, hp: 9000, defense: (flat: 100), poise: 0, unaware: false),
+    (name: "dummy_right", pos: (-3.0, 0.0, 8.0), yaw: 3.1415927, hp: 9000, defense: (flat: 100), poise: 0, unaware: false),
+  ],
+)

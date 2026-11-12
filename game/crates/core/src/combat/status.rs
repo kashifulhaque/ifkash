@@ -1138,6 +1138,7 @@ mod tests {
             absorb_percent: 0,
             absorb_hits: 0,
             notice_percent: 100,
+            poise_percent: 100,
         });
         w.status.buffs.push((num, i));
         w.status.buffs.sort_by_key(|(n, _)| *n);

@@ -216,5 +216,6 @@
     // 12000-12099: portfolio pickups (WP-049). 12000 is the stub relic on the test field.
     (id: "relic_test_stub", num: 12000),
     (id: "mechanics_yard", num: 10500), // WP-042: the 10500s are world mechanics
+    (id: "waking_hollow", num: 11000), // WP-043: the 11000s are Verge areas
   ],
 )

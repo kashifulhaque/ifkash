@@ -474,6 +474,18 @@ const EMBEDDED_KITS: &[(&str, &str)] = &[
 /// Level files as `(levels/<area>/<file>, text)`.
 const EMBEDDED_LEVELS: &[(&str, &str)] = &[
     (
+        "levels/waking_hollow/area.ron",
+        include_str!("../../../data/levels/waking_hollow/area.ron"),
+    ),
+    (
+        "levels/waking_hollow/layout.ron",
+        include_str!("../../../data/levels/waking_hollow/layout.ron"),
+    ),
+    (
+        "levels/waking_hollow/entities.ron",
+        include_str!("../../../data/levels/waking_hollow/entities.ron"),
+    ),
+    (
         "levels/mechanics_yard/area.ron",
         include_str!("../../../data/levels/mechanics_yard/area.ron"),
     ),

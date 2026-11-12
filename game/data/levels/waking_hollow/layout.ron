@@ -1,0 +1,89 @@
+// Waking Hollow layout (WP-043): the tutorial cave as greybox blocks. Generated from room
+// rectangles on the 2 m grid: one floor slab per run of open cells, and a one-cell wall ring
+// around them. Rooms, west to east and south to north (z grows toward the arena):
+//   wake         x   -8..8    z   -8..10
+//   corr_1       x   -2..2    z   10..22
+//   first_fight  x   -8..8    z   22..38
+//   alcove       x    8..14   z   26..34
+//   corr_2       x   -2..2    z   38..44
+//   hall         x  -10..10   z   44..62
+//   closet       x  -16..-10  z   50..54
+//   corr_3       x   -2..2    z   62..68
+//   twist        x   -8..8    z   68..82
+//   corr_4       x   -2..2    z   82..86
+//   antechamber  x   -8..8    z   86..96
+//   gate_neck    x   -4..4    z   96..98
+//   arena        x   -9..9    z   98..116
+(
+  landmarks: [
+    (name: "floor_-8_25", kit: "block_unit", pos: (-3.0, -0.5, 52.0), scale: (26.0, 1.0, 4.0)),
+    (name: "floor_-5_49", kit: "block_unit", pos: (-1.0, -0.5, 107.0), scale: (18.0, 1.0, 18.0)),
+    (name: "floor_-5_22", kit: "block_unit", pos: (0.0, -0.5, 47.0), scale: (20.0, 1.0, 6.0)),
+    (name: "floor_-5_27", kit: "block_unit", pos: (0.0, -0.5, 58.0), scale: (20.0, 1.0, 8.0)),
+    (name: "floor_-4_-4", kit: "block_unit", pos: (0.0, -0.5, 1.0), scale: (16.0, 1.0, 18.0)),
+    (name: "floor_-4_11", kit: "block_unit", pos: (0.0, -0.5, 24.0), scale: (16.0, 1.0, 4.0)),
+    (name: "floor_-4_17", kit: "block_unit", pos: (0.0, -0.5, 36.0), scale: (16.0, 1.0, 4.0)),
+    (name: "floor_-4_34", kit: "block_unit", pos: (0.0, -0.5, 75.0), scale: (16.0, 1.0, 14.0)),
+    (name: "floor_-4_43", kit: "block_unit", pos: (0.0, -0.5, 91.0), scale: (16.0, 1.0, 10.0)),
+    (name: "floor_-4_13", kit: "block_unit", pos: (3.0, -0.5, 30.0), scale: (22.0, 1.0, 8.0)),
+    (name: "floor_-2_48", kit: "block_unit", pos: (0.0, -0.5, 97.0), scale: (8.0, 1.0, 2.0)),
+    (name: "floor_-1_5", kit: "block_unit", pos: (0.0, -0.5, 16.0), scale: (4.0, 1.0, 12.0)),
+    (name: "floor_-1_19", kit: "block_unit", pos: (0.0, -0.5, 41.0), scale: (4.0, 1.0, 6.0)),
+    (name: "floor_-1_31", kit: "block_unit", pos: (0.0, -0.5, 65.0), scale: (4.0, 1.0, 6.0)),
+    (name: "floor_-1_41", kit: "block_unit", pos: (0.0, -0.5, 84.0), scale: (4.0, 1.0, 4.0)),
+    (name: "wall_-9_25", kit: "block_unit", pos: (-17.0, 3.0, 52.0), scale: (2.0, 6.0, 4.0)),
+    (name: "wall_-9_24", kit: "block_unit", pos: (-14.0, 3.0, 49.0), scale: (8.0, 6.0, 2.0)),
+    (name: "wall_-9_27", kit: "block_unit", pos: (-14.0, 3.0, 55.0), scale: (8.0, 6.0, 2.0)),
+    (name: "wall_-6_22", kit: "block_unit", pos: (-11.0, 3.0, 46.0), scale: (2.0, 6.0, 4.0)),
+    (name: "wall_-6_28", kit: "block_unit", pos: (-11.0, 3.0, 59.0), scale: (2.0, 6.0, 6.0)),
+    (name: "wall_-6_49", kit: "block_unit", pos: (-11.0, 3.0, 107.0), scale: (2.0, 6.0, 18.0)),
+    (name: "wall_-6_48", kit: "block_unit", pos: (-8.0, 3.0, 97.0), scale: (8.0, 6.0, 2.0)),
+    (name: "wall_-6_21", kit: "block_unit", pos: (-7.0, 3.0, 43.0), scale: (10.0, 6.0, 2.0)),
+    (name: "wall_-6_31", kit: "block_unit", pos: (-7.0, 3.0, 63.0), scale: (10.0, 6.0, 2.0)),
+    (name: "wall_-6_58", kit: "block_unit", pos: (-1.0, 3.0, 117.0), scale: (22.0, 6.0, 2.0)),
+    (name: "wall_-5_-4", kit: "block_unit", pos: (-9.0, 3.0, 1.0), scale: (2.0, 6.0, 18.0)),
+    (name: "wall_-5_11", kit: "block_unit", pos: (-9.0, 3.0, 30.0), scale: (2.0, 6.0, 16.0)),
+    (name: "wall_-5_34", kit: "block_unit", pos: (-9.0, 3.0, 75.0), scale: (2.0, 6.0, 14.0)),
+    (name: "wall_-5_43", kit: "block_unit", pos: (-9.0, 3.0, 91.0), scale: (2.0, 6.0, 10.0)),
+    (name: "wall_-5_5", kit: "block_unit", pos: (-6.0, 3.0, 11.0), scale: (8.0, 6.0, 2.0)),
+    (name: "wall_-5_10", kit: "block_unit", pos: (-6.0, 3.0, 21.0), scale: (8.0, 6.0, 2.0)),
+    (name: "wall_-5_19", kit: "block_unit", pos: (-6.0, 3.0, 39.0), scale: (8.0, 6.0, 2.0)),
+    (name: "wall_-5_33", kit: "block_unit", pos: (-6.0, 3.0, 67.0), scale: (8.0, 6.0, 2.0)),
+    (name: "wall_-5_41", kit: "block_unit", pos: (-6.0, 3.0, 84.0), scale: (8.0, 6.0, 4.0)),
+    (name: "wall_-5_-5", kit: "block_unit", pos: (0.0, 3.0, -9.0), scale: (20.0, 6.0, 2.0)),
+    (name: "wall_-2_6", kit: "block_unit", pos: (-3.0, 3.0, 16.0), scale: (2.0, 6.0, 8.0)),
+    (name: "wall_-2_20", kit: "block_unit", pos: (-3.0, 3.0, 41.0), scale: (2.0, 6.0, 2.0)),
+    (name: "wall_-2_32", kit: "block_unit", pos: (-3.0, 3.0, 65.0), scale: (2.0, 6.0, 2.0)),
+    (name: "wall_1_6", kit: "block_unit", pos: (3.0, 3.0, 16.0), scale: (2.0, 6.0, 8.0)),
+    (name: "wall_1_20", kit: "block_unit", pos: (3.0, 3.0, 41.0), scale: (2.0, 6.0, 2.0)),
+    (name: "wall_1_32", kit: "block_unit", pos: (3.0, 3.0, 65.0), scale: (2.0, 6.0, 2.0)),
+    (name: "wall_1_5", kit: "block_unit", pos: (6.0, 3.0, 11.0), scale: (8.0, 6.0, 2.0)),
+    (name: "wall_1_10", kit: "block_unit", pos: (6.0, 3.0, 21.0), scale: (8.0, 6.0, 2.0)),
+    (name: "wall_1_19", kit: "block_unit", pos: (6.0, 3.0, 39.0), scale: (8.0, 6.0, 2.0)),
+    (name: "wall_1_33", kit: "block_unit", pos: (6.0, 3.0, 67.0), scale: (8.0, 6.0, 2.0)),
+    (name: "wall_1_41", kit: "block_unit", pos: (6.0, 3.0, 84.0), scale: (8.0, 6.0, 4.0)),
+    (name: "wall_1_21", kit: "block_unit", pos: (7.0, 3.0, 43.0), scale: (10.0, 6.0, 2.0)),
+    (name: "wall_1_31", kit: "block_unit", pos: (7.0, 3.0, 63.0), scale: (10.0, 6.0, 2.0)),
+    (name: "wall_2_48", kit: "block_unit", pos: (7.0, 3.0, 97.0), scale: (6.0, 6.0, 2.0)),
+    (name: "wall_4_-4", kit: "block_unit", pos: (9.0, 3.0, 1.0), scale: (2.0, 6.0, 18.0)),
+    (name: "wall_4_11", kit: "block_unit", pos: (9.0, 3.0, 23.0), scale: (2.0, 6.0, 2.0)),
+    (name: "wall_4_18", kit: "block_unit", pos: (9.0, 3.0, 37.0), scale: (2.0, 6.0, 2.0)),
+    (name: "wall_4_34", kit: "block_unit", pos: (9.0, 3.0, 75.0), scale: (2.0, 6.0, 14.0)),
+    (name: "wall_4_43", kit: "block_unit", pos: (9.0, 3.0, 91.0), scale: (2.0, 6.0, 10.0)),
+    (name: "wall_4_49", kit: "block_unit", pos: (9.0, 3.0, 107.0), scale: (2.0, 6.0, 18.0)),
+    (name: "wall_4_12", kit: "block_unit", pos: (12.0, 3.0, 25.0), scale: (8.0, 6.0, 2.0)),
+    (name: "wall_4_17", kit: "block_unit", pos: (12.0, 3.0, 35.0), scale: (8.0, 6.0, 2.0)),
+    (name: "wall_5_22", kit: "block_unit", pos: (11.0, 3.0, 53.0), scale: (2.0, 6.0, 18.0)),
+    (name: "wall_7_13", kit: "block_unit", pos: (15.0, 3.0, 30.0), scale: (2.0, 6.0, 8.0)),
+
+    // The jump ledge across the first corridor: 0.8 m, over the 0.4 m autostep and under the
+    // 1.1 m jump, so the player must press jump.
+    (name: "jump_ledge", kit: "block_unit", pos: (0.0, 0.4, 17.0), scale: (4.0, 0.8, 2.0)),
+
+    // The B01 arena's four pillars (docs/game/05-enemies-and-bosses.md): 1 m square, 4 m tall.
+    (name: "pillar_nw", kit: "block_unit", pos: (-5.0, 2.0, 111.0), scale: (1.0, 4.0, 1.0)),
+    (name: "pillar_ne", kit: "block_unit", pos: (5.0, 2.0, 111.0), scale: (1.0, 4.0, 1.0)),
+    (name: "pillar_sw", kit: "block_unit", pos: (-5.0, 2.0, 103.0), scale: (1.0, 4.0, 1.0)),
+    (name: "pillar_se", kit: "block_unit", pos: (5.0, 2.0, 103.0), scale: (1.0, 4.0, 1.0)),
+  ],
+)

@@ -1,0 +1,72 @@
+// Waking Hollow entities (WP-043). +X is to the player's left while facing +Z. Yaw is in
+// radians from +Z toward +X: 0 faces +Z, 3.1415927 faces -Z, 1.5707964 faces +X.
+//
+// The critical path is one line north (+Z) from the Lantern to the fog gate. Every control
+// the cave teaches is an authored message the player reads with Interact (E), placed on the
+// line of travel just before the thing it teaches, so a first-time player learns each
+// control at the moment they need it:
+//   wake        move, camera, sprint, interact; the Lantern
+//   corridor 1  jump
+//   first fight lock-on, light and heavy attacks, stamina; an alcove with the use-item control
+//   hall        roll (dodge), guard and parry; a cracked wall (hollow wall) and a chest
+//   twist       drinking a flask
+//   antechamber the Sentry's telegraphs, and the fog gate
+// Doc: docs/game/02-world.md, "Dungeon layout template".
+(
+  spawn: (pos: (0.0, 0.0, 0.0), yaw: 0.0),
+  entities: [
+    // The start Lantern, 4 m behind the spawn.
+    Lantern(id: "lantern_l01", pos: (0.0, 0.0, -4.0), yaw: 0.0),
+
+    // --- Wake (safe room): movement and the Lantern ---------------------------------------
+    Message(id: "msg_move", pos: (0.0, 0.0, 3.0),
+      text: "Move with W, A, S, and D. Look around with the mouse. Hold Space to sprint. Press E to read a message like this one."),
+    Message(id: "msg_lantern", pos: (3.0, 0.0, -4.0),
+      text: "A Lantern. Stand beside it and press E to rest: you heal, your flasks refill, and the cave's husks wake again. Rest here to level up, and wake here if you fall."),
+
+    // --- Corridor 1: the jump -------------------------------------------------------------
+    Message(id: "msg_jump", pos: (0.0, 0.0, 13.0),
+      text: "A ledge blocks the way. Press F to jump. Run at the ledge and jump just before it."),
+
+    // --- First fight: one husk, then the alcove -------------------------------------------
+    Message(id: "msg_attack", pos: (0.0, 0.0, 25.0),
+      text: "A husk stirs ahead. Press Q to lock on, and press Q again to let go. Left mouse swings your blade; hold Shift with it for a slow heavy blow. Every swing spends stamina, the green bar. Wait for it to refill."),
+    Enemy(name: "husk_first", enemy: "husk", pos: (0.0, 0.0, 32.0), yaw: 3.1415927),
+    Message(id: "msg_items", pos: (11.0, 0.0, 30.0),
+      text: "Salts lie on the ground. Press E to take what you find. Press R to use the item in your quick slot, and the arrow keys to change which one is ready."),
+    Pickup(id: "salts_alcove", item: "itm_waking_salts", pos: (12.5, 0.0, 30.0), count: 2, interact: true),
+
+    // --- Hall: dodge, guard, and a cracked wall -------------------------------------------
+    Message(id: "msg_dodge", pos: (0.0, 0.0, 47.0),
+      text: "Two husks hunt here. Tap Space to roll. You cannot be struck early in the roll, so roll into a swing, not away from it. Rolling costs stamina."),
+    Message(id: "msg_guard", pos: (0.0, 0.0, 51.0),
+      text: "Hold the right mouse button to guard. A guard takes most of a blow but drains stamina. Guard just as a blow lands to parry it, then strike back."),
+    Enemy(name: "husk_hall_a", enemy: "husk", pos: (-3.0, 0.0, 57.0), yaw: 3.1415927),
+    Enemy(name: "husk_hall_b", enemy: "husk", pos: (3.5, 0.0, 59.0), yaw: 3.1415927),
+    Message(id: "msg_crack", pos: (-7.0, 0.0, 52.0),
+      text: "This wall is cracked and sounds hollow. Strike it with a swing to open it."),
+    HollowWall(id: "wall_closet", center: (-10.0, 1.5, 52.0), half_extents: (0.25, 1.5, 2.0)),
+    Chest(id: "chest_closet", pos: (-14.0, 0.0, 52.0), yaw: 1.5707964, loot: (item: "itm_clotweed", count: 3, glimmer: 150)),
+
+    // --- Twist: an ambush ------------------------------------------------------------------
+    Message(id: "msg_flask", pos: (0.0, 0.0, 70.0),
+      text: "Something fast waits in the dark. Press R to drink the flask in your quick slot and heal. Drinking is slow: do it when no one is close."),
+    Enemy(name: "husk_twist", enemy: "husk", pos: (-4.0, 0.0, 76.0), yaw: 3.1415927),
+    Enemy(name: "hound_twist", enemy: "thorn_hound", pos: (5.0, 0.0, 79.0), yaw: 3.1415927),
+
+    // --- Antechamber (safe room) and the fog gate -----------------------------------------
+    Message(id: "msg_sentry", pos: (0.0, 0.0, 91.0),
+      text: "The Hollow Sentry waits beyond the fog. Its lantern flares before it swings: roll through the slam and the sweep, then strike while it recovers. If you fall, you wake at the Lantern. Step into the fog when you are ready."),
+
+    // --- B01's arena: a chamber 18 m across with four pillars (layout.ron). The fog gate is
+    // the plane z = 98, 8 m wide, opening into the chamber (+Z). The Sentry waits at
+    // (0, 0, 111) facing the gate.
+    Boss(
+      name: "b01",
+      boss: "b01_hollow_sentry",
+      pos: (0.0, 0.0, 111.0),
+      yaw: 3.1415927,
+      gate: (pos: (0.0, 0.0, 98.0), yaw: 0.0, half_width_m: 4.0, depth_m: 2.0),
+    ),
+  ],
+)

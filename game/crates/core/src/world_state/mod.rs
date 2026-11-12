@@ -17,6 +17,8 @@
 
 pub mod death;
 pub mod flags;
+#[cfg(test)]
+mod hollow_tests;
 pub mod lantern;
 pub mod lantern_menu;
 pub mod mechanics;

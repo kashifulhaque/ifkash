@@ -15,6 +15,16 @@
   // One token per status, so the meters can be told apart without a new color.
   const STATUS_TINT = ['--moss', '--clay', '--fjord', '--danger', '--falu', '--fjord-strong'];
 
+  // What Interact would do, by the core's `interact_prompt` code (1, the Lantern, has its own line).
+  const PROMPTS: Record<number, string> = {
+    2: 'Take',
+    3: 'Pull the lever',
+    4: 'Open the door',
+    5: 'Read the message',
+    6: 'Climb the ladder',
+    7: 'Kick the ladder down'
+  };
+
   let innerWidth = 1280;
 
   $: s = $state as HudState;
@@ -156,11 +166,13 @@
       >
         <div class="notices" aria-live="polite">
           {#each $notices as n (n.id)}
-            <p class="notice">{n.text}</p>
+            <p class="notice" class:message={n.message}>{n.text}</p>
           {/each}
         </div>
         {#if s.prompt === 1}
           <p class="prompt"><kbd>E</kbd> Rest at the Lantern</p>
+        {:else if s.prompt > 1 && PROMPTS[s.prompt]}
+          <p class="prompt"><kbd>E</kbd> {PROMPTS[s.prompt]}</p>
         {/if}
       </div>
     </section>
@@ -477,6 +489,15 @@
 
   .notice {
     animation: rise 0.25s ease-out;
+  }
+
+  /* An authored message: a few sentences, so it wraps instead of running off the screen. */
+  .notice.message {
+    max-width: min(34rem, 92vw);
+    white-space: normal;
+    text-align: center;
+    line-height: 1.45;
+    padding: var(--s-2) var(--s-4);
   }
 
   kbd {

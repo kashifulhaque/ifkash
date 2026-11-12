@@ -1,0 +1,24 @@
+// Waking Hollow (WP-043): the tutorial cave from Lantern L01 to the B01 arena. Y is up; the
+// player spawns facing +Z and the cave runs north (+Z). See docs/game/02-world.md, "The
+// Verge" and "Dungeon layout template", and docs/game/05-enemies-and-bosses.md, "B01 Hollow
+// Sentry". The cave is indoors, so it has no terrain: floors are greybox blocks.
+(
+  id: "waking_hollow",
+  name: "Waking Hollow",
+  seed: 20261114,
+  bounds: (min: (-24.0, -16.0), max: (24.0, 128.0)),
+  kill_y: -30.0,
+  start_glimmer: 0,
+  // A dim cave: a short fog and a low, warm light.
+  ambient: (
+    sky: "night",
+    fog_color: (0.1, 0.1, 0.13),
+    fog_near_m: 14.0,
+    fog_far_m: 60.0,
+    sun_dir: (-0.2, -1.0, -0.1),
+    sun_color: (0.9, 0.8, 0.65),
+    sun_intensity: 0.35,
+    ambient_color: (0.55, 0.5, 0.5),
+    ambient_intensity: 0.6,
+  ),
+)

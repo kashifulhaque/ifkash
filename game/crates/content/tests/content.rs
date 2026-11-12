@@ -146,6 +146,7 @@ fn hash_ignores_comments_and_whitespace() {
                 ron_files("levels/test_field")
                     .into_iter()
                     .chain(ron_files("levels/mechanics_yard"))
+                    .chain(ron_files("levels/waking_hollow"))
                     .map(|(p, t)| (p, format!("// noise\n{t}")))
                     .collect(),
             )

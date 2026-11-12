@@ -23,8 +23,23 @@ const TEST_FIELD: Record<string, SpawnPoint> = {
   east_edge: { x: 30, z: 10, yaw: -HALF_PI, note: 'near the field edge' }
 };
 
+// Waking Hollow (WP-043): the rooms of the tutorial cave, south to north.
+const WAKING_HOLLOW: Record<string, SpawnPoint> = {
+  lantern: { x: 0, z: -2, yaw: 0, note: 'beside Lantern L01' },
+  jump: { x: 0, z: 11, yaw: 0, note: 'corridor 1, before the jump ledge' },
+  fight: { x: 0, z: 24, yaw: 0, note: 'the first fight, facing the husk' },
+  alcove: { x: 9, z: 30, yaw: 1.5707964, note: 'the salts alcove' },
+  hall: { x: 0, z: 46, yaw: 0, note: 'the dodge hall, before the two husks' },
+  crack: { x: -6, z: 52, yaw: -1.5707964, note: 'facing the cracked wall' },
+  twist: { x: 0, z: 69, yaw: 0, note: 'the ambush room' },
+  antechamber: { x: 0, z: 89, yaw: 0, note: 'the safe room before the fog gate' },
+  gate: { x: 0, z: 95, yaw: 0, note: 'at the B01 fog gate' },
+  arena: { x: 0, z: 100, yaw: 0, note: 'inside the B01 arena' }
+};
+
 const TABLES: Record<string, Record<string, SpawnPoint>> = {
   test_field: TEST_FIELD,
+  waking_hollow: WAKING_HOLLOW,
   m0_flat: {
     far: { x: 40, z: 40, yaw: Math.PI, note: 'far corner of the flat floor' }
   }

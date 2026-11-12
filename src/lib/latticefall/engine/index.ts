@@ -13,7 +13,7 @@ import { FixedStepLoop } from './loop';
 import { SceneView } from './scene';
 import { FLAG_LOCKED, SnapshotBuffer } from './snapshot';
 import { parseHud, type NameLookup } from '../ui/hud/hudState';
-import type { HudSink } from '../ui/hud/hudStore';
+import { messageIndexesFromWords, type HudSink } from '../ui/hud/hudStore';
 import { COMMAND, createMenuHost, type MenuHost, type MenuSink } from '../ui/menus/menuHost';
 
 export interface EngineStats {
@@ -75,6 +75,8 @@ export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions
   try {
     audio = new AudioEngine();
     audio.unlockOn(canvas);
+    // Waking Hollow has its own sound bed (WP-043); other areas keep the default voice.
+    if (scenario === 'waking_hollow') audio.setRegion('waking-hollow');
   } catch (err) {
     console.warn('Latticefall audio unavailable', err);
   }
@@ -137,6 +139,9 @@ export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions
     snapshots.push();
     if (view.props.active) view.props.setState(world.mechanics_state());
     const hudState = parseHud(world.hud_state(), names);
+    // The core's interact prompt also names doors, levers, messages, and pickups (code 1 is the
+    // Lantern, the same as the HUD's own word 17).
+    hudState.prompt = world.interact_prompt();
     lastPrompt = hudState.prompt;
     opts.hud?.state(hudState);
     // Events go to presentation only; the renderer reads them and never answers.
@@ -144,6 +149,8 @@ export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions
     if (opts.autosave !== false) saves.onEventWords(words);
     if (words.length) {
       opts.hud?.events(words);
+      // Authored ground messages (the cave's tutorial lines): the HUD shows the text.
+      for (const i of messageIndexesFromWords(words)) opts.hud?.message(world.message_text(i));
       if (restedIn(words)) opts.menu?.rested();
     }
     const events = decodeEvents(words);

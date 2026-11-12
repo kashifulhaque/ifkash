@@ -1,0 +1,14 @@
+{
+  "regions": {
+    "actors": [
+      {
+        "bytes": 231732,
+        "path": "wayfarer.glb"
+      },
+      {
+        "bytes": 625052,
+        "path": "ual.glb"
+      }
+    ]
+  }
+}

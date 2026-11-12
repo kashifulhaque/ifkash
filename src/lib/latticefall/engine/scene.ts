@@ -11,6 +11,7 @@ import {
   Material,
   Mesh,
   MeshStandardMaterial,
+  Object3D,
   PerspectiveCamera,
   PlaneGeometry,
   Scene,
@@ -21,6 +22,8 @@ import {
 import { ActorRenderer } from '../render/actors';
 import { digestMoveResolver } from '../render/actors/moveTable';
 import { CombatVfx } from '../render/vfx';
+import { LevelRenderer } from '../render/terrain';
+import { getQuality, pixelRatioFor, subscribeQuality } from '../render/lighting';
 import {
   CameraRig,
   TEST_FIELD_BOUNDS,
@@ -44,6 +47,7 @@ function token(name: string, fallback: string): Color {
   return new Color(fallback);
 }
 
+const ORIGIN = { x: 0, y: 0, z: 0 };
 const CAPSULE_RADIUS = 0.35;
 const CAPSULE_LENGTH = 1.0;
 const CAPSULE_HEIGHT = CAPSULE_LENGTH + CAPSULE_RADIUS * 2;
@@ -60,6 +64,11 @@ export class SceneView {
   private lastActors: DrawActor[] = [];
   private meshes = new Map<number, Mesh>();
   private disposables: Array<BufferGeometry | Material> = [];
+  /** The level renderer, once `loadLevel` finds a manifest. Null for the flat scenarios. */
+  private level: LevelRenderer | null = null;
+  /** The stand-in ground, proxy and lights that the level renderer replaces. */
+  private standIns: Object3D[] = [];
+  private offQuality: () => void;
   private camTarget = new Vector3();
   private camInit = false;
   private camYaw = 0;
@@ -82,7 +91,11 @@ export class SceneView {
     this.rig = new CameraRig(this.camera, raycast, loadCameraSettings());
     if (dev?.fakeLock) this.rig.fakeTarget = dev.fakeLock;
     this.renderer = new WebGLRenderer({ canvas, antialias: true });
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    this.renderer.setPixelRatio(pixelRatioFor(getQuality(), window.devicePixelRatio));
+    this.offQuality = subscribeQuality((p) => {
+      this.renderer.setPixelRatio(pixelRatioFor(p, window.devicePixelRatio));
+      this.resize();
+    });
 
     const bg = token('--bg', '#f4f1ea');
     const line = token('--line-strong', '#bfb6a6');
@@ -93,12 +106,14 @@ export class SceneView {
     const ground = new Mesh(new PlaneGeometry(200, 200), new MeshStandardMaterial({ color: surface }));
     ground.rotation.x = -Math.PI / 2;
     this.scene.add(ground);
+    this.standIns.push(ground);
     this.disposables.push(ground.geometry, ground.material as Material);
 
     // 2 m cells; sits a hair above the plane to avoid z-fighting.
     const grid = new GridHelper(200, 100, line, line);
     grid.position.y = 0.01;
     this.scene.add(grid);
+    this.standIns.push(grid);
     this.disposables.push(grid.geometry, grid.material as Material);
 
     // Dev camera runs on the test field draw a raycast-built copy of it instead of the flat plane.
@@ -110,6 +125,7 @@ export class SceneView {
         token('--clay', '#a4502f')
       );
       this.scene.add(proxy);
+      this.standIns.push(proxy);
       this.disposables.push(proxy.geometry, proxy.material as Material);
       ground.visible = false;
       grid.visible = false;
@@ -123,10 +139,11 @@ export class SceneView {
     }
     if (dev?.active) exposeDebug(this.rig, () => this.lastActors);
 
-    this.scene.add(new AmbientLight(0xffffff, 1.4));
+    const ambient = new AmbientLight(0xffffff, 1.4);
     const sun = new DirectionalLight(0xffffff, 2.2);
     sun.position.set(-6, 12, 8);
-    this.scene.add(sun);
+    this.scene.add(ambient, sun);
+    this.standIns.push(ambient, sun);
 
     this.capsuleGeometry = new CapsuleGeometry(CAPSULE_RADIUS, CAPSULE_LENGTH, 6, 16);
     this.noseGeometry = new SphereGeometry(0.12, 12, 8);
@@ -148,6 +165,22 @@ export class SceneView {
   private noseGeometry: SphereGeometry;
   private bodyMaterial: MeshStandardMaterial;
   private noseMaterial: MeshStandardMaterial;
+
+  /**
+   * Draws `scenario`'s level from its render manifest (static/latticefall/levels/NAME.json).
+   * Areas without a manifest keep the stand-in ground. Safe to call once, after construction.
+   */
+  async loadLevel(scenario: string): Promise<void> {
+    const level = new LevelRenderer(this.scene, this.renderer);
+    try {
+      if (!(await level.load(scenario))) return level.dispose();
+    } catch (err) {
+      console.error('Latticefall level failed to load; keeping the stand-in ground', err);
+      return level.dispose();
+    }
+    this.level = level;
+    for (const o of this.standIns) o.visible = false;
+  }
 
   resize(): void {
     const w = this.canvas.clientWidth || 1;
@@ -243,6 +276,7 @@ export class SceneView {
         this.yawDriven = pose.locked;
       }
     }
+    if (this.level) this.level.update(this.camera, focus ?? ORIGIN, frameMs);
     this.vfx.update(actors, simPaused ? 0 : Math.min(frameMs, 100) / 1000, this.camera, this.canvas.clientHeight || 1);
     this.vfx.applyCamera(this.camera);
     this.renderer.render(this.scene, this.camera);
@@ -252,6 +286,9 @@ export class SceneView {
     this.resizeObserver.disconnect();
     for (const mesh of this.meshes.values()) this.scene.remove(mesh);
     this.meshes.clear();
+    this.offQuality();
+    this.level?.dispose();
+    this.level = null;
     this.vfx.dispose();
     this.actors.dispose();
     for (const d of this.disposables) d.dispose();

@@ -87,6 +87,8 @@ export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions
     },
     dev.active ? dev : null
   );
+  // Draws the area's baked level when it has a manifest; the flat scenarios keep the stand-in ground.
+  void view.loadLevel(scenario);
 
   let tools: DevTools | null = null;
   let fps = 60;

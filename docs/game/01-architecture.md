@@ -256,7 +256,8 @@ tests, and RL datasets.
   on a rayon pool), never inside one.
 - **Versions.** `rust-toolchain.toml` pins Rust, and `Cargo.lock` pins Rapier. A Rapier
   upgrade is a determinism-breaking change.
-- **Content.** The content hash (a hash of all `game/data/` files after parsing) is part
+- **Content.** The content hash (a hash of the simulation data in `game/data/` after
+  parsing; portfolio files are excluded, see [ADR 0004](decisions/0004-portfolio-outside-content-hash.md)) is part
   of every replay header. A replay only replays against the same content hash.
 
 ### State hash and golden replays

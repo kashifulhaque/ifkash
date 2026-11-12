@@ -118,3 +118,21 @@ Status values are `todo`, `in progress`, `blocked`, `split`, `review`, and `done
 - **M0 branching (2026-11-12):** M0 (WP-001 to WP-008) was built on one branch,
   `claude/game-m0-1730d5`, with one commit series per WP, instead of the playbook's
   branch per WP. The owner reviews the branch as a whole.
+- **M0 exit gate (2026-11-12): passed locally.** The golden replay
+  `m0_random_3000.lfr` gives final hash `81ea2bbe90c69441` natively (`game:test`), in
+  WASM under Node (`game:wasm`), and from Python (`game:py`). Content hash
+  `efd431704141700b` matches across all three. The game CI workflow hasn't run on GitHub
+  yet, because the branch isn't pushed.
+- **M0 measurements (2026-11-12):** `lf_wasm_bg.wasm` is 349,267 bytes raw and 130,806
+  bytes gzipped (budget 1.5 MB gzipped). Native bench: about 50 to 100 million ticks per
+  second. Python: about 18 to 20 million steps per second with `step` and 157 to 181
+  million with `step_many`. These are numbers for a near-empty simulation; they say
+  nothing about the G1 budgets yet.
+- **Toolchain installed for M0:** Rust 1.99.1 (into `~/.rustup`), a uv venv at
+  `game/python/.venv` with maturin 1.16.0 and pytest 9.2.0, and actionlint into
+  `~/go/bin`. `game:wasm` uses `wasm-bindgen` 0.2.106 and `wasm-opt` 126 from the
+  existing worker-build cache (`~/Library/Caches/worker-build/`) when they aren't on
+  `PATH`. CI installs binaryen 126 from its GitHub release.
+- **WASM output is committed** in `src/lib/latticefall/wasm/` while ADR 0003 is Proposed,
+  because the Pages Git integration can't build Rust. Run `mise run game:wasm` and commit
+  the result after any core change. CI warns when the committed output is stale.

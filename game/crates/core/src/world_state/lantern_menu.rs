@@ -70,6 +70,8 @@ pub fn level_up(world: &mut World, attribute: u8) -> bool {
     };
     p.inventory.glimmer -= cost;
     set_attributes(p, rules, attrs);
+    // Derived stats follow the attributes and the gear together (WP-057).
+    crate::items::gear::refresh(world);
     true
 }
 
@@ -99,6 +101,7 @@ pub fn respec(world: &mut World, attributes: [u16; ATTRIBUTE_COUNT]) -> bool {
     }
     p.inventory.remove(quill, 1);
     set_attributes(p, rules, target);
+    crate::items::gear::refresh(world);
     true
 }
 
@@ -294,6 +297,72 @@ mod tests {
         assert_eq!(p.stats.attrs, level::from_values(target));
         assert_eq!(p.inventory.glimmer, glimmer, "respec costs no Glimmer");
         assert_eq!(p.stats.attrs.level(&w.attributes), level, "the level stays");
+    }
+
+    /// Wears the Vital Charm (+8% max HP) and writes its effect into the player.
+    fn wear_vital_charm(w: &mut World) {
+        let n = Content::load_embedded()
+            .expect("embedded content")
+            .registry
+            .num("chm_vital")
+            .expect("the Vital Charm exists");
+        let p = w.actors.get_mut(w.player).unwrap();
+        p.inventory.give_gear(n);
+        p.inventory.equipment.slots[usize::from(crate::items::slot::CHARM_1)] = Some(n);
+        crate::items::gear::refresh(w);
+    }
+
+    /// What the player's max HP should be: the attributes' value with the gear's percent.
+    fn max_hp_with_gear(w: &World) -> u32 {
+        let base = w
+            .actors
+            .get(w.player)
+            .unwrap()
+            .stats
+            .attrs
+            .derived(&w.attributes);
+        (u64::from(base.max_hp) * 108 / 100) as u32
+    }
+
+    #[test]
+    fn level_up_keeps_the_gears_bonus_on_the_new_maxima() {
+        let mut w = field();
+        rest(&mut w);
+        wear_vital_charm(&mut w);
+        let id = w.player;
+        let before = w.actors.get(id).unwrap().max_hp;
+        w.actors.get_mut(id).unwrap().inventory.glimmer = 1_000;
+        step(&mut w, vec![Command::LevelUp { attribute: 0 }]);
+        let p = w.actors.get(id).unwrap();
+        assert!(p.max_hp > before, "Vitality raised the maximum");
+        assert_eq!(
+            p.max_hp,
+            max_hp_with_gear(&w),
+            "and the charm's 8% is still on it"
+        );
+        assert!(p.hp <= p.max_hp);
+    }
+
+    #[test]
+    fn respec_keeps_the_gears_bonus_on_the_new_maxima() {
+        let mut w = field();
+        rest(&mut w);
+        wear_vital_charm(&mut w);
+        give_quills(&mut w, 1);
+        let id = w.player;
+        w.actors.get_mut(id).unwrap().inventory.glimmer = 1_000;
+        step(&mut w, vec![Command::LevelUp { attribute: 0 }]);
+        // Put the earned Vitality point into Focus instead.
+        step(
+            &mut w,
+            vec![Command::Respec {
+                attributes: [10, 11, 10, 12, 12, 8, 8],
+            }],
+        );
+        assert_eq!(quills_held(&w), 0, "the respec went through");
+        let p = w.actors.get(id).unwrap();
+        assert_eq!(p.stats.attrs.vitality, 10);
+        assert_eq!(p.max_hp, max_hp_with_gear(&w));
     }
 
     #[test]

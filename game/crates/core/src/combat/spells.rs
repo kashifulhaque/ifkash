@@ -26,7 +26,7 @@
 //!   commands: `Command::Equip { slot: slot::SPELL_1 + i, item: <spell> }` attunes a
 //!   known spell (one in the player's gear) to position `i`, and `Command::Unequip` frees
 //!   it ([`attune`], [`unattune`]). The slots a spell takes (1 or 2) add up to at most the
-//!   Focus-derived `spell_slots`, and the spell's attribute requirements must be met.
+//!   Focus-derived `spell_slots` plus the gear's bonus (`GearTable::spell_slot_bonus`), and the spell's attribute requirements must be met.
 //!   `CYCLE_SPELL` selects the next attuned spell ([`cycle`]).
 //! - **Cast speed.** A cast starts on a later frame: Finesse skips up to a quarter of the
 //!   frames before the first one that does anything (`MoveTable::cast_skip`).
@@ -296,7 +296,10 @@ pub fn attune(world: &mut World, index: u8, spell: NumId) -> bool {
     let known = p.inventory.gear.binary_search(&spell).is_ok();
     let derived = p.stats.attrs.derived(&world.attributes);
     let st = &world.spells;
-    let fits = st.used(&world.spells_table, i) + u16::from(s.slots) <= derived.spell_slots;
+    // Gear adds slots on top of Focus's (Scholar's Seal, WP-057).
+    let bonus = world.items.gear.spell_slot_bonus(&p.inventory.equipment);
+    let capacity = u32::from(derived.spell_slots) + bonus;
+    let fits = u32::from(st.used(&world.spells_table, i)) + u32::from(s.slots) <= capacity;
     let elsewhere = st
         .attuned
         .iter()

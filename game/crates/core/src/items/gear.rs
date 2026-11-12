@@ -472,6 +472,8 @@ pub fn refresh(world: &mut World) {
     let max_hp = (u64::from(base_hp) * (100 + hp_pct) / 100) as u32;
     p.max_hp = max_hp;
     p.hp = p.hp.min(max_hp);
+    // Shrike-Lite shortens spell startup (the cast speed rule reads it).
+    world.moves.cast_reduce_percent = world.items.gear.spell_startup_reduce_percent(&eq);
     sync_load_tier(world);
 }
 

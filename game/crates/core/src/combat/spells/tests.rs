@@ -158,6 +158,56 @@ fn slots_come_from_focus_and_a_spell_takes_one_or_two() {
     assert!(!try_attune(&mut w, 3, "spl_mirror_ward"));
 }
 
+/// Gives the player the charm `id` and wears it in the first charm slot, by command.
+fn wear_charm(w: &mut World, id: &str) {
+    let n = reg(id);
+    player_mut(w).inventory.give_gear(n);
+    step(
+        w,
+        0,
+        vec![Command::Equip {
+            slot: slot::CHARM_1,
+            item: n,
+        }],
+    );
+}
+
+#[test]
+fn scholars_seal_adds_a_spell_slot() {
+    let mut w = range();
+    // Focus 10 gives 2 slots; the lance takes both.
+    assert!(try_attune(&mut w, 0, "spl_unbinding_lance"));
+    assert!(!try_attune(&mut w, 1, "spl_aether_dart"), "no slot left");
+    wear_charm(&mut w, "chm_scholars_seal");
+    assert!(try_attune(&mut w, 1, "spl_aether_dart"), "the Seal's slot");
+    assert!(
+        !try_attune(&mut w, 2, "spl_aether_bolt"),
+        "one extra slot, not two"
+    );
+}
+
+#[test]
+fn shrike_lite_starts_a_cast_12_percent_sooner() {
+    let mut w = range();
+    equip(&mut w, 0, "spl_unbinding_lance");
+    player_mut(&mut w).stats.attrs.finesse = 60;
+    wear_charm(&mut w, "chm_shrike_lite");
+    idle(&mut w, 5);
+    step(&mut w, buttons::HEAVY, Vec::new());
+    // Startup 42: Finesse skips 10, leaving 32, and the charm takes 12% off that (28), so
+    // the cast starts on frame 14 instead of 10.
+    assert_eq!(player(&w).moves.current.unwrap().frame, 14);
+    let t: &MoveTable = &w.moves;
+    let lance = t
+        .get(t.num_of("spm_unbinding_lance_charged").unwrap())
+        .unwrap();
+    assert_eq!(
+        t.cast_skip(lance, 0),
+        6,
+        "12% of 42 frames, with no Finesse"
+    );
+}
+
 #[test]
 fn replacing_a_spell_counts_the_slots_it_frees() {
     let mut w = range();

@@ -231,6 +231,9 @@ pub struct MoveTable {
     pub crits: Option<super::crit::CritMoves>,
     /// How much Finesse shortens a cast's startup, from the spell files (WP-055).
     pub cast_speed: Option<lf_content::spells::CastSpeed>,
+    /// The player's gear shortens a spell's startup by this many percent (Shrike-Lite,
+    /// WP-057). Derived from the equipment by `items::gear::refresh`, so it isn't hashed.
+    pub cast_reduce_percent: u32,
 }
 
 impl MoveTable {
@@ -379,13 +382,19 @@ impl MoveTable {
     /// How many frames of a spell's startup `finesse` skips: the cast speed rule's saving
     /// (up to `max_percent` at `at_finesse`, in proportion below it) of the frames before
     /// the first one that does anything. 0 for a move that isn't a cast.
+    ///
+    /// Gear then shortens what is left by `cast_reduce_percent`, so a startup of `n` frames
+    /// becomes `n * (100 - reduce) / 100`, and the skip is the difference.
     pub fn cast_skip(&self, d: &MoveDef, finesse: u16) -> u16 {
         let Some(rule) = self.cast_speed.filter(|r| r.at_finesse > 0) else {
             return 0;
         };
         let saved = u32::from(rule.max_percent) * u32::from(finesse.min(rule.at_finesse))
             / u32::from(rule.at_finesse);
-        (u32::from(d.cast_startup) * saved / 100) as u16
+        let startup = u32::from(d.cast_startup);
+        let left = startup - startup * saved / 100;
+        let gear = left * (100 - self.cast_reduce_percent.min(100)) / 100;
+        (startup - gear) as u16
     }
 
     /// How far a charge has gone, from 0 to 1: WP-021 lerps the hitbox motion value from

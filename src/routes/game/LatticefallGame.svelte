@@ -108,7 +108,7 @@
 </script>
 
 <svelte:head>
-  <title>{name} · Latticefall</title>
+  <title>{name} · Cinderheart</title>
 </svelte:head>
 
 <svelte:window on:keydown={onKey} />
@@ -117,9 +117,9 @@
   <canvas bind:this={canvas} class="lf-canvas"></canvas>
 
   {#if status === 'loading'}
-    <p class="lf-note" aria-live="polite">Loading Latticefall…</p>
+    <p class="lf-note" aria-live="polite">Loading Cinderheart…</p>
   {:else if status === 'failed'}
-    <p class="lf-note" role="alert">Latticefall could not start: {failure}</p>
+    <p class="lf-note" role="alert">Cinderheart could not start: {failure}</p>
   {:else}
     <p class="lf-hint"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> move · click to capture the mouse · <kbd>P</kbd> pause · <kbd>L</kbd> Ledger</p>
   {/if}

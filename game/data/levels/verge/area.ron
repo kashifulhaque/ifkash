@@ -1,0 +1,30 @@
+// The Verge (WP-044): the first outdoor region, 400 x 400 m. Y is up. The Hollow's root-door
+// opens at the south-west corner; the Lantern chain runs L02 Crossroads -> L03 Aqueduct
+// Steps -> L04 Ninefold Chapel -> L05 Mossgut Mouth. See docs/game/02-world.md, "The Verge",
+// and the layout notes at the top of layout.ron.
+(
+  id: "verge",
+  name: "The Verge",
+  seed: 20261201,
+  bounds: (min: (-200.0, -200.0), max: (200.0, 200.0)),
+  kill_y: -50.0,
+  start_glimmer: 0,
+  // A long fog far plane so the Spire shows from the Crossroads, 250 m away.
+  ambient: (
+    sky: "day",
+    fog_color: (0.78, 0.76, 0.7),
+    fog_near_m: 120.0,
+    fog_far_m: 560.0,
+    sun_dir: (-0.5, -0.8, -0.3),
+    sun_color: (1.0, 0.92, 0.78),
+    sun_intensity: 1.0,
+    ambient_color: (0.62, 0.64, 0.72),
+    ambient_intensity: 0.55,
+  ),
+  regions: [
+    // Ash grass over the open ground (the renderer's meadow palette and look).
+    (name: "meadow", points: [(-150.0, -150.0), (150.0, -150.0), (150.0, 120.0), (-150.0, 120.0)]),
+    // The Briar Thicket and its approach: a dense stand of dead trees.
+    (name: "thicket", points: [(84.0, -112.0), (176.0, -112.0), (176.0, -48.0), (84.0, -48.0)]),
+  ],
+)

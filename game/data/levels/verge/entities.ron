@@ -1,0 +1,111 @@
+// The Verge entities (WP-044). +X is to the player's left while facing +Z. Yaw is in radians
+// from +Z toward +X: 0 faces +Z, 3.1415927 faces -Z, 1.5707964 faces +X.
+//
+// The main route runs spawn -> L02 -> L03 -> L04 -> L05 on the flat roads; every walk between
+// two Lanterns is under 45 seconds at run speed (world_state/verge_tests.rs). Side branches:
+// the aqueduct top (L03 -> chapel roof), the Windmill Rise, the Briar Thicket, the Spire
+// Approach. Enemies: Husks, Thorn Hounds, Lantern Thieves, Chapel Acolytes, and one Bramble
+// Brute at the windmill (docs/game/02-world.md, "The Verge").
+//
+// Registry numbers used here (11200 block): relic_banana_cpp 11210,
+// relic_shrike_lite_circuit 11211, chronicle_page_1 11212.
+(
+  // The root-door of Waking Hollow, facing toward the Crossroads.
+  spawn: (pos: (-110.0, 0.0, -120.0), yaw: 0.8569),
+  entities: [
+    // --- Lanterns: L02 to L05 (L01 is in Waking Hollow) ----------------------------------
+    Lantern(id: "lantern_l02", pos: (-40.0, 0.0, -60.0), yaw: 0.0),
+    Lantern(id: "lantern_l03", pos: (10.0, 0.0, -30.0), yaw: 1.5707964),
+    Lantern(id: "lantern_l04", pos: (90.0, 0.0, 36.0), yaw: 0.0),
+    Lantern(id: "lantern_l05", pos: (-20.0, 0.0, 56.0), yaw: 0.0),
+
+    // --- Authored messages -----------------------------------------------------------------
+    Message(id: "msg_verge_arrive", pos: (-107.0, 0.0, -117.0),
+      text: "The Verge: ash-gray grass, old roads, and a long wind. A worn road runs north-east toward a Lantern at the crossroads. Lanterns are the safe places here; rest at each one you find."),
+    Message(id: "msg_crossroads", pos: (-36.0, 0.0, -57.0),
+      text: "A crossroads. East, the aqueduct and its steps. North-west, a windmill on a hill. And far to the north, above everything, a spire of woven light that no road seems to reach."),
+    Message(id: "msg_aqueduct", pos: (14.0, 0.0, -34.0),
+      text: "The Aqueduct Steps. The ramp climbs to the old water road, which runs to the chapel roof. A road also runs east to the Briar Thicket. Something large hunts in there: come back stronger."),
+    Message(id: "msg_chapel", pos: (88.0, 0.0, 32.0),
+      text: "Ninefold Chapel. Nine candles stood here once. The roof is gone, but one platform remains, and a ladder on its face is raised. Kick it down from above to link this Lantern to the aqueduct."),
+    Message(id: "msg_crypt", pos: (118.0, 0.0, 46.0),
+      text: "The crypt's far wall sounds hollow. Strike it with a swing to open it."),
+    Message(id: "msg_windmill", pos: (-84.0, 10.0, 12.0),
+      text: "The windmill's sails are long gone. A ladder on its east face climbs to the roof, if you can get past what sleeps on this hill."),
+    Message(id: "msg_mossgut", pos: (-18.0, 0.0, 53.0),
+      text: "Mossgut Mouth. The cave behind is sealed by fallen rock. Beyond it, they say, a lift goes down to the deep."),
+    Message(id: "msg_thicket", pos: (106.0, 0.0, -80.0),
+      text: "The Briar Thicket. The hedges close in ahead. A fog hangs in the gap, thick and still. Whatever walks in the briars will not let you leave until one of you falls."),
+    Message(id: "msg_spire", pos: (-40.0, 0.0, 166.0),
+      text: "The Spire's base. Its door is a seam of woven light, shut. Come back when the great sigils are lit."),
+
+    // --- Spawn to L02: the first fights ----------------------------------------------------
+    Enemy(name: "husk_mouth_a", enemy: "husk", pos: (-90.0, 0.0, -92.0), yaw: 3.1415927),
+    Enemy(name: "husk_mouth_b", enemy: "husk", pos: (-66.0, 0.0, -80.0), yaw: 3.1415927),
+    Enemy(name: "hound_cross", enemy: "thorn_hound", pos: (-42.0, 0.0, -44.0), yaw: 3.1415927),
+
+    // --- L02 to L03 -------------------------------------------------------------------------
+    Enemy(name: "husk_flat", enemy: "husk", pos: (-20.0, 0.0, -50.0), yaw: 3.1415927),
+    Enemy(name: "hound_steps", enemy: "thorn_hound", pos: (-2.0, 0.0, -42.0), yaw: 3.1415927),
+
+    // --- L03 to L04: under the aqueduct ------------------------------------------------------
+    Enemy(name: "hound_under_a", enemy: "thorn_hound", pos: (46.0, 0.0, -2.0), yaw: 3.1415927),
+    Enemy(name: "husk_arch", enemy: "husk", pos: (62.0, 0.0, 14.0), yaw: 3.1415927),
+
+    // --- The chapel: acolytes in the nave, a husk in the crypt, a thief on the roof ---------
+    Enemy(name: "acolyte_a", enemy: "acolyte", pos: (82.0, 0.0, 46.0), yaw: 3.1415927),
+    Enemy(name: "acolyte_b", enemy: "acolyte", pos: (98.0, 0.0, 50.0), yaw: 3.1415927),
+    Enemy(name: "husk_crypt", enemy: "husk", pos: (114.0, 0.0, 46.0), yaw: 1.5707964),
+    Enemy(name: "thief_roof", enemy: "lantern_thief", pos: (92.0, 6.0, 52.0), yaw: 3.1415927),
+
+    // --- L04 to L05 ---------------------------------------------------------------------------
+    Enemy(name: "husk_road", enemy: "husk", pos: (50.0, 0.0, 30.0), yaw: 3.1415927),
+    Enemy(name: "thief_aqueduct", enemy: "lantern_thief", pos: (60.0, 6.0, -30.0), yaw: 3.1415927),
+
+    // --- The Windmill Rise: the Bramble Brute (elite) guards the tower -----------------------
+    Enemy(name: "brute_windmill", enemy: "bramble_brute", pos: (-86.0, 10.0, 12.5), yaw: 3.1415927),
+
+    // --- The Briar Thicket approach and arena --------------------------------------------------
+    Enemy(name: "hound_lane_a", enemy: "thorn_hound", pos: (96.0, 0.0, -78.0), yaw: 1.5707964),
+    Enemy(name: "hound_lane_b", enemy: "thorn_hound", pos: (100.0, 0.0, -83.0), yaw: 1.5707964),
+    Enemy(name: "husk_arena_a", enemy: "husk", pos: (150.0, 0.0, -78.0), yaw: -1.5707964),
+    Enemy(name: "husk_arena_b", enemy: "husk", pos: (140.0, 0.0, -100.0), yaw: -1.5707964),
+
+    // --- The Spire Approach ----------------------------------------------------------------------
+    Enemy(name: "husk_spire_a", enemy: "husk", pos: (12.0, 0.0, 90.0), yaw: 3.1415927),
+    Enemy(name: "husk_spire_b", enemy: "husk", pos: (-9.0, 0.0, 115.0), yaw: 3.1415927),
+
+    // --- Doors: none. The aqueduct ladder: raised until kicked from the platform --------------
+    Ladder(id: "ladder_chapel", pos: (90.0, 0.0, 43.4), yaw: 0.0, height_m: 6.0, kick_down: true),
+    // The windmill's roof ladder, on the east face (flat top is 10 m, the roof is at 18 m).
+    Ladder(id: "ladder_windmill", pos: (-85.4, 10.0, 20.0), yaw: -1.5707964, height_m: 8.0),
+
+    // --- The chapel's hollow wall and the relic behind it ---------------------------------------
+    HollowWall(id: "wall_crypt", center: (122.0, 1.5, 46.0), half_extents: (0.25, 1.5, 2.0)),
+    Pickup(id: "relic_banana_cpp", item: "relic_banana_cpp", pos: (127.0, 0.0, 46.0), codex: Some("projects.banana-cpp"), interact: true),
+
+    // --- Chronicle Page, slot 1 (the earliest work entry), at the altar -----------------------------
+    Pickup(id: "page_chronicle_1", item: "chronicle_page_1", pos: (90.0, 0.0, 53.0), codex: Some("work.corteva"), interact: true),
+
+    // --- The windmill roof: a chest, and the Shrike-Lite Circuit beside it -----------------------------
+    Chest(id: "chest_windmill", pos: (-92.0, 18.0, 20.0), yaw: 1.5707964, loot: (item: "itm_glimmer_vial", count: 1, glimmer: 200)),
+    Pickup(id: "relic_shrike_lite", item: "relic_shrike_lite_circuit", pos: (-88.0, 18.0, 20.0), codex: Some("projects.vicharak-micro-llama"), interact: true),
+
+    // --- Items and materials ------------------------------------------------------------------------------
+    Pickup(id: "clotweed_crossroads", item: "itm_clotweed", pos: (-46.0, 0.0, -54.0), count: 2, interact: true),
+    Pickup(id: "salts_steps", item: "itm_waking_salts", pos: (4.0, 0.0, -26.0), count: 2, interact: true),
+    Pickup(id: "vial_aqueduct", item: "itm_glimmer_vial", pos: (60.0, 6.0, -30.0), interact: true),
+    Chest(id: "chest_aqueduct", pos: (66.0, 6.0, 0.0), yaw: 1.5707964, loot: (item: "itm_pitch_oil", count: 3, glimmer: 150)),
+    Chest(id: "chest_chapel_roof", pos: (90.0, 6.0, 52.0), yaw: 3.1415927, loot: (item: "itm_clotweed", count: 3, glimmer: 250)),
+    Pickup(id: "ash_thicket", item: "itm_lantern_ash", pos: (102.0, 0.0, -76.0), interact: true),
+    Pickup(id: "oil_mossgut", item: "itm_spark_oil", pos: (-26.0, 0.0, 60.0), count: 2, interact: true),
+
+    // --- B02's arena: the Briar Thicket (x 112..172, z -108..-52) --------------------------------------------
+    // PLACEHOLDER: B02 (the Briar Stag, an M7 work package) has no boss definition yet, so
+    // no Boss entity is placed. When it exists, add:
+    //   Boss(name: "b02", boss: "<b02 id>", pos: (150.0, 0.0, -80.0), yaw: -1.5707964,
+    //     gate: (pos: (112.0, 0.0, -80.0), yaw: 1.5707964, half_width_m: 6.0, depth_m: 2.0)),
+    // The fog gate is the plane x = 112, 12 m wide, opening east into the arena. The Stag
+    // waits at (150, 0, -80) facing the gate; the hedges and five clumps are in layout.ron.
+  ],
+)

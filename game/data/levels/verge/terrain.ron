@@ -1,0 +1,44 @@
+// The Verge terrain: flat ash meadow at 0 m with hills. Vertices are 2 m apart (201 x 201).
+// Pads and roads flatten to exactly 0 m so greybox blocks and enemies can stand at y = 0;
+// the only raised ground is the Windmill Rise (a 10 m hill with a flat top at 10 m) and the
+// aqueduct's ramp (0 to 6 m).
+#![enable(implicit_some)]
+(
+  spacing_m: 2.0,
+  base_y: 0.0,
+  noise: (amplitude_m: 0.15, wavelength_m: 40.0, octaves: 2),
+  ops: [
+    // Distant hills, scenery only: they sit outside the playable meadow.
+    RaiseCircle(center: (-170.0, 120.0), radius: 40.0, height: 14.0),
+    RaiseCircle(center: (170.0, 150.0), radius: 45.0, height: 18.0),
+    RaiseCircle(center: (175.0, -150.0), radius: 35.0, height: 10.0),
+    // The Windmill Rise: a dome with a flat top.
+    RaiseCircle(center: (-90.0, 20.0), radius: 28.0, height: 10.0),
+    SetRect(min: (-98.0, 12.0), max: (-82.0, 28.0), height: 10.0),
+
+    // Pads at exactly 0 m: the hollow mouth, each Lantern, the chapel, the thicket.
+    SetRect(min: (-120.0, -130.0), max: (-100.0, -112.0), height: 0.0),
+    SetRect(min: (-52.0, -68.0), max: (-28.0, -50.0), height: 0.0),
+    SetRect(min: (0.0, -40.0), max: (20.0, -22.0), height: 0.0),
+    SetRect(min: (70.0, 26.0), max: (130.0, 64.0), height: 0.0),
+    SetRect(min: (-34.0, 46.0), max: (-8.0, 64.0), height: 0.0),
+    SetRect(min: (80.0, -114.0), max: (178.0, -46.0), height: 0.0),
+
+    // Roads, flat at 0 m (scatter keeps clear of them).
+    // R1: the hollow mouth to the Crossroads and on to the Aqueduct Steps.
+    FlattenPath(points: [(-110.0, -120.0), (-75.0, -90.0), (-40.0, -60.0), (-10.0, -45.0), (10.0, -30.0)], width: 6.0, height: 0.0),
+    // R2: the Steps to the chapel gate, under the aqueduct's big arch.
+    FlattenPath(points: [(10.0, -30.0), (36.0, -8.0), (56.0, 10.0), (66.0, 16.0), (78.0, 22.0), (90.0, 28.0)], width: 6.0, height: 0.0),
+    // R3: the chapel to Mossgut Mouth.
+    FlattenPath(points: [(90.0, 26.0), (78.0, 24.0), (60.0, 26.0), (40.0, 34.0), (10.0, 48.0), (-20.0, 56.0)], width: 6.0, height: 0.0),
+    // R4: the Steps east to the Briar Thicket.
+    FlattenPath(points: [(10.0, -30.0), (50.0, -60.0), (80.0, -75.0), (112.0, -80.0)], width: 6.0, height: 0.0),
+    // R5: Mossgut Mouth north to the Spire.
+    FlattenPath(points: [(-20.0, 56.0), (8.0, 60.0), (12.0, 90.0), (-30.0, 140.0), (-40.0, 164.0)], width: 6.0, height: 0.0),
+    // R6: Mossgut Mouth west to the foot of the Windmill Rise.
+    FlattenPath(points: [(-20.0, 56.0), (-50.0, 40.0), (-62.0, 30.0)], width: 6.0, height: 0.0),
+
+    // The aqueduct's ramp: a 4 m strip climbing 6 m over 20 m.
+    Ramp(min: (20.0, -32.0), max: (40.0, -28.0), axis: X, from: 0.0, to: 6.0),
+  ],
+)

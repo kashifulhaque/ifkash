@@ -77,6 +77,8 @@ export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions
     audio.unlockOn(canvas);
     // Waking Hollow has its own sound bed (WP-043); other areas keep the default voice.
     if (scenario === 'waking_hollow') audio.setRegion('waking-hollow');
+    // The Verge (WP-044) is open and windy.
+    if (scenario === 'verge') audio.setRegion('verge');
   } catch (err) {
     console.warn('Latticefall audio unavailable', err);
   }

@@ -37,9 +37,29 @@ const WAKING_HOLLOW: Record<string, SpawnPoint> = {
   arena: { x: 0, z: 100, yaw: 0, note: 'inside the B01 arena' }
 };
 
+// The Verge (WP-044): each Lantern, the landmarks, and the side branches. Lantern spawns
+// stand one meter or two off the Lantern.
+const VERGE: Record<string, SpawnPoint> = {
+  mouth: { x: -110, z: -120, yaw: 0.8569, note: 'the hollow mouth, the area start' },
+  l02: { x: -40, z: -62.5, yaw: 0, note: 'beside L02, Verge Crossroads, facing the Spire' },
+  l03: { x: 7.5, z: -30, yaw: HALF_PI, note: 'beside L03, Aqueduct Steps, facing the ramp' },
+  ramp_top: { x: 42, z: -30, yaw: HALF_PI, note: 'top of the aqueduct ramp, on the deck' },
+  l04: { x: 90, z: 33.5, yaw: 0, note: 'beside L04, in Ninefold Chapel' },
+  altar: { x: 90, z: 41.5, yaw: 0, note: 'before the chapel altar and the raised ladder' },
+  crypt: { x: 116, z: 46, yaw: HALF_PI, note: 'in the crypt, facing the hollow wall' },
+  roof: { x: 90, z: 47, yaw: 0, note: 'on the chapel roof platform, above the raised ladder' },
+  l05: { x: -20, z: 53.5, yaw: 0, note: 'beside L05, Mossgut Mouth' },
+  windmill: { x: -86, z: 10, yaw: 0, note: 'on the Windmill Rise, before the tower' },
+  thicket: { x: 104, z: -80, yaw: HALF_PI, note: 'the Briar Thicket lane, facing the fog gate' },
+  arena: { x: 118, z: -80, yaw: HALF_PI, note: 'inside the B02 arena, past the gate gap' },
+  spire_road: { x: -40, z: 160, yaw: 0, note: 'the Spire Approach, at the Spire base' },
+  spire_view: { x: -40, z: -64, yaw: 0, note: 'the landmark view: L02 looking at the Spire' }
+};
+
 const TABLES: Record<string, Record<string, SpawnPoint>> = {
   test_field: TEST_FIELD,
   waking_hollow: WAKING_HOLLOW,
+  verge: VERGE,
   m0_flat: {
     far: { x: 40, z: 40, yaw: Math.PI, note: 'far corner of the flat floor' }
   }

@@ -217,5 +217,9 @@
     (id: "relic_test_stub", num: 12000),
     (id: "mechanics_yard", num: 10500), // WP-042: the 10500s are world mechanics
     (id: "waking_hollow", num: 11000), // WP-043: the 11000s are Verge areas
+    (id: "verge", num: 11200), // WP-044: the Verge region; 11200-11499 are its content
+    (id: "relic_banana_cpp", num: 11210),
+    (id: "relic_shrike_lite_circuit", num: 11211),
+    (id: "chronicle_page_1", num: 11212),
   ],
 )

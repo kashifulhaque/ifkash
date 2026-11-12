@@ -24,6 +24,8 @@ pub mod lantern_menu;
 pub mod mechanics;
 #[cfg(test)]
 mod tests;
+#[cfg(test)]
+mod verge_tests;
 
 use lf_content::Scenario;
 use lf_content::scenario::{

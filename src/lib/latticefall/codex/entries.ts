@@ -68,5 +68,8 @@ export function findableEntries(): CodexEntry[] {
  * from the event, which carries only the number. Later WPs fill it from `portfolio.ron`.
  */
 export const PICKUP_ENTRY: Readonly<Record<number, string>> = {
+  11210: 'projects.banana-cpp',
+  11211: 'projects.vicharak-micro-llama',
+  11212: 'work.corteva',
   12000: 'projects.test-relic'
 };

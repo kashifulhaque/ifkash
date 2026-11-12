@@ -45,7 +45,7 @@ const MESSAGES: [&str; 10] = [
 
 /// One leg of the route.
 #[derive(Clone, Copy)]
-enum Leg {
+pub(super) enum Leg {
     /// Walk to a point (x, z).
     Goto(f32, f32),
     /// Press Interact (read a message, take a pickup, open a chest).
@@ -115,9 +115,9 @@ fn route() -> Vec<Leg> {
 }
 
 /// The scripted player.
-struct Bot {
-    leg: usize,
-    legs: Vec<Leg>,
+pub(super) struct Bot {
+    pub(super) leg: usize,
+    pub(super) legs: Vec<Leg>,
     /// Ticks left in a `Wait`.
     wait: u16,
     /// Buttons sent last tick, because every button is a press edge.
@@ -127,22 +127,31 @@ struct Bot {
     rolled: bool,
     /// The jump leg's phase: 0 not started, then ticks since the press.
     jump_at: Option<u32>,
+    /// Walk toward an enemy that is in range but not yet lockable, instead of pressing the
+    /// lock button where it can't work (an enemy that hasn't noticed the player).
+    pub(super) approach: bool,
 }
 
 impl Bot {
     fn new() -> Self {
+        Self::with_legs(route())
+    }
+
+    /// A bot that walks `legs` (the Verge's walk reuses it).
+    pub(super) fn with_legs(legs: Vec<Leg>) -> Self {
         Self {
             leg: 0,
-            legs: route(),
+            legs,
             wait: 0,
             last: 0,
             seen: None,
             rolled: false,
             jump_at: None,
+            approach: false,
         }
     }
 
-    fn done(&self) -> bool {
+    pub(super) fn done(&self) -> bool {
         self.leg >= self.legs.len()
     }
 
@@ -172,7 +181,7 @@ impl Bot {
             .min_by(|a, b| a.1.total_cmp(&b.1))
     }
 
-    fn act(&mut self, w: &World) -> TickInput {
+    pub(super) fn act(&mut self, w: &World) -> TickInput {
         let (frame, commands) = self.decide(w);
         let mut f = frame;
         f.buttons &= !self.last;
@@ -297,6 +306,9 @@ impl Bot {
             )
         };
         if p.lock_target.is_none() {
+            if self.approach && dist > 6.0 {
+                return go(toward.0, toward.1, 0);
+            }
             return go(0, 0, buttons::LOCK);
         }
         // Read the enemy's move: its first hit frame decides when to roll.

@@ -1,0 +1,121 @@
+// The Verge layout (WP-044): greybox blocks (scaled `block_unit`, centered on `pos`).
+// Y is up; the ground is 0 m except the Windmill Rise (flat top at 10 m) and the aqueduct
+// ramp (terrain.ron). Places, with their centers (x, z):
+//   hollow mouth      (-110, -120)   the root-door the player steps out of
+//   L02 Crossroads    ( -40,  -60)   open meadow; the Spire stands 240 m north of it
+//   L03 Aqueduct      (  10,  -30)   foot of the aqueduct ramp
+//   aqueduct          ramp x 20..40, then a deck at y = 6: east along z = -30 to x = 68,
+//                     north along x = 66 to z = 50, east to the chapel roof platform
+//   L04 Ninefold      (  90,   36)   chapel courtyard (x 74..106, z 30..60), crypt to the east
+//   L05 Mossgut Mouth ( -20,   56)   a cave mouth in a stone mass at z 64..76
+//   Windmill Rise     ( -90,   20)   a 10 m hill; the tower stands on its flat top
+//   Briar Thicket     ( 142,  -80)   the B02 arena, x 112..172, z -108..-52; fog gate on its
+//                                    west side at x = 112
+//   Spire Approach    road north from L05 to the Spire at (-40, 180)
+// Walks between Lanterns are checked by the test in world_state/verge_tests.rs.
+(
+  landmarks: [
+    // --- Borders: 6 m walls on the edge of the world -------------------------------------
+    (name: "border_n", kit: "block_unit", pos: (0.0, 3.0, 199.0), scale: (400.0, 6.0, 2.0)),
+    (name: "border_s", kit: "block_unit", pos: (0.0, 3.0, -199.0), scale: (400.0, 6.0, 2.0)),
+    (name: "border_e", kit: "block_unit", pos: (199.0, 3.0, 0.0), scale: (2.0, 6.0, 400.0)),
+    (name: "border_w", kit: "block_unit", pos: (-199.0, 3.0, 0.0), scale: (2.0, 6.0, 400.0)),
+
+    // --- The hollow mouth: a stone arch the root-door opened in ---------------------------
+    (name: "mouth_jamb_w", kit: "block_unit", pos: (-122.0, 3.0, -126.0), scale: (2.0, 6.0, 2.0)),
+    (name: "mouth_jamb_e", kit: "block_unit", pos: (-118.0, 3.0, -128.0), scale: (2.0, 6.0, 2.0)),
+    (name: "mouth_lintel", kit: "block_unit", pos: (-120.0, 6.5, -127.0), scale: (6.0, 1.0, 4.0)),
+    (name: "mouth_back", kit: "block_unit", pos: (-120.0, 4.0, -133.0), scale: (14.0, 8.0, 4.0)),
+
+    // --- The Spire: a stacked, tapering silhouette, 100 m tall, in the north --------------
+    // Visible from L02 (-40, -60) across open meadow: nothing taller than 18 m stands in
+    // the strip x = -60..-20 between them.
+    (name: "spire_base", kit: "block_unit", pos: (-40.0, 10.0, 182.0), scale: (22.0, 20.0, 22.0)),
+    (name: "spire_mid", kit: "block_unit", pos: (-40.0, 40.0, 182.0), scale: (14.0, 40.0, 14.0)),
+    (name: "spire_top", kit: "block_unit", pos: (-40.0, 70.0, 182.0), scale: (8.0, 20.0, 8.0)),
+    (name: "spire_tip", kit: "block_unit", pos: (-40.0, 90.0, 182.0), scale: (3.0, 20.0, 3.0)),
+
+    // --- The aqueduct ----------------------------------------------------------------------
+    // Decks: tops at y = 6.0, 4 m wide.
+    (name: "deck_ew1", kit: "block_unit", pos: (54.0, 5.75, -30.0), scale: (28.0, 0.5, 4.0)),
+    (name: "deck_ns", kit: "block_unit", pos: (66.0, 5.75, 10.0), scale: (4.0, 0.5, 84.0)),
+    (name: "deck_ew2", kit: "block_unit", pos: (74.0, 5.75, 50.0), scale: (20.0, 0.5, 4.0)),
+    // Piers, 2 m by 4 m, with 6 m arches between; the north-south leg skips z = 2..23, the
+    // "broken arch" the road runs under.
+    (name: "pier_ew_48", kit: "block_unit", pos: (48.0, 2.75, -30.0), scale: (2.0, 5.5, 4.0)),
+    (name: "pier_ew_56", kit: "block_unit", pos: (56.0, 2.75, -30.0), scale: (2.0, 5.5, 4.0)),
+    (name: "pier_ew_64", kit: "block_unit", pos: (64.0, 2.75, -30.0), scale: (2.0, 5.5, 4.0)),
+    (name: "pier_ns_-22", kit: "block_unit", pos: (66.0, 2.75, -22.0), scale: (4.0, 5.5, 2.0)),
+    (name: "pier_ns_-12", kit: "block_unit", pos: (66.0, 2.75, -12.0), scale: (4.0, 5.5, 2.0)),
+    (name: "pier_ns_-2", kit: "block_unit", pos: (66.0, 2.75, -2.0), scale: (4.0, 5.5, 2.0)),
+    (name: "pier_ns_26", kit: "block_unit", pos: (66.0, 2.75, 26.0), scale: (4.0, 5.5, 2.0)),
+    (name: "pier_ns_38", kit: "block_unit", pos: (66.0, 2.75, 38.0), scale: (4.0, 5.5, 2.0)),
+    (name: "pier_ns_48", kit: "block_unit", pos: (66.0, 2.75, 46.0), scale: (4.0, 5.5, 2.0)),
+    (name: "pier_ew2_79", kit: "block_unit", pos: (79.0, 2.75, 50.0), scale: (2.0, 5.5, 4.0)),
+
+    // --- Ninefold Chapel: a roofless ring, 4 m walls, one gate in the south ----------------
+    (name: "chapel_s_w", kit: "block_unit", pos: (80.0, 2.0, 30.0), scale: (12.0, 4.0, 1.0)),
+    (name: "chapel_s_e", kit: "block_unit", pos: (100.0, 2.0, 30.0), scale: (12.0, 4.0, 1.0)),
+    (name: "chapel_w", kit: "block_unit", pos: (74.0, 2.0, 45.0), scale: (1.0, 4.0, 30.0)),
+    (name: "chapel_n", kit: "block_unit", pos: (90.0, 2.0, 60.0), scale: (32.0, 4.0, 1.0)),
+    (name: "chapel_e_s", kit: "block_unit", pos: (106.0, 2.0, 37.0), scale: (1.0, 4.0, 14.0)),
+    (name: "chapel_e_n", kit: "block_unit", pos: (106.0, 2.0, 54.5), scale: (1.0, 4.0, 11.0)),
+    // The roof platform: the aqueduct's end. Top at y = 6.0, held on four pillars.
+    (name: "chapel_roof", kit: "block_unit", pos: (90.0, 5.75, 50.0), scale: (12.0, 0.5, 12.0)),
+    (name: "roof_pillar_sw", kit: "block_unit", pos: (85.0, 2.75, 45.0), scale: (1.0, 5.5, 1.0)),
+    (name: "roof_pillar_se", kit: "block_unit", pos: (95.0, 2.75, 45.0), scale: (1.0, 5.5, 1.0)),
+    (name: "roof_pillar_nw", kit: "block_unit", pos: (85.0, 2.75, 55.0), scale: (1.0, 5.5, 1.0)),
+    (name: "roof_pillar_ne", kit: "block_unit", pos: (95.0, 2.75, 55.0), scale: (1.0, 5.5, 1.0)),
+    // Ruined columns in the courtyard.
+    (name: "column_a", kit: "block_unit", pos: (82.0, 1.5, 38.0), scale: (1.0, 3.0, 1.0)),
+    (name: "column_b", kit: "block_unit", pos: (98.0, 1.5, 38.0), scale: (1.0, 3.0, 1.0)),
+    (name: "column_c", kit: "block_unit", pos: (98.0, 1.5, 44.0), scale: (1.0, 3.0, 1.0)),
+    // The crypt, east of the chapel: 3 m walls. Its east wall holds the hollow wall.
+    (name: "crypt_s", kit: "block_unit", pos: (114.0, 1.5, 40.0), scale: (16.0, 3.0, 1.0)),
+    (name: "crypt_n", kit: "block_unit", pos: (114.0, 1.5, 52.0), scale: (16.0, 3.0, 1.0)),
+    (name: "crypt_e_s", kit: "block_unit", pos: (122.0, 1.5, 42.0), scale: (1.0, 3.0, 4.0)),
+    (name: "crypt_e_n", kit: "block_unit", pos: (122.0, 1.5, 50.0), scale: (1.0, 3.0, 4.0)),
+    // The closet behind the hollow wall (x 122..130, z 43..49).
+    (name: "closet_s", kit: "block_unit", pos: (126.5, 1.5, 43.0), scale: (9.0, 3.0, 1.0)),
+    (name: "closet_n", kit: "block_unit", pos: (126.5, 1.5, 49.0), scale: (9.0, 3.0, 1.0)),
+    (name: "closet_e", kit: "block_unit", pos: (130.0, 1.5, 46.0), scale: (1.0, 3.0, 7.0)),
+
+    // --- The Windmill Rise: a tower on the hill's flat top (10 m) -------------------------
+    // 8 m square, 8 m walls, a doorway in the south wall, a flat roof at y = 18. A ladder on
+    // the east face climbs to the roof.
+    (name: "mill_w", kit: "block_unit", pos: (-93.5, 14.0, 20.0), scale: (1.0, 8.0, 8.0)),
+    (name: "mill_e", kit: "block_unit", pos: (-86.5, 14.0, 20.0), scale: (1.0, 8.0, 8.0)),
+    (name: "mill_n", kit: "block_unit", pos: (-90.0, 14.0, 23.5), scale: (6.0, 8.0, 1.0)),
+    (name: "mill_s_w", kit: "block_unit", pos: (-92.5, 14.0, 16.5), scale: (3.0, 8.0, 1.0)),
+    (name: "mill_s_e", kit: "block_unit", pos: (-87.5, 14.0, 16.5), scale: (3.0, 8.0, 1.0)),
+    (name: "mill_roof", kit: "block_unit", pos: (-90.0, 17.75, 20.0), scale: (8.0, 0.5, 8.0)),
+
+    // --- Mossgut Mouth: a cave mouth in a stone mass; the way down is a later work package -
+    (name: "mossgut_w", kit: "block_unit", pos: (-32.0, 5.0, 70.0), scale: (18.0, 10.0, 12.0)),
+    (name: "mossgut_e", kit: "block_unit", pos: (-8.0, 5.0, 70.0), scale: (18.0, 10.0, 12.0)),
+    (name: "mossgut_lintel", kit: "block_unit", pos: (-20.0, 8.5, 70.0), scale: (6.0, 3.0, 12.0)),
+    (name: "mossgut_plug", kit: "block_unit", pos: (-20.0, 3.5, 75.5), scale: (6.0, 7.0, 1.0)),
+
+    // --- The Briar Thicket (B02's arena): a hedge wall ring, 4 m tall -----------------------
+    (name: "briar_n", kit: "block_unit", pos: (142.0, 2.0, -51.0), scale: (62.0, 4.0, 2.0)),
+    (name: "briar_s", kit: "block_unit", pos: (142.0, 2.0, -109.0), scale: (62.0, 4.0, 2.0)),
+    (name: "briar_e", kit: "block_unit", pos: (173.0, 2.0, -80.0), scale: (2.0, 4.0, 60.0)),
+    (name: "briar_w_s", kit: "block_unit", pos: (111.0, 2.0, -97.0), scale: (2.0, 4.0, 22.0)),
+    (name: "briar_w_n", kit: "block_unit", pos: (111.0, 2.0, -63.0), scale: (2.0, 4.0, 22.0)),
+    // Briar clumps in the arena.
+    (name: "clump_a", kit: "block_unit", pos: (130.0, 1.5, -70.0), scale: (2.0, 3.0, 2.0)),
+    (name: "clump_b", kit: "block_unit", pos: (150.0, 1.5, -92.0), scale: (2.0, 3.0, 2.0)),
+    (name: "clump_c", kit: "block_unit", pos: (148.0, 1.5, -66.0), scale: (2.0, 3.0, 2.0)),
+    (name: "clump_d", kit: "block_unit", pos: (130.0, 1.5, -94.0), scale: (2.0, 3.0, 2.0)),
+    (name: "clump_e", kit: "block_unit", pos: (162.0, 1.5, -80.0), scale: (2.0, 3.0, 2.0)),
+    // The approach lane: hedges 12 m apart along the road.
+    (name: "lane_n", kit: "block_unit", pos: (97.0, 1.5, -72.0), scale: (26.0, 3.0, 2.0)),
+    (name: "lane_s", kit: "block_unit", pos: (97.0, 1.5, -88.0), scale: (26.0, 3.0, 2.0)),
+
+    // --- Spire Approach: broken arches over the road ---------------------------------------
+    (name: "arch_a_w", kit: "block_unit", pos: (4.0, 3.0, 84.0), scale: (1.5, 6.0, 1.5)),
+    (name: "arch_a_e", kit: "block_unit", pos: (20.0, 3.0, 96.0), scale: (1.5, 6.0, 1.5)),
+    (name: "arch_b_w", kit: "block_unit", pos: (-22.0, 2.0, 128.0), scale: (1.5, 4.0, 1.5)),
+    (name: "arch_b_e", kit: "block_unit", pos: (-8.0, 2.0, 124.0), scale: (1.5, 4.0, 1.5)),
+  ],
+)

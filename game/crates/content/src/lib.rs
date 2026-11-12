@@ -143,6 +143,10 @@ const EMBEDDED_MOVES: &[(&str, &str)] = &[
         include_str!("../../../data/moves/enemies/glasswing_stalker.ron"),
     ),
     (
+        "moves/enemies/acolyte_bell.ron",
+        include_str!("../../../data/moves/enemies/acolyte_bell.ron"),
+    ),
+    (
         "moves/bosses/test_boss.ron",
         include_str!("../../../data/moves/bosses/test_boss.ron"),
     ),
@@ -261,6 +265,10 @@ const EMBEDDED_SCENARIOS: &[(&str, &str)] = &[
         include_str!("../../../data/scenarios/fight_glasswing.ron"),
     ),
     (
+        "scenarios/fight_acolyte_bell.ron",
+        include_str!("../../../data/scenarios/fight_acolyte_bell.ron"),
+    ),
+    (
         "scenarios/boss_gate.ron",
         include_str!("../../../data/scenarios/boss_gate.ron"),
     ),
@@ -348,6 +356,10 @@ const EMBEDDED_ENEMIES: &[(&str, &str)] = &[
     (
         "enemies/glasswing_stalker.ron",
         include_str!("../../../data/enemies/glasswing_stalker.ron"),
+    ),
+    (
+        "enemies/acolyte_bell.ron",
+        include_str!("../../../data/enemies/acolyte_bell.ron"),
     ),
 ];
 

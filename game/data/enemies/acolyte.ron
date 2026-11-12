@@ -1,7 +1,7 @@
 // The Acolyte (registry 7050): a caster that casts a slow Radiance bolt with a visible
 // 30-tick glow (ac_cast's projectile leaves on frame 30). Source:
-// docs/game/05-enemies-and-bosses.md, "Enemy roster" (HP 160; Bell variant casts Rime, which
-// projectiles can't build up yet, so it isn't made). It takes the one ranged token. Its
+// docs/game/05-enemies-and-bosses.md, "Enemy roster" (HP 160; the Bell variant, acolyte_bell, casts
+// Rime). It takes the one ranged token. Its
 // bolt is a Formula, so a Shard Golem reflects it. `attack` is for the staff swat; the bolt
 // adds its Radiance rating to it. Everything else is tuning.
 #![enable(implicit_some)]

@@ -1,0 +1,5 @@
+# WP-036 golden: a Bell Acolyte glows for 30 ticks and casts a slow Rime bolt that builds Rime on the player (record with `lf-tools replay record-script`). Each line:
+# <ticks> <move_x> <move_z> [BUTTONS]. The player spawns at the origin facing +Z in fight_acolyte_bell.
+seed 58
+scenario fight_acolyte_bell
+190 0 0              # stand: it notices, glows, and casts; the golden ends while the Rime meter is still up (it decays after 60 ticks)

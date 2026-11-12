@@ -359,13 +359,14 @@ pub fn apply_landing(
     target: Id,
     move_num: crate::combat::moves::MoveNum,
     hitbox: u8,
+    projectile_status: Option<StatusBuildup>,
     result: HitResult,
 ) {
     let r = &world.status.rules;
-    // A projectile landing (`PROJECTILE_HITBOX`) has no hitbox of its own: projectile
-    // definitions carry no buildup yet, so only the attacker's weapon buff applies.
+    // A projectile landing (`PROJECTILE_HITBOX`) has no hitbox of its own: it carries its
+    // definition's buildup, and the attacker's weapon buff applies as well.
     let mut list: Vec<StatusBuildup> = if hitbox == PROJECTILE_HITBOX {
-        Vec::new()
+        projectile_status.into_iter().collect()
     } else {
         world
             .moves

@@ -58,4 +58,23 @@
     hitstop: 3, // tuning
     tags: [],
   ),
+  (
+    // The Bell Acolyte's Rime bolt (WP-036): the Radiance bolt's flight with 40 Rime
+    // buildup (`status`). A Formula too, so a Shard Golem reflects it.
+    id: "proj_rime_bolt",
+    speed: 7.0, // tuning
+    gravity: 0.0,
+    radius: 0.2, // tuning
+    lifetime_ticks: 150, // tuning
+    pierce: 0,
+    homing: None,
+    motion_value: 0.8, // tuning
+    phys: Neutral,
+    element: Aether,
+    poise_damage: 12, // tuning
+    knockback: 0.3, // tuning
+    hitstop: 3, // tuning
+    tags: [],
+    status: (kind: Rime, amount: 40), // tuning
+  ),
 ]

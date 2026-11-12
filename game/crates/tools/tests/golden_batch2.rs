@@ -208,3 +208,17 @@ fn m3_glasswing_lunges_and_slashes() {
         "{hs:?}"
     );
 }
+
+/// The Bell Acolyte's Rime bolt lands and builds Rime on the player.
+#[test]
+fn m3_acolyte_bell_casts_a_rime_bolt() {
+    let (w, events) = run_duel("m3_acolyte_bell", "fight_acolyte_bell");
+    let ac = w.state.ai_enemies[0];
+    let cast = w.moves.num_of("ac_bell_cast").unwrap();
+    let bolts: Vec<_> = on_player(&w, &events, ac)
+        .into_iter()
+        .filter(|h| h.move_num == cast)
+        .collect();
+    assert!(!bolts.is_empty(), "no bolt landed");
+    assert!(has_status(&w, lf_content::moves::StatusKind::Rime));
+}

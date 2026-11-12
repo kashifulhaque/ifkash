@@ -1,0 +1,28 @@
+// The Bell Acolyte (registry 7058): the Acolyte's Bell variant. Source:
+// docs/game/05-enemies-and-bosses.md, "Enemy roster" (Bell variant casts Rime). It casts the
+// same 30-tick glow and slow bolt, but the bolt (proj_rime_bolt) adds 40 Rime buildup. Its
+// `element_attack` is Aether, which the Rime bolt uses. Everything else is tuning.
+#![enable(implicit_some)]
+(
+  id: "acolyte_bell",
+  model: "acolyte_bell",
+  hp: 160,
+  poise: 20,
+  defense: (flat: 30),
+  resist: (immunity: 120, robustness: 160, composure: 140),
+  can_go_mad: true,
+  glimmer: 50,
+  attack: 40,
+  element_attack: (Aether, 60),
+  perception: (sight_deg: 120.0, sight_m: 26.0, hearing_mult: 1.0),
+  leash_m: 40.0,
+  moveset: "enemies/acolyte_bell.ron",
+  options: [
+    (move: "ac_bell_cast", when: [DistBetween(5.0, 18.0), FacingWithin(40.0)], weight: 8, cooldown: 120),
+    (move: "ac_smack", when: [DistBelow(1.9)], weight: 6, cooldown: 50),
+    (behavior: Retreat(dur: 40), when: [DistBelow(4.5)], weight: 5, cooldown: 90),
+    (behavior: Wait(dur: 20), when: [DistAbove(5.0)], weight: 2),
+    (behavior: Strafe(dur: 40), when: [DistAbove(5.0)], weight: 1, cooldown: 120),
+  ],
+  drops: [(item: "itm_glimmer_vial", chance: 0.05)],
+)

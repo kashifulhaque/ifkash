@@ -323,6 +323,7 @@ fn landing_for(
         counter,
         poise_damage: u32::from(def.poise_damage),
         unblockable: def.tags.contains(&HitTag::Unblockable),
+        status: def.status,
     }
 }
 

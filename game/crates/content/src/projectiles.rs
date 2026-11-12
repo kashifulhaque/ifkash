@@ -4,7 +4,7 @@
 
 use serde::{Deserialize, Serialize};
 
-use crate::moves::{Element, HitTag, PhysType};
+use crate::moves::{Element, HitTag, PhysType, StatusBuildup};
 
 /// A projectile that steers toward a target while it flies.
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
@@ -46,4 +46,7 @@ pub struct ProjectileDef {
     /// Render-only freeze frames.
     pub hitstop: u8,
     pub tags: Vec<HitTag>,
+    /// Status buildup a hit adds (a guarded hit adds less, as for a melee hit).
+    #[serde(default)]
+    pub status: Option<StatusBuildup>,
 }

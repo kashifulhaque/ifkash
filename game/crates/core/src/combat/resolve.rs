@@ -134,6 +134,8 @@ pub(crate) struct Landing {
     pub(crate) counter: bool,
     pub(crate) poise_damage: u32,
     pub(crate) unblockable: bool,
+    /// Buildup of the projectile that landed (a hitbox's is looked up from its move).
+    pub(crate) status: Option<lf_content::moves::StatusBuildup>,
 }
 
 /// A hitbox touching a hurtbox this tick, before its outcome is decided.
@@ -245,7 +247,9 @@ pub(crate) fn apply_landing(world: &mut World, l: &Landing) -> bool {
         poise::apply_landing(world, l.target, l.move_num, l.poise_damage);
     }
     // Buildup from the hitbox and the attacker's weapon buff (see `status`).
-    status::apply_landing(world, l.attacker, l.target, l.move_num, l.hitbox, result);
+    status::apply_landing(
+        world, l.attacker, l.target, l.move_num, l.hitbox, l.status, result,
+    );
     true
 }
 
@@ -431,6 +435,7 @@ pub fn run(world: &mut World) {
             counter,
             poise_damage: u32::from(hb.poise_damage),
             unblockable: hb.tags.contains(&HitTag::Unblockable),
+            status: None,
         });
     }
 

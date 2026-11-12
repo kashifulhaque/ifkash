@@ -142,9 +142,11 @@
     (id: "lamp_mite", num: 7055),
     (id: "shard_golem", num: 7056),
     (id: "glasswing_stalker", num: 7057),
+    (id: "acolyte_bell", num: 7058),
 
     (id: "ac_cast", num: 8300),
     (id: "ac_smack", num: 8301),
+    (id: "ac_bell_cast", num: 8302),
     (id: "dr_grab", num: 8310),
     (id: "dr_swipe", num: 8311),
     (id: "rs_lunge", num: 8320),
@@ -157,5 +159,6 @@
     (id: "gw_lunge", num: 8370),
     (id: "gw_slash", num: 8371),
     (id: "proj_radiance_bolt", num: 8590),
+    (id: "proj_rime_bolt", num: 8591),
   ],
 )

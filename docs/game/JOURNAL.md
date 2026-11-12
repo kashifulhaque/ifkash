@@ -50,6 +50,7 @@ Copy this block to the top of the entries and fill it in as you go:
     3-6, moved dummy poise and script into `dummy_actor`, fixed nesting the keep-both
     merge got wrong) and added kinds 3-6 to the frontend decoder table.
   - WP-027: in progress (sonnet), worktree
+  - WP-025: in progress (sonnet), main checkout (orchestrator at 291K when started)
   - WP-028: done by sonnet (no escalation) in a worktree; commits `9316e4b` (rebased) and
     the orchestrator's decoder fix; 226K worker tokens. The worker's decoder guessed the
     Hit length from the buffer size; the orchestrator replaced it with a per-kind table

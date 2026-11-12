@@ -133,8 +133,10 @@ impl LfWorld {
     /// - Kind 5, `Parry` (WP-024), 4 words: kind, attacker, target, the parried move number.
     /// - Kind 6, `Critical` (WP-024), 5 words: kind, attacker, target, crit kind (0 riposte,
     ///   1 backstab), the attacker's crit move number. The damage follows as a `Hit`.
-    /// - Kind 8, `Projectile` (WP-027), 10 words (kinds 2 to 6 belong to other events and
-    ///   kind 7 is reserved for status): kind, what happened (0 spawned, 1 struck
+    /// - Kind 7, `StatusProc` (WP-025), 4 words: kind, target, status (0 Poison, 1 Blight,
+    ///   2 Drowse, 3 Delirium, 4 Rupture, 5 Rime: the bit of that status in the snapshot's
+    ///   `status_mask`), HP the burst took (0 for the statuses that have none).
+    /// - Kind 8, `Projectile` (WP-027), 10 words: kind, what happened (0 spawned, 1 struck
     ///   an actor, 2 hit the level, 3 expired), projectile handle and definition number
     ///   (`proj_arrow` is 5000), shooter and target (`pack_id`; target is `0xFFFFFFFF`
     ///   unless it struck an actor), position (3), and 1 if the projectile is gone after
@@ -191,6 +193,9 @@ impl LfWorld {
                         c.kind.code(),
                         c.move_num,
                     ]);
+                }
+                Event::StatusProc(p) => {
+                    out.extend([7, pack_id(p.target), p.code(), p.damage]);
                 }
                 Event::Projectile(e) => {
                     out.extend([

@@ -137,6 +137,8 @@ pub fn respawn(world: &mut World) {
         a.lock_target = None;
         a.moves = MoveState::default();
         a.hit = HitState::default();
+        crate::combat::status::cure_all(a);
+        crate::combat::status::clear_buffs(a, &world.status);
     }
     world.state.death.respawn_in = None;
     world.state.death.safe_pos = pos;

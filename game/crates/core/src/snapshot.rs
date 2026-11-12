@@ -146,6 +146,7 @@ pub fn write_snapshot(world: &World, out: &mut Vec<ActorSnap>) {
             } else {
                 0.0
             },
+            status_mask: actor.status.aura_mask(),
             ..ActorSnap::default()
         });
     }

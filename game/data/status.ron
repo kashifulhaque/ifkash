@@ -1,0 +1,59 @@
+// Status effects and buffs.
+// Source: docs/game/03-combat.md, "Status effects" and "Buffs".
+// Schema: crates/content/src/status.rs. Resistances are not here: they come from the
+// attribute curves in attributes.ron (`resistance`) or from an enemy's own data.
+(
+  lockout_ticks: 60, // Status effects: can't build up again for 60 ticks after a proc
+  decay_delay_ticks: 60, // decay = 1.5 per tick, starting 60 ticks after the last buildup
+  decay_milli_per_tick: 1500,
+  boss_growth_percent: 25, // boss_tolerance = resistance * (1 + 0.25 * procs this fight)
+  crit_bonus_percent: 30, // buildup_per_hit: 1 + 0.3 * crit_or_stealth (riposte)
+  backstab_bonus_percent: 20, // Parry and critical hits: backstabs add 20 percent buildup
+  guarded_percent: 0, // tuning: the spec is silent; a blocked hit adds no buildup
+  dot_interval_ticks: 30, // "per second" at 30 ticks a second
+
+  rupture: (max_hp_permille: 120, flat: 80), // Burst: 12% of max HP + 80
+  rime: (
+    burst: (max_hp_permille: 80, flat: 50), // Burst: 8% of max HP + 50
+    duration_ticks: 600,
+    damage_taken_percent: 115, // +15% damage taken
+    stamina_regen_percent: 50, // -50% stamina regeneration
+  ),
+  poison: (
+    per_second: (max_hp_permille: 2, flat: 7), // 0.2% of max HP + 7 per second
+    duration_ticks: 1800,
+  ),
+  blight: (
+    per_second: (max_hp_permille: 6, flat: 14), // 0.6% of max HP + 14 per second
+    duration_ticks: 900,
+  ),
+  drowse: (
+    sleep_ticks: 300, // Enemies: sleep for 300 ticks or until hit
+    asleep_hit_percent: 120, // hit while asleep deals 1.2x
+    knockdown_ticks: 60, // Player: knocked down for 60 ticks
+    fp_loss_percent: 10, // and loses 10% of FP (read as max FP)
+  ),
+  delirium: (
+    fp_loss_percent: 30, // Player: loses 30% of max FP
+    hp_loss_percent: 10, // and 10% of max HP
+    player_stagger_ticks: 40,
+    enemy_stagger_ticks: 60, // Enemies that can go mad
+  ),
+
+  // Buffs: one weapon slot and one body slot. Elemental oils (Pitch, Spark) and the Arts
+  // that add AR or poise arrive with the spell and consumable work (WP-055 to WP-057).
+  buffs: [
+    (
+      id: "buf_bloodbloom_oil", slot: Weapon, damage_percent: 100,
+      status: [(kind: Rupture, amount: 40)], duration_ticks: 900, vfx: "oil_bloodbloom",
+    ), // Bloodbloom Oil: Rupture 40, 900 ticks
+    (
+      id: "buf_rime_edge", slot: Weapon, damage_percent: 100,
+      status: [(kind: Rime, amount: 40)], duration_ticks: 900, vfx: "edge_rime",
+    ), // Rime Edge: +40 Rime buildup, 900 ticks (its +10% Aether waits on elemental AR)
+    (
+      id: "buf_rallying_roar", slot: Body, damage_percent: 115,
+      status: [], duration_ticks: 900, vfx: "roar_rally",
+    ), // Rallying Roar: +15% damage, 900 ticks (its +20% poise isn't modelled yet)
+  ],
+)

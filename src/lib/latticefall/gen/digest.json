@@ -143,8 +143,8 @@
     "start_max": 16,
     "start_min": 4
   },
-  "contentHash": "5306991493527581101",
-  "contentHashHex": "49a638a54dbb31ad",
+  "contentHash": "14933967014266848892",
+  "contentHashHex": "cf401be03cc6c67c",
   "moves": [
     {
       "anim": "roll_quick",
@@ -202,6 +202,16 @@
       "fp": 0,
       "id": "dummy_slash",
       "num": 3020,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 40
+    },
+    {
+      "anim": "dummy_venom_slash",
+      "file": "moves/common.ron",
+      "fp": 0,
+      "id": "dummy_venom_slash",
+      "num": 3021,
       "stamina": 0,
       "stub": false,
       "totalFrames": 40

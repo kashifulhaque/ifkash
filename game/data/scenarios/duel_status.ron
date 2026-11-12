@@ -1,0 +1,27 @@
+// WP-025 status test scenario: a flat floor, a still sparring dummy 1.2 m ahead of the
+// player, and a boss warden off to the side. Both are padded (flat defense 500, no poise
+// meter) so they survive and don't stagger. The sparring dummy swings the Poison move at
+// the player; tests remove the script when they want only the player's hits.
+(
+  spawn: (0.0, 0.0, 0.0),
+  spawn_yaw: 0.0,
+  kill_y: -50.0,
+  heightfield: None,
+  boxes: [
+    (name: "floor", center: (0.0, -0.5, 0.0), half_extents: (1000.0, 0.5, 1000.0)),
+  ],
+  dummies: [
+    (
+      name: "sparring", pos: (0.0, 0.0, 1.2), yaw: 3.1415927, hp: 9000, defense: (flat: 500),
+      poise: 0, unaware: false,
+      resist: (immunity: 100, robustness: 100, composure: 100),
+      attack: Some((move_id: "dummy_venom_slash", first_tick: 40, every_ticks: 90)),
+    ),
+    (
+      name: "warden", pos: (6.0, 0.0, 0.0), yaw: -1.5707964, hp: 9000, defense: (flat: 500),
+      poise: 0, unaware: false,
+      resist: (immunity: 100, robustness: 100, composure: 100),
+      boss: true, immune: [Poison],
+    ),
+  ],
+)

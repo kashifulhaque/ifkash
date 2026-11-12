@@ -23,6 +23,8 @@ pub enum Event {
     /// A projectile spawned, struck an actor, hit the level, or expired
     /// (`combat::projectile`). A strike also emits a `Hit` for the damage.
     Projectile(ProjectileEvent),
+    /// A status meter filled and the effect took hold (`combat::status`).
+    StatusProc(StatusProc),
 }
 
 /// What happened to the player's life cycle (docs/game/06-progression-and-systems.md,
@@ -139,6 +141,25 @@ pub struct ProjectileEvent {
     pub pos: [f32; 3],
     /// The projectile is gone after this event (the handle may be reused later).
     pub ended: bool,
+}
+
+/// `target`'s `status` meter filled: the effect started. `damage` is the HP the burst took
+/// (Rupture, Rime, Delirium), 0 for the other statuses. The meter has reset and the
+/// status is locked out for a while.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct StatusProc {
+    pub target: Id,
+    pub status: lf_content::moves::StatusKind,
+    pub damage: u32,
+}
+
+impl StatusProc {
+    /// The code the WASM event stream uses: the status's index in
+    /// [`crate::combat::status::KINDS`] (0 Poison, 1 Blight, 2 Drowse, 3 Delirium, 4 Rupture,
+    /// 5 Rime).
+    pub fn code(&self) -> u32 {
+        crate::combat::status::index(self.status) as u32
+    }
 }
 
 /// One hitbox connecting with one target: the raw inputs to damage, poise, status, and

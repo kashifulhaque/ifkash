@@ -12,6 +12,7 @@ use crate::combat::hurtbox::Hurtbox;
 use crate::combat::moves::MoveTable;
 use crate::combat::poise::PoiseState;
 use crate::combat::projectile::{Projectile, ProjectileTable};
+use crate::combat::status::{StatusState, StatusTable};
 use crate::events::EventQueue;
 use crate::items::{Inventory, ItemTable, slot};
 use crate::physics::PhysicsState;
@@ -40,6 +41,8 @@ pub struct World {
     pub damage: DamageTable,
     /// Every projectile definition, from content. Not hashed: the content hash covers it.
     pub projectile_defs: ProjectileTable,
+    /// The status and buff rules, from content. Not hashed: the content hash covers them.
+    pub status: StatusTable,
     pub actors: Arena<Actor>,
     /// Projectiles in flight (docs/game/01-architecture.md, "World and actors").
     pub projectiles: Arena<Projectile>,
@@ -64,6 +67,8 @@ pub enum WorldError {
     Moves(String),
     /// An item or flask references an ID the registry doesn't have.
     Items(String),
+    /// The content has no `status.ron`, or a buff isn't in the registry.
+    Status(String),
 }
 
 impl core::fmt::Display for WorldError {
@@ -76,6 +81,7 @@ impl core::fmt::Display for WorldError {
             Self::MissingLocomotion => write!(f, "the content has no locomotion.ron"),
             Self::Moves(message) => write!(f, "{message}"),
             Self::Items(message) => write!(f, "{message}"),
+            Self::Status(message) => write!(f, "{message}"),
         }
     }
 }
@@ -110,6 +116,8 @@ impl World {
         let derived = stats.attrs.derived(&content.attributes);
         let (max_hp, max_stamina, max_fp) = (derived.max_hp, derived.max_stamina, derived.max_fp);
         let damage = DamageTable::from_content(content).map_err(WorldError::Items)?;
+        let status_table = StatusTable::from_content(content).map_err(WorldError::Status)?;
+        let player_status = StatusState::for_player(&stats.attrs, &content.attributes);
         let moves = MoveTable::from_content(content).map_err(WorldError::Moves)?;
         let hurtbox = Hurtbox::from_locomotion(&locomotion);
         let items = ItemTable::from_content(content).map_err(WorldError::Items)?;
@@ -135,6 +143,7 @@ impl World {
                 ..PoiseState::default()
             },
             stats,
+            status: player_status,
             motor: Motor {
                 grounded: true,
                 ground_y: level.spawn[1],
@@ -170,6 +179,7 @@ impl World {
             items,
             damage,
             projectile_defs,
+            status: status_table,
             actors,
             projectiles: Arena::new(),
             player,

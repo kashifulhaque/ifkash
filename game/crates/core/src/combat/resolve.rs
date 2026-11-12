@@ -44,7 +44,7 @@ use super::dodge;
 use super::guard::{self, IncomingHit};
 use super::hitbox::{self, Capsule, Pose};
 use super::moves::{MoveNum, MoveTable};
-use super::{crit, poise};
+use super::{crit, poise, status};
 use crate::actor::Actor;
 use crate::arena::Id;
 use crate::events::{Event, Hit, HitResult};
@@ -191,7 +191,8 @@ pub(crate) fn apply_landing(world: &mut World, l: &Landing) -> bool {
         return false;
     };
     let incoming = IncomingHit {
-        damage: l.damage.total,
+        // Rime and a sleeper's weakness scale the hit before the guard sees it.
+        damage: status::incoming_damage(t, &world.status, l.damage.total),
         poise_damage: l.poise_damage,
         elemental: l.damage.mostly_elemental(),
         unblockable: l.unblockable,
@@ -227,6 +228,8 @@ pub(crate) fn apply_landing(world: &mut World, l: &Landing) -> bool {
     if result == HitResult::Connected {
         poise::apply_landing(world, l.target, l.move_num, l.poise_damage);
     }
+    // Buildup from the hitbox and the attacker's weapon buff (see `status`).
+    status::apply_landing(world, l.attacker, l.target, l.move_num, l.hitbox, result);
     true
 }
 

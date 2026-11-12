@@ -6,7 +6,7 @@
 //
 // Number blocks (a convention, not enforced): 100s attributes, 1000s weapons,
 // 2000s straight-sword moves (2100s stub bow moves), 3000s common moves (dodges, flask drink), 4000s items,
-// 5000s projectiles. ss_roll (2012) and
+// 5000s projectiles, 6000s buffs. ss_roll (2012) and
 // ss_backstep_dodge (2013) are retired: WP-022 moved the dodges to moves/common.ron.
 (
   entries: [
@@ -46,6 +46,7 @@
     (id: "dodge_backstep", num: 3003),
     (id: "flask_drink", num: 3010),
     (id: "dummy_slash", num: 3020),
+    (id: "dummy_venom_slash", num: 3021),
     (id: "crit_riposte", num: 3030),
     (id: "crit_backstab", num: 3031),
     (id: "crit_receive_riposte", num: 3032),
@@ -76,5 +77,9 @@
 
     (id: "proj_arrow", num: 5000),
     (id: "proj_seeker_bolt", num: 5001),
+
+    (id: "buf_bloodbloom_oil", num: 6000),
+    (id: "buf_rime_edge", num: 6001),
+    (id: "buf_rallying_roar", num: 6002),
   ],
 )

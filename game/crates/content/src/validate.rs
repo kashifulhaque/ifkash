@@ -460,6 +460,16 @@ impl Validate for Content {
                 .error("flask.drink_move", "the move is not defined");
             }
         }
+        if let Some(st) = &self.status {
+            for (field, message) in st.problems() {
+                Sink {
+                    out: &mut out,
+                    file: "status.ron",
+                    item: "status",
+                }
+                .error(field, message);
+            }
+        }
         out
     }
 }

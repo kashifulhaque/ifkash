@@ -3,6 +3,8 @@
 
 use serde::{Deserialize, Serialize};
 
+use crate::moves::StatusKind;
+
 /// A level the simulation can start in.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -73,6 +75,42 @@ pub struct Dummy {
     /// A scripted attack loop. The hook WP-030's AI replaces.
     #[serde(default)]
     pub attack: Option<DummyAttack>,
+    /// What the dummy resists: the meter a status needs to fill (WP-025). Defaults to 100.
+    #[serde(default)]
+    pub resist: ResistData,
+    /// A boss: its resistances grow with every proc this fight, and it must list one to
+    /// three immunities. Defaults to false.
+    #[serde(default)]
+    pub boss: bool,
+    /// Statuses the dummy can't build up at all.
+    #[serde(default)]
+    pub immune: Vec<StatusKind>,
+    /// Delirium staggers it (enemies that can go mad). Defaults to false.
+    #[serde(default)]
+    pub can_go_mad: bool,
+}
+
+/// An enemy's status resistances (docs/game/05-enemies-and-bosses.md, `resist`). In the
+/// player's case they come from Vitality, Focus, and Endurance instead.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ResistData {
+    /// Poison and Blight.
+    pub immunity: u16,
+    /// Rupture and Rime.
+    pub robustness: u16,
+    /// Drowse and Delirium.
+    pub composure: u16,
+}
+
+impl Default for ResistData {
+    fn default() -> Self {
+        Self {
+            immunity: 100,
+            robustness: 100,
+            composure: 100,
+        }
+    }
 }
 
 fn default_dummy_poise() -> u16 {
@@ -178,6 +216,12 @@ impl Scenario {
         for d in &self.dummies {
             if d.hp == 0 {
                 return Err(format!("dummy {:?}: hp must be positive", d.name));
+            }
+            if d.boss && !(1..=3).contains(&d.immune.len()) {
+                return Err(format!(
+                    "dummy {:?}: a boss is immune to at least one status and at most three",
+                    d.name
+                ));
             }
             if d.attack.as_ref().is_some_and(|a| a.every_ticks == 0) {
                 return Err(format!("dummy {:?}: every_ticks must be positive", d.name));

@@ -134,4 +134,37 @@
     sfx: [(10, "swing_light")],
     vfx: [(12, "trail_steel")],
   ),
+  (
+    // WP-025 status test move: the dummy swing with Poison buildup, so two hits proc it
+    // on a player (resistance 110). Not used by any golden.
+    id: "dummy_venom_slash",
+    anim: "dummy_venom_slash",
+    total_frames: 40,
+    stamina: 0,
+    fp: 0,
+    root_motion: [],
+    track_deg_per_tick: 0.0,
+    hyperarmor: None,
+    iframes: None,
+    cancel_attack_from: None,
+    cancel_dodge_from: None,
+    cancel_any_from: None,
+    next_chain: None,
+    hitboxes: [
+      (
+        frames: (12, 14),
+        shape: Capsule(a: (0.0, 1.2, 0.3), b: (0.0, 1.2, 1.8), radius: 0.3),
+        motion_value: 1.0,
+        phys: Neutral,
+        element: None,
+        poise_damage: 20,
+        status: [(kind: Poison, amount: 55)],
+        knockback: 0.4,
+        hitstop: 4,
+        tags: [],
+      ),
+    ],
+    sfx: [(10, "swing_light")],
+    vfx: [(12, "trail_steel")],
+  ),
 ]

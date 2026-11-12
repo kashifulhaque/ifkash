@@ -7,8 +7,10 @@
 //! `Command::SplitFlasks` applies only while it lasts. The rest ends when the player
 //! pushes the stick or presses any button other than `INTERACT`, or dies.
 //!
-//! Not built yet: curing statuses (no statuses exist; add it to [`rest`]), the other menu
-//! entries (level up, attune, travel, loadouts), and Lantern Ash.
+//! Resting also cures every status (meters and effects; buffs run on).
+//!
+//! Not built yet: the other menu entries (level up, attune, travel, loadouts), and Lantern
+//! Ash.
 
 use lf_content::scenario::Dummy;
 
@@ -18,6 +20,7 @@ use crate::combat::dummy::DummyScript;
 use crate::combat::hurtbox::Hurtbox;
 use crate::combat::moves::MoveTable;
 use crate::combat::poise::PoiseState;
+use crate::combat::status::StatusState;
 use crate::events::{Event, LifeEvent};
 use crate::input::{Command, TickInput, buttons};
 use crate::world::World;
@@ -90,7 +93,7 @@ pub fn rest(world: &mut World, lantern: usize) {
         a.stamina = a.max_stamina;
         a.fp = a.max_fp;
         a.inventory.refill_flasks();
-        // Cure statuses here once statuses exist.
+        crate::combat::status::cure_all(a);
     }
     world.state.flags.raise(&flags::lantern_lit(&l.id));
     world.state.respawn_lantern = Some(l.id.clone());
@@ -128,6 +131,7 @@ pub fn dummy_actor(d: &Dummy, hurtbox: Hurtbox, moves: &MoveTable) -> Actor {
             defense: Defense::from_data(&d.defense),
             ..Stats::default()
         },
+        status: StatusState::for_enemy(&d.resist, d.boss, &d.immune, d.can_go_mad),
         motor: Motor {
             grounded: true,
             ground_y: d.pos[1],

@@ -87,6 +87,7 @@ fn hash_ignores_comments_and_whitespace() {
             "scenarios/duel_backstab.ron",
             "scenarios/duel_parry.ron",
             "scenarios/duel_stance.ron",
+            "scenarios/duel_status.ron",
             "scenarios/m0_flat.ron",
             "scenarios/m2_range.ron",
             "scenarios/test_field.ron",
@@ -95,7 +96,8 @@ fn hash_ignores_comments_and_whitespace() {
         .to_vec();
         c.with_world(Some(&read("locomotion.ron")), scenarios)?
             .with_consumables(Some(&format!("// noise\n{}", read("consumables.ron"))))?
-            .with_projectiles(Some(&format!("// noise\n{}", read("projectiles.ron"))))
+            .with_projectiles(Some(&format!("// noise\n{}", read("projectiles.ron"))))?
+            .with_status(Some(&format!("// noise\n{}", read("status.ron"))))
     })
     .expect("loads");
     assert_eq!(base.content_hash(), other.content_hash());

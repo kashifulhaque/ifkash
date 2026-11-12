@@ -13,6 +13,7 @@ use crate::combat::hurtbox::Hurtbox;
 use crate::combat::moves::MoveState;
 use crate::combat::poise::PoiseState;
 use crate::combat::resolve::HitState;
+use crate::combat::status::StatusState;
 use crate::items::Inventory;
 use serde::{Deserialize, Serialize};
 
@@ -51,6 +52,8 @@ pub struct Actor {
     pub inventory: Inventory,
     /// Attributes, defenses, and the other inputs to damage. See `stats`.
     pub stats: stats::Stats,
+    /// Status meters, effects, and buffs. See `combat::status`.
+    pub status: StatusState,
 }
 
 /// Character controller state between ticks.

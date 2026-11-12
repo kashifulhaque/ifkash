@@ -372,6 +372,7 @@ fn m2_parry_riposte_parries_then_ripostes() {
             Event::StanceBreak(_) => "stance_break",
             Event::Life(_) => "life",
             Event::Projectile(_) => "projectile",
+            Event::StatusProc(_) => "status_proc",
         })
         .collect();
     assert_eq!(kinds, ["parry", "critical", "hit"], "{events:?}");

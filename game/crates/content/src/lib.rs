@@ -21,6 +21,7 @@ pub mod portfolio;
 pub mod projectiles;
 pub mod registry;
 pub mod scenario;
+pub mod status;
 pub mod validate;
 pub mod weapons;
 
@@ -32,6 +33,7 @@ pub use portfolio::{Portfolio, PortfolioContent};
 pub use projectiles::{Homing, ProjectileDef};
 pub use registry::{NumId, Registry};
 pub use scenario::{Lantern, Scenario};
+pub use status::StatusRules;
 pub use validate::{Issue, Severity, Validate};
 pub use weapons::{GuardStats, Weapon};
 
@@ -49,6 +51,8 @@ const LOCOMOTION_FILE: &str = "locomotion.ron";
 const CONSUMABLES_FILE: &str = "consumables.ron";
 /// The projectile definitions file (relative to the data root).
 const PROJECTILES_FILE: &str = "projectiles.ron";
+/// The status and buff rules file (relative to the data root).
+const STATUS_FILE: &str = "status.ron";
 
 /// Embedded copies of every data file, as `(path relative to the data root, text)`.
 /// A new data file needs a line here; the `embedded_matches_data_dir` test fails if one
@@ -86,6 +90,7 @@ const EMBEDDED_ATTRIBUTES: &str = include_str!("../../../data/attributes.ron");
 const EMBEDDED_LOCOMOTION: &str = include_str!("../../../data/locomotion.ron");
 const EMBEDDED_CONSUMABLES: &str = include_str!("../../../data/consumables.ron");
 const EMBEDDED_PROJECTILES: &str = include_str!("../../../data/projectiles.ron");
+const EMBEDDED_STATUS: &str = include_str!("../../../data/status.ron");
 const EMBEDDED_SCENARIOS: &[(&str, &str)] = &[
     (
         "scenarios/m0_flat.ron",
@@ -110,6 +115,10 @@ const EMBEDDED_SCENARIOS: &[(&str, &str)] = &[
     (
         "scenarios/duel_backstab.ron",
         include_str!("../../../data/scenarios/duel_backstab.ron"),
+    ),
+    (
+        "scenarios/duel_status.ron",
+        include_str!("../../../data/scenarios/duel_status.ron"),
     ),
 ];
 
@@ -139,6 +148,10 @@ pub struct Content {
     /// Projectile definitions from `projectiles.ron`; empty if the file is missing.
     #[cfg_attr(feature = "ts", ts(skip))]
     pub projectiles: Vec<ProjectileDef>,
+    /// Status effect and buff rules from `status.ron`. `None` only for partial data
+    /// directories (test fixtures); the simulation needs it.
+    #[cfg_attr(feature = "ts", ts(skip))]
+    pub status: Option<StatusRules>,
 }
 
 /// A failure to load content. Validation problems are [`Issue`]s instead.
@@ -238,6 +251,12 @@ impl Content {
         } else {
             None
         };
+        let status_path = dir.join(STATUS_FILE);
+        let status = if status_path.is_file() {
+            Some(read(&status_path)?)
+        } else {
+            None
+        };
         Self::from_sources(
             &read(&dir.join("registry.ron"))?,
             &read(&dir.join("attributes.ron"))?,
@@ -246,7 +265,8 @@ impl Content {
         )?
         .with_world(locomotion.as_deref(), list(SCENARIOS_DIR)?)?
         .with_consumables(consumables.as_deref())?
-        .with_projectiles(projectiles.as_deref())
+        .with_projectiles(projectiles.as_deref())?
+        .with_status(status.as_deref())
     }
 
     /// Loads the content baked into this crate with `include_str!`.
@@ -265,7 +285,8 @@ impl Content {
         )?
         .with_world(Some(EMBEDDED_LOCOMOTION), own(EMBEDDED_SCENARIOS))?
         .with_consumables(Some(EMBEDDED_CONSUMABLES))?
-        .with_projectiles(Some(EMBEDDED_PROJECTILES))
+        .with_projectiles(Some(EMBEDDED_PROJECTILES))?
+        .with_status(Some(EMBEDDED_STATUS))
     }
 
     /// Builds content from RON text. `moves` and `weapons` are `(relative path, text)`.
@@ -297,6 +318,7 @@ impl Content {
             scenarios: BTreeMap::new(),
             consumables: None,
             projectiles: Vec::new(),
+            status: None,
         };
         content.check_registered()?;
         Ok(content)
@@ -351,6 +373,20 @@ impl Content {
             .unwrap_or_default();
         for (i, p) in self.projectiles.iter().enumerate() {
             self.check_id(PROJECTILES_FILE, format!("[{i}].id"), &p.id)?;
+        }
+        Ok(self)
+    }
+
+    /// Adds the status rules file (RON text, if any). Fails on a buff that has no
+    /// registry entry.
+    pub fn with_status(mut self, text: Option<&str>) -> Result<Self, ContentError> {
+        self.status = text
+            .map(|t| parse::<StatusRules>(STATUS_FILE, t))
+            .transpose()?;
+        if let Some(s) = &self.status {
+            for (field, id) in s.references() {
+                self.check_id(STATUS_FILE, field, id)?;
+            }
         }
         Ok(self)
     }

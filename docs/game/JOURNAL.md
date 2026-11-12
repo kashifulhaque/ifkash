@@ -45,7 +45,10 @@ Copy this block to the top of the entries and fill it in as you go:
     `world.rs`) and rehashed the goldens.
   - WP-023: done by sonnet (no escalation); commit `0e40d33`; 190K worker tokens. Also
     wired `guard::apply_incoming_hit` into the resolver.
-  - WP-024: in progress (sonnet), main checkout
+  - WP-024: done by sonnet (no escalation); commit `8bfb854`; 230K worker tokens. The
+    orchestrator merged it onto WP-029 (13 conflicts; renumbered its WASM event kinds to
+    3-6, moved dummy poise and script into `dummy_actor`, fixed nesting the keep-both
+    merge got wrong) and added kinds 3-6 to the frontend decoder table.
   - WP-027: in progress (sonnet), worktree
   - WP-028: done by sonnet (no escalation) in a worktree; commits `9316e4b` (rebased) and
     the orchestrator's decoder fix; 226K worker tokens. The worker's decoder guessed the

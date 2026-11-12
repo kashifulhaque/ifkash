@@ -147,6 +147,38 @@ const EMBEDDED_MOVES: &[(&str, &str)] = &[
         include_str!("../../../data/moves/enemies/acolyte_bell.ron"),
     ),
     (
+        "moves/enemies/lantern_thief.ron",
+        include_str!("../../../data/moves/enemies/lantern_thief.ron"),
+    ),
+    (
+        "moves/enemies/rime_wolf.ron",
+        include_str!("../../../data/moves/enemies/rime_wolf.ron"),
+    ),
+    (
+        "moves/enemies/mimic_chest.ron",
+        include_str!("../../../data/moves/enemies/mimic_chest.ron"),
+    ),
+    (
+        "moves/enemies/bramble_brute.ron",
+        include_str!("../../../data/moves/enemies/bramble_brute.ron"),
+    ),
+    (
+        "moves/enemies/choir_knight.ron",
+        include_str!("../../../data/moves/enemies/choir_knight.ron"),
+    ),
+    (
+        "moves/enemies/gray_captain.ron",
+        include_str!("../../../data/moves/enemies/gray_captain.ron"),
+    ),
+    (
+        "moves/enemies/foundry_smith.ron",
+        include_str!("../../../data/moves/enemies/foundry_smith.ron"),
+    ),
+    (
+        "moves/enemies/bell_warden.ron",
+        include_str!("../../../data/moves/enemies/bell_warden.ron"),
+    ),
+    (
         "moves/bosses/test_boss.ron",
         include_str!("../../../data/moves/bosses/test_boss.ron"),
     ),
@@ -269,6 +301,38 @@ const EMBEDDED_SCENARIOS: &[(&str, &str)] = &[
         include_str!("../../../data/scenarios/fight_acolyte_bell.ron"),
     ),
     (
+        "scenarios/fight_lantern_thief.ron",
+        include_str!("../../../data/scenarios/fight_lantern_thief.ron"),
+    ),
+    (
+        "scenarios/fight_rime_wolves.ron",
+        include_str!("../../../data/scenarios/fight_rime_wolves.ron"),
+    ),
+    (
+        "scenarios/fight_mimic.ron",
+        include_str!("../../../data/scenarios/fight_mimic.ron"),
+    ),
+    (
+        "scenarios/fight_bramble_brute.ron",
+        include_str!("../../../data/scenarios/fight_bramble_brute.ron"),
+    ),
+    (
+        "scenarios/fight_choir_knight.ron",
+        include_str!("../../../data/scenarios/fight_choir_knight.ron"),
+    ),
+    (
+        "scenarios/fight_gray_captain.ron",
+        include_str!("../../../data/scenarios/fight_gray_captain.ron"),
+    ),
+    (
+        "scenarios/fight_foundry_smith.ron",
+        include_str!("../../../data/scenarios/fight_foundry_smith.ron"),
+    ),
+    (
+        "scenarios/fight_bell_warden.ron",
+        include_str!("../../../data/scenarios/fight_bell_warden.ron"),
+    ),
+    (
         "scenarios/boss_gate.ron",
         include_str!("../../../data/scenarios/boss_gate.ron"),
     ),
@@ -360,6 +424,38 @@ const EMBEDDED_ENEMIES: &[(&str, &str)] = &[
     (
         "enemies/acolyte_bell.ron",
         include_str!("../../../data/enemies/acolyte_bell.ron"),
+    ),
+    (
+        "enemies/lantern_thief.ron",
+        include_str!("../../../data/enemies/lantern_thief.ron"),
+    ),
+    (
+        "enemies/rime_wolf.ron",
+        include_str!("../../../data/enemies/rime_wolf.ron"),
+    ),
+    (
+        "enemies/mimic_chest.ron",
+        include_str!("../../../data/enemies/mimic_chest.ron"),
+    ),
+    (
+        "enemies/bramble_brute.ron",
+        include_str!("../../../data/enemies/bramble_brute.ron"),
+    ),
+    (
+        "enemies/choir_knight.ron",
+        include_str!("../../../data/enemies/choir_knight.ron"),
+    ),
+    (
+        "enemies/gray_captain.ron",
+        include_str!("../../../data/enemies/gray_captain.ron"),
+    ),
+    (
+        "enemies/foundry_smith.ron",
+        include_str!("../../../data/enemies/foundry_smith.ron"),
+    ),
+    (
+        "enemies/bell_warden.ron",
+        include_str!("../../../data/enemies/bell_warden.ron"),
     ),
 ];
 

@@ -1,0 +1,29 @@
+// The Rime Wolf (registry 7081): a pack hunter. Source: docs/game/05-enemies-and-bosses.md,
+// "Enemy roster" (HP 160, packs of 3-4, circles, then one lunges at a time; Rimeshelf, so
+// Rime buildup and a Rime resistance). The `pack` rule (ai/special/pack.rs) makes
+// packmates circle one way and lets only one of them attack at a time; the 12 m radius,
+// stats, and cooldowns are tuning.
+#![enable(implicit_some)]
+(
+  id: "rime_wolf",
+  model: "wolf_rime",
+  hp: 160,
+  poise: 15,
+  defense: (flat: 25),
+  resist: (immunity: 120, robustness: 250, composure: 100),
+  can_go_mad: true,
+  glimmer: 40,
+  attack: 85,
+  speed_percent: 140,
+  perception: (sight_deg: 140.0, sight_m: 22.0, hearing_mult: 1.3),
+  moveset: "enemies/rime_wolf.ron",
+  pack: (radius_m: 12.0),
+  options: [
+    (move: "rw_lunge", when: [DistBetween(2.5, 6.0), FacingWithin(25.0)], weight: 5, cooldown: 100),
+    (move: "rw_bite", when: [DistBelow(1.7), FacingWithin(40.0)], weight: 3, cooldown: 45),
+    (behavior: Retreat(dur: 20), when: [DistBelow(2.0)], weight: 3, cooldown: 40),
+    (behavior: Strafe(dur: 45), when: [DistBetween(2.0, 9.0)], weight: 8),
+    (behavior: Approach(dur: 25), when: [DistAbove(7.0)], weight: 4),
+  ],
+  drops: [(item: "itm_glimmer_vial", chance: 0.04)],
+)

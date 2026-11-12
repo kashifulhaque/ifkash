@@ -1,0 +1,16 @@
+// WP-037 fight: a Choir Knight 7 m ahead of the player.
+(
+  spawn: (0.0, 0.0, 0.0),
+  spawn_yaw: 0.0,
+  kill_y: -50.0,
+  heightfield: None,
+  boxes: [
+    (name: "floor", center: (0.0, -0.5, 0.0), half_extents: (25.0, 0.5, 25.0)),
+  ],
+  lanterns: [
+    (id: "lantern_start", pos: (0.0, 0.0, -3.0), yaw: 0.0),
+  ],
+  enemies: [
+    (name: "choir", enemy: "choir_knight", pos: (0.0, 0.0, 7.0), yaw: 3.1415927),
+  ],
+)

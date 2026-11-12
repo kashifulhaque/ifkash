@@ -1,0 +1,13 @@
+# WP-037 golden: a pack of three Rime Wolves circles the player and lunges one at a time (record with `lf-tools replay record-script`). Each line:
+# <ticks> <move_x> <move_z> [BUTTONS]. The player spawns at the origin facing +Z in fight_rime_wolves.
+seed 42
+scenario fight_rime_wolves
+200 0 0             # stand: the pack circles and one lunges at a time
+1   0 0  LOCK
+5   0 0
+1   0 0  LIGHT
+40  0 0
+1   0 0  LIGHT
+40  0 0
+1   0 0  LIGHT
+60  0 0

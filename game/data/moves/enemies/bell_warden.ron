@@ -1,0 +1,104 @@
+// Enemy moves for WP-037 (the Bell Warden). Registry numbers 8670-8672. Schema:
+// crates/content/src/moves.rs. Every attack telegraphs for at least 12 frames before its
+// first active hitbox frame or projectile (docs/game/05-enemies-and-bosses.md, "Enemy
+// roster"; checked by the validator). Damage comes from the enemy's `attack` in
+// enemies/*.ron, so `motion_value` is the only multiplier here. Numbers are tuning.
+#![enable(implicit_some)]
+[
+  (
+    // First strike of the hand bell. The AI starts bw_strike_2 when this ends.
+    id: "bw_strike_1",
+    anim: "bw_strike_1",
+    total_frames: 44,
+    stamina: 0,
+    fp: 0,
+    root_motion: [(0, 0.0), (14, 0.0), (17, 0.16), (44, 0.16)],
+    track_deg_per_tick: 5.0,
+    hyperarmor: None,
+    iframes: None,
+    cancel_attack_from: None,
+    cancel_dodge_from: None,
+    cancel_any_from: None,
+    next_chain: "bw_strike_2",
+    hitboxes: [
+      (
+        frames: (16, 19),
+        shape: Capsule(a: (0.0, 1.2, 0.3), b: (0.0, 1.2, 1.7), radius: 0.4),
+        motion_value: 0.9,
+        phys: Blunt,
+        element: None,
+        poise_damage: 18,
+        status: [],
+        knockback: 0.4,
+        hitstop: 4,
+        tags: [],
+      ),
+    ],
+    sfx: [(14, "bell_swing"), (16, "bell_ring")],
+    vfx: [],
+  ),
+  (
+    // Second strike. The third strike of the chain is the stun wave.
+    id: "bw_strike_2",
+    anim: "bw_strike_2",
+    total_frames: 44,
+    stamina: 0,
+    fp: 0,
+    root_motion: [(0, 0.0), (14, 0.0), (17, 0.16), (44, 0.16)],
+    track_deg_per_tick: 5.0,
+    hyperarmor: None,
+    iframes: None,
+    cancel_attack_from: None,
+    cancel_dodge_from: None,
+    cancel_any_from: None,
+    next_chain: "bw_wave",
+    hitboxes: [
+      (
+        frames: (16, 19),
+        shape: Capsule(a: (0.0, 1.2, 0.3), b: (0.0, 1.2, 1.7), radius: 0.4),
+        motion_value: 1.0,
+        phys: Blunt,
+        element: None,
+        poise_damage: 18,
+        status: [],
+        knockback: 0.4,
+        hitstop: 4,
+        tags: [],
+      ),
+    ],
+    sfx: [(14, "bell_swing"), (16, "bell_ring")],
+    vfx: [],
+  ),
+  (
+    // Every third strike: the bell rings out a stun wave within 3.5 m.
+    id: "bw_wave",
+    anim: "bw_wave",
+    total_frames: 80,
+    stamina: 0,
+    fp: 0,
+    root_motion: [(0, 0.0), (80, 0.0)],
+    track_deg_per_tick: 0.0,
+    hyperarmor: (from: 18, to: 44),
+    iframes: None,
+    cancel_attack_from: None,
+    cancel_dodge_from: None,
+    cancel_any_from: None,
+    next_chain: None,
+    hitboxes: [
+      (
+        frames: (36, 40),
+        shape: Sphere(center: (0.0, 1.0, 0.0), radius: 3.5),
+        motion_value: 0.8,
+        phys: Neutral,
+        element: None,
+        poise_damage: 90,
+        status: [],
+        knockback: 1.2,
+        hitstop: 6,
+        tags: [Unblockable],
+      ),
+    ],
+    sfx: [(24, "bell_lift"), (36, "bell_ring_big")],
+    vfx: [(36, "ring_bell")],
+  ),
+]

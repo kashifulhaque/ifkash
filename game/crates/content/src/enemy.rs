@@ -73,6 +73,13 @@ pub struct EnemyDef {
     /// It gets back up after dying, unless something stops it (the Whitewarden Skeleton).
     #[serde(default)]
     pub revive: Option<Revive>,
+    /// It fights as part of a pack (the Rime Wolf): packmates circle the same way, and only
+    /// one of them is in an attack move at a time (WP-037).
+    #[serde(default)]
+    pub pack: Option<Pack>,
+    /// It lies dormant as a chest until woken (the Mimic Chest, WP-037).
+    #[serde(default)]
+    pub disguise: Option<Disguise>,
     /// What it picks from in Combat.
     pub options: Vec<AiOption>,
     /// Item drops. Not rolled yet (enemy drops arrive later).
@@ -107,6 +114,28 @@ pub struct EnemyDef {
 
 fn full_speed() -> u16 {
     100
+}
+
+/// A pack rule (docs "Enemy roster", Rime Wolf: "circles, then one lunges at a time"). A
+/// packmate is any other living enemy of the same definition within `radius_m` that is in
+/// Combat.
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Pack {
+    /// How close a packmate has to be to count, in meters.
+    pub radius_m: f32,
+}
+
+/// A disguise rule (docs/game/02-world.md, treasure chest row: "One mimic chest exists").
+/// While Idle the enemy is a chest: it hears and sees nothing. It wakes into the fight when
+/// the player comes within `wake_m`, holds `INTERACT` within `interact_m`, or hurts it.
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Disguise {
+    /// Waking distance for a player who just walks up, in meters.
+    pub wake_m: f32,
+    /// Distance from which pressing `INTERACT` (trying to open it) wakes it, in meters.
+    pub interact_m: f32,
 }
 
 /// A revive rule (docs "Enemy roster", Whitewarden Skeleton): `after_ticks` after dying
@@ -500,6 +529,18 @@ impl EnemyDef {
             out.push((
                 "reflects_formulae.cracked_ticks".to_owned(),
                 "must be positive".to_owned(),
+            ));
+        }
+        if self.pack.is_some_and(|p| p.radius_m <= 0.0) {
+            out.push(("pack.radius_m".to_owned(), "must be positive".to_owned()));
+        }
+        if self
+            .disguise
+            .is_some_and(|d| d.wake_m <= 0.0 || d.interact_m < d.wake_m)
+        {
+            out.push((
+                "disguise".to_owned(),
+                "wake_m must be positive and interact_m at least wake_m".to_owned(),
             ));
         }
         if self.guard.is_some() && self.stamina == 0 {

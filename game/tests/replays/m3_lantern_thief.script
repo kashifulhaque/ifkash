@@ -1,0 +1,10 @@
+# WP-037 golden: a Lantern Thief lobs pitch bombs from range, then runs when the player rushes it (record with `lf-tools replay record-script`). Each line:
+# <ticks> <move_x> <move_z> [BUTTONS]. The player spawns at the origin facing +Z in fight_lantern_thief.
+seed 41
+scenario fight_lantern_thief
+200 0 0             # stand: the thief notices and throws
+1   0 0  LOCK
+100 0 0
+60  0 127           # rush it: it flees
+1   0 0  LIGHT
+60  0 0

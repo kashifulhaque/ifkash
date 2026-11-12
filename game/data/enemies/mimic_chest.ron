@@ -1,0 +1,28 @@
+// The Mimic Chest (registry 7082): the surprise. Source: docs/game/05-enemies-and-bosses.md,
+// "Enemy roster" (HP 900; one in the game; the chest's latch is on the wrong side as a
+// hint, which is the model's job) and docs/game/02-world.md (treasure chest row). The
+// `disguise` rule (ai/special/mimic.rs) keeps it a chest until the player comes within
+// 2 m, tries to open it (INTERACT within 3 m), or hits it. Stats are tuning.
+#![enable(implicit_some)]
+(
+  id: "mimic_chest",
+  model: "chest_mimic",
+  hp: 900,
+  poise: 60,
+  defense: (flat: 70),
+  resist: (immunity: 200, robustness: 200, composure: 200),
+  glimmer: 800,
+  attack: 110,
+  speed_percent: 90,
+  perception: (sight_deg: 150.0, sight_m: 16.0, hearing_mult: 1.0),
+  moveset: "enemies/mimic_chest.ron",
+  disguise: (wake_m: 2.0, interact_m: 3.0),
+  options: [
+    (move: "mc_chomp", when: [DistBelow(2.4), FacingWithin(40.0)], weight: 6, cooldown: 60),
+    (move: "mc_slam", when: [DistBelow(2.8), FacingWithin(50.0)], weight: 4, cooldown: 90),
+    (move: "mc_hop", when: [DistBetween(2.6, 6.0), FacingWithin(30.0)], weight: 5, cooldown: 100),
+    (behavior: Approach(dur: 30), when: [DistAbove(2.4)], weight: 4),
+    (behavior: Strafe(dur: 30), when: [DistBetween(1.5, 4.0)], weight: 1, cooldown: 120),
+  ],
+  drops: [(item: "itm_glimmer_vial_large", chance: 1.0)],
+)

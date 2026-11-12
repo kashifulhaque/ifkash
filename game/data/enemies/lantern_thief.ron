@@ -1,0 +1,29 @@
+// The Lantern Thief (registry 7080): an ambusher and thrower. Source:
+// docs/game/05-enemies-and-bosses.md, "Enemy roster" (HP 140; hides on roofs and in
+// ruins, throws pitch bombs, flees when approached). Hiding is the scenario's placement
+// (a spawn on a roof); it throws from the ranged token pool and runs when the player gets
+// within 3.5 m. It doesn't steal: the roster has no steal rule. Defense, speed, and
+// attack are tuning.
+#![enable(implicit_some)]
+(
+  id: "lantern_thief",
+  model: "thief_lantern",
+  hp: 140,
+  poise: 12,
+  defense: (flat: 15),
+  resist: (immunity: 100, robustness: 100, composure: 100),
+  can_go_mad: true,
+  glimmer: 55,
+  attack: 90,
+  speed_percent: 115,
+  perception: (sight_deg: 130.0, sight_m: 24.0, hearing_mult: 1.2),
+  moveset: "enemies/lantern_thief.ron",
+  options: [
+    (behavior: Flee(dur: 40), when: [DistBelow(3.5)], weight: 8, cooldown: 70),
+    (move: "lt_stab", when: [DistBelow(1.6), FacingWithin(45.0)], weight: 6, cooldown: 40),
+    (move: "lt_bomb", when: [DistBetween(5.0, 14.0), FacingWithin(50.0)], weight: 8, cooldown: 100),
+    (behavior: Strafe(dur: 35), when: [DistBetween(4.0, 18.0)], weight: 2),
+    (behavior: Retreat(dur: 25), when: [DistBelow(5.0)], weight: 3),
+  ],
+  drops: [(item: "itm_glimmer_vial", chance: 0.12)],
+)

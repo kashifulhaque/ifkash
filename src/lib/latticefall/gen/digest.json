@@ -143,9 +143,109 @@
     "start_max": 16,
     "start_min": 4
   },
-  "contentHash": "12349800714265159623",
-  "contentHashHex": "ab634e514ca3e7c7",
+  "contentHash": "5860015478657563810",
+  "contentHashHex": "5152f507b7acbca2",
   "moves": [
+    {
+      "anim": "sentry_overhead",
+      "file": "moves/bosses/b01.ron",
+      "fp": 0,
+      "id": "b01_overhead",
+      "num": 9100,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 74
+    },
+    {
+      "anim": "sentry_sweep",
+      "file": "moves/bosses/b01.ron",
+      "fp": 0,
+      "id": "b01_sweep",
+      "num": 9101,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 66
+    },
+    {
+      "anim": "sentry_bash",
+      "file": "moves/bosses/b01.ron",
+      "fp": 0,
+      "id": "b01_bash",
+      "num": 9102,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 46
+    },
+    {
+      "anim": "sentry_combo_1",
+      "file": "moves/bosses/b01.ron",
+      "fp": 0,
+      "id": "b01_combo_1",
+      "num": 9103,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 40
+    },
+    {
+      "anim": "sentry_combo_2",
+      "file": "moves/bosses/b01.ron",
+      "fp": 0,
+      "id": "b01_combo_2",
+      "num": 9104,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 34
+    },
+    {
+      "anim": "sentry_combo_3",
+      "file": "moves/bosses/b01.ron",
+      "fp": 0,
+      "id": "b01_combo_3",
+      "num": 9105,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 60
+    },
+    {
+      "anim": "boss_swipe",
+      "file": "moves/bosses/test_boss.ron",
+      "fp": 0,
+      "id": "tb_swipe",
+      "num": 9200,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 60
+    },
+    {
+      "anim": "boss_slam",
+      "file": "moves/bosses/test_boss.ron",
+      "fp": 0,
+      "id": "tb_slam",
+      "num": 9201,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 72
+    },
+    {
+      "anim": "boss_roar",
+      "file": "moves/bosses/test_boss.ron",
+      "fp": 0,
+      "id": "tb_roar",
+      "num": 9202,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 45
+    },
+    {
+      "anim": "pillar_pulse",
+      "file": "moves/bosses/test_boss.ron",
+      "fp": 0,
+      "id": "tb_pillar_pulse",
+      "num": 9203,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 64
+    },
     {
       "anim": "roll_quick",
       "file": "moves/common.ron",
@@ -257,6 +357,136 @@
       "totalFrames": 44
     },
     {
+      "anim": "bw_strike_1",
+      "file": "moves/enemies/bell_warden.ron",
+      "fp": 0,
+      "id": "bw_strike_1",
+      "num": 8670,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 44
+    },
+    {
+      "anim": "bw_strike_2",
+      "file": "moves/enemies/bell_warden.ron",
+      "fp": 0,
+      "id": "bw_strike_2",
+      "num": 8671,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 44
+    },
+    {
+      "anim": "bw_wave",
+      "file": "moves/enemies/bell_warden.ron",
+      "fp": 0,
+      "id": "bw_wave",
+      "num": 8672,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 80
+    },
+    {
+      "anim": "bb_swing_1",
+      "file": "moves/enemies/bramble_brute.ron",
+      "fp": 0,
+      "id": "bb_swing_1",
+      "num": 8630,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 70
+    },
+    {
+      "anim": "bb_swing_2",
+      "file": "moves/enemies/bramble_brute.ron",
+      "fp": 0,
+      "id": "bb_swing_2",
+      "num": 8631,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 64
+    },
+    {
+      "anim": "bb_slam",
+      "file": "moves/enemies/bramble_brute.ron",
+      "fp": 0,
+      "id": "bb_slam",
+      "num": 8632,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 90
+    },
+    {
+      "anim": "ck_halberd_1",
+      "file": "moves/enemies/choir_knight.ron",
+      "fp": 0,
+      "id": "ck_halberd_1",
+      "num": 8640,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 60
+    },
+    {
+      "anim": "ck_halberd_2",
+      "file": "moves/enemies/choir_knight.ron",
+      "fp": 0,
+      "id": "ck_halberd_2",
+      "num": 8641,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 68
+    },
+    {
+      "anim": "ck_thrust",
+      "file": "moves/enemies/choir_knight.ron",
+      "fp": 0,
+      "id": "ck_thrust",
+      "num": 8642,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 56
+    },
+    {
+      "anim": "ck_bell",
+      "file": "moves/enemies/choir_knight.ron",
+      "fp": 0,
+      "id": "ck_bell",
+      "num": 8643,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 90
+    },
+    {
+      "anim": "fs_hammer",
+      "file": "moves/enemies/foundry_smith.ron",
+      "fp": 0,
+      "id": "fs_hammer",
+      "num": 8660,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 150
+    },
+    {
+      "anim": "fs_sweep",
+      "file": "moves/enemies/foundry_smith.ron",
+      "fp": 0,
+      "id": "fs_sweep",
+      "num": 8661,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 76
+    },
+    {
+      "anim": "fs_tongs",
+      "file": "moves/enemies/foundry_smith.ron",
+      "fp": 0,
+      "id": "fs_tongs",
+      "num": 8662,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 52
+    },
+    {
       "anim": "ga_shoot",
       "file": "moves/enemies/gray_archer.ron",
       "fp": 0,
@@ -275,6 +505,56 @@
       "stamina": 0,
       "stub": false,
       "totalFrames": 46
+    },
+    {
+      "anim": "gc_slash",
+      "file": "moves/enemies/gray_captain.ron",
+      "fp": 0,
+      "id": "gc_slash",
+      "num": 8650,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 74
+    },
+    {
+      "anim": "gc_overhead",
+      "file": "moves/enemies/gray_captain.ron",
+      "fp": 0,
+      "id": "gc_overhead",
+      "num": 8651,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 84
+    },
+    {
+      "anim": "gc_thrust",
+      "file": "moves/enemies/gray_captain.ron",
+      "fp": 0,
+      "id": "gc_thrust",
+      "num": 8652,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 54
+    },
+    {
+      "anim": "gc_cut",
+      "file": "moves/enemies/gray_captain.ron",
+      "fp": 0,
+      "id": "gc_cut",
+      "num": 8653,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 50
+    },
+    {
+      "anim": "gc_flurry",
+      "file": "moves/enemies/gray_captain.ron",
+      "fp": 0,
+      "id": "gc_flurry",
+      "num": 8654,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 52
     },
     {
       "anim": "gk_shield_advance",
@@ -375,6 +655,76 @@
       "stamina": 0,
       "stub": false,
       "totalFrames": 66
+    },
+    {
+      "anim": "lt_bomb",
+      "file": "moves/enemies/lantern_thief.ron",
+      "fp": 0,
+      "id": "lt_bomb",
+      "num": 8600,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 60
+    },
+    {
+      "anim": "lt_stab",
+      "file": "moves/enemies/lantern_thief.ron",
+      "fp": 0,
+      "id": "lt_stab",
+      "num": 8601,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 36
+    },
+    {
+      "anim": "mc_chomp",
+      "file": "moves/enemies/mimic_chest.ron",
+      "fp": 0,
+      "id": "mc_chomp",
+      "num": 8620,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 62
+    },
+    {
+      "anim": "mc_slam",
+      "file": "moves/enemies/mimic_chest.ron",
+      "fp": 0,
+      "id": "mc_slam",
+      "num": 8621,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 74
+    },
+    {
+      "anim": "mc_hop",
+      "file": "moves/enemies/mimic_chest.ron",
+      "fp": 0,
+      "id": "mc_hop",
+      "num": 8622,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 70
+    },
+    {
+      "anim": "rw_lunge",
+      "file": "moves/enemies/rime_wolf.ron",
+      "fp": 0,
+      "id": "rw_lunge",
+      "num": 8610,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 48
+    },
+    {
+      "anim": "rw_bite",
+      "file": "moves/enemies/rime_wolf.ron",
+      "fp": 0,
+      "id": "rw_bite",
+      "num": 8611,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 38
     },
     {
       "anim": "th_lunge",

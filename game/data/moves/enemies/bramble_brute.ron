@@ -1,0 +1,104 @@
+// Enemy moves for WP-037 (the Bramble Brute). Registry numbers 8630-8632. Schema:
+// crates/content/src/moves.rs. Every attack telegraphs for at least 12 frames before its
+// first active hitbox frame or projectile (docs/game/05-enemies-and-bosses.md, "Enemy
+// roster"; checked by the validator). Damage comes from the enemy's `attack` in
+// enemies/*.ron, so `motion_value` is the only multiplier here. Numbers are tuning.
+#![enable(implicit_some)]
+[
+  (
+    // First swing of a slow, long combo. The AI starts bb_swing_2 when this ends.
+    id: "bb_swing_1",
+    anim: "bb_swing_1",
+    total_frames: 70,
+    stamina: 0,
+    fp: 0,
+    root_motion: [(0, 0.0), (20, 0.0), (24, 0.24), (70, 0.24)],
+    track_deg_per_tick: 3.0,
+    hyperarmor: None,
+    iframes: None,
+    cancel_attack_from: None,
+    cancel_dodge_from: None,
+    cancel_any_from: None,
+    next_chain: "bb_swing_2",
+    hitboxes: [
+      (
+        frames: (24, 28),
+        shape: Capsule(a: (0.0, 1.3, 0.3), b: (0.0, 1.3, 2.0), radius: 0.45),
+        motion_value: 1.1,
+        phys: Slash,
+        element: None,
+        poise_damage: 22,
+        status: [],
+        knockback: 0.6,
+        hitstop: 5,
+        tags: [],
+      ),
+    ],
+    sfx: [(20, "swing_heavy")],
+    vfx: [(24, "trail_thorn")],
+  ),
+  (
+    // Backhand. Chains into the slam.
+    id: "bb_swing_2",
+    anim: "bb_swing_2",
+    total_frames: 64,
+    stamina: 0,
+    fp: 0,
+    root_motion: [(0, 0.0), (18, 0.0), (22, 0.24), (64, 0.24)],
+    track_deg_per_tick: 3.0,
+    hyperarmor: None,
+    iframes: None,
+    cancel_attack_from: None,
+    cancel_dodge_from: None,
+    cancel_any_from: None,
+    next_chain: "bb_slam",
+    hitboxes: [
+      (
+        frames: (22, 26),
+        shape: Capsule(a: (0.0, 1.3, 0.3), b: (0.0, 1.3, 2.0), radius: 0.45),
+        motion_value: 1.2,
+        phys: Slash,
+        element: None,
+        poise_damage: 24,
+        status: [],
+        knockback: 0.6,
+        hitstop: 5,
+        tags: [],
+      ),
+    ],
+    sfx: [(18, "swing_heavy")],
+    vfx: [],
+  ),
+  (
+    // Overhead slam that ends the combo. Hyperarmor through the wind-up.
+    id: "bb_slam",
+    anim: "bb_slam",
+    total_frames: 90,
+    stamina: 0,
+    fp: 0,
+    root_motion: [(0, 0.0), (30, 0.0), (36, 0.32), (90, 0.32)],
+    track_deg_per_tick: 2.0,
+    hyperarmor: (from: 26, to: 40),
+    iframes: None,
+    cancel_attack_from: None,
+    cancel_dodge_from: None,
+    cancel_any_from: None,
+    next_chain: None,
+    hitboxes: [
+      (
+        frames: (34, 38),
+        shape: Sphere(center: (0.0, 0.6, 1.7), radius: 1.3),
+        motion_value: 1.8,
+        phys: Blunt,
+        element: None,
+        poise_damage: 50,
+        status: [],
+        knockback: 1.2,
+        hitstop: 7,
+        tags: [],
+      ),
+    ],
+    sfx: [(26, "swing_heavy")],
+    vfx: [(34, "dust_ring")],
+  ),
+]

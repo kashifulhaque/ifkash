@@ -1,0 +1,104 @@
+// Enemy moves for WP-037 (the Mimic Chest). Registry numbers 8620-8622. Schema:
+// crates/content/src/moves.rs. Every attack telegraphs for at least 12 frames before its
+// first active hitbox frame or projectile (docs/game/05-enemies-and-bosses.md, "Enemy
+// roster"; checked by the validator). Damage comes from the enemy's `attack` in
+// enemies/*.ron, so `motion_value` is the only multiplier here. Numbers are tuning.
+#![enable(implicit_some)]
+[
+  (
+    // Lunges open and snaps shut. Hyperarmor from the telegraph on.
+    id: "mc_chomp",
+    anim: "mc_chomp",
+    total_frames: 62,
+    stamina: 0,
+    fp: 0,
+    root_motion: [(0, 0.0), (18, 0.0), (22, 0.32), (62, 0.32)],
+    track_deg_per_tick: 5.0,
+    hyperarmor: (from: 16, to: 26),
+    iframes: None,
+    cancel_attack_from: None,
+    cancel_dodge_from: None,
+    cancel_any_from: None,
+    next_chain: None,
+    hitboxes: [
+      (
+        frames: (20, 24),
+        shape: Capsule(a: (0.0, 0.7, 0.3), b: (0.0, 0.7, 1.7), radius: 0.6),
+        motion_value: 1.6,
+        phys: Pierce,
+        element: None,
+        poise_damage: 40,
+        status: [],
+        knockback: 0.8,
+        hitstop: 6,
+        tags: [],
+      ),
+    ],
+    sfx: [(14, "chest_creak")],
+    vfx: [(20, "trail_dull")],
+  ),
+  (
+    // Rears up and slams its lid down in front of it.
+    id: "mc_slam",
+    anim: "mc_slam",
+    total_frames: 74,
+    stamina: 0,
+    fp: 0,
+    root_motion: [(0, 0.0), (24, 0.0), (28, 0.2), (74, 0.2)],
+    track_deg_per_tick: 4.0,
+    hyperarmor: None,
+    iframes: None,
+    cancel_attack_from: None,
+    cancel_dodge_from: None,
+    cancel_any_from: None,
+    next_chain: None,
+    hitboxes: [
+      (
+        frames: (26, 30),
+        shape: Sphere(center: (0.0, 0.4, 1.4), radius: 1.3),
+        motion_value: 1.4,
+        phys: Blunt,
+        element: None,
+        poise_damage: 35,
+        status: [],
+        knockback: 1.0,
+        hitstop: 6,
+        tags: [],
+      ),
+    ],
+    sfx: [(18, "chest_creak")],
+    vfx: [],
+  ),
+  (
+    // Hops forward on its hinges and lands on the player.
+    id: "mc_hop",
+    anim: "mc_hop",
+    total_frames: 70,
+    stamina: 0,
+    fp: 0,
+    root_motion: [(0, 0.0), (18, 0.0), (26, 3.5), (70, 3.6)],
+    track_deg_per_tick: 6.0,
+    hyperarmor: None,
+    iframes: None,
+    cancel_attack_from: None,
+    cancel_dodge_from: None,
+    cancel_any_from: None,
+    next_chain: None,
+    hitboxes: [
+      (
+        frames: (22, 28),
+        shape: Sphere(center: (0.0, 0.6, 0.8), radius: 1.0),
+        motion_value: 1.2,
+        phys: Blunt,
+        element: None,
+        poise_damage: 30,
+        status: [],
+        knockback: 0.8,
+        hitstop: 5,
+        tags: [],
+      ),
+    ],
+    sfx: [(16, "chest_creak")],
+    vfx: [],
+  ),
+]

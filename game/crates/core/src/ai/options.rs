@@ -130,7 +130,8 @@ pub fn eligible(world: &World, me: Id, target: Id, t: &AiTuning) -> Vec<usize> {
                 && o.when.iter().all(|c| holds(c, &x))
                 && match o.kind {
                     OptionKind::Move { .. } => {
-                        free && tokens::available(world, me, target, pool(o.kind, def), t)
+                        free && super::special::pack::may_attack(world, me)
+                            && tokens::available(world, me, target, pool(o.kind, def), t)
                     }
                     OptionKind::Behavior(_) => true,
                 }
@@ -246,7 +247,13 @@ fn start_option(world: &mut World, me: Id, target: Id, i: usize) {
 
 /// Starts a behavior for its duration. A strafe draws its direction from the `ai` stream.
 pub fn start_behavior(world: &mut World, me: Id, beh: Behavior) {
-    let left = matches!(beh, Behavior::Strafe { .. }) && world.rng.ai.next_u32() & 1 == 1;
+    let mut left = matches!(beh, Behavior::Strafe { .. }) && world.rng.ai.next_u32() & 1 == 1;
+    // A pack circles one way (WP-037).
+    if matches!(beh, Behavior::Strafe { .. })
+        && let Some(l) = super::special::pack::circle_left(world, me)
+    {
+        left = l;
+    }
     if let Some(b) = world.actors.get_mut(me).and_then(|a| a.ai.as_mut()) {
         b.doing = Doing::Behavior(beh);
         b.doing_ticks = beh.dur().unwrap_or(0);

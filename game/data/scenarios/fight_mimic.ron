@@ -1,0 +1,16 @@
+// WP-037 fight: a Mimic Chest 6 m ahead of the player. It stays a chest until the player comes within 2 m, holds INTERACT within 3 m, or hits it.
+(
+  spawn: (0.0, 0.0, 0.0),
+  spawn_yaw: 0.0,
+  kill_y: -50.0,
+  heightfield: None,
+  boxes: [
+    (name: "floor", center: (0.0, -0.5, 0.0), half_extents: (25.0, 0.5, 25.0)),
+  ],
+  lanterns: [
+    (id: "lantern_start", pos: (0.0, 0.0, -3.0), yaw: 0.0),
+  ],
+  enemies: [
+    (name: "mimic", enemy: "mimic_chest", pos: (0.0, 0.0, 6.0), yaw: 3.1415927),
+  ],
+)

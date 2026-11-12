@@ -16,3 +16,7 @@ pub mod swarm;
 pub mod water;
 
 pub use revive::{note_death_blow, tick_dead};
+
+// WP-037: the Mimic Chest's disguise and the Rime Wolves' pack rule.
+pub mod mimic;
+pub mod pack;

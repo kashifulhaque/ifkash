@@ -1,0 +1,26 @@
+// The Bell Warden (registry 7087): an elite. Source: docs/game/05-enemies-and-bosses.md,
+// "Enemy roster" elites (HP 1,300; strikes a hand bell; each third strike is a stun wave).
+// `bw_strike_1` chains into `bw_strike_2` and then `bw_wave`, so every third strike of
+// the chain is the wave. Stats are tuning.
+#![enable(implicit_some)]
+(
+  id: "bell_warden",
+  model: "warden_bell",
+  hp: 1300,
+  poise: 60,
+  stance: 100,
+  defense: (flat: 60),
+  resist: (immunity: 200, robustness: 250, composure: 200),
+  immune: [Drowse],
+  glimmer: 600,
+  attack: 130,
+  speed_percent: 90,
+  perception: (sight_deg: 110.0, sight_m: 18.0, hearing_mult: 1.0),
+  moveset: "enemies/bell_warden.ron",
+  options: [
+    (move: "bw_strike_1", when: [DistBelow(2.4), FacingWithin(45.0)], weight: 8, cooldown: 30),
+    (behavior: Approach(dur: 30), when: [DistAbove(2.2)], weight: 5),
+    (behavior: Strafe(dur: 35), when: [DistBetween(1.8, 5.0)], weight: 1, cooldown: 120),
+  ],
+  drops: [(item: "itm_glimmer_vial_large", chance: 0.5)],
+)

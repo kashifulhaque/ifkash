@@ -1,0 +1,63 @@
+// Enemy moves for WP-037 (the Lantern Thief). Registry numbers 8600-8601. Schema:
+// crates/content/src/moves.rs. Every attack telegraphs for at least 12 frames before its
+// first active hitbox frame or projectile (docs/game/05-enemies-and-bosses.md, "Enemy
+// roster"; checked by the validator). Damage comes from the enemy's `attack` in
+// enemies/*.ron, so `motion_value` is the only multiplier here. Numbers are tuning.
+#![enable(implicit_some)]
+[
+  (
+    // Winds up for 24 frames (the telegraph) and lobs a pitch bomb in a short arc.
+    id: "lt_bomb",
+    anim: "lt_bomb",
+    total_frames: 60,
+    stamina: 0,
+    fp: 0,
+    root_motion: [(0, 0.0), (60, 0.0)],
+    track_deg_per_tick: 6.0,
+    hyperarmor: None,
+    iframes: None,
+    cancel_attack_from: None,
+    cancel_dodge_from: None,
+    cancel_any_from: None,
+    next_chain: None,
+    hitboxes: [
+    ],
+    projectiles: [
+      (frame: 24, projectile: "proj_pitch_bomb", offset: (0.2, 1.5, 0.5), yaw_deg: 0.0, pitch_deg: 8.0),
+    ],
+    sfx: [(10, "thief_wind"), (24, "bomb_throw")],
+    vfx: [(24, "glow_pitch")],
+  ),
+  (
+    // A quick dagger jab when cornered.
+    id: "lt_stab",
+    anim: "lt_stab",
+    total_frames: 36,
+    stamina: 0,
+    fp: 0,
+    root_motion: [(0, 0.0), (12, 0.0), (16, 0.5), (36, 0.5)],
+    track_deg_per_tick: 8.0,
+    hyperarmor: None,
+    iframes: None,
+    cancel_attack_from: None,
+    cancel_dodge_from: None,
+    cancel_any_from: None,
+    next_chain: None,
+    hitboxes: [
+      (
+        frames: (14, 16),
+        shape: Capsule(a: (0.0, 1.1, 0.2), b: (0.0, 1.1, 1.1), radius: 0.3),
+        motion_value: 0.8,
+        phys: Pierce,
+        element: None,
+        poise_damage: 8,
+        status: [],
+        knockback: 0.2,
+        hitstop: 4,
+        tags: [],
+      ),
+    ],
+    sfx: [(12, "swing_light")],
+    vfx: [],
+  ),
+]

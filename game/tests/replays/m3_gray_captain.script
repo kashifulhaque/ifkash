@@ -1,0 +1,11 @@
+# WP-037 golden: a Gray Knight Captain duels with delayed swings (record with `lf-tools replay record-script`). Each line:
+# <ticks> <move_x> <move_z> [BUTTONS]. The player spawns at the origin facing +Z in fight_gray_captain.
+seed 46
+scenario fight_gray_captain
+150 0 0             # stand: it notices and closes in
+1   0 0  LOCK
+100 0 0
+1   0 0  LIGHT
+60  0 0
+1   0 0  LIGHT
+80  0 0

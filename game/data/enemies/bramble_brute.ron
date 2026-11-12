@@ -1,0 +1,28 @@
+// The Bramble Brute (registry 7083): an elite. Source: docs/game/05-enemies-and-bosses.md,
+// "Enemy roster" elites (HP 1,100; a huge husk wrapped in thorns; slow, long combos; drops
+// Bramble Claws, an item a later WP defines). Elites use the regular enemy shape with a
+// stance meter and hyperarmored heavies. Poison immunity, stance, speed, and attack are
+// tuning.
+#![enable(implicit_some)]
+(
+  id: "bramble_brute",
+  model: "brute_bramble",
+  hp: 1100,
+  poise: 70,
+  stance: 100,
+  defense: (flat: 60, weakness: [(Slash, 110)]),
+  resist: (immunity: 200, robustness: 200, composure: 160),
+  immune: [Poison],
+  glimmer: 500,
+  attack: 140,
+  speed_percent: 70,
+  perception: (sight_deg: 100.0, sight_m: 16.0, hearing_mult: 0.9),
+  moveset: "enemies/bramble_brute.ron",
+  options: [
+    (move: "bb_swing_1", when: [DistBelow(2.8), FacingWithin(40.0)], weight: 6, cooldown: 30),
+    (move: "bb_slam", when: [DistBelow(3.0), FacingWithin(50.0)], weight: 3, cooldown: 150),
+    (behavior: Approach(dur: 30), when: [DistAbove(2.4)], weight: 5),
+    (behavior: Strafe(dur: 40), when: [DistBetween(2.0, 6.0)], weight: 1, cooldown: 150),
+  ],
+  drops: [(item: "itm_glimmer_vial_large", chance: 0.5)],
+)

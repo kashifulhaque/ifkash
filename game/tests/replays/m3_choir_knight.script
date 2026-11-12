@@ -1,0 +1,11 @@
+# WP-037 golden: a Choir Knight cuts with its halberd and rings its bell (record with `lf-tools replay record-script`). Each line:
+# <ticks> <move_x> <move_z> [BUTTONS]. The player spawns at the origin facing +Z in fight_choir_knight.
+seed 45
+scenario fight_choir_knight
+150 0 0             # stand: it notices and closes in
+1   0 0  LOCK
+100 0 0
+1   0 0  LIGHT
+60  0 0
+1   0 0  LIGHT
+80  0 0

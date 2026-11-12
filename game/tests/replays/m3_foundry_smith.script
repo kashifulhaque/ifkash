@@ -1,0 +1,11 @@
+# WP-037 golden: a Foundry Smith slams its hammer and leaves burning metal (record with `lf-tools replay record-script`). Each line:
+# <ticks> <move_x> <move_z> [BUTTONS]. The player spawns at the origin facing +Z in fight_foundry_smith.
+seed 47
+scenario fight_foundry_smith
+150 0 0             # stand: it notices and closes in
+1   0 0  LOCK
+100 0 0
+1   0 0  LIGHT
+60  0 0
+1   0 0  LIGHT
+80  0 0

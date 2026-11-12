@@ -1,0 +1,12 @@
+# WP-037 golden: a Mimic Chest stays a chest while the player waits, then wakes when the player walks up to it (record with `lf-tools replay record-script`). Each line:
+# <ticks> <move_x> <move_z> [BUTTONS]. The player spawns at the origin facing +Z in fight_mimic.
+seed 43
+scenario fight_mimic
+150 0 0             # stand: it stays a chest
+30  0 127           # walk up to it: it wakes within 2 m
+1   0 0  LOCK
+120 0 0              # stand: it chomps, slams, and hops
+1   0 0  LIGHT
+40  0 0
+1   0 0  LIGHT
+60  0 0

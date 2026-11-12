@@ -1,0 +1,27 @@
+// The Choir Knight (registry 7084): an elite. Source: docs/game/05-enemies-and-bosses.md,
+// "Enemy roster" elites (HP 1,400; halberd and bell; a bell ring stuns within 4 m,
+// telegraphed by lifting the bell). The ring is `ck_bell`: a 36-frame lift, then an
+// unblockable 4 m sphere with enough poise damage to stagger. Stats are tuning.
+#![enable(implicit_some)]
+(
+  id: "choir_knight",
+  model: "knight_choir",
+  hp: 1400,
+  poise: 60,
+  stance: 100,
+  defense: (flat: 70, weakness: [(Pierce, 110)]),
+  resist: (immunity: 160, robustness: 200, composure: 200),
+  glimmer: 650,
+  attack: 140,
+  speed_percent: 90,
+  perception: (sight_deg: 110.0, sight_m: 18.0, hearing_mult: 1.0),
+  moveset: "enemies/choir_knight.ron",
+  options: [
+    (move: "ck_bell", when: [DistBelow(4.0)], weight: 5, cooldown: 240),
+    (move: "ck_halberd_1", when: [DistBetween(1.5, 3.0), FacingWithin(40.0)], weight: 6, cooldown: 30),
+    (move: "ck_thrust", when: [DistBetween(2.4, 4.0), FacingWithin(30.0)], weight: 4, cooldown: 60),
+    (behavior: Approach(dur: 30), when: [DistAbove(3.0)], weight: 4),
+    (behavior: Strafe(dur: 40), when: [DistBetween(2.0, 6.0)], weight: 2, cooldown: 120),
+  ],
+  drops: [(item: "itm_glimmer_vial_large", chance: 0.5)],
+)

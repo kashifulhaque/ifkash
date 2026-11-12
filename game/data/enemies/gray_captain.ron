@@ -1,0 +1,28 @@
+// The Gray Knight Captain (registry 7085): an elite. Source:
+// docs/game/05-enemies-and-bosses.md, "Enemy roster" elites (HP 1,600; a greatsword duelist;
+// parryable delayed swings). Its swings hold back 34 to 44 frames before they fall, so a
+// player who parries early gets caught; none is Unparryable. Stats are tuning.
+#![enable(implicit_some)]
+(
+  id: "gray_captain",
+  model: "knight_captain",
+  hp: 1600,
+  poise: 60,
+  stance: 120,
+  defense: (flat: 80, weakness: [(Pierce, 110)]),
+  resist: (immunity: 180, robustness: 220, composure: 200),
+  glimmer: 800,
+  attack: 120,
+  speed_percent: 95,
+  perception: (sight_deg: 110.0, sight_m: 20.0, hearing_mult: 1.0),
+  moveset: "enemies/gray_captain.ron",
+  options: [
+    (move: "gc_slash", when: [DistBelow(2.8), FacingWithin(40.0)], weight: 5, cooldown: 40),
+    (move: "gc_overhead", when: [DistBelow(2.8), FacingWithin(40.0)], weight: 3, cooldown: 90),
+    (move: "gc_flurry", when: [DistBelow(2.4), FacingWithin(40.0)], weight: 4, cooldown: 60),
+    (move: "gc_thrust", when: [DistBetween(2.6, 4.2), FacingWithin(30.0)], weight: 4, cooldown: 60),
+    (behavior: Approach(dur: 30), when: [DistAbove(3.0)], weight: 4),
+    (behavior: Strafe(dur: 40), when: [DistBetween(2.0, 6.0)], weight: 2, cooldown: 90),
+  ],
+  drops: [(item: "itm_glimmer_vial_large", chance: 0.5)],
+)

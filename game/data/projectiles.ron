@@ -77,4 +77,22 @@
     tags: [],
     status: (kind: Rime, amount: 40), // tuning
   ),
+  (
+    // The Lantern Thief's pitch bomb (WP-037): a slow lobbed Fire shot with a high arc.
+    // A direct hit is the whole effect; there are no area hits yet.
+    id: "proj_pitch_bomb",
+    speed: 16.0, // tuning: about half a meter a tick
+    gravity: 8.0, // tuning
+    radius: 0.2, // tuning
+    lifetime_ticks: 90, // tuning
+    pierce: 0,
+    homing: None,
+    motion_value: 1.0,
+    phys: Neutral,
+    element: Fire,
+    poise_damage: 14, // tuning
+    knockback: 0.4, // tuning
+    hitstop: 3, // tuning
+    tags: [],
+  ),
 ]

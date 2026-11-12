@@ -366,6 +366,13 @@ pub fn run(world: &mut World) {
         if world.actors.get(id).is_none() {
             continue;
         }
+        // A disguised enemy is a chest until something wakes it (WP-037).
+        if special::mimic::dormant(world, id) {
+            special::mimic::wake(world, id);
+            if special::mimic::dormant(world, id) {
+                continue;
+            }
+        }
         attack::regen_stamina(world, id);
         perception::listen(world, id, noise);
         if thinks_on(world.tick, id.index, tuning.think_every_ticks) {
@@ -494,7 +501,7 @@ fn think(world: &mut World, id: Id, t: &AiTuning) {
 }
 
 /// Idle or Suspicious to Aware: picks the target and draws the notice length.
-fn engage(world: &mut World, id: Id, target: Id, t: &AiTuning) {
+pub(crate) fn engage(world: &mut World, id: Id, target: Id, t: &AiTuning) {
     let (lo, hi) = t.notice_ticks;
     let span = u32::from(hi.saturating_sub(lo)) + 1;
     let notice = lo + (world.rng.ai.next_u32() % span) as u16;
@@ -570,3 +577,5 @@ mod batch2_tests;
 mod enemy_tests;
 #[cfg(test)]
 mod tests;
+#[cfg(test)]
+mod wp37_tests;

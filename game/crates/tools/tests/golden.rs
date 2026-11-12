@@ -744,3 +744,264 @@ fn m3_whitewarden_revive_gets_back_up() {
     assert_eq!(r.hp, 90);
     assert!(!w.actors.get(sk).unwrap().dead);
 }
+
+// --- WP-037: enemy batch 3 and the elites ---
+
+/// Runs a golden's frames tick by tick, calling `each` on the world after every tick, and
+/// returns the world and all events.
+fn run_each(
+    name: &str,
+    scenario: &str,
+    mut each: impl FnMut(&lf_core::World),
+) -> (lf_core::World, Vec<lf_core::events::Event>) {
+    use lf_core::input::TickInput;
+    use lf_core::{World, tick};
+
+    let content = content();
+    let replay =
+        Replay::decode(&std::fs::read(replays_dir().join(format!("{name}.lfr"))).unwrap()).unwrap();
+    assert_eq!(replay.header.scenario, scenario);
+    let mut w = World::new(replay.header.seed, &content, scenario).unwrap();
+    let mut events = Vec::new();
+    for frame in expand(&replay.frames) {
+        tick(
+            &mut w,
+            &TickInput {
+                frame,
+                commands: Vec::new(),
+            },
+        );
+        events.extend(w.events.drain());
+        each(&w);
+    }
+    (w, events)
+}
+
+/// The moves the enemy `attacker` landed on the player, in order, by ID.
+fn move_ids_landed(
+    w: &lf_core::World,
+    events: &[lf_core::events::Event],
+    attacker: lf_core::arena::Id,
+) -> Vec<String> {
+    hits(events)
+        .iter()
+        .filter(|h| h.attacker == attacker && h.target == w.player)
+        .map(|h| w.moves.get(h.move_num).unwrap().data.id.clone())
+        .collect()
+}
+
+/// The thief lobs pitch bombs that land (62 damage each), and runs once the player rushes it.
+#[test]
+fn m3_lantern_thief_throws_bombs_and_flees() {
+    use lf_core::events::{Event, ProjectileEventKind};
+    let (w, events) = run_duel("m3_lantern_thief", "fight_lantern_thief");
+    let thief = w.state.ai_enemies[0];
+    let bombs = events
+        .iter()
+        .filter(|e| matches!(e, Event::Projectile(p) if p.shooter == thief && p.kind == ProjectileEventKind::Spawned))
+        .count();
+    assert!(bombs >= 3, "{bombs}");
+    let landed: Vec<_> = hits(&events)
+        .into_iter()
+        .filter(|h| h.attacker == thief && h.target == w.player)
+        .collect();
+    assert!(landed.len() >= 3, "{landed:?}");
+    assert!(
+        landed
+            .iter()
+            .all(|h| h.move_num == w.moves.num_of("lt_bomb").unwrap() && h.damage == 62)
+    );
+    // It started 11 m out; the player rushed it and a light hit it, and it ran off.
+    let t = w.actors.get(thief).unwrap();
+    assert!(t.hp < t.max_hp, "the player's light landed");
+    assert!(t.pos[2] > 12.0, "it fled: {:?}", t.pos);
+    assert!(w.actors.get(w.player).unwrap().pos[2] > 5.0);
+}
+
+/// The pack circles one way and lunges one at a time: at no tick are two wolves in an
+/// attack move, at no tick do two strafing wolves go opposite ways, and more than one wolf
+/// takes a turn.
+#[test]
+fn m3_rime_wolves_circle_and_lunge_one_at_a_time() {
+    use lf_content::enemy::Behavior;
+    use lf_core::ai::Doing;
+    let mut max_attacking = 0;
+    let mut mixed_circling = false;
+    let mut strafing_together = false;
+    let mut max_rime = 0;
+    let rime = lf_core::combat::status::index(lf_content::moves::StatusKind::Rime);
+    let (w, events) = run_each("m3_rime_wolves", "fight_rime_wolves", |w| {
+        let p = w.actors.get(w.player).unwrap();
+        max_rime = max_rime.max(p.status.meter_milli[rime]);
+        let brains: Vec<_> = w
+            .state
+            .ai_enemies
+            .iter()
+            .filter_map(|&id| {
+                w.actors
+                    .get(id)
+                    .filter(|a| !a.dead)
+                    .and_then(|a| a.ai.as_ref())
+            })
+            .collect();
+        let attacking = brains
+            .iter()
+            .filter(|b| matches!(b.doing, Doing::Attack { .. }))
+            .count();
+        max_attacking = max_attacking.max(attacking);
+        let strafing: Vec<bool> = brains
+            .iter()
+            .filter(|b| {
+                matches!(b.doing, Doing::Behavior(Behavior::Strafe { .. })) && b.doing_ticks > 0
+            })
+            .map(|b| b.strafe_left)
+            .collect();
+        if strafing.len() >= 2 {
+            strafing_together = true;
+            mixed_circling |= strafing.iter().any(|&l| l != strafing[0]);
+        }
+    });
+    assert_eq!(max_attacking, 1, "one wolf attacks at a time");
+    assert!(strafing_together, "the wolves circled together");
+    assert!(!mixed_circling, "they circled the same way");
+    let wolves = w.state.ai_enemies.clone();
+    let hs = hits(&events);
+    let biters: std::collections::BTreeSet<_> = hs
+        .iter()
+        .filter(|h| h.target == w.player && wolves.contains(&h.attacker))
+        .map(|h| h.attacker)
+        .collect();
+    assert!(biters.len() >= 2, "{hs:?}");
+    // The bites build Rime.
+    assert!(max_rime > 0, "{max_rime}");
+}
+
+/// The mimic is a chest for the first 150 ticks (no notice, no attack) while the player waits
+/// 6 m away, wakes when the player walks within 2 m, and then fights.
+#[test]
+fn m3_mimic_stays_a_chest_until_approached() {
+    use lf_core::ai::Awareness;
+    let mut woke_at = None;
+    let mut tick_n = 0u32;
+    let mut dormant_ticks = 0u32;
+    let (w, events) = run_each("m3_mimic", "fight_mimic", |w| {
+        tick_n += 1;
+        let m = w.state.ai_enemies[0];
+        let b = w.actors.get(m).unwrap().ai.as_ref().unwrap();
+        if b.awareness == Awareness::Idle {
+            dormant_ticks += 1;
+        } else if woke_at.is_none() {
+            woke_at = Some(tick_n);
+        }
+    });
+    let mimic = w.state.ai_enemies[0];
+    let woke = woke_at.expect("it woke");
+    assert!(woke > 150, "still a chest while the player waited: {woke}");
+    assert_eq!(dormant_ticks, woke - 1);
+    let landed = move_ids_landed(&w, &events, mimic);
+    assert!(landed.contains(&"mc_chomp".to_owned()), "{landed:?}");
+    assert!(w.actors.get(mimic).unwrap().hp < 900, "the player hit it");
+}
+
+/// The Bramble Brute lands its whole combo: both swings and the slam, in order.
+#[test]
+fn m3_bramble_brute_swings_swings_slams() {
+    let (w, events) = run_duel("m3_bramble_brute", "fight_bramble_brute");
+    let landed = move_ids_landed(&w, &events, w.state.ai_enemies[0]);
+    assert_eq!(
+        &landed[..3],
+        ["bb_swing_1", "bb_swing_2", "bb_slam"],
+        "{landed:?}"
+    );
+    assert!(!w.actors.get(w.player).unwrap().dead);
+}
+
+/// The Choir Knight's bell ring heavily staggers the player (a stun) for little damage, and
+/// its halberd chain lands too.
+#[test]
+fn m3_choir_knight_rings_its_bell() {
+    use lf_core::events::Event;
+    let (w, events) = run_duel("m3_choir_knight", "fight_choir_knight");
+    let knight = w.state.ai_enemies[0];
+    let bell = w.moves.num_of("ck_bell").unwrap();
+    let hs = hits(&events);
+    let i = events
+        .iter()
+        .position(|e| matches!(e, Event::Hit(h) if h.attacker == knight && h.move_num == bell))
+        .expect("the bell lands");
+    assert!(
+        matches!(&events[i + 1], Event::Stagger(s) if s.target == w.player && s.heavy),
+        "{:?}",
+        &events[i..]
+    );
+    let landed = move_ids_landed(&w, &events, knight);
+    assert!(landed.contains(&"ck_halberd_1".to_owned()), "{landed:?}");
+    // The bell lifts for 36 frames before the ring (the telegraph).
+    let d = &w.moves.get(bell).unwrap().data;
+    assert!(d.hitboxes[0].frames.0 >= 36);
+    assert!(hs.iter().any(|h| h.move_num == bell && h.damage < 60));
+}
+
+/// The Captain's swings fall late (34 frames or more after they start) and every one can be
+/// parried; the golden lands a delayed slash and overhead.
+#[test]
+fn m3_gray_captain_duels_with_delayed_swings() {
+    use lf_content::moves::HitTag;
+    let (w, events) = run_duel("m3_gray_captain", "fight_gray_captain");
+    let captain = w.state.ai_enemies[0];
+    let landed = move_ids_landed(&w, &events, captain);
+    assert!(landed.len() >= 2, "{landed:?}");
+    assert!(landed.iter().all(|m| m.starts_with("gc_")));
+    for id in ["gc_slash", "gc_overhead"] {
+        let d = &w.moves.get(w.moves.num_of(id).unwrap()).unwrap().data;
+        assert!(d.hitboxes[0].frames.0 >= 34, "{id}");
+        assert!(
+            d.hitboxes
+                .iter()
+                .all(|h| !h.tags.contains(&HitTag::Unparryable))
+        );
+    }
+    assert!(!w.actors.get(w.player).unwrap().dead);
+}
+
+/// The Smith's hammer slams the player (217 damage and a stagger), and leaves a Fire
+/// hitbox up in front of it for about 3 seconds as the burning metal.
+#[test]
+fn m3_foundry_smith_slams_and_leaves_burning_metal() {
+    use lf_content::moves::Element;
+    let (w, events) = run_duel("m3_foundry_smith", "fight_foundry_smith");
+    let smith = w.state.ai_enemies[0];
+    let hammer = w.moves.num_of("fs_hammer").unwrap();
+    let slams: Vec<_> = hits(&events)
+        .into_iter()
+        .filter(|h| h.attacker == smith && h.move_num == hammer && h.target == w.player)
+        .collect();
+    assert!(!slams.is_empty());
+    assert!(slams.iter().all(|h| h.hitbox == 0 && h.damage == 217));
+    let d = &w.moves.get(hammer).unwrap().data;
+    let fire = &d.hitboxes[1];
+    assert_eq!(fire.element, Some(Element::Fire));
+    assert!(fire.frames.1 - fire.frames.0 >= 85, "{:?}", fire.frames);
+    assert!(!w.actors.get(w.player).unwrap().dead);
+}
+
+/// The Bell Warden's chain is strike, strike, then the stun wave, over and over.
+#[test]
+fn m3_bell_warden_strikes_twice_then_sends_a_wave() {
+    use lf_core::events::Event;
+    let (w, events) = run_duel("m3_bell_warden", "fight_bell_warden");
+    let warden = w.state.ai_enemies[0];
+    let landed = move_ids_landed(&w, &events, warden);
+    assert_eq!(
+        &landed[..3],
+        ["bw_strike_1", "bw_strike_2", "bw_wave"],
+        "{landed:?}"
+    );
+    let wave = w.moves.num_of("bw_wave").unwrap();
+    let i = events
+        .iter()
+        .position(|e| matches!(e, Event::Hit(h) if h.attacker == warden && h.move_num == wave))
+        .unwrap();
+    assert!(matches!(&events[i + 1], Event::Stagger(s) if s.target == w.player && s.heavy));
+    assert!(!w.actors.get(w.player).unwrap().dead);
+}

@@ -1,0 +1,72 @@
+// Enemy moves for WP-037 (the Rime Wolf). Registry numbers 8610-8611. Schema:
+// crates/content/src/moves.rs. Every attack telegraphs for at least 12 frames before its
+// first active hitbox frame or projectile (docs/game/05-enemies-and-bosses.md, "Enemy
+// roster"; checked by the validator). Damage comes from the enemy's `attack` in
+// enemies/*.ron, so `motion_value` is the only multiplier here. Numbers are tuning.
+#![enable(implicit_some)]
+[
+  (
+    // A leaping bite that closes about 3 m. 25 Rime buildup.
+    id: "rw_lunge",
+    anim: "rw_lunge",
+    total_frames: 48,
+    stamina: 0,
+    fp: 0,
+    root_motion: [(0, 0.0), (12, 0.0), (16, 3.0), (48, 3.2)],
+    track_deg_per_tick: 8.0,
+    hyperarmor: None,
+    iframes: None,
+    cancel_attack_from: None,
+    cancel_dodge_from: None,
+    cancel_any_from: None,
+    next_chain: None,
+    hitboxes: [
+      (
+        frames: (14, 19),
+        shape: Capsule(a: (0.0, 0.8, 0.2), b: (0.0, 0.8, 1.3), radius: 0.35),
+        motion_value: 1.0,
+        phys: Pierce,
+        element: None,
+        poise_damage: 14,
+        status: [(kind: Rime, amount: 25)],
+        knockback: 0.5,
+        hitstop: 4,
+        tags: [],
+      ),
+    ],
+    sfx: [(12, "wolf_snarl")],
+    vfx: [(14, "trail_frost")],
+  ),
+  (
+    // A close snap. 10 Rime buildup.
+    id: "rw_bite",
+    anim: "rw_bite",
+    total_frames: 38,
+    stamina: 0,
+    fp: 0,
+    root_motion: [(0, 0.0), (12, 0.0), (15, 0.4), (38, 0.4)],
+    track_deg_per_tick: 8.0,
+    hyperarmor: None,
+    iframes: None,
+    cancel_attack_from: None,
+    cancel_dodge_from: None,
+    cancel_any_from: None,
+    next_chain: None,
+    hitboxes: [
+      (
+        frames: (13, 15),
+        shape: Capsule(a: (0.0, 0.8, 0.2), b: (0.0, 0.8, 1.0), radius: 0.35),
+        motion_value: 0.7,
+        phys: Pierce,
+        element: None,
+        poise_damage: 10,
+        status: [(kind: Rime, amount: 10)],
+        knockback: 0.3,
+        hitstop: 4,
+        tags: [],
+      ),
+    ],
+    sfx: [(12, "wolf_snarl")],
+    vfx: [],
+  ),
+]

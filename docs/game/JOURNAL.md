@@ -26,6 +26,7 @@ Copy this block to the top of the entries and fill it in as you go:
   - WP-059: sonnet, worktree; `342753c`; 406K.
   - Merge of WP-055 and WP-059 plus integration commit `bbb46e1` (gear refresh after level-up and respec; Scholar's Seal slot; Shrike-Lite startup): sonnet merge worker in the main checkout; 154K. Every golden A -> A.
   - WP-052: sonnet, worktree; `abc2479`; 261K. Orchestrator merged it onto WP-055 and WP-059 (4 code conflicts) and fixed the test catalyst's missing `catalyst_school`.
+  - WP-056: haiku, worktree; `12fb40d`; 395K. Clean cherry-pick; 71 goldens A -> A.
 - **Context:** orchestrator NNK; each worker NNK (budget 500K per context window)
 - **Not verified:** anything the session couldn't check
 - **Waiting on the owner:** decisions, credentials, playtests, merges

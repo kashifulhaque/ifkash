@@ -16,15 +16,31 @@
 //     bridge is then the first shortcut from the Barbican back to L14.
 // B03 has no boss definition yet (an M7 work package), so no Boss entity is placed.
 //
-// WP-065 (part 2) continues north from the keep landing at (0, 6, 218): it replaces the
-// placeholder wall `keep_stair_cap` (layout.ron) with the way on, and adds L16 and L17.
+// PART 2 (WP-065) continues north from the keep landing at (0, 6, 218). The stair climbs on to
+// the third tier, a terrace at y 12 (terrain.ron): the windward court with L16 at its south end,
+// the archers' perches on both walls, a Gray Knight Captain at the east end, the lift cage in the
+// bastion over the Lower Ward's north end (the second shortcut: its door opens only from
+// inside, so the cage is opened from the court first), and the keep. Two routes reach the
+// library (y 18): through the keep's door, the dining hall (Husk servants sleep until the feast
+// on the high table is taken: the castle's one ambush), and the dining stair; or up the west
+// rampart stair along the keep's wall to the library's west door. The library's north door leads
+// to the bell tower (two turns of a stair around an open well up to the belfry, 26 m above the
+// court) and, past it, to a corridor that descends to the antechamber (L17) and B07's fog gate.
+// A hollow wall on the library's east wall (a faint hum, then a hit) opens the Boo alcove.
 //
-// Registry numbers used here (25000 block): castle 25000.
+// THE HALL. B07's fog gate is the plane z = 340 across the gap in the antechamber's north wall
+// (x -4..4), opening north into the hall. Castellan Voss has no boss definition yet (M7), so no
+// Boss entity is placed, and the back gate toward Rimeshelf is a flag-keyed door: `gate_castle_back`
+// is Locked, and it opens when the world raises the flag `door.gate_castle_back.open`. M7's B07
+// raises it when Voss falls (alongside `boss.<id>.defeated`); nothing else opens it.
+//
+// Registry numbers used here (25000 block): castle 25000. Part 2 (26000 block): itm_lost_folio
+// 26001, relic_boo 26010, chronicle_page_3 26011 (all stubs).
 (
   // The arrival road, south-west of the plaza, facing the bridge.
   spawn: (pos: (-20.0, 0.0, -62.0), yaw: 0.2187),
   entities: [
-    // --- Lanterns: L14 and L15 (L16 and L17 are WP-065's) ------------------------------------
+    // --- Lanterns: L14 and L15 here; L16 and L17 are part 2's, below --------------------------
     // L14 stands 30 m from B03's fog gate; L15 is in the cistern, at the cliff path's end.
     Lantern(id: "lantern_l14", pos: (-12.0, 0.0, -26.0), yaw: 0.0),
     Lantern(id: "lantern_l15", pos: (-4.0, -8.0, 74.0), yaw: 1.5707964),
@@ -121,5 +137,102 @@
     // along the bridge; Corvane waits mid-span facing south. L14 is about 30 m from the gate.
     // The Echo Stone stands just inside the gate, on the west side of the deck.
     EchoStone(id: "stone_b03", pos: (-4.5, 0.0, 9.0), yaw: 0.4),
+
+    // =========================================================================================
+    // PART 2 (WP-065): the ramparts, the keep, the library, the bell tower, the hall
+    // =========================================================================================
+
+    // --- Lanterns: L16 on the windward court, L17 in the antechamber ----------------------------
+    // L16 is a few steps from the top of the keep stair; L17 is 11 m from B07's fog gate.
+    Lantern(id: "lantern_l16", pos: (-5.0, 12.0, 245.0), yaw: 0.0),
+    Lantern(id: "lantern_l17", pos: (2.0, 12.0, 330.0), yaw: 0.0),
+
+    // --- Doors, the lift, levers, the ladder, the hollow wall ----------------------------------
+    // The castle's back gate toward Rimeshelf: shut until the world raises `door.gate_castle_back.open`.
+    Door(id: "gate_castle_back", pos: (0.0, 12.0, 385.0), yaw: 3.1415927, half_width_m: 3.0, height_m: 6.5, kind: Locked),
+    // The second shortcut: a lift from the court down to the Lower Ward. The cage's door opens
+    // only from inside (it faces north), so the shortcut opens from the far side.
+    Lift(id: "lift_rampart", pos: (18.0, 203.0), bottom_y: 0.0, top_y: 12.0, half_extents: (2.2, 2.2)),
+    Door(id: "door_lift_cage", pos: (18.0, 0.0, 200.5), yaw: 0.0, half_width_m: 2.25, height_m: 3.0, kind: OneWay),
+    Lever(id: "lever_lift_top", pos: (18.0, 12.0, 206.0), yaw: 3.1415927, target: Lift(id: "lift_rampart", stop: 1)),
+    Lever(id: "lever_lift_bottom", pos: (18.0, 0.0, 204.4), yaw: 3.1415927, target: Lift(id: "lift_rampart", stop: 0)),
+    // The library's upper shelf: the gallery along the south wall (y 22).
+    Ladder(id: "ladder_gallery", pos: (-10.0, 18.0, 268.95), yaw: 3.1415927, height_m: 4.0),
+    // The east wall of the library, behind the last bookcase: a hit reveals the Boo alcove.
+    HollowWall(id: "wall_library_boo", center: (27.0, 20.0, 273.0), half_extents: (1.0, 2.0, 1.5)),
+
+    // --- Authored messages ------------------------------------------------------------------------
+    Message(id: "msg_court", pos: (-2.0, 12.0, 250.0),
+      text: "The windward court, the castle's third tier. The wind comes straight off the sea. Archers hold a perch on each wall, and a captain in gray plate keeps the east end. The keep's door stands ahead. A stair along its west wall climbs to the library's other door."),
+    Message(id: "msg_lift", pos: (13.0, 12.0, 210.0),
+      text: "A lift cage hangs in the corner of the bastion. Its door opens only from inside. Ride it down once and the Lower Ward is a short walk from the Lantern at the bridge."),
+    Message(id: "msg_keep_door", pos: (0.0, 12.0, 260.0),
+      text: "The keep. The dining hall lies inside, and above it the library. The scholars say a table is still laid."),
+    Message(id: "msg_dining", pos: (0.0, 12.0, 266.0),
+      text: "A feast no one finished. The servants at the benches have sat a long time. The best of the table lies on the high board, and they do not like it taken."),
+    Message(id: "msg_library", pos: (-23.8, 18.0, 283.6),
+      text: "The Graymantle library. The shelves are in order and the readers are not. A ladder at the south wall climbs to the upper shelf. A faint hum comes from the east wall, behind the last case. The north door leads on to the bell tower and the Castellan's hall."),
+    Message(id: "msg_hum", pos: (24.5, 18.0, 273.0),
+      text: "A faint hum, behind this wall."),
+    Message(id: "msg_bell_tower", pos: (-18.8, 18.0, 290.4),
+      text: "The bell tower. The stair winds twice around an open well to the belfry. The bell cracked long ago, and the wind plays what is left. A scroll on the belfry floor teaches a parry for weapons that cannot parry."),
+    Message(id: "msg_antechamber", pos: (-3.0, 12.0, 324.0),
+      text: "The Castellan's antechamber. The hall lies through the gap in the north wall. Voss has fought every duel in this castle, and he remembers all of them. Vary your play."),
+    Message(id: "msg_back_gate", pos: (-6.0, 12.3, 381.0),
+      text: "The back gate stays shut while the Castellan lives. Beyond it the road climbs to Rimeshelf."),
+    Message(id: "msg_pass", pos: (0.0, 12.0, 392.0),
+      text: "The pass north. Snow has drifted against the wall, and the wind is colder."),
+
+    // --- Enemies: the ramparts' archers, captain, and flank knight; the dining hall's ambush; a reader --------
+    // The perches: two Gray Archers on four-meter platforms, facing the court (30 m of sight).
+    Enemy(name: "archer_perch_w", enemy: "gray_archer", pos: (-41.0, 16.0, 247.0), yaw: 1.5707964),
+    Enemy(name: "archer_perch_e", enemy: "gray_archer", pos: (41.0, 16.0, 247.0), yaw: -1.5707964),
+    // The elite: the captain keeps the court's east end, with the bastion and its lift cage to the south-west.
+    Enemy(name: "captain_rampart", enemy: "gray_captain", pos: (34.0, 12.0, 238.0), yaw: -1.5707964),
+    // A Gray Knight at the foot of the west rampart stair.
+    Enemy(name: "knight_flank_w", enemy: "gray_knight", pos: (-40.0, 12.0, 272.0), yaw: 3.1415927),
+    // The dining hall's ambush: Husk servants asleep at the east benches until the feast is taken (kept off the west aisle and the library's walking lane above).
+    Enemy(name: "servant_dining_a", enemy: "husk_servant", pos: (11.0, 12.0, 267.0), yaw: -1.5707964, wakes_on: Some("pickup.chunk_dining.taken")),
+    Enemy(name: "servant_dining_b", enemy: "husk_servant", pos: (11.0, 12.0, 273.5), yaw: -1.5707964, wakes_on: Some("pickup.chunk_dining.taken")),
+    Enemy(name: "servant_dining_c", enemy: "husk_servant", pos: (17.5, 12.0, 267.0), yaw: 3.1415927, wakes_on: Some("pickup.chunk_dining.taken")),
+    Enemy(name: "servant_dining_d", enemy: "husk_servant", pos: (17.5, 12.0, 273.5), yaw: 3.1415927, wakes_on: Some("pickup.chunk_dining.taken")),
+    // A reader in the library's south-east corner, off the way between the two doors.
+    Enemy(name: "servant_library", enemy: "husk_servant", pos: (14.0, 18.0, 269.0), yaw: 3.1415927),
+
+    // --- Items, relics, materials, key items (docs/game/04-arsenal-and-builds.md) ----------------
+    // The ramparts: Flask Dew beside the library's west door, the Parrier's Eye on the east perch
+    // (the archer stands by it), the captain's Gray Knight Greatsword, and a chest on the west wall.
+    Pickup(id: "dew_rampart", item: "itm_flask_dew", pos: (-31.0, 18.0, 287.0), interact: true),
+    Pickup(id: "chm_parriers_eye_perch", item: "chm_parriers_eye", pos: (41.0, 16.0, 249.5), interact: true),
+    Pickup(id: "wpn_gray_greatsword_rampart", item: "wpn_gray_greatsword", pos: (36.0, 12.0, 234.0), interact: true),
+    Chest(id: "chest_court", pos: (-45.5, 12.0, 233.0), yaw: 1.5707964, loot: (item: "itm_forgeglass_shard", count: 3, glimmer: 300)),
+    // The keep: the feast on the high table (taking it wakes the benches) and a chest by the door.
+    Pickup(id: "chunk_dining", item: "itm_forgeglass_chunk", pos: (0.0, 12.0, 282.4), count: 2, interact: true),
+    Chest(id: "chest_dining", pos: (22.0, 12.0, 266.0), yaw: 3.1415927, loot: (item: "itm_forgeglass_chunk", count: 1, glimmer: 350)),
+    // The library: the Gradient Rod on the reading desk, two Formulae in the aisle, the Rewrite
+    // Quill on the upper shelf (the gallery), a Lost Folio in the east nook, and, behind the
+    // hollow wall, the Boo relic (portfolio: boo).
+    Pickup(id: "wpn_gradient_rod_library", item: "wpn_gradient_rod", pos: (0.0, 18.0, 278.2), interact: true),
+    Pickup(id: "spl_homing_motes_library", item: "spl_homing_motes", pos: (-10.0, 18.0, 275.5), interact: true),
+    Pickup(id: "spl_aether_wave_library", item: "spl_aether_wave", pos: (10.0, 18.0, 275.5), interact: true),
+    Pickup(id: "quill_gallery", item: "itm_rewrite_quill", pos: (-4.0, 22.0, 266.5), interact: true),
+    Pickup(id: "folio_library", item: "itm_lost_folio", pos: (20.0, 18.0, 270.0), interact: true),
+    Pickup(id: "relic_boo", item: "relic_boo", pos: (30.5, 18.0, 272.5), codex: Some("projects.boo"), interact: true),
+    // The bell tower's belfry: the Windward Parry Art Scroll.
+    Pickup(id: "scroll_windward_parry", item: "itm_art_scroll_windward_parry", pos: (-14.0, 38.0, 291.0), interact: true),
+    // The Castellan's desk (the hall's north dais): Chronicle Page slot 3 and the Gradient Descent
+    // Formula. They lie behind the fight, at the far end of the hall.
+    Pickup(id: "page_chronicle_3", item: "chronicle_page_3", pos: (0.0, 12.3, 378.2), codex: Some("work.american-express"), interact: true),
+    Pickup(id: "spl_gradient_descent_desk", item: "spl_gradient_descent", pos: (-3.0, 12.3, 378.2), interact: true),
+
+    // --- B07's arena: Castellan's Hall (x -22..22, z 342..384) ------------------------------------
+    // The boss: PLACEHOLDER. B07 (Castellan Voss, an M7 work package) has no boss definition yet,
+    // so no Boss entity is placed. When it exists, add:
+    //   Boss(name: "b07", boss: "<b07 id>", pos: (0.0, 12.0, 364.0), yaw: 3.1415927,
+    //     gate: (pos: (0.0, 12.0, 340.0), yaw: 0.0, half_width_m: 4.0, depth_m: 3.0)),
+    // The fog gate is the plane z = 340 across the gap in the antechamber's north wall, opening
+    // north; Voss waits mid-hall facing south. L17 is about 10 m from the gate. The Echo Stone
+    // stands just inside it, by the west wall. M7 also raises `door.gate_castle_back.open` when he falls.
+    EchoStone(id: "stone_b07", pos: (-10.0, 12.0, 346.0), yaw: 0.5),
   ],
 )

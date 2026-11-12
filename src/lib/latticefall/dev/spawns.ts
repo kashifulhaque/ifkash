@@ -147,7 +147,26 @@ const CASTLE: Record<string, SpawnPoint> = {
   ladder: { x: -44, z: 130, yaw: -HALF_PI, note: "at the wall-walk ladder's foot" },
   wall_walk: { x: -49.5, z: 125, yaw: 0, note: 'on the wall-walk, facing the ballista' },
   stair: { x: 0, z: 186, yaw: 0, note: 'at the foot of the keep stair, before the two Gray Knights' },
-  landing: { x: 0, z: 217, yaw: 0, note: "the keep landing, where part 2's way on begins" }
+  landing: { x: 0, z: 217, yaw: 0, note: "the keep landing, where part 2's way on begins" },
+  // Part 2 (WP-065): the third tier, a terrace at y 12; the keep's floors are y 12, 18, and 22.
+  l16: { x: -5, y: 12, z: 242.5, yaw: 0, note: 'beside L16, the windward court, facing the Lantern and the keep' },
+  court: { x: 0, y: 12, z: 244, yaw: 0, note: 'the windward court, facing the keep door (archers on both perches)' },
+  perch: { x: -41, y: 16, z: 245, yaw: 0, note: "on the west archers' perch" },
+  captain: { x: 26, y: 12, z: 240, yaw: HALF_PI, note: "facing the Gray Knight Captain at the court's east end" },
+  lift: { x: 18, y: 12, z: 210, yaw: Math.PI, note: "at the lift cage's top stop (the second shortcut)" },
+  keep_door: { x: 0, y: 12, z: 259, yaw: 0, note: "at the keep's door" },
+  dining: { x: 0, y: 12, z: 268, yaw: 0, note: 'the dining hall, facing the high table (the Husk servants sleep)' },
+  library: { x: -23, y: 18, z: 284, yaw: HALF_PI, note: 'the top of the dining stair, in the library' },
+  library_mid: { x: 0, y: 18, z: 281, yaw: 0, note: "mid-library, facing the Gradient Rod's desk" },
+  gallery: { x: -4, y: 22, z: 266.5, yaw: Math.PI, note: "on the upper shelf (the gallery), at the Rewrite Quill" },
+  alcove: { x: 23.5, y: 18, z: 273, yaw: HALF_PI, note: "facing the library's hollow wall (the Boo alcove)" },
+  tower: { x: -18.8, y: 18, z: 290.4, yaw: 0, note: "at the bell tower's foot" },
+  belfry: { x: -14, y: 38, z: 290.5, yaw: 0, note: 'the belfry, at the Windward Parry scroll' },
+  corridor: { x: 21, y: 18, z: 291, yaw: 0, note: "the corridor from the library's north door" },
+  l17: { x: 1, y: 12, z: 327.5, yaw: 0, note: "beside L17, Castellan's Antechamber, facing the Lantern and the fog gate" },
+  b07_gate: { x: 0, y: 12, z: 338, yaw: 0, note: "at B07's fog gate (the plane z = 340)" },
+  hall: { x: 0, y: 12, z: 346, yaw: 0, note: "inside Castellan's Hall, by the Echo Stone" },
+  desk: { x: 0, y: 12.3, z: 374, yaw: 0, note: "at the Castellan's desk, facing the back gate" }
 };
 
 // The Cinderdeep Mine (WP-062): the rooms of D4, north (+Z) and down. Lantern spawns stand a meter

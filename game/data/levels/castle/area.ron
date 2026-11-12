@@ -8,7 +8,7 @@
   id: "castle",
   name: "Castle Graymantle",
   seed: 20262501,
-  bounds: (min: (-70.0, -90.0), max: (70.0, 300.0)),
+  bounds: (min: (-70.0, -90.0), max: (70.0, 400.0)),
   kill_y: -50.0,
   start_glimmer: 0,
   // Flat overcast, sea fog (docs/game/07-presentation.md, region palettes): stone gray and sea

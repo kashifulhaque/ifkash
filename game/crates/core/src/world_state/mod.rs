@@ -16,6 +16,8 @@
 //! `inventory.glimmer`. [`Layout`] is rebuilt from the scenario and isn't saved.
 
 #[cfg(test)]
+mod castle2_tests;
+#[cfg(test)]
 mod castle_tests;
 pub mod death;
 #[cfg(test)]

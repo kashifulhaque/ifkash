@@ -24,27 +24,27 @@ use crate::tick::tick;
 use crate::world::World;
 use crate::world_state::flags;
 
-const SCENARIO: &str = "castle";
-const SEED: u64 = 64;
+pub(super) const SCENARIO: &str = "castle";
+pub(super) const SEED: u64 = 64;
 /// The longest run, in ticks (the walk takes about 5,000; this only stops a stuck run).
 const MAX_TICKS: u64 = 12_000;
 /// Acceptance: no walk between Lanterns takes longer than this at run speed, in seconds.
-const MAX_WALK_S: f32 = 45.0;
+pub(super) const MAX_WALK_S: f32 = 45.0;
 /// A path request's node budget.
-const BUDGET: u32 = 2_000_000;
+pub(super) const BUDGET: u32 = 2_000_000;
 /// The shelf of the cliff path under the bridge, at its south end.
 const SHELF_SOUTH: [f32; 3] = [0.0, -8.0, 6.0];
 /// The foot of the keep stair, where the golden ends: 13 m from the Gray Knights.
-const STAIR_FOOT: [f32; 3] = [0.0, 0.0, 184.0];
+pub(super) const STAIR_FOOT: [f32; 3] = [0.0, 0.0, 184.0];
 /// B03's fog gate (the placeholder in `entities.ron`).
 const B03_GATE: [f32; 3] = [0.0, 0.0, 3.5];
 
-fn world() -> World {
+pub(super) fn world() -> World {
     let content = Content::load_embedded().expect("embedded content");
     World::new(SEED, &content, SCENARIO).expect("castle exists")
 }
 
-fn lantern_pos(w: &World, id: &str) -> [f32; 3] {
+pub(super) fn lantern_pos(w: &World, id: &str) -> [f32; 3] {
     w.layout
         .lanterns
         .iter()
@@ -54,7 +54,7 @@ fn lantern_pos(w: &World, id: &str) -> [f32; 3] {
 }
 
 /// The smoothed nav path between two points, as waypoints.
-fn walk_path(w: &World, from: [f32; 3], to: [f32; 3]) -> Vec<[f32; 3]> {
+pub(super) fn walk_path(w: &World, from: [f32; 3], to: [f32; 3]) -> Vec<[f32; 3]> {
     w.nav
         .as_ref()
         .expect("the castle has enemies, so it has a nav grid")
@@ -63,7 +63,7 @@ fn walk_path(w: &World, from: [f32; 3], to: [f32; 3]) -> Vec<[f32; 3]> {
         .waypoints
 }
 
-fn length(path: &[[f32; 3]]) -> f32 {
+pub(super) fn length(path: &[[f32; 3]]) -> f32 {
     path.windows(2)
         .map(|s| {
             let (dx, dz) = (s[1][0] - s[0][0], s[1][2] - s[0][2]);
@@ -73,12 +73,12 @@ fn length(path: &[[f32; 3]]) -> f32 {
 }
 
 /// Seconds to walk `path` at run speed.
-fn seconds(w: &World, path: &[[f32; 3]]) -> f32 {
+pub(super) fn seconds(w: &World, path: &[[f32; 3]]) -> f32 {
     length(path) / w.locomotion.run_speed
 }
 
 /// The nav path through each stop in turn, joined, and its walking time.
-fn via(w: &World, stops: &[[f32; 3]]) -> (Vec<[f32; 3]>, f32) {
+pub(super) fn via(w: &World, stops: &[[f32; 3]]) -> (Vec<[f32; 3]>, f32) {
     let mut all: Vec<[f32; 3]> = Vec::new();
     for pair in stops.windows(2) {
         let p = walk_path(w, pair[0], pair[1]);
@@ -182,7 +182,7 @@ fn every_walk_between_lanterns_is_under_45_seconds() {
 }
 
 /// Drives the player toward (x, z) for `ticks` ticks with no buttons.
-fn push_toward(w: &mut World, x: f32, z: f32, ticks: u32) {
+pub(super) fn push_toward(w: &mut World, x: f32, z: f32, ticks: u32) {
     for _ in 0..ticks {
         let p = w.actors.get(w.player).unwrap().pos;
         let (dx, dz) = (x - p[0], z - p[2]);
@@ -201,7 +201,7 @@ fn push_toward(w: &mut World, x: f32, z: f32, ticks: u32) {
 }
 
 /// One tick with `buttons` held and no movement.
-fn press(w: &mut World, mask: u16) {
+pub(super) fn press(w: &mut World, mask: u16) {
     let input = TickInput {
         frame: ActionFrame {
             move_x: 0,
@@ -216,11 +216,11 @@ fn press(w: &mut World, mask: u16) {
     w.events.drain();
 }
 
-fn player_pos(w: &World) -> [f32; 3] {
+pub(super) fn player_pos(w: &World) -> [f32; 3] {
     w.actors.get(w.player).unwrap().pos
 }
 
-fn put_player(w: &mut World, pos: [f32; 3]) {
+pub(super) fn put_player(w: &mut World, pos: [f32; 3]) {
     let id = w.player;
     let p = w.actors.get_mut(id).unwrap();
     p.pos = pos;
@@ -231,7 +231,7 @@ fn put_player(w: &mut World, pos: [f32; 3]) {
 }
 
 /// A world with every enemy removed, so a test of the level's mechanics isn't a fight.
-fn quiet_world() -> World {
+pub(super) fn quiet_world() -> World {
     let mut w = world();
     let ids: Vec<_> = w.state.ai_enemies.clone();
     for id in ids {
@@ -430,7 +430,7 @@ fn the_castle_has_its_enemies_items_and_echo_stone() {
         2,
         "two Gray Knights guard the keep stair"
     );
-    assert!(level.enemies.len() < 40, "{} enemies", level.enemies.len());
+    assert!(level.enemies.len() < 60, "{} enemies", level.enemies.len());
     // The Mimic stands in the armory (x 24..46, z 120..150); the other enemies stay out of it.
     let in_armory = |p: &[f32; 3]| p[0] > 24.0 && p[0] < 46.0 && p[2] > 120.0 && p[2] < 150.0;
     let mimic = level
@@ -463,25 +463,32 @@ fn the_castle_has_its_enemies_items_and_echo_stone() {
     }
     assert!(level.chests.len() >= 3, "chests: {}", level.chests.len());
     // The Echo Stone is on the bridge, inside the fog gate, and the world resolves it.
-    assert_eq!(level.echo_stones.len(), 1);
-    let stone = &level.echo_stones[0];
-    assert_eq!(stone.id, "stone_b03");
+    let stone = level
+        .echo_stones
+        .iter()
+        .find(|s| s.id == "stone_b03")
+        .expect("B03's stone");
     assert!(
         stone.pos[0].abs() < 6.0 && stone.pos[2] > B03_GATE[2] && stone.pos[2] < 60.0,
         "the stone is off the bridge: {:?}",
         stone.pos
     );
-    assert_eq!(world().echo_table.stones.len(), 1);
+    assert!(!world().echo_table.stones.is_empty());
     assert!(level.bosses.is_empty(), "B03 is an M7 work package");
     // Two Lanterns, the gate and postern, one lever, and the ladder.
-    assert_eq!(level.lanterns.len(), 2);
-    assert_eq!(level.doors.len(), 2);
-    assert_eq!(level.levers.len(), 1);
-    assert_eq!(level.ladders.len(), 1);
+    // (Part 2 adds Lanterns, doors, levers, and ladders of its own; see castle2_tests.)
+    for id in ["lantern_l14", "lantern_l15"] {
+        assert!(level.lanterns.iter().any(|l| l.id == id));
+    }
+    for id in ["gate_main", "door_postern"] {
+        assert!(level.doors.iter().any(|d| d.id == id));
+    }
+    assert!(level.levers.iter().any(|l| l.id == "lever_gate_main"));
+    assert!(level.ladders.iter().any(|l| l.id == "ladder_wall_west"));
 }
 
 /// Drives the player to a Lantern's side and rests: used by the walk below.
-fn goto(w: &World, legs: &mut Vec<Leg>, at: [f32; 3], to: [f32; 3]) {
+pub(super) fn goto(w: &World, legs: &mut Vec<Leg>, at: [f32; 3], to: [f32; 3]) {
     for p in &walk_path(w, at, to)[1..] {
         legs.push(Leg::Goto(p[0], p[2]));
     }
@@ -489,7 +496,7 @@ fn goto(w: &World, legs: &mut Vec<Leg>, at: [f32; 3], to: [f32; 3]) {
 
 /// The route leg by leg: the arrival road, L14 (rest), the cliff path, L15 (rest), the cistern's
 /// stair, the gatehouse lever, the inner arch, and the Lower Ward to the foot of the keep stair.
-fn legs(w: &World) -> Vec<Leg> {
+pub(super) fn legs(w: &World) -> Vec<Leg> {
     let mut legs = Vec::new();
     let l14 = lantern_pos(w, "lantern_l14");
     let l15 = lantern_pos(w, "lantern_l15");

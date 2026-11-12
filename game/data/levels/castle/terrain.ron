@@ -1,5 +1,5 @@
 // The Castle Graymantle terrain (WP-064): flat ground at 0 m, cut by the gorge. Vertices are 2 m
-// apart (71 x 196). The castle's floors that stand over another floor (the bridge deck over the
+// apart (71 x 246). The castle's floors that stand over another floor (the bridge deck over the
 // cliff path, the cistern's ceiling over the cistern) are boxes in layout.ron; the heightfield
 // holds only the lowest floor of each column.
 //
@@ -15,8 +15,8 @@
   ops: [
     // The gorge, and the sea on both sides of the headland.
     SetRect(min: (-70.0, 2.0), max: (70.0, 58.0), height: -30.0),
-    SetRect(min: (-70.0, 60.0), max: (-56.0, 300.0), height: -30.0),
-    SetRect(min: (56.0, 60.0), max: (70.0, 300.0), height: -30.0),
+    SetRect(min: (-70.0, 60.0), max: (-56.0, 400.0), height: -30.0),
+    SetRect(min: (56.0, 60.0), max: (70.0, 400.0), height: -30.0),
 
     // The cliff path: a shelf 4 m wide (vertices x -2, 0, 2) at -8 m under the bridge.
     SetRect(min: (-3.0, 2.0), max: (3.0, 58.0), height: -8.0),
@@ -29,8 +29,14 @@
     // The cistern's stair: 16 m long (26.6 degrees), x 6..12, rising to the courtyard at z 90.
     Ramp(min: (6.0, 74.0), max: (12.0, 90.0), axis: Z, from: -8.0, to: 0.0),
 
+    // The third tier (WP-065): a terrace at 12 m behind the Lower Ward's north wall, x -48..48, z 216..398.
+    // The ramparts' court, the keep, the antechamber, and Castellan's Hall stand on it (layout.ron).
+    SetRect(min: (-48.0, 216.0), max: (48.0, 398.0), height: 12.0),
+
     // The main stair of the Lower Ward: 16 m long (20.6 degrees) to the keep landing at 6 m.
     Ramp(min: (-6.0, 196.0), max: (6.0, 212.0), axis: Z, from: 0.0, to: 6.0),
     SetRect(min: (-6.0, 212.0), max: (6.0, 224.0), height: 6.0),
+    // Past the landing the stair climbs on to the terrace: 16 m long (20.6 degrees), 6 m to 12 m.
+    Ramp(min: (-6.0, 224.0), max: (6.0, 240.0), axis: Z, from: 6.0, to: 12.0),
   ],
 )

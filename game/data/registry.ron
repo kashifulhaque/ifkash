@@ -236,6 +236,10 @@
     (id: "drowned_belfry", num: 22001),
     // WP-064: Castle Graymantle, part 1. 25000-25999 are the castle's content (WP-065 shares it).
     (id: "castle", num: 25000),
+    // WP-065: Castle Graymantle, part 2. 26000-26999 are part 2's content (stubs).
+    (id: "itm_lost_folio", num: 26001), // stub key item: the library's Lost Folio (the Archivist's quest); no item-table entry yet
+    (id: "relic_boo", num: 26010), // stub relic: the friendly ghost's mask behind the library's hollow wall
+    (id: "chronicle_page_3", num: 26011), // stub page: the Castellan's desk, slot 3 (work: american-express)
     // WP-062: Hollowdeep and the Cinderdeep Mine. 23000-23999 are the underground region's content.
     (id: "hollowdeep", num: 23000),
     (id: "cinderdeep_mine", num: 23001),

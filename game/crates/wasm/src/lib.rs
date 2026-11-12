@@ -44,7 +44,8 @@ pub fn encode_replay(seed: u64, scenario: &str, frames: &[u8]) -> Result<Vec<u8>
     let content = Content::load_embedded().map_err(|e| JsError::new(&e.to_string()))?;
     let (chunks, _) = frames.as_chunks::<4>();
     let frames: Vec<ActionFrame> = chunks.iter().map(|&b| ActionFrame::from_bytes(b)).collect();
-    let replay = Replay::record(seed, scenario, content.content_hash(), &frames, Vec::new());
+    let replay = Replay::record(seed, scenario, &content, &frames, Vec::new())
+        .map_err(|e| JsError::new(&e.to_string()))?;
     Ok(replay.encode())
 }
 

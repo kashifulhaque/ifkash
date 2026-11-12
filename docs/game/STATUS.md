@@ -84,7 +84,7 @@ The orchestrator owns this file. It follows these rules, from
 | 057 | Charms, armor, consumables | combat | sonnet | done | sonnet, Opus-verified | latticefall-m5 | game/m5-builds (worker worktree) | 2026-11-12 | `charms.ron` (14), `armor.ron` (7 sets, Boo, endark), consumable `effect:`; `items/{gear,usage,gear_tests}.rs`; `content/src/gear.rs`. `gear::refresh` recomputes defense, absorption, poise, resistances, max HP, load tier on gear change. Hooks in resolve, projectile, status, poise, status_regen, ai sight. Gaps: Scholar's Seal slot and Shrike-Lite startup are queries only (spells must call them); endark needs darkness; items reuse the flask-drink move; stub bow arrows swap `proj_arrow`; Thornheart uses the body buff slot. Registry 16000-16630. |
 | 058 | Equipment rendering | render | sonnet | done | sonnet, Opus-verified | latticefall-m5 | game/m5-builds (worker worktree) | 2026-11-12 | `render/equipment/` (procedural: 14 weapon class builders, 7 armor sets plus Boo and endark as bone-riding parts, catalyst and spell VFX, player gear). Dev armory `/game?engine=lf&dev=1&scene=armory&armory=blades\|heavy\|hands\|catalysts\|armor` in its own chunk. Player gear synced from `menu_state()` every 6 ticks. Digest extended (`catalystSchool`, `element`, armor, spells). Not verified: menu equipping, weapons during attack animations, mobile. Spell VFX not driven by combat events (no spell element on Hit). Armor is unskinned shells, clips a little. Fists hide behind label plates. |
 | 059 | Echo summons | ai | sonnet | done | sonnet, Opus-verified | latticefall-m5 | game/m5-builds (worker worktree) | 2026-11-12 | `ai/echo.rs` (+ tests), `content/src/echo.rs`, `data/echoes/` (rules + 4 Echoes, 17000-17131), `itm_echo_bell` (`ItemKind::EchoBell`). Bell = `UseItem` within `stone_ring_m` of a stone; `CYCLE_SPELL` picks the Echo; bow = `Gesture(1)` (PoliteLlama 120%). Echo brains marked by spawn index `u16::MAX`; `World::echo` hashed only while active. WASM event kind 21. Scenario `echo_boss_gate`; golden `m5_echo_helps_beat_test_boss` (recorded from an ignored test). Gaps: Echo Stones not in the level format (WP-060); no renderer, art, or sfx; actors pass through each other. |
-| 060 | Mirrormere | world | sonnet | todo |  |  | | | |
+| 060 | Mirrormere | world | sonnet | in progress |  | latticefall-m6 | game/m6-world (worker worktree) | 2026-11-12 | |
 | 061 | Sunken Ossuary, Drowned Belfry | world | sonnet | todo |  |  | | | |
 | 062 | Hollowdeep, Cinderdeep Mine | world | sonnet | todo |  |  | | | |
 | 063 | Mossgut Cave, Glasswing Grotto | world | sonnet | todo |  |  | | | |
@@ -92,7 +92,7 @@ The orchestrator owns this file. It follows these rules, from
 | 065 | Castle Graymantle, part 2 | world | sonnet | todo |  |  | | | |
 | 066 | Rimeshelf, Whitewarden, Bound Ring | world | sonnet | todo |  |  | | | |
 | 067 | Lattice Spire | world | sonnet | todo |  |  | | | |
-| 068 | Hollowhearth, NPCs, questlines | ui | sonnet | todo |  |  | | | |
+| 068 | Hollowhearth, NPCs, questlines | ui | sonnet | in progress |  | latticefall-m6 | game/m6-world (worker worktree) | 2026-11-12 | |
 | 069 | Map and fast travel | ui | sonnet | todo |  |  | | | |
 | 070 | B02 the Briar Stag | ai | sonnet | todo |  |  | | | |
 | 071 | B03 Bridgewarden Corvane | ai | haiku | todo |  |  | | | |

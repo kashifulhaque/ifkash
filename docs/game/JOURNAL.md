@@ -38,6 +38,28 @@ Copy this block to the top of the entries and fill it in as you go:
 
 ## Entries
 
+### 2026-11-12: latticefall-m6 (M6)
+
+- **Orchestrator:** Opus 5.5, low effort
+- **Branch:** `game/m6-world`
+- **Started from:** `origin/main` at `3680331`
+- **Gate G2:** still open. The owner asked for M6 anyway.
+- **Reservations:** registry numbers: WP-060 21000-21999, WP-061 22000-22999,
+  WP-062 23000-23999, WP-063 24000-24999, WP-064 25000-25999, WP-065 26000-26999,
+  WP-066 27000-27999, WP-067 28000-28999, WP-068 29000-29999, WP-069 30000-30499.
+  WASM event kinds: WP-060 27, WP-062 28, WP-064 29, WP-067 30, WP-068 31-33,
+  WP-061 34, WP-063 35, WP-065 36, WP-066 37, WP-069 38.
+- **Plan:** wave 1 is WP-060 and WP-068. WP-060 also adds Echo Stones to the level
+  format (an M5 follow-up), which every later region WP uses, so the other region WPs
+  wait for it. New world mechanics go in their own files under
+  `world_state/mechanics/`; `mechanics.rs`, `world_state/mod.rs`, `lib.rs`,
+  `registry.ron`, and the WASM event list take append-only edits.
+- **WPs:**
+- **Context:**
+- **Not verified:**
+- **Waiting on the owner:**
+- **Next steps:**
+
 ### 2026-11-12: latticefall-m5 (M5)
 
 - **Orchestrator:** Opus 5.5, low effort

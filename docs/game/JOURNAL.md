@@ -39,6 +39,8 @@ Copy this block to the top of the entries and fill it in as you go:
   9200-9299, B01 moves 9100-9199. WASM event kinds: WP-030 9-10, WP-033 11-12, WP-032
   13, WP-036 14-15, WP-037 16.
 - **WPs:**
+  - WP-030: opus; 264K worker tokens (reported 190K).
+  - WP-031: sonnet, worktree; 139K. Cherry-picked onto WP-030 by the orchestrator, no conflicts.
 - **Context:**
 - **Not verified:**
 - **Waiting on the owner:**

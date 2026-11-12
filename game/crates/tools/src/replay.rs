@@ -6,7 +6,7 @@ use std::process::ExitCode;
 
 use clap::Subcommand;
 use lf_content::Content;
-use lf_core::input::{ActionFrame, Command};
+use lf_core::input::{ActionFrame, Command, buttons};
 use lf_core::replay::{Replay, ReplayError, expand, run_replay};
 use lf_core::rng::Pcg32;
 
@@ -26,17 +26,21 @@ pub enum Action {
         #[arg(long)]
         out: PathBuf,
     },
+    /// Record a replay from a scripted input file (see `parse_script` for the format).
+    RecordScript {
+        script: PathBuf,
+        #[arg(long)]
+        out: PathBuf,
+    },
 }
 
 pub fn replays_dir() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../tests/replays")
 }
 
-fn content_hash(data: &Path) -> Result<u64, String> {
+fn content(data: &Path) -> Result<Content, String> {
     // Same source as `lf-tools validate`.
-    Content::load_dir(data)
-        .map(|c| c.content_hash())
-        .map_err(|e| e.to_string())
+    Content::load_dir(data).map_err(|e| e.to_string())
 }
 
 fn load(file: &Path) -> Result<Replay, String> {
@@ -58,8 +62,8 @@ fn go(action: Action, data: &Path) -> Result<ExitCode, String> {
     match action {
         Action::Run { file } => {
             let replay = load(&file)?;
-            let hash = content_hash(data)?;
-            match run_replay(&replay, hash) {
+            let content = content(data)?;
+            match run_replay(&replay, &content) {
                 Ok(report) => {
                     println!(
                         "{}: ticks {}, final hash {:016x}, OK",
@@ -89,16 +93,17 @@ fn go(action: Action, data: &Path) -> Result<ExitCode, String> {
                     v
                 }
             };
-            let hash = content_hash(data)?;
+            let content = content(data)?;
             for f in files {
                 let old = load(&f)?;
                 let new = Replay::record(
                     old.header.seed,
                     &old.header.scenario,
-                    hash,
+                    &content,
                     &expand(&old.frames),
                     old.commands.clone(),
-                );
+                )
+                .map_err(|e| format!("{}: {e}", f.display()))?;
                 let fin = |r: &Replay| r.hashes.last().map_or(0, |h| h.1);
                 fs::write(&f, new.encode()).map_err(|e| format!("{}: {e}", f.display()))?;
                 println!(
@@ -112,19 +117,101 @@ fn go(action: Action, data: &Path) -> Result<ExitCode, String> {
         }
         Action::RecordRandom { seed, ticks, out } => {
             let (frames, commands) = random_inputs(seed, ticks);
-            let replay = Replay::record(seed, "m0_flat", content_hash(data)?, &frames, commands);
-            let bytes = replay.encode();
-            fs::write(&out, &bytes).map_err(|e| format!("{}: {e}", out.display()))?;
-            println!(
-                "{}: {} ticks, {} bytes, final hash {:016x}",
-                out.display(),
-                ticks,
-                bytes.len(),
-                replay.hashes.last().map_or(0, |h| h.1)
-            );
-            Ok(ExitCode::SUCCESS)
+            let replay = Replay::record(seed, "m0_flat", &content(data)?, &frames, commands)
+                .map_err(|e| e.to_string())?;
+            write_replay(&out, &replay)
+        }
+        Action::RecordScript { script, out } => {
+            let text =
+                fs::read_to_string(&script).map_err(|e| format!("{}: {e}", script.display()))?;
+            let s = parse_script(&text).map_err(|e| format!("{}: {e}", script.display()))?;
+            let replay = Replay::record(s.seed, &s.scenario, &content(data)?, &s.frames, vec![])
+                .map_err(|e| e.to_string())?;
+            write_replay(&out, &replay)
         }
     }
+}
+
+fn write_replay(out: &Path, replay: &Replay) -> Result<ExitCode, String> {
+    let bytes = replay.encode();
+    fs::write(out, &bytes).map_err(|e| format!("{}: {e}", out.display()))?;
+    println!(
+        "{}: {} ticks, {} bytes, final hash {:016x}",
+        out.display(),
+        replay.total_ticks(),
+        bytes.len(),
+        replay.hashes.last().map_or(0, |h| h.1)
+    );
+    Ok(ExitCode::SUCCESS)
+}
+
+/// A parsed input script.
+pub struct Script {
+    pub seed: u64,
+    pub scenario: String,
+    pub frames: Vec<ActionFrame>,
+}
+
+/// Parses an input script. Blank lines and text after `#` are ignored. The header lines
+/// `seed <u64>` and `scenario <name>` are required; every other line is
+/// `<ticks> <move_x> <move_z> [BUTTON+BUTTON...]`, holding that frame for `ticks` ticks.
+/// Button names are the `ActionFrame` button names, for example `DODGE+JUMP`.
+pub fn parse_script(text: &str) -> Result<Script, String> {
+    let mut seed = None;
+    let mut scenario = None;
+    let mut frames = Vec::new();
+    for (n, raw) in text.lines().enumerate() {
+        let line = raw.split('#').next().unwrap_or("").trim();
+        if line.is_empty() {
+            continue;
+        }
+        let err = |m: &str| format!("line {}: {m}: {raw:?}", n + 1);
+        let words: Vec<&str> = line.split_whitespace().collect();
+        match words[0] {
+            "seed" if words.len() == 2 => {
+                seed = Some(words[1].parse::<u64>().map_err(|_| err("bad seed"))?);
+            }
+            "scenario" if words.len() == 2 => scenario = Some(words[1].to_owned()),
+            _ if words.len() == 3 || words.len() == 4 => {
+                let ticks: u32 = words[0].parse().map_err(|_| err("bad tick count"))?;
+                let move_x: i8 = words[1].parse().map_err(|_| err("bad move_x"))?;
+                let move_z: i8 = words[2].parse().map_err(|_| err("bad move_z"))?;
+                let mut mask = 0u16;
+                if let Some(names) = words.get(3) {
+                    for name in names.split('+') {
+                        mask |= button(name).ok_or_else(|| err("unknown button"))?;
+                    }
+                }
+                let frame = ActionFrame {
+                    move_x,
+                    move_z,
+                    buttons: mask,
+                };
+                frames.extend(std::iter::repeat_n(frame, ticks as usize));
+            }
+            _ => return Err(err("expected `<ticks> <move_x> <move_z> [BUTTONS]`")),
+        }
+    }
+    Ok(Script {
+        seed: seed.ok_or("missing `seed` line")?,
+        scenario: scenario.ok_or("missing `scenario` line")?,
+        frames,
+    })
+}
+
+fn button(name: &str) -> Option<u16> {
+    Some(match name {
+        "LIGHT" => buttons::LIGHT,
+        "HEAVY" => buttons::HEAVY,
+        "GUARD" => buttons::GUARD,
+        "DODGE" => buttons::DODGE,
+        "ART" => buttons::ART,
+        "JUMP" => buttons::JUMP,
+        "USE_ITEM" => buttons::USE_ITEM,
+        "INTERACT" => buttons::INTERACT,
+        "LOCK" => buttons::LOCK,
+        _ => return None,
+    })
 }
 
 /// Random stick and button input held for 1 to 12 ticks at a time, plus a few commands.

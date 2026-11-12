@@ -1,6 +1,10 @@
 use lf_core::input::{ActionFrame, Command};
 use lf_core::replay::{Replay, ReplayHeader, compress, expand};
 use proptest::prelude::*;
+use std::sync::LazyLock;
+
+static CONTENT: LazyLock<lf_content::Content> =
+    LazyLock::new(|| lf_content::Content::load_embedded().expect("embedded content"));
 
 fn arb_frame() -> impl Strategy<Value = ActionFrame> {
     // Few distinct values so runs actually occur.
@@ -48,7 +52,7 @@ proptest! {
         commands in proptest::collection::vec((0u64..200, arb_command()), 0..10),
         seed in any::<u64>(),
     ) {
-        let r = Replay::record(seed, "m0_flat", 1, &frames, commands);
+        let r = Replay::record(seed, "m0_flat", &CONTENT, &frames, commands).unwrap();
         let back = Replay::decode(&r.encode()).unwrap();
         prop_assert_eq!(&back, &r);
         prop_assert_eq!(expand(&back.frames), frames);

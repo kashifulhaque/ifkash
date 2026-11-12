@@ -14,16 +14,20 @@ use std::path::Path;
 use serde::{Deserialize, Serialize};
 
 pub mod attributes;
+pub mod locomotion;
 pub mod moves;
 pub mod portfolio;
 pub mod registry;
+pub mod scenario;
 pub mod validate;
 pub mod weapons;
 
 pub use attributes::Attributes;
+pub use locomotion::Locomotion;
 pub use moves::Move;
 pub use portfolio::{Portfolio, PortfolioContent};
 pub use registry::{NumId, Registry};
+pub use scenario::Scenario;
 pub use validate::{Issue, Severity, Validate};
 pub use weapons::Weapon;
 
@@ -33,6 +37,10 @@ use registry::RegistryFile;
 const MOVES_DIR: &str = "moves";
 /// Directory (relative to the data root) holding weapon files.
 const WEAPONS_DIR: &str = "weapons";
+/// Directory (relative to the data root) holding scenario files.
+const SCENARIOS_DIR: &str = "scenarios";
+/// The locomotion tuning file (relative to the data root).
+const LOCOMOTION_FILE: &str = "locomotion.ron";
 
 /// Embedded copies of every data file, as `(path relative to the data root, text)`.
 /// A new data file needs a line here; the `embedded_matches_data_dir` test fails if one
@@ -47,6 +55,17 @@ const EMBEDDED_WEAPONS: &[(&str, &str)] = &[(
 )];
 const EMBEDDED_REGISTRY: &str = include_str!("../../../data/registry.ron");
 const EMBEDDED_ATTRIBUTES: &str = include_str!("../../../data/attributes.ron");
+const EMBEDDED_LOCOMOTION: &str = include_str!("../../../data/locomotion.ron");
+const EMBEDDED_SCENARIOS: &[(&str, &str)] = &[
+    (
+        "scenarios/m0_flat.ron",
+        include_str!("../../../data/scenarios/m0_flat.ron"),
+    ),
+    (
+        "scenarios/test_field.ron",
+        include_str!("../../../data/scenarios/test_field.ron"),
+    ),
+];
 
 /// All parsed content.
 ///
@@ -59,6 +78,14 @@ pub struct Content {
     pub attributes: Attributes,
     pub moves: BTreeMap<String, Vec<Move>>,
     pub weapons: BTreeMap<String, Vec<Weapon>>,
+    /// Player locomotion tuning from `locomotion.ron`. `None` only for partial data
+    /// directories (test fixtures); the simulation needs it.
+    #[cfg_attr(feature = "ts", ts(skip))]
+    pub locomotion: Option<Locomotion>,
+    /// Scenarios keyed by file path relative to the data root, for example
+    /// `scenarios/test_field.ron`. Look one up by name with [`Content::scenario`].
+    #[cfg_attr(feature = "ts", ts(skip))]
+    pub scenarios: BTreeMap<String, Scenario>,
 }
 
 /// A failure to load content. Validation problems are [`Issue`]s instead.
@@ -116,6 +143,9 @@ impl Content {
         };
         let list = |sub: &str| -> Result<Vec<(String, String)>, ContentError> {
             let sub_dir = dir.join(sub);
+            if sub == SCENARIOS_DIR && !sub_dir.is_dir() {
+                return Ok(Vec::new());
+            }
             let mut names = Vec::new();
             let entries = std::fs::read_dir(&sub_dir).map_err(|e| ContentError::Io {
                 path: sub_dir.display().to_string(),
@@ -137,12 +167,19 @@ impl Content {
                 .map(|name| Ok((format!("{sub}/{name}"), read(&sub_dir.join(&name))?)))
                 .collect()
         };
+        let locomotion_path = dir.join(LOCOMOTION_FILE);
+        let locomotion = if locomotion_path.is_file() {
+            Some(read(&locomotion_path)?)
+        } else {
+            None
+        };
         Self::from_sources(
             &read(&dir.join("registry.ron"))?,
             &read(&dir.join("attributes.ron"))?,
             list(MOVES_DIR)?,
             list(WEAPONS_DIR)?,
-        )
+        )?
+        .with_world(locomotion.as_deref(), list(SCENARIOS_DIR)?)
     }
 
     /// Loads the content baked into this crate with `include_str!`.
@@ -158,7 +195,8 @@ impl Content {
             EMBEDDED_ATTRIBUTES,
             own(EMBEDDED_MOVES),
             own(EMBEDDED_WEAPONS),
-        )
+        )?
+        .with_world(Some(EMBEDDED_LOCOMOTION), own(EMBEDDED_SCENARIOS))
     }
 
     /// Builds content from RON text. `moves` and `weapons` are `(relative path, text)`.
@@ -186,9 +224,37 @@ impl Content {
             attributes,
             moves: move_map,
             weapons: weapon_map,
+            locomotion: None,
+            scenarios: BTreeMap::new(),
         };
         content.check_registered()?;
         Ok(content)
+    }
+
+    /// Adds the simulation world data: locomotion tuning (RON text, if any) and scenarios
+    /// as `(relative path, text)`.
+    pub fn with_world(
+        mut self,
+        locomotion: Option<&str>,
+        scenarios: Vec<(String, String)>,
+    ) -> Result<Self, ContentError> {
+        self.locomotion = locomotion
+            .map(|text| parse::<Locomotion>(LOCOMOTION_FILE, text))
+            .transpose()?;
+        for (path, text) in scenarios {
+            let scenario: Scenario = parse(&path, &text)?;
+            scenario.check().map_err(|message| ContentError::Parse {
+                file: path.clone(),
+                message,
+            })?;
+            self.scenarios.insert(path, scenario);
+        }
+        Ok(self)
+    }
+
+    /// Finds a scenario by name: `test_field` is `scenarios/test_field.ron`.
+    pub fn scenario(&self, name: &str) -> Option<&Scenario> {
+        self.scenarios.get(&format!("{SCENARIOS_DIR}/{name}.ron"))
     }
 
     /// Fails on the first content ID that has no registry entry.

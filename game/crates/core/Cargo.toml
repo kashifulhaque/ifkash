@@ -17,6 +17,12 @@ libm.workspace = true
 # Same math crate as rapier3d 0.36.1 (WP-010 adds Rapier). `libm-force` routes nalgebra's
 # transcendental functions through libm, matching Rapier's `enhanced-determinism`.
 nalgebra = { version = "0.35", default-features = false, features = ["std", "libm-force"] }
+# Physics (docs/game/01-architecture.md#physics). `enhanced-determinism` is required by the
+# determinism contract and excludes the SIMD features, which stay off. `serde-serialize`
+# lets `PhysicsState` serialize with the world. Pinned exactly: an upgrade is a
+# determinism-breaking change.
+rapier3d = { version = "=0.36.1", default-features = false, features = ["dim3", "f32", "std", "enhanced-determinism", "serde-serialize"] }
+lf-content.workspace = true
 
 [dev-dependencies]
 proptest = "1"

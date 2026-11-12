@@ -11,6 +11,7 @@ from latticefall import (
     embedded_content_hash,
     replay_final_expected,
     replay_frames,
+    replay_scenario,
     replay_seed,
     run_replay,
 )
@@ -44,7 +45,7 @@ def test_stepping_matches_recorded_hash(path):
     data = path.read_bytes()
     frames = replay_frames(data)
     sim = Sim()
-    sim.reset(replay_seed(data), "m0_flat")
+    sim.reset(replay_seed(data), replay_scenario(data))
     for i in range(0, len(frames), 4):
         sim.step(frames[i : i + 4])
     assert sim.tick == len(frames) // 4
@@ -55,7 +56,7 @@ def test_stepping_matches_recorded_hash(path):
 def test_step_many_matches_step(path):
     data = path.read_bytes()
     sim = Sim()
-    sim.reset(replay_seed(data))
+    sim.reset(replay_seed(data), replay_scenario(data))
     assert sim.step_many(replay_frames(data)) == sim.tick
     assert sim.state_hash() == replay_final_expected(data)
 
@@ -65,7 +66,7 @@ def test_clone_diverges_independently_then_converges():
     frames = replay_frames(data)
     half = (len(frames) // 8) * 4
     sim = Sim()
-    sim.reset(replay_seed(data))
+    sim.reset(replay_seed(data), replay_scenario(data))
     sim.step_many(frames[:half])
     copy = sim.clone()
     assert copy.state_hash() == sim.state_hash()

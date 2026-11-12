@@ -30,8 +30,7 @@ pub fn content_hash() -> Result<String, JsError> {
 pub fn run_replay(bytes: &[u8]) -> Result<String, JsError> {
     let replay = Replay::decode(bytes).map_err(|e| JsError::new(&e.to_string()))?;
     let content = Content::load_embedded().map_err(|e| JsError::new(&e.to_string()))?;
-    let report = core_run_replay(&replay, content.content_hash())
-        .map_err(|e| JsError::new(&e.to_string()))?;
+    let report = core_run_replay(&replay, &content).map_err(|e| JsError::new(&e.to_string()))?;
     Ok(format!("{:016x}", report.final_hash))
 }
 
@@ -44,14 +43,17 @@ pub struct LfWorld {
 
 #[wasm_bindgen]
 impl LfWorld {
-    /// Starts a fresh world. `scenario` is reserved: only the flat M0 scenario exists so far.
+    /// Starts a fresh world from the embedded content. `scenario` names a file in
+    /// `game/data/scenarios/` without the extension, for example `m0_flat` or
+    /// `test_field`. Throws if the scenario doesn't exist.
     #[wasm_bindgen(constructor)]
-    pub fn new_world(seed: u64, scenario: &str) -> LfWorld {
-        let _ = scenario;
-        let world = World::new(seed);
+    pub fn new_world(seed: u64, scenario: &str) -> Result<LfWorld, JsError> {
+        let content = Content::load_embedded().map_err(|e| JsError::new(&e.to_string()))?;
+        let world =
+            World::new(seed, &content, scenario).map_err(|e| JsError::new(&e.to_string()))?;
         let mut snapshot = Vec::new();
         write_snapshot(&world, &mut snapshot);
-        LfWorld { world, snapshot }
+        Ok(LfWorld { world, snapshot })
     }
 
     /// Advances one tick per 4-byte `ActionFrame` in `frames` (`[move_x, move_z, buttons_lo,
@@ -97,11 +99,13 @@ impl LfWorld {
             .collect()
     }
 
-    /// Ray query against the world. Stub until WP-010 adds physics: always `undefined`.
-    /// On a hit it will return the distance along the ray.
+    /// Ray query against the level. `origin` and `dir` are 3 floats each. Returns the
+    /// distance to the first hit within `max`, in units of `dir`'s length, or `undefined`
+    /// on a miss or if either array isn't 3 long. Read-only: it never changes the world.
     pub fn raycast(&self, origin: &[f32], dir: &[f32], max: f32) -> Option<f32> {
-        let _ = (origin, dir, max);
-        None
+        let origin: [f32; 3] = origin.try_into().ok()?;
+        let dir: [f32; 3] = dir.try_into().ok()?;
+        self.world.physics.raycast(origin, dir, max)
     }
 
     /// The world state hash as 16 lowercase hex digits.

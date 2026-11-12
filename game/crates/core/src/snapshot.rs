@@ -62,7 +62,11 @@ pub fn write_snapshot(world: &World, out: &mut Vec<ActorSnap>) {
             id: pack_id(id),
             pos: actor.pos,
             yaw: actor.yaw,
-            hp_frac: 1.0,
+            hp_frac: if actor.max_hp > 0 {
+                actor.hp as f32 / actor.max_hp as f32
+            } else {
+                0.0
+            },
             ..ActorSnap::default()
         });
     }
@@ -84,7 +88,8 @@ mod tests {
 
     #[test]
     fn snapshot_holds_the_player() {
-        let mut w = World::new(1);
+        let content = lf_content::Content::load_embedded().unwrap();
+        let mut w = World::new(1, &content, "m0_flat").unwrap();
         let id = w.player;
         w.actors.get_mut(id).unwrap().pos = [1.0, 2.0, 3.0];
         let mut out = Vec::new();

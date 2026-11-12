@@ -27,7 +27,7 @@ use pyo3::prelude::*;
 use pyo3::pybacked::PyBackedBytes;
 use pyo3::types::PyBytes;
 
-/// The only scenario so far.
+/// The scenario a new `Sim` starts in, and the default for `reset`.
 const DEFAULT_SCENARIO: &str = "m0_flat";
 /// Environment variable that names a content directory.
 const DATA_ENV: &str = "LATTICEFALL_DATA";
@@ -60,16 +60,6 @@ fn embedded() -> PyResult<Content> {
     Content::load_embedded().map_err(|e| value_err(format!("cannot load embedded content: {e}")))
 }
 
-fn check_scenario(scenario: &str) -> PyResult<()> {
-    if scenario == DEFAULT_SCENARIO {
-        Ok(())
-    } else {
-        Err(value_err(format!(
-            "unknown scenario {scenario:?} (only {DEFAULT_SCENARIO:?} exists so far)"
-        )))
-    }
-}
-
 fn step_world(world: &mut World, frame: ActionFrame) {
     let input = TickInput {
         frame,
@@ -97,17 +87,17 @@ impl Sim {
         let content = load_content(data_dir)?;
         let content_hash = content.content_hash();
         Ok(Self {
-            world: World::new(0),
+            world: World::new(0, &content, DEFAULT_SCENARIO).map_err(value_err)?,
             content,
             content_hash,
         })
     }
 
-    /// Starts a fresh world from `seed` in `scenario`.
+    /// Starts a fresh world from `seed` in `scenario` (a file in the content's
+    /// `scenarios/` folder, without the extension). Raises `ValueError` if it doesn't exist.
     #[pyo3(signature = (seed, scenario=DEFAULT_SCENARIO))]
     fn reset(&mut self, seed: u64, scenario: &str) -> PyResult<()> {
-        check_scenario(scenario)?;
-        self.world = World::new(seed);
+        self.world = World::new(seed, &self.content, scenario).map_err(value_err)?;
         Ok(())
     }
 
@@ -206,8 +196,8 @@ fn decode(data: &[u8]) -> PyResult<Replay> {
 #[pyfunction]
 fn run_replay(py: Python<'_>, data: PyBackedBytes) -> PyResult<u64> {
     let r = decode(&data)?;
-    let hash = load_content(None)?.content_hash();
-    py.detach(|| replay::run_replay(&r, hash))
+    let content = load_content(None)?;
+    py.detach(|| replay::run_replay(&r, &content))
         .map(|report| report.final_hash)
         .map_err(value_err)
 }
@@ -236,11 +226,17 @@ fn replay_seed(data: PyBackedBytes) -> PyResult<u64> {
     Ok(decode(&data)?.header.seed)
 }
 
+/// The scenario name recorded in a replay.
+#[pyfunction]
+fn replay_scenario(data: PyBackedBytes) -> PyResult<String> {
+    Ok(decode(&data)?.header.scenario)
+}
+
 #[pymodule]
 mod _latticefall {
     #[pymodule_export]
     use super::{
         Sim, content_hash, embedded_content_hash, replay_final_expected, replay_frames,
-        replay_seed, run_replay,
+        replay_scenario, replay_seed, run_replay,
     };
 }

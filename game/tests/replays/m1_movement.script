@@ -1,0 +1,13 @@
+# WP-010 golden route on the test field (record with `lf-tools replay record-script`).
+# Each line: <ticks> <move_x> <move_z> [BUTTONS]. The player spawns at the origin
+# facing +Z; the ramp starts at z = 10, the ledge face is at z = 30, the drop at z = 40.
+seed 10
+scenario test_field
+45  0  30           # walk
+15  0  127          # run
+150 0  127 DODGE    # sprint (starts after 8 ticks held) up the ramp to the ledge face
+10  0  127          # stop sprinting, press against the 1 m ledge
+1   0  127 JUMP     # jump the ledge
+40  0  127          # land on top and recover
+60  0  127          # run off the far edge: a 10 m drop
+60  0  0            # stand still after the landing

@@ -23,8 +23,13 @@ pub fn tick(world: &mut World, input: &TickInput) {
 mod tests {
     use super::*;
 
+    fn fresh(seed: u64) -> World {
+        let content = lf_content::Content::load_embedded().unwrap();
+        World::new(seed, &content, "m0_flat").unwrap()
+    }
+
     fn run(seed: u64, ticks: u64) -> World {
-        let mut w = World::new(seed);
+        let mut w = fresh(seed);
         let input = TickInput::default();
         for _ in 0..ticks {
             tick(&mut w, &input);
@@ -34,7 +39,7 @@ mod tests {
 
     #[test]
     fn ten_thousand_ticks_are_reproducible() {
-        let start = World::new(42).state_hash();
+        let start = fresh(42).state_hash();
         let a = run(42, 10_000);
         let b = run(42, 10_000);
         assert_eq!(a.tick, 10_000);

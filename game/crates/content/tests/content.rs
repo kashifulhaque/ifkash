@@ -33,7 +33,7 @@ fn embedded_and_dir_hashes_match() {
 
 #[test]
 fn embedded_matches_data_dir() {
-    // Every .ron file under data/moves and data/weapons must be embedded.
+    // Every .ron file under data/moves, data/weapons, and data/scenarios must be embedded.
     let dir = Content::load_dir(data_dir()).expect("dir loads");
     let embedded = Content::load_embedded().expect("embedded loads");
     assert_eq!(
@@ -44,6 +44,13 @@ fn embedded_matches_data_dir() {
         dir.weapons.keys().collect::<Vec<_>>(),
         embedded.weapons.keys().collect::<Vec<_>>()
     );
+    assert_eq!(
+        dir.scenarios.keys().collect::<Vec<_>>(),
+        embedded.scenarios.keys().collect::<Vec<_>>()
+    );
+    assert!(embedded.locomotion.is_some());
+    assert!(embedded.scenario("m0_flat").is_some());
+    assert!(embedded.scenario("test_field").is_some());
 }
 
 #[test]
@@ -60,6 +67,13 @@ fn hash_ignores_comments_and_whitespace() {
         vec![("moves/straight_sword.ron".into(), moves)],
         vec![("weapons/straight_sword.ron".into(), weapons)],
     )
+    .and_then(|c| {
+        let read = |p: &str| std::fs::read_to_string(data_dir().join(p)).unwrap();
+        let scenarios = ["scenarios/m0_flat.ron", "scenarios/test_field.ron"]
+            .map(|p| (p.to_owned(), format!("// noise\n{}", read(p))))
+            .to_vec();
+        c.with_world(Some(&read("locomotion.ron")), scenarios)
+    })
     .expect("loads");
     assert_eq!(base.content_hash(), other.content_hash());
 }

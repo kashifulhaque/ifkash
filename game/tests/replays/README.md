@@ -10,7 +10,8 @@ The file is [`postcard`](https://docs.rs/postcard) bytes of `lf_core::replay::Re
 (format version 1):
 
 - Header: `format_version` (u16), `content_hash` (u64), `seed` (u64), `scenario`
-  (string, `m0_flat` for now), and `start_tick` (u64, must be 0).
+  (string: a file in `game/data/scenarios/` without the extension, such as `m0_flat`
+  or `test_field`), and `start_tick` (u64, must be 0).
 - Frames: run-length-encoded `ActionFrame` values, as `(frame, run)` pairs. A frame is
   `move_x: i8`, `move_z: i8`, `buttons: u16`.
 - Commands: `(tick, Command)` pairs, applied on the tick whose number matches.
@@ -28,9 +29,20 @@ lf-tools replay run tests/replays/m0_random_3000.lfr
 # Re-record the expected hashes and content hash in place (all .lfr files if no FILE).
 lf-tools replay rehash [FILE]
 
-# Record a new random replay.
+# Record a new random replay (on m0_flat).
 lf-tools replay record-random --seed 20260101 --ticks 3000 --out tests/replays/m0_random_3000.lfr
+
+# Record a replay from an input script.
+lf-tools replay record-script tests/replays/m1_movement.script --out tests/replays/m1_movement.lfr
 ```
+
+## Replays
+
+- `m0_random_3000.lfr`: 3,000 ticks of random input on `m0_flat`.
+- `m1_movement.lfr`: the WP-010 route on `test_field`, recorded from
+  `m1_movement.script`. It walks, sprints up the slope, jumps the 1 m ledge, and walks
+  off the 10 m drop. The `m1_movement_route_does_what_it_says` test in
+  `game/crates/tools/tests/golden.rs` checks each of those happens.
 
 Rehash only when a change to the simulation or the content data is intended. Review the
 old and new final hash it prints, and commit the updated file with that change.

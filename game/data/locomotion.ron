@@ -1,0 +1,39 @@
+// Player locomotion tuning for the kinematic character controller (WP-010).
+// Sources:
+//   docs/game/01-architecture.md, "ActionFrame" (walk and run stick thresholds) and
+//     "Physics" (kinematic controller with autostep and snap to ground).
+//   docs/game/02-world.md, "Traversal and world mechanics" (jump and fall damage rows).
+//   docs/game/03-combat.md, "Combat verbs" (sprint and jump rows) and "Regeneration".
+// Values marked "tuning" are not fixed by the spec.
+(
+  walk_speed: 1.6, // tuning (carried over from the WP-004 placeholder)
+  run_speed: 4.5, // tuning (carried over from the WP-004 placeholder)
+  sprint_speed: 6.0, // tuning
+  walk_below: 40.0, // ActionFrame: magnitude below 40 is a walk
+  run_above: 90.0, // ActionFrame: magnitude above 90 is a run
+  sprint_delay_ticks: 8, // Combat verbs, Sprint: starts after 8 ticks held
+  sprint_stamina_per_tick: 0.2, // Combat verbs, Sprint: 0.2 per tick
+  jump_height: 1.1, // Traversal, Jump: 1.1 m height
+  jump_startup_ticks: 4, // Combat verbs, Jump: startup 4
+  jump_landing_ticks: 6, // Combat verbs, Jump: 6 landing
+  jump_stamina: 10.0, // Combat verbs, Jump: stamina 10
+  // Chosen with jump_height so a running jump carries about 3.5 m (Traversal, Jump):
+  // airtime = 2 * sqrt(2 * jump_height / gravity), and run_speed * airtime is about 3.5.
+  gravity: 14.5,
+  terminal_fall_speed: 40.0, // tuning
+  stamina_regen_per_tick: 1.5, // Regeneration: 1.5 per tick
+  stamina_regen_delay_ticks: 15, // Regeneration: after 15 ticks without spending
+  stub_vitality: 10, // stub until characters have attributes
+  stub_endurance: 10, // stub until characters have attributes
+  fall_damage_from_m: 8.0, // Traversal, Fall damage: over 8 m
+  fall_damage_per_m: 0.04, // Traversal, Fall damage: 4% of max HP per meter above 8
+  fall_death_over_m: 20.0, // Traversal, Fall damage: over 20 m, death
+  capsule_radius: 0.35, // tuning: 1.8 m tall capsule
+  capsule_half_height: 0.55, // tuning
+  controller_offset: 0.02, // tuning
+  max_slope_climb_deg: 45.0, // tuning
+  min_slope_slide_deg: 50.0, // tuning
+  autostep_height: 0.4, // tuning: stairs step up, the 1 m ledge needs a jump
+  autostep_min_width: 0.2, // tuning
+  snap_to_ground: 0.3, // tuning
+)

@@ -2,14 +2,15 @@
 //! replays"). A replay is a seed, a run-length-encoded `ActionFrame` stream, commands keyed
 //! by tick, and expected state hashes every `CHECKPOINT_INTERVAL` ticks. The file is
 //! `postcard` bytes (`.lfr`), so the native tools, WASM/Node, and Python all load the same
-//! file. This module does no I/O and does not know about `lf-content`: callers pass the
-//! content hash.
+//! file. This module does no I/O: callers pass the loaded `Content`, which supplies the
+//! content hash and the scenario.
 
+use lf_content::Content;
 use serde::{Deserialize, Serialize};
 
 use crate::input::{ActionFrame, Command, TickInput};
 use crate::tick::tick;
-use crate::world::World;
+use crate::world::{World, WorldError};
 
 /// Bumped on any incompatible change to the layout below.
 pub const FORMAT_VERSION: u16 = 1;
@@ -55,6 +56,8 @@ pub enum ReplayError {
     },
     /// A recorded checkpoint lies beyond the last tick of the replay.
     CheckpointOutOfRange(u64),
+    /// The world couldn't be built, for example because the scenario doesn't exist.
+    World(WorldError),
 }
 
 impl core::fmt::Display for ReplayError {
@@ -76,6 +79,7 @@ impl core::fmt::Display for ReplayError {
                 "state hash mismatch at tick {tick}: expected {expected:016x}, got {actual:016x}"
             ),
             Self::CheckpointOutOfRange(t) => write!(f, "checkpoint at tick {t} is past the end"),
+            Self::World(e) => write!(f, "{e}"),
         }
     }
 }
@@ -128,20 +132,21 @@ impl Replay {
         self.frames.iter().map(|&(_, n)| u64::from(n)).sum()
     }
 
-    /// Runs `frames` and `commands` from a fresh world and records the expected hashes.
+    /// Runs `frames` and `commands` from a fresh world in `scenario` and records the
+    /// expected hashes and the content hash.
     pub fn record(
         seed: u64,
         scenario: &str,
-        content_hash: u64,
+        content: &Content,
         frames: &[ActionFrame],
         commands: Vec<(u64, Command)>,
-    ) -> Replay {
+    ) -> Result<Replay, ReplayError> {
         let mut commands = commands;
         commands.sort_by_key(|&(t, _)| t); // stable: keeps order within a tick
         let mut r = Replay {
             header: ReplayHeader {
                 format_version: FORMAT_VERSION,
-                content_hash,
+                content_hash: content.content_hash(),
                 seed,
                 scenario: scenario.to_string(),
                 start_tick: 0,
@@ -150,10 +155,8 @@ impl Replay {
             commands,
             hashes: Vec::new(),
         };
-        r.hashes = simulate(&r, |_, _| Ok(()))
-            .expect("recording cannot mismatch")
-            .1;
-        r
+        r.hashes = simulate(&r, content, |_, _| Ok(()))?.1;
+        Ok(r)
     }
 }
 
@@ -161,6 +164,7 @@ impl Replay {
 /// tick. Returns the report and the hash at every checkpoint.
 fn simulate(
     r: &Replay,
+    content: &Content,
     mut check: impl FnMut(u64, u64) -> Result<(), ReplayError>,
 ) -> Result<(ReplayReport, Vec<(u64, u64)>), ReplayError> {
     if r.header.start_tick != 0 {
@@ -170,7 +174,8 @@ fn simulate(
     if let Some(&(t, _)) = r.hashes.iter().find(|&&(t, _)| t > total || t == 0) {
         return Err(ReplayError::CheckpointOutOfRange(t));
     }
-    let mut world = World::new(r.header.seed);
+    let mut world =
+        World::new(r.header.seed, content, &r.header.scenario).map_err(ReplayError::World)?;
     let mut cmd_i = 0;
     let mut seen = Vec::new();
     let mut final_hash = world.state_hash();
@@ -205,15 +210,17 @@ fn simulate(
     ))
 }
 
-/// Replays `r` against `content_hash`, failing on the first mismatching checkpoint.
-pub fn run_replay(r: &Replay, content_hash: u64) -> Result<ReplayReport, ReplayError> {
+/// Replays `r` against `content`, failing on a content hash mismatch or on the first
+/// mismatching checkpoint.
+pub fn run_replay(r: &Replay, content: &Content) -> Result<ReplayReport, ReplayError> {
+    let content_hash = content.content_hash();
     if r.header.content_hash != content_hash {
         return Err(ReplayError::ContentHashMismatch {
             expected: r.header.content_hash,
             actual: content_hash,
         });
     }
-    let (report, _) = simulate(r, |t, actual| {
+    let (report, _) = simulate(r, content, |t, actual| {
         match r.hashes.iter().find(|&&(ct, _)| ct == t) {
             Some(&(_, expected)) if expected != actual => Err(ReplayError::HashMismatch {
                 tick: t,
@@ -250,15 +257,22 @@ mod tests {
     #[test]
     fn record_then_run_is_ok() {
         let frames: Vec<_> = (0..95).map(|i| f((i % 7) as i8 * 10, 50)).collect();
-        let r = Replay::record(5, "m0_flat", 9, &frames, vec![(3, Command::Rest)]);
+        let content = Content::load_embedded().unwrap();
+        let r = Replay::record(5, "m0_flat", &content, &frames, vec![(3, Command::Rest)]).unwrap();
         assert_eq!(r.hashes.last().unwrap().0, 95);
         assert_eq!(r.hashes.len(), 4);
-        let rep = run_replay(&Replay::decode(&r.encode()).unwrap(), 9).unwrap();
+        let rep = run_replay(&Replay::decode(&r.encode()).unwrap(), &content).unwrap();
         assert_eq!(rep.ticks, 95);
         assert_eq!(rep.final_hash, r.hashes.last().unwrap().1);
+        let mut other = content.clone();
+        other.attributes.max_hp.base_tenths += 1;
         assert!(matches!(
-            run_replay(&r, 10),
+            run_replay(&r, &other),
             Err(ReplayError::ContentHashMismatch { .. })
+        ));
+        assert!(matches!(
+            Replay::record(5, "nope", &content, &frames, vec![]),
+            Err(ReplayError::World(WorldError::UnknownScenario(_)))
         ));
     }
 }

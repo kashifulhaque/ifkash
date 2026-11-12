@@ -6,6 +6,7 @@ from ._latticefall import (
     embedded_content_hash,
     replay_final_expected,
     replay_frames,
+    replay_scenario,
     replay_seed,
     run_replay,
 )
@@ -19,6 +20,7 @@ __all__ = [
     "embedded_content_hash",
     "replay_final_expected",
     "replay_frames",
+    "replay_scenario",
     "replay_seed",
     "run_replay",
 ]

@@ -139,7 +139,11 @@ fn return_to_lantern(world: &mut World) -> bool {
 /// to add as the projectile's element. `None` leaves the shot as it is (no arrows
 /// equipped, or none left: the stub bow keeps firing the base arrow).
 pub fn take_ammo(world: &mut World, shooter: Id, projectile: &str) -> Option<(String, u8)> {
-    if shooter != world.player || projectile != BASE_ARROW {
+    // WP-052: the bow's heavy and fully drawn arrows are base arrows too: they spend ammunition
+    // and take its swap (and so its fixed stats) like the light arrow does.
+    let base =
+        projectile == BASE_ARROW || matches!(projectile, "proj_arrow_heavy" | "proj_arrow_charged");
+    if shooter != world.player || !base {
         return None;
     }
     let item = world.actors.get(shooter)?.inventory.equipment.slots[usize::from(slot::ARROWS)]?;

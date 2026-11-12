@@ -3,6 +3,7 @@
 
 import { InputController, ReplayRecorder, downloadBytes, encodeReplay } from '../input';
 import { parseDevParams } from '../dev/params';
+import { AudioEngine } from '../audio/engine';
 import { cameraOptions } from '../render/camera';
 import type { DevTools } from '../dev';
 import { decodeEvents } from './events';
@@ -45,6 +46,14 @@ export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions
   const input = new InputController();
   input.attach(canvas);
   const recorder = new ReplayRecorder();
+  // Audio is optional: a browser without Web Audio still plays the game, silently.
+  let audio: AudioEngine | null = null;
+  try {
+    audio = new AudioEngine();
+    audio.unlockOn(canvas);
+  } catch (err) {
+    console.warn('Latticefall audio unavailable', err);
+  }
   // The camera's collision queries go through the core's read-only `raycast` export.
   const rayOrigin = new Float32Array(3);
   const rayDir = new Float32Array(3);
@@ -79,6 +88,7 @@ export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions
       // Events go to presentation only; the renderer reads them and never answers.
       const events = decodeEvents(world.drain_events());
       if (events.length) {
+        audio?.handleEvents(events);
         view.vfx.handleEvents(events);
         tools?.onEvents(events);
       }
@@ -89,6 +99,10 @@ export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions
       const drawn = snapshots.interpolate(alpha);
       tools?.beforeRender(drawn);
       view.render(drawn, frameMs, loop.isPaused);
+      // The first drawn actor is the player; the listener follows it and the camera's yaw.
+      if (audio && drawn[0] && !loop.isPaused) {
+        audio.updatePlayer({ x: drawn[0].x, y: drawn[0].y, z: drawn[0].z, yaw: view.cameraYaw });
+      }
       tools?.afterRender(frameMs, world.tick_count(), () => world.state_hash());
       // Movement is camera-relative, so when lock-on turns the camera, input follows it.
       if (view.yawDriven) input.cameraYaw = view.cameraYaw;
@@ -140,6 +154,7 @@ export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions
     },
     dispose() {
       loop.stop();
+      audio?.dispose();
       tools?.dispose();
       input.detach();
       view.dispose();

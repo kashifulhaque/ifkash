@@ -32,6 +32,8 @@ pub struct Context {
     pub phase: u8,
     /// Ticks since the enemy last lost HP (`u16::MAX` if it never has).
     pub since_hurt: u16,
+    /// Hidden in reeds (WP-036).
+    pub hidden: bool,
 }
 
 fn frac(hp: u32, max: u32) -> f32 {
@@ -60,6 +62,7 @@ impl Context {
             target_guarding: target.moves.guard.active,
             phase: me.ai.as_ref().map_or(0, |b| b.phase),
             since_hurt: me.ai.as_ref().map_or(u16::MAX, |b| b.since_hurt),
+            hidden: me.ai.as_ref().is_some_and(|b| b.hidden),
         }
     }
 }
@@ -82,6 +85,8 @@ pub fn holds(c: &Condition, x: &Context) -> bool {
         Condition::TargetCasting => false,
         Condition::Phase(p) => x.phase == p,
         Condition::HurtWithin(t) => x.since_hurt <= t,
+        Condition::Hidden => x.hidden,
+        Condition::Exposed => !x.hidden,
     }
 }
 

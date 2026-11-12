@@ -1,0 +1,8 @@
+# WP-036 golden: a Reed Stalker hides in its reeds, lunges when the player comes within 4.5 m, then burrows back (record with `lf-tools replay record-script`). Each line:
+# <ticks> <move_x> <move_z> [BUTTONS]. The player spawns at the origin facing +Z in fight_reed_stalker.
+seed 52
+scenario fight_reed_stalker
+40  0 0              # stand: it notices and stays hidden
+35  0 127            # walk up to 3.5 m of the reeds
+1   0 0  LOCK
+200 0 0              # it lunges once, then burrows back into the reeds

@@ -15,6 +15,10 @@ export const FLAG_INVULNERABLE = 1 << 3;
 /** Set on the actor the player is locked on to. */
 export const FLAG_LOCKED = 1 << 4;
 export const FLAG_TWO_HANDING = 1 << 5;
+/** A shimmering enemy standing still: nearly invisible (Glasswing Stalker). */
+export const FLAG_CLOAKED = 1 << 6;
+/** An enemy hidden in reeds (Reed Stalker). */
+export const FLAG_HIDDEN = 1 << 7;
 
 export interface ActorSnap {
   id: number;

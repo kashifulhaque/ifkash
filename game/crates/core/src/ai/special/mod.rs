@@ -6,4 +6,13 @@
 
 pub mod revive;
 
+// WP-036 (enemy batch 2). `batch2::tick` is the per-tick hook; the rest are the rules.
+pub mod batch2;
+pub mod flying;
+pub mod reeds;
+pub mod reflect;
+pub mod shimmer;
+pub mod swarm;
+pub mod water;
+
 pub use revive::{note_death_blow, tick_dead};

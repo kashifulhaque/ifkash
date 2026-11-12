@@ -1,0 +1,75 @@
+// Enemy moves for WP-036 (the Shard Golem). Registry numbers 8360-8361. Schema:
+// crates/content/src/moves.rs. Every attack telegraphs for at least 12 frames before its
+// first active hitbox frame or projectile (docs/game/05-enemies-and-bosses.md, "Enemy
+// roster"; checked by the validator). Damage comes from the enemy's `attack` (and
+// `element_attack`) in enemies/*.ron, so `motion_value` is the only multiplier here. Numbers
+// are tuning.
+#![enable(implicit_some)]
+[
+  (
+    // An overhead slam with both fists: a long 36-frame wind-up.
+    id: "sg_slam",
+    anim: "sg_slam",
+    total_frames: 92,
+    stamina: 0,
+    fp: 0,
+    root_motion: [(0, 0.0), (34, 0.0), (38, 0.4), (92, 0.4)],
+    track_deg_per_tick: 3.0,
+    hyperarmor: None,
+    iframes: None,
+    cancel_attack_from: None,
+    cancel_dodge_from: None,
+    cancel_any_from: None,
+    next_chain: None,
+    hitboxes: [
+      (
+        frames: (36, 40),
+        shape: Capsule(a: (0.0, 1.2, 0.4), b: (0.0, 0.3, 1.8), radius: 0.7),
+        motion_value: 1.6,
+        phys: Blunt,
+        element: None,
+        poise_damage: 60,
+        status: [],
+        knockback: 1.5,
+        hitstop: 8,
+        tags: [],
+      ),
+    ],
+    projectiles: [],
+    sfx: [(24, "golem_grind")],
+    vfx: [(36, "shards_burst")],
+  ),
+  (
+    // A wide sweep with one arm.
+    id: "sg_sweep",
+    anim: "sg_sweep",
+    total_frames: 80,
+    stamina: 0,
+    fp: 0,
+    root_motion: [(0, 0.0), (28, 0.0), (32, 0.5), (80, 0.5)],
+    track_deg_per_tick: 3.0,
+    hyperarmor: None,
+    iframes: None,
+    cancel_attack_from: None,
+    cancel_dodge_from: None,
+    cancel_any_from: None,
+    next_chain: None,
+    hitboxes: [
+      (
+        frames: (30, 36),
+        shape: Capsule(a: (-1.2, 1.0, 0.8), b: (1.2, 1.0, 0.8), radius: 0.6),
+        motion_value: 1.2,
+        phys: Blunt,
+        element: None,
+        poise_damage: 45,
+        status: [],
+        knockback: 1.2,
+        hitstop: 6,
+        tags: [],
+      ),
+    ],
+    projectiles: [],
+    sfx: [(22, "golem_grind")],
+    vfx: [],
+  ),
+]

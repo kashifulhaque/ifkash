@@ -1,0 +1,27 @@
+// The Lamp Mite (registry 7055): a swarm bomb. Source: docs/game/05-enemies-and-bosses.md,
+// "Enemy roster" (HP 30; groups of 6-10; explodes for Fire after 60 ticks of contact).
+// `explodes` counts 48 ticks of contact and then plays lm_burst, whose first active frame is
+// 12 (the validator's minimum telegraph): 60 ticks from first contact to the blast. Its Fire
+// comes from `element_attack`; it has no physical attack. Everything else is tuning.
+#![enable(implicit_some)]
+(
+  id: "lamp_mite",
+  model: "lamp_mite",
+  hp: 30,
+  poise: 0,
+  defense: (flat: 10),
+  resist: (immunity: 100, robustness: 100, composure: 100),
+  can_go_mad: true,
+  glimmer: 5,
+  attack: 0,
+  element_attack: (Fire, 90),
+  speed_percent: 90,
+  explodes: (move_id: "lm_burst", contact_m: 1.9, contact_ticks: 48),
+  perception: (sight_deg: 180.0, sight_m: 16.0, hearing_mult: 1.2),
+  moveset: "enemies/lamp_mite.ron",
+  options: [
+    (behavior: Approach(dur: 20), when: [DistAbove(1.0)], weight: 6),
+    (behavior: Wait(dur: 15), when: [DistBelow(1.0)], weight: 1),
+  ],
+  drops: [],
+)

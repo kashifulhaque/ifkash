@@ -7,7 +7,7 @@
 
 use serde::{Deserialize, Serialize};
 
-use crate::moves::StatusKind;
+use crate::moves::{Element, StatusKind};
 use crate::scenario::{DefenseData, ResistData};
 use crate::weapons::GuardStats;
 
@@ -78,6 +78,31 @@ pub struct EnemyDef {
     /// Item drops. Not rolled yet (enemy drops arrive later).
     #[serde(default)]
     pub drops: Vec<EnemyDrop>,
+
+    // WP-036 (enemy batch 2): special rules. Each is selected by a field here and run by
+    // `lf_core::ai::special`.
+    /// Elemental attack rating: every hit with this element deals this much (the Acolyte's
+    /// Radiance bolt, the Lamp Mite's Fire burst). `attack` stays the physical rating.
+    #[serde(default)]
+    pub element_attack: Option<(Element, u32)>,
+    /// Confined to the scenario's water volumes (the Drowned, the Reed Stalker).
+    #[serde(default)]
+    pub water_only: bool,
+    /// Hides in the scenario's reed patches (the Reed Stalker).
+    #[serde(default)]
+    pub hides_in_reeds: Option<ReedHiding>,
+    /// Hovers above the ground, dives, and may be drawn to lit Lanterns (the Cave Moth).
+    #[serde(default)]
+    pub flying: Option<Flying>,
+    /// Explodes after clinging to its target (the Lamp Mite).
+    #[serde(default)]
+    pub explodes: Option<Explodes>,
+    /// Reflects Formulae until struck with Blunt (the Shard Golem).
+    #[serde(default)]
+    pub reflects_formulae: Option<Reflects>,
+    /// Nearly invisible while it stands still (the Glasswing Stalker). A render flag.
+    #[serde(default)]
+    pub shimmers: bool,
 }
 
 fn full_speed() -> u16 {
@@ -107,6 +132,63 @@ pub enum ReviveStop {
     /// It died within this many meters of a lit Lantern (the scenario's light sources
     /// stand in for braziers until those exist).
     LitLantern(f32),
+}
+
+/// Reed hiding (docs "Enemy roster", Reed Stalker): inside a reed patch it is hidden, until
+/// it attacks. The `Burrow` behavior takes it back to the nearest patch.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ReedHiding {
+    /// Ticks it stays revealed after the end of an attack move, even inside a patch.
+    pub reveal_ticks: u16,
+}
+
+/// Flight (docs "Enemy roster", Cave Moth). Its feet stay `hover_m` above the ground below
+/// it, and a dive move brings it down for a strike.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Flying {
+    /// Feet height above the ground below, in meters.
+    pub hover_m: f32,
+    /// How fast it changes height outside a dive, in meters per second.
+    pub climb_mps: f32,
+    /// While Idle with no patrol, it drifts toward the nearest lit Lantern within this many
+    /// meters ("drawn to light sources"). 0 turns it off.
+    #[serde(default)]
+    pub light_m: f32,
+    #[serde(default)]
+    pub dives: Vec<Dive>,
+}
+
+/// A move that carries a flyer down and back up. Heights follow the move's frame: from
+/// `hover_m` down to `low_m` by `down_until`, held until `up_from`, and back up by `up_until`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Dive {
+    pub move_id: String,
+    pub low_m: f32,
+    pub down_until: u16,
+    pub up_from: u16,
+    pub up_until: u16,
+}
+
+/// A swarm explosion (docs "Enemy roster", Lamp Mite): after `contact_ticks` in a row within
+/// `contact_m` of its target it plays `move_id` (a blast) and dies when the move ends.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Explodes {
+    pub move_id: String,
+    pub contact_m: f32,
+    pub contact_ticks: u16,
+}
+
+/// Formula reflection (docs "Enemy roster", Shard Golem): a Formula (an elemental
+/// projectile) that hits it flies back at its shooter, unless a Blunt hit cracked its
+/// crystals within the last `cracked_ticks`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Reflects {
+    pub cracked_ticks: u16,
 }
 
 /// Sight cone and hearing (docs "Perception").
@@ -157,6 +239,8 @@ pub enum Behavior {
     Wait { dur: u16 },
     /// Run away from the target.
     Flee { dur: u16 },
+    /// Walk to the nearest reed patch (WP-036). Nothing happens if the scenario has none.
+    Burrow { dur: u16 },
     /// Walk the spawn's patrol waypoints. An Idle behavior; not an option.
     Patrol,
 }
@@ -170,7 +254,8 @@ impl Behavior {
             | Self::Retreat { dur }
             | Self::Guard { dur }
             | Self::Wait { dur }
-            | Self::Flee { dur } => Some(dur),
+            | Self::Flee { dur }
+            | Self::Burrow { dur } => Some(dur),
             Self::Patrol => None,
         }
     }
@@ -208,6 +293,10 @@ pub enum Condition {
     Phase(u8),
     /// The enemy lost HP within this many ticks (an archer repositions after a hit).
     HurtWithin(u16),
+    /// The enemy is hidden in reeds (WP-036).
+    Hidden,
+    /// The enemy is not hidden in reeds (WP-036).
+    Exposed,
 }
 
 /// An item drop.
@@ -292,6 +381,19 @@ impl EnemyDef {
         out
     }
 
+    /// Moves a special rule plays that no option names: the explosion and the dives. They
+    /// need the same checks as an option's move.
+    pub fn special_moves(&self) -> Vec<&str> {
+        let mut out = Vec::new();
+        if let Some(x) = &self.explodes {
+            out.push(x.move_id.as_str());
+        }
+        if let Some(f) = &self.flying {
+            out.extend(f.dives.iter().map(|d| d.move_id.as_str()));
+        }
+        out
+    }
+
     /// Shape problems the core relies on, as `(field, message)`.
     pub fn problems(&self) -> Vec<(String, String)> {
         let mut out = Vec::new();
@@ -362,6 +464,43 @@ impl EnemyDef {
                     "LitLantern needs a positive radius".to_owned(),
                 ));
             }
+        }
+        if let Some(f) = &self.flying {
+            if f.hover_m < 0.0 || f.climb_mps <= 0.0 || f.light_m < 0.0 {
+                out.push((
+                    "flying".to_owned(),
+                    "hover_m and light_m can't be negative and climb_mps must be positive"
+                        .to_owned(),
+                ));
+            }
+            for (i, d) in f.dives.iter().enumerate() {
+                if !(d.down_until <= d.up_from && d.up_from < d.up_until)
+                    || d.low_m < 0.0
+                    || d.low_m > f.hover_m
+                {
+                    out.push((
+                        format!("flying.dives[{i}]"),
+                        "needs down_until <= up_from < up_until and 0 <= low_m <= hover_m"
+                            .to_owned(),
+                    ));
+                }
+            }
+        }
+        if let Some(x) = &self.explodes
+            && (x.contact_m <= 0.0 || x.contact_ticks == 0)
+        {
+            out.push((
+                "explodes".to_owned(),
+                "contact_m and contact_ticks must be positive".to_owned(),
+            ));
+        }
+        if let Some(r) = &self.reflects_formulae
+            && r.cracked_ticks == 0
+        {
+            out.push((
+                "reflects_formulae.cracked_ticks".to_owned(),
+                "must be positive".to_owned(),
+            ));
         }
         if self.guard.is_some() && self.stamina == 0 {
             out.push((

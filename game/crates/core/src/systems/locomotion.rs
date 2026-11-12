@@ -18,7 +18,10 @@ pub fn run(world: &mut World, _input: &TickInput) {
         .map(|(id, _)| id)
         .collect();
     for id in ai {
-        if let Some(actor) = world.actors.get_mut(id) {
+        // A flyer skips gravity and the controller (WP-036, `ai::special::flying`).
+        if crate::ai::special::flying::flies(world, id) {
+            crate::ai::special::flying::step(world, id);
+        } else if let Some(actor) = world.actors.get_mut(id) {
             controller::step(actor, &world.physics, &world.locomotion);
         }
     }

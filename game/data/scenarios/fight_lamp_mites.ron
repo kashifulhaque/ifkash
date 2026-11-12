@@ -1,0 +1,22 @@
+// WP-036 fight: six Lamp Mites 8 to 10 m ahead of the player.
+// The player spawns at the origin facing +Z on a 50 m floor.
+(
+  spawn: (0.0, 0.0, 0.0),
+  spawn_yaw: 0.0,
+  kill_y: -50.0,
+  heightfield: None,
+  boxes: [
+    (name: "floor", center: (0.0, -0.5, 0.0), half_extents: (25.0, 0.5, 25.0)),
+  ],
+  lanterns: [
+    (id: "lantern_start", pos: (0.0, 0.0, -3.0), yaw: 0.0),
+  ],
+  enemies: [
+    (name: "mite_a", enemy: "lamp_mite", pos: (-2.5, 0.0, 8.0), yaw: 3.1415927),
+    (name: "mite_b", enemy: "lamp_mite", pos: (-1.5, 0.0, 9.5), yaw: 3.1415927),
+    (name: "mite_c", enemy: "lamp_mite", pos: (-0.5, 0.0, 8.5), yaw: 3.1415927),
+    (name: "mite_d", enemy: "lamp_mite", pos: (0.5, 0.0, 10.0), yaw: 3.1415927),
+    (name: "mite_e", enemy: "lamp_mite", pos: (1.5, 0.0, 8.5), yaw: 3.1415927),
+    (name: "mite_f", enemy: "lamp_mite", pos: (2.5, 0.0, 9.5), yaw: 3.1415927),
+  ],
+)

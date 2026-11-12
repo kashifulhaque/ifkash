@@ -1,0 +1,64 @@
+// Enemy moves for WP-036 (the Acolyte). Registry numbers 8300-8301. Schema:
+// crates/content/src/moves.rs. Every attack telegraphs for at least 12 frames before its
+// first active hitbox frame or projectile (docs/game/05-enemies-and-bosses.md, "Enemy
+// roster"; checked by the validator). Damage comes from the enemy's `attack` (and
+// `element_attack`) in enemies/*.ron, so `motion_value` is the only multiplier here. Numbers
+// are tuning.
+#![enable(implicit_some)]
+[
+  (
+    // The cast: a 30-frame glow (the telegraph), then a slow Radiance bolt, aimed level from the chest. Takes the ranged token.
+    id: "ac_cast",
+    anim: "ac_cast",
+    total_frames: 80,
+    stamina: 0,
+    fp: 0,
+    root_motion: [(0, 0.0), (80, 0.0)],
+    track_deg_per_tick: 4.0,
+    hyperarmor: None,
+    iframes: None,
+    cancel_attack_from: None,
+    cancel_dodge_from: None,
+    cancel_any_from: None,
+    next_chain: None,
+    hitboxes: [],
+    projectiles: [
+      (frame: 30, projectile: "proj_radiance_bolt", offset: (0.0, 1.3, 0.6), yaw_deg: 0.0, pitch_deg: 0.0),
+    ],
+    sfx: [(8, "chant")],
+    vfx: [(0, "glow_radiance")],
+  ),
+  (
+    // A short swat with the staff for a player who closes in.
+    id: "ac_smack",
+    anim: "ac_smack",
+    total_frames: 44,
+    stamina: 0,
+    fp: 0,
+    root_motion: [(0, 0.0), (12, 0.0), (16, 0.4), (44, 0.4)],
+    track_deg_per_tick: 6.0,
+    hyperarmor: None,
+    iframes: None,
+    cancel_attack_from: None,
+    cancel_dodge_from: None,
+    cancel_any_from: None,
+    next_chain: None,
+    hitboxes: [
+      (
+        frames: (14, 16),
+        shape: Capsule(a: (0.0, 1.1, 0.2), b: (0.0, 1.1, 1.0), radius: 0.4),
+        motion_value: 0.6,
+        phys: Blunt,
+        element: None,
+        poise_damage: 16,
+        status: [],
+        knockback: 0.8,
+        hitstop: 4,
+        tags: [],
+      ),
+    ],
+    projectiles: [],
+    sfx: [(12, "swing_light")],
+    vfx: [],
+  ),
+]

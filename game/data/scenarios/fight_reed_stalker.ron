@@ -1,0 +1,23 @@
+// WP-036 fight: a Reed Stalker hidden in a reed patch (x -2..2, z 7..11) inside a pond (x -8..8, z 2..14). Water and reeds are scenario data until the level format (WP-040).
+// The player spawns at the origin facing +Z on a 50 m floor.
+(
+  spawn: (0.0, 0.0, 0.0),
+  spawn_yaw: 0.0,
+  kill_y: -50.0,
+  heightfield: None,
+  boxes: [
+    (name: "floor", center: (0.0, -0.5, 0.0), half_extents: (25.0, 0.5, 25.0)),
+  ],
+  water: [
+    (name: "pond", center: (0.0, 8.0), half_extents: (8.0, 6.0)),
+  ],
+  reeds: [
+    (name: "reeds", center: (0.0, 9.0), half_extents: (2.0, 2.0)),
+  ],
+  lanterns: [
+    (id: "lantern_start", pos: (0.0, 0.0, -3.0), yaw: 0.0),
+  ],
+  enemies: [
+    (name: "stalker", enemy: "reed_stalker", pos: (0.0, 0.0, 9.0), yaw: 3.1415927),
+  ],
+)

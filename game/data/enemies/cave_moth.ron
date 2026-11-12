@@ -1,0 +1,33 @@
+// The Cave Moth (registry 7054): a flyer that drops Drowse dust and dives. Source:
+// docs/game/05-enemies-and-bosses.md, "Enemy roster" (HP 110; hovers; drops Drowse dust; drawn
+// to light sources). `flying` keeps its feet 0.9 m above the ground (its body is then within reach of a
+// sword), brings it down 0.7 m for cm_dive, and sends an idle moth to the nearest lit Lantern within 14 m. Everything else is
+// tuning.
+#![enable(implicit_some)]
+(
+  id: "cave_moth",
+  model: "cave_moth",
+  hp: 110,
+  poise: 0,
+  defense: (flat: 20),
+  resist: (immunity: 100, robustness: 100, composure: 160),
+  can_go_mad: true,
+  glimmer: 30,
+  attack: 70,
+  speed_percent: 90,
+  flying: (
+    hover_m: 0.9,
+    climb_mps: 3.0,
+    light_m: 14.0,
+    dives: [(move_id: "cm_dive", low_m: 0.2, down_until: 16, up_from: 24, up_until: 40)],
+  ),
+  perception: (sight_deg: 200.0, sight_m: 18.0, hearing_mult: 1.0),
+  moveset: "enemies/cave_moth.ron",
+  options: [
+    (move: "cm_dive", when: [DistBetween(2.5, 4.5), FacingWithin(30.0)], weight: 12, cooldown: 150),
+    (move: "cm_dust", when: [DistBelow(2.5)], weight: 6, cooldown: 120),
+    (behavior: Approach(dur: 12), when: [DistAbove(2.5)], weight: 5),
+    (behavior: Strafe(dur: 30), when: [DistBelow(4.0)], weight: 2),
+  ],
+  drops: [(item: "itm_glimmer_vial", chance: 0.03)],
+)

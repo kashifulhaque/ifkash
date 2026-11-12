@@ -1,0 +1,5 @@
+# WP-036 golden: six Lamp Mites cling to the player and blow up after 48 ticks of contact (record with `lf-tools replay record-script`). Each line:
+# <ticks> <move_x> <move_z> [BUTTONS]. The player spawns at the origin facing +Z in fight_lamp_mites.
+seed 55
+scenario fight_lamp_mites
+400 0 0              # stand: the mites cling and explode

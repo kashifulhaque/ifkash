@@ -1,0 +1,15 @@
+# WP-036 golden: five Marsh Crawlers swarm the player, bite with Poison, and die to lights (record with `lf-tools replay record-script`). Each line:
+# <ticks> <move_x> <move_z> [BUTTONS]. The player spawns at the origin facing +Z in fight_marsh_crawlers.
+seed 53
+scenario fight_marsh_crawlers
+150 0 0              # stand: the swarm closes in and bites, two at a time
+1   0 0  LOCK
+5   0 0
+1   0 0  LIGHT
+35  0 0
+1   0 0  LIGHT
+35  0 0
+1   0 0  LIGHT
+35  0 0
+1   0 0  LIGHT
+60  0 0

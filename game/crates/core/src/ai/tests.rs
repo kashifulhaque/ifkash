@@ -349,6 +349,7 @@ fn conditions_read_the_context() {
         target_guarding: false,
         phase: 0,
         since_hurt: 20,
+        hidden: false,
     };
     assert!(holds(&Condition::DistBetween(2.0, 3.4), &x));
     assert!(!holds(&Condition::DistBetween(3.4, 5.0), &x));

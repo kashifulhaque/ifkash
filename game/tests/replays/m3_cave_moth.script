@@ -1,0 +1,25 @@
+# WP-036 golden: a Cave Moth hovers in, dives at the player, shakes Drowse dust, and is cut down (record with `lf-tools replay record-script`). Each line:
+# <ticks> <move_x> <move_z> [BUTTONS]. The player spawns at the origin facing +Z in fight_cave_moth.
+seed 54
+scenario fight_cave_moth
+200 0 0              # stand: it hovers in, then dives and dusts
+1   0 0  LOCK
+10  0 0
+1   0 0  LIGHT
+24  0 0
+1   0 0  LIGHT
+24  0 0
+1   0 0  LIGHT
+24  0 0
+1   0 0  LIGHT
+24  0 0
+1   0 0  LIGHT
+24  0 0
+1   0 0  LIGHT
+24  0 0
+1   0 0  LIGHT
+24  0 0
+1   0 0  LIGHT
+24  0 0
+1   0 0  LIGHT
+100 0 0

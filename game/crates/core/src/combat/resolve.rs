@@ -230,6 +230,15 @@ pub(crate) fn apply_landing(world: &mut World, l: &Landing) -> bool {
     if killed {
         note_death_blow(world, l);
     }
+    // A Blunt hit cracks a Shard Golem's crystals (WP-036).
+    if world
+        .moves
+        .get(l.move_num)
+        .and_then(|d| d.data.hitboxes.get(usize::from(l.hitbox)))
+        .is_some_and(|h| h.phys == lf_content::moves::PhysType::Blunt)
+    {
+        crate::ai::special::reflect::note_blunt(world, l.target);
+    }
     // A hit that wasn't blocked adds poise and stance damage (see `poise`). Projectile
     // hits count too.
     if result == HitResult::Connected {

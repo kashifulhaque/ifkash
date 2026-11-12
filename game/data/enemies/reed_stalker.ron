@@ -1,0 +1,27 @@
+// The Reed Stalker (registry 7052): hides in reeds and ambushes with one heavy lunge, then
+// retreats into the reeds. Source: docs/game/05-enemies-and-bosses.md, "Enemy roster"
+// (HP 180). `hides_in_reeds` hides it inside a reed patch; the lunge reveals it for 60 ticks
+// and the Burrow option walks it back to the nearest patch (Exposed). `water_only` confines it
+// to the water. Everything else is tuning.
+#![enable(implicit_some)]
+(
+  id: "reed_stalker",
+  model: "reed_stalker",
+  hp: 180,
+  poise: 30,
+  defense: (flat: 30),
+  resist: (immunity: 120, robustness: 100, composure: 100),
+  can_go_mad: true,
+  glimmer: 45,
+  attack: 110,
+  water_only: true,
+  hides_in_reeds: (reveal_ticks: 60),
+  perception: (sight_deg: 120.0, sight_m: 12.0, hearing_mult: 1.2),
+  moveset: "enemies/reed_stalker.ron",
+  options: [
+    (move: "rs_lunge", when: [Hidden, DistBetween(1.0, 4.5), FacingWithin(30.0)], weight: 10, cooldown: 200),
+    (behavior: Burrow(dur: 60), when: [Exposed], weight: 10),
+    (behavior: Wait(dur: 20), when: [Hidden], weight: 1),
+  ],
+  drops: [(item: "itm_glimmer_vial", chance: 0.04)],
+)

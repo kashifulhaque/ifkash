@@ -22,7 +22,7 @@ pub mod lantern;
 mod tests;
 
 use lf_content::Scenario;
-use lf_content::scenario::{Dummy, EnemySpawn, Lantern};
+use lf_content::scenario::{Dummy, EnemySpawn, Lantern, Zone};
 use serde::{Deserialize, Serialize};
 
 use crate::arena::Id;
@@ -45,6 +45,9 @@ pub struct Layout {
     /// The boss fights (WP-033). Their members are the last entries of `enemies`; see
     /// `ai::boss::extend_layout`.
     pub bosses: Vec<crate::ai::boss::BossLayout>,
+    /// Water volumes and reed patches (WP-036; see `ai::special`).
+    pub water: Vec<Zone>,
+    pub reeds: Vec<Zone>,
 }
 
 impl Layout {
@@ -56,6 +59,8 @@ impl Layout {
             dummies: level.dummies.clone(),
             enemies: level.enemies.clone(),
             bosses: Vec::new(),
+            water: level.water.clone(),
+            reeds: level.reeds.clone(),
         }
     }
 

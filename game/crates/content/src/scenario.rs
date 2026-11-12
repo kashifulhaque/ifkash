@@ -33,6 +33,14 @@ pub struct Scenario {
     /// Lanterns (WP-029). Real levels place them in the level format (WP-040).
     #[serde(default)]
     pub lanterns: Vec<Lantern>,
+    /// Water volumes (WP-036): where a `water_only` enemy can go. Real levels place them in
+    /// the level format (WP-040).
+    #[serde(default)]
+    pub water: Vec<Zone>,
+    /// Reed patches (WP-036): where a reed-hiding enemy is hidden. Real levels place them in
+    /// the level format (WP-040).
+    #[serde(default)]
+    pub reeds: Vec<Zone>,
     /// Glimmer the player starts with. Zero in real levels; test scenarios set it so a
     /// death has something to drop before enemies drop Glimmer (WP-023, WP-030).
     #[serde(default)]
@@ -72,6 +80,18 @@ pub struct FogGate {
     pub half_width_m: f32,
     /// How far past the plane, into the arena, still counts as walking through.
     pub depth_m: f32,
+}
+
+/// A rectangle on the ground plane, for water and reeds (WP-036).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Zone {
+    /// Label for tools and error messages.
+    pub name: String,
+    /// Center, as (x, z) in meters.
+    pub center: [f32; 2],
+    /// Half the size along x and z, in meters.
+    pub half_extents: [f32; 2],
 }
 
 /// A Lantern: where the player rests and respawns.

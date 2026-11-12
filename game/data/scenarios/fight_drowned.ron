@@ -1,0 +1,20 @@
+// WP-036 fight: a Drowned in a pool (x -6..6, z 3..9) 8 m ahead of the player. It can reach the pool's near edge and no further, so the player steps up to it. Water is scenario data until the level format (WP-040).
+// The player spawns at the origin facing +Z on a 50 m floor.
+(
+  spawn: (0.0, 0.0, 0.0),
+  spawn_yaw: 0.0,
+  kill_y: -50.0,
+  heightfield: None,
+  boxes: [
+    (name: "floor", center: (0.0, -0.5, 0.0), half_extents: (25.0, 0.5, 25.0)),
+  ],
+  water: [
+    (name: "pool", center: (0.0, 6.0), half_extents: (6.0, 3.0)),
+  ],
+  lanterns: [
+    (id: "lantern_start", pos: (0.0, 0.0, -3.0), yaw: 0.0),
+  ],
+  enemies: [
+    (name: "drowned", enemy: "drowned", pos: (0.0, 0.0, 8.0), yaw: 3.1415927),
+  ],
+)

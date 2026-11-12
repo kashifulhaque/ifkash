@@ -18,10 +18,18 @@ use crate::world::World;
 /// `a`'s attack rating if it is an AI enemy with an `attack`; `None` otherwise.
 pub fn rating(world: &World, a: &Actor) -> Option<AttackRating> {
     let d = &world.ai.defs[usize::from(a.ai.as_ref()?.def)].data;
-    (d.attack > 0).then(|| AttackRating {
-        // The rating is in thousandths.
-        phys_milli: u64::from(d.attack) * 1000,
-        ..AttackRating::default()
+    (d.attack > 0 || d.element_attack.is_some()).then(|| {
+        // Aether, Fire, Storm, Radiance: the order `AttackRating::elem_milli` uses.
+        let mut elem_milli = [0; 4];
+        if let Some((e, rating)) = d.element_attack {
+            elem_milli[e as usize] = u64::from(rating) * 1000;
+        }
+        AttackRating {
+            // The rating is in thousandths.
+            phys_milli: u64::from(d.attack) * 1000,
+            elem_milli,
+            ..AttackRating::default()
+        }
     })
 }
 

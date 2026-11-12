@@ -1,0 +1,75 @@
+// Enemy moves for WP-036 (the Cave Moth). Registry numbers 8340-8341. Schema:
+// crates/content/src/moves.rs. Every attack telegraphs for at least 12 frames before its
+// first active hitbox frame or projectile (docs/game/05-enemies-and-bosses.md, "Enemy
+// roster"; checked by the validator). Damage comes from the enemy's `attack` (and
+// `element_attack`) in enemies/*.ron, so `motion_value` is the only multiplier here. Numbers
+// are tuning.
+#![enable(implicit_some)]
+[
+  (
+    // A dive: it drops from its hover to 0.2 m by frame 16, strikes forward, and climbs back by frame 40 (the flying rule in enemies/cave_moth.ron).
+    id: "cm_dive",
+    anim: "cm_dive",
+    total_frames: 56,
+    stamina: 0,
+    fp: 0,
+    root_motion: [(0, 0.0), (14, 0.0), (24, 3.5), (56, 3.5)],
+    track_deg_per_tick: 5.0,
+    hyperarmor: None,
+    iframes: None,
+    cancel_attack_from: None,
+    cancel_dodge_from: None,
+    cancel_any_from: None,
+    next_chain: None,
+    hitboxes: [
+      (
+        frames: (16, 22),
+        shape: Capsule(a: (0.0, 0.8, 0.2), b: (0.0, 0.8, 1.1), radius: 0.4),
+        motion_value: 1.0,
+        phys: Pierce,
+        element: None,
+        poise_damage: 12,
+        status: [],
+        knockback: 0.8,
+        hitstop: 4,
+        tags: [],
+      ),
+    ],
+    projectiles: [],
+    sfx: [(12, "moth_wings")],
+    vfx: [(16, "trail_dull")],
+  ),
+  (
+    // Shakes Drowse dust over the ground beneath it: 20 frames of wing beats, then a burst under its body. 35 Drowse buildup. Its feet are at the hover height, so the sphere reaches down.
+    id: "cm_dust",
+    anim: "cm_dust",
+    total_frames: 64,
+    stamina: 0,
+    fp: 0,
+    root_motion: [(0, 0.0), (64, 0.0)],
+    track_deg_per_tick: 0.0,
+    hyperarmor: None,
+    iframes: None,
+    cancel_attack_from: None,
+    cancel_dodge_from: None,
+    cancel_any_from: None,
+    next_chain: None,
+    hitboxes: [
+      (
+        frames: (20, 24),
+        shape: Sphere(center: (0.0, -0.9, 0.0), radius: 1.7),
+        motion_value: 0.4,
+        phys: Neutral,
+        element: None,
+        poise_damage: 0,
+        status: [(kind: Drowse, amount: 35)],
+        knockback: 0.0,
+        hitstop: 0,
+        tags: [],
+      ),
+    ],
+    projectiles: [],
+    sfx: [(10, "moth_wings")],
+    vfx: [(20, "dust_drowse")],
+  ),
+]

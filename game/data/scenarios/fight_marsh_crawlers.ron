@@ -1,0 +1,21 @@
+// WP-036 fight: a group of five Marsh Crawlers 8 to 11 m ahead of the player.
+// The player spawns at the origin facing +Z on a 50 m floor.
+(
+  spawn: (0.0, 0.0, 0.0),
+  spawn_yaw: 0.0,
+  kill_y: -50.0,
+  heightfield: None,
+  boxes: [
+    (name: "floor", center: (0.0, -0.5, 0.0), half_extents: (25.0, 0.5, 25.0)),
+  ],
+  lanterns: [
+    (id: "lantern_start", pos: (0.0, 0.0, -3.0), yaw: 0.0),
+  ],
+  enemies: [
+    (name: "crawler_a", enemy: "marsh_crawler", pos: (-2.0, 0.0, 8.0), yaw: 3.1415927),
+    (name: "crawler_b", enemy: "marsh_crawler", pos: (0.0, 0.0, 9.0), yaw: 3.1415927),
+    (name: "crawler_c", enemy: "marsh_crawler", pos: (2.0, 0.0, 8.0), yaw: 3.1415927),
+    (name: "crawler_d", enemy: "marsh_crawler", pos: (-1.0, 0.0, 11.0), yaw: 3.1415927),
+    (name: "crawler_e", enemy: "marsh_crawler", pos: (1.0, 0.0, 11.0), yaw: 3.1415927),
+  ],
+)

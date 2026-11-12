@@ -111,6 +111,38 @@ const EMBEDDED_MOVES: &[(&str, &str)] = &[
         include_str!("../../../data/moves/enemies/whitewarden_skeleton.ron"),
     ),
     (
+        "moves/enemies/acolyte.ron",
+        include_str!("../../../data/moves/enemies/acolyte.ron"),
+    ),
+    (
+        "moves/enemies/drowned.ron",
+        include_str!("../../../data/moves/enemies/drowned.ron"),
+    ),
+    (
+        "moves/enemies/reed_stalker.ron",
+        include_str!("../../../data/moves/enemies/reed_stalker.ron"),
+    ),
+    (
+        "moves/enemies/marsh_crawler.ron",
+        include_str!("../../../data/moves/enemies/marsh_crawler.ron"),
+    ),
+    (
+        "moves/enemies/cave_moth.ron",
+        include_str!("../../../data/moves/enemies/cave_moth.ron"),
+    ),
+    (
+        "moves/enemies/lamp_mite.ron",
+        include_str!("../../../data/moves/enemies/lamp_mite.ron"),
+    ),
+    (
+        "moves/enemies/shard_golem.ron",
+        include_str!("../../../data/moves/enemies/shard_golem.ron"),
+    ),
+    (
+        "moves/enemies/glasswing_stalker.ron",
+        include_str!("../../../data/moves/enemies/glasswing_stalker.ron"),
+    ),
+    (
         "moves/bosses/test_boss.ron",
         include_str!("../../../data/moves/bosses/test_boss.ron"),
     ),
@@ -197,6 +229,38 @@ const EMBEDDED_SCENARIOS: &[(&str, &str)] = &[
         include_str!("../../../data/scenarios/fight_skeleton.ron"),
     ),
     (
+        "scenarios/fight_acolyte.ron",
+        include_str!("../../../data/scenarios/fight_acolyte.ron"),
+    ),
+    (
+        "scenarios/fight_drowned.ron",
+        include_str!("../../../data/scenarios/fight_drowned.ron"),
+    ),
+    (
+        "scenarios/fight_reed_stalker.ron",
+        include_str!("../../../data/scenarios/fight_reed_stalker.ron"),
+    ),
+    (
+        "scenarios/fight_marsh_crawlers.ron",
+        include_str!("../../../data/scenarios/fight_marsh_crawlers.ron"),
+    ),
+    (
+        "scenarios/fight_cave_moth.ron",
+        include_str!("../../../data/scenarios/fight_cave_moth.ron"),
+    ),
+    (
+        "scenarios/fight_lamp_mites.ron",
+        include_str!("../../../data/scenarios/fight_lamp_mites.ron"),
+    ),
+    (
+        "scenarios/fight_shard_golem.ron",
+        include_str!("../../../data/scenarios/fight_shard_golem.ron"),
+    ),
+    (
+        "scenarios/fight_glasswing.ron",
+        include_str!("../../../data/scenarios/fight_glasswing.ron"),
+    ),
+    (
         "scenarios/boss_gate.ron",
         include_str!("../../../data/scenarios/boss_gate.ron"),
     ),
@@ -252,6 +316,38 @@ const EMBEDDED_ENEMIES: &[(&str, &str)] = &[
     (
         "enemies/whitewarden_skeleton.ron",
         include_str!("../../../data/enemies/whitewarden_skeleton.ron"),
+    ),
+    (
+        "enemies/acolyte.ron",
+        include_str!("../../../data/enemies/acolyte.ron"),
+    ),
+    (
+        "enemies/drowned.ron",
+        include_str!("../../../data/enemies/drowned.ron"),
+    ),
+    (
+        "enemies/reed_stalker.ron",
+        include_str!("../../../data/enemies/reed_stalker.ron"),
+    ),
+    (
+        "enemies/marsh_crawler.ron",
+        include_str!("../../../data/enemies/marsh_crawler.ron"),
+    ),
+    (
+        "enemies/cave_moth.ron",
+        include_str!("../../../data/enemies/cave_moth.ron"),
+    ),
+    (
+        "enemies/lamp_mite.ron",
+        include_str!("../../../data/enemies/lamp_mite.ron"),
+    ),
+    (
+        "enemies/shard_golem.ron",
+        include_str!("../../../data/enemies/shard_golem.ron"),
+    ),
+    (
+        "enemies/glasswing_stalker.ron",
+        include_str!("../../../data/enemies/glasswing_stalker.ron"),
     ),
 ];
 

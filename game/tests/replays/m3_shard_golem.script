@@ -1,0 +1,11 @@
+# WP-036 golden: a Shard Golem walks up and slams and sweeps, while the player trades Blunt-free lights with it (record with `lf-tools replay record-script`). Each line:
+# <ticks> <move_x> <move_z> [BUTTONS]. The player spawns at the origin facing +Z in fight_shard_golem.
+seed 56
+scenario fight_shard_golem
+60  0 0              # stand: it notices and lumbers up
+1   0 0  LOCK
+60  0 0
+1   0 0  LIGHT
+40  0 0
+1   0 0  LIGHT
+200 0 0

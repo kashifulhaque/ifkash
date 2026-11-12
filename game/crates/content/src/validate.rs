@@ -502,6 +502,11 @@ fn check_ai(content: &Content, out: &mut Vec<Issue>) {
             sink.error(field, message);
         }
         telegraph_check(e, content, &mut sink);
+        for (i, m) in e.special_moves().into_iter().enumerate() {
+            if content.move_by_id(m).is_none() {
+                sink.error(format!("special_moves[{i}]"), "the move is not defined");
+            }
+        }
         for (i, o) in e.options.iter().enumerate() {
             if let Some(m) = &o.move_id {
                 match content.move_by_id(m) {
@@ -544,6 +549,8 @@ fn telegraph_check(e: &crate::EnemyDef, content: &Content, sink: &mut Sink<'_>) 
         .options
         .iter()
         .filter_map(|o| o.move_id.as_deref())
+        // Moves a special rule plays (a swarm's burst, a flyer's dive) attack too (WP-036).
+        .chain(e.special_moves())
         .collect();
     while let Some(id) = todo.pop() {
         if !seen.insert(id) {

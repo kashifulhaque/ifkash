@@ -1,0 +1,27 @@
+// The Shard Golem (registry 7056): a slow tank. Source: docs/game/05-enemies-and-bosses.md,
+// "Enemy roster" (HP 600; slow, heavy hits; crystals reflect Formulae unless struck with
+// Blunt first). `reflects_formulae` sends a Formula back at its shooter; a Blunt hit cracks
+// the crystals for 150 ticks (5 seconds). Everything else is tuning.
+#![enable(implicit_some)]
+(
+  id: "shard_golem",
+  model: "shard_golem",
+  hp: 600,
+  poise: 90,
+  defense: (flat: 70),
+  resist: (immunity: 200, robustness: 200, composure: 200),
+  can_go_mad: false,
+  glimmer: 120,
+  attack: 140,
+  speed_percent: 55,
+  reflects_formulae: (cracked_ticks: 150),
+  perception: (sight_deg: 100.0, sight_m: 14.0, hearing_mult: 0.8),
+  moveset: "enemies/shard_golem.ron",
+  options: [
+    (move: "sg_slam", when: [DistBelow(2.6), FacingWithin(30.0)], weight: 6, cooldown: 120),
+    (move: "sg_sweep", when: [DistBelow(2.8), FacingWithin(60.0)], weight: 5, cooldown: 90),
+    (behavior: Approach(dur: 30), when: [DistAbove(2.2)], weight: 6),
+    (behavior: Wait(dur: 25), when: [DistBelow(4.0)], weight: 1),
+  ],
+  drops: [(item: "itm_glimmer_vial", chance: 0.1)],
+)

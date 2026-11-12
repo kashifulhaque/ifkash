@@ -1,0 +1,28 @@
+// The Glasswing Stalker (registry 7057): an ambusher, nearly invisible when still and
+// shimmering when it moves. Source: docs/game/05-enemies-and-bosses.md, "Enemy roster" (HP 260).
+// `shimmers` sets the snapshot's CLOAKED flag while it stands still (a render flag only).
+// It lunges from range and follows with a slash. Everything else is tuning.
+#![enable(implicit_some)]
+(
+  id: "glasswing_stalker",
+  model: "glasswing_stalker",
+  hp: 260,
+  poise: 30,
+  defense: (flat: 35),
+  resist: (immunity: 120, robustness: 120, composure: 100),
+  can_go_mad: true,
+  glimmer: 70,
+  attack: 115,
+  speed_percent: 110,
+  shimmers: true,
+  perception: (sight_deg: 130.0, sight_m: 16.0, hearing_mult: 1.3),
+  moveset: "enemies/glasswing_stalker.ron",
+  options: [
+    (move: "gw_lunge", when: [DistBetween(2.5, 5.5), FacingWithin(25.0)], weight: 10, cooldown: 120),
+    (move: "gw_slash", when: [DistBelow(2.0), FacingWithin(40.0)], weight: 6, cooldown: 60),
+    (behavior: Approach(dur: 20), when: [DistAbove(5.5)], weight: 6),
+    (behavior: Approach(dur: 10), when: [DistBetween(2.0, 2.5)], weight: 4),
+    (behavior: Strafe(dur: 30), when: [DistBetween(2.0, 6.0)], weight: 2),
+  ],
+  drops: [(item: "itm_glimmer_vial", chance: 0.05)],
+)

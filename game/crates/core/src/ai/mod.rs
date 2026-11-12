@@ -158,6 +158,16 @@ pub struct AiState {
     pub dead_ticks: u16,
     /// The killing blow keeps it down for good (see [`special`]).
     pub stays_dead: bool,
+    /// Hidden in a reed patch (see [`special::reeds`]).
+    pub hidden: bool,
+    /// Ticks left that an attack keeps it revealed.
+    pub reveal: u16,
+    /// Ticks in a row in contact with its target (see [`special::swarm`]).
+    pub contact_ticks: u16,
+    /// Its blast move is playing; it dies when the move ends.
+    pub exploding: bool,
+    /// Ticks left that a Blunt hit keeps its crystals cracked (see [`special::reflect`]).
+    pub cracked: u16,
 }
 
 /// What an option does once picked.
@@ -362,6 +372,7 @@ pub fn run(world: &mut World) {
             think(world, id, &tuning);
         }
         behaviors::execute(world, id, &tuning);
+        special::batch2::tick(world, id);
     }
 }
 
@@ -553,6 +564,8 @@ fn return_home(world: &mut World, id: Id) {
 
 #[cfg(test)]
 mod b01_tests;
+#[cfg(test)]
+mod batch2_tests;
 #[cfg(test)]
 mod enemy_tests;
 #[cfg(test)]

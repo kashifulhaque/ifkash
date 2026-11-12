@@ -1,0 +1,42 @@
+// Enemy moves for WP-036 (the Marsh Crawler). Registry numbers 8330. Schema:
+// crates/content/src/moves.rs. Every attack telegraphs for at least 12 frames before its
+// first active hitbox frame or projectile (docs/game/05-enemies-and-bosses.md, "Enemy
+// roster"; checked by the validator). Damage comes from the enemy's `attack` (and
+// `element_attack`) in enemies/*.ron, so `motion_value` is the only multiplier here. Numbers
+// are tuning.
+#![enable(implicit_some)]
+[
+  (
+    // A quick bite. 25 Poison buildup.
+    id: "mc_bite",
+    anim: "mc_bite",
+    total_frames: 36,
+    stamina: 0,
+    fp: 0,
+    root_motion: [(0, 0.0), (11, 0.0), (13, 0.3), (36, 0.3)],
+    track_deg_per_tick: 8.0,
+    hyperarmor: None,
+    iframes: None,
+    cancel_attack_from: None,
+    cancel_dodge_from: None,
+    cancel_any_from: None,
+    next_chain: None,
+    hitboxes: [
+      (
+        frames: (12, 14),
+        shape: Capsule(a: (0.0, 0.4, 0.2), b: (0.0, 0.4, 0.9), radius: 0.3),
+        motion_value: 0.7,
+        phys: Pierce,
+        element: None,
+        poise_damage: 6,
+        status: [(kind: Poison, amount: 25)],
+        knockback: 0.2,
+        hitstop: 4,
+        tags: [],
+      ),
+    ],
+    projectiles: [],
+    sfx: [(10, "crawler_chitter")],
+    vfx: [],
+  ),
+]

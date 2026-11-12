@@ -39,4 +39,23 @@
     hitstop: 3, // tuning
     tags: [],
   ),
+  (
+    // The Acolyte's Radiance bolt (WP-036): slow, so the 30-tick glow and the flight both
+    // give a player time to move. A Formula: elemental, no physical type, so a Shard Golem
+    // reflects it. Damage comes from the Acolyte's `element_attack`.
+    id: "proj_radiance_bolt",
+    speed: 7.0, // tuning: 0.23 m a tick
+    gravity: 0.0,
+    radius: 0.2, // tuning
+    lifetime_ticks: 150, // tuning
+    pierce: 0,
+    homing: None,
+    motion_value: 1.0,
+    phys: Neutral,
+    element: Radiance,
+    poise_damage: 12, // tuning
+    knockback: 0.3, // tuning
+    hitstop: 3, // tuning
+    tags: [],
+  ),
 ]

@@ -1,0 +1,27 @@
+// The Drowned (registry 7051): slow, water only, and it grabs. Source:
+// docs/game/05-enemies-and-bosses.md, "Enemy roster" (HP 220; a grab costs 20% HP unless
+// dodged; weak to Storm). `water_only` confines it to the scenario's water volumes; the
+// grab (dr_grab) is Unblockable, so only a dodge avoids it. Everything else is tuning.
+#![enable(implicit_some)]
+(
+  id: "drowned",
+  model: "drowned",
+  hp: 220,
+  poise: 40,
+  defense: (flat: 35, weakness: [(Storm, 125)]),
+  resist: (immunity: 140, robustness: 100, composure: 100),
+  can_go_mad: true,
+  glimmer: 40,
+  attack: 100,
+  speed_percent: 50,
+  water_only: true,
+  perception: (sight_deg: 110.0, sight_m: 16.0, hearing_mult: 1.2),
+  moveset: "enemies/drowned.ron",
+  options: [
+    (move: "dr_grab", when: [DistBelow(2.0), FacingWithin(30.0)], weight: 6, cooldown: 150),
+    (move: "dr_swipe", when: [DistBelow(2.0), FacingWithin(40.0)], weight: 4, cooldown: 60),
+    (behavior: Approach(dur: 30), when: [DistAbove(1.8)], weight: 6),
+    (behavior: Wait(dur: 20), when: [DistAbove(4.0)], weight: 1),
+  ],
+  drops: [(item: "itm_glimmer_vial", chance: 0.04)],
+)

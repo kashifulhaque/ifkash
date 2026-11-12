@@ -1,0 +1,30 @@
+// The Acolyte (registry 7050): a caster that casts a slow Radiance bolt with a visible
+// 30-tick glow (ac_cast's projectile leaves on frame 30). Source:
+// docs/game/05-enemies-and-bosses.md, "Enemy roster" (HP 160; Bell variant casts Rime, which
+// projectiles can't build up yet, so it isn't made). It takes the one ranged token. Its
+// bolt is a Formula, so a Shard Golem reflects it. `attack` is for the staff swat; the bolt
+// adds its Radiance rating to it. Everything else is tuning.
+#![enable(implicit_some)]
+(
+  id: "acolyte",
+  model: "acolyte",
+  hp: 160,
+  poise: 20,
+  defense: (flat: 30),
+  resist: (immunity: 120, robustness: 100, composure: 140),
+  can_go_mad: true,
+  glimmer: 50,
+  attack: 40,
+  element_attack: (Radiance, 90),
+  perception: (sight_deg: 120.0, sight_m: 26.0, hearing_mult: 1.0),
+  leash_m: 40.0,
+  moveset: "enemies/acolyte.ron",
+  options: [
+    (move: "ac_cast", when: [DistBetween(5.0, 18.0), FacingWithin(40.0)], weight: 8, cooldown: 120),
+    (move: "ac_smack", when: [DistBelow(1.9)], weight: 6, cooldown: 50),
+    (behavior: Retreat(dur: 40), when: [DistBelow(4.5)], weight: 5, cooldown: 90),
+    (behavior: Wait(dur: 20), when: [DistAbove(5.0)], weight: 2),
+    (behavior: Strafe(dur: 40), when: [DistAbove(5.0)], weight: 1, cooldown: 120),
+  ],
+  drops: [(item: "itm_glimmer_vial", chance: 0.05)],
+)

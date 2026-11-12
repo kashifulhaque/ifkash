@@ -174,6 +174,16 @@ struct Step {
     /// event's position.
     landings: Vec<Landing>,
     end: Option<(End, V3)>,
+    /// A reflector turned the projectile back: it flies on from `pos` under this actor.
+    reflected_by: Option<Id>,
+}
+
+fn midpoint(a: V3, b: V3) -> V3 {
+    [
+        (a[0] + b[0]) * 0.5,
+        (a[1] + b[1]) * 0.5,
+        (a[2] + b[2]) * 0.5,
+    ]
 }
 
 fn sub(a: V3, b: V3) -> V3 {
@@ -398,6 +408,7 @@ fn plan(world: &World, id: Id, p: &Projectile, def: &ProjectileDef, bodies: &[Bo
 
     let mut landings = Vec::new();
     let mut end = None;
+    let mut reflect = None;
     let mut struck = p.struck.len();
     for (frac, target, point) in touched {
         if wall.is_some_and(|w| frac > w) {
@@ -406,12 +417,39 @@ fn plan(world: &World, id: Id, p: &Projectile, def: &ProjectileDef, bodies: &[Bo
         let Some(t) = world.actors.get(target) else {
             continue;
         };
+        // A Formula that meets a reflector flies back at its shooter (WP-036).
+        if crate::ai::special::reflect::reflects(world, target, def) {
+            reflect = Some((target, point));
+            break;
+        }
         landings.push(landing_for(world, p, def, t, target, point, v1));
         struck += 1;
         if struck > usize::from(def.pierce) {
             end = Some((End::Spent, point));
             break;
         }
+    }
+    if let Some((by, point)) = reflect {
+        // Back toward where the shooter stands (its chest), at the speed it had; or straight
+        // back if the shooter is gone.
+        let speed = len(v1);
+        let back = world
+            .actors
+            .get(p.shooter)
+            .map(|s| {
+                let c = s.hurtbox.capsule(s.pos);
+                sub(midpoint(c.a, c.b), point)
+            })
+            .filter(|d| len(*d) > EPS)
+            .unwrap_or_else(|| scale(v1, -1.0));
+        return Step {
+            id,
+            pos: point,
+            vel: scale(unit(back), speed),
+            landings,
+            end: None,
+            reflected_by: Some(by),
+        };
     }
     if end.is_none() {
         if let Some(w) = wall {
@@ -431,6 +469,7 @@ fn plan(world: &World, id: Id, p: &Projectile, def: &ProjectileDef, bodies: &[Bo
         vel: v1,
         landings,
         end,
+        reflected_by: None,
     }
 }
 
@@ -603,6 +642,12 @@ fn advance(world: &mut World) {
                 p.pos = step.pos;
                 p.vel = step.vel;
                 p.age += 1;
+                // A reflected Formula belongs to the reflector now, and can strike its old
+                // shooter.
+                if let Some(by) = step.reflected_by {
+                    p.shooter = by;
+                    p.struck.clear();
+                }
                 if let Some(slot) = world.projectiles.get_mut(step.id) {
                     *slot = p;
                 }

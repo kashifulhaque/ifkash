@@ -17,6 +17,7 @@
 //! | Guard, Wait | Stands | The target |
 //! | Flee | Runs away from the target | Where it runs |
 //! | Return | Runs home | Where it runs |
+//! | Burrow | Walks to the nearest reed patch (WP-036) | Where it walks |
 //!
 //! "The target" is where the actor last saw it (`AiState::last_seen`), so a target that
 //! slips out of sight is lost rather than tracked through walls.
@@ -138,6 +139,8 @@ pub fn execute(world: &mut World, id: Id, t: &AiTuning) {
         return;
     };
     let mut next_patrol = None;
+    // A flyer with nothing else to do drifts toward a lit Lantern (WP-036).
+    let light = super::special::flying::light_goal(world, id);
     let target = b.target.map(|_| b.last_seen);
     let spawn = world.layout.enemies.get(usize::from(b.spawn));
     let home = spawn.map_or(a.pos, |s| s.pos);
@@ -159,7 +162,15 @@ pub fn execute(world: &mut World, id: Id, t: &AiTuning) {
                     }
                 }
             }
-            None => Plan::Stand { face: None },
+            None => match light {
+                Some(goal) => Plan::Go {
+                    goal,
+                    speed: t.walk_speed,
+                    face: None,
+                    nav: false,
+                },
+                None => Plan::Stand { face: None },
+            },
         },
         Awareness::Suspicious => Plan::Go {
             goal: b.noise_at,
@@ -211,6 +222,17 @@ pub fn execute(world: &mut World, id: Id, t: &AiTuning) {
                         face: None,
                         nav: false,
                     },
+                    Behavior::Burrow { .. } => {
+                        match super::special::reeds::nearest_patch(world, pos) {
+                            Some(goal) if dist_xz(pos, goal) > t.arrive_m => Plan::Go {
+                                goal,
+                                speed: t.walk_speed,
+                                face: None,
+                                nav: false,
+                            },
+                            _ => Plan::Stand { face: target },
+                        }
+                    }
                     Behavior::Guard { .. } | Behavior::Wait { .. } | Behavior::Patrol => {
                         Plan::Stand { face: target }
                     }

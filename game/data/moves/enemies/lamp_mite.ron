@@ -1,0 +1,42 @@
+// Enemy moves for WP-036 (the Lamp Mite). Registry numbers 8350. Schema:
+// crates/content/src/moves.rs. Every attack telegraphs for at least 12 frames before its
+// first active hitbox frame or projectile (docs/game/05-enemies-and-bosses.md, "Enemy
+// roster"; checked by the validator). Damage comes from the enemy's `attack` (and
+// `element_attack`) in enemies/*.ron, so `motion_value` is the only multiplier here. Numbers
+// are tuning.
+#![enable(implicit_some)]
+[
+  (
+    // The blast: a 12-frame flare (the telegraph), then a Fire burst around the mite. The swarm rule plays it after 48 ticks of contact and removes the mite when it ends.
+    id: "lm_burst",
+    anim: "lm_burst",
+    total_frames: 36,
+    stamina: 0,
+    fp: 0,
+    root_motion: [(0, 0.0), (36, 0.0)],
+    track_deg_per_tick: 0.0,
+    hyperarmor: None,
+    iframes: None,
+    cancel_attack_from: None,
+    cancel_dodge_from: None,
+    cancel_any_from: None,
+    next_chain: None,
+    hitboxes: [
+      (
+        frames: (12, 16),
+        shape: Sphere(center: (0.0, 0.5, 0.0), radius: 2.2),
+        motion_value: 0.7,
+        phys: Neutral,
+        element: Fire,
+        poise_damage: 20,
+        status: [],
+        knockback: 1.5,
+        hitstop: 6,
+        tags: [],
+      ),
+    ],
+    projectiles: [],
+    sfx: [(6, "mite_hiss")],
+    vfx: [(0, "flare_fire")],
+  ),
+]

@@ -16,6 +16,10 @@ pub mod flags {
     /// The actor the player is currently locked on to.
     pub const LOCKED_TARGET: u16 = 1 << 4;
     pub const TWO_HANDING: u16 = 1 << 5;
+    /// A shimmering enemy standing still: nearly invisible (Glasswing Stalker, WP-036).
+    pub const CLOAKED: u16 = 1 << 6;
+    /// An enemy hidden in reeds (Reed Stalker, WP-036).
+    pub const HIDDEN: u16 = 1 << 7;
 }
 
 /// One actor as the renderer sees it. 40 bytes, 4-byte aligned, no padding. The TypeScript
@@ -41,7 +45,8 @@ pub struct ActorSnap {
     /// Registry number of the enemy definition (7000 is the Husk), for model lookup. 0 for the
     /// player and any actor with no AI brain.
     pub kind: u16,
-    /// See [`flags`]. Only dead, guarding, invulnerable (i-frames), and locked target are set so far.
+    /// See [`flags`]. Only dead, staggered, guarding, invulnerable (i-frames), locked target,
+    /// cloaked, and hidden are set so far.
     pub flags: u16,
     /// Meters.
     pub pos: [f32; 3],
@@ -132,6 +137,12 @@ pub fn write_snapshot(world: &World, out: &mut Vec<ActorSnap>) {
         }
         if crate::combat::dodge::is_invulnerable(&actor.moves) {
             bits |= flags::INVULNERABLE;
+        }
+        if crate::ai::special::shimmer::cloaked(world, actor) {
+            bits |= flags::CLOAKED;
+        }
+        if crate::ai::special::reeds::hidden(actor) {
+            bits |= flags::HIDDEN;
         }
         let current = actor.moves.current;
         out.push(ActorSnap {

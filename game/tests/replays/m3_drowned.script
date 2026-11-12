@@ -1,0 +1,12 @@
+# WP-036 golden: a Drowned wades to the near edge of its pool and grabs the player, who then hits it (record with `lf-tools replay record-script`). Each line:
+# <ticks> <move_x> <move_z> [BUTTONS]. The player spawns at the origin facing +Z in fight_drowned.
+seed 51
+scenario fight_drowned
+30  0 0              # stand: it notices and wades toward the player
+10  0 127            # step up to the pool's edge (z 3)
+1   0 0  LOCK
+200 0 0              # it grabs for about 20% of the player's HP
+1   0 0  LIGHT
+40  0 0
+1   0 0  LIGHT
+60  0 0

@@ -1,0 +1,42 @@
+// Enemy moves for WP-036 (the Reed Stalker). Registry numbers 8320. Schema:
+// crates/content/src/moves.rs. Every attack telegraphs for at least 12 frames before its
+// first active hitbox frame or projectile (docs/game/05-enemies-and-bosses.md, "Enemy
+// roster"; checked by the validator). Damage comes from the enemy's `attack` (and
+// `element_attack`) in enemies/*.ron, so `motion_value` is the only multiplier here. Numbers
+// are tuning.
+#![enable(implicit_some)]
+[
+  (
+    // The one heavy lunge out of the reeds: 16 frames of coil, then about 3.4 m of forward travel. After it the stalker is revealed and burrows back.
+    id: "rs_lunge",
+    anim: "rs_lunge",
+    total_frames: 60,
+    stamina: 0,
+    fp: 0,
+    root_motion: [(0, 0.0), (14, 0.0), (18, 3.2), (60, 3.4)],
+    track_deg_per_tick: 5.0,
+    hyperarmor: None,
+    iframes: None,
+    cancel_attack_from: None,
+    cancel_dodge_from: None,
+    cancel_any_from: None,
+    next_chain: None,
+    hitboxes: [
+      (
+        frames: (16, 20),
+        shape: Capsule(a: (0.0, 0.9, 0.2), b: (0.0, 0.9, 1.3), radius: 0.45),
+        motion_value: 1.7,
+        phys: Pierce,
+        element: None,
+        poise_damage: 40,
+        status: [],
+        knockback: 1.2,
+        hitstop: 6,
+        tags: [],
+      ),
+    ],
+    projectiles: [],
+    sfx: [(12, "reed_rustle")],
+    vfx: [(16, "trail_dull")],
+  ),
+]

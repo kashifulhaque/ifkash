@@ -1,0 +1,25 @@
+// The Marsh Crawler (registry 7053): a swarm biter. Source:
+// docs/game/05-enemies-and-bosses.md, "Enemy roster" (HP 60; groups of 4-6; Poison bite).
+// The group comes from the scenario; the shared melee tokens keep it to two biters at a
+// time. Everything else is tuning.
+#![enable(implicit_some)]
+(
+  id: "marsh_crawler",
+  model: "marsh_crawler",
+  hp: 60,
+  poise: 0,
+  defense: (flat: 15),
+  resist: (immunity: 200, robustness: 100, composure: 100),
+  can_go_mad: true,
+  glimmer: 8,
+  attack: 55,
+  speed_percent: 110,
+  perception: (sight_deg: 160.0, sight_m: 14.0, hearing_mult: 1.2),
+  moveset: "enemies/marsh_crawler.ron",
+  options: [
+    (move: "mc_bite", when: [DistBelow(1.7), FacingWithin(45.0)], weight: 6, cooldown: 45),
+    (behavior: Approach(dur: 20), when: [DistAbove(1.4)], weight: 6),
+    (behavior: Strafe(dur: 30), when: [DistBetween(1.2, 4.0)], weight: 2),
+  ],
+  drops: [(item: "itm_glimmer_vial", chance: 0.02)],
+)

@@ -45,6 +45,8 @@ Copy this block to the top of the entries and fill it in as you go:
     `world.rs`) and rehashed the goldens.
   - WP-023: done by sonnet (no escalation); commit `0e40d33`; 190K worker tokens. Also
     wired `guard::apply_incoming_hit` into the resolver.
+  - WP-024: in progress (sonnet), main checkout
+  - WP-027: in progress (sonnet), worktree
   - WP-028: in progress (sonnet), worktree
   - WP-029: in progress (sonnet), worktree
 - **Context:** orchestrator 126K + workers 181K = 307K after WP-020 (budget 500K).

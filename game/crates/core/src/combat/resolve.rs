@@ -396,6 +396,7 @@ pub fn run(world: &mut World) {
             poise::parry_window_of(world, cand.target),
             hb.tags.contains(&HitTag::Unparryable),
             &world.locomotion.poise,
+            crate::combat::arts::stance_parry_ticks(world, cand.target) > 0,
         ) {
             parries.push(poise::Parry {
                 attacker: cand.attacker,

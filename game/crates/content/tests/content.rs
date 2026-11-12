@@ -123,6 +123,9 @@ fn hash_ignores_comments_and_whitespace() {
     }
     all_moves.extend(ron_files("moves/enemies"));
     all_moves.extend(ron_files("moves/bosses"));
+    // The Arts' moves (WP-054).
+    let arts_moves = std::fs::read_to_string(data_dir().join("moves/arts.ron")).unwrap();
+    all_moves.push(("moves/arts.ron".to_owned(), arts_moves));
     let other = Content::from_sources(
         &noisy,
         &attrs,

@@ -1,0 +1,6 @@
+# WP-054 golden: Rending Sweep's spin (ticks 10 to 70). The dummy is inside the sweep. Record with `lf-tools replay record-script`.
+seed 5402
+scenario m5_art_rending_sweep
+10 0 0            # settle on the ground
+1 0 0 ART
+70 0 0

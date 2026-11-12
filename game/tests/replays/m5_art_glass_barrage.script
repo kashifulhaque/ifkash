@@ -1,0 +1,6 @@
+# WP-054 golden: Glass Barrage's five shards (ticks 10 to 70), fired at the dummy 8 m ahead. Record with `lf-tools replay record-script`.
+seed 5413
+scenario m5_art_glass_barrage
+10 0 0            # settle on the ground
+1 0 0 ART
+70 0 0

@@ -1,28 +1,83 @@
-// Arts: weapon skills that cost FP. Every Art is a stub until WP-054 implements it; the
-// validator warns on stubs. A weapon names its Art (`default_art` in weapons/), and the
-// validator checks that the Art lists the weapon's class.
-// Source: docs/game/04-arsenal-and-builds.md, "Arts". Schema: crates/content/src/arts.rs.
+// Arts: weapon skills that cost FP. Source: docs/game/04-arsenal-and-builds.md, "Arts". Schema:
+// crates/content/src/arts.rs. Each Art plays one move from moves/arts.ron (the `amv_*` moves,
+// registry 20000-20014); its FP is the move's `fp`, and the validator checks they agree.
 // Registry numbers: 19500-19513.
 //
 // The spec's "Any melee except fist" is spelled out here as the melee classes. "Toll" is one
-// Art with two variants (Bell Toll for the Bellwright's Mallet, Choir Toll for the Choir
-// Glaive); the variant follows from the weapon's element, so it stays one entry.
+// Art with two variants: the Bell Toll (the base move, for the Bellwright's Mallet, an Aether
+// weapon) and the Choir Toll (for a Radiance weapon, the Choir Glaive).
+//
+// Numbers the spec leaves out (a stance's length, a buff's frame) are tuning, marked in the
+// move file. Effects the simulation doesn't model yet are listed in WP-054's report, not here.
 #![enable(implicit_some)]
 (
   arts: [
-    (id: "art_feint_step", name: "Feint Step", classes: [Dagger, StraightSword, CurvedSword, ThrustingSword, Fist], fp: 6, stub: true),
-    (id: "art_rending_sweep", name: "Rending Sweep", classes: [CurvedSword, Axe], fp: 10, stub: true),
-    (id: "art_bastion", name: "Bastion", classes: [Shield], fp: 0, stub: true),
-    (id: "art_windward_parry", name: "Windward Parry", classes: [Dagger, StraightSword, Shield], fp: 0, stub: true),
-    (id: "art_rising_cleave", name: "Rising Cleave", classes: [StraightSword, Greatsword, Halberd], fp: 10, stub: true),
-    (id: "art_rallying_roar", name: "Rallying Roar", classes: [Axe, Hammer, Colossal, Fist], fp: 12, stub: true),
-    (id: "art_lunging_thrust", name: "Lunging Thrust", classes: [Spear, ThrustingSword], fp: 9, stub: true),
-    (id: "art_earthsplit", name: "Earthsplit", classes: [Hammer, Colossal], fp: 14, stub: true),
-    (id: "art_rime_edge", name: "Rime Edge", classes: [Dagger, StraightSword, Greatsword, CurvedSword, ThrustingSword, Axe, Hammer, Colossal, Spear, Halberd], fp: 15, stub: true),
-    (id: "art_radiant_blade", name: "Radiant Blade", classes: [Dagger, StraightSword, Greatsword, CurvedSword, ThrustingSword, Axe, Hammer, Colossal, Spear, Halberd], fp: 15, stub: true),
-    (id: "art_spark_volley", name: "Spark Volley", classes: [Bow], fp: 10, stub: true),
-    (id: "art_lantern_flare", name: "Lantern Flare", classes: [StraightSword], fp: 12, stub: true),
-    (id: "art_glass_barrage", name: "Glass Barrage", classes: [ThrustingSword, Spear], fp: 14, stub: true),
-    (id: "art_toll", name: "Toll", classes: [Hammer, Halberd], fp: 18, stub: true),
+    (
+      id: "art_feint_step", name: "Feint Step",
+      classes: [Dagger, StraightSword, CurvedSword, ThrustingSword, Fist],
+      fp: 6, move_id: "amv_feint_step",
+    ),
+    (
+      id: "art_rending_sweep", name: "Rending Sweep",
+      classes: [CurvedSword, Axe], fp: 10, move_id: "amv_rending_sweep",
+    ),
+    (
+      // A stance: the guard stays up, and the first block starts the guard counter.
+      id: "art_bastion", name: "Bastion",
+      classes: [Shield], fp: 0, move_id: "amv_bastion",
+      stance: true, auto_counter: true,
+    ),
+    (
+      // A stance with a 5-tick parry window (tuning: the spec gives 5 ticks).
+      id: "art_windward_parry", name: "Windward Parry",
+      classes: [Dagger, StraightSword, Shield], fp: 0, move_id: "amv_windward_parry",
+      stance: true, parry_ticks: 5,
+    ),
+    (
+      id: "art_rising_cleave", name: "Rising Cleave",
+      classes: [StraightSword, Greatsword, Halberd], fp: 10, move_id: "amv_rising_cleave",
+    ),
+    (
+      id: "art_rallying_roar", name: "Rallying Roar",
+      classes: [Axe, Hammer, Colossal, Fist], fp: 12, move_id: "amv_rallying_roar",
+      buff: (frame: 14, buff: "buf_rallying_roar"),
+    ),
+    (
+      id: "art_lunging_thrust", name: "Lunging Thrust",
+      classes: [Spear, ThrustingSword], fp: 9, move_id: "amv_lunging_thrust",
+    ),
+    (
+      id: "art_earthsplit", name: "Earthsplit",
+      classes: [Hammer, Colossal], fp: 14, move_id: "amv_earthsplit",
+    ),
+    (
+      id: "art_rime_edge", name: "Rime Edge",
+      classes: [Dagger, StraightSword, Greatsword, CurvedSword, ThrustingSword, Axe, Hammer, Colossal, Spear, Halberd],
+      fp: 15, move_id: "amv_rime_edge",
+      buff: (frame: 8, buff: "buf_rime_edge"),
+    ),
+    (
+      id: "art_radiant_blade", name: "Radiant Blade",
+      classes: [Dagger, StraightSword, Greatsword, CurvedSword, ThrustingSword, Axe, Hammer, Colossal, Spear, Halberd],
+      fp: 15, move_id: "amv_radiant_blade",
+      buff: (frame: 8, buff: "buf_radiant_blade"),
+    ),
+    (
+      id: "art_spark_volley", name: "Spark Volley",
+      classes: [Bow], fp: 10, move_id: "amv_spark_volley",
+    ),
+    (
+      id: "art_lantern_flare", name: "Lantern Flare",
+      classes: [StraightSword], fp: 12, move_id: "amv_lantern_flare",
+    ),
+    (
+      id: "art_glass_barrage", name: "Glass Barrage",
+      classes: [ThrustingSword, Spear], fp: 14, move_id: "amv_glass_barrage",
+    ),
+    (
+      id: "art_toll", name: "Toll",
+      classes: [Hammer, Halberd], fp: 18, move_id: "amv_bell_toll",
+      variants: [(element: Radiance, move_id: "amv_choir_toll")],
+    ),
   ],
 )

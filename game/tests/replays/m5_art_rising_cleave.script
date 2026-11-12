@@ -1,0 +1,6 @@
+# WP-054 golden: Rising Cleave's upward slash (ticks 10 to 70). The dummy is inside the slash. Record with `lf-tools replay record-script`.
+seed 5405
+scenario m5_art_rising_cleave
+10 0 0            # settle on the ground
+1 0 0 ART
+70 0 0

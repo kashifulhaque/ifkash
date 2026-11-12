@@ -1,0 +1,6 @@
+# WP-054 golden: Radiant Blade's weapon buff (ticks 10 to 70). The buff lands on frame 8. Record with `lf-tools replay record-script`.
+seed 5410
+scenario m5_art_radiant_blade
+10 0 0            # settle on the ground
+1 0 0 ART
+60 0 0

@@ -75,6 +75,9 @@ pub enum Action {
     /// `GUARD` pressed with a catalyst in the left hand: casts the selected spell
     /// (docs/game/03-combat.md, "Spells", "Casting input"). See `combat::spells`.
     Cast,
+    /// `ART` pressed: the right-hand weapon's Art (docs/game/04-arsenal-and-builds.md,
+    /// "Arts"). See `combat::arts`.
+    Art,
 }
 
 /// The most recent action that couldn't fire yet. See docs/game/03-combat.md,
@@ -197,6 +200,9 @@ pub struct Moveset {
     /// The cast move `GUARD` starts, when a catalyst with a matching spell selected is in
     /// the left hand (`combat::spells` sets it; a weapon's moveset never has one).
     pub left_cast: Option<MoveNum>,
+    /// The move `ART` starts: the right-hand weapon's Art (`combat::arts`). Set by
+    /// `World::sync_player_moveset`; `None` for a weapon with no Art.
+    pub art: Option<MoveNum>,
     /// The roll for each equip load tier (there is none when overloaded).
     pub roll_light: MoveNum,
     pub roll_medium: MoveNum,
@@ -237,6 +243,8 @@ pub struct MoveTable {
     /// The player's gear shortens a spell's startup by this many percent (Shrike-Lite,
     /// WP-057). Derived from the equipment by `items::gear::refresh`, so it isn't hashed.
     pub cast_reduce_percent: u32,
+    /// Every Art, and each weapon's Art facts (`combat::arts`). Built from content.
+    pub arts: super::arts::ArtTable,
 }
 
 impl MoveTable {
@@ -302,6 +310,7 @@ impl MoveTable {
                 Err(format!("move \"{id}\" is not defined"))
             }
         };
+        let arts = super::arts::ArtTable::from_content(content)?;
         let mut movesets = Vec::new();
         for (_, w) in content.all_weapons() {
             let s = &w.moveset;
@@ -333,6 +342,8 @@ impl MoveTable {
                 plunge: defined(&s.plunge)?,
                 guard_counter: defined(&s.guard_counter)?,
                 left_cast: None,
+                // The default Art (a weapon's Art scroll is applied at sync).
+                art: arts.default_move(num(&w.id)?, w.elemental.map(|e| e.element)),
                 roll_light: defined(&s.roll_light)?,
                 roll_medium: defined(&s.roll_medium)?,
                 roll_heavy: defined(&s.roll_heavy)?,
@@ -359,6 +370,7 @@ impl MoveTable {
         table.movesets = movesets;
         table.flask = FlaskRules::from_content(content)?;
         table.crits = super::crit::CritMoves::resolve(&table);
+        table.arts = arts;
         table.player_moveset = player_moveset;
         Ok(table)
     }
@@ -465,6 +477,9 @@ fn read_input(ms: &mut MoveState, f: ActionFrame, t: &Locomotion) {
     if pressed & buttons::USE_ITEM != 0 {
         ms.press(Action::UseItem, dir);
     }
+    if pressed & buttons::ART != 0 {
+        ms.press(Action::Art, dir);
+    }
     // A tap is a release before sprint could start (docs/game/03-combat.md, "Combat
     // verbs": Roll and Backstep are a `DODGE` tap, Sprint a hold of more than
     // `sprint_delay_ticks`).
@@ -495,7 +510,7 @@ fn resolve(
         let window = match b.action {
             Action::Light | Action::Heavy => d.data.cancel_attack_from,
             Action::Dodge => d.data.cancel_dodge_from,
-            Action::Cast => d.data.cancel_attack_from,
+            Action::Cast | Action::Art => d.data.cancel_attack_from,
             Action::UseItem => None,
         };
         if !reached(window) && !reached(d.data.cancel_any_from) {
@@ -515,6 +530,7 @@ fn resolve(
         Action::Heavy if counter => set.guard_counter,
         Action::Heavy => set.heavy,
         Action::Cast => set.left_cast?,
+        Action::Art => set.art?,
         Action::Dodge => dodge::select(set, set.load_tier, b.dir != [0, 0])?,
         // Items are resolved by `crate::items::drink_move` before this is called.
         Action::UseItem => return None,
@@ -602,11 +618,20 @@ pub fn step(
     // The guard raises and lowers (see `combat::guard`). Whether a move may start is read
     // before the update, so a stagger of N ticks blocks exactly N ticks of starts.
     let can_act = a.moves.guard.can_act();
+    // An Art stance (Bastion, Windward Parry) keeps the guard up while it plays.
+    let stance = a
+        .moves
+        .current
+        .and_then(|c| table.arts.of_move(c.num))
+        .filter(|r| r.stance);
+    let stance_now = stance.is_some();
+    let auto_counter_now = stance.is_some_and(|r| r.auto_counter);
     // An AI actor has no buttons; its `Guard` behavior raises the guard (WP-032).
     // A catalyst can't guard (docs/game/03-combat.md, "Spells").
     let casting_left = set.is_some_and(|s| s.left_cast.is_some());
-    let wants_guard =
-        (held & buttons::GUARD != 0 && !casting_left) || a.ai.as_ref().is_some_and(|b| b.guarding);
+    let wants_guard = (held & buttons::GUARD != 0 && !casting_left)
+        || a.ai.as_ref().is_some_and(|b| b.guarding)
+        || stance_now;
     // A guard attack keeps the guard up while it plays, so the guard sees the actor as
     // free during it (see `Moveset::guard_attack`).
     let in_guard_attack = set.is_some_and(|s| {
@@ -614,9 +639,15 @@ pub fn step(
     });
     a.moves.guard.update(
         wants_guard,
-        a.moves.current.is_none() || in_guard_attack,
+        a.moves.current.is_none() || in_guard_attack || stance_now,
         &t.guard,
     );
+
+    // A stance with an auto counter (Bastion) starts the guard counter as soon as a block
+    // opens its window, without a `HEAVY`: the buffered `HEAVY` resolves to the counter below.
+    if auto_counter_now && a.moves.guard.counter > 0 && a.moves.buffer.is_none() {
+        a.moves.press(Action::Heavy, [0, 0]);
+    }
 
     // 3. Fire the buffered action if the current move allows it. A broken guard or a
     // lowering one blocks starting anything.
@@ -642,9 +673,11 @@ pub fn step(
             && let Some(d) = num.and_then(|n| table.get(n))
             && stamina::try_spend(a, &d.data)
         {
-            // Starting a move drops the guard, except a guard attack, which keeps it up. It
-            // also uses up the counter window.
-            if s.guard_attack != Some(d.num) {
+            // Starting a move drops the guard, except a guard attack and an Art stance, which
+            // keep it up. It also uses up the counter window.
+            let keeps_guard = s.guard_attack == Some(d.num)
+                || table.arts.of_move(d.num).is_some_and(|r| r.stance);
+            if !keeps_guard {
                 a.moves.guard.drop_guard();
             }
             if d.num == s.guard_counter {

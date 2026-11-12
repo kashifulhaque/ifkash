@@ -65,6 +65,7 @@ impl FlaskRules {
                     | ItemKind::Cure
                     | ItemKind::Glimmer
                     | ItemKind::LanternAsh
+                    | ItemKind::ArtScroll
             ) && i.effect != ItemEffect::None
             {
                 usable.push(num(&i.id)?);

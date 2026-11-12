@@ -51,6 +51,22 @@
     (id: "itm_echo_bell", name: "Echo Bell", kind: EchoBell, stack: 1), // WP-059: summons an Echo at an Echo Stone
     // WP-053: Smith materials, all key items with no effect. The Forgeglass and Starglass are
     // spent at the Smith, the Ember unlocks the high levels, and a whetstone is one temper.
+    // WP-054: Art Scrolls, one per Art. Using one changes the held common weapon's Art, if the
+    // weapon's class can use it.
+    (id: "itm_art_scroll_feint_step", name: "Art Scroll: Feint Step", kind: ArtScroll, stack: 5, effect: ArtScroll(art: "art_feint_step")),
+    (id: "itm_art_scroll_rending_sweep", name: "Art Scroll: Rending Sweep", kind: ArtScroll, stack: 5, effect: ArtScroll(art: "art_rending_sweep")),
+    (id: "itm_art_scroll_bastion", name: "Art Scroll: Bastion", kind: ArtScroll, stack: 5, effect: ArtScroll(art: "art_bastion")),
+    (id: "itm_art_scroll_windward_parry", name: "Art Scroll: Windward Parry", kind: ArtScroll, stack: 5, effect: ArtScroll(art: "art_windward_parry")),
+    (id: "itm_art_scroll_rising_cleave", name: "Art Scroll: Rising Cleave", kind: ArtScroll, stack: 5, effect: ArtScroll(art: "art_rising_cleave")),
+    (id: "itm_art_scroll_rallying_roar", name: "Art Scroll: Rallying Roar", kind: ArtScroll, stack: 5, effect: ArtScroll(art: "art_rallying_roar")),
+    (id: "itm_art_scroll_lunging_thrust", name: "Art Scroll: Lunging Thrust", kind: ArtScroll, stack: 5, effect: ArtScroll(art: "art_lunging_thrust")),
+    (id: "itm_art_scroll_earthsplit", name: "Art Scroll: Earthsplit", kind: ArtScroll, stack: 5, effect: ArtScroll(art: "art_earthsplit")),
+    (id: "itm_art_scroll_rime_edge", name: "Art Scroll: Rime Edge", kind: ArtScroll, stack: 5, effect: ArtScroll(art: "art_rime_edge")),
+    (id: "itm_art_scroll_radiant_blade", name: "Art Scroll: Radiant Blade", kind: ArtScroll, stack: 5, effect: ArtScroll(art: "art_radiant_blade")),
+    (id: "itm_art_scroll_spark_volley", name: "Art Scroll: Spark Volley", kind: ArtScroll, stack: 5, effect: ArtScroll(art: "art_spark_volley")),
+    (id: "itm_art_scroll_lantern_flare", name: "Art Scroll: Lantern Flare", kind: ArtScroll, stack: 5, effect: ArtScroll(art: "art_lantern_flare")),
+    (id: "itm_art_scroll_glass_barrage", name: "Art Scroll: Glass Barrage", kind: ArtScroll, stack: 5, effect: ArtScroll(art: "art_glass_barrage")),
+    (id: "itm_art_scroll_toll", name: "Art Scroll: Toll", kind: ArtScroll, stack: 5, effect: ArtScroll(art: "art_toll")),
     (id: "itm_forgeglass_shard", name: "Forgeglass Shard", kind: Key, stack: 99),
     (id: "itm_forgeglass_chunk", name: "Forgeglass Chunk", kind: Key, stack: 99),
     (id: "itm_starglass", name: "Starglass", kind: Key, stack: 99),

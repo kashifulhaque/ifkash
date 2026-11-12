@@ -415,9 +415,49 @@ fn check_arts(content: &Content, out: &mut Vec<Issue>) {
         if a.fp > 200 {
             s.error("fp", format!("{} is above 200", a.fp));
         }
+        // The Art's move must exist and cost the Art's FP: the move's `fp` is what the player
+        // pays (`combat::stamina::try_spend`).
+        check_art_move(&mut s, content, "move_id", &a.move_id, a.fp);
+        let mut elements = BTreeSet::new();
+        for (i, v) in a.variants.iter().enumerate() {
+            if !elements.insert(format!("{:?}", v.element)) {
+                s.error(format!("variants[{i}].element"), "two variants for one element");
+            }
+            check_art_move(&mut s, content, &format!("variants[{i}].move_id"), &v.move_id, a.fp);
+        }
+        if let Some(b) = &a.buff {
+            let known = content
+                .status
+                .as_ref()
+                .is_some_and(|st| st.buffs.iter().any(|d| d.id == b.buff));
+            if !known {
+                s.error("buff.buff", format!("buff \"{}\" is not defined", b.buff));
+            }
+            if content
+                .move_by_id(&a.move_id)
+                .is_some_and(|m| b.frame >= m.total_frames)
+            {
+                s.error("buff.frame", "is outside the move's frames");
+            }
+        }
+        if (a.parry_ticks > 0 || a.auto_counter) && !a.stance {
+            s.error("stance", "a parry window or an auto counter needs a stance");
+        }
         if a.stub {
             s.warn("stub", "Art is a stub placeholder");
         }
+    }
+}
+
+/// An Art's move must exist and cost the Art's FP (the move's `fp` is what the player pays).
+fn check_art_move(s: &mut Sink<'_>, content: &Content, field: &str, id: &str, fp: u16) {
+    match content.move_by_id(id) {
+        None => s.error(field, format!("move \"{id}\" is not defined")),
+        Some(m) if m.fp != fp => s.error(
+            field,
+            format!("move \"{id}\" costs {} FP, not the Art's {fp}", m.fp),
+        ),
+        Some(_) => {}
     }
 }
 
@@ -657,6 +697,14 @@ impl Validate for Content {
                     sink.error(
                         format!("items[{i}].effect"),
                         format!("projectile \"{p}\" is not defined"),
+                    );
+                }
+                if let crate::ItemEffect::ArtScroll { art } = &item.effect
+                    && !self.arts.iter().any(|a| &a.id == art)
+                {
+                    sink.error(
+                        format!("items[{i}].effect"),
+                        format!("Art \"{art}\" is not defined"),
                     );
                 }
                 if let crate::ItemEffect::Oil { buff } = &item.effect

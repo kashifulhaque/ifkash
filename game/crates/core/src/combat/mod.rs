@@ -1,6 +1,7 @@
 //! Combat: moves, stamina, dodging, guarding, hitboxes, and hit resolution, damage, poise,
 //! parries, critical hits, projectiles, and status effects and buffs. See docs/game/03-combat.md.
 
+pub mod arts;
 pub mod bow;
 pub mod crit;
 pub mod damage;

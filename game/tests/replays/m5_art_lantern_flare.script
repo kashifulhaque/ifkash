@@ -1,0 +1,6 @@
+# WP-054 golden: Lantern Flare's fire burst (ticks 10 to 70). The dummy is inside the flare. Record with `lf-tools replay record-script`.
+seed 5412
+scenario m5_art_lantern_flare
+10 0 0            # settle on the ground
+1 0 0 ART
+70 0 0

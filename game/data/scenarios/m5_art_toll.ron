@@ -1,0 +1,18 @@
+// WP-054 golden scenario: Toll's Bell Toll, with the dummy inside the 2.4 m shockwave. A flat floor and one padded dummy 2.0 m ahead, facing the
+// player (yaw pi). The player wields wpn_bellwright_mallet (weapons/wpn_heavy.ron), whose default Art
+// this scenario exercises.
+(
+  spawn: (0.0, 0.0, 0.0),
+  spawn_yaw: 0.0,
+  kill_y: -50.0,
+  heightfield: None,
+  boxes: [
+    (name: "floor", center: (0.0, -0.5, 0.0), half_extents: (1000.0, 0.5, 1000.0)),
+  ],
+  player_weapon: Some("wpn_bellwright_mallet"),
+  dummies: [
+    (
+      name: "dummy", pos: (0.0, 0.0, 2.0), yaw: 3.1415927, hp: 6000, defense: (flat: 500),
+    ),
+  ],
+)

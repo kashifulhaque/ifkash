@@ -1,0 +1,6 @@
+# WP-054 golden: Rime Edge's weapon buff (ticks 10 to 70). The buff lands on frame 8. Record with `lf-tools replay record-script`.
+seed 5409
+scenario m5_art_rime_edge
+10 0 0            # settle on the ground
+1 0 0 ART
+60 0 0

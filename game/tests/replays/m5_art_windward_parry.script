@@ -1,0 +1,7 @@
+# WP-054 golden: Windward Parry's stance. ART is pressed on tick 48, so the 5-tick window (ticks 50 to 54) covers the duelist's swing on ticks 52 to 54. Record with `lf-tools replay record-script`.
+seed 5404
+scenario m5_art_windward_parry
+10 0 0            # settle on the ground
+38 0 0
+1 0 0 ART
+60 0 0

@@ -263,6 +263,10 @@ const EMBEDDED_MOVES: &[(&str, &str)] = &[
         "moves/bosses/b01.ron",
         include_str!("../../../data/moves/bosses/b01.ron"),
     ),
+    (
+        "moves/arts.ron",
+        include_str!("../../../data/moves/arts.ron"),
+    ),
 ];
 const EMBEDDED_WEAPONS: &[(&str, &str)] = &[
     (
@@ -539,6 +543,62 @@ const EMBEDDED_SCENARIOS: &[(&str, &str)] = &[
     (
         "scenarios/wp052_catalyst.ron",
         include_str!("../../../data/scenarios/wp052_catalyst.ron"),
+    ),
+    (
+        "scenarios/m5_art_feint_step.ron",
+        include_str!("../../../data/scenarios/m5_art_feint_step.ron"),
+    ),
+    (
+        "scenarios/m5_art_rending_sweep.ron",
+        include_str!("../../../data/scenarios/m5_art_rending_sweep.ron"),
+    ),
+    (
+        "scenarios/m5_art_bastion.ron",
+        include_str!("../../../data/scenarios/m5_art_bastion.ron"),
+    ),
+    (
+        "scenarios/m5_art_windward_parry.ron",
+        include_str!("../../../data/scenarios/m5_art_windward_parry.ron"),
+    ),
+    (
+        "scenarios/m5_art_rising_cleave.ron",
+        include_str!("../../../data/scenarios/m5_art_rising_cleave.ron"),
+    ),
+    (
+        "scenarios/m5_art_rallying_roar.ron",
+        include_str!("../../../data/scenarios/m5_art_rallying_roar.ron"),
+    ),
+    (
+        "scenarios/m5_art_lunging_thrust.ron",
+        include_str!("../../../data/scenarios/m5_art_lunging_thrust.ron"),
+    ),
+    (
+        "scenarios/m5_art_earthsplit.ron",
+        include_str!("../../../data/scenarios/m5_art_earthsplit.ron"),
+    ),
+    (
+        "scenarios/m5_art_rime_edge.ron",
+        include_str!("../../../data/scenarios/m5_art_rime_edge.ron"),
+    ),
+    (
+        "scenarios/m5_art_radiant_blade.ron",
+        include_str!("../../../data/scenarios/m5_art_radiant_blade.ron"),
+    ),
+    (
+        "scenarios/m5_art_spark_volley.ron",
+        include_str!("../../../data/scenarios/m5_art_spark_volley.ron"),
+    ),
+    (
+        "scenarios/m5_art_lantern_flare.ron",
+        include_str!("../../../data/scenarios/m5_art_lantern_flare.ron"),
+    ),
+    (
+        "scenarios/m5_art_glass_barrage.ron",
+        include_str!("../../../data/scenarios/m5_art_glass_barrage.ron"),
+    ),
+    (
+        "scenarios/m5_art_toll.ron",
+        include_str!("../../../data/scenarios/m5_art_toll.ron"),
     ),
 ];
 const EMBEDDED_BOSSES: &[(&str, &str)] = &[

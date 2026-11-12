@@ -1,0 +1,18 @@
+// WP-054 golden scenario: Rising Cleave's upward slash. A flat floor and one padded dummy 2.2 m ahead, facing the
+// player (yaw pi). The player wields wpn_gray_greatsword (weapons/wpn_heavy.ron), whose default Art
+// this scenario exercises.
+(
+  spawn: (0.0, 0.0, 0.0),
+  spawn_yaw: 0.0,
+  kill_y: -50.0,
+  heightfield: None,
+  boxes: [
+    (name: "floor", center: (0.0, -0.5, 0.0), half_extents: (1000.0, 0.5, 1000.0)),
+  ],
+  player_weapon: Some("wpn_gray_greatsword"),
+  dummies: [
+    (
+      name: "dummy", pos: (0.0, 0.0, 2.2), yaw: 3.1415927, hp: 6000, defense: (flat: 500),
+    ),
+  ],
+)

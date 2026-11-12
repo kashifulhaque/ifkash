@@ -75,6 +75,7 @@ pub fn apply_landed(world: &mut World) {
             true
         }
         ItemEffect::LanternAsh => return_to_lantern(world),
+        ItemEffect::ArtScroll { art } => crate::combat::arts::apply_scroll(world, &art),
         ItemEffect::None | ItemEffect::Ammo { .. } => false,
     };
     if used && let Some(p) = world.actors.get_mut(player) {

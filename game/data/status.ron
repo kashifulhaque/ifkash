@@ -68,5 +68,10 @@
       id: "buf_thornheart", slot: Body, damage_percent: 112,
       status: [], duration_ticks: 600, vfx: "charm_thornheart",
     ), // Thornheart: +12% damage for 600 ticks after a Rupture proc near you
+    // WP-054: Radiant Blade's weapon buff: Radiance at 25% of the attack rating, 900 ticks.
+    (
+      id: "buf_radiant_blade", slot: Weapon, damage_percent: 100,
+      status: [], duration_ticks: 900, vfx: "edge_radiance", element: Some((Radiance, 25)),
+    ), // Radiant Blade: Radiance at 25% of AR, 900 ticks
   ],
 )

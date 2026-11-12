@@ -337,6 +337,8 @@ impl World {
             let mut set = set.clone();
             // The selected spell's cast moves, if a catalyst holds them (WP-055).
             crate::combat::spells::overlay(self, &mut set);
+            // The Art the weapon has now, which an Art Scroll may have changed (WP-054).
+            set.art = weapon.and_then(|w| crate::combat::arts::player_art_move(self, w));
             self.moves.player_moveset = Some(set);
         }
     }

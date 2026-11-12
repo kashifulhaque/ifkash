@@ -1,0 +1,6 @@
+# WP-054 golden: Feint Step's dash (ticks 10 to 30). The dummy is 6 m ahead, out of the dash's reach. Record with `lf-tools replay record-script`.
+seed 5401
+scenario m5_art_feint_step
+10 0 0            # settle on the ground
+1 0 0 ART
+40 0 0

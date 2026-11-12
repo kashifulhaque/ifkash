@@ -1,0 +1,6 @@
+# WP-054 golden: Lunging Thrust's lunge (ticks 10 to 70). The dummy is 3 m ahead, inside the 4 m lunge. Record with `lf-tools replay record-script`.
+seed 5407
+scenario m5_art_lunging_thrust
+10 0 0            # settle on the ground
+1 0 0 ART
+70 0 0

@@ -239,4 +239,22 @@
     hitstop: 4, // tuning
     tags: [],
   ),
+  (
+    // WP-054: a glass shard from Glass Barrage: fast and straight, with a small hit radius
+    // (tuning: no spec row fixes the shard's numbers).
+    id: "proj_glass_shard",
+    speed: 36.0, // tuning
+    gravity: 0.0,
+    radius: 0.1, // tuning
+    lifetime_ticks: 60, // tuning
+    pierce: 0,
+    homing: None,
+    motion_value: 0.8, // tuning
+    phys: Pierce,
+    element: Aether,
+    poise_damage: 6, // tuning
+    knockback: 0.1, // tuning
+    hitstop: 2,
+    tags: [],
+  ),
 ]

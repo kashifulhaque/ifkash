@@ -1,0 +1,6 @@
+# WP-054 golden: Earthsplit's slam (ticks 10 to 90). The shockwave lands on frames 30 to 33, around the dummy 2 m ahead. Record with `lf-tools replay record-script`.
+seed 5408
+scenario m5_art_earthsplit
+10 0 0            # settle on the ground
+1 0 0 ART
+80 0 0

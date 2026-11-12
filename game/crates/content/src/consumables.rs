@@ -29,6 +29,8 @@ pub enum ItemKind {
     /// The Echo Bell (WP-059): in a quick slot, using it at an Echo Stone summons an Echo.
     /// Keeps a stack of one.
     EchoBell,
+    /// An Art Scroll (WP-054): used from a quick slot, it changes the held weapon's Art.
+    ArtScroll,
 }
 
 /// What using an item does (WP-057). `phys` and `elem` are attack rating in whole
@@ -60,6 +62,9 @@ pub enum ItemEffect {
         projectile: String,
         elem_percent: u8,
     },
+    /// Changes the right-hand weapon's Art to `art` (WP-054). The weapon must be common and
+    /// its class must be one the Art lists; otherwise using the scroll does nothing.
+    ArtScroll { art: String },
 }
 
 impl ItemEffect {
@@ -172,14 +177,16 @@ impl Consumables {
                 | (ItemKind::Cure, ItemEffect::Cure { .. })
                 | (ItemKind::Glimmer, ItemEffect::Glimmer { .. })
                 | (ItemKind::LanternAsh, ItemEffect::LanternAsh)
-                | (ItemKind::Ammunition, ItemEffect::Ammo { .. }) => true,
+                | (ItemKind::Ammunition, ItemEffect::Ammo { .. })
+                | (ItemKind::ArtScroll, ItemEffect::ArtScroll { .. }) => true,
                 (
                     ItemKind::Throwable
                     | ItemKind::WeaponBuff
                     | ItemKind::Cure
                     | ItemKind::Glimmer
                     | ItemKind::LanternAsh
-                    | ItemKind::Ammunition,
+                    | ItemKind::Ammunition
+                    | ItemKind::ArtScroll,
                     _,
                 ) => false,
                 (_, e) => *e == ItemEffect::None,

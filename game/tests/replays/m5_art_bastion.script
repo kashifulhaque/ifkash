@@ -1,0 +1,6 @@
+# WP-054 golden: Bastion's stance (ticks 10 to 170). The duelist swings at ticks 40 and 130, and the stance blocks each swing and counters it. Record with `lf-tools replay record-script`.
+seed 5403
+scenario m5_art_bastion
+10 0 0            # settle on the ground
+1 0 0 ART
+170 0 0

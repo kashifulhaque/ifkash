@@ -180,15 +180,17 @@ pub fn parry_window_open(held: u8, startup: u8, window: u8) -> bool {
 
 /// True if `target` parries a hit from `attacker`: it has a parry window and is inside it,
 /// the hit isn't unparryable, and the attacker is in front of it. `window` is the target's
-/// weapon's `parry_window_ticks`.
+/// weapon's `parry_window_ticks` (or its Art's, see [`parry_window_of`]). `in_stance` is true
+/// while the target's Art stance holds, which parries from its move (Windward Parry).
 pub fn is_parry(
     attacker: &Actor,
     target: &Actor,
     window: u8,
     unparryable: bool,
     t: &Poise,
+    in_stance: bool,
 ) -> bool {
-    if unparryable || target.dead || target.moves.current.is_some() {
+    if unparryable || target.dead || (target.moves.current.is_some() && !in_stance) {
         return false;
     }
     if !parry_window_open(target.moves.guard.held, t.parry_startup_ticks, window) {
@@ -269,9 +271,14 @@ pub fn apply_landing(world: &mut World, target: Id, move_num: MoveNum, poise_dam
     }
 }
 
-/// The parry window of `id`'s weapon: only the player has a moveset until AI lands.
+/// The parry window of `id`'s weapon: only the player has a moveset until AI lands. While the
+/// player holds a parry stance (Windward Parry), the stance's window replaces the weapon's.
 pub fn parry_window_of(world: &World, id: Id) -> u8 {
     if id == world.player {
+        let stance = crate::combat::arts::stance_parry_ticks(world, id);
+        if stance > 0 {
+            return stance;
+        }
         let base = world
             .moves
             .player_moveset
@@ -482,16 +489,16 @@ mod tests {
         target.moves.guard.held = 4;
         let mut attacker = actor(40, 0);
         attacker.pos = [0.0, 0.0, 1.0];
-        assert!(is_parry(&attacker, &target, 6, false, &t));
-        assert!(!is_parry(&attacker, &target, 6, true, &t), "unparryable");
-        assert!(!is_parry(&attacker, &target, 0, false, &t), "no parry tool");
+        assert!(is_parry(&attacker, &target, 6, false, &t, false));
+        assert!(!is_parry(&attacker, &target, 6, true, &t, false), "unparryable");
+        assert!(!is_parry(&attacker, &target, 0, false, &t, false), "no parry tool");
         attacker.pos = [0.0, 0.0, -1.0];
-        assert!(!is_parry(&attacker, &target, 6, false, &t), "from behind");
+        assert!(!is_parry(&attacker, &target, 6, false, &t, false), "from behind");
         attacker.pos = [0.0, 0.0, 1.0];
         target.moves.guard.held = 9;
-        assert!(!is_parry(&attacker, &target, 6, false, &t), "window closed");
+        assert!(!is_parry(&attacker, &target, 6, false, &t, false), "window closed");
         target.moves.guard.held = 2;
-        assert!(!is_parry(&attacker, &target, 6, false, &t), "not open yet");
+        assert!(!is_parry(&attacker, &target, 6, false, &t, false), "not open yet");
     }
 
     #[test]

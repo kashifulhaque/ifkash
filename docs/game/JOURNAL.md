@@ -15,7 +15,7 @@ Copy this block to the top of the entries and fill it in as you go:
 ### YYYY-MM-DD: SESSION_NAME (TARGET)
 
 - **Orchestrator:** model and effort; session ID if the app shows one
-- **Branch and PR:** branch name; pull request link
+- **Branch:** session branch name; first and last commit pushed to `main`
 - **Started from:** `main` at COMMIT, or the previous session's branch
 - **WPs:**
   - WP-NNN: done by WORKER (escalated from ...?); commit SHA; worker tokens
@@ -31,7 +31,10 @@ Copy this block to the top of the entries and fill it in as you go:
 ### 2026-11-12: latticefall-m1 (M1)
 
 - **Orchestrator:** Opus 5.5, low effort; session `local_e9f21284-d98a-499d-989a-a9b9aee9498c`
-- **Branch and PR:** `game/m1-movement`; PR linked below once opened
+- **Branch:** `game/m1-movement`, opened as
+  [kashifulhaque/ifkash#15](https://github.com/kashifulhaque/ifkash/pull/15). The owner
+  then decided that sessions commit to `main` directly, so the branch was pushed to
+  `main` and the PR closed as merged.
 - **Started from:** `origin/main` at `daffff9` (M0 and the playbook are merged)
 - **WPs:**
   - WP-010: done by opus; commit `99b31ed`; 235K worker tokens
@@ -55,9 +58,10 @@ Copy this block to the top of the entries and fill it in as you go:
   1.5 hours after the worker reported. The orchestrator stopped it. The playbook now has
   a process rule for workers and a
   [leftover-process check](11-agent-playbook.md#check-for-leftover-processes).
-- **Waiting on the owner:** decide the context-budget rule above; merge the PR.
+- **Waiting on the owner:** decide the context-budget rule above.
 - **Next steps:**
-  1. Branch from `game/m1-movement` if the PR isn't merged, otherwise from `origin/main`.
+  1. Start a session branch from `origin/main` and push each verified WP to `main`
+     (see the playbook's "Branches and commits").
   2. Run WP-015 (haiku; it touches `actor/targeting.rs` and `test_field.ron`) and
      WP-012 (sonnet; render/camera) in parallel. Agree on the snapshot's lock-target
      field first: WP-012 reads what WP-015 writes. WP-012 must take over the orbit yaw

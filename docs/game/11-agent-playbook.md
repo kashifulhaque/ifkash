@@ -47,9 +47,9 @@ writes code itself only for small fixes found during verification.
 
 1. Read the latest [`JOURNAL.md`](JOURNAL.md) entry. Do its **Next steps** first, and
    respect anything it says is waiting on the owner.
-2. Check the git state. If the previous milestone's pull request is merged, branch from
-   `main`. If it isn't merged, branch from the previous session's branch (the journal
-   names it) and say so in your journal entry.
+2. Check the git state. Fetch, then start a session branch from `origin/main`. If the
+   journal says an earlier session left work that isn't on `main`, stop and tell the
+   owner.
 3. Pick the WPs to run: every WP in the target whose **Depends on** WPs are all `done`
    in `STATUS.md` (or merged on your branch) and that isn't `in progress` for another
    session. Order them by the waves in [the roadmap](10-roadmap.md#critical-path-and-parallelism).
@@ -91,8 +91,8 @@ G2, G3, Launch), or the context budget says so. Then:
 2. [Check for leftover processes](#check-for-leftover-processes), and stop every dev
    server you started unless the owner needs it for a review. If you leave one
    running, name it and its port in your message to the owner.
-3. Push the branch and open (or update) one pull request for the session's work, as
-   [branches, commits, and pull requests](#branches-commits-and-pull-requests) describes.
+3. Make sure every verified commit is on `main`, as
+   [branches and commits](#branches-and-commits) describes.
 4. Complete your journal entry, including **Next steps** for the next session.
 5. Tell the owner: what's done, what's blocked, what needs their decision, and the
    exact prompt to start the next session.
@@ -189,18 +189,24 @@ You may use subagents for independent parts of this WP, for example one per
 enemy or one per data file. Give each subagent the exact file paths it owns.
 ```
 
-## Branches, commits, and pull requests
+## Branches and commits
 
-- An orchestrator session works on one branch, named for its target, for example
-  `game/m1-movement`. A single-WP session uses `game/wp-020-move-system`.
+The owner decided on 2026-11-12 that sessions commit to `main` directly, without pull
+requests.
+
+- A session works on a local branch named for its target, for example
+  `game/m2-combat`, started from `origin/main`. Worker worktrees branch from it.
 - Commit once per verified WP, in small buildable steps. Prefix each subject with the
-  WP ID: `WP-020: Add hitbox sweep queries`.
-- Open one pull request per session. Its description lists each WP with what changed
-  and how it was verified, everything not verified, and decisions for the owner.
-- Never merge your own pull request. The owner reviews and merges.
-- Merge only when CI is green. The game lives behind the `?engine=lf` flag
-  until [WP-086](10-roadmap.md#wp-086), so partial worlds can merge
-  without breaking the site.
+  WP ID: `WP-020: Add hitbox sweep queries`. The commit message says how the WP was
+  verified, what wasn't verified, and any decision the owner must make.
+- After each verified WP, push it to `main`: `git fetch origin`, rebase the session
+  branch onto `origin/main` if `main` moved, then `git push origin HEAD:main`. Never
+  force-push `main`.
+- Push only after the whole [definition of done](#definition-of-done) passes locally,
+  because no pull request runs CI first. A push to `main` deploys the site. The game
+  lives behind the `?engine=lf` flag until [WP-086](10-roadmap.md#wp-086), so partial
+  worlds can ship without breaking the site.
+- If CI fails on `main` after a push, fixing it comes before the next WP.
 
 ## Definition of done
 
@@ -212,7 +218,7 @@ A WP is done when all of the following are true:
 - `bun run check` passes at the repo root if any TypeScript or Svelte changed.
 - Every golden replay in `game/tests/replays/` still produces its recorded state hash,
   or the WP deliberately changes simulation behavior and re-records the hashes with
-  `cargo run -p lf-tools -- replay rehash` and says so in the pull request.
+  `cargo run -p lf-tools -- replay rehash` and says so in the commit message.
 - Content data passes `cargo run -p lf-tools -- validate`.
 - If the WP is visible in the browser, the agent took screenshots by using the
   [visual verification protocol](#verify-visually) and attached or described them.
@@ -286,7 +292,7 @@ shows that a spec is wrong (a number feels bad, an approach doesn't work):
 3. Edit the spec section so it matches, and link the ADR from it.
 
 Tuning numbers (damage, timings, health) don't need an ADR. Change them in
-`game/data/` and mention the change in the pull request.
+`game/data/` and mention the change in the commit message.
 
 ## Run work in parallel
 

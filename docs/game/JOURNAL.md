@@ -29,6 +29,7 @@ Copy this block to the top of the entries and fill it in as you go:
   - WP-056: haiku, worktree; `12fb40d`; 395K. Clean cherry-pick; 71 goldens A -> A.
   - WP-053: haiku, worktree; `3903440`; 377K. Behavior change: seven `m5_spell_*` goldens re-recorded (stylus now at spec scaling and catalyst moveset).
   - WP-058: sonnet, worktree; `472c995`; 278K. Orchestrator opened the armory (armor, catalysts) on port 5180; it renders. Only console errors: the pre-existing `m0_flat.json` 404.
+  - WP-054: haiku, worktree; `bdd3384`; 394K. Behavior change: `m0_random_3000` re-recorded (random inputs press the new `ART` button). Orchestrator ran `cargo fmt` on three files. The worker's stale `lf-tools` binary briefly rewrote WP-059's finished worktree; that worktree shows no changes.
 - **Context:** orchestrator NNK; each worker NNK (budget 500K per context window)
 - **Not verified:** anything the session couldn't check
 - **Waiting on the owner:** decisions, credentials, playtests, merges

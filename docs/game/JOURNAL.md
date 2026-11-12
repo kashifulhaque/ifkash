@@ -43,6 +43,7 @@ Copy this block to the top of the entries and fill it in as you go:
   - WP-048: sonnet, worktree; `185f063`; 108K. Not listened to; only hits make sound so far.
   - WP-047: sonnet, worktree; `a241b74`; 133K. Autosave from a real rest not exercised in play.
   - WP-045: sonnet, worktree; `f438ef1`; 200K. Merged onto WP-047 by the orchestrator (2 conflicts: WASM struct, engine loop).
+  - WP-035.a: sonnet, worktree; `2ec2d05`; 281K. No WASM or simulation change.
 
 ### 2026-11-12: latticefall-m3 (M3)
 

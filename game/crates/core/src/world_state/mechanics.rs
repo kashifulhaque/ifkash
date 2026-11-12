@@ -582,6 +582,13 @@ fn try_door(world: &mut World, i: usize) {
                 mechanic(world, MechanicEvent::DOOR_ONE_WAY, i);
             }
         }
+        DoorKind::Held { items, need } => {
+            if held_door::holds(world, items, *need) {
+                set_door(world, i, true);
+            } else {
+                mechanic(world, MechanicEvent::DOOR_NEEDS_KEY, i);
+            }
+        }
         DoorKind::Keyed(key) => {
             let player = world.player;
             let taken = world.items.num_of(key).is_some_and(|num| {
@@ -1007,6 +1014,7 @@ pub fn render_state(world: &World) -> Vec<f32> {
 }
 
 pub mod darkness;
+pub mod held_door;
 pub mod mine_cart;
 pub mod trapdoor;
 pub mod water_level;

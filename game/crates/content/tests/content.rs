@@ -198,6 +198,7 @@ fn hash_ignores_comments_and_whitespace() {
                     .chain(ron_files("levels/castle"))
                     .chain(ron_files("levels/cinderdeep_mine"))
                     .chain(ron_files("levels/hollowdeep"))
+                    .chain(ron_files("levels/spire"))
                     .map(|(p, t)| (p, format!("// noise\n{t}")))
                     .collect(),
             )

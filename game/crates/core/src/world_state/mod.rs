@@ -32,6 +32,8 @@ pub mod mechanics;
 mod mirrormere_tests;
 pub mod quests;
 #[cfg(test)]
+mod spire_tests;
+#[cfg(test)]
 mod tests;
 #[cfg(test)]
 mod verge_tests;

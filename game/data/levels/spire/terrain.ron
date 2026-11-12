@@ -1,0 +1,13 @@
+// The Spire terrain: flat ground at 0 m (the tower and its ramp are blocks, see layout.ron), with
+// distant hills as scenery outside the walls. Vertices are 2 m apart (73 x 73).
+#![enable(implicit_some)]
+(
+  spacing_m: 2.0,
+  base_y: 0.0,
+  ops: [
+    RaiseCircle(center: (-70.0, 70.0), radius: 30.0, height: 10.0),
+    RaiseCircle(center: (70.0, 70.0), radius: 30.0, height: 12.0),
+    RaiseCircle(center: (70.0, -70.0), radius: 26.0, height: 8.0),
+    RaiseCircle(center: (-70.0, -70.0), radius: 26.0, height: 9.0),
+  ],
+)

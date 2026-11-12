@@ -973,6 +973,22 @@ const EMBEDDED_LEVELS: &[(&str, &str)] = &[
         "levels/castle/entities.ron",
         include_str!("../../../data/levels/castle/entities.ron"),
     ),
+    (
+        "levels/spire/area.ron",
+        include_str!("../../../data/levels/spire/area.ron"),
+    ),
+    (
+        "levels/spire/terrain.ron",
+        include_str!("../../../data/levels/spire/terrain.ron"),
+    ),
+    (
+        "levels/spire/layout.ron",
+        include_str!("../../../data/levels/spire/layout.ron"),
+    ),
+    (
+        "levels/spire/entities.ron",
+        include_str!("../../../data/levels/spire/entities.ron"),
+    ),
 ];
 
 /// All parsed content.
@@ -1693,6 +1709,11 @@ impl Content {
             for d in &scenario.doors {
                 if let scenario::DoorKind::Keyed(key) = &d.kind {
                     self.check_id(&entities, format!("door {}: key", d.id), key)?;
+                }
+                if let scenario::DoorKind::Held { items, .. } = &d.kind {
+                    for key in items {
+                        self.check_id(&entities, format!("door {}: held item", d.id), key)?;
+                    }
                 }
             }
             for n in &scenario.npcs {

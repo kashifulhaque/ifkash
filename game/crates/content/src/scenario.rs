@@ -84,6 +84,11 @@ pub struct Scenario {
     /// `Command::Equip` (WP-055). Real levels teach spells with pickups.
     #[serde(default)]
     pub player_spells: Vec<String>,
+    /// Item IDs (a key item or a consumable, one of each) the player holds from the start
+    /// (WP-067). Real levels place items instead; the Spire lists two Great Sigils until the
+    /// bosses that grant them exist (see `levels/spire/area.ron`).
+    #[serde(default)]
+    pub player_items: Vec<String>,
     /// Echo Stones (WP-059): where the Echo Bell summons an Echo. A boss arena has one
     /// unless its definition says otherwise. Real levels place them in the level format.
     #[serde(default)]
@@ -300,6 +305,10 @@ pub enum DoorKind {
     OneWay,
     /// Opens with `INTERACT` while the player holds this key item (one is used up).
     Keyed(String),
+    /// Opens with `INTERACT` while the player holds at least `need` different items from
+    /// `items`, and keeps them (WP-067: the Spire Gate takes any two of the four Great
+    /// Sigils). Unlike [`DoorKind::Keyed`], nothing is used up.
+    Held { items: Vec<String>, need: u8 },
 }
 
 /// A door: a slab that sinks into the floor when it opens (the flag `door.<id>.open`).
@@ -782,6 +791,14 @@ impl Scenario {
         }
         for (i, d) in self.doors.iter().enumerate() {
             unique(self.doors[..i].iter().any(|o| o.id == d.id), "door", &d.id)?;
+            if let DoorKind::Held { items, need } = &d.kind
+                && (*need == 0 || usize::from(*need) > items.len())
+            {
+                return Err(format!(
+                    "door {:?}: need must be between 1 and the number of items",
+                    d.id
+                ));
+            }
             positive("door", &d.id, "half_width_m", d.half_width_m)?;
             positive("door", &d.id, "height_m", d.height_m)?;
             // The slab is an axis-aligned box, so the door faces along x or z.

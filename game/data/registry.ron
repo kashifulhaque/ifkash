@@ -649,5 +649,14 @@
     (id: "stn_hearth", num: 29104),
     (id: "hollowhearth", num: 29200),
     (id: "relic_opencode", num: 29300),
+
+    // WP-067: the Lattice Spire takes 28000-28999. The area 28000, its Chronicle Page 28011, and
+    // the four Great Sigils 28020-28023 (stub key items: B06, B07, B09, and B10 grant them in M7).
+    (id: "spire", num: 28000),
+    (id: "chronicle_page_5", num: 28011),
+    (id: "itm_great_sigil_choir", num: 28020),
+    (id: "itm_great_sigil_castellan", num: 28021),
+    (id: "itm_great_sigil_matriarch", num: 28022),
+    (id: "itm_great_sigil_bellwright", num: 28023),
   ],
 )

@@ -1,0 +1,95 @@
+// The Lattice Spire entities (WP-067). Yaw is in radians from +Z toward +X: 0 faces +Z (north),
+// 3.1415927 faces -Z, 1.5707964 faces +X, -1.5707964 faces -X.
+//
+// The route: spawn (by L22, so the golden starts there) -> L22 Spire Foot (outside the gate) -> the Spire Gate (any two Great Sigils) ->
+// the outer spiral (four jumps, each with a ladder) -> F1 south door -> three gauntlet floors ->
+// L23 The Loom on F3 -> the stair corridor -> B12's fog gate. Walks between Lanterns are under
+// 45 seconds at run speed (world_state/spire_tests.rs).
+//
+// Registry numbers used here (28000 block): spire 28000, chronicle_page_5 28011, and the four Great
+// Sigils 28020-28023 (stub key items, in consumables.ron).
+(
+  spawn: (pos: (2.0, 0.0, -27.0), yaw: 0.0),
+  entities: [
+    // --- Lanterns: L22 Spire Foot (outside the gate) and L23 The Loom (before B12) -------------
+    Lantern(id: "lantern_l22", pos: (2.0, 0.0, -24.0), yaw: 0.0),
+    Lantern(id: "lantern_l23", pos: (-5.0, 17.00, -2.0), yaw: 1.5707964),
+
+    // --- The Spire Gate: opens with INTERACT while the player holds any two Great Sigils -------
+    Door(id: "spire_gate", pos: (2.0, 0.0, -14.0), yaw: 3.1415927, half_width_m: 1.5, height_m: 4.5,
+      kind: Held(items: ["itm_great_sigil_choir", "itm_great_sigil_castellan", "itm_great_sigil_matriarch", "itm_great_sigil_bellwright"], need: 2)),
+
+    // --- Hall doors: each floor's hall of enemies is shut off from the stair strip, and the doors open
+    // (one way, from the strip) when the player is ready for the fight. The route never needs them.
+    Door(id: "hall_door_f1", pos: (4.75, 7.00, 7.0), yaw: 1.5707964, half_width_m: 2.0, height_m: 4.0, kind: OneWay),
+    Door(id: "hall_door_f2", pos: (-7.5, 12.00, 5.25), yaw: 0.0, half_width_m: 1.5, height_m: 4.0, kind: OneWay),
+    Door(id: "hall_door_f3", pos: (-3.25, 17.00, 0.5), yaw: -1.5707964, half_width_m: 1.5, height_m: 4.0, kind: OneWay),
+
+    // --- Fallback ladders: one on the far face of each gap ---------------------------------------
+    Ladder(id: "ladder_gap_e2", pos: (-12.00, 0.00, 2.65), yaw: 0.0000000, height_m: 2.27),
+    Ladder(id: "ladder_gap_e3", pos: (-0.93, 0.60, 12.00), yaw: 1.5707963, height_m: 3.10),
+    Ladder(id: "ladder_gap_e4", pos: (12.00, 3.36, -9.82), yaw: 3.1415927, height_m: 3.10),
+
+    // --- Authored messages ---------------------------------------------------------------------
+    Message(id: "msg_spire_foot", pos: (0.00, 0.00, -28.00),
+      text: "The foot of the Lattice Spire. It was a loom once, and the realm hung from it. The gate ahead knows the Great Sigils and will open for any two of the four."),
+    Message(id: "msg_spire_gate", pos: (-1.00, 0.00, -18.50),
+      text: "A gate of woven light, shut. Two Great Sigils, any two: the gate does not take them, it only wants to see that you carry them. Bring them and press the word you know."),
+    Message(id: "msg_spire_ring", pos: (-1.50, 0.30, -12.00),
+      text: "The outer ramp. The Lattice came unraveled here: the road has gaps no wider than a jump. Each gap has a ladder on its far wall for anyone who would rather climb."),
+    Message(id: "msg_spire_f1", pos: (7.50, 7.00, -9.00),
+      text: "The first floor. The things that kept the Verge and the lake are here, wearing the Lattice like armor. They are stronger than you remember."),
+    Message(id: "msg_spire_f2", pos: (7.00, 12.00, 3.50),
+      text: "The second floor. The Castle and the deep sent their best. A Flask Dew left on the west shelf, for whoever is still standing."),
+    Message(id: "msg_spire_f3", pos: (-4.00, 17.00, 7.50),
+      text: "The third floor, the last before the roof. The cold from Rimeshelf followed the Lattice up here. The newest page waits on the east wall."),
+    Message(id: "msg_spire_loom", pos: (-6.50, 17.00, -3.50),
+      text: "The Loom. One Lantern before the roof. The stair behind it climbs to a gate; beyond the gate the thread begins and ends."),
+
+    // --- Enemies: the outer ramp, then one floor per pair of regions (elites only here) -----------
+    // The plaza: two Verge husks well off the road to the gate (a fight by L22 for anyone who wants it).
+    Enemy(name: "husk_plaza_a", enemy: "husk", pos: (-24.0, 0.0, -34.0), yaw: 1.5707964),
+    Enemy(name: "husk_plaza_b", enemy: "husk", pos: (30.0, 0.0, -30.0), yaw: -1.5707964),
+    // Floor 1, the Verge and the lake: a Bramble Brute and a Choir Knight, with their kin.
+    Enemy(name: "brute_f1", enemy: "bramble_brute", pos: (-4.00, 7.00, 0.00), yaw: 1.5707964),
+    Enemy(name: "choir_knight_f1", enemy: "choir_knight", pos: (-6.50, 7.00, 6.00), yaw: 0.0000000),
+    Enemy(name: "acolyte_bell_f1", enemy: "acolyte_bell", pos: (-7.50, 7.00, -6.00), yaw: 1.5707964),
+    Enemy(name: "husk_f1_a", enemy: "husk", pos: (-1.50, 7.00, 6.00), yaw: 3.1415927),
+    Enemy(name: "husk_f1_b", enemy: "husk", pos: (-2.00, 7.00, -6.00), yaw: 3.1415927),
+    Enemy(name: "hound_f1_a", enemy: "thorn_hound", pos: (1.50, 7.00, 1.00), yaw: 3.1415927),
+    // Floor 2, the deep and the Castle: a Gray Knight Captain with knights, archers, and the glass.
+    Enemy(name: "captain_f2", enemy: "gray_captain", pos: (-3.00, 12.00, -2.00), yaw: 1.5707964),
+    Enemy(name: "gray_knight_f2_a", enemy: "gray_knight", pos: (-6.50, 12.00, -5.00), yaw: 0.0000000),
+    Enemy(name: "gray_knight_f2_b", enemy: "gray_knight", pos: (-7.00, 12.00, 2.50), yaw: 3.1415927),
+    Enemy(name: "gray_archer_f2_a", enemy: "gray_archer", pos: (-8.00, 12.00, 0.00), yaw: 1.5707964),
+    Enemy(name: "gray_archer_f2_b", enemy: "gray_archer", pos: (-3.50, 12.00, -7.00), yaw: 1.5707964),
+    Enemy(name: "golem_f2", enemy: "shard_golem", pos: (1.50, 12.00, -3.00), yaw: 3.1415927),
+    Enemy(name: "glasswing_f2", enemy: "glasswing_stalker", pos: (-2.00, 12.00, 3.00), yaw: 3.1415927),
+    // Floor 3, Rimeshelf: the Foundry Smith and a Bell Warden, with wolves, the dead, and frost husks.
+    Enemy(name: "smith_f3", enemy: "foundry_smith", pos: (5.00, 17.00, -1.00), yaw: 3.1415927),
+    Enemy(name: "bell_warden_f3", enemy: "bell_warden", pos: (6.50, 17.00, -3.50), yaw: 3.1415927),
+    Enemy(name: "rime_wolf_f3_a", enemy: "rime_wolf", pos: (-1.00, 17.00, -2.00), yaw: 3.1415927),
+    Enemy(name: "rime_wolf_f3_b", enemy: "rime_wolf", pos: (0.00, 17.00, 0.50), yaw: 3.1415927),
+    Enemy(name: "rime_wolf_f3_c", enemy: "rime_wolf", pos: (-2.00, 17.00, 2.00), yaw: 3.1415927),
+    Enemy(name: "skeleton_f3_a", enemy: "whitewarden_skeleton", pos: (1.50, 17.00, -3.50), yaw: 1.5707964),
+    Enemy(name: "skeleton_f3_b", enemy: "whitewarden_skeleton", pos: (4.50, 17.00, 3.50), yaw: 3.1415927),
+    Enemy(name: "husk_frost_f3", enemy: "husk_frost", pos: (2.00, 17.00, 0.50), yaw: 3.1415927),
+
+    // --- Items, materials, and the last Chronicle Page --------------------------------------------
+    Pickup(id: "vial_ring", item: "itm_glimmer_vial", pos: (-4.63, 3.60, 12.00), interact: true),
+    Chest(id: "chest_f1", pos: (-8.0, 7.00, 8.0), yaw: 3.1415927, loot: (item: "itm_forgeglass_chunk", count: 2, glimmer: 400)),
+    Pickup(id: "dew_f2", item: "itm_flask_dew", pos: (-8.5, 12.00, 8.0), interact: true),
+    Chest(id: "chest_f2", pos: (-8.0, 12.00, -8.0), yaw: 1.5707964, loot: (item: "wpn_spire_longbow", count: 1, glimmer: 500)),
+    Pickup(id: "page_chronicle_5", item: "chronicle_page_5", pos: (8.2, 17.00, 3.0), codex: Some("work.wand-ai"), interact: true),
+    Pickup(id: "starglass_f3", item: "itm_starglass", pos: (-8.2, 17.00, -7.0), interact: true),
+
+    // --- B12's arena: the roof of the Spire (an octagon about 36 m across at y = 22) -----------------
+    // The boss: PLACEHOLDER. B12 (the Unspooled, an M7 work package) has no boss definition yet, so
+    // no Boss entity is placed. When it exists, add:
+    //   Boss(name: "b12", boss: "<b12 id>", pos: (0.0, 22.00, 8.0), yaw: 3.1415927,
+    //     gate: (pos: (6.5, 22.00, -5.25), yaw: 0.0, half_width_m: 1.5, depth_m: 3.0))
+    // The fog gate is the plane z = -5.25 across the corridor's opening (x 5..8), opening north onto
+    // the roof. L23 is about 20 m from the gate. The Echo Stone stands just inside it.
+    EchoStone(id: "stone_b12", pos: (3.0, 22.00, -2.5), yaw: 0.7854),
+  ],
+)

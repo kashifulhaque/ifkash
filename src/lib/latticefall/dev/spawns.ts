@@ -9,9 +9,9 @@ export interface SpawnPoint {
   yaw: number;
   note: string;
   /**
-   * The feet height, for a floor under another floor (the castle's cliff path under the bridge
-   * and its cistern under the courtyard). Left out, the height comes from a ray cast from above,
-   * which lands on the topmost floor.
+   * The feet height, for a floor under another floor (the castle's cliff path under the bridge,
+   * its cistern under the courtyard, and the Spire's stacked floors). Left out, the height comes
+   * from a ray cast from above, which lands on the topmost floor.
    */
   y?: number;
 }
@@ -189,6 +189,25 @@ const HOLLOWDEEP: Record<string, SpawnPoint> = {
   ledge: { x: 148, z: -34, yaw: HALF_PI, note: "the ledge above the hatch (after it opens), where the Spire's connection is" }
 };
 
+// The Lattice Spire (WP-067): the gate, the spiral's gaps, each floor, the Lanterns, and the arena.
+// `y` is the floor height, because a ray cast down from above would land on a higher floor.
+const SPIRE: Record<string, SpawnPoint> = {
+  l22: { x: 2, z: -26, yaw: 0, note: 'beside L22, Spire Foot, facing the gate and the tower' },
+  gate: { x: 2, z: -17, yaw: 0, note: 'before the Spire Gate' },
+  forecourt: { x: 1, z: -12, yaw: Math.PI, note: 'the forecourt, at the foot of the outer spiral' },
+  gap1: { x: -12, z: -1, yaw: 0, y: 2.2, note: 'the first gap on the west side of the spiral, facing north' },
+  gap2: { x: -6, z: 12, yaw: HALF_PI, y: 3.5, note: 'the second gap on the north side, facing east' },
+  gap3: { x: 12, z: -3, yaw: Math.PI, y: 6.3, note: 'the third gap on the east side, facing south' },
+  ringend: { x: 8, z: -12, yaw: 0, y: 6.9, note: "the top of the spiral, before floor 1's south door" },
+  f1: { x: 7.5, z: -8, yaw: 0, y: 7, note: 'floor 1, at the foot of the first stair' },
+  f2: { x: 7.5, z: 3, yaw: 0, y: 12, note: 'floor 2, at the top of the first stair' },
+  f3: { x: -6, z: 7, yaw: Math.PI, y: 17, note: 'floor 3, beside the top of the second stair' },
+  l23: { x: -4, z: -2, yaw: HALF_PI, y: 17, note: 'beside L23, The Loom, on floor 3' },
+  corridor: { x: -4, z: -7, yaw: HALF_PI, y: 17, note: 'the stair corridor to the fog gate' },
+  fog: { x: 6.5, z: -7, yaw: 0, y: 22, note: "the corridor's landing, facing B12's fog gate" },
+  arena: { x: 0, z: 4, yaw: Math.PI, y: 22, note: "B12's roof, past the gate" }
+};
+
 const TABLES: Record<string, Record<string, SpawnPoint>> = {
   sunken_ossuary: SUNKEN_OSSUARY,
   drowned_belfry: DROWNED_BELFRY,
@@ -200,6 +219,7 @@ const TABLES: Record<string, Record<string, SpawnPoint>> = {
   castle: CASTLE,
   cinderdeep_mine: CINDERDEEP_MINE,
   hollowdeep: HOLLOWDEEP,
+  spire: SPIRE,
   m0_flat: {
     far: { x: 40, z: 40, yaw: Math.PI, note: 'far corner of the flat floor' }
   }

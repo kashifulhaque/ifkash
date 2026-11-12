@@ -139,6 +139,10 @@ pub struct Area {
     /// Spell IDs the player knows from the start (test areas).
     #[serde(default)]
     pub player_spells: Vec<String>,
+    /// Item IDs the player holds from the start, one of each (WP-067; the Spire grants two
+    /// Great Sigils until B06 to B10 exist).
+    #[serde(default)]
+    pub player_items: Vec<String>,
     /// A safe place (WP-068): no combat, weapons sheathed, walk only (Hollowhearth).
     #[serde(default)]
     pub safe_zone: bool,
@@ -1550,6 +1554,7 @@ impl Level {
             start_glimmer: self.area.start_glimmer,
             player_weapon: self.area.player_weapon.clone(),
             player_spells: self.area.player_spells.clone(),
+            player_items: self.area.player_items.clone(),
             echo_stones: Vec::new(),
             echoes_unlocked: Vec::new(),
             npcs: Vec::new(),
@@ -1629,6 +1634,7 @@ mod tests {
                 start_glimmer: 0,
                 player_weapon: None,
                 player_spells: Vec::new(),
+                player_items: Vec::new(),
                 safe_zone: false,
             },
             terrain: Some(Terrain {

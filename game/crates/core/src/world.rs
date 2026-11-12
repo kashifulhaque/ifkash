@@ -299,6 +299,17 @@ impl World {
                 p.inventory.give_gear(spell);
             }
         }
+        // Items the scenario hands over (WP-067): key items such as the Spire's Great Sigils.
+        for id in &level.player_items {
+            let item = world.items.num_of(id).ok_or_else(|| {
+                WorldError::Items(format!(
+                    "scenario {scenario:?}: player_items \"{id}\" is not an item"
+                ))
+            })?;
+            if let Some(p) = world.actors.get_mut(player) {
+                p.inventory.pick_up(item, 1, &world.items);
+            }
+        }
         if let Some(id) = &level.player_weapon {
             let weapon = content
                 .registry

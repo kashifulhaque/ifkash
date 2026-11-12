@@ -1,0 +1,28 @@
+// The Lattice Spire (WP-067): the final dungeon, a 144 x 144 m yard around a 20 m tower of woven
+// light, 80 m tall. Y is up. Lantern L22 Spire Foot stands outside the Spire Gate; L23 The Loom
+// stands on the third floor, before B12's fog gate. See docs/game/02-world.md, "The Lattice Spire",
+// and the notes at the top of layout.ron and entities.ron.
+(
+  id: "spire",
+  name: "The Lattice Spire",
+  seed: 20261701,
+  bounds: (min: (-72.0, -72.0), max: (72.0, 72.0)),
+  kill_y: -50.0,
+  start_glimmer: 0,
+  // TEMPORARY (WP-067): two Great Sigils, so the gate and the Spire can be walked and replayed.
+  // B06, B07, B09, and B10 grant the real ones in M7; once saves carry the player's inventory
+  // into an area, remove this line so that the Spire Gate has to be earned.
+  player_items: ["itm_great_sigil_choir", "itm_great_sigil_castellan"],
+  // Late light, the tower's threads catching it: a long fog so the Spire shows from the gate.
+  ambient: (
+    sky: "day",
+    fog_color: (0.66, 0.62, 0.7),
+    fog_near_m: 90.0,
+    fog_far_m: 420.0,
+    sun_dir: (-0.5, -0.45, -0.4),
+    sun_color: (1.0, 0.86, 0.7),
+    sun_intensity: 0.9,
+    ambient_color: (0.6, 0.58, 0.74),
+    ambient_intensity: 0.6,
+  ),
+)

@@ -21,6 +21,7 @@ Copy this block to the top of the entries and fill it in as you go:
   - WP-NNN: done by WORKER (escalated from ...?); commit SHA; worker tokens
   - WP-NNN: blocked: reason
   - WP-051: haiku, worktree; `b2cc543`; 346K. Orchestrator regenerated `gen/` types for WP-050 `level_cost` (WP-050 missed `gen-ts`).
+  - WP-057: sonnet, worktree; `80dd69f`; 366K. Merge onto WP-051: registry keep-both, goldens rehashed (45, all A -> A).
 - **Context:** orchestrator NNK; each worker NNK (budget 500K per context window)
 - **Not verified:** anything the session couldn't check
 - **Waiting on the owner:** decisions, credentials, playtests, merges

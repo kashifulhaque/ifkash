@@ -81,7 +81,7 @@ The orchestrator owns this file. It follows these rules, from
 | 054 | Arts | combat | haiku | todo |  |  | | | |
 | 055 | Spell system and Formulae | combat | sonnet | in progress |  | latticefall-m5 | game/m5-builds (worker worktree) | 2026-11-12 | |
 | 056 | Litanies | combat | haiku | todo |  |  | | | |
-| 057 | Charms, armor, consumables | combat | sonnet | in progress |  | latticefall-m5 | game/m5-builds (worker worktree) | 2026-11-12 | |
+| 057 | Charms, armor, consumables | combat | sonnet | done | sonnet, Opus-verified | latticefall-m5 | game/m5-builds (worker worktree) | 2026-11-12 | `charms.ron` (14), `armor.ron` (7 sets, Boo, endark), consumable `effect:`; `items/{gear,usage,gear_tests}.rs`; `content/src/gear.rs`. `gear::refresh` recomputes defense, absorption, poise, resistances, max HP, load tier on gear change. Hooks in resolve, projectile, status, poise, status_regen, ai sight. Gaps: Scholar's Seal slot and Shrike-Lite startup are queries only (spells must call them); endark needs darkness; items reuse the flask-drink move; stub bow arrows swap `proj_arrow`; Thornheart uses the body buff slot. Registry 16000-16630. |
 | 058 | Equipment rendering | render | sonnet | todo |  |  | | | |
 | 059 | Echo summons | ai | sonnet | in progress |  | latticefall-m5 | game/m5-builds (worker worktree) | 2026-11-12 | |
 | 060 | Mirrormere | world | sonnet | todo |  |  | | | |

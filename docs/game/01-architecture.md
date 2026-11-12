@@ -407,7 +407,8 @@ Each area directory in `game/data/levels/` holds:
   with their fog gates, dummies, water, and reeds. Doors, levers, lifts, items, and
   messages join this list as new entity kinds. An Echo Stone is
   `EchoStone(id:, pos:, yaw:)`: a boss arena's region WP places one inside its fog gate
-  (WP-060 added it).
+  (WP-060 added it). WP-062 added `Darkness(...)` (at most one per level), `Glow(...)`
+  (a lit rectangle), `Cart(...)`, and `Trapdoor(...)`.
 - `dressing.ron`: scatter rules (Poisson-disk sampled props by tag and density, masked
   by region, terrain slope, and paths) and a few hand-placed props. The renderer
   applies these; the core ignores them unless a rule marks props as colliders.

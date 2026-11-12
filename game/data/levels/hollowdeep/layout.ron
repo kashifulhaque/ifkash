@@ -1,0 +1,73 @@
+// Hollowdeep layout (WP-062): greybox blocks (scaled `block_unit`, centered on `pos`). The
+// cavern walls are the terrain (terrain.ron), so the blocks here are the landmarks and the
+// furniture. Y is up. Places, with centers (x, z):
+//   the Lamp Tree      ( 25, -50)   a 37 m glowing fungus on the lake's island; it shows over the
+//                                   water from the Fungal Shore (the landmark, seen from L11)
+//   L11 Fungal Shore   (-64, -50)   the west bank; the Belfry lift's frame at (-90, -50)
+//   the west passage   (-80,  13)   the Mossgut lift's alcove at (-98, 18)
+//   L12 Glasswing Mouth(-20,  60)   on the north shore; D5's arch at (-16, 97)
+//   L13 Lamplight Hollow(102, 70)   the antechamber; B09's arena behind the fog gate z = 92
+//   B09's arena        (112, 120)   six unlit lamps ringed 20 m from the middle
+//   the Root Stair     (110, -34)   a ramp east, and the landing at (143, -34)
+// Walks between Lanterns are checked by world_state/hollowdeep_tests.rs.
+(
+  landmarks: [
+    // --- The Lamp Tree: roots, trunk, and a two-tier cap, on the lake's island -------------------
+    (name: "tree_trunk", kit: "block_unit", pos: (25.00, 15.00, -50.00), scale: (4.00, 30.00, 4.00)),
+    (name: "tree_root0", kit: "block_unit", pos: (21.50, 1.50, -50.00), scale: (3.00, 3.00, 3.00)),
+    (name: "tree_root1", kit: "block_unit", pos: (28.50, 1.50, -50.00), scale: (3.00, 3.00, 3.00)),
+    (name: "tree_root2", kit: "block_unit", pos: (25.00, 1.50, -53.50), scale: (3.00, 3.00, 3.00)),
+    (name: "tree_root3", kit: "block_unit", pos: (25.00, 1.50, -46.50), scale: (3.00, 3.00, 3.00)),
+    (name: "tree_cap_low", kit: "block_unit", pos: (25.00, 31.50, -50.00), scale: (24.00, 3.00, 24.00)),
+    (name: "tree_cap_high", kit: "block_unit", pos: (25.00, 35.00, -50.00), scale: (14.00, 4.00, 14.00)),
+    // --- The Fungal Shore: glowing stalks (stalagmites) and the Belfry lift's frame ---------------
+    (name: "stalk0", kit: "block_unit", pos: (-80.00, 3.50, -110.00), scale: (2.50, 7.00, 2.50)),
+    (name: "stalk1", kit: "block_unit", pos: (-54.00, 4.50, -112.00), scale: (2.50, 9.00, 2.50)),
+    (name: "stalk2", kit: "block_unit", pos: (-48.00, 3.00, -78.00), scale: (2.50, 6.00, 2.50)),
+    (name: "stalk3", kit: "block_unit", pos: (-86.00, 4.00, -66.00), scale: (2.50, 8.00, 2.50)),
+    (name: "stalk4", kit: "block_unit", pos: (-44.00, 3.50, -40.00), scale: (2.50, 7.00, 2.50)),
+    (name: "belfry_post_w", kit: "block_unit", pos: (-94.00, 3.50, -50.00), scale: (1.20, 7.00, 1.20)),
+    (name: "belfry_post_e", kit: "block_unit", pos: (-86.00, 3.50, -50.00), scale: (1.20, 7.00, 1.20)),
+    (name: "belfry_lintel", kit: "block_unit", pos: (-90.00, 7.60, -50.00), scale: (9.20, 1.20, 1.20)),
+    // --- The west passage: the Mossgut lift's frame ---------------------------------------------
+    (name: "mossgut_post_s", kit: "block_unit", pos: (-98.00, 3.50, 12.00), scale: (1.20, 7.00, 1.20)),
+    (name: "mossgut_post_n", kit: "block_unit", pos: (-98.00, 3.50, 24.00), scale: (1.20, 7.00, 1.20)),
+    (name: "mossgut_lintel", kit: "block_unit", pos: (-98.00, 7.60, 18.00), scale: (1.20, 1.20, 13.20)),
+    // --- The north shore and the Glasswing Mouth: D5's arch, two stalks -------------------------
+    (name: "grotto_post_w", kit: "block_unit", pos: (-22.00, 4.50, 97.00), scale: (2.00, 9.00, 2.00)),
+    (name: "grotto_post_e", kit: "block_unit", pos: (-10.00, 4.50, 97.00), scale: (2.00, 9.00, 2.00)),
+    (name: "grotto_lintel", kit: "block_unit", pos: (-16.00, 9.75, 97.00), scale: (14.00, 1.50, 2.00)),
+    (name: "stalk5", kit: "block_unit", pos: (-40.00, 3.00, 66.00), scale: (2.50, 6.00, 2.50)),
+    (name: "stalk6", kit: "block_unit", pos: (40.00, 3.50, 44.00), scale: (2.50, 7.00, 2.50)),
+    // --- The antechamber and the arena's gate ---------------------------------------------------
+    (name: "hollow_pillar_w", kit: "block_unit", pos: (92.00, 4.00, 58.00), scale: (2.00, 8.00, 2.00)),
+    (name: "hollow_pillar_e", kit: "block_unit", pos: (112.00, 4.00, 58.00), scale: (2.00, 8.00, 2.00)),
+    (name: "gate_post_w", kit: "block_unit", pos: (97.00, 4.50, 92.00), scale: (2.00, 9.00, 2.00)),
+    (name: "gate_post_e", kit: "block_unit", pos: (111.00, 4.50, 92.00), scale: (2.00, 9.00, 2.00)),
+    (name: "gate_lintel", kit: "block_unit", pos: (104.00, 9.75, 92.00), scale: (16.00, 1.50, 2.00)),
+    // --- B09's arena: six unlit lamps ringed around the middle (112, 120), and four pillars ---------
+    (name: "lamp_0", kit: "block_unit", pos: (132.00, 1.50, 120.00), scale: (1.40, 3.00, 1.40)),
+    (name: "lamp_1", kit: "block_unit", pos: (122.00, 1.50, 137.32), scale: (1.40, 3.00, 1.40)),
+    (name: "lamp_2", kit: "block_unit", pos: (102.00, 1.50, 137.32), scale: (1.40, 3.00, 1.40)),
+    (name: "lamp_3", kit: "block_unit", pos: (92.00, 1.50, 120.00), scale: (1.40, 3.00, 1.40)),
+    (name: "lamp_4", kit: "block_unit", pos: (102.00, 1.50, 102.68), scale: (1.40, 3.00, 1.40)),
+    (name: "lamp_5", kit: "block_unit", pos: (122.00, 1.50, 102.68), scale: (1.40, 3.00, 1.40)),
+    (name: "arena_pillar0", kit: "block_unit", pos: (92.00, 6.00, 108.00), scale: (2.50, 12.00, 2.50)),
+    (name: "arena_pillar1", kit: "block_unit", pos: (132.00, 6.00, 108.00), scale: (2.50, 12.00, 2.50)),
+    (name: "arena_pillar2", kit: "block_unit", pos: (92.00, 6.00, 134.00), scale: (2.50, 12.00, 2.50)),
+    (name: "arena_pillar3", kit: "block_unit", pos: (132.00, 6.00, 134.00), scale: (2.50, 12.00, 2.50)),
+    // --- The Root Stair: three timber frames, the landing's ledge, and the hatch's frame -------------
+    (name: "stair_post_s0", kit: "block_unit", pos: (90.00, 5.36, -39.20), scale: (0.80, 5.00, 0.80)),
+    (name: "stair_post_n0", kit: "block_unit", pos: (90.00, 5.36, -28.80), scale: (0.80, 5.00, 0.80)),
+    (name: "stair_beam0", kit: "block_unit", pos: (90.00, 8.26, -34.00), scale: (1.00, 0.80, 11.20)),
+    (name: "stair_post_s1", kit: "block_unit", pos: (110.00, 12.50, -39.20), scale: (0.80, 5.00, 0.80)),
+    (name: "stair_post_n1", kit: "block_unit", pos: (110.00, 12.50, -28.80), scale: (0.80, 5.00, 0.80)),
+    (name: "stair_beam1", kit: "block_unit", pos: (110.00, 15.40, -34.00), scale: (1.00, 0.80, 11.20)),
+    (name: "stair_post_s2", kit: "block_unit", pos: (130.00, 19.64, -39.20), scale: (0.80, 5.00, 0.80)),
+    (name: "stair_post_n2", kit: "block_unit", pos: (130.00, 19.64, -28.80), scale: (0.80, 5.00, 0.80)),
+    (name: "stair_beam2", kit: "block_unit", pos: (130.00, 22.54, -34.00), scale: (1.00, 0.80, 11.20)),
+    (name: "spire_ledge", kit: "block_unit", pos: (148.30, 23.00, -34.00), scale: (3.40, 2.00, 6.00)),
+    (name: "hatch_frame_w", kit: "block_unit", pos: (146.00, 22.00, -36.20), scale: (2.40, 4.00, 0.60)),
+    (name: "hatch_frame_e", kit: "block_unit", pos: (146.00, 22.00, -31.80), scale: (2.40, 4.00, 0.60)),
+  ],
+)

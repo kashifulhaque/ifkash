@@ -289,7 +289,10 @@ export class SceneView {
         this.yawDriven = pose.locked;
       }
     }
-    if (this.level) this.level.update(this.camera, focus ?? ORIGIN, frameMs);
+    if (this.level) {
+      this.level.setVisibility(this.props.visibility);
+      this.level.update(this.camera, focus ?? ORIGIN, frameMs);
+    }
     if (this.props.active) this.props.update(simPaused ? 0 : frameMs);
     this.vfx.update(actors, simPaused ? 0 : Math.min(frameMs, 100) / 1000, this.camera, this.canvas.clientHeight || 1);
     this.vfx.applyCamera(this.camera);

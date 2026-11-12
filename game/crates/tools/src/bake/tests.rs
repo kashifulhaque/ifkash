@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
 use lf_content::level::Entity;
-use lf_content::scenario::{EnemySpawn, Lantern};
+use lf_content::scenario::{Darkness, EnemySpawn, Lantern, Zone};
 use lf_content::{Content, Kits, Level, NavConfig};
 
 use super::area::{Baked, bake_level};
@@ -102,4 +102,78 @@ fn a_lantern_on_reachable_ground_is_fine() {
         }));
     });
     assert!(baked.warnings.is_empty(), "{:?}", baked.warnings);
+}
+
+fn dark_rule() -> Entity {
+    Entity::Darkness(Darkness {
+        visibility_m: 6.0,
+        torch_visibility_m: 14.0,
+        lantern_light_m: 9.0,
+        torch_flag: "codex.projects.smoltorch".into(),
+    })
+}
+
+/// WP-062: a dark area's walk from the spawn through its Lanterns must stay in glowing zones.
+/// The test field has Lanterns far from its spawn, so with no glow the walk goes dark; a glow
+/// over the whole field lights it.
+#[test]
+fn a_dark_critical_path_is_a_warning_until_glowing_zones_cover_it() {
+    let content = Content::load_dir(data()).unwrap();
+    // A second Lantern at the top of the ramp, 30 m on: the walk between the two Lanterns is dark.
+    let far_lantern = || {
+        Entity::Lantern(Lantern {
+            id: "lantern_ramp_top".into(),
+            pos: [0.0, 9.0, 29.0],
+            yaw: 0.0,
+        })
+    };
+    let dark = bake_with(&content, |level| {
+        level.entities.entities.push(dark_rule());
+        level.entities.entities.push(far_lantern());
+    });
+    assert!(
+        kinds(&dark).contains(&WarningKind::DarkCriticalPath),
+        "{:?}",
+        dark.warnings
+    );
+    let lit = bake_with(&content, |level| {
+        let b = level.area.bounds;
+        level.entities.entities.push(dark_rule());
+        level.entities.entities.push(far_lantern());
+        level.entities.entities.push(Entity::Glow(Zone {
+            name: "everywhere".into(),
+            center: [(b.min[0] + b.max[0]) / 2.0, (b.min[1] + b.max[1]) / 2.0],
+            half_extents: [(b.max[0] - b.min[0]) / 2.0, (b.max[1] - b.min[1]) / 2.0],
+        }));
+    });
+    assert!(
+        !kinds(&lit).contains(&WarningKind::DarkCriticalPath),
+        "{:?}",
+        lit.warnings
+    );
+    // A level without a darkness rule is never dark.
+    let plain = bake_with(&content, |_| {});
+    assert!(!kinds(&plain).contains(&WarningKind::DarkCriticalPath));
+}
+
+/// WP-062: Hollowdeep and the Cinderdeep Mine bake with no warnings, which includes the rule that
+/// Hollowdeep's critical path stays inside its glowing zones, and the committed manifests are
+/// current.
+#[test]
+fn the_underground_areas_bake_cleanly() {
+    let content = Content::load_dir(data()).unwrap();
+    let kits = Kits::new(content.kits.iter().map(|(f, c)| (f.as_str(), c))).unwrap();
+    let nav = NavConfig::load_dir(data()).unwrap();
+    for area in ["hollowdeep", "cinderdeep_mine"] {
+        let level = content.level(area).expect("the area exists");
+        let baked = bake_level(area, level, &kits, &nav).unwrap();
+        assert!(baked.warnings.is_empty(), "{area}: {:?}", baked.warnings);
+        let committed =
+            std::fs::read_to_string(super::default_manifest_dir().join(format!("{area}.json")))
+                .unwrap_or_else(|_| panic!("static/latticefall/levels/{area}.json exists"));
+        assert!(
+            committed == baked.manifest,
+            "the committed manifest is stale: run `cargo run -p lf-tools -- bake {area}`"
+        );
+    }
 }

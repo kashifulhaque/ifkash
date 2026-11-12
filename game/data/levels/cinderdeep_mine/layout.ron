@@ -1,0 +1,48 @@
+// Cinderdeep Mine layout (WP-062): greybox blocks (scaled `block_unit`, centered on `pos`). The
+// tunnel's walls are the terrain (terrain.ron), so the blocks here are the furniture: timber
+// supports, the forge, pillars, and the sealed wall's frame. Y is up. Places (x, z):
+//   mouth hall       (  0, -85)   timber frame at the Verge mouth
+//   teaching room    (  0, -64)   the ride cart waits at its north end (3, -48)
+//   the gallery      (  0,   4)   three timber frames; the rail runs at x = 3
+//   lower hall       (  0,  76)   L10 at (0, 68); four pillars; the push cart's rail on z = 78
+//   west branch      (-45,  78)   the sealed wall at x -35..-33; the smoltorch chamber behind
+//   the forge        ( 61,  73)   B08's arena, x 44..78, z 54..92; fog gate at x = 44
+// Walks between Lanterns are checked by world_state/hollowdeep_tests.rs.
+(
+  landmarks: [
+    // --- The Verge mouth: a timber frame over the way in ----------------------------------------
+    (name: "mouth_post_w", kit: "block_unit", pos: (-4.60, 2.50, -88.00), scale: (0.80, 5.00, 0.80)),
+    (name: "mouth_post_e", kit: "block_unit", pos: (4.60, 2.50, -88.00), scale: (0.80, 5.00, 0.80)),
+    (name: "mouth_beam", kit: "block_unit", pos: (0.00, 5.40, -88.00), scale: (10.00, 0.80, 1.00)),
+    // --- The gallery: three timber frames over the rail --------------------------------------
+    (name: "gallery_post_w0", kit: "block_unit", pos: (-5.20, -1.82, -30.00), scale: (0.80, 5.00, 0.80)),
+    (name: "gallery_post_e0", kit: "block_unit", pos: (5.20, -1.82, -30.00), scale: (0.80, 5.00, 0.80)),
+    (name: "gallery_beam0", kit: "block_unit", pos: (0.00, 1.08, -30.00), scale: (11.20, 0.80, 1.00)),
+    (name: "gallery_post_w1", kit: "block_unit", pos: (-5.20, -9.29, 8.00), scale: (0.80, 5.00, 0.80)),
+    (name: "gallery_post_e1", kit: "block_unit", pos: (5.20, -9.29, 8.00), scale: (0.80, 5.00, 0.80)),
+    (name: "gallery_beam1", kit: "block_unit", pos: (0.00, -6.39, 8.00), scale: (11.20, 0.80, 1.00)),
+    (name: "gallery_post_w2", kit: "block_unit", pos: (-5.20, -16.36, 44.00), scale: (0.80, 5.00, 0.80)),
+    (name: "gallery_post_e2", kit: "block_unit", pos: (5.20, -16.36, 44.00), scale: (0.80, 5.00, 0.80)),
+    (name: "gallery_beam2", kit: "block_unit", pos: (0.00, -13.46, 44.00), scale: (11.20, 0.80, 1.00)),
+    // --- The lower hall: four pillars, and a stack of ore crates by L10 -----------------------
+    (name: "hall_pillar0", kit: "block_unit", pos: (-14.00, -17.50, 68.00), scale: (2.00, 9.00, 2.00)),
+    (name: "hall_pillar1", kit: "block_unit", pos: (14.00, -17.50, 68.00), scale: (2.00, 9.00, 2.00)),
+    (name: "hall_pillar2", kit: "block_unit", pos: (-14.00, -17.50, 84.00), scale: (2.00, 9.00, 2.00)),
+    (name: "hall_pillar3", kit: "block_unit", pos: (14.00, -17.50, 84.00), scale: (2.00, 9.00, 2.00)),
+    (name: "hall_crates_a", kit: "block_unit", pos: (-8.00, -21.50, 62.00), scale: (2.00, 1.00, 2.00)),
+    (name: "hall_crates_b", kit: "block_unit", pos: (-6.00, -21.00, 62.00), scale: (2.00, 2.00, 2.00)),
+    // --- The sealed west branch: a frame around the wall, and a lintel -----------------------
+    (name: "seal_post_n", kit: "block_unit", pos: (-34.00, -19.00, 73.00), scale: (2.40, 6.00, 0.80)),
+    (name: "seal_post_s", kit: "block_unit", pos: (-34.00, -19.00, 83.00), scale: (2.40, 6.00, 0.80)),
+    // --- B08's forge: the furnace, four pillars, and the gate's frame ---------------------------
+    (name: "forge_furnace", kit: "block_unit", pos: (61.00, -18.50, 90.50), scale: (14.00, 7.00, 2.50)),
+    (name: "forge_anvil", kit: "block_unit", pos: (61.00, -21.30, 84.00), scale: (3.00, 1.40, 2.00)),
+    (name: "forge_pillar0", kit: "block_unit", pos: (52.00, -18.00, 62.00), scale: (2.00, 8.00, 2.00)),
+    (name: "forge_pillar1", kit: "block_unit", pos: (72.00, -18.00, 62.00), scale: (2.00, 8.00, 2.00)),
+    (name: "forge_pillar2", kit: "block_unit", pos: (72.00, -18.00, 84.00), scale: (2.00, 8.00, 2.00)),
+    (name: "forge_pillar3", kit: "block_unit", pos: (52.00, -18.00, 84.00), scale: (2.00, 8.00, 2.00)),
+    (name: "gate_post_n", kit: "block_unit", pos: (44.00, -18.50, 87.00), scale: (1.20, 7.00, 1.20)),
+    (name: "gate_post_s", kit: "block_unit", pos: (44.00, -18.50, 77.00), scale: (1.20, 7.00, 1.20)),
+    (name: "gate_lintel", kit: "block_unit", pos: (44.00, -14.50, 82.00), scale: (1.20, 1.00, 10.00)),
+  ],
+)

@@ -1,0 +1,33 @@
+// The Hollowdeep dressing: render-only scatter (no rule adds colliders). Loose stones on the
+// shores and the lamplit hollow; the renderer lights them with the glowing zones.
+(
+  rules: [
+    (
+      tag: "stone",
+      density: 0.003,
+      min_spacing: 3.0,
+      max_slope_deg: 25.0,
+      avoid: [Path(width: 6.0), Lantern(radius: 3.0), Spawn(radius: 3.0), Layout(margin: 1.0)],
+      region_mask: Some("shore"),
+      scale: (0.6, 1.5),
+    ),
+    (
+      tag: "stone",
+      density: 0.003,
+      min_spacing: 3.0,
+      max_slope_deg: 25.0,
+      avoid: [Path(width: 6.0), Lantern(radius: 3.0), Layout(margin: 1.0)],
+      region_mask: Some("north_shore"),
+      scale: (0.6, 1.5),
+    ),
+    (
+      tag: "stone",
+      density: 0.003,
+      min_spacing: 3.0,
+      max_slope_deg: 25.0,
+      avoid: [Path(width: 6.0), Lantern(radius: 3.0), Layout(margin: 1.0)],
+      region_mask: Some("lamplight"),
+      scale: (0.6, 1.5),
+    ),
+  ],
+)

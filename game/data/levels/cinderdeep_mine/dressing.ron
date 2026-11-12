@@ -1,0 +1,24 @@
+// The Cinderdeep Mine dressing: render-only scatter (no rule adds colliders). Loose stones on
+// the gallery's floor and the lower hall's.
+(
+  rules: [
+    (
+      tag: "stone",
+      density: 0.004,
+      min_spacing: 2.5,
+      max_slope_deg: 25.0,
+      avoid: [Path(width: 6.0), Lantern(radius: 3.0), Spawn(radius: 3.0), Layout(margin: 1.0)],
+      region_mask: Some("gallery"),
+      scale: (0.5, 1.2),
+    ),
+    (
+      tag: "stone",
+      density: 0.004,
+      min_spacing: 2.5,
+      max_slope_deg: 25.0,
+      avoid: [Path(width: 6.0), Lantern(radius: 3.0), Layout(margin: 1.0)],
+      region_mask: Some("lower_hall"),
+      scale: (0.5, 1.2),
+    ),
+  ],
+)

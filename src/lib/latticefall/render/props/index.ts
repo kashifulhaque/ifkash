@@ -23,6 +23,7 @@ import {
   type Scene
 } from 'three';
 import { manifestUrl } from '../kits/manifest';
+import { DeepProps } from './deep';
 import { HearthProps } from './hearth';
 import { createPoolWater, type PoolData } from '../water';
 
@@ -59,6 +60,12 @@ export class PropsRenderer {
   private root = new Group();
   /** Hollowhearth's NPCs and stations (WP-068). */
   private hearth = new HearthProps(this.root);
+  /** Mine carts and the Root Stair's trapdoor (WP-062). */
+  private deep = new DeepProps(this.root);
+  private cartAt = -1;
+  private hatchAt = -1;
+  /** The state word holding the player's visibility in meters, or -1 in an area with no darkness. */
+  private visAt = -1;
   private geometries: BufferGeometry[] = [];
   private materials: Material[] = [];
   private updaters: Array<{ kind: StateKind; index: number; update: Updater; value: number }> = [];
@@ -97,6 +104,14 @@ export class PropsRenderer {
       this.offsets.set(k, at);
       at += this.counts.get(k) ?? 0;
     }
+    // WP-062: after the pools come each mine cart (its distance along the rail), each trapdoor
+    // (1 when open), and, in a dark area only, the player's visibility in meters (0: no limit).
+    const kindCount = (name: string) => entities.filter((e) => Object.keys(e)[0] === name).length;
+    this.cartAt = at;
+    at += kindCount('Cart');
+    this.hatchAt = at;
+    at += kindCount('Trapdoor');
+    this.visAt = kindCount('Darkness') > 0 ? at : -1;
     const seen = new Map<StateKind, number>();
     let any = false;
     for (const e of entities) {
@@ -104,6 +119,15 @@ export class PropsRenderer {
       const d = e[kind];
       if (kind === 'Boss') {
         this.fogGate((d.gate ?? {}) as Record<string, unknown>);
+        any = true;
+        continue;
+      }
+      if (kind === 'Cart' || kind === 'Trapdoor') {
+        this.deep.add(kind, d);
+        any = true;
+        continue;
+      }
+      if (kind === 'Darkness') {
         any = true;
         continue;
       }
@@ -139,10 +163,16 @@ export class PropsRenderer {
     this.state = words;
   }
 
+  /** How far the player sees in meters (Hollowdeep's darkness, WP-062); 0 for no limit. */
+  get visibility(): number {
+    return this.visAt < 0 ? 0 : (this.state[this.visAt] ?? 0);
+  }
+
   /** Moves the props toward the state. Call once per frame. */
   update(frameMs: number): void {
     this.clock += frameMs;
     this.hearth.update(frameMs);
+    this.deep.update(frameMs, this.state, this.cartAt, this.hatchAt);
     for (const u of this.updaters) {
       const word = this.state[(this.offsets.get(u.kind) ?? 0) + u.index];
       if (word === undefined) continue;
@@ -153,6 +183,7 @@ export class PropsRenderer {
   dispose(): void {
     this.disposed = true;
     this.hearth.dispose();
+    this.deep.dispose();
     this.scene.remove(this.root);
     for (const g of this.geometries) g.dispose();
     for (const m of this.materials) m.dispose();

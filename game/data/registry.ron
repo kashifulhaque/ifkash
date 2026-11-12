@@ -236,6 +236,12 @@
     (id: "drowned_belfry", num: 22001),
     // WP-064: Castle Graymantle, part 1. 25000-25999 are the castle's content (WP-065 shares it).
     (id: "castle", num: 25000),
+    // WP-062: Hollowdeep and the Cinderdeep Mine. 23000-23999 are the underground region's content.
+    (id: "hollowdeep", num: 23000),
+    (id: "cinderdeep_mine", num: 23001),
+    (id: "relic_smoltorch", num: 23010), // stub relic: the key tool that lights the dark
+    (id: "relic_ferray", num: 23011), // stub relic: the Storm spear on the Lamp Tree's island
+    (id: "relic_endark", num: 23012), // stub relic: the cloak that hides you in the dark
 
     // WP-050: 14000-14099 are leveling and respec entries.
     (id: "itm_rewrite_quill", num: 14000), // WP-050: the Rewrite Quill, consumed by respec

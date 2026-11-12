@@ -5,6 +5,7 @@
 import { Color, DirectionalLight, Fog, HemisphereLight, Object3D, Scene, Vector3 } from 'three';
 import type { Ambient, Region } from '../kits/manifest';
 import { regionAt } from '../terrain/regionMath';
+import { darkFog } from './darkness';
 import { heightFogUniforms } from './fogPatch';
 import { NEUTRAL_LOOK, REGION_LOOKS, type RegionLook } from './regions';
 import type { QualityPreset } from './quality';
@@ -41,6 +42,9 @@ export class LevelLighting {
   private shadowSize = 0;
   /** The region the focus is in right now (null outside every region). */
   region: string | null = null;
+  /** How far the player sees in meters (Hollowdeep's darkness, WP-062); 0 for no limit. */
+  private visibility = 0;
+  private darkColor = new Color();
 
   constructor(
     private scene: Scene,
@@ -101,6 +105,14 @@ export class LevelLighting {
     }
   }
 
+  /**
+   * Sets how far the player sees, in meters, from the core's visibility word (0 for no limit). The
+   * fog, the light, and the horizon ease toward the dark look in `update`.
+   */
+  setVisibility(meters: number): void {
+    this.visibility = meters > 0 ? meters : 0;
+  }
+
   /** Moves the sun's shadow window to the focus and eases toward the focus's region look. */
   update(fx: number, fy: number, fz: number, dtMs: number): void {
     const name = regionAt(this.regions, fx, fz)?.name ?? null;
@@ -112,13 +124,16 @@ export class LevelLighting {
     this.snapNext = false;
     const l = this.look;
     const g = this.goal;
-    l.fogColor.lerp(g.fogColor, k);
+    // In the dark (WP-062) the goal's fog closes to the player's visibility and the light dims.
+    const dark = darkFog(this.visibility, g.fogNear, g.fogFar);
+    this.darkColor.copy(g.fogColor).multiplyScalar(dark.color);
+    l.fogColor.lerp(this.darkColor, k);
     l.sunColor.lerp(g.sunColor, k);
     l.ambientColor.lerp(g.ambientColor, k);
-    l.fogNear += (g.fogNear - l.fogNear) * k;
-    l.fogFar += (g.fogFar - l.fogFar) * k;
-    l.sunIntensity += (g.sunIntensity - l.sunIntensity) * k;
-    l.ambientIntensity += (g.ambientIntensity - l.ambientIntensity) * k;
+    l.fogNear += (dark.near - l.fogNear) * k;
+    l.fogFar += (dark.far - l.fogFar) * k;
+    l.sunIntensity += (g.sunIntensity * dark.light - l.sunIntensity) * k;
+    l.ambientIntensity += (g.ambientIntensity * dark.light - l.ambientIntensity) * k;
     l.haze += (g.haze - l.haze) * k;
     this.apply();
 

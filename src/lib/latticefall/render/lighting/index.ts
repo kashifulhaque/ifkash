@@ -1,5 +1,7 @@
 export { LevelLighting } from './lighting';
 export { applyHeightFog, heightFogUniforms } from './fogPatch';
+export { darkFog } from './darkness';
+export type { DarkFog } from './darkness';
 export { REGION_LOOKS } from './regions';
 export type { RegionLook } from './regions';
 export {

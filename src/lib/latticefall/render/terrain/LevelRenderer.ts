@@ -80,6 +80,11 @@ export class LevelRenderer {
     this.instances?.setGrassDensity(p.grassDensity);
   }
 
+  /** Hollowdeep's darkness (WP-062): how far the player sees, in meters; 0 for no limit. */
+  setVisibility(meters: number): void {
+    this.lighting?.setVisibility(meters);
+  }
+
   /** Call every frame, before the scene renders. `focus` is the player's position. */
   update(camera: PerspectiveCamera, focus: { x: number; y: number; z: number }, frameMs: number): void {
     if (!this.lighting || !this.sky) return;

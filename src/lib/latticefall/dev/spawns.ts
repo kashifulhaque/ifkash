@@ -150,6 +150,45 @@ const CASTLE: Record<string, SpawnPoint> = {
   landing: { x: 0, z: 217, yaw: 0, note: "the keep landing, where part 2's way on begins" }
 };
 
+// The Cinderdeep Mine (WP-062): the rooms of D4, north (+Z) and down. Lantern spawns stand a meter
+// or two off the Lantern.
+const CINDERDEEP_MINE: Record<string, SpawnPoint> = {
+  mouth: { x: 0, z: -92, yaw: 0, note: 'the Verge mouth, the area start' },
+  cart: { x: 1, z: -50, yaw: 0, note: 'beside the ride cart at the top of the gallery' },
+  gallery: { x: 0, z: -4, yaw: 0, note: 'mid-gallery, facing down the slope (the Miner is by the rail)' },
+  l10: { x: 2, z: 64, yaw: Math.PI, note: 'beside L10, Cinderdeep Shaft, facing back up the gallery' },
+  hall: { x: 0, z: 76, yaw: 0, note: 'the middle of the lower hall, facing the exit tunnel' },
+  push: { x: -8.6, z: 77.4, yaw: -HALF_PI, note: 'beside the push cart, facing the sealed wall' },
+  wall: { x: -29, z: 78, yaw: -HALF_PI, note: 'in the west corridor, facing the sealed wall' },
+  chamber: { x: -44, z: 78, yaw: HALF_PI, note: 'inside the smoltorch chamber, facing the broken wall' },
+  forge_gate: { x: 36, z: 82, yaw: HALF_PI, note: "the corridor to B08's fog gate" },
+  forge: { x: 50, z: 82, yaw: HALF_PI, note: "inside B08's forge, facing the furnace side" },
+  exit: { x: 0, z: 94, yaw: 0, note: 'the exit tunnel to Hollowdeep' }
+};
+
+// Hollowdeep (WP-062): each Lantern, the landmark view, the dark places, and the Root Stair.
+const HOLLOWDEEP: Record<string, SpawnPoint> = {
+  arrival: { x: -132, z: -128, yaw: HALF_PI, note: 'the arrival cave, the area start' },
+  l11: { x: -62, z: -52, yaw: HALF_PI, note: 'beside L11, Fungal Shore, facing the lake and the Lamp Tree' },
+  landmark: { x: -62, z: -52, yaw: HALF_PI, note: 'the landmark view: L11 looking across the Glowing Lake' },
+  dark_shore: { x: -42, z: -88, yaw: HALF_PI, note: 'the shore east of the glowing band: dark, six paces of sight' },
+  nook: { x: -108, z: -64, yaw: -HALF_PI, note: 'the dark nook west of the shore (no moss, the Lantern Sword)' },
+  belfry: { x: -88, z: -52, yaw: -HALF_PI, note: "the Belfry lift's frame on the shore" },
+  passage: { x: -80, z: 4, yaw: 0, note: 'the west passage, facing north' },
+  l12: { x: -18, z: 58, yaw: 0, note: 'beside L12, Glasswing Mouth, facing the arch to the north' },
+  mouth: { x: -16, z: 90, yaw: 0, note: "the Glasswing Mouth's arch to D5, in the dark" },
+  ford: { x: 24, z: 44, yaw: Math.PI, note: "the head of the ford to the Lamp Tree's island (unlit)" },
+  island: { x: 30, z: -42, yaw: Math.PI, note: "the Lamp Tree's island, under the cap" },
+  l13: { x: 100, z: 68, yaw: 0, note: 'beside L13, Lamplight Hollow, facing the fog gate' },
+  gate: { x: 104, z: 88, yaw: 0, note: "B09's fog gate, from the antechamber" },
+  arena: { x: 104, z: 100, yaw: 0, note: "inside B09's cavern, facing the six lamps" },
+  east_shore: { x: 73, z: 20, yaw: Math.PI, note: 'the east shore, facing the Shard Golem' },
+  stair: { x: 86, z: -34, yaw: HALF_PI, note: "the foot of the Root Stair, looking up it" },
+  alcove: { x: 104, z: -22, yaw: 0, note: "the Root Stair's alcove (the endark relic)" },
+  hatch: { x: 144, z: -34, yaw: HALF_PI, note: "the top of the Root Stair: the ladder's foot, under the hatch" },
+  ledge: { x: 148, z: -34, yaw: HALF_PI, note: "the ledge above the hatch (after it opens), where the Spire's connection is" }
+};
+
 const TABLES: Record<string, Record<string, SpawnPoint>> = {
   sunken_ossuary: SUNKEN_OSSUARY,
   drowned_belfry: DROWNED_BELFRY,
@@ -159,6 +198,8 @@ const TABLES: Record<string, Record<string, SpawnPoint>> = {
   hollowhearth: HOLLOWHEARTH,
   mirrormere: MIRRORMERE,
   castle: CASTLE,
+  cinderdeep_mine: CINDERDEEP_MINE,
+  hollowdeep: HOLLOWDEEP,
   m0_flat: {
     far: { x: 40, z: 40, yaw: Math.PI, note: 'far corner of the flat floor' }
   }

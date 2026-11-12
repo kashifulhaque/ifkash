@@ -1,0 +1,81 @@
+// The Cinderdeep Mine entities (WP-062, D4). Yaw is in radians from +Z toward +X: 0 faces +Z
+// (north, down the mine), 3.1415927 faces -Z, 1.5707964 faces +X, -1.5707964 faces -X.
+//
+// The route follows the dungeon template (docs/game/02-world.md): the mouth hall (entrance),
+// the teaching room and the gallery (the ride cart: no enemies, then one Miner), the lower hall
+// (L10, Cinderdeep Shaft: the one Lantern inside a mini-dungeon), the push cart and its sealed
+// branch (the smoltorch chamber), a shortcut (the ride cart rolls back up to the teaching
+// room), and B08's forge behind a fog gate. The way on to Hollowdeep is the tunnel at the north
+// end of the lower hall, so B08 is optional.
+//
+// MINE CARTS. `cart_gallery` is a Ride cart on a 106 m rail down the gallery's east side
+// (the rail points sit on the terrain: y = -22 * (z + 52) / 112). Stand beside it and press
+// INTERACT. `cart_smoltorch` is a Push cart on the lower hall's z = 78 rail; it rolls west into
+// the sturdy hollow wall that seals the smoltorch chamber (a sword can't open it).
+//
+// Registry numbers used here (23000 block): cinderdeep_mine 23001, relic_smoltorch 23010.
+(
+  // The mouth hall, facing down the mine.
+  spawn: (pos: (0.0, 0.0, -92.0), yaw: 0.0),
+  entities: [
+    // --- L10: Cinderdeep Shaft, at the foot of the gallery ----------------------------------
+    Lantern(id: "lantern_l10", pos: (0.0, -22.0, 68.0), yaw: 3.1415927),
+
+    // --- Mine carts ---------------------------------------------------------------------------
+    Cart(id: "cart_gallery", rail: [(3.0, -0.79, -48.0), (3.0, -21.21, 56.0)], kind: Ride, speed_mps: 9.0),
+    Cart(id: "cart_smoltorch", rail: [(-10.0, -22.0, 78.0), (-32.2, -22.0, 78.0)], kind: Push("wall_smoltorch"), speed_mps: 6.0),
+    HollowWall(id: "wall_smoltorch", center: (-34.0, -19.0, 78.0), half_extents: (1.0, 3.0, 4.5), sturdy: true),
+
+    // --- Authored messages ---------------------------------------------------------------------
+    Message(id: "msg_mine_mouth", pos: (0.0, 0.0, -88.0),
+      text: "Cinderdeep Mine. The Miners dug down until they struck a darker place, and left their lanterns burning. The tunnel runs north and down."),
+    Message(id: "msg_cart", pos: (-1.0, 0.0, -54.0),
+      text: "A mine cart waits on a rail that runs down the gallery. Stand beside it and press the interact key to ride it down. Press it beside the cart at the bottom to ride back up."),
+    Message(id: "msg_gallery", pos: (0.0, -9.5, -4.0),
+      text: "A rail on the gallery's east side, a Miner who has not noticed the cart. Riding is quicker than walking, but you can't fight while you ride."),
+    Message(id: "msg_hall", pos: (-2.0, -22.0, 62.0),
+      text: "Cinderdeep Shaft. The tunnel on the north wall leads on, down into Hollowdeep. West, a rail runs into a wall of old timber. East, a corridor glows red."),
+    Message(id: "msg_push_cart", pos: (-8.0, -22.0, 75.0),
+      text: "A loaded cart on a short rail, and the rail ends at a sealed wall that a sword won't break. Press the interact key beside the cart to shove it."),
+    Message(id: "msg_forge", pos: (30.0, -22.0, 82.0),
+      text: "The forge's heat comes down the corridor. Whatever the Miners woke is still working at the anvil."),
+    Message(id: "msg_exit", pos: (0.0, -22.0, 94.0),
+      text: "The tunnel goes on down. Past the next bend the air smells of wet stone and old light."),
+
+    // --- Enemies: Miners (lantern-carrying husks), Lamp Mites, a Shard Golem -------------------
+    // The gallery: one Miner by the rail, in plain sight, so the first ride shows a threat.
+    Enemy(name: "miner_gallery", enemy: "husk_miner", pos: (-4.5, -12.18, 10.0), yaw: 1.5707964),
+    // The lower hall: two Miners in the far corners; L10 is clear.
+    Enemy(name: "miner_hall_w", enemy: "husk_miner", pos: (-22.0, -22.0, 88.0), yaw: 0.0),
+    Enemy(name: "miner_hall_e", enemy: "husk_miner", pos: (22.0, -22.0, 88.0), yaw: 0.0),
+    // The smoltorch chamber: a Lamp Mite swarm behind the sealed wall.
+    Enemy(name: "mite_chamber_a", enemy: "lamp_mite", pos: (-46.0, -22.0, 70.0), yaw: 0.0),
+    Enemy(name: "mite_chamber_b", enemy: "lamp_mite", pos: (-46.0, -22.0, 86.0), yaw: 0.0),
+    Enemy(name: "mite_chamber_c", enemy: "lamp_mite", pos: (-40.0, -22.0, 72.0), yaw: 0.0),
+    // The east corridor: a Shard Golem guarding the way to the forge.
+    Enemy(name: "golem_corridor", enemy: "shard_golem", pos: (34.0, -22.0, 82.0), yaw: -1.5707964),
+
+    // --- Items, relics, and materials -----------------------------------------------------------
+    // L10's chests: Forgeglass Shards (also dropped by the Miners).
+    Chest(id: "chest_l10", pos: (-10.0, -22.0, 70.0), yaw: 1.5707964, loot: (item: "itm_forgeglass_shard", count: 3, glimmer: 150)),
+    Chest(id: "chest_hall_e", pos: (20.0, -22.0, 64.0), yaw: -1.5707964, loot: (item: "itm_forgeglass_shard", count: 2, glimmer: 120)),
+    // The smoltorch chamber (behind the push cart's wall): the relic, the Miner's Pick, the Ember
+    // Locket, and a chest. The relic's pickup raises `codex.projects.smoltorch`, which is the flag
+    // Hollowdeep's darkness rule reads as "the player carries a light".
+    Pickup(id: "relic_smoltorch", item: "relic_smoltorch", pos: (-46.0, -22.0, 78.0), codex: Some("projects.smoltorch"), interact: true),
+    Pickup(id: "pick_chamber", item: "wpn_miners_pick", pos: (-42.0, -22.0, 74.0), interact: true),
+    Pickup(id: "locket_chamber", item: "chm_ember_locket", pos: (-42.0, -22.0, 82.0), interact: true),
+    Chest(id: "chest_chamber", pos: (-50.0, -22.0, 88.0), yaw: 3.1415927, loot: (item: "itm_forgeglass_shard", count: 3, glimmer: 200)),
+
+    // --- B08's arena: the forge (x 44..78, z 54..92) ---------------------------------------------
+    // The boss: PLACEHOLDER. B08 (the Forgeheart Colossus, an M7 work package) has no boss
+    // definition yet, so no Boss entity is placed. When it exists, add:
+    //   Boss(name: "b08", boss: "<b08 id>", pos: (62.0, -22.0, 72.0), yaw: -1.5707964,
+    //     gate: (pos: (44.0, -22.0, 82.0), yaw: 1.5707964, half_width_m: 4.0, depth_m: 3.0)),
+    // The fog gate is the plane x = 44 across the corridor (z 78..86), opening east into the
+    // forge. The reward, the Forgeheart Ember (itm_forgeheart_ember), goes on a pedestal behind
+    // the furnace after the fight. L10 is 45 m from the gate (about 10 s).
+    // The Echo Stone stands just inside the gate, in the forge's north-west corner.
+    EchoStone(id: "stone_b08", pos: (48.0, -22.0, 88.0), yaw: 0.7854),
+  ],
+)

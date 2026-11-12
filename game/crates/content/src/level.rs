@@ -48,7 +48,8 @@
 //! [`Level::compile`] has to hand the core (a list on [`Scenario`]). WP-042 added the world
 //! mechanics this way: ladders, lifts, doors, levers, hollow walls, pickups, chests,
 //! messages, pools, and snow. A new sculpt operation is a new [`Sculpt`] variant and a match arm in
-//! [`Sculpt::apply`]. WP-060 added `EchoStone(id:, pos:, yaw:)` the same way: a level places
+//! [`Sculpt::apply`]. WP-062 added `Darkness`, `Glow`, `Cart`, and `Trapdoor` the same way.
+//! WP-060 added `EchoStone(id:, pos:, yaw:)` the same way: a level places
 //! the summoning spot of a boss arena in `entities.ron` instead of in a scenario file, and
 //! compile hands it to the core's Echo rules (`Scenario::echo_stones`).
 
@@ -58,8 +59,9 @@ use serde::{Deserialize, Serialize};
 
 use crate::Scenario;
 use crate::scenario::{
-    BossSpawn, BoxCollider, Chest, Door, Dummy, EchoStone, EnemySpawn, Heightfield, HollowWall,
-    Ladder, Lantern, Lever, LeverTarget, Lift, Message, NpcSpawn, Pickup, Pool, StationSpawn, Zone,
+    BossSpawn, BoxCollider, Cart, Chest, Darkness, Door, Dummy, EchoStone, EnemySpawn, Heightfield,
+    HollowWall, Ladder, Lantern, Lever, LeverTarget, Lift, Message, NpcSpawn, Pickup, Pool,
+    StationSpawn, Trapdoor, Zone,
 };
 
 /// The files an area directory can hold, in load order.
@@ -832,6 +834,17 @@ pub enum Entity {
     /// `EchoStone(id: "stone_b06", pos: (72.0, 0.0, 13.0), yaw: 2.356)`. `id` is unique in
     /// the level; `yaw` is the direction the Echo faces when it appears.
     EchoStone(EchoStone),
+    /// The darkness rule of a dark area (WP-062): at most one per level, for example
+    /// `Darkness(visibility_m: 6.0, torch_visibility_m: 14.0, lantern_light_m: 9.0,
+    /// torch_flag: "codex.projects.smoltorch")`.
+    Darkness(Darkness),
+    /// A glowing zone (WP-062): a lit rectangle in a dark area. The critical path stays
+    /// inside these (the bake checks it).
+    Glow(Zone),
+    /// A mine cart on a rail (WP-062): ridden down, or pushed into a hollow wall.
+    Cart(Cart),
+    /// A trapdoor the player pushes open from below (WP-062).
+    Trapdoor(Trapdoor),
 }
 
 impl Entity {
@@ -857,6 +870,10 @@ impl Entity {
             Self::Npc(_) => "Npc",
             Self::Station(_) => "Station",
             Self::EchoStone(_) => "EchoStone",
+            Self::Darkness(_) => "Darkness",
+            Self::Glow(_) => "Glow",
+            Self::Cart(_) => "Cart",
+            Self::Trapdoor(_) => "Trapdoor",
         }
     }
 
@@ -880,6 +897,10 @@ impl Entity {
             Self::Npc(n) => &n.npc,
             Self::Station(s) => &s.station,
             Self::EchoStone(s) => &s.id,
+            Self::Darkness(_) => "darkness",
+            Self::Glow(z) => &z.name,
+            Self::Cart(c) => &c.id,
+            Self::Trapdoor(t) => &t.id,
         }
     }
 
@@ -901,6 +922,9 @@ impl Entity {
             Self::Npc(n) => Some(n.pos),
             Self::Station(s) => Some(s.pos),
             Self::EchoStone(s) => Some(s.pos),
+            Self::Cart(c) => c.rail.first().copied(),
+            Self::Trapdoor(t) => Some(t.stand),
+            Self::Darkness(_) | Self::Glow(_) => None,
             Self::Water(_)
             | Self::Reeds(_)
             | Self::Snow(_)
@@ -1531,6 +1555,10 @@ impl Level {
             npcs: Vec::new(),
             stations: Vec::new(),
             safe_zone: self.area.safe_zone,
+            darkness: None,
+            glows: Vec::new(),
+            carts: Vec::new(),
+            trapdoors: Vec::new(),
         };
         for e in &self.entities.entities {
             match e {
@@ -1553,6 +1581,14 @@ impl Level {
                 Entity::Npc(n) => sc.npcs.push(n.clone()),
                 Entity::Station(s) => sc.stations.push(s.clone()),
                 Entity::EchoStone(s) => sc.echo_stones.push(s.clone()),
+                Entity::Darkness(d) => {
+                    if sc.darkness.replace(d.clone()).is_some() {
+                        return Err("entities.ron: a level has at most one Darkness".to_owned());
+                    }
+                }
+                Entity::Glow(z) => sc.glows.push(z.clone()),
+                Entity::Cart(c) => sc.carts.push(c.clone()),
+                Entity::Trapdoor(t) => sc.trapdoors.push(t.clone()),
             }
         }
         sc.check().map_err(|e| format!("entities.ron: {e}"))?;

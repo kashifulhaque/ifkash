@@ -77,6 +77,12 @@ pub struct MechState {
     /// One per `Layout::lifts` entry.
     pub lifts: Vec<LiftRun>,
     pub climb: Option<Climb>,
+    /// One per `Layout::carts` entry (WP-062; see `mine_cart`).
+    #[serde(default)]
+    pub carts: Vec<mine_cart::CartRun>,
+    /// The tick a Lantern Flare burns out at, 0 for none (WP-062; see `darkness`).
+    #[serde(default)]
+    pub flare_until: u64,
     /// The player let go of a ladder this tick, so the buttons that did it stay masked
     /// for the rest of the tick. Recomputed every tick, so not saved or hashed.
     #[serde(skip)]
@@ -88,6 +94,8 @@ impl MechState {
         Self {
             lifts: vec![LiftRun::default(); layout.lifts.len()],
             climb: None,
+            carts: vec![mine_cart::CartRun::default(); layout.carts.len()],
+            flare_until: 0,
             suppress: false,
         }
     }
@@ -95,7 +103,13 @@ impl MechState {
     /// At rest: no ladder, every lift waiting at its bottom stop. Such a state is left out
     /// of the state hash.
     pub fn is_inert(&self) -> bool {
-        self.climb.is_none() && self.lifts.iter().all(|l| l.rise == 0.0 && l.target == 0)
+        self.climb.is_none()
+            && self.lifts.iter().all(|l| l.rise == 0.0 && l.target == 0)
+            && self
+                .carts
+                .iter()
+                .all(|c| *c == mine_cart::CartRun::default())
+            && self.flare_until == 0
     }
 }
 
@@ -110,6 +124,8 @@ enum Target {
     LadderFoot(usize),
     LadderTop(usize),
     LadderKick(usize),
+    Cart(usize),
+    Trapdoor(usize),
 }
 
 impl Target {
@@ -124,6 +140,8 @@ impl Target {
             Self::LadderFoot(_) => 5,
             Self::LadderTop(_) => 6,
             Self::LadderKick(_) => 7,
+            Self::Cart(_) => 8,
+            Self::Trapdoor(_) => 9,
         }
     }
 
@@ -136,7 +154,9 @@ impl Target {
             | Self::Message(i)
             | Self::LadderFoot(i)
             | Self::LadderTop(i)
-            | Self::LadderKick(i) => i,
+            | Self::LadderKick(i)
+            | Self::Cart(i)
+            | Self::Trapdoor(i) => i,
         }
     }
 }
@@ -202,6 +222,8 @@ fn has_any(layout: &Layout) -> bool {
         && layout.messages.is_empty()
         && layout.pools.is_empty()
         && layout.snow.is_empty()
+        && layout.carts.is_empty()
+        && layout.trapdoors.is_empty()
         && layout.pickups.iter().all(|p| !p.interact))
 }
 
@@ -230,6 +252,8 @@ pub fn install(world: &mut World) {
             .physics
             .add_mover(wall_center(w, false, t.sink_extra_m), w.half_extents);
     }
+    // Trapdoor hatches come last (WP-062).
+    trapdoor::install(world);
     sync_colliders(world);
 }
 
@@ -257,6 +281,7 @@ pub fn sync_colliders(world: &mut World) {
             wall_center(w, revealed, t.sink_extra_m),
         );
     }
+    trapdoor::sync(world);
 }
 
 // ---------------------------------------------------------------------------------------
@@ -266,6 +291,10 @@ pub fn sync_colliders(world: &mut World) {
 /// let go of one) the attack, guard, dodge, jump, item, and lock-on buttons are cleared.
 /// `None` means use the input as it is.
 pub fn mask_input(world: &World, input: &TickInput) -> Option<TickInput> {
+    // A player riding a mine cart is held in place (WP-062).
+    if let Some(masked) = mine_cart::mask(world, input) {
+        return Some(masked);
+    }
     // A safe zone (Hollowhearth, WP-068) clears the combat buttons and caps the stick.
     let safe = crate::world_state::quests::safe_zone_input(world, input);
     let input = safe.as_ref().unwrap_or(input);
@@ -279,7 +308,8 @@ pub fn mask_input(world: &World, input: &TickInput) -> Option<TickInput> {
 
 /// Whether the player is on a ladder.
 pub fn climbing(world: &World) -> bool {
-    world.mech.climb.is_some()
+    // A mine cart carries the player along its rail the way a ladder does (WP-062).
+    world.mech.climb.is_some() || mine_cart::riding(world)
 }
 
 // ---------------------------------------------------------------------------------------
@@ -309,6 +339,7 @@ pub fn run(world: &mut World, input: &TickInput) {
         }
     }
     lifts_step(world);
+    mine_cart::step(world);
     sync_colliders(world);
 }
 
@@ -361,6 +392,7 @@ fn nearest(world: &World) -> Option<Target> {
         || p.moves.current.is_some()
         || world.state.resting.is_some()
         || world.mech.climb.is_some()
+        || mine_cart::riding(world)
     {
         return None;
     }
@@ -412,6 +444,19 @@ fn nearest(world: &World) -> Option<Target> {
             offer(reach(feet, top, gr, h), Target::LadderKick(i));
         }
     }
+    for i in 0..world.layout.carts.len() {
+        if let Some(at) = mine_cart::spot(world, i) {
+            offer(
+                reach(feet, at, r + mine_cart::CART_HALF_LENGTH_M, h),
+                Target::Cart(i),
+            );
+        }
+    }
+    for i in 0..world.layout.trapdoors.len() {
+        if let Some(at) = trapdoor::spot(world, i) {
+            offer(reach(feet, at, r, h), Target::Trapdoor(i));
+        }
+    }
     best.map(|(_, t)| t)
 }
 
@@ -429,6 +474,9 @@ pub fn prompt(world: &World) -> u32 {
         Some(Target::Message(_)) => 5,
         Some(Target::LadderFoot(_) | Target::LadderTop(_)) => 6,
         Some(Target::LadderKick(_)) => 7,
+        // 30 ride a mine cart, 31 push one, 32 push a trapdoor open (WP-062).
+        Some(Target::Cart(i)) => mine_cart::prompt(world, i),
+        Some(Target::Trapdoor(_)) => trapdoor::PROMPT_OPEN,
     }
 }
 
@@ -457,6 +505,8 @@ fn interact(world: &mut World) {
             world.state.flags.raise(&flags::ladder_down(&id));
             mechanic(world, MechanicEvent::LADDER_KICKED, i);
         }
+        Target::Cart(i) => mine_cart::interact(world, i),
+        Target::Trapdoor(i) => trapdoor::interact(world, i),
     }
 }
 
@@ -895,7 +945,7 @@ pub fn after_hits(world: &mut World) {
     }
     let mut revealed = Vec::new();
     for (i, w) in world.layout.hollow_walls.iter().enumerate() {
-        if world.state.flags.is_set(&flags::wall_revealed(&w.id)) {
+        if w.sturdy || world.state.flags.is_set(&flags::wall_revealed(&w.id)) {
             continue;
         }
         let hit = caps.iter().any(|c| {
@@ -946,9 +996,19 @@ pub fn render_state(world: &World) -> Vec<f32> {
     out.extend(l.chests.iter().map(|d| flag(flags::chest_opened(&d.id))));
     out.extend(l.messages.iter().map(|d| flag(flags::message_read(&d.id))));
     out.extend((0..l.pools.len()).map(|i| pool_depth(world, i)));
+    // WP-062: each mine cart's distance along its rail, each trapdoor (1 if open), then, in
+    // a dark area only, the player's visibility in meters (0 for no limit).
+    out.extend(mine_cart::render_words(world));
+    out.extend(trapdoor::render_words(world));
+    if l.darkness.is_some() {
+        out.push(darkness::render_word(world));
+    }
     out
 }
 
+pub mod darkness;
+pub mod mine_cart;
+pub mod trapdoor;
 pub mod water_level;
 // WP-061: bells, flag levers, and sleeping enemies.
 pub mod bell;

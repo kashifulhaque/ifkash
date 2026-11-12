@@ -1,0 +1,54 @@
+// The Hollowdeep terrain. Vertices are 2 m apart (151 x 151). The whole area is rock (a 40 m
+// plateau) and the caverns are carved out of it: the carved rooms' sheer sides (40 m over one
+// 2 m cell) are the cavern walls, so the nav grid and the character controller treat them as
+// walls and the layout needs no wall blocks. The ground is 0 m everywhere except the lake basin
+// and the Root Stair.
+//
+// The caverns (x, z ranges; floor at 0 m unless noted):
+//   arrival cave       x -146..-116, z -146..-116   the Cinderdeep Mine's tunnel comes in on the west
+//   passage            x -118..-94,  z -134..-122
+//   the Fungal Shore   x  -96..-30,  z -126..-30    L11; the lake's west bank; a dark nook west
+//   west passage       x  -88..-72,  z  -32..58     and a Mossgut lift alcove (x -104..-88)
+//   the north shore    x  -90..66,   z   40..72     L12 on it; the Glasswing Mouth north of it
+//   the east shore     x   64..82,   z  -42..72     down to the Root Stair
+//   antechamber        x   82..122,  z   50..92     L13; the Lamplight arena (x 78..146, z 94..146)
+//                                                   behind a fog gate on the corridor z = 92
+//   the Root Stair     a ramp east from the east shore, x 82..138, z -40..-28, 0 m up to 20 m,
+//                      and a landing (x 138..148) under the Spire plateau
+// The Glowing Lake is a basin x -28..62, z -108..38, floor -4 m, with the Lamp Tree's island
+// (x 5..45, z -70..-30, 0 m) and a ford (x 22..28, z -30..38, 0.4 m under the surface) from the
+// north shore to the island. See entities.ron's Pool entries for the water model; it is the
+// same as Mirrormere's: a pool's rectangle runs out to the lip of the bank, the water is 4 m
+// deep, and deep water is an invisible wall.
+#![enable(implicit_some)]
+(
+  spacing_m: 2.0,
+  base_y: 40.0,
+  ops: [
+    // The arrival cave and its passage into the Fungal Shore.
+    SetRect(min: (-146.0, -146.0), max: (-116.0, -116.0), height: 0.0),
+    SetRect(min: (-118.0, -134.0), max: (-94.0, -122.0), height: 0.0),
+    SetRect(min: (-96.0, -126.0), max: (-30.0, -30.0), height: 0.0),
+    // The dark nook off the shore, and the west passage with its lift alcove.
+    SetRect(min: (-120.0, -70.0), max: (-96.0, -58.0), height: 0.0),
+    SetRect(min: (-88.0, -32.0), max: (-72.0, 58.0), height: 0.0),
+    SetRect(min: (-104.0, 10.0), max: (-88.0, 26.0), height: 0.0),
+    // The north shore, the Glasswing Mouth, the east shore, the antechamber, and the arena.
+    SetRect(min: (-90.0, 40.0), max: (66.0, 72.0), height: 0.0),
+    SetRect(min: (-36.0, 72.0), max: (4.0, 100.0), height: 0.0),
+    SetRect(min: (64.0, -42.0), max: (82.0, 72.0), height: 0.0),
+    SetRect(min: (82.0, 50.0), max: (122.0, 92.0), height: 0.0),
+    SetRect(min: (98.0, 92.0), max: (110.0, 96.0), height: 0.0),
+    SetRect(min: (78.0, 94.0), max: (146.0, 146.0), height: 0.0),
+
+    // The Root Stair: y = (x - 82) * 20 / 56. The alcove off it (the endark relic) matches.
+    Ramp(min: (82.0, -40.0), max: (138.0, -28.0), axis: X, from: 0.0, to: 20.0),
+    Ramp(min: (100.0, -26.0), max: (112.0, -14.0), axis: X, from: 6.4286, to: 10.7143),
+    SetRect(min: (138.0, -40.0), max: (148.0, -28.0), height: 20.0),
+
+    // The Glowing Lake: the basin, then the Lamp Tree's island and the ford over it.
+    SetRect(min: (-28.0, -108.0), max: (62.0, 38.0), height: -4.0),
+    SetRect(min: (5.0, -70.0), max: (45.0, -30.0), height: 0.0),
+    SetRect(min: (22.0, -30.0), max: (28.0, 38.0), height: -0.4),
+  ],
+)

@@ -23,6 +23,8 @@ mod dungeon_tests;
 pub mod flags;
 #[cfg(test)]
 mod hollow_tests;
+#[cfg(test)]
+mod hollowdeep_tests;
 pub mod lantern;
 pub mod lantern_menu;
 pub mod mechanics;
@@ -81,6 +83,11 @@ pub struct Layout {
     pub stations: Vec<quests::StationSpot>,
     /// A safe zone: no combat, weapons sheathed, walk only (WP-068).
     pub safe_zone: bool,
+    /// Darkness, mine carts, and trapdoors (WP-062; see `mechanics`).
+    pub darkness: Option<lf_content::scenario::Darkness>,
+    pub glows: Vec<Zone>,
+    pub carts: Vec<lf_content::scenario::Cart>,
+    pub trapdoors: Vec<lf_content::scenario::Trapdoor>,
 }
 
 impl Layout {
@@ -107,6 +114,10 @@ impl Layout {
             npcs: Vec::new(),
             stations: Vec::new(),
             safe_zone: false,
+            darkness: level.darkness.clone(),
+            glows: level.glows.clone(),
+            carts: level.carts.clone(),
+            trapdoors: level.trapdoors.clone(),
         }
     }
 

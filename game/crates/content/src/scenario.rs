@@ -103,6 +103,20 @@ pub struct Scenario {
     /// core clears the combat buttons and caps the stick at a walk.
     #[serde(default)]
     pub safe_zone: bool,
+    /// The darkness rule (WP-062, Hollowdeep): outside the glowing zones the player sees
+    /// only a few meters. `None` in every other area.
+    #[serde(default)]
+    pub darkness: Option<Darkness>,
+    /// Glowing zones (WP-062): rectangles on the ground plane that are lit. A dark area's
+    /// critical path stays inside them.
+    #[serde(default)]
+    pub glows: Vec<Zone>,
+    /// Mine carts (WP-062): ride one along its rail, or push one into a wall.
+    #[serde(default)]
+    pub carts: Vec<Cart>,
+    /// Trapdoors (WP-062): a hatch the player pushes open from below.
+    #[serde(default)]
+    pub trapdoors: Vec<Trapdoor>,
 }
 
 /// Where an NPC stands. The NPC's lines and quest are in `npcs/<name>.ron`.
@@ -352,6 +366,10 @@ pub struct HollowWall {
     pub id: String,
     pub center: [f32; 3],
     pub half_extents: [f32; 3],
+    /// A hit doesn't reveal it: only a mine cart pushed into it breaks it (WP-062). A
+    /// sturdy wall must be the target of a `Push` cart.
+    #[serde(default)]
+    pub sturdy: bool,
 }
 
 /// What a pickup or chest gives.
@@ -581,6 +599,72 @@ pub struct BoxCollider {
     pub half_extents: [f32; 3],
 }
 
+// ---------------------------------------------------------------------------------------
+// Darkness, mine carts, and trapdoors (WP-062; docs/game/02-world.md, "Traversal and world
+// mechanics" and "Mini-dungeons", D4)
+
+/// How dark an area is, and what lights it. Outside every glowing zone, and farther than
+/// `lantern_light_m` from a Lantern, the player sees `visibility_m` meters
+/// (docs/game/02-world.md: 6 m). A carried light (the *smoltorch* relic, which raises
+/// `torch_flag`) or a Lantern Flare raises it to `torch_visibility_m`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Darkness {
+    /// Visibility in the dark with no light, in meters.
+    pub visibility_m: f32,
+    /// Visibility in the dark with a carried light, in meters.
+    pub torch_visibility_m: f32,
+    /// A Lantern lights the ground this far around it, in meters.
+    pub lantern_light_m: f32,
+    /// The world flag that means the player carries a light: the codex flag the *smoltorch*
+    /// relic pickup raises (`codex.projects.smoltorch`).
+    pub torch_flag: String,
+}
+
+/// What a mine cart does.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub enum CartKind {
+    /// The player rides it from one end of its rail to the other: `INTERACT` at the end
+    /// the cart waits at, and again at the far end to ride back. Never strands the player.
+    Ride,
+    /// The player pushes it (`INTERACT` beside it) and it rolls to the end of its rail,
+    /// where it breaks the hollow wall with this ID. A pushed cart stays at the end.
+    Push(String),
+}
+
+/// A mine cart on a rail (D4, Cinderdeep Mine). The cart waits at the first rail point.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Cart {
+    /// Unique among the scenario's carts.
+    pub id: String,
+    /// The rail as (x, y, z) points in meters (feet level), at least two. The cart rolls
+    /// along the straight segments between them.
+    pub rail: Vec<[f32; 3]>,
+    pub kind: CartKind,
+    /// How fast it rolls, in meters per second.
+    pub speed_mps: f32,
+}
+
+/// A trapdoor: a hatch overhead that the player pushes open from below (the flag
+/// `trapdoor.<id>.open`). One way: it can't be opened from above. Opening it lowers the
+/// ladder it names, so the Root Stair's ladder climbs to the Spire's underside.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Trapdoor {
+    /// Unique among the scenario's trapdoors.
+    pub id: String,
+    /// The middle of the hatch's underside, in meters.
+    pub pos: [f32; 3],
+    /// Half the hatch's size along x and z, in meters. It slides -x when it opens.
+    pub half_extents: [f32; 2],
+    /// Where the player stands to push it open (feet), in meters.
+    pub stand: [f32; 3],
+    /// The kick-down ladder that comes down when the hatch opens, if any.
+    #[serde(default)]
+    pub ladder: Option<String>,
+}
+
 impl Scenario {
     /// Checks shape invariants the physics builder relies on.
     pub fn check(&self) -> Result<(), String> {
@@ -784,6 +868,83 @@ impl Scenario {
                 &n.station,
             )?;
             positive("station", &n.station, "radius_m", n.radius_m)?;
+        }
+        if let Some(d) = &self.darkness {
+            let ok = d.visibility_m > 0.0
+                && d.torch_visibility_m >= d.visibility_m
+                && d.lantern_light_m > 0.0
+                && !d.torch_flag.is_empty();
+            if !ok {
+                return Err(
+                    "darkness: visibility_m and lantern_light_m must be positive, \
+                     torch_visibility_m at least visibility_m, and torch_flag a flag"
+                        .to_owned(),
+                );
+            }
+        }
+        for (i, g) in self.glows.iter().enumerate() {
+            unique(
+                self.glows[..i].iter().any(|o| o.name == g.name),
+                "glow",
+                &g.name,
+            )?;
+            positive(
+                "glow",
+                &g.name,
+                "half_extents",
+                g.half_extents[0].min(g.half_extents[1]),
+            )?;
+        }
+        for (i, c) in self.carts.iter().enumerate() {
+            unique(self.carts[..i].iter().any(|o| o.id == c.id), "cart", &c.id)?;
+            positive("cart", &c.id, "speed_mps", c.speed_mps)?;
+            if c.rail.len() < 2 || c.rail.windows(2).any(|s| s[0] == s[1]) {
+                return Err(format!(
+                    "cart {:?}: the rail needs two or more distinct points",
+                    c.id
+                ));
+            }
+            if let CartKind::Push(wall) = &c.kind
+                && !self.hollow_walls.iter().any(|w| &w.id == wall)
+            {
+                return Err(format!(
+                    "cart {:?}: it breaks hollow wall {wall:?}, which doesn't exist",
+                    c.id
+                ));
+            }
+        }
+        if let Some(w) = self.hollow_walls.iter().find(|w| {
+            w.sturdy
+                && !self
+                    .carts
+                    .iter()
+                    .any(|c| matches!(&c.kind, CartKind::Push(id) if id == &w.id))
+        }) {
+            return Err(format!(
+                "hollow wall {:?} is sturdy, so a Push cart has to break it",
+                w.id
+            ));
+        }
+        for (i, t) in self.trapdoors.iter().enumerate() {
+            unique(
+                self.trapdoors[..i].iter().any(|o| o.id == t.id),
+                "trapdoor",
+                &t.id,
+            )?;
+            positive(
+                "trapdoor",
+                &t.id,
+                "half_extents",
+                t.half_extents[0].min(t.half_extents[1]),
+            )?;
+            if let Some(l) = &t.ladder
+                && !self.ladders.iter().any(|d| &d.id == l && d.kick_down)
+            {
+                return Err(format!(
+                    "trapdoor {:?}: its ladder {l:?} must be a kick_down ladder",
+                    t.id
+                ));
+            }
         }
         for (i, p) in self.pools.iter().enumerate() {
             unique(

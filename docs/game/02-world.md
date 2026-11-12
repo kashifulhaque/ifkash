@@ -347,7 +347,9 @@ The following mechanics are available to every area. Each lives in
 | Sleeping enemy | An enemy spawn with `wakes_on: Some(flag)` doesn't think until the flag is set, so it can be backstabbed asleep (WP-061) | The Ossuary's Drowned wake when lever 2 drains the Flooded Crypt; see `mechanics/slumber.rs` |
 | Deep snow | Slows 25%, sprint costs 1.5x stamina | Rimeshelf |
 | Fall damage | Over 8 m: 4% of max HP per meter above 8; over 20 m: death | Except into deep water, which isn't reachable |
-| Darkness | Visibility reduced to 6 m outside light sources | Hollowdeep only, never on the critical path |
+| Darkness | Visibility reduced to 6 m outside light sources (14 m with the *smoltorch* relic or a Lantern Flare); a `Darkness` rule and `Glow` zones in `entities.ron`; a Lantern lights 9 m around it | Hollowdeep only, never on the critical path: `lf-tools bake` warns (`dark-critical-path`) when the walk from the spawn through the Lanterns leaves the glowing zones; see `mechanics/darkness.rs` |
+| Mine cart | A `Cart` on a rail: `Ride` carries the player down and back (held in place, no attacks); `Push(wall)` rolls into a hollow wall and breaks it | Cinderdeep Mine; a `sturdy` hollow wall opens only to a pushed cart, not to a swing; see `mechanics/mine_cart.rs` |
+| Trapdoor | A hatch overhead that opens with `INTERACT` from below and drops a kick-down ladder; never opens from above | The Root Stair; see `mechanics/trapdoor.rs` |
 | Messages | Readable ground messages (authored and, later, player-written) | See [async features](06-progression-and-systems.md#asynchronous-features) |
 | Treasure chest | Opens with `INTERACT` | One mimic chest exists, in the castle armory |
 | Item glint | A pickup on the ground | Glints are visible from 25 m |

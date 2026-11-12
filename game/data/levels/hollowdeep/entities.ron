@@ -1,0 +1,135 @@
+// The Hollowdeep entities (WP-062). Yaw is in radians from +Z toward +X: 0 faces +Z (north),
+// 3.1415927 faces -Z, 1.5707964 faces +X, -1.5707964 faces -X.
+//
+// DARKNESS. The area has a Darkness rule (6 m of sight in the dark, 14 m with a light) and
+// Glow zones: lit rectangles. The critical path (spawn -> L11 -> L12 -> L13, and the way to B09's
+// fog gate) runs inside Glow zones, and `lf-tools bake hollowdeep` checks it (the
+// `dark-critical-path` warning). Off the glowing bands it is dark, so the side branches are the
+// dark places: the shore's far side, the ford to the Lamp Tree's island, the nook west of the
+// shore, the Glasswing Mouth, and the Root Stair's alcove. A light (the smoltorch relic from the
+// Cinderdeep Mine, or the Lantern Sword's Lantern Flare) widens the sight there; nothing here
+// needs it. Glow zones keep the player lit anywhere inside, and a Lantern lights 9 m around it.
+//
+// WATER (the same model as Mirrormere's lake): the Glowing Lake is five deep pools (4 m, an
+// invisible wall at the lip) around the Lamp Tree's island, with the ford (a sixth pool,
+// 0.4 m deep, a wade) between the north shore and the island.
+//
+// THE ROOT STAIR. A ramp from the east shore up 20 m to a landing under the Spire plateau.
+// The landing has a kick-down ladder (up to the Spire's underside) that stays raised until the
+// player pushes the hatch above it open from below (`Trapdoor`, which drops the ladder). The
+// hatch is one way: only the Spire side has a lever/prompt for it ("Opens from the other side").
+//
+// Registry numbers used here (23000 block): hollowdeep 23000, relic_smoltorch 23010 (placed
+// in the mine), relic_ferray 23011, relic_endark 23012.
+(
+  // The arrival cave, where the Cinderdeep Mine's tunnel opens: facing the passage east.
+  spawn: (pos: (-132.0, 0.0, -128.0), yaw: 1.5707964),
+  entities: [
+    // --- The darkness rule and the glowing zones ----------------------------------------------
+    Darkness(visibility_m: 6.0, torch_visibility_m: 14.0, lantern_light_m: 9.0, torch_flag: "codex.projects.smoltorch"),
+    Glow(name: "glow_arrival", center: (-131.0, -131.0), half_extents: (15.0, 15.0)),
+    Glow(name: "glow_passage", center: (-106.0, -128.0), half_extents: (12.0, 6.0)),
+    Glow(name: "glow_shore", center: (-77.0, -79.0), half_extents: (21.0, 51.0)),
+    Glow(name: "glow_west_passage", center: (-80.0, 13.0), half_extents: (10.0, 45.0)),
+    Glow(name: "glow_north_west", center: (-40.0, 56.0), half_extents: (50.0, 18.0)),
+    Glow(name: "glow_north_shore", center: (47.0, 61.0), half_extents: (39.0, 9.0)),
+    Glow(name: "glow_mouth", center: (-16.0, 85.0), half_extents: (20.0, 15.0)),
+    Glow(name: "glow_antechamber", center: (101.0, 73.0), half_extents: (23.0, 25.0)),
+    Glow(name: "glow_arena", center: (112.0, 120.0), half_extents: (32.0, 26.0)),
+    Glow(name: "glow_east_shore", center: (73.0, 8.0), half_extents: (9.0, 50.0)),
+    Glow(name: "glow_stair", center: (115.0, -34.0), half_extents: (33.0, 8.0)),
+    Glow(name: "glow_tree", center: (25.0, -50.0), half_extents: (20.0, 20.0)),
+
+    // --- Lanterns: L11 to L13 -----------------------------------------------------------------
+    Lantern(id: "lantern_l11", pos: (-64.0, 0.0, -50.0), yaw: 0.7854),
+    Lantern(id: "lantern_l12", pos: (-20.0, 0.0, 60.0), yaw: 0.0),
+    Lantern(id: "lantern_l13", pos: (102.0, 0.0, 70.0), yaw: 0.0),
+
+    // --- Water: the Glowing Lake and its ford ---------------------------------------------------
+    Pool(name: "mere_west", center: (-12.5, -35.0), half_extents: (17.5, 75.0), depth_m: 4.0, floor_y_m: -4.0),
+    Pool(name: "mere_east", center: (54.5, -35.0), half_extents: (9.5, 75.0), depth_m: 4.0, floor_y_m: -4.0),
+    Pool(name: "mere_south", center: (25.0, -90.0), half_extents: (20.0, 20.0), depth_m: 4.0, floor_y_m: -4.0),
+    Pool(name: "mere_north_w", center: (13.5, 5.0), half_extents: (8.5, 35.0), depth_m: 4.0, floor_y_m: -4.0),
+    Pool(name: "mere_north_e", center: (36.5, 5.0), half_extents: (8.5, 35.0), depth_m: 4.0, floor_y_m: -4.0),
+    // The ford: a ridge 0.4 m under the surface, from the north shore to the island. A wade.
+    Pool(name: "ford", center: (25.0, 5.0), half_extents: (3.0, 35.0), depth_m: 0.4, floor_y_m: -0.4),
+
+    // --- Doors in the dark: the Root Stair's ladder and hatch -------------------------------------
+    Ladder(id: "root_ladder", pos: (146.0, 20.0, -34.0), yaw: 1.5707964, height_m: 4.0, kick_down: true),
+    Trapdoor(id: "root_hatch", pos: (146.0, 24.0, -34.0), half_extents: (1.0, 1.2), stand: (146.0, 20.0, -34.0), ladder: Some("root_ladder")),
+
+    // --- Authored messages ---------------------------------------------------------------------
+    Message(id: "msg_deep_arrive", pos: (-128.0, 0.0, -128.0),
+      text: "Hollowdeep. The tunnel's last lantern is behind you. The glowing moss marks the safe way; past it, the dark closes in to six paces."),
+    Message(id: "msg_deep_dark", pos: (-96.0, 0.0, -128.0),
+      text: "Where the moss gives out, you can see six paces and no farther. A small flame, if you find one, will show you more. Nothing here asks you to wander into the dark."),
+    Message(id: "msg_deep_shore", pos: (-68.0, 0.0, -54.0),
+      text: "The Fungal Shore. Across the water the Lamp Tree burns on its island, the first light this deep. The path north follows the moss."),
+    Message(id: "msg_deep_nook", pos: (-98.0, 0.0, -64.0),
+      text: "A side tunnel with no moss in it. Whoever left a sword here left it in the dark on purpose."),
+    Message(id: "msg_deep_passage", pos: (-80.0, 0.0, 2.0),
+      text: "The west passage. A cold draft comes down a shaft on the left: a lift lands there, from a place with a bell."),
+    Message(id: "msg_deep_mouth", pos: (-16.0, 0.0, 66.0),
+      text: "Glasswing Mouth. The arch to the north is a cave of crystal that hums when something moves in it. Things there are nearly invisible when still."),
+    Message(id: "msg_deep_ford", pos: (24.0, 0.0, 46.0),
+      text: "A ford, knee deep and unlit, runs south across the lake to the Lamp Tree's island. The water beside it is far too deep to wade."),
+    Message(id: "msg_deep_island", pos: (14.0, 0.0, -36.0),
+      text: "The roots of the Lamp Tree. Something spear-shaped has been left in the hollow of one, humming with stored lightning."),
+    Message(id: "msg_deep_antechamber", pos: (96.0, 0.0, 66.0),
+      text: "Lamplight Hollow. Six lamps ring the cavern beyond the gate, all of them dark. Something vast is waiting among them."),
+    Message(id: "msg_deep_east", pos: (74.0, 0.0, 40.0),
+      text: "The east shore, where the lake's glow still reaches. A stair of living roots climbs away from the far end."),
+    Message(id: "msg_deep_stair", pos: (88.0, 2.14, -34.0),
+      text: "The Root Stair. It climbs a long way, toward the underside of something. A loose hatch hangs at the top."),
+    Message(id: "msg_deep_hatch", pos: (144.0, 20.0, -34.0),
+      text: "A hatch above, and a ladder folded away behind it. Push the hatch from below and the ladder comes down. It only opens this way."),
+
+    // --- Enemies: Cave Moths, Lamp Mites, Miners, Shard Golems, Glasswing Stalkers --------------
+    // The Fungal Shore: a Miner by his lantern, Lamp Mites on the dark lakeside, a moth.
+    Enemy(name: "miner_shore", enemy: "husk_miner", pos: (-84.0, 0.0, -92.0), yaw: 0.0),
+    Enemy(name: "mite_shore_a", enemy: "lamp_mite", pos: (-48.0, 0.0, -100.0), yaw: 0.0),
+    Enemy(name: "mite_shore_b", enemy: "lamp_mite", pos: (-44.0, 0.0, -96.0), yaw: 0.0),
+    Enemy(name: "mite_shore_c", enemy: "lamp_mite", pos: (-50.0, 0.0, -94.0), yaw: 0.0),
+    Enemy(name: "moth_shore", enemy: "cave_moth", pos: (-40.0, 0.0, -56.0), yaw: 0.0),
+    // The north shore: a Miner on the way, moths by the ford, and the Glasswing ambush (the one
+    // ambush in the region: two Stalkers waiting in the dark at the Mouth).
+    Enemy(name: "miner_north", enemy: "husk_miner", pos: (-52.0, 0.0, 44.0), yaw: 1.5707964),
+    Enemy(name: "moth_ford_a", enemy: "cave_moth", pos: (20.0, 0.0, 46.0), yaw: 0.0),
+    Enemy(name: "moth_ford_b", enemy: "cave_moth", pos: (30.0, 0.0, 48.0), yaw: 0.0),
+    Enemy(name: "stalker_mouth_a", enemy: "glasswing_stalker", pos: (-4.0, 0.0, 86.0), yaw: 3.1415927),
+    Enemy(name: "stalker_mouth_b", enemy: "glasswing_stalker", pos: (-30.0, 0.0, 92.0), yaw: 3.1415927),
+    // The east shore and the stair: a Shard Golem blocks the middle, a Miner climbs the stair.
+    Enemy(name: "golem_east", enemy: "shard_golem", pos: (73.0, 0.0, 10.0), yaw: 3.1415927),
+    Enemy(name: "miner_stair", enemy: "husk_miner", pos: (116.0, 12.14, -34.0), yaw: -1.5707964),
+    // Lamplight Hollow's antechamber: two Miners at the lamps' foot.
+    Enemy(name: "miner_hollow_w", enemy: "husk_miner", pos: (88.0, 0.0, 84.0), yaw: 3.1415927),
+    Enemy(name: "miner_hollow_e", enemy: "husk_miner", pos: (118.0, 0.0, 84.0), yaw: 3.1415927),
+
+    // --- Items, relics, and materials -----------------------------------------------------------
+    // The Fungal Shore: Flask Dew (a key item, one of six) and a chest of Forgeglass Shards.
+    Pickup(id: "dew_shore", item: "itm_flask_dew", pos: (-58.0, 0.0, -54.0), interact: true),
+    Chest(id: "chest_shore", pos: (-76.0, 0.0, -100.0), yaw: 1.5707964, loot: (item: "itm_forgeglass_shard", count: 3, glimmer: 250)),
+    // The dark nook west of the shore: the Lantern Sword and a Forgeglass Chunk.
+    Pickup(id: "sword_nook", item: "wpn_lantern_sword", pos: (-116.0, 0.0, -64.0), interact: true),
+    Chest(id: "chest_nook", pos: (-112.0, 0.0, -68.0), yaw: -1.5707964, loot: (item: "itm_forgeglass_chunk", count: 2, glimmer: 300)),
+    // The Lamp Tree's island: the ferray relic (a Storm spear) and a chest.
+    Pickup(id: "relic_ferray", item: "relic_ferray", pos: (34.0, 0.0, -50.0), codex: Some("projects.ferray"), interact: true),
+    Chest(id: "chest_island", pos: (20.0, 0.0, -40.0), yaw: 3.1415927, loot: (item: "itm_forgeglass_chunk", count: 2, glimmer: 250)),
+    // The north shore's dark east end, and the antechamber.
+    Chest(id: "chest_north_shore", pos: (60.0, 0.0, 44.0), yaw: 3.1415927, loot: (item: "itm_forgeglass_chunk", count: 1, glimmer: 200)),
+    Chest(id: "chest_antechamber", pos: (116.0, 0.0, 56.0), yaw: 3.1415927, loot: (item: "itm_forgeglass_chunk", count: 2, glimmer: 350)),
+    // The Root Stair's alcove: the endark relic, a cloak that hides you in the dark.
+    Pickup(id: "relic_endark", item: "relic_endark", pos: (106.0, 8.57, -20.0), codex: Some("projects.endark"), interact: true),
+
+    // --- B09's arena: Lamplight Hollow's cavern (x 78..146, z 94..146) --------------------------
+    // The boss: PLACEHOLDER. B09 (the Lamplight Matriarch, an M7 work package) has no boss
+    // definition yet, so no Boss entity is placed. When it exists, add:
+    //   Boss(name: "b09", boss: "<b09 id>", pos: (112.0, 0.0, 120.0), yaw: 3.1415927,
+    //     gate: (pos: (104.0, 0.0, 92.0), yaw: 0.0, half_width_m: 6.0, depth_m: 3.0)),
+    // The fog gate is the plane z = 92 across the corridor (x 98..110), opening north into the
+    // cavern; the six unlit lamps (`lamp_0` to `lamp_5` in layout.ron) ring the middle. L13 is 22
+    // m from the gate (about 5 s). The reward is the Great Sigil of the Deep Lamp.
+    // The Echo Stone stands just inside the gate, west of the entrance.
+    EchoStone(id: "stone_b09", pos: (94.0, 0.0, 100.0), yaw: 0.7854),
+  ],
+)

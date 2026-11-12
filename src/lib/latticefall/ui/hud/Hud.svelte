@@ -24,7 +24,10 @@
     6: 'Climb the ladder',
     7: 'Kick the ladder down',
     8: 'Speak',
-    9: 'Look closer'
+    9: 'Look closer',
+    30: 'Ride the cart',
+    31: 'Push the cart',
+    32: 'Push the hatch open'
   };
 
   let innerWidth = 1280;

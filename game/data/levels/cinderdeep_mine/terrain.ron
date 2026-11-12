@@ -1,0 +1,38 @@
+// The Cinderdeep Mine terrain. Vertices are 2 m apart (81 x 101). The whole area is rock (a
+// 20 m plateau); the mine is carved out of it, and the carved rooms' sheer sides (more than 20 m
+// over one 2 m cell) are the tunnel walls: the nav grid and the character controller treat
+// them as walls, so the layout needs no wall blocks.
+//
+// The route runs south to north and down:
+//   mouth hall      x -10..10,  z -96..-74, y 0   (the Verge mouth is at z = -98)
+//   teaching room   x -14..14,  z -76..-52, y 0   (the first mine cart waits at its north end)
+//   the gallery     x  -6..6,   z -52..60,  y 0 down to -22 (a 11 degree slope, 112 m long;
+//                   the rail runs down its east side at x = 3)
+//   the lower hall  x -26..26,  z  60..92,  y -22 (L10, Cinderdeep Shaft)
+//   the exit        x  -6..6,   z  92..100, y -22 (to Hollowdeep)
+// Side branches off the lower hall:
+//   west: a corridor (x -36..-26, z 74..82) sealed by a sturdy hollow wall at x -35..-33, and
+//         behind it the smoltorch chamber (x -54..-36, z 66..90). The push cart breaks the wall.
+//   east: a corridor (x 26..44, z 78..86) to B08's forge, a 34 x 38 m chamber (x 44..78,
+//         z 54..92) behind a fog gate at x = 44.
+#![enable(implicit_some)]
+(
+  spacing_m: 2.0,
+  base_y: 20.0,
+  ops: [
+    // The mouth to the Verge, then the mouth hall and the teaching room.
+    SetRect(min: (-4.0, -100.0), max: (4.0, -96.0), height: 0.0),
+    SetRect(min: (-10.0, -96.0), max: (10.0, -74.0), height: 0.0),
+    SetRect(min: (-14.0, -76.0), max: (14.0, -52.0), height: 0.0),
+    // The gallery: y = -22 * (z + 52) / 112, so the rail's points can sit exactly on it.
+    Ramp(min: (-6.0, -52.0), max: (6.0, 60.0), axis: Z, from: 0.0, to: -22.0),
+    // The lower hall, the exit tunnel, and the sealed west branch.
+    SetRect(min: (-26.0, 60.0), max: (26.0, 92.0), height: -22.0),
+    SetRect(min: (-6.0, 92.0), max: (6.0, 100.0), height: -22.0),
+    SetRect(min: (-36.0, 74.0), max: (-26.0, 82.0), height: -22.0),
+    SetRect(min: (-54.0, 66.0), max: (-36.0, 90.0), height: -22.0),
+    // The east branch: the corridor and the forge.
+    SetRect(min: (26.0, 78.0), max: (44.0, 86.0), height: -22.0),
+    SetRect(min: (44.0, 54.0), max: (78.0, 92.0), height: -22.0),
+  ],
+)

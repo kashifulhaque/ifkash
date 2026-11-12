@@ -6,7 +6,8 @@ use std::collections::VecDeque;
 
 use lf_content::level::{MAX_HAND_PLACED_PROPS, sample_height};
 use lf_content::{Level, Scenario};
-use lf_core::nav::NavGrid;
+use lf_core::nav::{NavGrid, Search};
+use lf_core::world_state::mechanics::darkness;
 
 /// How far below the terrain surface a feet position may sit before it counts as buried,
 /// in meters. Allows for the bilinear terrain sample differing from the triangulated
@@ -29,6 +30,9 @@ pub enum WarningKind {
     OutsideBounds,
     /// More hand-placed props than the dressing rules allow.
     TooManyProps,
+    /// A dark area's critical path (the walk from the spawn through the Lanterns, in order)
+    /// leaves the glowing zones (WP-062).
+    DarkCriticalPath,
 }
 
 impl WarningKind {
@@ -40,6 +44,7 @@ impl WarningKind {
             Self::InsideCollider => "inside-collider",
             Self::OutsideBounds => "outside-bounds",
             Self::TooManyProps => "too-many-props",
+            Self::DarkCriticalPath => "dark-critical-path",
         }
     }
 }
@@ -88,6 +93,56 @@ fn reachable(grid: &NavGrid, start: u32) -> Vec<bool> {
         }
     }
     seen
+}
+
+/// The node budget for a path request in the critical-path check.
+const PATH_BUDGET: u32 = 4_000_000;
+
+/// How far apart the critical path is sampled, in meters.
+const LIT_SAMPLE_M: f32 = 0.5;
+
+/// A dark area's rule (docs/game/02-world.md, "Hollowdeep": "the critical path stays inside
+/// glowing zones"): walk the baked grid's shortest path from the spawn to each Lantern in order
+/// and warn about the first stretch of each leg that isn't lit (a glowing zone, or within a
+/// Lantern's light).
+fn check_lit_path(scenario: &Scenario, grid: &NavGrid, out: &mut Vec<Warning>) {
+    let Some(rule) = &scenario.darkness else {
+        return;
+    };
+    let mut stops = vec![("the player spawn".to_owned(), scenario.spawn)];
+    stops.extend(scenario.lanterns.iter().map(|l| (l.id.clone(), l.pos)));
+    let mut search = Search::new();
+    for pair in stops.windows(2) {
+        let (from, to) = (&pair[0], &pair[1]);
+        let Ok(path) = grid.find_path(&mut search, from.1, to.1, PATH_BUDGET) else {
+            continue;
+        };
+        let dark = path.waypoints.windows(2).find_map(|seg| {
+            let (dx, dz) = (seg[1][0] - seg[0][0], seg[1][2] - seg[0][2]);
+            let n = ((dx * dx + dz * dz).sqrt() / LIT_SAMPLE_M).ceil().max(1.0) as u32;
+            (0..=n).find_map(|k| {
+                let t = k as f32 / n as f32;
+                let (x, z) = (seg[0][0] + dx * t, seg[0][2] + dz * t);
+                let lit = darkness::lit_by(
+                    &scenario.glows,
+                    &scenario.lanterns,
+                    rule.lantern_light_m,
+                    x,
+                    z,
+                );
+                (!lit).then_some((x, z))
+            })
+        });
+        if let Some((x, z)) = dark {
+            out.push(Warning {
+                kind: WarningKind::DarkCriticalPath,
+                message: format!(
+                    "the walk from {} to {} leaves the glowing zones at ({x:.1}, {z:.1})",
+                    from.0, to.0
+                ),
+            });
+        }
+    }
 }
 
 /// Checks a compiled level against its baked grid.
@@ -158,5 +213,7 @@ pub fn check(level: &Level, scenario: &Scenario, grid: &NavGrid) -> Vec<Warning>
             ),
         );
     }
+    // `warn` is done; the critical-path check takes `out` itself.
+    check_lit_path(scenario, grid, &mut out);
     out
 }

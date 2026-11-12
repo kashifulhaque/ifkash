@@ -1,0 +1,37 @@
+// Cinderdeep Mine (WP-062, D4): the tunnel from the Verge down to Hollowdeep, 160 x 200 m. Y is
+// up and the mine runs north (+Z) and down. The Verge mouth is at the south end; the way on to
+// Hollowdeep is the north end. See docs/game/02-world.md, "Mini-dungeons" (D4), and the notes at
+// the top of terrain.ron, layout.ron, and entities.ron.
+(
+  id: "cinderdeep_mine",
+  name: "Cinderdeep Mine",
+  seed: 20261302,
+  bounds: (min: (-80.0, -100.0), max: (80.0, 100.0)),
+  kill_y: -60.0,
+  start_glimmer: 0,
+  // A smoky tunnel lit by the Miners' lanterns: warm, close fog. The mine isn't dark in the
+  // sense of Hollowdeep's rule (that is Hollowdeep only), only dim.
+  ambient: (
+    sky: "night",
+    fog_color: (0.14, 0.09, 0.07),
+    fog_near_m: 16.0,
+    fog_far_m: 90.0,
+    sun_dir: (-0.3, -1.0, -0.2),
+    sun_color: (0.9, 0.55, 0.3),
+    sun_intensity: 0.3,
+    ambient_color: (0.62, 0.45, 0.34),
+    ambient_intensity: 0.5,
+  ),
+  regions: [
+    // The long gallery and the teaching chamber above it.
+    (name: "gallery", points: [(-14.0, -76.0), (14.0, -76.0), (14.0, 60.0), (-14.0, 60.0)]),
+    // The lower hall, the side branches, and the forge.
+    (name: "lower_hall", points: [(-52.0, 60.0), (78.0, 60.0), (78.0, 92.0), (-52.0, 92.0)]),
+  ],
+  connections: [
+    // Up to the Verge: the mine mouth.
+    (to: "verge", pos: (0.0, 0.0, -98.0), radius_m: 2.5),
+    // Down to Hollowdeep: the arrival cave.
+    (to: "hollowdeep", pos: (0.0, -22.0, 98.0), radius_m: 2.5),
+  ],
+)

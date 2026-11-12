@@ -825,6 +825,46 @@ const EMBEDDED_LEVELS: &[(&str, &str)] = &[
         include_str!("../../../data/levels/mirrormere/dressing.ron"),
     ),
     (
+        "levels/cinderdeep_mine/area.ron",
+        include_str!("../../../data/levels/cinderdeep_mine/area.ron"),
+    ),
+    (
+        "levels/cinderdeep_mine/terrain.ron",
+        include_str!("../../../data/levels/cinderdeep_mine/terrain.ron"),
+    ),
+    (
+        "levels/cinderdeep_mine/layout.ron",
+        include_str!("../../../data/levels/cinderdeep_mine/layout.ron"),
+    ),
+    (
+        "levels/cinderdeep_mine/entities.ron",
+        include_str!("../../../data/levels/cinderdeep_mine/entities.ron"),
+    ),
+    (
+        "levels/cinderdeep_mine/dressing.ron",
+        include_str!("../../../data/levels/cinderdeep_mine/dressing.ron"),
+    ),
+    (
+        "levels/hollowdeep/area.ron",
+        include_str!("../../../data/levels/hollowdeep/area.ron"),
+    ),
+    (
+        "levels/hollowdeep/terrain.ron",
+        include_str!("../../../data/levels/hollowdeep/terrain.ron"),
+    ),
+    (
+        "levels/hollowdeep/layout.ron",
+        include_str!("../../../data/levels/hollowdeep/layout.ron"),
+    ),
+    (
+        "levels/hollowdeep/entities.ron",
+        include_str!("../../../data/levels/hollowdeep/entities.ron"),
+    ),
+    (
+        "levels/hollowdeep/dressing.ron",
+        include_str!("../../../data/levels/hollowdeep/dressing.ron"),
+    ),
+    (
         "levels/waking_hollow/area.ron",
         include_str!("../../../data/levels/waking_hollow/area.ron"),
     ),

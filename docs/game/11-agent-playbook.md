@@ -34,6 +34,8 @@ docs/game/JOURNAL.md (the latest entry first), and docs/game/STATUS.md. Then rea
 roadmap cards for the WPs you'll run, and nothing else until a WP needs it.
 
 Shell rule (pass it to every worker): call /bin/ls instead of ls, and never run eza.
+Process rule (pass it to every worker): give long commands a timeout, and stop every
+process you started (dev servers, scripts, watchers) before you report.
 ```
 
 ## Run a milestone as an orchestrator
@@ -69,6 +71,7 @@ For each ready WP:
 3. **Verify yourself.** Run every **Verify** command and check every **Acceptance**
    bullet. Don't trust the worker's report. Read the diff for determinism-rule
    violations.
+   Then [check for leftover processes](#check-for-leftover-processes).
 4. **Escalate on failure.** If a worker's result fails verification, send it the
    failure once. If it fails again, start a fresh worker one tier up (haiku to sonnet to
    opus) with both failures in its brief. If an opus worker fails, mark the WP `blocked`
@@ -85,11 +88,37 @@ Stop when the target is done, everything left is blocked, a gate needs the owner
 G2, G3, Launch), or the context budget says so. Then:
 
 1. Finish or release every WP you claimed.
-2. Push the branch and open (or update) one pull request for the session's work, as
+2. [Check for leftover processes](#check-for-leftover-processes), and stop every dev
+   server you started unless the owner needs it for a review. If you leave one
+   running, name it and its port in your message to the owner.
+3. Push the branch and open (or update) one pull request for the session's work, as
    [branches, commits, and pull requests](#branches-commits-and-pull-requests) describes.
-3. Complete your journal entry, including **Next steps** for the next session.
-4. Tell the owner: what's done, what's blocked, what needs their decision, and the
+4. Complete your journal entry, including **Next steps** for the next session.
+5. Tell the owner: what's done, what's blocked, what needs their decision, and the
    exact prompt to start the next session.
+
+## Check for leftover processes
+
+Workers often leave a process running after they report: a script that stopped
+responding, a dev server, or a test watcher. A background task that the app shows as
+running for far longer than its WP took is usually one of these. The orchestrator
+checks for them after each worker finishes, and again before it stops:
+
+1. List processes that came from this session's commands:
+
+   ```bash
+   ps -eo pid,etime,command | grep -E "bun|node|vite|cargo|maturin|python|wrangler" | grep -v grep
+   ```
+
+2. For each process whose command points at this repo, a worktree of it, or the
+   session's scratch directory, decide whether a running WP still needs it. The
+   `etime` column shows how long it has run.
+3. Stop the ones nothing needs: `kill PID`. Stop a dev server that the Browser pane
+   started with `preview_stop` instead.
+4. Note what you stopped in your journal entry if it affected a WP's result.
+
+Don't stop processes that this session didn't start, such as the owner's own dev
+servers or another session's workers.
 
 ## Choose a worker
 
@@ -149,6 +178,8 @@ repo. Follow docs/game/11-agent-playbook.md exactly.
 7. Report: what was asked, what changed, what you verified, what's left.
 
 Shell rule: call /bin/ls instead of ls, and never run eza.
+Process rule: give long commands a timeout, and stop every process you started (dev
+servers, scripts, watchers) before you report.
 ```
 
 For a WP that you want to run with parallel subagents, add this line to the prompt:

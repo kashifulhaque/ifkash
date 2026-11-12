@@ -37,7 +37,8 @@ Copy this block to the top of the entries and fill it in as you go:
   - WP-010: done by opus; commit `99b31ed`; 235K worker tokens
   - WP-011: done by sonnet in its own worktree, merged in `543fdb4`, with a follow-up
     fix for WP-010's new `Replay::record` signature; 126K worker tokens
-  - WP-013: review, by sonnet in its own worktree, merged in `9a34f77` (resolved a
+  - WP-013: done by sonnet in its own worktree (the owner approved the animation in
+    motion; fine-tuning comes later), merged in `9a34f77` (resolved a
     `scene.ts` conflict with WP-011's camera); 215K worker tokens. The owner approved
     downloading the Quaternius Universal Animation Library, `@gltf-transform/cli`, and
     toktx.
@@ -47,12 +48,14 @@ Copy this block to the top of the entries and fill it in as you go:
   The playbook's "6-10 WPs per session" estimate doesn't hold when worker tokens count:
   two L workers and one M worker used 576K. Either raise the budget or count only the
   orchestrator's context; that's the owner's call.
-- **Not verified:** WP-013 foot sliding in live motion; pointer lock and gamepad input
+- **Not verified:** pointer lock and gamepad input
   (WP-011 was checked with synthetic key events); x86 determinism (macOS arm64 only);
   the `game` CI workflow on GitHub for this branch.
-- **Waiting on the owner:** review the WP-013 animation in motion
-  (`/game?engine=lf&anim=run&animcam=side`, then play with WASD) and set it to done or
-  send it back; decide the context-budget rule above; merge the PR.
+- **Leftover process:** a WP-013 worker script stopped responding and ran for about
+  1.5 hours after the worker reported. The orchestrator stopped it. The playbook now has
+  a process rule for workers and a
+  [leftover-process check](11-agent-playbook.md#check-for-leftover-processes).
+- **Waiting on the owner:** decide the context-budget rule above; merge the PR.
 - **Next steps:**
   1. Branch from `game/m1-movement` if the PR isn't merged, otherwise from `origin/main`.
   2. Run WP-015 (haiku; it touches `actor/targeting.rs` and `test_field.ron`) and

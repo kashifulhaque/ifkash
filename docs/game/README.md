@@ -21,6 +21,8 @@ AI coding agents can build it one work package at a time.
   roadmap cards for the WPs you'll run, and nothing else until a WP needs it.
 
   Shell rule (pass it to every worker): call /bin/ls instead of ls, and never run eza.
+  Process rule (pass it to every worker): give long commands a timeout, and stop every
+  process you started (dev servers, scripts, watchers) before you report.
   ```
 
   The orchestrator gives each work package to a worker subagent of the model the card

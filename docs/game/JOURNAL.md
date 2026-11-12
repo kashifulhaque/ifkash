@@ -40,6 +40,7 @@ Copy this block to the top of the entries and fill it in as you go:
   WP-059 17000-17499. WASM event kinds: WP-055 18-19, WP-057 20, WP-059 21-22;
   WP-050 and WP-051 add none.
 - **WPs:**
+  - WP-050: haiku, worktree; `cbccd54`; 189K. Touched `wasm/src/menu.rs` (signature change). Goldens rehashed (content hash only).
 - **Context:**
 - **Not verified:**
 - **Waiting on the owner:**

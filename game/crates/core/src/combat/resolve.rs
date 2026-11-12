@@ -414,17 +414,16 @@ pub fn run(world: &mut World) {
         let motion_value = crit::scale_motion(motion_value, a, c.num, &world.moves);
         // Damage, from the attacker's equipped weapon and stats. An actor with no
         // weapon has no attack rating and deals the minimum of 1.
-        let ar = a
-            .inventory
-            .equipment
-            .right_weapon()
-            .and_then(|w| {
-                world.damage.attack_rating(
-                    w,
-                    &a.stats.attrs,
-                    a.stats.weapon_upgrade,
-                    a.stats.two_handing,
-                )
+        let ar = super::spells::power(world, a, c.num)
+            .or_else(|| {
+                a.inventory.equipment.right_weapon().and_then(|w| {
+                    world.damage.attack_rating(
+                        w,
+                        &a.stats.attrs,
+                        a.stats.weapon_upgrade,
+                        a.stats.two_handing,
+                    )
+                })
             })
             // An enemy has no weapon: its definition's attack rating (WP-032).
             .or_else(|| crate::ai::attack::rating(world, a))

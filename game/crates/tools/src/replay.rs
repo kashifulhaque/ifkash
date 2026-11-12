@@ -159,8 +159,9 @@ pub struct Script {
 /// `seed <u64>` and `scenario <name>` are required; every other line is
 /// `<ticks> <move_x> <move_z> [BUTTON+BUTTON...]`, holding that frame for `ticks` ticks.
 /// Button names are the `ActionFrame` button names, for example `DODGE+JUMP`.
-/// `cmd Rest` and `cmd SplitFlasks <vigil>` queue a command on the tick of the next frame
-/// line (or on the tick after the last frame, if none follows).
+/// `cmd Rest`, `cmd SplitFlasks <vigil>`, `cmd LevelUp <attribute>`, `cmd Equip <slot> <item>`
+/// (the item is a registry number), and `cmd Unequip <slot>` queue a command on the tick of
+/// the next frame line (or on the tick after the last frame, if none follows).
 pub fn parse_script(text: &str) -> Result<Script, String> {
     let mut seed = None;
     let mut scenario = None;
@@ -184,7 +185,25 @@ pub fn parse_script(text: &str) -> Result<Script, String> {
                     ("SplitFlasks", Some(v)) => Command::SplitFlasks {
                         vigil: v.parse().map_err(|_| err("bad vigil count"))?,
                     },
-                    _ => return Err(err("unknown command (Rest, SplitFlasks <vigil>)")),
+                    ("LevelUp", Some(v)) => Command::LevelUp {
+                        attribute: v.parse().map_err(|_| err("bad attribute index"))?,
+                    },
+                    ("Equip", Some(v)) => Command::Equip {
+                        slot: v.parse().map_err(|_| err("bad slot number"))?,
+                        item: words
+                            .get(3)
+                            .and_then(|i| i.parse().ok())
+                            .ok_or_else(|| err("Equip needs a slot and a registry number"))?,
+                    },
+                    ("Unequip", Some(v)) => Command::Unequip {
+                        slot: v.parse().map_err(|_| err("bad slot number"))?,
+                    },
+                    _ => {
+                        return Err(err(
+                            "unknown command (Rest, SplitFlasks <vigil>, LevelUp <attribute>, \
+                             Equip <slot> <item>, Unequip <slot>)",
+                        ));
+                    }
                 };
                 commands.push((frames.len() as u64, command));
             }

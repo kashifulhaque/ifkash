@@ -148,8 +148,8 @@
     "start_max": 16,
     "start_min": 4
   },
-  "contentHash": "8657306454595294906",
-  "contentHashHex": "7824ee5a21d956ba",
+  "contentHash": "15947994701888307770",
+  "contentHashHex": "dd52a8af6ddd423a",
   "moves": [
     {
       "anim": "axe_chop_r",
@@ -1790,6 +1790,106 @@
       "stamina": 16,
       "stub": false,
       "totalFrames": 24
+    },
+    {
+      "anim": "cast_formula",
+      "file": "spells/formulae.ron",
+      "fp": 5,
+      "id": "spm_aether_dart",
+      "num": 15100,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 20
+    },
+    {
+      "anim": "cast_formula",
+      "file": "spells/formulae.ron",
+      "fp": 12,
+      "id": "spm_aether_bolt",
+      "num": 15101,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 34
+    },
+    {
+      "anim": "cast_formula",
+      "file": "spells/formulae.ron",
+      "fp": 16,
+      "id": "spm_homing_motes",
+      "num": 15102,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 44
+    },
+    {
+      "anim": "cast_formula",
+      "file": "spells/formulae.ron",
+      "fp": 20,
+      "id": "spm_aether_wave",
+      "num": 15103,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 38
+    },
+    {
+      "anim": "cast_buff",
+      "file": "spells/formulae.ron",
+      "fp": 14,
+      "id": "spm_mirror_ward",
+      "num": 15104,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 40
+    },
+    {
+      "anim": "cast_buff",
+      "file": "spells/formulae.ron",
+      "fp": 10,
+      "id": "spm_veil",
+      "num": 15105,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 40
+    },
+    {
+      "anim": "cast_formula",
+      "file": "spells/formulae.ron",
+      "fp": 24,
+      "id": "spm_gradient_descent",
+      "num": 15106,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 54
+    },
+    {
+      "anim": "cast_formula",
+      "file": "spells/formulae.ron",
+      "fp": 18,
+      "id": "spm_glasswing_swarm",
+      "num": 15107,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 30
+    },
+    {
+      "anim": "cast_formula",
+      "file": "spells/formulae.ron",
+      "fp": 32,
+      "id": "spm_unbinding_lance",
+      "num": 15108,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 46
+    },
+    {
+      "anim": "cast_formula_charged",
+      "file": "spells/formulae.ron",
+      "fp": 32,
+      "id": "spm_unbinding_lance_charged",
+      "num": 15109,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 72
     }
   ],
   "weapons": [
@@ -1825,6 +1925,28 @@
       "stub": true,
       "unique": false,
       "weightTenths": 20
+    },
+    {
+      "baseDamage": 90,
+      "class": "Catalyst",
+      "file": "weapons/stylus_reliquary.ron",
+      "id": "wpn_scholars_stylus",
+      "name": "Scholar's Stylus",
+      "num": 1100,
+      "stub": true,
+      "unique": false,
+      "weightTenths": 10
+    },
+    {
+      "baseDamage": 90,
+      "class": "Catalyst",
+      "file": "weapons/stylus_reliquary.ron",
+      "id": "wpn_pilgrims_reliquary",
+      "name": "Pilgrim's Reliquary",
+      "num": 1101,
+      "stub": true,
+      "unique": false,
+      "weightTenths": 15
     },
     {
       "baseDamage": 90,

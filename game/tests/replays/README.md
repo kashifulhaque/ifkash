@@ -130,6 +130,14 @@ lf-tools replay record-script tests/replays/m1_movement.script --out tests/repla
   (`wpn_test_*` in `data/weapons/test_classes.ron`) against a padded dummy, and plays the
   three-hit light chain and then the heavy. `game/crates/tools/tests/wp051_movesets.rs` checks
   that each of those four swings hits the dummy, in order.
+- `m5_spell_aether_dart`, `m5_spell_aether_bolt`, `m5_spell_homing_motes`,
+  `m5_spell_aether_wave`, `m5_spell_mirror_ward`, `m5_spell_veil`,
+  `m5_spell_gradient_descent`, `m5_spell_glasswing_swarm`, `m5_spell_unbinding_lance`: the
+  WP-055 goldens, one per Formula, each from its `.script`. The player rests at the Lantern,
+  levels Insight to the spell's requirement, attunes it with `cmd Equip 32 <spell number>`,
+  and casts it on `spell_range` (the ward and the Veil on `spell_ward`, against a Husk). The
+  assertion tests are in `game/crates/tools/tests/golden_spells.rs`; the rules have unit tests
+  in `game/crates/core/src/combat/spells/tests.rs`.
 
 Rehash only when a change to the simulation or the content data is intended. Review the
 old and new final hash it prints, and commit the updated file with that change.

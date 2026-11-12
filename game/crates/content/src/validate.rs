@@ -314,6 +314,13 @@ fn check_weapon(w: &Weapon, file: &str, content: &Content, out: &mut Vec<Issue>)
     if w.stub {
         s.warn("stub", "weapon is a stub placeholder");
     }
+    let catalyst = w.class == crate::weapons::WeaponClass::Catalyst;
+    if catalyst != w.catalyst_school.is_some() {
+        s.error(
+            "catalyst_school",
+            "a Catalyst has a school, and no other weapon does",
+        );
+    }
 }
 
 fn check_curve(name: &str, c: &Curve, a: &Attributes, out: &mut Vec<Issue>) {
@@ -535,9 +542,53 @@ impl Validate for Content {
                 .error(field, message);
             }
         }
+        check_spells(self, &mut out);
         check_ai(self, &mut out);
         out.extend(crate::boss::check(self));
         out
+    }
+}
+
+/// Every spell: its slots, requirements, effects, and channel (WP-055).
+fn check_spells(content: &Content, out: &mut Vec<Issue>) {
+    let mut seen = BTreeSet::new();
+    for sp in &content.spells {
+        let mut s = Sink {
+            out: &mut *out,
+            file: "spells",
+            item: &sp.id,
+        };
+        if !seen.insert(sp.id.as_str()) {
+            s.error("id", "duplicate spell ID");
+        }
+        for (field, message) in sp.problems() {
+            s.error(field, message);
+        }
+        let rq = &sp.requirements;
+        for (name, v) in [
+            ("might", rq.might),
+            ("finesse", rq.finesse),
+            ("insight", rq.insight),
+            ("devotion", rq.devotion),
+        ] {
+            if v > content.attributes.max {
+                s.error(
+                    format!("requirements.{name}"),
+                    format!("{v} is above the attribute cap {}", content.attributes.max),
+                );
+            }
+        }
+    }
+    if !content.spells.is_empty() && content.spell_rules.is_none() {
+        Sink {
+            out,
+            file: "spells",
+            item: "rules",
+        }
+        .error(
+            "rules",
+            "no spell file states the shared `rules` (cast speed)",
+        );
     }
 }
 

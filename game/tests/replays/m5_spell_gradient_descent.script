@@ -1,0 +1,27 @@
+# WP-055 golden: Gradient Descent arcs onto a dummy (record with `lf-tools replay record-script`). Each line:
+# <ticks> <move_x> <move_z> [BUTTONS], plus `cmd` lines. The player rests at the Lantern,
+# raises Insight by 14 (the spell's requirement), attunes the spell to the first
+# attunement slot (slot 32), and casts it. Stylus, Glimmer, and known spells come from
+# the `spell_range` scenario.
+seed 5507
+scenario spell_range
+10 0 0            # settle on the ground
+cmd Rest
+cmd LevelUp 5
+cmd LevelUp 5
+cmd LevelUp 5
+cmd LevelUp 5
+cmd LevelUp 5
+cmd LevelUp 5
+cmd LevelUp 5
+cmd LevelUp 5
+cmd LevelUp 5
+cmd LevelUp 5
+cmd LevelUp 5
+cmd LevelUp 5
+cmd LevelUp 5
+cmd LevelUp 5
+cmd Equip 32 15006      # attune
+2 0 0
+1 0 0 LIGHT
+90 0 0

@@ -21,6 +21,9 @@
     (id: "wpn_wayfarer_blade", num: 1000),
     (id: "wpn_parry_dagger", num: 1001),
     (id: "wpn_stub_bow", num: 1002),
+    // WP-055: catalysts take 1100-1149.
+    (id: "wpn_scholars_stylus", num: 1100),
+    (id: "wpn_pilgrims_reliquary", num: 1101),
 
     (id: "ss_light_1", num: 2000),
     (id: "ss_light_2", num: 2001),
@@ -348,5 +351,37 @@
     (id: "buf_pitch_oil", num: 16620),
     (id: "buf_spark_oil", num: 16621),
     (id: "buf_thornheart", num: 16630),
+
+    // WP-055: the Formulae. 15000-15499 is spells, spell moves, spell projectiles, and spell
+    // buffs. Formulae: spells 15000-15019, moves 15100-15149, projectiles 15300-15349, buffs
+    // 15400-15449. The Litanies (WP-056) take the upper half of each block.
+    (id: "spl_aether_dart", num: 15000),
+    (id: "spl_aether_bolt", num: 15001),
+    (id: "spl_homing_motes", num: 15002),
+    (id: "spl_aether_wave", num: 15003),
+    (id: "spl_mirror_ward", num: 15004),
+    (id: "spl_veil", num: 15005),
+    (id: "spl_gradient_descent", num: 15006),
+    (id: "spl_glasswing_swarm", num: 15007),
+    (id: "spl_unbinding_lance", num: 15008),
+    (id: "spm_aether_dart", num: 15100),
+    (id: "spm_aether_bolt", num: 15101),
+    (id: "spm_homing_motes", num: 15102),
+    (id: "spm_aether_wave", num: 15103),
+    (id: "spm_mirror_ward", num: 15104),
+    (id: "spm_veil", num: 15105),
+    (id: "spm_gradient_descent", num: 15106),
+    (id: "spm_glasswing_swarm", num: 15107),
+    (id: "spm_unbinding_lance", num: 15108),
+    (id: "spm_unbinding_lance_charged", num: 15109),
+    (id: "spp_aether_dart", num: 15300),
+    (id: "spp_aether_bolt", num: 15301),
+    (id: "spp_homing_mote", num: 15302),
+    (id: "spp_gradient_descent", num: 15303),
+    (id: "spp_glasswing_shard", num: 15304),
+    (id: "spp_unbinding_lance", num: 15305),
+    (id: "spp_unbinding_lance_charged", num: 15306),
+    (id: "spb_mirror_ward", num: 15400),
+    (id: "spb_veil", num: 15401),
   ],
 )

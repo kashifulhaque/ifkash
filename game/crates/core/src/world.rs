@@ -14,6 +14,7 @@ use crate::combat::hurtbox::Hurtbox;
 use crate::combat::moves::MoveTable;
 use crate::combat::poise::PoiseState;
 use crate::combat::projectile::{Projectile, ProjectileTable};
+use crate::combat::spells::{SpellState, SpellTable};
 use crate::combat::status::{StatusState, StatusTable};
 use crate::events::EventQueue;
 use crate::items::{Inventory, ItemTable, slot};
@@ -72,6 +73,11 @@ pub struct World {
     pub bosses: Vec<BossRun>,
     /// Lanterns, the respawn point, the Remnant, and world flags (WP-029).
     pub state: WorldState,
+    /// The player's attuned spells and the selected one (WP-055). Hashed only once a spell
+    /// is attuned.
+    pub spells: SpellState,
+    /// Every spell and catalyst, from content. Not hashed: the content hash covers it.
+    pub spells_table: SpellTable,
     /// Lifts and the ladder the player is on (WP-042). Hashed only while it isn't at rest.
     pub mech: MechState,
     /// Drained by the host every tick; excluded from the state hash.
@@ -132,6 +138,9 @@ struct HashView<'a> {
     /// Left out while the world mechanics are at rest, for the same reason.
     #[serde(skip_serializing_if = "MechState::is_inert")]
     mech: &'a MechState,
+    /// Left out until a spell is attuned, for the same reason.
+    #[serde(skip_serializing_if = "SpellState::is_inert")]
+    spells: &'a SpellState,
 }
 
 fn no_bosses(bosses: &&Vec<BossRun>) -> bool {
@@ -250,10 +259,23 @@ impl World {
             layout,
             bosses,
             state,
+            spells: SpellState::default(),
+            spells_table: SpellTable::from_content(content).map_err(WorldError::Items)?,
             mech,
             events: EventQueue::default(),
         };
         crate::world_state::mechanics::install(&mut world);
+        // Spells the scenario teaches the player (WP-055); `Command::Equip` attunes them.
+        for id in &level.player_spells {
+            let spell = world.spells_table.num_of(id).ok_or_else(|| {
+                WorldError::Items(format!(
+                    "scenario {scenario:?}: player_spells \"{id}\" is not a spell"
+                ))
+            })?;
+            if let Some(p) = world.actors.get_mut(player) {
+                p.inventory.give_gear(spell);
+            }
+        }
         if let Some(id) = &level.player_weapon {
             let weapon = content
                 .registry
@@ -282,7 +304,10 @@ impl World {
             .get(self.player)
             .and_then(|p| p.inventory.equipment.right_weapon());
         if let Some(set) = weapon.and_then(|w| self.moves.moveset_of(w)) {
-            self.moves.player_moveset = Some(set.clone());
+            let mut set = set.clone();
+            // The selected spell's cast moves, if a catalyst holds them (WP-055).
+            crate::combat::spells::overlay(self, &mut set);
+            self.moves.player_moveset = Some(set);
         }
     }
 
@@ -297,6 +322,7 @@ impl World {
             projectiles: &self.projectiles,
             bosses: &self.bosses,
             mech: &self.mech,
+            spells: &self.spells,
         };
         let bytes = postcard::to_allocvec(&view).expect("world serialization cannot fail");
         xxhash_rust::xxh3::xxh3_64(&bytes)

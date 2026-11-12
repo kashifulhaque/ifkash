@@ -4,6 +4,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::moves::PhysType;
+use crate::spells::SpellSchool;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "ts", derive(ts_rs::TS))]
@@ -146,4 +147,8 @@ pub struct Weapon {
     /// A placeholder for an item a later WP implements; the validator warns on it.
     #[serde(default)]
     pub stub: bool,
+    /// The school a catalyst casts: a stylus casts Formulae, a reliquary Litanies. Set on
+    /// every `Catalyst` weapon and on no other.
+    #[serde(default)]
+    pub catalyst_school: Option<SpellSchool>,
 }

@@ -26,9 +26,16 @@ pub mod slot {
     /// Five quick item slots: `QUICK_1 + 0..5`.
     pub const QUICK_1: u8 = 10;
     pub const ARROWS: u8 = 15;
-    /// Number of slot numbers.
+    /// Number of slot numbers in `Equipment::slots`.
     pub const COUNT: usize = 16;
     pub const QUICK_COUNT: u8 = 5;
+    /// Spell attunement positions: `SPELL_1 + 0..SPELL_COUNT` (WP-055). These are slot
+    /// numbers for `Command::Equip` and `Command::Unequip` only; the spells live in
+    /// `World::spells` (`combat::spells`), not in `Equipment::slots`, so adding them left
+    /// the state hash of every existing world alone. Append-only: new slot kinds go above
+    /// `SPELL_1 + SPELL_COUNT`, not below.
+    pub const SPELL_1: u8 = 32;
+    pub const SPELL_COUNT: u8 = 14;
 }
 
 /// Charm slots open at the start (docs/game/06-progression-and-systems.md, "Equipment

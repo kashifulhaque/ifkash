@@ -1,0 +1,19 @@
+# WP-055 golden: Veil halves the range enemies notice the player at (record with `lf-tools replay record-script`). Each line:
+# <ticks> <move_x> <move_z> [BUTTONS], plus `cmd` lines. The player rests at the Lantern,
+# raises Insight by 4 (the spell's requirement), attunes the spell to the first
+# attunement slot (slot 32), and casts it. Stylus, Glimmer, and known spells come from
+# the `spell_ward` scenario.
+seed 5506
+scenario spell_ward
+10 0 0            # settle on the ground
+cmd Rest
+cmd LevelUp 5
+cmd LevelUp 5
+cmd LevelUp 5
+cmd LevelUp 5
+cmd Equip 32 15005      # attune
+2 0 0
+1 0 0 LIGHT
+45 0 0
+100 0 127       # run toward the Husk: with the Veil it notices at 7 m, not 14
+120 0 0

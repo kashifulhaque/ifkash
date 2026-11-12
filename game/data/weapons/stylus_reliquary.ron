@@ -1,0 +1,72 @@
+// Weapon files load in path order and the first weapon in the content is the player's
+// default, so this file must sort after straight_sword.ron: don't rename it to sort earlier.
+//
+// Minimal catalysts for WP-055 (the spell system): a stylus for the Formulae and a reliquary
+// for the Litanies (WP-056). WP-053 adds the full catalyst list (docs/game/04-arsenal-and-builds.md,
+// "Weapon list"). A catalyst's `base_damage` and scaling make its spell power, which replaces
+// attack rating in the damage formula for spells (docs/game/03-combat.md, "Spells"). With
+// no spell attuned and selected, the moveset below is what it swings: the straight sword's
+// moves, until the catalysts get their own.
+#![enable(implicit_some)]
+[
+  (
+    id: "wpn_scholars_stylus",
+    name: "Scholar's Stylus",
+    class: Catalyst,
+    base_damage: 90, // tuning
+    phys: Neutral,
+    scaling: (might: 0.0, finesse: 0.0, insight: 1.0, devotion: 0.0), // tuning
+    requirements: (might: 0, finesse: 0, insight: 0, devotion: 0),
+    weight_tenths: 10, // tuning
+    unique: false,
+    guard: (absorb_phys_percent: 0, absorb_elem_percent: 0, guard_boost: 0), // catalysts can't guard
+    moveset: (
+      light_chain: ["ss_light_1"],
+      heavy: "ss_heavy",
+      charged_heavy: "ss_heavy_charged",
+      running: "ss_running",
+      rolling: "ss_rolling",
+      backstep: "ss_backstep",
+      jump_light: "ss_jump_light",
+      jump_heavy: "ss_jump_heavy",
+      plunge: "ss_plunge",
+      guard_counter: "ss_guard_counter",
+      roll_light: "dodge_roll_light",
+      roll_medium: "dodge_roll_medium",
+      roll_heavy: "dodge_roll_heavy",
+      dodge_backstep: "dodge_backstep",
+    ),
+    stub: true,
+    catalyst_school: Formula,
+  ),
+  (
+    id: "wpn_pilgrims_reliquary",
+    name: "Pilgrim's Reliquary",
+    class: Catalyst,
+    base_damage: 90, // tuning
+    phys: Neutral,
+    scaling: (might: 0.0, finesse: 0.0, insight: 0.0, devotion: 1.0), // tuning
+    requirements: (might: 0, finesse: 0, insight: 0, devotion: 0),
+    weight_tenths: 15, // tuning
+    unique: false,
+    guard: (absorb_phys_percent: 0, absorb_elem_percent: 0, guard_boost: 0), // catalysts can't guard
+    moveset: (
+      light_chain: ["ss_light_1"],
+      heavy: "ss_heavy",
+      charged_heavy: "ss_heavy_charged",
+      running: "ss_running",
+      rolling: "ss_rolling",
+      backstep: "ss_backstep",
+      jump_light: "ss_jump_light",
+      jump_heavy: "ss_jump_heavy",
+      plunge: "ss_plunge",
+      guard_counter: "ss_guard_counter",
+      roll_light: "dodge_roll_light",
+      roll_medium: "dodge_roll_medium",
+      roll_heavy: "dodge_roll_heavy",
+      dodge_backstep: "dodge_backstep",
+    ),
+    stub: true,
+    catalyst_school: Litany,
+  ),
+]

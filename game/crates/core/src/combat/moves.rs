@@ -72,6 +72,9 @@ pub enum Action {
     /// `USE_ITEM` pressed (or a `Command::UseItem`): drinks the selected flask. See
     /// `crate::items`.
     UseItem,
+    /// `GUARD` pressed with a catalyst in the left hand: casts the selected spell
+    /// (docs/game/03-combat.md, "Spells", "Casting input"). See `combat::spells`.
+    Cast,
 }
 
 /// The most recent action that couldn't fire yet. See docs/game/03-combat.md,
@@ -169,6 +172,10 @@ pub struct MoveDef {
     /// the first hitbox frame (docs/game/03-combat.md, "Move data schema",
     /// `track_deg_per_tick`). 0 for a move with no hitbox.
     pub track_until: u16,
+    /// For a spell's cast move: the first frame that does anything (a projectile, hitbox,
+    /// effect, or the hold of a channel). Finesse skips a share of the frames before it
+    /// ([`MoveTable::cast_skip`]). 0 for every other move.
+    pub cast_startup: u16,
 }
 
 /// A weapon moveset with every move as a numeric ID.
@@ -187,6 +194,9 @@ pub struct Moveset {
     pub plunge: MoveNum,
     /// Started by `HEAVY` within `counter_window_ticks` after a block.
     pub guard_counter: MoveNum,
+    /// The cast move `GUARD` starts, when a catalyst with a matching spell selected is in
+    /// the left hand (`combat::spells` sets it; a weapon's moveset never has one).
+    pub left_cast: Option<MoveNum>,
     /// The roll for each equip load tier (there is none when overloaded).
     pub roll_light: MoveNum,
     pub roll_medium: MoveNum,
@@ -219,6 +229,8 @@ pub struct MoveTable {
     pub flask: Option<FlaskRules>,
     /// The critical hit moves, if the content has them. See `combat::crit`.
     pub crits: Option<super::crit::CritMoves>,
+    /// How much Finesse shortens a cast's startup, from the spell files (WP-055).
+    pub cast_speed: Option<lf_content::spells::CastSpeed>,
 }
 
 impl MoveTable {
@@ -245,11 +257,35 @@ impl MoveTable {
                     .chain(m.projectiles.iter().map(|p| p.frame))
                     .min()
                     .unwrap_or(0),
+                cast_startup: 0,
             });
         }
         defs.sort_by_key(|d| d.num);
+        // A spell's cast moves skip startup with Finesse (docs/game/03-combat.md, "Spells").
+        for sp in &content.spells {
+            for (m, effects) in std::iter::once((&sp.cast, &sp.effects))
+                .chain(sp.charged.as_ref().map(|m| (m, &sp.charged_effects)))
+            {
+                let first = m
+                    .hitboxes
+                    .iter()
+                    .map(|h| h.frames.0)
+                    .chain(m.projectiles.iter().map(|p| p.frame))
+                    .chain(effects.iter().map(|e| e.frame))
+                    .chain(m.charge.map(|c| c.charge_from))
+                    .min()
+                    .unwrap_or(0);
+                if let Some(d) = num(&m.id)
+                    .ok()
+                    .and_then(|n| defs.binary_search_by_key(&n, |d| d.num).ok())
+                {
+                    defs[d].cast_startup = first;
+                }
+            }
+        }
         let mut table = Self {
             defs,
+            cast_speed: content.spell_rules.map(|r| r.cast_speed),
             ..Self::default()
         };
         let defined = |id: &str| {
@@ -290,6 +326,7 @@ impl MoveTable {
                 jump_heavy: defined(&s.jump_heavy)?,
                 plunge: defined(&s.plunge)?,
                 guard_counter: defined(&s.guard_counter)?,
+                left_cast: None,
                 roll_light: defined(&s.roll_light)?,
                 roll_medium: defined(&s.roll_medium)?,
                 roll_heavy: defined(&s.roll_heavy)?,
@@ -337,6 +374,18 @@ impl MoveTable {
     /// Finds a move by string ID. A linear scan, for tools and tests.
     pub fn num_of(&self, id: &str) -> Option<MoveNum> {
         self.defs.iter().find(|d| d.data.id == id).map(|d| d.num)
+    }
+
+    /// How many frames of a spell's startup `finesse` skips: the cast speed rule's saving
+    /// (up to `max_percent` at `at_finesse`, in proportion below it) of the frames before
+    /// the first one that does anything. 0 for a move that isn't a cast.
+    pub fn cast_skip(&self, d: &MoveDef, finesse: u16) -> u16 {
+        let Some(rule) = self.cast_speed.filter(|r| r.at_finesse > 0) else {
+            return 0;
+        };
+        let saved = u32::from(rule.max_percent) * u32::from(finesse.min(rule.at_finesse))
+            / u32::from(rule.at_finesse);
+        (u32::from(d.cast_startup) * saved / 100) as u16
     }
 
     /// How far a charge has gone, from 0 to 1: WP-021 lerps the hitbox motion value from
@@ -432,6 +481,7 @@ fn resolve(
         let window = match b.action {
             Action::Light | Action::Heavy => d.data.cancel_attack_from,
             Action::Dodge => d.data.cancel_dodge_from,
+            Action::Cast => d.data.cancel_attack_from,
             Action::UseItem => None,
         };
         if !reached(window) && !reached(d.data.cancel_any_from) {
@@ -448,6 +498,7 @@ fn resolve(
         },
         Action::Heavy if counter => set.guard_counter,
         Action::Heavy => set.heavy,
+        Action::Cast => set.left_cast?,
         Action::Dodge => dodge::select(set, set.load_tier, b.dir != [0, 0])?,
         // Items are resolved by `crate::items::drink_move` before this is called.
         Action::UseItem => return None,
@@ -470,8 +521,16 @@ pub fn step(
         a.moves.interrupt();
         return;
     }
+    // `GUARD` casts instead of guarding when a catalyst is in the left hand.
+    let cast_press = set.is_some_and(|s| s.left_cast.is_some())
+        && input.is_some_and(|f| {
+            f.pressed(buttons::GUARD) && a.moves.prev_buttons & buttons::GUARD == 0
+        });
     if let Some(f) = input {
         read_input(&mut a.moves, f, t);
+    }
+    if cast_press {
+        a.moves.press(Action::Cast, [0, 0]);
     }
     let held = input.map_or(0, |f| f.buttons);
     let stick = input.is_some_and(|f| f.move_x != 0 || f.move_z != 0);
@@ -528,7 +587,10 @@ pub fn step(
     // before the update, so a stagger of N ticks blocks exactly N ticks of starts.
     let can_act = a.moves.guard.can_act();
     // An AI actor has no buttons; its `Guard` behavior raises the guard (WP-032).
-    let wants_guard = held & buttons::GUARD != 0 || a.ai.as_ref().is_some_and(|b| b.guarding);
+    // A catalyst can't guard (docs/game/03-combat.md, "Spells").
+    let casting_left = set.is_some_and(|s| s.left_cast.is_some());
+    let wants_guard =
+        (held & buttons::GUARD != 0 && !casting_left) || a.ai.as_ref().is_some_and(|b| b.guarding);
     a.moves
         .guard
         .update(wants_guard, a.moves.current.is_none(), &t.guard);
@@ -556,14 +618,19 @@ pub fn step(
             if b.action == Action::Dodge && b.dir != [0, 0] {
                 a.yaw = atan2(f32::from(b.dir[0]), f32::from(b.dir[1]));
             }
+            // A spell's startup is shorter with Finesse (`MoveTable::cast_skip`).
+            let skip = table.cast_skip(d, a.stats.attrs.finesse);
             a.moves.current = Some(ActiveMove {
                 num: d.num,
-                frame: 0,
+                frame: skip,
                 charge_ticks: 0,
-                hold_button: if b.action == Action::Heavy {
-                    buttons::HEAVY
-                } else {
-                    0
+                // Holding the button charges a chargeable move: a heavy, or a channeled
+                // spell started by `LIGHT` or a left-hand `GUARD`.
+                hold_button: match b.action {
+                    Action::Heavy => buttons::HEAVY,
+                    Action::Light if d.data.charge.is_some() => buttons::LIGHT,
+                    Action::Cast if d.data.charge.is_some() => buttons::GUARD,
+                    _ => 0,
                 },
                 free_from: d.data.cancel_any_from.unwrap_or(d.data.total_frames),
             });

@@ -1,0 +1,37 @@
+# WP-055 golden: Unbinding Lance pierces two dummies, then the charged form (record with `lf-tools replay record-script`). Each line:
+# <ticks> <move_x> <move_z> [BUTTONS], plus `cmd` lines. The player rests at the Lantern,
+# raises Insight by 20 (the spell's requirement), attunes the spell to the first
+# attunement slot (slot 32), and casts it. Stylus, Glimmer, and known spells come from
+# the `spell_range` scenario.
+seed 5509
+scenario spell_range
+10 0 0            # settle on the ground
+cmd Rest
+cmd LevelUp 5
+cmd LevelUp 5
+cmd LevelUp 5
+cmd LevelUp 5
+cmd LevelUp 5
+cmd LevelUp 5
+cmd LevelUp 5
+cmd LevelUp 5
+cmd LevelUp 5
+cmd LevelUp 5
+cmd LevelUp 5
+cmd LevelUp 5
+cmd LevelUp 5
+cmd LevelUp 5
+cmd LevelUp 5
+cmd LevelUp 5
+cmd LevelUp 5
+cmd LevelUp 5
+cmd LevelUp 5
+cmd LevelUp 5
+cmd Equip 32 15008      # attune
+2 0 0
+1 0 0 LIGHT     # the lance: through dummy_front and dummy_far
+90 0 0
+cmd Rest         # refill FP
+2 0 0
+1 0 0 HEAVY     # the charged form
+130 0 0

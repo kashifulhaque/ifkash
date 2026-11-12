@@ -4,6 +4,7 @@ import type { Moveset } from "./Moveset";
 import type { PhysType } from "./PhysType";
 import type { Requirements } from "./Requirements";
 import type { Scaling } from "./Scaling";
+import type { SpellSchool } from "./SpellSchool";
 import type { WeaponClass } from "./WeaponClass";
 
 export type Weapon = { id: string, name: string, class: WeaponClass, base_damage: number, phys: PhysType, scaling: Scaling, requirements: Requirements, 
@@ -19,4 +20,9 @@ crit_mult_percent: number, moveset: Moveset,
 /**
  * A placeholder for an item a later WP implements; the validator warns on it.
  */
-stub: boolean, };
+stub: boolean, 
+/**
+ * The school a catalyst casts: a stylus casts Formulae, a reliquary Litanies. Set on
+ * every `Catalyst` weapon and on no other.
+ */
+catalyst_school: SpellSchool | null, };

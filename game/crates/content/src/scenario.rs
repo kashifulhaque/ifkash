@@ -80,6 +80,10 @@ pub struct Scenario {
     /// weapon. The player owns it. Used by the duel scenarios (WP-024).
     #[serde(default)]
     pub player_weapon: Option<String>,
+    /// Spell IDs the player knows from the start, so a test scenario can attune them with
+    /// `Command::Equip` (WP-055). Real levels teach spells with pickups.
+    #[serde(default)]
+    pub player_spells: Vec<String>,
 }
 
 /// A pickup: an item lying in the level. Walking within `radius_m` of it takes it, once:

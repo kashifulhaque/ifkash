@@ -1,0 +1,454 @@
+// The nine Formulae (Insight, cast with a stylus). Source: docs/game/04-arsenal-and-builds.md,
+// "Formulae (Insight, stylus)", and docs/game/03-combat.md, "Spells". Schema:
+// crates/content/src/spells.rs. Each spell carries its own cast moves, projectiles, and buffs;
+// the loader merges them into the move, projectile, and buff tables, so none of them is in
+// moves/, projectiles.ron, or status.ron. FP costs are the moves' `fp`.
+//
+// Registry numbers: spells 15000-15019, moves 15100-15149, projectiles 15300-15349, and buffs
+// 15400-15449 are the Formulae's. The upper halves of each block (15020+, 15150+, 15350+,
+// 15450+) are the Litanies'.
+//
+// Every number marked "tuning" is a first guess; the spec gives only the FP cost, slots,
+// requirement, and effect of each Formula.
+#![enable(implicit_some)]
+(
+  rules: (
+    // docs/game/03-combat.md, "Spells": Finesse shortens cast startup by up to 25 percent at
+    // 60 Finesse.
+    cast_speed: (max_percent: 25, at_finesse: 60),
+  ),
+  spells: [
+    (
+      // Fast, weak projectile. Starting spell (Scholar).
+      id: "spl_aether_dart",
+      name: "Aether Dart",
+      school: Formula,
+      slots: 1,
+      requirements: (might: 0, finesse: 0, insight: 10, devotion: 0),
+      cast: (
+        id: "spm_aether_dart",
+        anim: "cast_formula",
+        total_frames: 20, // tuning
+        stamina: 0, // casting costs FP only
+        fp: 5, // docs/game/04-arsenal-and-builds.md, "Formulae"
+        root_motion: [],
+        track_deg_per_tick: 10.0, // aims at the lock target until the spell leaves
+        hyperarmor: None,
+        iframes: None,
+        cancel_attack_from: 14, // tuning
+        cancel_dodge_from: 9, // tuning
+        cancel_any_from: 14, // tuning
+        next_chain: None,
+        hitboxes: [],
+        projectiles: [(frame: 7, projectile: "spp_aether_dart", offset: (0.0, 1.4, 0.5), yaw_deg: 0.0, pitch_deg: 0.0)],
+        sfx: [(7, "cast_formula")],
+        vfx: [],
+      ),
+      projectiles: [
+      (
+        // Fast and weak: 1 m a tick, flat.
+        id: "spp_aether_dart",
+        speed: 30.0, // tuning
+        gravity: 0.0, // tuning
+        radius: 0.12, // tuning
+        lifetime_ticks: 45, // tuning
+        pierce: 0,
+        homing: None,
+        motion_value: 0.7, // tuning
+        phys: Neutral,
+        element: Aether,
+        poise_damage: 6, // tuning
+        knockback: 0.1, // tuning
+        hitstop: 1,
+        tags: [],
+      ),
+      ],
+    ),
+    (
+      // Strong, slower projectile. Starting spell (Scholar).
+      id: "spl_aether_bolt",
+      name: "Aether Bolt",
+      school: Formula,
+      slots: 1,
+      requirements: (might: 0, finesse: 0, insight: 14, devotion: 0),
+      cast: (
+        id: "spm_aether_bolt",
+        anim: "cast_formula",
+        total_frames: 34, // tuning
+        stamina: 0, // casting costs FP only
+        fp: 12, // docs/game/04-arsenal-and-builds.md, "Formulae"
+        root_motion: [],
+        track_deg_per_tick: 10.0, // aims at the lock target until the spell leaves
+        hyperarmor: None,
+        iframes: None,
+        cancel_attack_from: 28, // tuning
+        cancel_dodge_from: 20, // tuning
+        cancel_any_from: 28, // tuning
+        next_chain: None,
+        hitboxes: [],
+        projectiles: [(frame: 14, projectile: "spp_aether_bolt", offset: (0.0, 1.4, 0.5), yaw_deg: 0.0, pitch_deg: 0.0)],
+        sfx: [(14, "cast_formula")],
+        vfx: [],
+      ),
+      projectiles: [
+      (
+        // Strong and slower than the Dart.
+        id: "spp_aether_bolt",
+        speed: 18.0, // tuning
+        gravity: 0.0, // tuning
+        radius: 0.2, // tuning
+        lifetime_ticks: 70, // tuning
+        pierce: 0,
+        homing: None,
+        motion_value: 1.6, // tuning
+        phys: Neutral,
+        element: Aether,
+        poise_damage: 16, // tuning
+        knockback: 0.3, // tuning
+        hitstop: 3,
+        tags: [],
+      ),
+      ],
+    ),
+    (
+      // 5 motes: spawned one after another over the cast, each fans out and homes in. They do not orbit; the projectile system has no orbit, so the fan stands in for it.
+      id: "spl_homing_motes",
+      name: "Homing Motes",
+      school: Formula,
+      slots: 1,
+      requirements: (might: 0, finesse: 0, insight: 16, devotion: 0),
+      cast: (
+        id: "spm_homing_motes",
+        anim: "cast_formula",
+        total_frames: 44, // tuning
+        stamina: 0, // casting costs FP only
+        fp: 16, // docs/game/04-arsenal-and-builds.md, "Formulae"
+        root_motion: [],
+        track_deg_per_tick: 10.0, // aims at the lock target until the spell leaves
+        hyperarmor: None,
+        iframes: None,
+        cancel_attack_from: 38, // tuning
+        cancel_dodge_from: 30, // tuning
+        cancel_any_from: 38, // tuning
+        next_chain: None,
+        hitboxes: [],
+        projectiles: [(frame: 12, projectile: "spp_homing_mote", offset: (-0.8, 1.9, 0.2), yaw_deg: 50.0, pitch_deg: 40.0), (frame: 14, projectile: "spp_homing_mote", offset: (-0.4, 1.9, 0.2), yaw_deg: 25.0, pitch_deg: 40.0), (frame: 16, projectile: "spp_homing_mote", offset: (0.0, 1.9, 0.2), yaw_deg: 0.0, pitch_deg: 40.0), (frame: 18, projectile: "spp_homing_mote", offset: (0.4, 1.9, 0.2), yaw_deg: -25.0, pitch_deg: 40.0), (frame: 20, projectile: "spp_homing_mote", offset: (0.8, 1.9, 0.2), yaw_deg: -50.0, pitch_deg: 40.0)],
+        sfx: [(12, "cast_formula")],
+        vfx: [],
+      ),
+      projectiles: [
+      (
+        // Slow, strongly homing: launched up and out, then bends onto the target.
+        id: "spp_homing_mote",
+        speed: 7.0, // tuning
+        gravity: 0.0, // tuning
+        radius: 0.15, // tuning
+        lifetime_ticks: 110, // tuning
+        pierce: 0,
+        homing: (turn_deg_per_tick: 10.0, range_m: 25.0),
+        motion_value: 0.55, // tuning
+        phys: Neutral,
+        element: Aether,
+        poise_damage: 6, // tuning
+        knockback: 0.15, // tuning
+        hitstop: 1,
+        tags: [],
+      ),
+      ],
+    ),
+    (
+      // Short-range cone of Aether, a hitbox rather than a projectile.
+      id: "spl_aether_wave",
+      name: "Aether Wave",
+      school: Formula,
+      slots: 1,
+      requirements: (might: 0, finesse: 0, insight: 18, devotion: 0),
+      cast: (
+        id: "spm_aether_wave",
+        anim: "cast_formula",
+        total_frames: 38, // tuning
+        stamina: 0, // casting costs FP only
+        fp: 20, // docs/game/04-arsenal-and-builds.md, "Formulae"
+        root_motion: [],
+        track_deg_per_tick: 10.0, // aims at the lock target until the spell leaves
+        hyperarmor: None,
+        iframes: None,
+        cancel_attack_from: 32, // tuning
+        cancel_dodge_from: 24, // tuning
+        cancel_any_from: 32, // tuning
+        next_chain: None,
+        hitboxes: [
+        (
+          frames: (12, 15),
+          // A wide, shallow slab in front of the caster: the cone, as a capsule.
+          shape: Capsule(a: (-1.3, 1.1, 1.7), b: (1.3, 1.1, 1.7), radius: 0.9),
+          motion_value: 1.4, // tuning
+          phys: Neutral,
+          element: Aether,
+          poise_damage: 18, // tuning
+          status: [],
+          knockback: 0.6, // tuning
+          hitstop: 3,
+          tags: [],
+        ),
+      ],
+        projectiles: [],
+        sfx: [(12, "cast_formula")],
+        vfx: [],
+      ),
+    ),
+    (
+      // Body buff: absorbs 40% of the next 3 hits.
+      id: "spl_mirror_ward",
+      name: "Mirror Ward",
+      school: Formula,
+      slots: 1,
+      requirements: (might: 0, finesse: 0, insight: 16, devotion: 0),
+      cast: (
+        id: "spm_mirror_ward",
+        anim: "cast_buff",
+        total_frames: 40, // tuning
+        stamina: 0, // casting costs FP only
+        fp: 14, // docs/game/04-arsenal-and-builds.md, "Formulae"
+        root_motion: [],
+        track_deg_per_tick: 10.0, // aims at the lock target until the spell leaves
+        hyperarmor: None,
+        iframes: None,
+        cancel_attack_from: 34, // tuning
+        cancel_dodge_from: 26, // tuning
+        cancel_any_from: 34, // tuning
+        next_chain: None,
+        hitboxes: [],
+        projectiles: [],
+        sfx: [(14, "cast_formula")],
+        vfx: [],
+      ),
+      effects: [(frame: 14, effect: Buff(buff: "spb_mirror_ward"))],
+      buffs: [
+        (
+          id: "spb_mirror_ward",
+          slot: Body,
+          damage_percent: 100,
+          status: [],
+          duration_ticks: 1800, // tuning: the spec gives hits, not time; this is the longest it waits
+          vfx: "ward_mirror",
+          absorb_percent: 40, // absorbs 40% of the next 3 hits
+          absorb_hits: 3,
+        ),
+      ],
+    ),
+    (
+      // Body buff: enemies notice you at half range for 900 ticks.
+      id: "spl_veil",
+      name: "Veil",
+      school: Formula,
+      slots: 1,
+      requirements: (might: 0, finesse: 0, insight: 12, devotion: 0),
+      cast: (
+        id: "spm_veil",
+        anim: "cast_buff",
+        total_frames: 40, // tuning
+        stamina: 0, // casting costs FP only
+        fp: 10, // docs/game/04-arsenal-and-builds.md, "Formulae"
+        root_motion: [],
+        track_deg_per_tick: 10.0, // aims at the lock target until the spell leaves
+        hyperarmor: None,
+        iframes: None,
+        cancel_attack_from: 34, // tuning
+        cancel_dodge_from: 26, // tuning
+        cancel_any_from: 34, // tuning
+        next_chain: None,
+        hitboxes: [],
+        projectiles: [],
+        sfx: [(14, "cast_formula")],
+        vfx: [],
+      ),
+      effects: [(frame: 14, effect: Buff(buff: "spb_veil"))],
+      buffs: [
+        (
+          id: "spb_veil",
+          slot: Body,
+          damage_percent: 100,
+          status: [],
+          duration_ticks: 900, // 900 ticks (the spec)
+          vfx: "veil",
+          notice_percent: 50, // enemies notice you at half range
+        ),
+      ],
+    ),
+    (
+      // A bolt that arcs up and accelerates down onto the target; high stance damage.
+      id: "spl_gradient_descent",
+      name: "Gradient Descent",
+      school: Formula,
+      slots: 2,
+      requirements: (might: 0, finesse: 0, insight: 22, devotion: 0),
+      cast: (
+        id: "spm_gradient_descent",
+        anim: "cast_formula",
+        total_frames: 54, // tuning
+        stamina: 0, // casting costs FP only
+        fp: 24, // docs/game/04-arsenal-and-builds.md, "Formulae"
+        root_motion: [],
+        track_deg_per_tick: 10.0, // aims at the lock target until the spell leaves
+        hyperarmor: None,
+        iframes: None,
+        cancel_attack_from: 48, // tuning
+        cancel_dodge_from: 40, // tuning
+        cancel_any_from: 48, // tuning
+        next_chain: None,
+        hitboxes: [],
+        projectiles: [(frame: 20, projectile: "spp_gradient_descent", offset: (0.0, 1.8, 0.4), yaw_deg: 0.0, pitch_deg: 55.0)],
+        sfx: [(20, "cast_formula")],
+        vfx: [],
+      ),
+      projectiles: [
+      (
+        // Thrown up at 55 degrees; gravity bends it over and speeds it down onto the target, about 6 m out. Heavy stance damage.
+        id: "spp_gradient_descent",
+        speed: 13.0, // tuning
+        gravity: 28.0, // tuning
+        radius: 0.35, // tuning
+        lifetime_ticks: 60, // tuning
+        pierce: 0,
+        homing: None,
+        motion_value: 2.2, // tuning
+        phys: Neutral,
+        element: Aether,
+        poise_damage: 70, // tuning
+        knockback: 0.8, // tuning
+        hitstop: 5,
+        tags: [],
+      ),
+      ],
+    ),
+    (
+      // Shards in a spread; good against groups.
+      id: "spl_glasswing_swarm",
+      name: "Glasswing Swarm",
+      school: Formula,
+      slots: 1,
+      requirements: (might: 0, finesse: 12, insight: 18, devotion: 0),
+      cast: (
+        id: "spm_glasswing_swarm",
+        anim: "cast_formula",
+        total_frames: 30, // tuning
+        stamina: 0, // casting costs FP only
+        fp: 18, // docs/game/04-arsenal-and-builds.md, "Formulae"
+        root_motion: [],
+        track_deg_per_tick: 10.0, // aims at the lock target until the spell leaves
+        hyperarmor: None,
+        iframes: None,
+        cancel_attack_from: 24, // tuning
+        cancel_dodge_from: 16, // tuning
+        cancel_any_from: 24, // tuning
+        next_chain: None,
+        hitboxes: [],
+        projectiles: [(frame: 10, projectile: "spp_glasswing_shard", offset: (0.0, 1.4, 0.5), yaw_deg: -24.0, pitch_deg: 0.0), (frame: 10, projectile: "spp_glasswing_shard", offset: (0.0, 1.4, 0.5), yaw_deg: -12.0, pitch_deg: 0.0), (frame: 10, projectile: "spp_glasswing_shard", offset: (0.0, 1.4, 0.5), yaw_deg: 0.0, pitch_deg: 0.0), (frame: 10, projectile: "spp_glasswing_shard", offset: (0.0, 1.4, 0.5), yaw_deg: 12.0, pitch_deg: 0.0), (frame: 10, projectile: "spp_glasswing_shard", offset: (0.0, 1.4, 0.5), yaw_deg: 24.0, pitch_deg: 0.0)],
+        sfx: [(10, "cast_formula")],
+        vfx: [],
+      ),
+      projectiles: [
+      (
+        // Five shards in a 48 degree spread.
+        id: "spp_glasswing_shard",
+        speed: 24.0, // tuning
+        gravity: 0.0, // tuning
+        radius: 0.1, // tuning
+        lifetime_ticks: 30, // tuning
+        pierce: 0,
+        homing: None,
+        motion_value: 0.5, // tuning
+        phys: Neutral,
+        element: Aether,
+        poise_damage: 5, // tuning
+        knockback: 0.1, // tuning
+        hitstop: 1,
+        tags: [],
+      ),
+      ],
+    ),
+    (
+      // Charged beam that pierces through enemies: HEAVY casts the slow, charged form.
+      id: "spl_unbinding_lance",
+      name: "Unbinding Lance",
+      school: Formula,
+      slots: 2,
+      requirements: (might: 0, finesse: 0, insight: 28, devotion: 0),
+      cast: (
+        id: "spm_unbinding_lance",
+        anim: "cast_formula",
+        total_frames: 46, // tuning
+        stamina: 0, // casting costs FP only
+        fp: 32, // docs/game/04-arsenal-and-builds.md, "Formulae"
+        root_motion: [],
+        track_deg_per_tick: 10.0, // aims at the lock target until the spell leaves
+        hyperarmor: None,
+        iframes: None,
+        cancel_attack_from: 40, // tuning
+        cancel_dodge_from: 32, // tuning
+        cancel_any_from: 40, // tuning
+        next_chain: None,
+        hitboxes: [],
+        projectiles: [(frame: 18, projectile: "spp_unbinding_lance", offset: (0.0, 1.4, 0.5), yaw_deg: 0.0, pitch_deg: 0.0)],
+        sfx: [(18, "cast_formula")],
+        vfx: [],
+      ),
+      charged: (
+        id: "spm_unbinding_lance_charged",
+        anim: "cast_formula_charged",
+        total_frames: 72, // tuning
+        stamina: 0, // casting costs FP only
+        fp: 32, // docs/game/04-arsenal-and-builds.md, "Formulae"
+        root_motion: [],
+        track_deg_per_tick: 10.0, // aims at the lock target until the spell leaves
+        hyperarmor: None,
+        iframes: None,
+        cancel_attack_from: 66, // tuning
+        cancel_dodge_from: 58, // tuning
+        cancel_any_from: 66, // tuning
+        next_chain: None,
+        hitboxes: [],
+        projectiles: [(frame: 42, projectile: "spp_unbinding_lance_charged", offset: (0.0, 1.4, 0.5), yaw_deg: 0.0, pitch_deg: 0.0)],
+        sfx: [(42, "cast_formula")],
+        vfx: [],
+      ),
+      projectiles: [
+      (
+        // A pierce-through beam: very fast, passes through six enemies.
+        id: "spp_unbinding_lance",
+        speed: 60.0, // tuning
+        gravity: 0.0, // tuning
+        radius: 0.3, // tuning
+        lifetime_ticks: 24, // tuning
+        pierce: 6,
+        homing: None,
+        motion_value: 1.6, // tuning
+        phys: Neutral,
+        element: Aether,
+        poise_damage: 24, // tuning
+        knockback: 0.4, // tuning
+        hitstop: 4,
+        tags: [],
+      ),
+      (
+        // The charged beam: wider, hits harder, passes through eight enemies.
+        id: "spp_unbinding_lance_charged",
+        speed: 60.0, // tuning
+        gravity: 0.0, // tuning
+        radius: 0.4, // tuning
+        lifetime_ticks: 24, // tuning
+        pierce: 8,
+        homing: None,
+        motion_value: 2.7, // tuning
+        phys: Neutral,
+        element: Aether,
+        poise_damage: 40, // tuning
+        knockback: 0.6, // tuning
+        hitstop: 5,
+        tags: [],
+      ),
+      ],
+    ),
+  ],
+)

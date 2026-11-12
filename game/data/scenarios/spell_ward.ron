@@ -1,0 +1,23 @@
+// The WP-055 body-buff test: the spell range's Lantern and Scholar's Stylus, and one Husk 16 m
+// ahead facing the player, outside the 14 m it sees. A player who walks toward it is noticed
+// at 14 m; the Husk then walks up and swings its two-hit combo (62 and 79 damage). That tests
+// Mirror Ward, which absorbs 40 percent of the next 3 hits. A Veil halves the range the Husk
+// notices the player at, to 7 m: that tests Veil.
+(
+  spawn: (0.0, 0.0, 0.0),
+  spawn_yaw: 0.0,
+  kill_y: -50.0,
+  heightfield: None,
+  start_glimmer: 400000,
+  player_weapon: Some("wpn_scholars_stylus"),
+  player_spells: ["spl_mirror_ward", "spl_veil"],
+  lanterns: [
+    (id: "lantern_ward", pos: (0.0, 0.0, -1.0), yaw: 0.0),
+  ],
+  boxes: [
+    (name: "floor", center: (0.0, -0.5, 0.0), half_extents: (60.0, 0.5, 60.0)),
+  ],
+  enemies: [
+    (name: "husk", enemy: "husk", pos: (0.0, 0.0, 16.0), yaw: 3.1415927),
+  ],
+)

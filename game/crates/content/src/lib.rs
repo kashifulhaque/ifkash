@@ -26,6 +26,7 @@ pub mod portfolio;
 pub mod projectiles;
 pub mod registry;
 pub mod scenario;
+pub mod spells;
 pub mod status;
 pub mod validate;
 pub mod weapons;
@@ -43,6 +44,7 @@ pub use portfolio::{Portfolio, PortfolioContent};
 pub use projectiles::{Homing, ProjectileDef};
 pub use registry::{NumId, Registry};
 pub use scenario::{Lantern, Pickup, Scenario};
+pub use spells::{SpellDef, SpellRules, SpellSchool};
 pub use status::StatusRules;
 pub use validate::{Issue, Severity, Validate};
 pub use weapons::{GuardStats, Weapon};
@@ -67,6 +69,8 @@ const STATUS_FILE: &str = "status.ron";
 const CHARMS_FILE: &str = "charms.ron";
 /// The armor file (relative to the data root).
 const ARMOR_FILE: &str = "armor.ron";
+/// Directory (relative to the data root) holding spell files.
+const SPELLS_DIR: &str = "spells";
 /// Directory (relative to the data root) holding enemy definitions, one per file.
 const ENEMIES_DIR: &str = "enemies";
 /// Directory (relative to the data root) holding boss definitions, one per file.
@@ -230,6 +234,10 @@ const EMBEDDED_WEAPONS: &[(&str, &str)] = &[
         include_str!("../../../data/weapons/stub_bow.ron"),
     ),
     (
+        "weapons/stylus_reliquary.ron",
+        include_str!("../../../data/weapons/stylus_reliquary.ron"),
+    ),
+    (
         "weapons/test_classes.ron",
         include_str!("../../../data/weapons/test_classes.ron"),
     ),
@@ -238,6 +246,17 @@ const EMBEDDED_REGISTRY: &str = include_str!("../../../data/registry.ron");
 const EMBEDDED_ATTRIBUTES: &str = include_str!("../../../data/attributes.ron");
 const EMBEDDED_LOCOMOTION: &str = include_str!("../../../data/locomotion.ron");
 const EMBEDDED_CONSUMABLES: &str = include_str!("../../../data/consumables.ron");
+/// Embedded spell files, as `(spells/<file>, text)`. `litanies.ron` is WP-056's.
+const EMBEDDED_SPELLS: &[(&str, &str)] = &[
+    (
+        "spells/formulae.ron",
+        include_str!("../../../data/spells/formulae.ron"),
+    ),
+    (
+        "spells/litanies.ron",
+        include_str!("../../../data/spells/litanies.ron"),
+    ),
+];
 const EMBEDDED_PROJECTILES: &str = include_str!("../../../data/projectiles.ron");
 const EMBEDDED_STATUS: &str = include_str!("../../../data/status.ron");
 const EMBEDDED_CHARMS: &str = include_str!("../../../data/charms.ron");
@@ -366,6 +385,14 @@ const EMBEDDED_SCENARIOS: &[(&str, &str)] = &[
     (
         "scenarios/fight_bell_warden.ron",
         include_str!("../../../data/scenarios/fight_bell_warden.ron"),
+    ),
+    (
+        "scenarios/spell_range.ron",
+        include_str!("../../../data/scenarios/spell_range.ron"),
+    ),
+    (
+        "scenarios/spell_ward.ron",
+        include_str!("../../../data/scenarios/spell_ward.ron"),
     ),
     (
         "scenarios/boss_gate.ron",
@@ -636,6 +663,13 @@ pub struct Content {
     /// Armor pieces from `armor.ron` (WP-057); empty if the file is missing.
     #[cfg_attr(feature = "ts", ts(skip))]
     pub armor: Vec<ArmorPiece>,
+    /// Every spell from `spells/*.ron`, in file then list order (WP-055). Their moves,
+    /// projectiles, and buffs are also in `moves`, `projectiles`, and `status`.
+    #[cfg_attr(feature = "ts", ts(skip))]
+    pub spells: Vec<SpellDef>,
+    /// The rules every spell shares (cast speed), from the spell file that states them.
+    #[cfg_attr(feature = "ts", ts(skip))]
+    pub spell_rules: Option<SpellRules>,
     /// The shared AI tuning from `ai.ron`. `None` only for partial data directories;
     /// a scenario with enemies needs it.
     #[cfg_attr(feature = "ts", ts(skip))]
@@ -837,6 +871,7 @@ impl Content {
         .with_status(status.as_deref())?
         .with_charms(charms.as_deref())?
         .with_armor(armor.as_deref())?
+        .with_spells(list(SPELLS_DIR)?)?
         .with_enemies(ai.as_deref(), list(ENEMIES_DIR)?)?
         .with_bosses(list(BOSSES_DIR)?)?
         .with_levels(list(KITS_DIR)?, list_levels(dir)?)
@@ -862,6 +897,7 @@ impl Content {
         .with_status(Some(EMBEDDED_STATUS))?
         .with_charms(Some(EMBEDDED_CHARMS))?
         .with_armor(Some(EMBEDDED_ARMOR))?
+        .with_spells(own(EMBEDDED_SPELLS))?
         .with_enemies(Some(EMBEDDED_AI), own(EMBEDDED_ENEMIES))?
         .with_bosses(own(EMBEDDED_BOSSES))?
         .with_levels(own(EMBEDDED_KITS), own(EMBEDDED_LEVELS))
@@ -899,6 +935,8 @@ impl Content {
             status: None,
             charms: Vec::new(),
             armor: Vec::new(),
+            spells: Vec::new(),
+            spell_rules: None,
             ai: None,
             enemies: BTreeMap::new(),
             bosses: BTreeMap::new(),
@@ -988,6 +1026,42 @@ impl Content {
         Ok(self)
     }
 
+    /// Adds spell files as `(spells/<file>, text)` and merges each spell's moves,
+    /// projectiles, and buffs into `moves`, `projectiles`, and the status rules. Fails on
+    /// an ID that has no registry entry, or on a spell with buffs when there are no
+    /// status rules to take them.
+    pub fn with_spells(mut self, files: Vec<(String, String)>) -> Result<Self, ContentError> {
+        for (path, text) in files {
+            let file: spells::SpellFile = parse(&path, &text)?;
+            if let Some(r) = file.rules {
+                self.spell_rules = Some(r);
+            }
+            let mut moves = Vec::new();
+            for (i, s) in file.spells.into_iter().enumerate() {
+                for (field, id) in s.references() {
+                    self.check_id(&path, format!("spells[{i}].{field}"), id)?;
+                }
+                for m in std::iter::once(&s.cast).chain(s.charged.as_ref()) {
+                    if let Some(next) = &m.next_chain {
+                        self.check_id(&path, format!("{}: next_chain", m.id), next)?;
+                    }
+                    moves.push(m.clone());
+                }
+                self.projectiles.extend(s.projectiles.iter().cloned());
+                if !s.buffs.is_empty() {
+                    let status = self.status.as_mut().ok_or_else(|| ContentError::Parse {
+                        file: path.clone(),
+                        message: "a spell defines buffs but there is no status.ron".to_owned(),
+                    })?;
+                    status.buffs.extend(s.buffs.iter().cloned());
+                }
+                self.spells.push(s);
+            }
+            self.moves.insert(path, moves);
+        }
+        Ok(self)
+    }
+
     /// Adds the armor file (RON text, if any). Fails on a piece that has no registry entry.
     pub fn with_armor(mut self, text: Option<&str>) -> Result<Self, ContentError> {
         self.armor = text
@@ -999,6 +1073,11 @@ impl Content {
             self.check_id(ARMOR_FILE, format!("pieces[{i}].id"), &p.id)?;
         }
         Ok(self)
+    }
+
+    /// Finds a spell by string ID.
+    pub fn spell_by_id(&self, id: &str) -> Option<&SpellDef> {
+        self.spells.iter().find(|s| s.id == id)
     }
 
     /// Adds the AI tuning (RON text, if any) and the enemy definitions as

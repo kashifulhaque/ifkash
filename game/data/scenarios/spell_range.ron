@@ -1,0 +1,42 @@
+// The WP-055 spell range: a flat floor, a Lantern at the spawn, and four padded dummies in a
+// line and a spread. The player spawns at the origin facing +Z with a Scholar's Stylus,
+// knows all nine Formulae, and holds enough Glimmer to level Insight at the Lantern, so a
+// script can raise the attributes a spell needs (`cmd Rest`, `cmd LevelUp 5`) and attune it
+// (`cmd Equip 32 <spell number>`) the way a player does. +X is to the player's left.
+//   - dummy_front: 7 m dead ahead; dummy_far: 14 m dead ahead, so a beam passes through both.
+//   - dummy_left and dummy_right: 8 m ahead, 3 m to either side: a spread reaches them.
+//   - dummy_near: 2.6 m ahead and 1.3 m to the left, inside a short-range cone but off the
+//     line of fire.
+// Every dummy has 9000 HP, flat defense 100, and no poise, so it takes hits and stands.
+(
+  spawn: (0.0, 0.0, 0.0),
+  spawn_yaw: 0.0,
+  kill_y: -50.0,
+  heightfield: None,
+  start_glimmer: 400000,
+  player_weapon: Some("wpn_scholars_stylus"),
+  player_spells: [
+    "spl_aether_dart",
+    "spl_aether_bolt",
+    "spl_homing_motes",
+    "spl_aether_wave",
+    "spl_mirror_ward",
+    "spl_veil",
+    "spl_gradient_descent",
+    "spl_glasswing_swarm",
+    "spl_unbinding_lance",
+  ],
+  lanterns: [
+    (id: "lantern_range", pos: (0.0, 0.0, -1.0), yaw: 0.0),
+  ],
+  boxes: [
+    (name: "floor", center: (0.0, -0.5, 0.0), half_extents: (60.0, 0.5, 60.0)),
+  ],
+  dummies: [
+    (name: "dummy_front", pos: (0.0, 0.0, 7.0), yaw: 3.1415927, hp: 9000, defense: (flat: 100), poise: 0, unaware: false),
+    (name: "dummy_near", pos: (1.3, 0.0, 2.3), yaw: 3.1415927, hp: 9000, defense: (flat: 100), poise: 0, unaware: false),
+    (name: "dummy_far", pos: (0.0, 0.0, 14.0), yaw: 3.1415927, hp: 9000, defense: (flat: 100), poise: 0, unaware: false),
+    (name: "dummy_left", pos: (3.0, 0.0, 8.0), yaw: 3.1415927, hp: 9000, defense: (flat: 100), poise: 0, unaware: false),
+    (name: "dummy_right", pos: (-3.0, 0.0, 8.0), yaw: 3.1415927, hp: 9000, defense: (flat: 100), poise: 0, unaware: false),
+  ],
+)

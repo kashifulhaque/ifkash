@@ -1,0 +1,23 @@
+# WP-055 golden: Mirror Ward absorbs 40% of the next 3 hits (record with `lf-tools replay record-script`). Each line:
+# <ticks> <move_x> <move_z> [BUTTONS], plus `cmd` lines. The player rests at the Lantern,
+# raises Insight by 8 (the spell's requirement), attunes the spell to the first
+# attunement slot (slot 32), and casts it. Stylus, Glimmer, and known spells come from
+# the `spell_ward` scenario.
+seed 5505
+scenario spell_ward
+10 0 0            # settle on the ground
+cmd Rest
+cmd LevelUp 5
+cmd LevelUp 5
+cmd LevelUp 5
+cmd LevelUp 5
+cmd LevelUp 5
+cmd LevelUp 5
+cmd LevelUp 5
+cmd LevelUp 5
+cmd Equip 32 15004      # attune
+2 0 0
+1 0 0 LIGHT     # cast the ward
+45 0 0
+60 0 127        # run toward the Husk: it notices at 14 m and walks up
+300 0 0         # it swings its combo, and again

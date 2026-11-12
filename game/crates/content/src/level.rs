@@ -132,6 +132,9 @@ pub struct Area {
     /// A weapon ID the player starts wielding instead of the default weapon.
     #[serde(default)]
     pub player_weapon: Option<String>,
+    /// Spell IDs the player knows from the start (test areas).
+    #[serde(default)]
+    pub player_spells: Vec<String>,
 }
 
 /// An axis-aligned rectangle on the ground plane, as (x, z) corners in meters.
@@ -1499,6 +1502,7 @@ impl Level {
             snow: Vec::new(),
             start_glimmer: self.area.start_glimmer,
             player_weapon: self.area.player_weapon.clone(),
+            player_spells: self.area.player_spells.clone(),
         };
         for e in &self.entities.entities {
             match e {
@@ -1557,6 +1561,7 @@ mod tests {
                 connections: vec![],
                 start_glimmer: 0,
                 player_weapon: None,
+                player_spells: Vec::new(),
             },
             terrain: Some(Terrain {
                 spacing_m: 1.0,

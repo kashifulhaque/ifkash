@@ -84,6 +84,8 @@ pub fn index(kind: StatusKind) -> usize {
 pub struct ActiveBuff {
     pub num: NumId,
     pub ticks: u32,
+    /// Hits a hit-absorbing buff (Mirror Ward) has left to absorb; 0 for any other buff.
+    pub hits: u8,
 }
 
 /// Per-actor status state. Simulation state: part of the state hash.
@@ -408,6 +410,7 @@ pub fn apply_landing(
 /// `damage` as `t` takes it, scaled by Rime's debuff and a sleeper's weakness. A hit
 /// wakes a sleeper.
 pub fn incoming_damage(t: &mut Actor, table: &StatusTable, damage: u32) -> u32 {
+    let damage = absorbed(t, table, damage);
     if t.status.active == [0; COUNT] {
         return damage;
     }
@@ -420,6 +423,40 @@ pub fn incoming_damage(t: &mut Actor, table: &StatusTable, damage: u32) -> u32 {
         t.status.active[index(StatusKind::Drowse)] = 0;
     }
     u32::try_from(d).unwrap_or(u32::MAX)
+}
+
+/// `damage` after a hit-absorbing body buff (Mirror Ward: 40 percent of the next 3 hits).
+/// Each hit that deals damage uses one of the buff's hits, and the buff ends with the
+/// last. A buff with `absorb_hits` 0 absorbs for its whole duration.
+fn absorbed(t: &mut Actor, table: &StatusTable, damage: u32) -> u32 {
+    let Some(b) = t.status.body_buff else {
+        return damage;
+    };
+    let Some(def) = table.buff(b.num).filter(|d| d.absorb_percent > 0) else {
+        return damage;
+    };
+    if damage == 0 {
+        return 0;
+    }
+    if def.absorb_hits > 0 {
+        let left = b.hits.saturating_sub(1);
+        if left == 0 {
+            t.status.body_buff = None;
+            recompute_buff_percent(t, table);
+        } else if let Some(slot) = t.status.body_buff.as_mut() {
+            slot.hits = left;
+        }
+    }
+    (u64::from(damage) * u64::from(100 - def.absorb_percent) / 100) as u32
+}
+
+/// How far enemies notice `a`, in percent of their range (a Veil gives 50): the body
+/// buff's `notice_percent`, or 100.
+pub fn notice_percent(a: &Actor, table: &StatusTable) -> u16 {
+    a.status
+        .body_buff
+        .and_then(|b| table.buff(b.num))
+        .map_or(100, |d| d.notice_percent)
 }
 
 /// Clears `kind`'s meter and ends its effect (a cure item).
@@ -453,6 +490,7 @@ pub fn apply_buff(a: &mut Actor, table: &StatusTable, num: NumId) -> bool {
     let active = Some(ActiveBuff {
         num,
         ticks: def.duration_ticks,
+        hits: def.absorb_hits,
     });
     match def.slot {
         BuffSlot::Weapon => a.status.weapon_buff = active,
@@ -1097,6 +1135,9 @@ mod tests {
             duration_ticks: 100,
             vfx: "test".to_owned(),
             element: None,
+            absorb_percent: 0,
+            absorb_hits: 0,
+            notice_percent: 100,
         });
         w.status.buffs.push((num, i));
         w.status.buffs.sort_by_key(|(n, _)| *n);

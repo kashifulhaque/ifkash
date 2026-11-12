@@ -29,6 +29,8 @@ pub mod usage;
 pub use inventory::{Equipment, FlaskKind, Flasks, Inventory, slot};
 pub use table::{FlaskRules, ItemDef, ItemTable};
 
+use lf_content::NumId;
+
 use crate::combat::moves::Action;
 use crate::input::{Command, TickInput, buttons};
 use crate::world::World;
@@ -51,8 +53,17 @@ pub fn run(world: &mut World, input: &TickInput) {
     }
     let weapon_before = actor.inventory.equipment.right_weapon();
     let gear_before = gear::gear_slots(&actor.inventory.equipment);
+    let mut spell_cmds: Vec<(bool, u8, NumId)> = Vec::new();
     for c in &input.commands {
         match *c {
+            // Spell positions attune a spell instead (`combat::spells`); that needs the
+            // whole world, so it runs after this loop.
+            Command::Equip { slot, item } if slot >= slot::SPELL_1 => {
+                spell_cmds.push((true, slot - slot::SPELL_1, item));
+            }
+            Command::Unequip { slot } if slot >= slot::SPELL_1 => {
+                spell_cmds.push((false, slot - slot::SPELL_1, 0));
+            }
             Command::Equip { slot, item } => {
                 actor.inventory.equip(slot, item, &world.items);
             }
@@ -106,6 +117,23 @@ pub fn run(world: &mut World, input: &TickInput) {
         gear::sync_load_tier(world);
     }
     gear::tick(world);
+    // `CYCLE_SPELL` selects the next attuned spell. The moves system keeps last tick's
+    // buttons until it runs later this tick, so the press edge is against those.
+    let spell_pressed = input.frame.buttons & buttons::CYCLE_SPELL != 0
+        && world
+            .actors
+            .get(world.player)
+            .is_some_and(|p| p.moves.prev_buttons & buttons::CYCLE_SPELL == 0);
+    for (attune, index, item) in spell_cmds {
+        if attune {
+            crate::combat::spells::attune(world, index, item);
+        } else {
+            crate::combat::spells::unattune(world, index);
+        }
+    }
+    if spell_pressed {
+        crate::combat::spells::cycle(world);
+    }
 }
 
 #[cfg(test)]

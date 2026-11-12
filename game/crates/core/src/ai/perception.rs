@@ -101,6 +101,13 @@ pub fn player_noise(world: &World, t: &AiTuning) -> Option<([f32; 3], f32)> {
         let run = speed >= (l.walk_speed + l.run_speed) * 0.5;
         r = r.max(if run { n.run_m } else { n.walk_m });
     }
+    // A Veil (a body buff) halves the radius, as it halves the sight range.
+    let pct = crate::combat::status::notice_percent(p, &world.status);
+    let r = if pct == 100 {
+        r
+    } else {
+        r * f32::from(pct) / 100.0
+    };
     (r > 0.0).then_some((p.pos, r))
 }
 

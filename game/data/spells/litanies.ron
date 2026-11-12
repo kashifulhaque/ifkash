@@ -1,0 +1,7 @@
+// The nine Litanies (Devotion, cast with a reliquary): WP-056 fills this in. The schema is
+// the same as formulae.ron (crates/content/src/spells.rs) and needs no `rules` here. Registry
+// numbers: spells 15020-15039, moves 15150-15199, projectiles 15350-15399, buffs 15450-15499.
+#![enable(implicit_some)]
+(
+  spells: [],
+)

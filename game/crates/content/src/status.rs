@@ -97,6 +97,22 @@ pub struct BuffDef {
     /// hit's physical attack rating it adds (an oil's "Fire at 20% of AR", WP-057).
     #[serde(default)]
     pub element: Option<(Element, u8)>,
+    /// Body buffs only: the share of each of the next `absorb_hits` hits it takes, in
+    /// percent (Mirror Ward: 40). 0 absorbs nothing.
+    #[serde(default)]
+    pub absorb_percent: u8,
+    /// How many hits `absorb_percent` applies to before the buff ends. 0 means the
+    /// absorption lasts the whole duration.
+    #[serde(default)]
+    pub absorb_hits: u8,
+    /// Body buffs only: enemies notice the holder at this percent of their range, by sight
+    /// and by hearing (Veil: 50). 100 changes nothing.
+    #[serde(default = "full_percent")]
+    pub notice_percent: u16,
+}
+
+fn full_percent() -> u16 {
+    100
 }
 
 /// The whole `status.ron` file.
@@ -175,6 +191,18 @@ impl StatusRules {
                 out.push((
                     format!("buffs[{i}].element"),
                     "only a weapon buff adds an element".to_owned(),
+                ));
+            }
+            if b.slot == BuffSlot::Weapon && (b.absorb_percent > 0 || b.notice_percent != 100) {
+                out.push((
+                    format!("buffs[{i}].absorb_percent"),
+                    "only a body buff absorbs hits or hides the holder".to_owned(),
+                ));
+            }
+            if b.absorb_percent > 100 || b.notice_percent == 0 {
+                out.push((
+                    format!("buffs[{i}].notice_percent"),
+                    "absorb_percent is at most 100 and notice_percent at least 1".to_owned(),
                 ));
             }
             if b.slot == BuffSlot::Body && !b.status.is_empty() {

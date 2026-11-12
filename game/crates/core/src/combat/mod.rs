@@ -12,5 +12,6 @@ pub mod moves;
 pub mod poise;
 pub mod projectile;
 pub mod resolve;
+pub mod spells;
 pub mod stamina;
 pub mod status;

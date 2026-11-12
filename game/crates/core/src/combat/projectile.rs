@@ -533,17 +533,17 @@ pub fn spawn(
     let yaw = a.yaw + spawn.yaw_deg * DEG_TO_RAD;
     let pitch = spawn.pitch_deg * DEG_TO_RAD;
     let heading = [cos(pitch) * sin(yaw), sin(pitch), cos(pitch) * cos(yaw)];
-    let ar = a
-        .inventory
-        .equipment
-        .right_weapon()
-        .and_then(|w| {
-            world.damage.attack_rating(
-                w,
-                &a.stats.attrs,
-                a.stats.weapon_upgrade,
-                a.stats.two_handing,
-            )
+    // A spell's projectile deals the catalyst's spell power (WP-055), not the weapon's AR.
+    let ar = super::spells::power(world, a, move_num)
+        .or_else(|| {
+            a.inventory.equipment.right_weapon().and_then(|w| {
+                world.damage.attack_rating(
+                    w,
+                    &a.stats.attrs,
+                    a.stats.weapon_upgrade,
+                    a.stats.two_handing,
+                )
+            })
         })
         // An enemy has no weapon: its definition's attack rating (WP-032).
         .or_else(|| crate::ai::attack::rating(world, a))

@@ -428,9 +428,14 @@ fn think(world: &mut World, id: Id, t: &AiTuning) {
     };
     let def = &world.ai.def(brain.def);
     let target = world.actors.get(player).filter(|p| !p.dead);
-    // Boo and endark shorten what enemies see of the player (WP-057).
+    // Boo and endark (WP-057) and a Veil (WP-055) shorten what enemies see of the player;
+    // a Veil also shortens the range it is heard at (in `player_noise`).
     let sees = target.is_some_and(|p| {
-        let range = crate::items::gear::scale_sight(&world.items.gear, p, &def.perception);
+        let mut range = crate::items::gear::scale_sight(&world.items.gear, p, &def.perception);
+        let pct = crate::combat::status::notice_percent(p, &world.status);
+        if pct != 100 {
+            range.sight_m = range.sight_m * f32::from(pct) / 100.0;
+        }
         perception::sees(&world.physics, a, p, &range, t)
     });
     let faces = target.is_some_and(|p| perception::in_cone(a, p.pos, def.perception.sight_deg));

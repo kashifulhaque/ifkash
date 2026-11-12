@@ -128,6 +128,10 @@ fn hash_ignores_comments_and_whitespace() {
             ("weapons/straight_sword.ron".into(), weapons),
             ("weapons/stub_bow.ron".into(), bow),
             ("weapons/test_classes.ron".into(), test_classes),
+            (
+                "weapons/stylus_reliquary.ron".into(),
+                std::fs::read_to_string(data_dir().join("weapons/stylus_reliquary.ron")).unwrap(),
+            ),
         ],
     )
     .and_then(|c| {
@@ -142,6 +146,12 @@ fn hash_ignores_comments_and_whitespace() {
             .with_status(Some(&format!("// noise\n{}", read("status.ron"))))?
             .with_charms(Some(&format!("// noise\n{}", read("charms.ron"))))?
             .with_armor(Some(&format!("// noise\n{}", read("armor.ron"))))?
+            .with_spells(
+                ron_files("spells")
+                    .into_iter()
+                    .map(|(p, t)| (p, format!("// noise\n{t}")))
+                    .collect(),
+            )?
             .with_enemies(
                 Some(&format!("// noise\n{}", read("ai.ron"))),
                 ron_files("enemies")

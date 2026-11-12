@@ -23,7 +23,7 @@ pub mod validate;
 pub mod weapons;
 
 pub use attributes::Attributes;
-pub use locomotion::Locomotion;
+pub use locomotion::{LockOn, Locomotion};
 pub use moves::Move;
 pub use portfolio::{Portfolio, PortfolioContent};
 pub use registry::{NumId, Registry};

@@ -64,4 +64,24 @@ pub struct Locomotion {
     pub autostep_min_width: f32,
     /// Distance within which the player is snapped down to the ground, in meters.
     pub snap_to_ground: f32,
+    /// Lock-on targeting numbers.
+    pub lock_on: LockOn,
+}
+
+/// Lock-on tuning (docs/game/03-combat.md, "Lock-on").
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct LockOn {
+    /// Farthest a target can be to be acquired or switched to, in meters.
+    pub acquire_range_m: f32,
+    /// Full apex angle of the acquisition cone around the facing, in degrees. A target
+    /// is inside it when it is within half this angle of the facing on either side.
+    pub acquire_cone_deg: f32,
+    /// The lock breaks when the target is farther than this, in meters.
+    pub break_range_m: f32,
+    /// Radius around the player in which a new target is picked automatically after the
+    /// locked one dies, in meters.
+    pub retarget_range_m: f32,
+    /// Height above the feet of the point the line-of-sight ray runs between, in meters.
+    pub eye_height_m: f32,
 }

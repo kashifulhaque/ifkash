@@ -36,4 +36,12 @@
   autostep_height: 0.4, // tuning: stairs step up, the 1 m ledge needs a jump
   autostep_min_width: 0.2, // tuning
   snap_to_ground: 0.3, // tuning
+  // Lock-on (docs/game/03-combat.md, "Lock-on")
+  lock_on: (
+    acquire_range_m: 20.0, // Lock-on: within 20 m
+    acquire_cone_deg: 60.0, // Lock-on: a 60 degree cone (full apex angle, 30 degrees each side)
+    break_range_m: 30.0, // Lock-on: breaks beyond 30 m
+    retarget_range_m: 8.0, // Lock-on: auto-pick the next target within 8 m
+    eye_height_m: 1.5, // tuning: line-of-sight ray height; the capsule is 1.8 m tall
+  ),
 )

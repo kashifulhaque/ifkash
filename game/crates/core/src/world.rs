@@ -88,6 +88,21 @@ impl World {
             },
             ..Actor::default()
         });
+        for d in &level.dummies {
+            actors.insert(Actor {
+                pos: d.pos,
+                yaw: d.yaw,
+                hp: d.hp,
+                max_hp: d.hp,
+                motor: Motor {
+                    grounded: true,
+                    ground_y: d.pos[1],
+                    fall_peak_y: d.pos[1],
+                    ..Motor::default()
+                },
+                ..Actor::default()
+            });
+        }
         Ok(Self {
             tick: 0,
             rng: RngStreams::from_seed(seed),

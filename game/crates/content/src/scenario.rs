@@ -17,6 +17,23 @@ pub struct Scenario {
     pub heightfield: Option<Heightfield>,
     #[serde(default)]
     pub boxes: Vec<BoxCollider>,
+    /// Standing dummy actors: they have HP, never move or act, and can be locked on to.
+    #[serde(default)]
+    pub dummies: Vec<Dummy>,
+}
+
+/// A training dummy.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Dummy {
+    /// Label for tools and error messages.
+    pub name: String,
+    /// Feet position, in meters.
+    pub pos: [f32; 3],
+    /// Facing, in radians from +Z toward +X.
+    pub yaw: f32,
+    /// Max HP; the dummy starts at full HP.
+    pub hp: u32,
 }
 
 /// A terrain heightfield centered on `center`. Vertex `(row, col)` sits at
@@ -73,6 +90,11 @@ impl Scenario {
         for b in &self.boxes {
             if b.half_extents.iter().any(|&e| e <= 0.0) {
                 return Err(format!("box {:?}: half_extents must be positive", b.name));
+            }
+        }
+        for d in &self.dummies {
+            if d.hp == 0 {
+                return Err(format!("dummy {:?}: hp must be positive", d.name));
             }
         }
         Ok(())

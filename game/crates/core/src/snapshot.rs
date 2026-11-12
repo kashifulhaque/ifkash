@@ -7,6 +7,17 @@
 use crate::arena::Id;
 use crate::world::World;
 
+/// Bits of `ActorSnap::flags`, in the order of docs/game/01-architecture.md.
+pub mod flags {
+    pub const DEAD: u16 = 1 << 0;
+    pub const STAGGERED: u16 = 1 << 1;
+    pub const GUARDING: u16 = 1 << 2;
+    pub const INVULNERABLE: u16 = 1 << 3;
+    /// The actor the player is currently locked on to.
+    pub const LOCKED_TARGET: u16 = 1 << 4;
+    pub const TWO_HANDING: u16 = 1 << 5;
+}
+
 /// One actor as the renderer sees it. 40 bytes, 4-byte aligned, no padding. The TypeScript
 /// reader in `src/lib/latticefall/engine/snapshot.ts` mirrors these offsets exactly.
 ///
@@ -29,7 +40,7 @@ pub struct ActorSnap {
     pub id: u32,
     /// Content ID of the actor type, for model lookup. 0 until actor kinds exist.
     pub kind: u16,
-    /// Dead, staggered, guarding, invulnerable, locked target, two-handing. None yet.
+    /// See [`flags`]. Only dead and locked target are set so far.
     pub flags: u16,
     /// Meters.
     pub pos: [f32; 3],
@@ -57,9 +68,18 @@ pub fn pack_id(id: Id) -> u32 {
 /// Clears `out` and writes one record per live actor, in arena (index) order.
 pub fn write_snapshot(world: &World, out: &mut Vec<ActorSnap>) {
     out.clear();
+    let locked = world.actors.get(world.player).and_then(|p| p.lock_target);
     for (id, actor) in world.actors.iter() {
+        let mut bits = 0;
+        if actor.dead || actor.hp == 0 {
+            bits |= flags::DEAD;
+        }
+        if locked == Some(id) {
+            bits |= flags::LOCKED_TARGET;
+        }
         out.push(ActorSnap {
             id: pack_id(id),
+            flags: bits,
             pos: actor.pos,
             yaw: actor.yaw,
             hp_frac: if actor.max_hp > 0 {

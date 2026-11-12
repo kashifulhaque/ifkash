@@ -2,9 +2,11 @@
 //! See docs/game/01-architecture.md, "World and actors".
 
 pub mod controller;
+pub mod targeting;
 #[cfg(test)]
 mod tests;
 
+use crate::arena::Id;
 use serde::{Deserialize, Serialize};
 
 /// One actor. Every field is simulation state and is part of the state hash.
@@ -23,6 +25,9 @@ pub struct Actor {
     pub stamina: f32,
     pub max_stamina: f32,
     pub motor: Motor,
+    /// The actor this one is locked on to (the player's lock-on target), if any.
+    /// See `targeting`.
+    pub lock_target: Option<Id>,
 }
 
 /// Character controller state between ticks.

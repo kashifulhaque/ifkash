@@ -210,6 +210,8 @@ fn button(name: &str) -> Option<u16> {
         "USE_ITEM" => buttons::USE_ITEM,
         "INTERACT" => buttons::INTERACT,
         "LOCK" => buttons::LOCK,
+        "SWITCH_L" => buttons::SWITCH_L,
+        "SWITCH_R" => buttons::SWITCH_R,
         _ => return None,
     })
 }

@@ -44,8 +44,10 @@ pub fn jump_speed(t: &Locomotion) -> f32 {
 }
 
 /// Player intent (tick system 2): turns the frame into a planar velocity, a facing,
-/// sprint, and jump requests.
-pub fn intent(a: &mut Actor, frame: ActionFrame, t: &Locomotion) {
+/// sprint, and jump requests. `lock_pos` is the position of the locked-on target, if any:
+/// while it's set the actor strafes, facing the target whichever way it moves
+/// (docs/game/03-combat.md, "Lock-on"). The move direction is the stick's, unchanged.
+pub fn intent(a: &mut Actor, frame: ActionFrame, lock_pos: Option<[f32; 3]>, t: &Locomotion) {
     let m = &mut a.motor;
     let pressed = frame.buttons & !m.prev_buttons;
     m.prev_buttons = frame.buttons;
@@ -59,6 +61,9 @@ pub fn intent(a: &mut Actor, frame: ActionFrame, t: &Locomotion) {
         a.vel[0] = 0.0;
         a.vel[2] = 0.0;
         return;
+    }
+    if let Some(p) = lock_pos {
+        a.yaw = super::targeting::bearing(a.pos, p, a.yaw);
     }
     // In the air the takeoff velocity is kept: no air control.
     if !m.grounded && m.jump_startup == 0 {
@@ -89,7 +94,9 @@ pub fn intent(a: &mut Actor, frame: ActionFrame, t: &Locomotion) {
         }
         a.vel[0] = x / mag * speed;
         a.vel[2] = z / mag * speed;
-        a.yaw = atan2(x, z);
+        if lock_pos.is_none() {
+            a.yaw = atan2(x, z);
+        }
     }
 
     if pressed & buttons::JUMP != 0 && m.grounded && m.jump_startup == 0 && a.stamina > 0.0 {

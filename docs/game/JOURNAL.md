@@ -37,7 +37,9 @@ Copy this block to the top of the entries and fill it in as you go:
   - WP-020: done by opus (no escalation); commit `9858e66`; 181K worker tokens.
     The orchestrator regenerated `gen/Moveset.ts` (the worker's Touch list excluded `src/`).
   - WP-022: done by sonnet (no escalation); commit `398952c`; 160K worker tokens
-  - WP-021: in progress (opus), in its own worktree in parallel with WP-022
+  - WP-021: done by opus (no escalation) in a worktree; commit `5e4f88b`; 181K worker
+    tokens. The orchestrator rebased it onto WP-022, fixed one test for the renamed roll
+    field, and rehashed the goldens. Guard wiring into the resolver moves to WP-023.
   - WP-026: in progress (sonnet), in the main checkout in parallel with WP-021
 - **Context:** orchestrator 126K + workers 181K = 307K after WP-020 (budget 500K).
   Started WP-022 rather than WP-021: an opus L worker would likely pass the hard stop.

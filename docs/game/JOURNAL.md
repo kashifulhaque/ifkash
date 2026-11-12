@@ -62,6 +62,9 @@ Copy this block to the top of the entries and fill it in as you go:
   - WP-062: sonnet, worktree; `d0ad877`; 442K. Merged onto WP-064. Deliberate rehash: `m4_mechanics_yard` (new `MechState` fields are hashed once its lift moves). The merge left level manifests stale; the orchestrator rebaked all of them.
   - WP-067: sonnet, worktree; `2e2a678`; 415K. Merged onto WP-062; removed a duplicate `SpawnPoint.y` (WP-064 and WP-067 both added it).
   - Wave 2 screenshots by the orchestrator (dev WASM, port 5180): Belfry Tide Hall, castle bridge deck, Hollowdeep L11, Spire Gate; no console errors.
+  - WP-063: sonnet, worktree; `1024fe4`; 514K, **over the 500K budget** (it finished and committed). Clean cherry-pick; orchestrator rehashed after the worker's late elite-stat change (94 lines, A -> A).
+  - WP-065: sonnet, worktree; `9bd1f3e`; 391K. Worker said `m6_castle_part1` was unchanged; it wasn't (its part-1 geometry edits move the hash). The orchestrator proved it by patching the content hash in the worker's own recording and replaying it OK on the merged code. Deliberate.
+  - WP-069: sonnet, worktree; `8bf7ac9`; 289K. Merged last so WP-063 and WP-065 could be checked A -> A first. Deliberate rehash of 55 goldens (visited-cell flags). Map checked in the browser (opens with M; labelled tablist).
 - **Context:**
 - **Not verified:**
 - **Waiting on the owner:**

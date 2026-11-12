@@ -1,6 +1,7 @@
 //! `lf-tools`: command-line tools for Latticefall content and replays.
 
 mod assets;
+mod bake;
 mod bench;
 mod gen_ts;
 mod replay;
@@ -56,6 +57,11 @@ enum Command {
         #[arg(long)]
         out: Option<PathBuf>,
     },
+    /// Bake derived level data (the navigation grid).
+    Bake {
+        #[command(subcommand)]
+        action: bake::Action,
+    },
     /// Generate TypeScript types and a UI digest from the content data.
     GenTs {
         /// The data directory. Defaults to `game/data/`.
@@ -80,6 +86,7 @@ fn main() -> ExitCode {
             &out.unwrap_or_else(assets::default_out),
         ),
         Command::Bench { ticks } => bench::run(ticks),
+        Command::Bake { action } => bake::run(action, &default_data()),
         Command::Replay { action } => replay::run(action, &default_data()),
     }
 }

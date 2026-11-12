@@ -1,0 +1,24 @@
+// Navigation tuning. Schema: crates/content/src/nav.rs. Source: docs/game/01-architecture.md,
+// "Navigation" (0.5 m cells, 512 node expansions per request, 4 requests per tick).
+// Everything else is tuning: the spec fixes no agent size or edge rule.
+(
+  cell_size: 0.5,
+  // Largest floor-height change between two adjacent cells an agent can cross. 0.5 m per
+  // 0.5 m cell is the 45 degree climb limit (locomotion.ron); it also blocks the test
+  // field's 63 degree ridge and the 1 m ledge face while allowing the 26.6 degree ramp
+  // and the 0.3 m steps.
+  max_edge_climb: 0.5,
+  agent_radius: 0.35, // tuning: a cell is walkable only if a sphere this wide fits
+  agent_height: 1.8, // tuning: headroom a floor needs above it
+  // A sphere is lifted this far above the floor for the clearance test, so low steps
+  // (autostep is 0.4 m) don't count as walls.
+  step_lift: 0.45,
+  edge_margin: 0.5, // tuning: cells this close to a wall cost more (hugging walls is risky)
+  edge_cost: 3, // tuning: cost multiplier for those cells (open ground costs 1)
+  max_layers: 4, // tuning: stacked floors kept per column (castle floors, cave ledges)
+  expansion_budget: 512,
+  requests_per_tick: 4,
+  max_pending: 32, // tuning: queued requests beyond this are refused
+  snap_radius_cells: 3, // tuning: how far a start or goal off the grid snaps to a walkable cell
+  snap_height: 1.0, // tuning: a start or goal this far above or below a floor still uses it
+)

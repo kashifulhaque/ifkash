@@ -8,6 +8,7 @@ pub mod events;
 pub mod input;
 pub mod items;
 pub mod math;
+pub mod nav;
 pub mod physics;
 pub mod replay;
 pub mod rng;

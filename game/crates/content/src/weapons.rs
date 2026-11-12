@@ -69,6 +69,12 @@ pub struct Moveset {
     pub roll_heavy: String,
     /// Backstep: `DODGE` tapped with no direction.
     pub dodge_backstep: String,
+    /// The attack `LIGHT` starts while the guard is raised, and which keeps the guard up
+    /// while it plays: a spear's thrust from behind its guard, a shield's bash
+    /// (docs/game/04-arsenal-and-builds.md, "Weapon classes"). `None` for a class that
+    /// drops its guard to attack.
+    #[serde(default)]
+    pub guard_attack: Option<String>,
 }
 
 impl Moveset {
@@ -96,6 +102,9 @@ impl Moveset {
             ("dodge_backstep", &self.dodge_backstep),
         ] {
             out.push((format!("moveset.{field}"), id.as_str()));
+        }
+        if let Some(id) = &self.guard_attack {
+            out.push(("moveset.guard_attack".to_owned(), id.as_str()));
         }
         out
     }

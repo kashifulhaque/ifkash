@@ -12,4 +12,11 @@ roll_light: string, roll_medium: string, roll_heavy: string,
 /**
  * Backstep: `DODGE` tapped with no direction.
  */
-dodge_backstep: string, };
+dodge_backstep: string, 
+/**
+ * The attack `LIGHT` starts while the guard is raised, and which keeps the guard up
+ * while it plays: a spear's thrust from behind its guard, a shield's bash
+ * (docs/game/04-arsenal-and-builds.md, "Weapon classes"). `None` for a class that
+ * drops its guard to attack.
+ */
+guard_attack: string | null, };

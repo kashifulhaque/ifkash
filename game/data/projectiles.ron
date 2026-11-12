@@ -205,4 +205,38 @@
     hitstop: 2,
     tags: [],
   ),
+  (
+    // The bow heavy's arrow (WP-052): a drawn shot, faster and harder than a light arrow.
+    id: "proj_arrow_heavy",
+    speed: 46.0, // tuning
+    gravity: 10.0, // tuning
+    radius: 0.06, // tuning
+    lifetime_ticks: 100, // tuning
+    pierce: 0,
+    homing: None,
+    motion_value: 1.6, // tuning
+    phys: Pierce,
+    element: None,
+    poise_damage: 14, // tuning
+    knockback: 0.4, // tuning
+    hitstop: 3, // tuning
+    tags: [],
+  ),
+  (
+    // The bow's fully drawn arrow (WP-052): flies nearly flat, and pierces one extra target.
+    id: "proj_arrow_charged",
+    speed: 52.0, // tuning
+    gravity: 8.0, // tuning
+    radius: 0.07, // tuning
+    lifetime_ticks: 110, // tuning
+    pierce: 1,
+    homing: None,
+    motion_value: 2.2, // tuning
+    phys: Pierce,
+    element: None,
+    poise_damage: 22, // tuning
+    knockback: 0.6, // tuning
+    hitstop: 4, // tuning
+    tags: [],
+  ),
 ]

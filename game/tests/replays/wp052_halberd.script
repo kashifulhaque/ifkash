@@ -1,0 +1,17 @@
+# WP-052 golden: the halberd's sweeps and chop, then its heavy.
+seed 5203
+scenario wp052_halberd
+60 0 30              # walk toward the dummy
+5 0 0                # stand
+1 0 0 LIGHT          # hb_light_1 starts
+25 0 0
+1 0 0 LIGHT          # hb_light_2 starts
+25 0 0
+1 0 0 LIGHT          # hb_light_3 starts
+47 0 0               # hb_light_3 runs out (46 frames)
+1 0 0 LOCK          # lock on, so backing away keeps facing the dummy
+3 0 0
+27 0 -30            # back away 1.4 m to reopen the range
+3 0 0
+1 0 0 HEAVY          # hb_heavy
+64 0 0               # the heavy plays out (52 frames)

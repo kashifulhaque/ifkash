@@ -1,0 +1,24 @@
+# WP-052 golden: the colossal sword's three slams and its heavy, then two-handed (TWO_HAND) and the first slam again.
+seed 5201
+scenario wp052_colossal
+60 0 30              # walk toward the dummy
+5 0 0                # stand
+1 0 0 LIGHT          # col_light_1 starts
+30 0 0
+1 0 0 LIGHT          # col_light_2 starts
+30 0 0
+1 0 0 LIGHT          # col_light_3 starts
+61 0 0               # col_light_3 runs out (60 frames)
+1 0 0 LOCK          # lock on, so backing away keeps facing the dummy
+3 0 0
+32 0 -30            # back away 1.7 m to reopen the range
+3 0 0
+1 0 0 HEAVY          # col_heavy
+80 0 0               # the heavy plays out (68 frames)
+14 0 -30            # back away 0.7 m to reopen the range
+3 0 0
+# Two-handing: TWO_HAND toggles it, and the same first swing hits harder.
+1 0 0 TWO_HAND
+2 0 0
+1 0 0 LIGHT          # col_light_1 again, two-handed
+62 0 0

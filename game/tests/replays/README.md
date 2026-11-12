@@ -149,5 +149,14 @@ lf-tools replay record-script tests/replays/m1_movement.script --out tests/repla
   `the_bot_beats_the_test_boss_faster_with_an_echo` checks the same bot is slower without the
   Echo.
 
+- `wp052_colossal`, `wp052_spear`, `wp052_halberd`, `wp052_fist`, `wp052_bow`, `wp052_shield`,
+  `wp052_catalyst`: the WP-052 goldens, one per remaining weapon class, each from its `.script`
+  on the matching `wp052_*` scenario with the class's test weapon (`wpn_test_*`, registry
+  18900-18906). Each plays the class's light chain and heavy; the colossal sword then
+  two-hands (`TWO_HAND`) and swings again, the spear and the shield bash from a raised guard
+  (`GUARD+LIGHT`), and the bow shoots free-aimed, locked on, drawn, and fully drawn.
+  `game/crates/tools/tests/wp052_movesets.rs` checks the hits, in order, and the guard staying
+  up through the spear's and shield's guard attacks.
+
 Rehash only when a change to the simulation or the content data is intended. Review the
 old and new final hash it prints, and commit the updated file with that change.

@@ -138,6 +138,9 @@ pub fn write_snapshot(world: &World, out: &mut Vec<ActorSnap>) {
         if crate::combat::dodge::is_invulnerable(&actor.moves) {
             bits |= flags::INVULNERABLE;
         }
+        if actor.stats.two_handing {
+            bits |= flags::TWO_HANDING;
+        }
         if crate::ai::special::shimmer::cloaked(world, actor) {
             bits |= flags::CLOAKED;
         }

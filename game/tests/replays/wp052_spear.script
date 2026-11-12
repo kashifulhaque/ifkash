@@ -1,0 +1,26 @@
+# WP-052 golden: the spear's three thrusts and its heavy, then two guard thrusts with the guard held.
+seed 5202
+scenario wp052_spear
+60 0 30              # walk toward the dummy
+5 0 0                # stand
+1 0 0 LIGHT          # sp_light_1 starts
+21 0 0
+1 0 0 LIGHT          # sp_light_2 starts
+21 0 0
+1 0 0 LIGHT          # sp_light_3 starts
+38 0 0               # sp_light_3 runs out (37 frames)
+1 0 0 LOCK          # lock on, so backing away keeps facing the dummy
+3 0 0
+27 0 -30            # back away 1.4 m to reopen the range
+3 0 0
+1 0 0 HEAVY          # sp_heavy
+60 0 0               # the heavy plays out (48 frames)
+23 0 -30            # back away 1.2 m to reopen the range
+3 0 0
+# The guard attack: GUARD raises the guard (3 ticks), then LIGHT thrusts from behind it.
+6 0 0 GUARD
+1 0 0 GUARD+LIGHT    # sp_guard_thrust, guard still raised
+33 0 0 GUARD
+1 0 0 GUARD+LIGHT    # and once more from the raised guard
+33 0 0 GUARD
+10 0 0

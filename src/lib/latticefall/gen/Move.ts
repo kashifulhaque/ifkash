@@ -29,4 +29,11 @@ stub: boolean,
  * Multiplies the hitboxes' `poise_damage` into stance damage (docs/game/03-combat.md,
  * "Poise and stance"): 2.0 for guard counters, charged heavies, and jump heavies.
  */
-stance_mult: number, };
+stance_mult: number, 
+/**
+ * A ranged move the player can steer by hand: with no lock target, the stick turns
+ * the actor toward it until the first projectile leaves (a bow's free aim, see
+ * `combat::bow`). With a lock target, `track_deg_per_tick` turns it toward the
+ * target as for any move.
+ */
+free_aim: boolean, };

@@ -1,0 +1,19 @@
+# WP-052 golden: the fist's four-strike string, then its heavy.
+seed 5204
+scenario wp052_fist
+60 0 30              # walk toward the dummy
+5 0 0                # stand
+1 0 0 LIGHT          # fi_light_1 starts
+11 0 0
+1 0 0 LIGHT          # fi_light_2 starts
+11 0 0
+1 0 0 LIGHT          # fi_light_3 starts
+13 0 0
+1 0 0 LIGHT          # fi_light_4 starts
+28 0 0               # fi_light_4 runs out (27 frames)
+1 0 0 LOCK          # lock on, so backing away keeps facing the dummy
+3 0 0
+27 0 -30            # back away 1.4 m to reopen the range
+3 0 0
+1 0 0 HEAVY          # fi_heavy
+47 0 0               # the heavy plays out (35 frames)

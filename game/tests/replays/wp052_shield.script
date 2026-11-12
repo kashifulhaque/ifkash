@@ -1,0 +1,24 @@
+# WP-052 golden: the shield's three bashes and its rush, then a bash from behind a raised guard.
+seed 5206
+scenario wp052_shield
+60 0 30              # walk toward the dummy
+5 0 0                # stand
+1 0 0 LIGHT          # sh_bash_1 starts
+20 0 0
+1 0 0 LIGHT          # sh_bash_2 starts
+20 0 0
+1 0 0 LIGHT          # sh_bash_3 starts
+39 0 0               # sh_bash_3 runs out (38 frames)
+1 0 0 LOCK          # lock on, so backing away keeps facing the dummy
+3 0 0
+27 0 -30            # back away 1.4 m to reopen the range
+3 0 0
+1 0 0 HEAVY          # sh_heavy
+56 0 0               # the heavy plays out (44 frames)
+31 0 -30            # back away 1.6 m to reopen the range
+3 0 0
+# The guard attack: GUARD raises the guard (3 ticks), then LIGHT bashes from behind it.
+6 0 0 GUARD
+1 0 0 GUARD+LIGHT    # sh_guard_bash, guard still raised
+29 0 0 GUARD
+10 0 0

@@ -1,0 +1,17 @@
+# WP-052 golden: the bow. Free aim: the stick points at the dummy (it is off to the left) and a
+# LIGHT shot turns toward it before the arrow leaves. Then LOCK, a locked-on shot, a heavy tap
+# (bow_heavy), and a heavy hold (bow_heavy_charged), all of which land on the dummy.
+seed 5205
+scenario wp052_bow
+5 0 0                # stand; the dummy is not locked
+10 58 100 LIGHT         # bow_shot, steered by the stick (free aim)
+46 0 0               # the shot plays out and the arrow lands
+1 0 0 LOCK
+3 0 0
+1 0 0 LIGHT          # bow_shot, locked on: it turns to the lock target by itself
+46 0 0
+1 0 0 HEAVY          # bow_heavy (tap)
+58 0 0
+40 0 0 HEAVY         # bow_heavy_charged: HEAVY held through the draw, then released
+1 0 0
+82 0 0

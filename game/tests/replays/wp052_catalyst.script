@@ -1,0 +1,17 @@
+# WP-052 golden: the catalyst's three melee strikes and its overhead.
+seed 5207
+scenario wp052_catalyst
+60 0 30              # walk toward the dummy
+5 0 0                # stand
+1 0 0 LIGHT          # ct_light_1 starts
+20 0 0
+1 0 0 LIGHT          # ct_light_2 starts
+20 0 0
+1 0 0 LIGHT          # ct_light_3 starts
+38 0 0               # ct_light_3 runs out (37 frames)
+1 0 0 LOCK          # lock on, so backing away keeps facing the dummy
+3 0 0
+21 0 -30            # back away 1.1 m to reopen the range
+3 0 0
+1 0 0 HEAVY          # ct_heavy
+54 0 0               # the heavy plays out (42 frames)

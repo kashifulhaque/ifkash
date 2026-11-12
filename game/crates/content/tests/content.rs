@@ -118,6 +118,13 @@ fn hash_ignores_comments_and_whitespace() {
         let text = std::fs::read_to_string(data_dir().join(format!("moves/{class}.ron"))).unwrap();
         all_moves.push((format!("moves/{class}.ron"), text));
     }
+    // WP-052: the other classes' movesets.
+    for class in [
+        "colossal", "spear", "halberd", "fist", "bow", "shield", "catalyst",
+    ] {
+        let text = std::fs::read_to_string(data_dir().join(format!("moves/{class}.ron"))).unwrap();
+        all_moves.push((format!("moves/{class}.ron"), text));
+    }
     all_moves.extend(ron_files("moves/enemies"));
     all_moves.extend(ron_files("moves/bosses"));
     let other = Content::from_sources(

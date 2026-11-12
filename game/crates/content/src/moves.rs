@@ -155,6 +155,12 @@ pub struct Move {
     /// "Poise and stance"): 2.0 for guard counters, charged heavies, and jump heavies.
     #[serde(default = "default_stance_mult")]
     pub stance_mult: f32,
+    /// A ranged move the player can steer by hand: with no lock target, the stick turns
+    /// the actor toward it until the first projectile leaves (a bow's free aim, see
+    /// `combat::bow`). With a lock target, `track_deg_per_tick` turns it toward the
+    /// target as for any move.
+    #[serde(default)]
+    pub free_aim: bool,
 }
 
 fn default_stance_mult() -> f32 {

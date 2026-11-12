@@ -202,6 +202,9 @@ pub struct Moveset {
     pub roll_medium: MoveNum,
     pub roll_heavy: MoveNum,
     pub dodge_backstep: MoveNum,
+    /// Started by `LIGHT` while the guard is raised, and keeps the guard up while it plays
+    /// (a spear's thrust, a shield's bash). `None`: `LIGHT` drops the guard as usual.
+    pub guard_attack: Option<MoveNum>,
     /// The wielder's equip load tier. A stand-in until equipment exists: the weapon's
     /// weight plus `stub_armor_weight_tenths`, over the max equip load at
     /// `stub_endurance`.
@@ -334,6 +337,7 @@ impl MoveTable {
                 roll_medium: defined(&s.roll_medium)?,
                 roll_heavy: defined(&s.roll_heavy)?,
                 dodge_backstep: defined(&s.dodge_backstep)?,
+                guard_attack: s.guard_attack.as_deref().map(defined).transpose()?,
                 load_tier,
                 guard: w.guard,
                 crit_mult_percent: w.crit_mult_percent,
@@ -481,6 +485,7 @@ fn resolve(
     current: Option<ActiveMove>,
     sprinting: bool,
     counter: bool,
+    guarding: bool,
     set: &Moveset,
     table: &MoveTable,
 ) -> Option<MoveNum> {
@@ -498,6 +503,8 @@ fn resolve(
         }
     }
     let num = match b.action {
+        // A raised guard and a guard attack: `LIGHT` thrusts or bashes from behind the guard.
+        Action::Light if guarding && set.guard_attack.is_some() => set.guard_attack?,
         Action::Light => match cur {
             Some((c, _)) if dodge::is_roll(set, c.num) => set.rolling,
             Some((c, _)) if c.num == set.dodge_backstep => set.backstep,
@@ -600,27 +607,46 @@ pub fn step(
     let casting_left = set.is_some_and(|s| s.left_cast.is_some());
     let wants_guard =
         (held & buttons::GUARD != 0 && !casting_left) || a.ai.as_ref().is_some_and(|b| b.guarding);
-    a.moves
-        .guard
-        .update(wants_guard, a.moves.current.is_none(), &t.guard);
+    // A guard attack keeps the guard up while it plays, so the guard sees the actor as
+    // free during it (see `Moveset::guard_attack`).
+    let in_guard_attack = set.is_some_and(|s| {
+        s.guard_attack.is_some() && a.moves.current.map(|c| c.num) == s.guard_attack
+    });
+    a.moves.guard.update(
+        wants_guard,
+        a.moves.current.is_none() || in_guard_attack,
+        &t.guard,
+    );
 
     // 3. Fire the buffered action if the current move allows it. A broken guard or a
     // lowering one blocks starting anything.
     if let (Some(b), Some(s)) = (a.moves.buffer, set) {
         let grounded = a.motor.grounded && a.motor.jump_startup == 0 && a.motor.landing == 0;
         let counter = a.moves.guard.counter > 0;
+        let guarding = a.moves.guard.active;
         let num = if b.action == Action::UseItem {
             crate::items::inventory::drink_move(a, table)
         } else {
-            resolve(b, a.moves.current, a.motor.sprinting, counter, s, table)
+            resolve(
+                b,
+                a.moves.current,
+                a.motor.sprinting,
+                counter,
+                guarding,
+                s,
+                table,
+            )
         };
         if grounded
             && can_act
             && let Some(d) = num.and_then(|n| table.get(n))
             && stamina::try_spend(a, &d.data)
         {
-            // Starting a move drops the guard, and uses up the counter window.
-            a.moves.guard.drop_guard();
+            // Starting a move drops the guard, except a guard attack, which keeps it up. It
+            // also uses up the counter window.
+            if s.guard_attack != Some(d.num) {
+                a.moves.guard.drop_guard();
+            }
             if d.num == s.guard_counter {
                 a.moves.guard.counter = 0;
             }
@@ -694,11 +720,15 @@ pub fn step(
         }
         return;
     }
-    if c.frame < d.track_until
-        && let Some(p) = lock_pos
-    {
+    if c.frame < d.track_until {
         let step = d.data.track_deg_per_tick * DEG_TO_RAD;
-        a.yaw = turn_toward(a.yaw, bearing(a.pos, p, a.yaw), step);
+        if let Some(p) = lock_pos {
+            a.yaw = turn_toward(a.yaw, bearing(a.pos, p, a.yaw), step);
+        } else if d.data.free_aim
+            && let Some(f) = input
+        {
+            super::bow::free_aim(a, f, step);
+        }
     }
     let meters = if charging {
         0.0

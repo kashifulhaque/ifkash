@@ -123,6 +123,31 @@ const EMBEDDED_MOVES: &[(&str, &str)] = &[
         include_str!("../../../data/moves/hammer.ron"),
     ),
     (
+        "moves/colossal.ron",
+        include_str!("../../../data/moves/colossal.ron"),
+    ),
+    (
+        "moves/spear.ron",
+        include_str!("../../../data/moves/spear.ron"),
+    ),
+    (
+        "moves/halberd.ron",
+        include_str!("../../../data/moves/halberd.ron"),
+    ),
+    (
+        "moves/fist.ron",
+        include_str!("../../../data/moves/fist.ron"),
+    ),
+    ("moves/bow.ron", include_str!("../../../data/moves/bow.ron")),
+    (
+        "moves/shield.ron",
+        include_str!("../../../data/moves/shield.ron"),
+    ),
+    (
+        "moves/catalyst.ron",
+        include_str!("../../../data/moves/catalyst.ron"),
+    ),
+    (
         "moves/crits.ron",
         include_str!("../../../data/moves/crits.ron"),
     ),
@@ -436,6 +461,34 @@ const EMBEDDED_SCENARIOS: &[(&str, &str)] = &[
     (
         "scenarios/echo_boss_gate.ron",
         include_str!("../../../data/scenarios/echo_boss_gate.ron"),
+    ),
+    (
+        "scenarios/wp052_colossal.ron",
+        include_str!("../../../data/scenarios/wp052_colossal.ron"),
+    ),
+    (
+        "scenarios/wp052_spear.ron",
+        include_str!("../../../data/scenarios/wp052_spear.ron"),
+    ),
+    (
+        "scenarios/wp052_halberd.ron",
+        include_str!("../../../data/scenarios/wp052_halberd.ron"),
+    ),
+    (
+        "scenarios/wp052_fist.ron",
+        include_str!("../../../data/scenarios/wp052_fist.ron"),
+    ),
+    (
+        "scenarios/wp052_bow.ron",
+        include_str!("../../../data/scenarios/wp052_bow.ron"),
+    ),
+    (
+        "scenarios/wp052_shield.ron",
+        include_str!("../../../data/scenarios/wp052_shield.ron"),
+    ),
+    (
+        "scenarios/wp052_catalyst.ron",
+        include_str!("../../../data/scenarios/wp052_catalyst.ron"),
     ),
 ];
 const EMBEDDED_BOSSES: &[(&str, &str)] = &[

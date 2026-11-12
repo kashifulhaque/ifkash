@@ -1,0 +1,272 @@
+// Bow moveset (WP-052). Source: docs/game/04-arsenal-and-builds.md, "Weapon classes": ranged, medium speed, 40 m range, Finesse; aim while locked on or free-aim.
+// Frame numbers are tuning unless a spec line says otherwise. Dodges (roll, backstep) are
+// shared in common.ron; the critical pair is shared in crits.ron, and the weapon's
+// crit_mult_percent (100) sets the crit.
+// total_frames = startup + active + recovery; a hitbox window is (startup, startup + active - 1).
+// Schema: crates/content/src/moves.rs.
+#![enable(implicit_some)]
+[
+  (
+    // LIGHT: a quick arrow from the chest. Locked on, the move turns toward the lock target until the
+    // arrow leaves; with no lock target, the stick aims it (free_aim, combat/bow.rs).
+    id: "bow_shot",
+    anim: "bow_shoot",
+    total_frames: 26,
+    stamina: 6,
+    fp: 0,
+    root_motion: [],
+    track_deg_per_tick: 12.0,
+    hyperarmor: None,
+    iframes: None,
+    cancel_attack_from: 18,
+    cancel_dodge_from: 13,
+    cancel_any_from: 20,
+    next_chain: None,
+    free_aim: true,
+    hitboxes: [
+    ],
+    projectiles: [
+      (frame: 9, projectile: "proj_arrow", offset: (0.0, 1.4, 0.5), yaw_deg: 0.0, pitch_deg: 0.0),
+    ],
+    sfx: [(8, "bow_release")],
+    vfx: [],
+  ),
+  (
+    // HEAVY tap: a drawn shot. The heavy arrow hits harder and flies faster. Aims like bow_shot.
+    id: "bow_heavy",
+    anim: "bow_draw",
+    total_frames: 38,
+    stamina: 12,
+    fp: 0,
+    root_motion: [],
+    track_deg_per_tick: 10.0,
+    hyperarmor: None,
+    iframes: None,
+    cancel_attack_from: None,
+    cancel_dodge_from: 28,
+    cancel_any_from: 33,
+    next_chain: None,
+    free_aim: true,
+    hitboxes: [
+    ],
+    projectiles: [
+      (frame: 18, projectile: "proj_arrow_heavy", offset: (0.0, 1.4, 0.5), yaw_deg: 0.0, pitch_deg: 0.0),
+    ],
+    sfx: [(17, "bow_release")],
+    vfx: [],
+  ),
+  (
+    // HEAVY hold: the draw holds at frame 12 for up to 30 ticks and keeps aiming while it holds. The
+    // arrow is the charged arrow. The charge ticks do not scale it (a projectile's motion value is
+    // its definition's); a full draw is a different arrow.
+    id: "bow_heavy_charged",
+    anim: "bow_draw_charged",
+    total_frames: 42,
+    stamina: 18,
+    fp: 0,
+    root_motion: [],
+    track_deg_per_tick: 10.0,
+    hyperarmor: None,
+    iframes: None,
+    cancel_attack_from: None,
+    cancel_dodge_from: 34,
+    cancel_any_from: 39,
+    next_chain: None,
+    charge: (charge_from: 12, max_frames: 30, motion_value_max: 1.0),
+    free_aim: true,
+    hitboxes: [
+    ],
+    projectiles: [
+      (frame: 24, projectile: "proj_arrow_charged", offset: (0.0, 1.4, 0.5), yaw_deg: 0.0, pitch_deg: 0.0),
+    ],
+    sfx: [(23, "bow_release")],
+    vfx: [(12, "charge_glow"), (24, "")],
+  ),
+  (
+    // The running attack: a snap shot while sprinting, 1.0 m forward.
+    id: "bow_running",
+    anim: "bow_run_shot",
+    total_frames: 28,
+    stamina: 8,
+    fp: 0,
+    root_motion: [(0, 0.0), (8, 0.6), (12, 1.0), (28, 1.0)],
+    track_deg_per_tick: 8.0,
+    hyperarmor: None,
+    iframes: None,
+    cancel_attack_from: None,
+    cancel_dodge_from: 14,
+    cancel_any_from: 19,
+    next_chain: None,
+    free_aim: true,
+    hitboxes: [
+    ],
+    projectiles: [
+      (frame: 10, projectile: "proj_arrow", offset: (0.0, 1.4, 0.5), yaw_deg: 0.0, pitch_deg: 0.0),
+    ],
+    sfx: [(9, "bow_release")],
+    vfx: [],
+  ),
+  (
+    // The rolling attack: LIGHT during roll recovery.
+    id: "bow_rolling",
+    anim: "bow_roll_shot",
+    total_frames: 24,
+    stamina: 6,
+    fp: 0,
+    root_motion: [],
+    track_deg_per_tick: 10.0,
+    hyperarmor: None,
+    iframes: None,
+    cancel_attack_from: None,
+    cancel_dodge_from: 11,
+    cancel_any_from: 16,
+    next_chain: None,
+    free_aim: true,
+    hitboxes: [
+    ],
+    projectiles: [
+      (frame: 7, projectile: "proj_arrow", offset: (0.0, 1.4, 0.5), yaw_deg: 0.0, pitch_deg: 0.0),
+    ],
+    sfx: [(6, "bow_release")],
+    vfx: [],
+  ),
+  (
+    // The backstep attack: LIGHT during backstep recovery.
+    id: "bow_backstep",
+    anim: "bow_backstep_shot",
+    total_frames: 22,
+    stamina: 6,
+    fp: 0,
+    root_motion: [],
+    track_deg_per_tick: 10.0,
+    hyperarmor: None,
+    iframes: None,
+    cancel_attack_from: None,
+    cancel_dodge_from: 10,
+    cancel_any_from: 15,
+    next_chain: None,
+    free_aim: true,
+    hitboxes: [
+    ],
+    projectiles: [
+      (frame: 6, projectile: "proj_arrow", offset: (0.0, 1.4, 0.5), yaw_deg: 0.0, pitch_deg: 0.0),
+    ],
+    sfx: [(5, "bow_release")],
+    vfx: [],
+  ),
+  (
+    // Jump light: a shot from the air.
+    id: "bow_jump_light",
+    anim: "bow_jump_shot",
+    total_frames: 28,
+    stamina: 8,
+    fp: 0,
+    root_motion: [],
+    track_deg_per_tick: 8.0,
+    hyperarmor: None,
+    iframes: None,
+    cancel_attack_from: None,
+    cancel_dodge_from: 12,
+    cancel_any_from: 17,
+    next_chain: None,
+    free_aim: true,
+    hitboxes: [
+    ],
+    projectiles: [
+      (frame: 8, projectile: "proj_arrow", offset: (0.0, 1.4, 0.5), yaw_deg: 0.0, pitch_deg: 0.0),
+    ],
+    sfx: [(7, "bow_release")],
+    vfx: [],
+  ),
+  (
+    // Jump heavy: a drawn shot from the air with the heavy arrow.
+    id: "bow_jump_heavy",
+    anim: "bow_jump_draw",
+    total_frames: 36,
+    stamina: 14,
+    fp: 0,
+    root_motion: [],
+    track_deg_per_tick: 8.0,
+    hyperarmor: None,
+    iframes: None,
+    cancel_attack_from: None,
+    cancel_dodge_from: 24,
+    cancel_any_from: 29,
+    next_chain: None,
+    stance_mult: 2.0,
+    free_aim: true,
+    hitboxes: [
+    ],
+    projectiles: [
+      (frame: 14, projectile: "proj_arrow_heavy", offset: (0.0, 1.4, 0.5), yaw_deg: 0.0, pitch_deg: 0.0),
+    ],
+    sfx: [(13, "bow_release")],
+    vfx: [],
+  ),
+  (
+    // Plunge: a bow has no blade, so the fall lands as a stomp. Motion value 2.0.
+    id: "bow_plunge",
+    anim: "bow_plunge",
+    total_frames: 36,
+    stamina: 0,
+    fp: 0,
+    root_motion: [(0, 0.0), (5, 0.0), (8, 0.3), (36, 0.3)],
+    track_deg_per_tick: 0.0,
+    hyperarmor: None,
+    iframes: None,
+    cancel_attack_from: None,
+    cancel_dodge_from: 13,
+    cancel_any_from: 18,
+    next_chain: None,
+    hitboxes: [
+      (
+        frames: (5, 8),
+        shape: Capsule(a: (0.0, 2.0, 0.3), b: (0.0, 0.0, 0.8), radius: 0.4),
+        motion_value: 2.0,
+        phys: Blunt,
+        element: None,
+        poise_damage: 20,
+        status: [],
+        knockback: 0.6,
+        hitstop: 5,
+        tags: [],
+      ),
+    ],
+    sfx: [(4, "swing_light")],
+    vfx: [(5, "plunge_burst")],
+  ),
+  (
+    // Guard counter: a bow has no guard of its own, so this is a butt strike, reachable only after a
+    // block with another guard. Motion value 1.4, stance 2.0x.
+    id: "bow_guard_counter",
+    anim: "bow_counter",
+    total_frames: 30,
+    stamina: 12,
+    fp: 0,
+    root_motion: [(0, 0.0), (6, 0.25), (10, 0.5), (30, 0.5)],
+    track_deg_per_tick: 5.0,
+    hyperarmor: None,
+    iframes: None,
+    cancel_attack_from: None,
+    cancel_dodge_from: 15,
+    cancel_any_from: 20,
+    next_chain: None,
+    stance_mult: 2.0,
+    hitboxes: [
+      (
+        frames: (8, 10),
+        shape: Capsule(a: (0.2, 1.1, 0.3), b: (0.2, 1.1, 1.5), radius: 0.3),
+        motion_value: 1.4,
+        phys: Blunt,
+        element: None,
+        poise_damage: 16,
+        status: [],
+        knockback: 0.6,
+        hitstop: 4,
+        tags: [],
+      ),
+    ],
+    sfx: [(7, "swing_light")],
+    vfx: [(8, "trail_steel")],
+  ),
+]

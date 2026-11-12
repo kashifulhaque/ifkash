@@ -1,7 +1,7 @@
 //! Move state machines: advances every actor's move one frame (see `combat::moves::step`).
 
 use crate::arena::Id;
-use crate::combat::{crit, moves, poise};
+use crate::combat::{crit, moves, poise, two_hand};
 use crate::input::TickInput;
 use crate::world::World;
 
@@ -27,6 +27,9 @@ pub fn run(world: &mut World, input: &TickInput) {
             None
         };
         if let Some(actor) = world.actors.get_mut(id) {
+            if is_player {
+                two_hand::update(actor, input.frame);
+            }
             moves::step(actor, frame, lock_pos, &world.moves, set, &tuning);
         }
         if let Some(plan) = crit_plan {

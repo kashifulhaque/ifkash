@@ -1,7 +1,7 @@
 // Engine entry point: wires the WASM core, input, fixed-step loop, snapshot interpolation
 // and the Three.js scene together. Import dynamically from the game route only.
 
-import { KeyboardInput } from './input';
+import { InputController, ReplayRecorder, downloadBytes, encodeReplay } from '../input';
 import { loadWasm } from './loader';
 import { FixedStepLoop } from './loop';
 import { SceneView } from './scene';
@@ -23,26 +23,38 @@ export interface EngineOptions {
 
 export interface Engine {
   setPaused(paused: boolean): void;
+  /** Ticks recorded for the replay so far. */
+  replayTicks(): number;
+  /** Downloads everything recorded since the world started as a `.lfr` replay file. */
+  downloadReplay(): void;
   dispose(): void;
 }
 
 export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions = {}): Promise<Engine> {
   const wasm = await loadWasm();
-  const world = new wasm.glue.LfWorld(opts.seed ?? 1n, opts.scenario ?? 'm0_flat');
+  const seed = opts.seed ?? 1n;
+  const scenario = opts.scenario ?? 'm0_flat';
+  const world = new wasm.glue.LfWorld(seed, scenario);
   const snapshots = new SnapshotBuffer(wasm, world);
-  const input = new KeyboardInput();
-  input.attach();
+  const input = new InputController();
+  input.attach(canvas);
+  const recorder = new ReplayRecorder();
   const view = new SceneView(canvas);
 
   let fps = 60;
   let sinceStats = 0;
   const loop = new FixedStepLoop({
     tick() {
-      world.tick(input.frame());
+      input.poll();
+      const frame = input.frame();
+      recorder.record(frame); // Every tick's input goes into the replay.
+      world.tick(frame);
       snapshots.push();
       world.drain_events(); // Nothing consumes events yet; drain so the queue stays empty.
     },
     render(alpha, frameMs) {
+      input.updateLook(frameMs);
+      view.setCamera(input.cameraYaw, input.cameraPitch);
       view.render(snapshots.interpolate(alpha), frameMs);
       if (frameMs > 0) fps += (1000 / frameMs - fps) * 0.1;
       sinceStats += frameMs;
@@ -61,6 +73,11 @@ export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions
 
   return {
     setPaused: (paused) => loop.setPaused(paused),
+    replayTicks: () => recorder.ticks,
+    downloadReplay() {
+      const bytes = encodeReplay(wasm.glue, recorder, seed, scenario);
+      downloadBytes(bytes, `latticefall-${seed}-${recorder.ticks}t.lfr`);
+    },
     dispose() {
       loop.stop();
       input.detach();

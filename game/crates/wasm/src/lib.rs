@@ -34,6 +34,20 @@ pub fn run_replay(bytes: &[u8]) -> Result<String, JsError> {
     Ok(format!("{:016x}", report.final_hash))
 }
 
+/// Encodes a `.lfr` replay from a browser recording: the seed and scenario the world was
+/// started with, and one 4-byte `ActionFrame` per tick run (`[move_x, move_z, buttons_lo,
+/// buttons_hi]`; trailing bytes short of a frame are ignored). The checkpoint hashes come
+/// from re-simulating the frames here, so the file matches what `lf-tools replay run` expects.
+/// The browser records no commands yet, so the command list is empty.
+#[wasm_bindgen]
+pub fn encode_replay(seed: u64, scenario: &str, frames: &[u8]) -> Result<Vec<u8>, JsError> {
+    let content = Content::load_embedded().map_err(|e| JsError::new(&e.to_string()))?;
+    let (chunks, _) = frames.as_chunks::<4>();
+    let frames: Vec<ActionFrame> = chunks.iter().map(|&b| ActionFrame::from_bytes(b)).collect();
+    let replay = Replay::record(seed, scenario, content.content_hash(), &frames, Vec::new());
+    Ok(replay.encode())
+}
+
 /// One simulation world plus its snapshot buffer.
 #[wasm_bindgen]
 pub struct LfWorld {

@@ -10,26 +10,9 @@
 
 /** Words per record, kind word included, by event kind. Mirrors the doc on `drain_events`. */
 export const EVENT_WORDS: Readonly<Record<number, number>> = {
-  1: 17 // Hit (WP-023: 13 words plus damage, result, flags, hp after)
+  1: 17, // Hit: 13 words plus damage, result, flags, and hp after (WP-023)
+  2: 6 // Life: code, value, position (WP-029); not decoded yet, skipped by length
 };
-
-/**
- * Hit record lengths this decoder accepts. The record has no length prefix, so a buffer
- * made only of Hit records is read with the longest candidate that divides it cleanly and
- * starts every record with the Hit kind. 13 is the pre-WP-023 encoder; drop it once every
- * build has the 17-word record.
- */
-const HIT_WORDS_CANDIDATES = [17, 13];
-
-function hitWords(words: ArrayLike<number>): number {
-  for (const n of HIT_WORDS_CANDIDATES) {
-    if (words.length % n !== 0) continue;
-    let ok = true;
-    for (let i = 0; i < words.length; i += n) if (words[i] !== EVENT_HIT) ok = false;
-    if (ok) return n;
-  }
-  return EVENT_WORDS[EVENT_HIT];
-}
 
 export const EVENT_HIT = 1;
 
@@ -49,14 +32,14 @@ export interface HitEvent {
   point: [number, number, number];
   /** Unit ground-plane direction from the attacker to the target. */
   dir: [number, number, number];
-  /** WP-023 words; undefined from a 13-word (older) record. */
-  damage?: number;
+  /** Damage the target took. */
+  damage: number;
   /** 0 connected, 1 guarded, 2 guard broken. */
-  result?: number;
+  result: number;
   /** Bit 0 counter hit, bit 1 killed. */
-  flags?: number;
+  flags: number;
   /** Target HP after the hit. */
-  hpAfter?: number;
+  hpAfter: number;
 }
 
 export const HIT_CONNECTED = 0;
@@ -75,10 +58,9 @@ function f32(bits: number): number {
 export function decodeEvents(words: ArrayLike<number>): GameEvent[] {
   const out: GameEvent[] = [];
   let i = 0;
-  const hitLen = hitWords(words);
   while (i < words.length) {
     const kind = words[i];
-    const len = kind === EVENT_HIT ? hitLen : EVENT_WORDS[kind];
+    const len = EVENT_WORDS[kind];
     if (len === undefined || i + len > words.length) break;
     if (kind === EVENT_HIT) {
       out.push({
@@ -91,9 +73,10 @@ export function decodeEvents(words: ArrayLike<number>): GameEvent[] {
         chargeFrac: f32(words[i + 6]),
         point: [f32(words[i + 7]), f32(words[i + 8]), f32(words[i + 9])],
         dir: [f32(words[i + 10]), f32(words[i + 11]), f32(words[i + 12])],
-        ...(len >= 17
-          ? { damage: words[i + 13] >>> 0, result: words[i + 14] >>> 0, flags: words[i + 15] >>> 0, hpAfter: words[i + 16] >>> 0 }
-          : {})
+        damage: words[i + 13] >>> 0,
+        result: words[i + 14] >>> 0,
+        flags: words[i + 15] >>> 0,
+        hpAfter: words[i + 16] >>> 0
       });
     }
     i += len;

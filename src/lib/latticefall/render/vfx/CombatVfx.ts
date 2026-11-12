@@ -324,8 +324,12 @@ export class CombatVfx {
       motionValue: 1,
       chargeFrac: 0,
       dir: [0, 0, 1],
+      damage: 0,
+      result: 0,
+      flags: 0,
+      hpAfter: 0,
       ...e
-    });
+    } as HitEvent);
   }
 
   debug(): VfxDebug {

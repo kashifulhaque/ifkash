@@ -1,0 +1,174 @@
+# Builds the WASM module and the SvelteKit site, then deploys to Cloudflare Pages.
+# Replaces the Pages Git integration; see docs/game/decisions/0003-frontend-deploy.md.
+name: Deploy frontend to Cloudflare Pages
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/**'
+      - 'static/**'
+      - 'game/**'
+      - 'package.json'
+      - 'bun.lock'
+      - 'svelte.config.js'
+      - 'vite.config.ts'
+      - 'tsconfig.json'
+      - 'mise.toml'
+      - '.github/workflows/web-deploy.yml'
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'static/**'
+      - 'game/**'
+      - 'package.json'
+      - 'bun.lock'
+      - 'svelte.config.js'
+      - 'vite.config.ts'
+      - 'tsconfig.json'
+      - 'mise.toml'
+      - '.github/workflows/web-deploy.yml'
+  workflow_dispatch:
+
+# Serialize production deploys. Cancel superseded pull request previews only.
+concurrency:
+  group: web-deploy-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+  pull-requests: write # For the preview URL comment.
+  deployments: write # For GitHub deployment status from wrangler-action.
+
+env:
+  GAME_RUST_VERSION: '1.99.1' # Keep in sync with game/rust-toolchain.toml.
+  # TODO(owner): PLACEHOLDER. Replace PAGES_PROJECT_NAME with the real Pages project name
+  # from the Cloudflare dashboard (Workers & Pages). The deploy jobs fail until you do.
+  PAGES_PROJECT: PAGES_PROJECT_NAME
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install mise tools
+        uses: jdx/mise-action@v5
+        with:
+          install_args: rust bun node
+
+      - name: Install pinned Rust toolchain
+        run: >
+          rustup toolchain install "$GAME_RUST_VERSION" --profile minimal
+          -c clippy -c rustfmt -t wasm32-unknown-unknown
+
+      - name: Cache Cargo registry and build output
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: game -> target
+
+      # The wasm-bindgen CLI version must match the crate version in Cargo.lock.
+      - name: Read wasm-bindgen version from Cargo.lock
+        id: wbg
+        run: |
+          version="$(grep -A1 -x 'name = "wasm-bindgen"' game/Cargo.lock | sed -n 's/^version = "\(.*\)"$/\1/p' | head -n1)"
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+
+      - name: Install wasm-bindgen-cli
+        if: steps.wbg.outputs.version != ''
+        uses: taiki-e/install-action@v2
+        with:
+          tool: wasm-bindgen-cli@${{ steps.wbg.outputs.version }}
+
+      # wasm-opt comes from binaryen. Use the same release as local builds (version 126);
+      # the apt package is too old for the --enable-* flags in game/scripts/build-wasm.sh.
+      - name: Install binaryen
+        run: |
+          curl -sSfL https://github.com/WebAssembly/binaryen/releases/download/version_126/binaryen-version_126-x86_64-linux.tar.gz \
+            | tar -xz -C "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/binaryen-version_126/bin" >> "$GITHUB_PATH"
+
+      - name: Build WASM module
+        run: mise run game:wasm
+
+      - name: Install frontend dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build site
+        run: bun run build
+        env:
+          PUBLIC_GOOGLE_CLIENT_ID: ${{ vars.PUBLIC_GOOGLE_CLIENT_ID }}
+
+      # adapter-cloudflare writes the Pages bundle here.
+      - name: Upload build output
+        uses: actions/upload-artifact@v7
+        with:
+          name: pages-bundle
+          path: .svelte-kit/cloudflare
+          if-no-files-found: error
+
+  deploy-production:
+    name: Deploy production
+    needs: build
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Check the Pages project name is set
+        run: |
+          if [ "$PAGES_PROJECT" = "PAGES_PROJECT_NAME" ]; then
+            echo "::error::PAGES_PROJECT is still the placeholder. Set it in .github/workflows/web-deploy.yml."
+            exit 1
+          fi
+
+      - name: Download build output
+        uses: actions/download-artifact@v7
+        with:
+          name: pages-bundle
+          path: dist
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_PAGES_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: '4.50.0'
+          command: pages deploy dist --project-name=${{ env.PAGES_PROJECT }} --branch=main
+
+  deploy-preview:
+    name: Deploy preview
+    needs: build
+    # Pull requests from forks don't get repository secrets, so skip them.
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check the Pages project name is set
+        run: |
+          if [ "$PAGES_PROJECT" = "PAGES_PROJECT_NAME" ]; then
+            echo "::error::PAGES_PROJECT is still the placeholder. Set it in .github/workflows/web-deploy.yml."
+            exit 1
+          fi
+
+      - name: Download build output
+        uses: actions/download-artifact@v7
+        with:
+          name: pages-bundle
+          path: dist
+
+      - name: Deploy preview to Cloudflare Pages
+        id: deploy
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_PAGES_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: '4.50.0'
+          command: pages deploy dist --project-name=${{ env.PAGES_PROJECT }} --branch=pr-${{ github.event.number }}
+
+      - name: Comment preview URL
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PREVIEW_URL: ${{ steps.deploy.outputs.deployment-url }}
+        run: gh pr comment "${{ github.event.number }}" --repo "${{ github.repository }}" --body "Preview deployed to ${PREVIEW_URL}"

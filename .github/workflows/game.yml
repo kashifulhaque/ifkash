@@ -131,16 +131,6 @@ jobs:
       - name: Build WASM and run determinism test
         run: mise run game:wasm
 
-      # The WASM output is committed while ADR 0003 is pending. Warn (don't fail yet) when
-      # the committed files differ from a fresh build, until cross-host builds are proven
-      # byte-identical.
-      - name: Check the committed WASM output is current
-        run: |
-          if ! git diff --quiet -- src/lib/latticefall/wasm; then
-            echo "::warning::src/lib/latticefall/wasm differs from a fresh build. Run 'mise run game:wasm' and commit the result."
-            git diff --stat -- src/lib/latticefall/wasm
-          fi
-
   python:
     name: Python bindings
     runs-on: ubuntu-latest

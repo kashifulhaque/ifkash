@@ -165,7 +165,7 @@ weekends, and M5-M8 another 6-10 weeks. M9 can start any time after M3.
 <a id="wp-004"></a>
 ### WP-004: Add inputs, replays, and golden replay tests
 
-- **Lane:** core · **Depends on:** 002 · **Size:** M
+- **Lane:** core · **Depends on:** 002, 003 · **Size:** M
 - **Read:** [Inputs](01-architecture.md#inputs),
   [state hash and golden replays](01-architecture.md#state-hash-and-golden-replays),
   [persistence](01-architecture.md#persistence).

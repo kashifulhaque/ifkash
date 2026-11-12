@@ -18,7 +18,7 @@ deterministic. Read it before any WP in the `core`, `render`, `rl`, or `infra` l
 | Content format | RON files in `game/data/`, parsed only by Rust | [0001](decisions/0001-rust-core.md) |
 | Rust-to-TypeScript types | `ts-rs`, generated into `src/lib/latticefall/gen/` | [0001](decisions/0001-rust-core.md) |
 | Navigation | Height-aware grid per area with A*; no navmesh | [0001](decisions/0001-rust-core.md) |
-| Frontend deploy | GitHub Actions builds WASM and deploys Pages with Wrangler | [0003](decisions/0003-frontend-deploy.md), needs owner sign-off |
+| Frontend deploy | GitHub Actions builds WASM and deploys Pages with Wrangler | [0003](decisions/0003-frontend-deploy.md) |
 
 ### Why a Rust core
 
@@ -440,10 +440,10 @@ bun run check                                 # frontend typecheck
 cd game/python && maturin develop && pytest   # Python bindings
 ```
 
-Cloudflare Pages' Git integration can't build Rust without extra setup. ADR 0003
-proposes that a GitHub Actions workflow build the WASM module and the site, then deploy
-with `wrangler pages deploy`, replacing the Git integration for the frontend. The owner
-must approve this before [WP-005](10-roadmap.md#wp-005) changes anything.
+Cloudflare Pages' Git integration can't build Rust without extra setup. Per
+[ADR 0003](decisions/0003-frontend-deploy.md) (accepted), `.github/workflows/web-deploy.yml`
+builds the WASM module and the site, then deploys with `wrangler pages deploy`, replacing
+the Git integration for the frontend.
 
 ## Performance budgets
 

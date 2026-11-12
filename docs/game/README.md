@@ -41,7 +41,7 @@ These need an answer before the WPs that depend on them:
 
 | Decision | Needed before | Default if no answer |
 |---|---|---|
-| Approve [ADR 0003](decisions/0003-frontend-deploy.md): deploy the frontend from GitHub Actions instead of the Pages Git integration | [WP-005](10-roadmap.md#wp-005) (CI part runs either way) | Keep the Git integration and commit built WASM files (a fallback documented in the ADR) |
+| Finish the [ADR 0003](decisions/0003-frontend-deploy.md) rollout (approved 2026-11-12): set the Pages project name, add the secrets, then disconnect the Pages Git integration | Merging the M0 branch to `main` | None. Until it's done, merging breaks Pages deploys, because the WASM module isn't committed |
 | Confirm the working title *Latticefall*, after a trademark search | [WP-086](10-roadmap.md#wp-086) (launch) | Keep it as a working title |
 | Confirm the Rust-core decision at gate G1 | [M2](10-roadmap.md#m2-combat-core) | Continue with Rust |
 | Approve each new asset pack (license check) | The WP that adds it | Use only packs already verified in [the presentation spec](07-presentation.md#sources) |

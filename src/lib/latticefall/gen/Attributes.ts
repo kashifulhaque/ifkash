@@ -2,12 +2,17 @@
 import type { AttributeDef } from "./AttributeDef";
 import type { Curve } from "./Curve";
 import type { DamageRules } from "./DamageRules";
+import type { LevelCost } from "./LevelCost";
 import type { Steps } from "./Steps";
 
 /**
  * The contents of `attributes.ron`.
  */
-export type Attributes = { min: number, max: number, start_min: number, start_max: number, level_offset: number, attributes: Array<AttributeDef>, max_hp: Curve, max_fp: Curve, max_stamina: Curve, max_equip_load: Curve, spell_slots: Steps, resistance: Curve, 
+export type Attributes = { min: number, max: number, start_min: number, start_max: number, level_offset: number, 
+/**
+ * The Glimmer cost of each level (docs/game/06-progression-and-systems.md, "Leveling").
+ */
+level_cost: LevelCost, attributes: Array<AttributeDef>, max_hp: Curve, max_fp: Curve, max_stamina: Curve, max_equip_load: Curve, spell_slots: Steps, resistance: Curve, 
 /**
  * Attack rating and damage numbers (docs/game/03-combat.md, "Attack rating" and
  * "Damage dealt").

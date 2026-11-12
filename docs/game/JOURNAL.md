@@ -31,7 +31,7 @@ Copy this block to the top of the entries and fill it in as you go:
 ### 2026-11-12: latticefall-m4 (M4)
 
 - **Orchestrator:** Opus 5.5, low effort
-- **Branch:** `game/m4-slice`
+- **Branch:** `game/m4-slice`; first commit on `main` `0b4815b`, last WP commit `518bac3`
 - **Started from:** `origin/main` at `54850f0`
 - **Reservations:** registry numbers: WP-040 10000-10499, WP-042 10500-10999 (items
   4500-4599), WP-043 11000-11199, WP-044 11200-11499, WP-049 12000-12099. WASM event
@@ -50,6 +50,47 @@ Copy this block to the top of the entries and fill it in as you go:
   - WP-046: sonnet, worktree; `7f8d8a7`; 335K. Edited `world_state/` (LevelUp, Travel) while WP-042 held it; WP-042 rebases onto it.
   - WP-042: sonnet, worktree; `12ca046`; 363K. Its report named a test that doesn't exist under that name; the equivalent core test does.
   - WP-043: sonnet, main checkout; `870e5d3`; 241K.
+  - WP-044: sonnet, main checkout; `518bac3`; 220K. Greybox only; the card allows a separate art pass.
+- **Context:** orchestrator about 310K at the end (budget 500K per context window). Largest worker: WP-042 at 363K.
+- **Lessons:**
+  - Agent worktrees branch from `origin/main`, not the session branch, so push each
+    verified WP before starting the next worker, and tell running workers to rebase
+    onto the session branch before they commit. That kept every cherry-pick clean
+    except two (WP-045's WASM struct and engine loop; WP-040's goldens).
+  - The Browser pane's `preview_start` only reads the main checkout's `launch.json`.
+    Worktree workers ran Vite on their own ports and opened them by URL.
+  - A golden that only re-records content hashes after a merge is safe to rehash once;
+    compare `final hash A -> B` lines from `replay rehash` to prove no state hash moved.
+  - Workers' reports can name tests wrongly (WP-042); grep for the test before trusting it.
+  - The landing card (WP-049) would have changed the public `/game` page; the
+    orchestrator gated it behind `engine=lf`. Check every UI WP for that.
+- **Not verified:**
+  - Any real playthrough: combat feel, pacing, whether the tutorial teaches without
+    outside help, and whether the Verge's routes feel right. That's gate G2.
+  - Real gamepad and screen reader in the menus; audio by ear; the low and high
+    quality presets; mobile.
+  - Fast 4G load time of the landing card (measured locally only).
+- **Waiting on the owner:**
+  - **Gate G2:** play Waking Hollow and the Verge at `/game?engine=lf` (Play on the
+    landing card; `&scenario=waking_hollow` or `&scenario=verge`). The levels aren't
+    linked yet: no area transition joins the cave to the Verge.
+  - Waking Hollow has one Lantern about 98 m from B01's fog gate; the spec wants one
+    within 20 s. Add a Lantern (changes the Lantern table) or accept the run.
+  - The starting blade kills Husks in one or two hits; the bot took no damage
+    through the cave. Tune now or in WP-089 (with B01 from M3).
+  - WP-040 readings recorded in `01-architecture.md` Levels without an ADR: levels are
+    compiled at content load, kit colliders are boxes only, Lanterns live only in
+    `entities.ron`.
+  - Settings saved but not read yet: difficulty, graphics quality in the sim,
+    color-blind mode, subtitles, reduced motion (WP-046).
+- **Next steps:**
+  1. Owner: gate G2 playtest and its decisions.
+  2. Small follow-ups found in M4 (one sonnet WP each, or fold into M5/M6):
+     an area transition from Waking Hollow's root-door to the Verge (and the
+     root-door kind that opens after B01); a Lantern model; the Verge art pass; menu
+     load and save; reading the saved difficulty, quality, and accessibility settings.
+  3. Then M5 (WP-050 onward). Keep reserving registry blocks and event kinds per WP.
+     Used this session: 14-17. Free WASM kinds: 10, 12, and 18 and up.
 
 ### 2026-11-12: latticefall-m3 (M3)
 

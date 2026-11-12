@@ -1,58 +1,38 @@
-//! The Lantern menu's commands that change the character or the player's place: level up
-//! and travel (`Command::LevelUp`, `Command::Travel`). Split flasks lives in `items`. All of
-//! them apply only while resting at a Lantern. See docs/game/06-progression-and-systems.md,
-//! "Leveling" and "Lanterns".
+//! The Lantern menu's commands that change the character or the player's place: level up,
+//! respec, and travel (`Command::LevelUp`, `Command::Respec`, `Command::Travel`). Split
+//! flasks lives in `items`. All of them apply only while resting at a Lantern. See
+//! docs/game/06-progression-and-systems.md, "Leveling" and "Lanterns", and
+//! docs/game/04-arsenal-and-builds.md, "Respec".
 //!
-//! The level-up cost lives here, not in the browser, so the menu asks the core what the
-//! next level costs (`level_cost`). WP-050 (leveling and respec) may move this code into
-//! `actor/level.rs` and add respec.
+//! The leveling numbers and rules live in `actor::level`. This module spends the Glimmer
+//! and the Rewrite Quill and applies the result to the player.
 
-use crate::actor::stats::{Attrs, Derived};
+use lf_content::Attributes;
+
+use crate::actor::Actor;
+use crate::actor::level::{self, ATTRIBUTE_COUNT};
+use crate::actor::stats::{Attrs, Derived, Stats};
 use crate::combat::status::StatusState;
 use crate::input::{Command, TickInput};
 use crate::world::World;
 
 use super::{flags, lantern};
 
-/// Number of attributes `Command::LevelUp` can raise.
-pub const ATTRIBUTE_COUNT: u8 = 7;
-
-/// Glimmer to go from character level `level` to the next:
-/// `floor(100 + 20 L + 1.2 L^2)` (docs/game/06-progression-and-systems.md, "Leveling").
-/// `12 * L^2 / 10` in integers is the exact floor of `1.2 * L^2`.
-pub fn level_cost(level: u32) -> u32 {
-    100 + 20 * level + 12 * level * level / 10
-}
-
-/// The attribute `index` (the order of `Attrs`), or `None` past the last.
-fn attribute_mut(a: &mut Attrs, index: u8) -> Option<&mut u16> {
-    Some(match index {
-        0 => &mut a.vitality,
-        1 => &mut a.focus,
-        2 => &mut a.endurance,
-        3 => &mut a.might,
-        4 => &mut a.finesse,
-        5 => &mut a.insight,
-        6 => &mut a.devotion,
-        _ => return None,
-    })
-}
+/// The item ID of the Rewrite Quill (`consumables.ron`; registry 14000), which a respec
+/// consumes.
+const REWRITE_QUILL: &str = "itm_rewrite_quill";
 
 /// The derived stats now and after raising `attribute` by one, for the menu's preview.
 /// `None` if the player is gone, the attribute doesn't exist, or it is at the maximum.
 /// Read-only.
 pub fn level_preview(world: &World, attribute: u8) -> Option<(Derived, Derived)> {
-    let mut attrs = world.actors.get(world.player)?.stats.attrs;
+    let attrs = world.actors.get(world.player)?.stats.attrs;
     let now = attrs.derived(&world.attributes);
-    let v = attribute_mut(&mut attrs, attribute)?;
-    if *v >= world.attributes.max {
-        return None;
-    }
-    *v += 1;
-    Some((now, attrs.derived(&world.attributes)))
+    let raised = level::raised(&attrs, &world.attributes, attribute)?;
+    Some((now, raised.derived(&world.attributes)))
 }
 
-/// Applies the tick's `LevelUp` and `Travel` commands, in order, while resting.
+/// Applies the tick's `LevelUp`, `Respec`, and `Travel` commands, in order, while resting.
 pub fn run(world: &mut World, input: &TickInput) {
     for c in &input.commands {
         if world.state.resting.is_none() {
@@ -61,6 +41,9 @@ pub fn run(world: &mut World, input: &TickInput) {
         match *c {
             Command::LevelUp { attribute } => {
                 level_up(world, attribute);
+            }
+            Command::Respec { attributes } => {
+                respec(world, attributes);
             }
             Command::Travel { lantern } => {
                 travel(world, usize::from(lantern));
@@ -72,36 +55,68 @@ pub fn run(world: &mut World, input: &TickInput) {
 
 /// Spends the Glimmer the next level costs to raise `attribute` by one. False (and no
 /// change) if the attribute doesn't exist or is at the maximum, or the player can't pay.
-/// Maximum HP, FP, and stamina grow with their attributes, and the current values grow
-/// by the same amount; the resistances that attributes raise are refreshed.
 pub fn level_up(world: &mut World, attribute: u8) -> bool {
     let rules = &world.attributes;
     let player = world.player;
     let Some(p) = world.actors.get_mut(player) else {
         return false;
     };
-    let cost = level_cost(p.stats.attrs.level(rules));
+    let cost = level::level_cost(rules, p.stats.attrs.level(rules));
     if p.dead || p.inventory.glimmer < cost {
         return false;
     }
-    let max = rules.max;
-    let mut attrs = p.stats.attrs;
-    match attribute_mut(&mut attrs, attribute) {
-        Some(v) if *v < max => *v += 1,
-        _ => return false,
+    let Some(attrs) = level::raised(&p.stats.attrs, rules, attribute) else {
+        return false;
+    };
+    p.inventory.glimmer -= cost;
+    set_attributes(p, rules, attrs);
+    true
+}
+
+/// Redistributes the player's attribute points (docs/game/04-arsenal-and-builds.md,
+/// "Respec"). `attributes` is the new spread, in `Attrs` order. It costs one Rewrite Quill
+/// and no Glimmer, and the level stays the same. False (and no change) if the player is
+/// dead or has no quill, or the spread isn't a valid respec (`level::respec_allowed`).
+///
+/// The floor is the starting class's values. No class can be chosen yet, so that floor is
+/// the player's starting loadout (`locomotion.ron`, see `Stats::player_stub`).
+pub fn respec(world: &mut World, attributes: [u16; ATTRIBUTE_COUNT]) -> bool {
+    let Some(quill) = world.items.num_of(REWRITE_QUILL) else {
+        return false;
+    };
+    let base = Stats::player_stub(&world.locomotion).attrs;
+    let rules = &world.attributes;
+    let player = world.player;
+    let Some(p) = world.actors.get_mut(player) else {
+        return false;
+    };
+    if p.dead || p.inventory.count(quill) == 0 {
+        return false;
     }
+    let target = level::from_values(attributes);
+    if !level::respec_allowed(rules, &base, &p.stats.attrs, &target) {
+        return false;
+    }
+    p.inventory.remove(quill, 1);
+    set_attributes(p, rules, target);
+    true
+}
+
+/// Sets the player's attributes and refreshes what they drive. The maxima follow their
+/// attributes, the current values move by the same amount (clamped to the new maxima), and
+/// the resistances that attributes raise are refreshed.
+fn set_attributes(p: &mut Actor, rules: &Attributes, attrs: Attrs) {
     let before = p.stats.attrs.derived(rules);
     let after = attrs.derived(rules);
-    p.inventory.glimmer -= cost;
     p.stats.attrs = attrs;
     p.max_hp = after.max_hp;
     p.max_fp = after.max_fp;
     p.max_stamina = after.max_stamina;
-    p.hp = (p.hp + after.max_hp.saturating_sub(before.max_hp)).min(p.max_hp);
-    p.fp = (p.fp + (after.max_fp - before.max_fp).max(0.0)).min(p.max_fp);
-    p.stamina = (p.stamina + (after.max_stamina - before.max_stamina).max(0.0)).min(p.max_stamina);
+    let hp_delta = i64::from(after.max_hp) - i64::from(before.max_hp);
+    p.hp = (i64::from(p.hp) + hp_delta).clamp(0, i64::from(p.max_hp)) as u32;
+    p.fp = (p.fp + (after.max_fp - before.max_fp)).clamp(0.0, p.max_fp);
+    p.stamina = (p.stamina + (after.max_stamina - before.max_stamina)).clamp(0.0, p.max_stamina);
     p.status.resist = StatusState::for_player(&attrs, rules).resist;
-    true
 }
 
 /// Moves the player to the lit Lantern at index `to` and rests there, so the Lantern menu
@@ -163,16 +178,6 @@ mod tests {
     }
 
     #[test]
-    fn the_cost_curve_matches_the_leveling_table() {
-        // The spec's table: cost to the next level.
-        for (level, cost) in [(10, 420), (20, 980), (30, 1780), (45, 3430), (60, 5620)] {
-            assert_eq!(level_cost(level), cost, "level {level}");
-        }
-        // The table's cumulative column: 6,518 from level 10 to 20.
-        assert_eq!((10..20).map(level_cost).sum::<u32>(), 6518);
-    }
-
-    #[test]
     fn level_up_spends_glimmer_and_raises_the_attribute_and_maxima() {
         let mut w = field();
         rest(&mut w);
@@ -185,7 +190,7 @@ mod tests {
                 p.max_hp,
             )
         };
-        let cost = level_cost(level);
+        let cost = level::level_cost(&w.attributes, level);
         w.actors.get_mut(id).unwrap().inventory.glimmer = cost + 5;
         step(&mut w, vec![Command::LevelUp { attribute: 0 }]);
         let p = w.actors.get(id).unwrap();
@@ -237,6 +242,169 @@ mod tests {
         let at_max = p.stats.attrs;
         step(&mut w, vec![Command::LevelUp { attribute: 3 }]);
         assert_eq!(w.actors.get(id).unwrap().stats.attrs, at_max);
+    }
+
+    /// The Rewrite Quill's item number in the test world.
+    fn quill(w: &World) -> lf_content::registry::NumId {
+        w.items
+            .num_of(REWRITE_QUILL)
+            .expect("the quill is registered")
+    }
+
+    /// Gives the player `n` Rewrite Quills.
+    fn give_quills(w: &mut World, n: u16) {
+        let q = quill(w);
+        let id = w.player;
+        let items = &w.items;
+        let p = w.actors.get_mut(id).unwrap();
+        assert_eq!(p.inventory.pick_up(q, n, items), n);
+    }
+
+    fn quills_held(w: &World) -> u16 {
+        w.actors.get(w.player).unwrap().inventory.count(quill(w))
+    }
+
+    /// The starting loadout: Vitality 10, Focus 10, Endurance 10, Might 12, Finesse 12,
+    /// Insight 8, Devotion 8 (level 10).
+    const BASE: [u16; ATTRIBUTE_COUNT] = [10, 10, 10, 12, 12, 8, 8];
+
+    #[test]
+    fn respec_consumes_a_quill_and_redistributes_without_changing_glimmer_or_level() {
+        let mut w = field();
+        rest(&mut w);
+        let id = w.player;
+        // Three level-ups, all into Might: 420 + 465 + 512 Glimmer.
+        w.actors.get_mut(id).unwrap().inventory.glimmer = 2_000;
+        for _ in 0..3 {
+            step(&mut w, vec![Command::LevelUp { attribute: 3 }]);
+        }
+        let p = w.actors.get(id).unwrap();
+        assert_eq!(p.inventory.glimmer, 2_000 - 420 - 465 - 512);
+        assert_eq!(p.stats.attrs.level(&w.attributes), 13);
+        give_quills(&mut w, 1);
+        let glimmer = w.actors.get(id).unwrap().inventory.glimmer;
+        let level = w.actors.get(id).unwrap().stats.attrs.level(&w.attributes);
+
+        // Take two Might points back and spread them over Insight and Devotion.
+        let target = [10, 10, 10, 13, 12, 9, 9];
+        step(&mut w, vec![Command::Respec { attributes: target }]);
+
+        let p = w.actors.get(id).unwrap();
+        assert_eq!(quills_held(&w), 0, "one quill consumed");
+        assert_eq!(p.stats.attrs, level::from_values(target));
+        assert_eq!(p.inventory.glimmer, glimmer, "respec costs no Glimmer");
+        assert_eq!(p.stats.attrs.level(&w.attributes), level, "the level stays");
+    }
+
+    #[test]
+    fn respec_resets_to_the_class_base_plus_the_free_points() {
+        let mut w = field();
+        rest(&mut w);
+        let id = w.player;
+        w.actors.get_mut(id).unwrap().inventory.glimmer = 2_000;
+        for attribute in [0, 0, 5] {
+            step(&mut w, vec![Command::LevelUp { attribute }]);
+        }
+        give_quills(&mut w, 1);
+        // Vitality and Insight went up by two and one. The respec puts all three free
+        // points into Focus, which resets the other attributes to the base.
+        step(
+            &mut w,
+            vec![Command::Respec {
+                attributes: [10, 13, 10, 12, 12, 8, 8],
+            }],
+        );
+        let p = w.actors.get(id).unwrap();
+        assert_eq!(p.stats.attrs.level(&w.attributes), 13, "73 points - 60");
+        assert_eq!(p.stats.attrs.vitality, BASE[0]);
+        assert_eq!(p.stats.attrs.insight, BASE[5]);
+        assert_eq!(p.stats.attrs.focus, 13);
+    }
+
+    #[test]
+    fn respec_lowers_the_maxima_and_clamps_the_current_values() {
+        let mut w = field();
+        rest(&mut w);
+        let id = w.player;
+        w.actors.get_mut(id).unwrap().inventory.glimmer = 2_000;
+        for _ in 0..3 {
+            step(&mut w, vec![Command::LevelUp { attribute: 0 }]);
+        }
+        let hp_high = w.actors.get(id).unwrap().max_hp;
+        give_quills(&mut w, 1);
+        // Full HP at the high maximum, then the three Vitality points go to Insight.
+        w.actors.get_mut(id).unwrap().hp = hp_high;
+        step(
+            &mut w,
+            vec![Command::Respec {
+                attributes: [10, 10, 10, 12, 12, 11, 8],
+            }],
+        );
+        let p = w.actors.get(id).unwrap();
+        assert_eq!(p.max_hp, w.attributes.max_hp_tenths(10) as u32 / 10);
+        assert!(p.max_hp < hp_high);
+        assert_eq!(p.hp, p.max_hp, "current HP follows the lower maximum");
+    }
+
+    #[test]
+    fn respec_refuses_without_a_quill_a_rest_or_a_valid_spread() {
+        let mut w = field();
+        let id = w.player;
+        // One point above the starting loadout (Might 13, total 71), so a respec has
+        // something to move. Set directly: this test is about the respec rules.
+        w.actors.get_mut(id).unwrap().stats.attrs.might = 13;
+        let before = w.actors.get(id).unwrap().stats.attrs;
+        let valid = [10, 10, 10, 12, 12, 9, 8];
+        rest(&mut w);
+
+        // Resting, but no quill.
+        step(&mut w, vec![Command::Respec { attributes: valid }]);
+        assert_eq!(
+            w.actors.get(id).unwrap().stats.attrs,
+            before,
+            "no quill, no respec"
+        );
+
+        give_quills(&mut w, 1);
+        // Resting, but a changed total: a point appears from nowhere.
+        step(
+            &mut w,
+            vec![Command::Respec {
+                attributes: [10, 10, 10, 14, 12, 8, 8],
+            }],
+        );
+        assert_eq!(w.actors.get(id).unwrap().stats.attrs, before);
+        // Vitality below the starting loadout, with the total kept.
+        step(
+            &mut w,
+            vec![Command::Respec {
+                attributes: [9, 10, 10, 14, 12, 8, 8],
+            }],
+        );
+        assert_eq!(w.actors.get(id).unwrap().stats.attrs, before);
+        // No change at all.
+        step(
+            &mut w,
+            vec![Command::Respec {
+                attributes: level::values(&before),
+            }],
+        );
+        assert_eq!(w.actors.get(id).unwrap().stats.attrs, before);
+        assert_eq!(quills_held(&w), 1, "refused respecs keep the quill");
+
+        // Not resting: refused even with a valid spread and a quill.
+        w.state.resting = None;
+        step(&mut w, vec![Command::Respec { attributes: valid }]);
+        assert_eq!(w.actors.get(id).unwrap().stats.attrs, before);
+        assert_eq!(quills_held(&w), 1);
+        rest(&mut w);
+
+        // A valid spread with the quill: it goes through.
+        step(&mut w, vec![Command::Respec { attributes: valid }]);
+        assert_eq!(quills_held(&w), 0);
+        let after = w.actors.get(id).unwrap().stats.attrs;
+        assert_eq!(after, level::from_values(valid));
+        assert_eq!(after.insight, 9);
     }
 
     fn with_second_lantern(w: &mut World, lit: bool) {

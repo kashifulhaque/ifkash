@@ -221,5 +221,8 @@
     (id: "relic_banana_cpp", num: 11210),
     (id: "relic_shrike_lite_circuit", num: 11211),
     (id: "chronicle_page_1", num: 11212),
+
+    // WP-050: 14000-14099 are leveling and respec entries.
+    (id: "itm_rewrite_quill", num: 14000), // WP-050: the Rewrite Quill, consumed by respec
   ],
 )

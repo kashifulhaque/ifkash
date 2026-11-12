@@ -122,7 +122,7 @@ impl LfWorld {
     /// until the end.
     pub fn menu_state(&self) -> Vec<f32> {
         use lf_core::ai::boss::Stage;
-        use lf_core::world_state::{flags, lantern_menu};
+        use lf_core::world_state::flags;
         let w = &self.world;
         let mut out = vec![0.0f32; MENU_WORDS];
         let Some(p) = w.actors.get(w.player) else {
@@ -152,7 +152,7 @@ impl LfWorld {
         }
         let level = a.level(&w.attributes);
         out[28] = level as f32;
-        out[29] = lantern_menu::level_cost(level) as f32;
+        out[29] = lf_core::actor::level::level_cost(&w.attributes, level) as f32;
         out[30] = f32::from(w.attributes.max);
         let f = &inv.flasks;
         out[31] = f32::from(f.max_charges);

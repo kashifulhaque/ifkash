@@ -74,6 +74,18 @@ impl Steps {
     }
 }
 
+/// The Glimmer cost of the level from `L` to `L + 1`:
+/// `floor(base + per_level * L + quad_tenths * L^2 / 10)`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "ts", derive(ts_rs::TS))]
+#[serde(deny_unknown_fields)]
+pub struct LevelCost {
+    pub base: u32,
+    pub per_level: u32,
+    /// The quadratic term in tenths: 12 is 1.2 * L^2.
+    pub quad_tenths: u32,
+}
+
 /// The contents of `attributes.ron`.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "ts", derive(ts_rs::TS))]
@@ -84,6 +96,8 @@ pub struct Attributes {
     pub start_min: u16,
     pub start_max: u16,
     pub level_offset: u16,
+    /// The Glimmer cost of each level (docs/game/06-progression-and-systems.md, "Leveling").
+    pub level_cost: LevelCost,
     pub attributes: Vec<AttributeDef>,
     pub max_hp: Curve,
     pub max_fp: Curve,

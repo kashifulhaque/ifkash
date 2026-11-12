@@ -64,6 +64,10 @@ impl ActionFrame {
 ///   Finesse, Insight, Devotion) by one, for the Glimmer the next level costs. `Travel`
 ///   moves the player to the lit Lantern at index `lantern` of the scenario. Both apply
 ///   only while resting at a Lantern (`world_state::lantern_menu`).
+/// - `Respec` sets the attribute spread to `attributes` (in the order of `LevelUp`'s
+///   attributes, Vitality to Devotion) and consumes a Rewrite Quill. It applies only while
+///   resting at a Lantern, and only if the spread keeps the total and the starting values
+///   as the floor (`actor::level::respec_allowed`).
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Command {
     Rest,
@@ -74,6 +78,7 @@ pub enum Command {
     Gesture(u16),
     SplitFlasks { vigil: u8 },
     Travel { lantern: u8 },
+    Respec { attributes: [u16; 7] },
 }
 
 /// Everything the simulation consumes in one tick.

@@ -2,6 +2,7 @@
 //! See docs/game/01-architecture.md, "World and actors".
 
 pub mod controller;
+pub mod level;
 pub mod stats;
 pub mod targeting;
 #[cfg(test)]

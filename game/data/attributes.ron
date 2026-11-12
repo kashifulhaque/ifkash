@@ -11,6 +11,9 @@
   start_min: 4,
   start_max: 16,
   level_offset: 60, // character level = sum of attributes - level_offset
+  // Glimmer to go from level L to L + 1: floor(base + per_level * L + quad_tenths * L^2 / 10).
+  // Source: docs/game/06-progression-and-systems.md, "Leveling".
+  level_cost: (base: 100, per_level: 20, quad_tenths: 12),
   attributes: [
     (id: "attr_vitality", name: "Vitality"),
     (id: "attr_focus", name: "Focus"),

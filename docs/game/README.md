@@ -7,12 +7,29 @@ AI coding agents can build it one work package at a time.
 
 ## Start here
 
-- **If you're an AI coding agent** with a work package to do: read
-  [the agent playbook](11-agent-playbook.md), then [`STATUS.md`](STATUS.md), then your
-  card in [the roadmap](10-roadmap.md). Read only the sections your card lists.
-- **If you're the owner** planning the next session: check [`STATUS.md`](STATUS.md),
-  pick the next WPs from [the roadmap's waves](10-roadmap.md#critical-path-and-parallelism),
-  and paste the session prompt from [the playbook](11-agent-playbook.md#start-a-session).
+- **If you're the owner** starting the next session: open a new Claude Code session
+  with Opus and paste the following prompt, replacing `TARGET` with a milestone such as
+  `M1`, or with `next`:
+
+  ```text
+  You are the orchestrator for Latticefall, the game in this repo. Work on: TARGET.
+  Follow docs/game/11-agent-playbook.md, section "Run a milestone as an orchestrator",
+  exactly, including the context budget.
+
+  Start by reading, in this order: docs/game/README.md, docs/game/11-agent-playbook.md,
+  docs/game/JOURNAL.md (the latest entry first), and docs/game/STATUS.md. Then read the
+  roadmap cards for the WPs you'll run, and nothing else until a WP needs it.
+
+  Shell rule (pass it to every worker): call /bin/ls instead of ls, and never run eza.
+  ```
+
+  The orchestrator gives each work package to a worker subagent of the model the card
+  names, verifies it, records it in `STATUS.md` and `JOURNAL.md`, and tells you when it
+  reaches its context budget, with the prompt for the next session.
+- **If you're an orchestrator:** follow
+  [run a milestone as an orchestrator](11-agent-playbook.md#run-a-milestone-as-an-orchestrator).
+- **If you're a worker** with one work package: your brief has everything; if you were
+  started without one, follow [run a single work package](11-agent-playbook.md#run-a-single-work-package).
 - **If you're reviewing the design:** read in the order of the following table.
 
 ## Documents
@@ -33,6 +50,7 @@ AI coding agents can build it one work package at a time.
 | [11 Agent playbook](11-agent-playbook.md) | How a session runs, definition of done, determinism rules, visual checks, lanes |
 | [12 Research notes](12-research-notes.md) | What the plan's research found, with sources and open questions |
 | [STATUS.md](STATUS.md) | Live progress tracker |
+| [JOURNAL.md](JOURNAL.md) | Session handoff log: who did what, context used, next steps |
 | [decisions/](decisions/) | Architecture decision records (ADRs) |
 
 ## Open decisions for the owner

@@ -1,0 +1,14 @@
+# WP-051 golden: the thrusting sword's three-thrust light chain, then its heavy, on
+# wp051_thrusting_sword (a padded dummy 6.1 m ahead). The chain opens at frame 19.
+seed 5104
+scenario wp051_thrusting_sword
+60 0 30              # walk 3.2 m toward the dummy
+5 0 0                # stand
+1 0 0 LIGHT          # ts_light_1 starts on tick 0
+18 0 0
+1 0 0 LIGHT          # tick 19: ts_light_2 starts
+18 0 0
+1 0 0 LIGHT          # tick 38: ts_light_3 starts
+34 0 0               # ts_light_3 runs out (32 frames)
+1 0 0 HEAVY          # ts_heavy
+50 0 0               # heavy plays out (40 frames)

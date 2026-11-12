@@ -1,0 +1,14 @@
+# WP-051 golden: the axe's three-chop light chain, then its heavy, on wp051_axe (a padded
+# dummy 5.3 m ahead). The chain opens at frame 22.
+seed 5105
+scenario wp051_axe
+60 0 30              # walk 3.2 m toward the dummy
+5 0 0                # stand
+1 0 0 LIGHT          # ax_light_1 starts on tick 0
+21 0 0
+1 0 0 LIGHT          # tick 22: ax_light_2 starts
+21 0 0
+1 0 0 LIGHT          # tick 44: ax_light_3 starts
+42 0 0               # ax_light_3 runs out (40 frames)
+1 0 0 HEAVY          # ax_heavy
+55 0 0               # heavy plays out (46 frames)

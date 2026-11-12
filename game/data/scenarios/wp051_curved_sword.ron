@@ -1,0 +1,15 @@
+// WP-051 golden scenario for the Curved sword moveset: a flat floor and a padded dummy 5.5 m
+// ahead, facing the player (yaw pi). The player wields wpn_test_curved_sword (weapons/test_classes.ron).
+(
+  spawn: (0.0, 0.0, 0.0),
+  spawn_yaw: 0.0,
+  kill_y: -50.0,
+  heightfield: None,
+  boxes: [
+    (name: "floor", center: (0.0, -0.5, 0.0), half_extents: (1000.0, 0.5, 1000.0)),
+  ],
+  player_weapon: Some("wpn_test_curved_sword"),
+  dummies: [
+    (name: "dummy", pos: (0.0, 0.0, 5.5), yaw: 3.1415927, hp: 600, defense: (flat: 500)),
+  ],
+)

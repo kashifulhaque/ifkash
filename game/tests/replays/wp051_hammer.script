@@ -1,0 +1,14 @@
+# WP-051 golden: the hammer's three-swing light chain, then its heavy, on wp051_hammer (a
+# padded dummy 5.7 m ahead). The chain opens at frame 23.
+seed 5106
+scenario wp051_hammer
+60 0 30              # walk 3.2 m toward the dummy
+5 0 0                # stand
+1 0 0 LIGHT          # hm_light_1 starts on tick 0
+22 0 0
+1 0 0 LIGHT          # tick 23: hm_light_2 starts
+22 0 0
+1 0 0 LIGHT          # tick 46: hm_light_3 starts
+44 0 0               # hm_light_3 runs out (42 frames)
+1 0 0 HEAVY          # hm_heavy
+60 0 0               # heavy plays out (50 frames)

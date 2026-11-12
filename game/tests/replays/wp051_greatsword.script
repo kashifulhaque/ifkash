@@ -1,0 +1,14 @@
+# WP-051 golden: the greatsword's three-sweep light chain, then its heavy, on wp051_greatsword
+# (a padded dummy 6.1 m ahead). The sweeps chain at frame 30 (cancel_attack_from: 30).
+seed 5102
+scenario wp051_greatsword
+60 0 30              # walk 3.2 m toward the dummy
+5 0 0                # stand
+1 0 0 LIGHT          # gs_light_1 starts on tick 0
+29 0 0
+1 0 0 LIGHT          # tick 30: gs_light_2 starts
+29 0 0
+1 0 0 LIGHT          # tick 60: gs_light_3 starts
+50 0 0               # gs_light_3 runs out (48 frames)
+1 0 0 HEAVY          # gs_heavy
+70 0 0               # heavy plays out (56 frames)

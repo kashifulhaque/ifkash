@@ -85,6 +85,27 @@ const EMBEDDED_MOVES: &[(&str, &str)] = &[
         include_str!("../../../data/moves/straight_sword.ron"),
     ),
     (
+        "moves/dagger.ron",
+        include_str!("../../../data/moves/dagger.ron"),
+    ),
+    (
+        "moves/greatsword.ron",
+        include_str!("../../../data/moves/greatsword.ron"),
+    ),
+    (
+        "moves/curved_sword.ron",
+        include_str!("../../../data/moves/curved_sword.ron"),
+    ),
+    (
+        "moves/thrusting_sword.ron",
+        include_str!("../../../data/moves/thrusting_sword.ron"),
+    ),
+    ("moves/axe.ron", include_str!("../../../data/moves/axe.ron")),
+    (
+        "moves/hammer.ron",
+        include_str!("../../../data/moves/hammer.ron"),
+    ),
+    (
         "moves/crits.ron",
         include_str!("../../../data/moves/crits.ron"),
     ),
@@ -201,6 +222,10 @@ const EMBEDDED_WEAPONS: &[(&str, &str)] = &[
     (
         "weapons/stub_bow.ron",
         include_str!("../../../data/weapons/stub_bow.ron"),
+    ),
+    (
+        "weapons/test_classes.ron",
+        include_str!("../../../data/weapons/test_classes.ron"),
     ),
 ];
 const EMBEDDED_REGISTRY: &str = include_str!("../../../data/registry.ron");
@@ -341,6 +366,30 @@ const EMBEDDED_SCENARIOS: &[(&str, &str)] = &[
     (
         "scenarios/boss_b01.ron",
         include_str!("../../../data/scenarios/boss_b01.ron"),
+    ),
+    (
+        "scenarios/wp051_dagger.ron",
+        include_str!("../../../data/scenarios/wp051_dagger.ron"),
+    ),
+    (
+        "scenarios/wp051_greatsword.ron",
+        include_str!("../../../data/scenarios/wp051_greatsword.ron"),
+    ),
+    (
+        "scenarios/wp051_curved_sword.ron",
+        include_str!("../../../data/scenarios/wp051_curved_sword.ron"),
+    ),
+    (
+        "scenarios/wp051_thrusting_sword.ron",
+        include_str!("../../../data/scenarios/wp051_thrusting_sword.ron"),
+    ),
+    (
+        "scenarios/wp051_axe.ron",
+        include_str!("../../../data/scenarios/wp051_axe.ron"),
+    ),
+    (
+        "scenarios/wp051_hammer.ron",
+        include_str!("../../../data/scenarios/wp051_hammer.ron"),
     ),
 ];
 const EMBEDDED_BOSSES: &[(&str, &str)] = &[

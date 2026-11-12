@@ -97,6 +97,8 @@ fn hash_ignores_comments_and_whitespace() {
             .collect()
     };
     let test_enemy = std::fs::read_to_string(data_dir().join("moves/test_enemy.ron")).unwrap();
+    let test_classes =
+        std::fs::read_to_string(data_dir().join("weapons/test_classes.ron")).unwrap();
     let mut all_moves = vec![
         ("moves/common.ron".to_owned(), common),
         ("moves/crits.ron".to_owned(), crits),
@@ -104,6 +106,18 @@ fn hash_ignores_comments_and_whitespace() {
         ("moves/stub_bow.ron".to_owned(), bow_moves),
         ("moves/test_enemy.ron".to_owned(), test_enemy),
     ];
+    // WP-051: the six class movesets.
+    for class in [
+        "dagger",
+        "greatsword",
+        "curved_sword",
+        "thrusting_sword",
+        "axe",
+        "hammer",
+    ] {
+        let text = std::fs::read_to_string(data_dir().join(format!("moves/{class}.ron"))).unwrap();
+        all_moves.push((format!("moves/{class}.ron"), text));
+    }
     all_moves.extend(ron_files("moves/enemies"));
     all_moves.extend(ron_files("moves/bosses"));
     let other = Content::from_sources(
@@ -113,6 +127,7 @@ fn hash_ignores_comments_and_whitespace() {
         vec![
             ("weapons/straight_sword.ron".into(), weapons),
             ("weapons/stub_bow.ron".into(), bow),
+            ("weapons/test_classes.ron".into(), test_classes),
         ],
     )
     .and_then(|c| {

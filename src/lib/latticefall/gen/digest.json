@@ -55,6 +55,11 @@
       "unwieldy_base_percent": 60,
       "unwieldy_recovery_percent": 20
     },
+    "level_cost": {
+      "base": 100,
+      "per_level": 20,
+      "quad_tenths": 12
+    },
     "level_offset": 60,
     "max": 60,
     "max_equip_load": {
@@ -143,9 +148,129 @@
     "start_max": 16,
     "start_min": 4
   },
-  "contentHash": "5860015478657563810",
-  "contentHashHex": "5152f507b7acbca2",
+  "contentHash": "9290997999082337490",
+  "contentHashHex": "80f04174502af4d2",
   "moves": [
+    {
+      "anim": "axe_chop_r",
+      "file": "moves/axe.ron",
+      "fp": 0,
+      "id": "ax_light_1",
+      "num": 13400,
+      "stamina": 16,
+      "stub": false,
+      "totalFrames": 34
+    },
+    {
+      "anim": "axe_chop_l",
+      "file": "moves/axe.ron",
+      "fp": 0,
+      "id": "ax_light_2",
+      "num": 13401,
+      "stamina": 16,
+      "stub": false,
+      "totalFrames": 34
+    },
+    {
+      "anim": "axe_cleave",
+      "file": "moves/axe.ron",
+      "fp": 0,
+      "id": "ax_light_3",
+      "num": 13402,
+      "stamina": 20,
+      "stub": false,
+      "totalFrames": 40
+    },
+    {
+      "anim": "axe_overhead",
+      "file": "moves/axe.ron",
+      "fp": 0,
+      "id": "ax_heavy",
+      "num": 13403,
+      "stamina": 24,
+      "stub": false,
+      "totalFrames": 46
+    },
+    {
+      "anim": "axe_overhead_charged",
+      "file": "moves/axe.ron",
+      "fp": 0,
+      "id": "ax_heavy_charged",
+      "num": 13404,
+      "stamina": 30,
+      "stub": false,
+      "totalFrames": 50
+    },
+    {
+      "anim": "axe_run_chop",
+      "file": "moves/axe.ron",
+      "fp": 0,
+      "id": "ax_running",
+      "num": 13405,
+      "stamina": 18,
+      "stub": false,
+      "totalFrames": 36
+    },
+    {
+      "anim": "axe_roll_chop",
+      "file": "moves/axe.ron",
+      "fp": 0,
+      "id": "ax_rolling",
+      "num": 13406,
+      "stamina": 16,
+      "stub": false,
+      "totalFrames": 30
+    },
+    {
+      "anim": "axe_backstep_chop",
+      "file": "moves/axe.ron",
+      "fp": 0,
+      "id": "ax_backstep",
+      "num": 13407,
+      "stamina": 14,
+      "stub": false,
+      "totalFrames": 30
+    },
+    {
+      "anim": "axe_jump_chop",
+      "file": "moves/axe.ron",
+      "fp": 0,
+      "id": "ax_jump_light",
+      "num": 13408,
+      "stamina": 20,
+      "stub": false,
+      "totalFrames": 34
+    },
+    {
+      "anim": "axe_jump_overhead",
+      "file": "moves/axe.ron",
+      "fp": 0,
+      "id": "ax_jump_heavy",
+      "num": 13409,
+      "stamina": 24,
+      "stub": false,
+      "totalFrames": 38
+    },
+    {
+      "anim": "axe_plunge",
+      "file": "moves/axe.ron",
+      "fp": 0,
+      "id": "ax_plunge",
+      "num": 13410,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 32
+    },
+    {
+      "anim": "axe_counter",
+      "file": "moves/axe.ron",
+      "fp": 0,
+      "id": "ax_guard_counter",
+      "num": 13411,
+      "stamina": 18,
+      "stub": false,
+      "totalFrames": 30
+    },
     {
       "anim": "sentry_overhead",
       "file": "moves/bosses/b01.ron",
@@ -357,6 +482,276 @@
       "totalFrames": 44
     },
     {
+      "anim": "curved_cut_r",
+      "file": "moves/curved_sword.ron",
+      "fp": 0,
+      "id": "cs_light_1",
+      "num": 13200,
+      "stamina": 10,
+      "stub": false,
+      "totalFrames": 24
+    },
+    {
+      "anim": "curved_cut_l",
+      "file": "moves/curved_sword.ron",
+      "fp": 0,
+      "id": "cs_light_2",
+      "num": 13201,
+      "stamina": 10,
+      "stub": false,
+      "totalFrames": 24
+    },
+    {
+      "anim": "curved_spin_half",
+      "file": "moves/curved_sword.ron",
+      "fp": 0,
+      "id": "cs_light_3",
+      "num": 13202,
+      "stamina": 14,
+      "stub": false,
+      "totalFrames": 28
+    },
+    {
+      "anim": "curved_spin_full",
+      "file": "moves/curved_sword.ron",
+      "fp": 0,
+      "id": "cs_heavy",
+      "num": 13203,
+      "stamina": 20,
+      "stub": false,
+      "totalFrames": 38
+    },
+    {
+      "anim": "curved_spin_full_charged",
+      "file": "moves/curved_sword.ron",
+      "fp": 0,
+      "id": "cs_heavy_charged",
+      "num": 13204,
+      "stamina": 26,
+      "stub": false,
+      "totalFrames": 40
+    },
+    {
+      "anim": "curved_run_slash",
+      "file": "moves/curved_sword.ron",
+      "fp": 0,
+      "id": "cs_running",
+      "num": 13205,
+      "stamina": 12,
+      "stub": false,
+      "totalFrames": 28
+    },
+    {
+      "anim": "curved_roll_slash",
+      "file": "moves/curved_sword.ron",
+      "fp": 0,
+      "id": "cs_rolling",
+      "num": 13206,
+      "stamina": 12,
+      "stub": false,
+      "totalFrames": 22
+    },
+    {
+      "anim": "curved_backstep_slash",
+      "file": "moves/curved_sword.ron",
+      "fp": 0,
+      "id": "cs_backstep",
+      "num": 13207,
+      "stamina": 12,
+      "stub": false,
+      "totalFrames": 22
+    },
+    {
+      "anim": "curved_jump_slash",
+      "file": "moves/curved_sword.ron",
+      "fp": 0,
+      "id": "cs_jump_light",
+      "num": 13208,
+      "stamina": 16,
+      "stub": false,
+      "totalFrames": 26
+    },
+    {
+      "anim": "curved_jump_spin",
+      "file": "moves/curved_sword.ron",
+      "fp": 0,
+      "id": "cs_jump_heavy",
+      "num": 13209,
+      "stamina": 20,
+      "stub": false,
+      "totalFrames": 30
+    },
+    {
+      "anim": "curved_plunge",
+      "file": "moves/curved_sword.ron",
+      "fp": 0,
+      "id": "cs_plunge",
+      "num": 13210,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 26
+    },
+    {
+      "anim": "curved_counter",
+      "file": "moves/curved_sword.ron",
+      "fp": 0,
+      "id": "cs_guard_counter",
+      "num": 13211,
+      "stamina": 16,
+      "stub": false,
+      "totalFrames": 26
+    },
+    {
+      "anim": "dagger_stab_r",
+      "file": "moves/dagger.ron",
+      "fp": 0,
+      "id": "dag_light_1",
+      "num": 13000,
+      "stamina": 6,
+      "stub": false,
+      "totalFrames": 18
+    },
+    {
+      "anim": "dagger_stab_l",
+      "file": "moves/dagger.ron",
+      "fp": 0,
+      "id": "dag_light_2",
+      "num": 13001,
+      "stamina": 6,
+      "stub": false,
+      "totalFrames": 18
+    },
+    {
+      "anim": "dagger_stab_step",
+      "file": "moves/dagger.ron",
+      "fp": 0,
+      "id": "dag_light_3",
+      "num": 13002,
+      "stamina": 8,
+      "stub": false,
+      "totalFrames": 22
+    },
+    {
+      "anim": "dagger_rising_stab",
+      "file": "moves/dagger.ron",
+      "fp": 0,
+      "id": "dag_heavy",
+      "num": 13003,
+      "stamina": 16,
+      "stub": false,
+      "totalFrames": 26
+    },
+    {
+      "anim": "dagger_rising_stab_charged",
+      "file": "moves/dagger.ron",
+      "fp": 0,
+      "id": "dag_heavy_charged",
+      "num": 13004,
+      "stamina": 20,
+      "stub": false,
+      "totalFrames": 28
+    },
+    {
+      "anim": "dagger_run_stab",
+      "file": "moves/dagger.ron",
+      "fp": 0,
+      "id": "dag_running",
+      "num": 13005,
+      "stamina": 10,
+      "stub": false,
+      "totalFrames": 20
+    },
+    {
+      "anim": "dagger_roll_stab",
+      "file": "moves/dagger.ron",
+      "fp": 0,
+      "id": "dag_rolling",
+      "num": 13006,
+      "stamina": 8,
+      "stub": false,
+      "totalFrames": 16
+    },
+    {
+      "anim": "dagger_backstep_stab",
+      "file": "moves/dagger.ron",
+      "fp": 0,
+      "id": "dag_backstep",
+      "num": 13007,
+      "stamina": 8,
+      "stub": false,
+      "totalFrames": 14
+    },
+    {
+      "anim": "dagger_jump_stab",
+      "file": "moves/dagger.ron",
+      "fp": 0,
+      "id": "dag_jump_light",
+      "num": 13008,
+      "stamina": 12,
+      "stub": false,
+      "totalFrames": 20
+    },
+    {
+      "anim": "dagger_jump_overhead",
+      "file": "moves/dagger.ron",
+      "fp": 0,
+      "id": "dag_jump_heavy",
+      "num": 13009,
+      "stamina": 16,
+      "stub": false,
+      "totalFrames": 22
+    },
+    {
+      "anim": "dagger_plunge",
+      "file": "moves/dagger.ron",
+      "fp": 0,
+      "id": "dag_plunge",
+      "num": 13010,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 22
+    },
+    {
+      "anim": "dagger_counter",
+      "file": "moves/dagger.ron",
+      "fp": 0,
+      "id": "dag_guard_counter",
+      "num": 13011,
+      "stamina": 18,
+      "stub": false,
+      "totalFrames": 22
+    },
+    {
+      "anim": "ac_cast",
+      "file": "moves/enemies/acolyte.ron",
+      "fp": 0,
+      "id": "ac_cast",
+      "num": 8300,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 80
+    },
+    {
+      "anim": "ac_smack",
+      "file": "moves/enemies/acolyte.ron",
+      "fp": 0,
+      "id": "ac_smack",
+      "num": 8301,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 44
+    },
+    {
+      "anim": "ac_bell_cast",
+      "file": "moves/enemies/acolyte_bell.ron",
+      "fp": 0,
+      "id": "ac_bell_cast",
+      "num": 8302,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 80
+    },
+    {
       "anim": "bw_strike_1",
       "file": "moves/enemies/bell_warden.ron",
       "fp": 0,
@@ -417,6 +812,26 @@
       "totalFrames": 90
     },
     {
+      "anim": "cm_dive",
+      "file": "moves/enemies/cave_moth.ron",
+      "fp": 0,
+      "id": "cm_dive",
+      "num": 8340,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 56
+    },
+    {
+      "anim": "cm_dust",
+      "file": "moves/enemies/cave_moth.ron",
+      "fp": 0,
+      "id": "cm_dust",
+      "num": 8341,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 64
+    },
+    {
       "anim": "ck_halberd_1",
       "file": "moves/enemies/choir_knight.ron",
       "fp": 0,
@@ -457,6 +872,26 @@
       "totalFrames": 90
     },
     {
+      "anim": "dr_grab",
+      "file": "moves/enemies/drowned.ron",
+      "fp": 0,
+      "id": "dr_grab",
+      "num": 8310,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 72
+    },
+    {
+      "anim": "dr_swipe",
+      "file": "moves/enemies/drowned.ron",
+      "fp": 0,
+      "id": "dr_swipe",
+      "num": 8311,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 58
+    },
+    {
       "anim": "fs_hammer",
       "file": "moves/enemies/foundry_smith.ron",
       "fp": 0,
@@ -485,6 +920,26 @@
       "stamina": 0,
       "stub": false,
       "totalFrames": 52
+    },
+    {
+      "anim": "gw_lunge",
+      "file": "moves/enemies/glasswing_stalker.ron",
+      "fp": 0,
+      "id": "gw_lunge",
+      "num": 8370,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 52
+    },
+    {
+      "anim": "gw_slash",
+      "file": "moves/enemies/glasswing_stalker.ron",
+      "fp": 0,
+      "id": "gw_slash",
+      "num": 8371,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 46
     },
     {
       "anim": "ga_shoot",
@@ -657,6 +1112,16 @@
       "totalFrames": 66
     },
     {
+      "anim": "lm_burst",
+      "file": "moves/enemies/lamp_mite.ron",
+      "fp": 0,
+      "id": "lm_burst",
+      "num": 8350,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 36
+    },
+    {
       "anim": "lt_bomb",
       "file": "moves/enemies/lantern_thief.ron",
       "fp": 0,
@@ -672,6 +1137,16 @@
       "fp": 0,
       "id": "lt_stab",
       "num": 8601,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 36
+    },
+    {
+      "anim": "mc_bite",
+      "file": "moves/enemies/marsh_crawler.ron",
+      "fp": 0,
+      "id": "mc_bite",
+      "num": 8330,
       "stamina": 0,
       "stub": false,
       "totalFrames": 36
@@ -707,6 +1182,16 @@
       "totalFrames": 70
     },
     {
+      "anim": "rs_lunge",
+      "file": "moves/enemies/reed_stalker.ron",
+      "fp": 0,
+      "id": "rs_lunge",
+      "num": 8320,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 60
+    },
+    {
       "anim": "rw_lunge",
       "file": "moves/enemies/rime_wolf.ron",
       "fp": 0,
@@ -725,6 +1210,26 @@
       "stamina": 0,
       "stub": false,
       "totalFrames": 38
+    },
+    {
+      "anim": "sg_slam",
+      "file": "moves/enemies/shard_golem.ron",
+      "fp": 0,
+      "id": "sg_slam",
+      "num": 8360,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 92
+    },
+    {
+      "anim": "sg_sweep",
+      "file": "moves/enemies/shard_golem.ron",
+      "fp": 0,
+      "id": "sg_sweep",
+      "num": 8361,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 80
     },
     {
       "anim": "th_lunge",
@@ -765,6 +1270,246 @@
       "stamina": 0,
       "stub": false,
       "totalFrames": 60
+    },
+    {
+      "anim": "greatsword_sweep_r",
+      "file": "moves/greatsword.ron",
+      "fp": 0,
+      "id": "gs_light_1",
+      "num": 13100,
+      "stamina": 18,
+      "stub": false,
+      "totalFrames": 40
+    },
+    {
+      "anim": "greatsword_sweep_l",
+      "file": "moves/greatsword.ron",
+      "fp": 0,
+      "id": "gs_light_2",
+      "num": 13101,
+      "stamina": 18,
+      "stub": false,
+      "totalFrames": 40
+    },
+    {
+      "anim": "greatsword_cleave",
+      "file": "moves/greatsword.ron",
+      "fp": 0,
+      "id": "gs_light_3",
+      "num": 13102,
+      "stamina": 24,
+      "stub": false,
+      "totalFrames": 48
+    },
+    {
+      "anim": "greatsword_overhead",
+      "file": "moves/greatsword.ron",
+      "fp": 0,
+      "id": "gs_heavy",
+      "num": 13103,
+      "stamina": 30,
+      "stub": false,
+      "totalFrames": 56
+    },
+    {
+      "anim": "greatsword_overhead_charged",
+      "file": "moves/greatsword.ron",
+      "fp": 0,
+      "id": "gs_heavy_charged",
+      "num": 13104,
+      "stamina": 36,
+      "stub": false,
+      "totalFrames": 60
+    },
+    {
+      "anim": "greatsword_run_sweep",
+      "file": "moves/greatsword.ron",
+      "fp": 0,
+      "id": "gs_running",
+      "num": 13105,
+      "stamina": 22,
+      "stub": false,
+      "totalFrames": 44
+    },
+    {
+      "anim": "greatsword_roll_sweep",
+      "file": "moves/greatsword.ron",
+      "fp": 0,
+      "id": "gs_rolling",
+      "num": 13106,
+      "stamina": 20,
+      "stub": false,
+      "totalFrames": 36
+    },
+    {
+      "anim": "greatsword_backstep_sweep",
+      "file": "moves/greatsword.ron",
+      "fp": 0,
+      "id": "gs_backstep",
+      "num": 13107,
+      "stamina": 18,
+      "stub": false,
+      "totalFrames": 34
+    },
+    {
+      "anim": "greatsword_jump_sweep",
+      "file": "moves/greatsword.ron",
+      "fp": 0,
+      "id": "gs_jump_light",
+      "num": 13108,
+      "stamina": 22,
+      "stub": false,
+      "totalFrames": 40
+    },
+    {
+      "anim": "greatsword_jump_overhead",
+      "file": "moves/greatsword.ron",
+      "fp": 0,
+      "id": "gs_jump_heavy",
+      "num": 13109,
+      "stamina": 26,
+      "stub": false,
+      "totalFrames": 46
+    },
+    {
+      "anim": "greatsword_plunge",
+      "file": "moves/greatsword.ron",
+      "fp": 0,
+      "id": "gs_plunge",
+      "num": 13110,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 36
+    },
+    {
+      "anim": "greatsword_counter",
+      "file": "moves/greatsword.ron",
+      "fp": 0,
+      "id": "gs_guard_counter",
+      "num": 13111,
+      "stamina": 24,
+      "stub": false,
+      "totalFrames": 38
+    },
+    {
+      "anim": "hammer_swing_r",
+      "file": "moves/hammer.ron",
+      "fp": 0,
+      "id": "hm_light_1",
+      "num": 13500,
+      "stamina": 16,
+      "stub": false,
+      "totalFrames": 36
+    },
+    {
+      "anim": "hammer_swing_l",
+      "file": "moves/hammer.ron",
+      "fp": 0,
+      "id": "hm_light_2",
+      "num": 13501,
+      "stamina": 16,
+      "stub": false,
+      "totalFrames": 36
+    },
+    {
+      "anim": "hammer_sweep",
+      "file": "moves/hammer.ron",
+      "fp": 0,
+      "id": "hm_light_3",
+      "num": 13502,
+      "stamina": 20,
+      "stub": false,
+      "totalFrames": 42
+    },
+    {
+      "anim": "hammer_smash",
+      "file": "moves/hammer.ron",
+      "fp": 0,
+      "id": "hm_heavy",
+      "num": 13503,
+      "stamina": 28,
+      "stub": false,
+      "totalFrames": 50
+    },
+    {
+      "anim": "hammer_smash_charged",
+      "file": "moves/hammer.ron",
+      "fp": 0,
+      "id": "hm_heavy_charged",
+      "num": 13504,
+      "stamina": 34,
+      "stub": false,
+      "totalFrames": 54
+    },
+    {
+      "anim": "hammer_run_swing",
+      "file": "moves/hammer.ron",
+      "fp": 0,
+      "id": "hm_running",
+      "num": 13505,
+      "stamina": 20,
+      "stub": false,
+      "totalFrames": 40
+    },
+    {
+      "anim": "hammer_roll_swing",
+      "file": "moves/hammer.ron",
+      "fp": 0,
+      "id": "hm_rolling",
+      "num": 13506,
+      "stamina": 16,
+      "stub": false,
+      "totalFrames": 32
+    },
+    {
+      "anim": "hammer_backstep_swing",
+      "file": "moves/hammer.ron",
+      "fp": 0,
+      "id": "hm_backstep",
+      "num": 13507,
+      "stamina": 14,
+      "stub": false,
+      "totalFrames": 30
+    },
+    {
+      "anim": "hammer_jump_swing",
+      "file": "moves/hammer.ron",
+      "fp": 0,
+      "id": "hm_jump_light",
+      "num": 13508,
+      "stamina": 22,
+      "stub": false,
+      "totalFrames": 36
+    },
+    {
+      "anim": "hammer_jump_smash",
+      "file": "moves/hammer.ron",
+      "fp": 0,
+      "id": "hm_jump_heavy",
+      "num": 13509,
+      "stamina": 28,
+      "stub": false,
+      "totalFrames": 42
+    },
+    {
+      "anim": "hammer_plunge",
+      "file": "moves/hammer.ron",
+      "fp": 0,
+      "id": "hm_plunge",
+      "num": 13510,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 36
+    },
+    {
+      "anim": "hammer_counter",
+      "file": "moves/hammer.ron",
+      "fp": 0,
+      "id": "hm_guard_counter",
+      "num": 13511,
+      "stamina": 20,
+      "stub": false,
+      "totalFrames": 32
     },
     {
       "anim": "sword_slash_r",
@@ -925,6 +1670,126 @@
       "stamina": 0,
       "stub": false,
       "totalFrames": 52
+    },
+    {
+      "anim": "rapier_thrust",
+      "file": "moves/thrusting_sword.ron",
+      "fp": 0,
+      "id": "ts_light_1",
+      "num": 13300,
+      "stamina": 10,
+      "stub": false,
+      "totalFrames": 26
+    },
+    {
+      "anim": "rapier_thrust_l",
+      "file": "moves/thrusting_sword.ron",
+      "fp": 0,
+      "id": "ts_light_2",
+      "num": 13301,
+      "stamina": 10,
+      "stub": false,
+      "totalFrames": 26
+    },
+    {
+      "anim": "rapier_lunge",
+      "file": "moves/thrusting_sword.ron",
+      "fp": 0,
+      "id": "ts_light_3",
+      "num": 13302,
+      "stamina": 14,
+      "stub": false,
+      "totalFrames": 32
+    },
+    {
+      "anim": "rapier_pierce",
+      "file": "moves/thrusting_sword.ron",
+      "fp": 0,
+      "id": "ts_heavy",
+      "num": 13303,
+      "stamina": 22,
+      "stub": false,
+      "totalFrames": 40
+    },
+    {
+      "anim": "rapier_pierce_charged",
+      "file": "moves/thrusting_sword.ron",
+      "fp": 0,
+      "id": "ts_heavy_charged",
+      "num": 13304,
+      "stamina": 28,
+      "stub": false,
+      "totalFrames": 42
+    },
+    {
+      "anim": "rapier_run_thrust",
+      "file": "moves/thrusting_sword.ron",
+      "fp": 0,
+      "id": "ts_running",
+      "num": 13305,
+      "stamina": 14,
+      "stub": false,
+      "totalFrames": 30
+    },
+    {
+      "anim": "rapier_roll_thrust",
+      "file": "moves/thrusting_sword.ron",
+      "fp": 0,
+      "id": "ts_rolling",
+      "num": 13306,
+      "stamina": 12,
+      "stub": false,
+      "totalFrames": 24
+    },
+    {
+      "anim": "rapier_backstep_thrust",
+      "file": "moves/thrusting_sword.ron",
+      "fp": 0,
+      "id": "ts_backstep",
+      "num": 13307,
+      "stamina": 10,
+      "stub": false,
+      "totalFrames": 22
+    },
+    {
+      "anim": "rapier_jump_thrust",
+      "file": "moves/thrusting_sword.ron",
+      "fp": 0,
+      "id": "ts_jump_light",
+      "num": 13308,
+      "stamina": 16,
+      "stub": false,
+      "totalFrames": 28
+    },
+    {
+      "anim": "rapier_jump_pierce",
+      "file": "moves/thrusting_sword.ron",
+      "fp": 0,
+      "id": "ts_jump_heavy",
+      "num": 13309,
+      "stamina": 20,
+      "stub": false,
+      "totalFrames": 32
+    },
+    {
+      "anim": "rapier_plunge",
+      "file": "moves/thrusting_sword.ron",
+      "fp": 0,
+      "id": "ts_plunge",
+      "num": 13310,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 26
+    },
+    {
+      "anim": "rapier_counter",
+      "file": "moves/thrusting_sword.ron",
+      "fp": 0,
+      "id": "ts_guard_counter",
+      "num": 13311,
+      "stamina": 16,
+      "stub": false,
+      "totalFrames": 24
     }
   ],
   "weapons": [
@@ -960,6 +1825,72 @@
       "stub": true,
       "unique": false,
       "weightTenths": 20
+    },
+    {
+      "baseDamage": 90,
+      "class": "Dagger",
+      "file": "weapons/test_classes.ron",
+      "id": "wpn_test_dagger",
+      "name": "Test Dagger",
+      "num": 13900,
+      "stub": false,
+      "unique": false,
+      "weightTenths": 20
+    },
+    {
+      "baseDamage": 140,
+      "class": "Greatsword",
+      "file": "weapons/test_classes.ron",
+      "id": "wpn_test_greatsword",
+      "name": "Test Greatsword",
+      "num": 13901,
+      "stub": false,
+      "unique": false,
+      "weightTenths": 100
+    },
+    {
+      "baseDamage": 95,
+      "class": "CurvedSword",
+      "file": "weapons/test_classes.ron",
+      "id": "wpn_test_curved_sword",
+      "name": "Test Curved Sword",
+      "num": 13902,
+      "stub": false,
+      "unique": false,
+      "weightTenths": 30
+    },
+    {
+      "baseDamage": 100,
+      "class": "ThrustingSword",
+      "file": "weapons/test_classes.ron",
+      "id": "wpn_test_thrusting_sword",
+      "name": "Test Thrusting Sword",
+      "num": 13903,
+      "stub": false,
+      "unique": false,
+      "weightTenths": 30
+    },
+    {
+      "baseDamage": 115,
+      "class": "Axe",
+      "file": "weapons/test_classes.ron",
+      "id": "wpn_test_axe",
+      "name": "Test Axe",
+      "num": 13904,
+      "stub": false,
+      "unique": false,
+      "weightTenths": 50
+    },
+    {
+      "baseDamage": 112,
+      "class": "Hammer",
+      "file": "weapons/test_classes.ron",
+      "id": "wpn_test_hammer",
+      "name": "Test Hammer",
+      "num": 13905,
+      "stub": false,
+      "unique": false,
+      "weightTenths": 60
     }
   ]
 }

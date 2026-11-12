@@ -124,5 +124,12 @@ lf-tools replay record-script tests/replays/m1_movement.script --out tests/repla
   are in `game/crates/tools/tests/golden_batch2.rs`. The special rules have their own unit
   tests in `game/crates/core/src/ai/batch2_tests.rs`.
 
+- `wp051_dagger`, `wp051_greatsword`, `wp051_curved_sword`, `wp051_thrusting_sword`,
+  `wp051_axe`, `wp051_hammer`: the WP-051 goldens, one per weapon class, each from its
+  `.script` on the matching `wp051_*` scenario. The player wields the class's test weapon
+  (`wpn_test_*` in `data/weapons/test_classes.ron`) against a padded dummy, and plays the
+  three-hit light chain and then the heavy. `game/crates/tools/tests/wp051_movesets.rs` checks
+  that each of those four swings hits the dummy, in order.
+
 Rehash only when a change to the simulation or the content data is intended. Review the
 old and new final hash it prints, and commit the updated file with that change.

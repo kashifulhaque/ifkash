@@ -1,0 +1,14 @@
+# WP-051 golden: the curved sword's three-part light chain, then its heavy, on
+# wp051_curved_sword (a padded dummy 5.5 m ahead). The chain opens at frame 17.
+seed 5103
+scenario wp051_curved_sword
+60 0 30              # walk 3.2 m toward the dummy
+5 0 0                # stand
+1 0 0 LIGHT          # cs_light_1 starts on tick 0
+16 0 0
+1 0 0 LIGHT          # tick 17: cs_light_2 starts
+16 0 0
+1 0 0 LIGHT          # tick 34: cs_light_3 starts
+30 0 0               # cs_light_3 runs out (28 frames)
+1 0 0 HEAVY          # cs_heavy
+50 0 0               # heavy plays out (38 frames)

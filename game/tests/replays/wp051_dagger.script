@@ -1,0 +1,15 @@
+# WP-051 golden: the dagger's three-stab light chain, then its heavy, on wp051_dagger
+# (a padded dummy 5.6 m ahead). Each LIGHT is pressed on the frame its move allows the chain
+# (cancel_attack_from: 16 for the first two stabs).
+seed 5101
+scenario wp051_dagger
+60 0 30              # walk 3.2 m toward the dummy
+5 0 0                # stand
+1 0 0 LIGHT          # dag_light_1 starts on tick 0
+15 0 0
+1 0 0 LIGHT          # tick 16: dag_light_2 starts
+15 0 0
+1 0 0 LIGHT          # tick 32: dag_light_3 starts (the chain's last stab)
+30 0 0               # dag_light_3 runs out (22 frames)
+1 0 0 HEAVY          # dag_heavy
+60 0 0               # heavy plays out

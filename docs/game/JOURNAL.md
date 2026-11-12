@@ -49,7 +49,10 @@ Copy this block to the top of the entries and fill it in as you go:
     orchestrator merged it onto WP-029 (13 conflicts; renumbered its WASM event kinds to
     3-6, moved dummy poise and script into `dummy_actor`, fixed nesting the keep-both
     merge got wrong) and added kinds 3-6 to the frontend decoder table.
-  - WP-027: in progress (sonnet), worktree
+  - WP-027: done by sonnet (no escalation) in a worktree; commit `25526c3`; 303K worker
+    tokens, plus 115K for a second sonnet worker that merged it onto WP-024 and WP-029
+    (registry clash 1001 -> 1002 for the stub bow, duplicate `player_weapon` field, the
+    shared apply step now also applies poise). The orchestrator re-ran every gate.
   - WP-025: in progress (sonnet), main checkout (orchestrator at 291K when started)
   - WP-028: done by sonnet (no escalation) in a worktree; commits `9316e4b` (rebased) and
     the orchestrator's decoder fix; 226K worker tokens. The worker's decoder guessed the

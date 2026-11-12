@@ -47,7 +47,10 @@ Copy this block to the top of the entries and fill it in as you go:
     wired `guard::apply_incoming_hit` into the resolver.
   - WP-024: in progress (sonnet), main checkout
   - WP-027: in progress (sonnet), worktree
-  - WP-028: in progress (sonnet), worktree
+  - WP-028: done by sonnet (no escalation) in a worktree; commits `9316e4b` (rebased) and
+    the orchestrator's decoder fix; 226K worker tokens. The worker's decoder guessed the
+    Hit length from the buffer size; the orchestrator replaced it with a per-kind table
+    and took the browser check itself.
   - WP-029: done by sonnet (no escalation) in a worktree; commit `f1922f8`; 211K worker
     tokens. The orchestrator rebased it onto WP-023 (kept both sides in `world.rs` and
     the WASM encoder; moved dummy defense into `dummy_actor`) and rehashed.

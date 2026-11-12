@@ -19,8 +19,8 @@
 //!
 //! # Extension points
 //!
-//! - Bosses (WP-033, `ai/boss.rs`): [`AiState::phase`] feeds `Condition::Phase`, and
-//!   `EnemyDef::ignores_tokens` skips the token pools.
+//! - Bosses (WP-033, [`boss`]): [`AiState::phase`] feeds `Condition::Phase`, and
+//!   `EnemyDef::ignores_tokens` skips the token pools. [`run`] calls [`boss::run`] first.
 //! - Special rules (WP-032, `ai/special/`): run after [`run`]'s think for an actor whose
 //!   definition needs one, for example the skeleton's revive.
 //! - Navigation (WP-032 with WP-031's grid): [`behaviors::desired_move`] is the steering
@@ -28,6 +28,7 @@
 
 pub mod attack;
 pub mod behaviors;
+pub mod boss;
 pub mod options;
 pub mod pathing;
 pub mod perception;
@@ -137,7 +138,7 @@ pub struct AiState {
     pub patrol_i: u16,
     /// HP at the last think, to notice being hit.
     pub last_hp: u32,
-    /// Boss phase for `Condition::Phase`; 0 for regular enemies (WP-033 sets it).
+    /// Boss phase for `Condition::Phase`, from 1; 0 for regular enemies (see [`boss`]).
     pub phase: u8,
     /// The guard is held up (an enemy's `Guard` behavior); `combat::moves::step` reads it
     /// like the player's guard button (WP-032).
@@ -330,6 +331,7 @@ pub fn run(world: &mut World) {
     let Some(tuning) = world.ai.tuning else {
         return;
     };
+    boss::run(world);
     let ids: Vec<Id> = world
         .actors
         .iter()
@@ -342,6 +344,10 @@ pub fn run(world: &mut World) {
     let noise = perception::player_noise(world, &tuning);
     pathing::deliver(world);
     for id in ids {
+        // A boss member waits for its fight (see `boss`).
+        if boss::benched(world, id) {
+            continue;
+        }
         tokens::release_finished(world, id);
         if world.actors.get(id).is_some_and(|a| a.dead) {
             special::tick_dead(world, id);

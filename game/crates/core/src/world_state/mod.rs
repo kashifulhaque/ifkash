@@ -42,6 +42,9 @@ pub struct Layout {
     /// The AI enemies' spawns, in the order `WorldState::ai_enemies` lists them (WP-030).
     /// An AI actor's `AiState::spawn` indexes this list.
     pub enemies: Vec<EnemySpawn>,
+    /// The boss fights (WP-033). Their members are the last entries of `enemies`; see
+    /// `ai::boss::extend_layout`.
+    pub bosses: Vec<crate::ai::boss::BossLayout>,
 }
 
 impl Layout {
@@ -52,6 +55,7 @@ impl Layout {
             lanterns: level.lanterns.clone(),
             dummies: level.dummies.clone(),
             enemies: level.enemies.clone(),
+            bosses: Vec::new(),
         }
     }
 

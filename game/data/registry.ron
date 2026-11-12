@@ -113,5 +113,14 @@
     (id: "ga_shove", num: 8031),
     (id: "ws_slash", num: 8040),
     (id: "ws_lunge", num: 8041),
+
+    (id: "test_boss", num: 9000),
+    (id: "test_boss_body", num: 9001),
+    (id: "test_boss_pillar", num: 9002),
+
+    (id: "tb_swipe", num: 9200),
+    (id: "tb_slam", num: 9201),
+    (id: "tb_roar", num: 9202),
+    (id: "tb_pillar_pulse", num: 9203),
   ],
 )

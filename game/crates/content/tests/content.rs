@@ -99,6 +99,7 @@ fn hash_ignores_comments_and_whitespace() {
         ("moves/test_enemy.ron".to_owned(), test_enemy),
     ];
     all_moves.extend(ron_files("moves/enemies"));
+    all_moves.extend(ron_files("moves/bosses"));
     let other = Content::from_sources(
         &noisy,
         &attrs,
@@ -121,6 +122,12 @@ fn hash_ignores_comments_and_whitespace() {
             .with_enemies(
                 Some(&format!("// noise\n{}", read("ai.ron"))),
                 ron_files("enemies")
+                    .into_iter()
+                    .map(|(p, t)| (p, format!("// noise\n{t}")))
+                    .collect(),
+            )?
+            .with_bosses(
+                ron_files("bosses")
                     .into_iter()
                     .map(|(p, t)| (p, format!("// noise\n{t}")))
                     .collect(),

@@ -26,6 +26,10 @@ pub struct Scenario {
     /// level format (WP-040).
     #[serde(default)]
     pub enemies: Vec<EnemySpawn>,
+    /// Boss fights (WP-033), from `bosses/<boss>.ron`. Real levels place them in the level
+    /// format (WP-040).
+    #[serde(default)]
+    pub bosses: Vec<BossSpawn>,
     /// Lanterns (WP-029). Real levels place them in the level format (WP-040).
     #[serde(default)]
     pub lanterns: Vec<Lantern>,
@@ -37,6 +41,37 @@ pub struct Scenario {
     /// weapon. The player owns it. Used by the duel scenarios (WP-024).
     #[serde(default)]
     pub player_weapon: Option<String>,
+}
+
+/// A boss fight: where the boss stands and the fog gate that starts it.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct BossSpawn {
+    /// Label for tools and error messages. Unique among the scenario's bosses and enemies.
+    pub name: String,
+    /// The boss definition's ID.
+    pub boss: String,
+    /// The body's feet position, in meters. Parts stand at their offsets from it.
+    pub pos: [f32; 3],
+    /// Facing, in radians from +Z toward +X.
+    pub yaw: f32,
+    pub gate: FogGate,
+}
+
+/// A fog gate: a vertical plane the player walks through into the arena. Once they are
+/// through, the fight starts and the gate seals until the boss falls or the player dies.
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct FogGate {
+    /// The middle of the gate's threshold, in meters.
+    pub pos: [f32; 3],
+    /// The direction into the arena, in radians from +Z toward +X. The gate's plane is
+    /// perpendicular to it.
+    pub yaw: f32,
+    /// Half the gate's width, in meters.
+    pub half_width_m: f32,
+    /// How far past the plane, into the arena, still counts as walking through.
+    pub depth_m: f32,
 }
 
 /// A Lantern: where the player rests and respawns.
@@ -251,6 +286,19 @@ impl Scenario {
         for (i, e) in self.enemies.iter().enumerate() {
             if self.enemies[..i].iter().any(|o| o.name == e.name) {
                 return Err(format!("enemy spawn {:?} is listed twice", e.name));
+            }
+        }
+        for (i, b) in self.bosses.iter().enumerate() {
+            if self.bosses[..i].iter().any(|o| o.name == b.name)
+                || self.enemies.iter().any(|o| o.name == b.name)
+            {
+                return Err(format!("boss spawn {:?} is listed twice", b.name));
+            }
+            if b.gate.half_width_m <= 0.0 || b.gate.depth_m <= 0.0 {
+                return Err(format!(
+                    "boss {:?}: the gate's half_width_m and depth_m must be positive",
+                    b.name
+                ));
             }
         }
         for (i, l) in self.lanterns.iter().enumerate() {

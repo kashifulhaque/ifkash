@@ -1,0 +1,57 @@
+// The WP-033 test boss (registry 9000-9099): a two-phase boss with one extra part. It
+// exercises the framework (fog gate, intro, a phase change, a reset, rewards); it isn't
+// part of the roster in docs/game/05-enemies-and-bosses.md. Real bosses (WP-034 on) use
+// this shape. The body's options carry the phases: an option without a `Phase` condition
+// works in every phase, and phase 2 adds `tb_slam`.
+#![enable(implicit_some)]
+(
+  id: "test_boss",
+  name: "The Test Dummy",
+  body: (
+    id: "test_boss_body",
+    model: "boss_test",
+    hp: 900,
+    poise: 300,
+    defense: (flat: 10),
+    resist: (immunity: 200, robustness: 200, composure: 200),
+    glimmer: 0,
+    leash_m: 80.0,
+    ignores_tokens: true,
+    moveset: "bosses/test_boss.ron",
+    options: [
+      (move: "tb_swipe", when: [DistBelow(2.6), FacingWithin(50.0)], weight: 5, cooldown: 45),
+      (move: "tb_slam", when: [Phase(2), DistBelow(3.0), FacingWithin(50.0)], weight: 4, cooldown: 90),
+      (behavior: Approach(dur: 20), when: [DistAbove(2.6)], weight: 4),
+      (behavior: Strafe(dur: 30), when: [DistBetween(1.5, 6.0)], weight: 2, cooldown: 60),
+    ],
+  ),
+  parts: [
+    (
+      // A pillar beside the boss: it pulses at anyone close. Not needed to win.
+      def: (
+        id: "test_boss_pillar",
+        model: "pillar_test",
+        hp: 150,
+        poise: 0,
+        leash_m: 80.0,
+        ignores_tokens: true,
+        options: [
+          (move: "tb_pillar_pulse", when: [DistBelow(3.0)], weight: 3, cooldown: 120),
+          (behavior: Wait(dur: 30), weight: 1),
+        ],
+      ),
+      offset: (7.0, 0.0, 0.0),
+      required: false,
+    ),
+  ],
+  phases: [
+    (below: 0.6, transition: "tb_roar"),
+  ],
+  rewards: (
+    glimmer: 500,
+    items: [(item: "itm_glimmer_vial", count: 2)],
+    codex: "test_boss",
+  ),
+  echo_stone: true,
+  music: (intro: "boss_test_intro", loop_stem: "boss_test_loop", phase2_stem: "boss_test_p2"),
+)

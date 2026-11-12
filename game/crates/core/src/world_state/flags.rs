@@ -14,6 +14,16 @@ pub fn lantern_lit(lantern_id: &str) -> String {
     format!("lantern.{lantern_id}.lit")
 }
 
+/// Flag name for "this boss is defeated" (WP-033).
+pub fn boss_defeated(boss_id: &str) -> String {
+    format!("boss.{boss_id}.defeated")
+}
+
+/// Flag name for "this codex entry is unlocked" (a boss reward).
+pub fn codex(entry: &str) -> String {
+    format!("codex.{entry}")
+}
+
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Flags(BTreeMap<String, u32>);
 

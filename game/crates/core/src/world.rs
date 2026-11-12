@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 pub use crate::actor::Actor;
 use crate::actor::Motor;
 use crate::actor::stats::Stats;
+use crate::ai::boss::BossRun;
 use crate::ai::{AiTable, enemy_actor};
 use crate::arena::{Arena, Id};
 use crate::combat::damage::DamageTable;
@@ -62,6 +63,9 @@ pub struct World {
     /// Lanterns and enemy spawns from the scenario, for the world state to refer to. Not
     /// hashed: the scenario name is, and the content hash covers the scenario.
     pub layout: Layout,
+    /// Each boss fight's state, in `layout.bosses` order (WP-033). Hashed only when a
+    /// scenario has a boss.
+    pub bosses: Vec<BossRun>,
     /// Lanterns, the respawn point, the Remnant, and world flags (WP-029).
     pub state: WorldState,
     /// Drained by the host every tick; excluded from the state hash.
@@ -116,6 +120,13 @@ struct HashView<'a> {
     /// back, so a skipped field is safe.
     #[serde(skip_serializing_if = "Arena::is_unused")]
     projectiles: &'a Arena<Projectile>,
+    /// Left out when the scenario has no boss, for the same reason as `projectiles`.
+    #[serde(skip_serializing_if = "no_bosses")]
+    bosses: &'a Vec<BossRun>,
+}
+
+fn no_bosses(bosses: &&Vec<BossRun>) -> bool {
+    bosses.is_empty()
 }
 
 impl World {
@@ -177,7 +188,9 @@ impl World {
                 )));
             }
         }
-        let layout = Layout::from_scenario(level);
+        let mut layout = Layout::from_scenario(level);
+        crate::ai::boss::extend_layout(&mut layout, level, content, &moves)
+            .map_err(WorldError::Ai)?;
         let enemies = layout
             .dummies
             .iter()
@@ -199,6 +212,7 @@ impl World {
             })?;
             ai_enemies.push(actors.insert(actor));
         }
+        let bosses = layout.bosses.iter().map(|_| BossRun::default()).collect();
         let state = WorldState::new(&layout, enemies, ai_enemies);
         let physics = PhysicsState::new(scenario, level);
         // Enemies steer along nav paths, so a scenario with any gets its grid baked here
@@ -222,6 +236,7 @@ impl World {
             projectiles: Arena::new(),
             player,
             layout,
+            bosses,
             state,
             events: EventQueue::default(),
         };
@@ -266,6 +281,7 @@ impl World {
             actors: &self.actors,
             state: &self.state,
             projectiles: &self.projectiles,
+            bosses: &self.bosses,
         };
         let bytes = postcard::to_allocvec(&view).expect("world serialization cannot fail");
         xxhash_rust::xxh3::xxh3_64(&bytes)

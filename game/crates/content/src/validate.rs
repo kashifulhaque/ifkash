@@ -471,6 +471,7 @@ impl Validate for Content {
             }
         }
         check_ai(self, &mut out);
+        out.extend(crate::boss::check(self));
         out
     }
 }

@@ -144,7 +144,10 @@ impl LfWorld {
     /// - Kind 9, `Awareness` (WP-030), 4 words: kind, the AI actor (`pack_id`), and the
     ///   awareness state it left and entered (0 Idle, 1 Suspicious, 2 Aware, 3 Combat,
     ///   4 Return).
-    /// - Kinds 10 to 12 are reserved for other work packages.
+    /// - Kind 10 and 12 are reserved for other work packages.
+    /// - Kind 11, `Boss` (WP-033), 4 words: kind, the boss's index in the scenario, what
+    ///   happened (0 the gate sealed, 1 the fight started, 2 a phase started, 3 defeated,
+    ///   4 reset), and the phase (the new one for 2, 1 for 1, otherwise 0).
     /// - Kind 13, `Revive` (WP-032), 3 words: kind, the enemy that got back up
     ///   (`pack_id`), and the HP it has.
     pub fn drain_events(&mut self) -> Vec<u32> {
@@ -220,6 +223,9 @@ impl LfWorld {
                 }
                 Event::Revive(e) => {
                     out.extend([13, pack_id(e.actor), e.hp]);
+                }
+                Event::Boss(e) => {
+                    out.extend([11, u32::from(e.boss), u32::from(e.kind), u32::from(e.phase)]);
                 }
             }
         }

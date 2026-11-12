@@ -28,6 +28,8 @@ pub enum Event {
     Awareness(AwarenessEvent),
     /// A dead enemy stood up again (`ai::special::revive`, WP-032).
     Revive(ReviveEvent),
+    /// A boss fight began, changed phase, ended, or reset (`ai::boss`).
+    Boss(BossEvent),
 }
 
 /// A reviver got back up with `hp` HP (WASM event kind 13).
@@ -35,6 +37,29 @@ pub enum Event {
 pub struct ReviveEvent {
     pub actor: Id,
     pub hp: u32,
+}
+
+/// What happened in a boss fight (WP-033). `boss` indexes the scenario's bosses
+/// (`Layout::bosses`). `kind` is one of the consts; `phase` is the phase it concerns
+/// (the new phase for `PHASE_STARTED`, 1 for `FIGHT_STARTED`, otherwise 0).
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct BossEvent {
+    pub boss: u16,
+    pub kind: u8,
+    pub phase: u8,
+}
+
+impl BossEvent {
+    /// The player walked through the fog gate: it sealed and the intro wait began.
+    pub const SEALED: u8 = 0;
+    /// The intro ended and the boss fights.
+    pub const FIGHT_STARTED: u8 = 1;
+    /// A phase threshold was crossed: the transition move starts.
+    pub const PHASE_STARTED: u8 = 2;
+    /// The boss fell: the gate opened and the rewards paid out.
+    pub const DEFEATED: u8 = 3;
+    /// The player died: the boss was rebuilt and the gate opened.
+    pub const RESET: u8 = 4;
 }
 
 /// An AI actor changed awareness state (WP-030). `from` and `to` are

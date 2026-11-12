@@ -99,6 +99,14 @@ lf-tools replay record-script tests/replays/m1_movement.script --out tests/repla
   `m3_whitewarden_revive.script`. The player kills a Whitewarden Skeleton, which lies down
   for 180 ticks and revives at half HP (WASM event kind 13). `m3_whitewarden_revive_gets_back_up`
   checks it.
+- `m3_boss_phase_reset.lfr`: the WP-033 golden on `boss_gate`, recorded from
+  `m3_boss_phase_reset.script`. The player walks through the test boss's fog gate and
+  waits out the 90-tick intro. Then they lock on and land three light hits, which take the
+  boss under 60% HP: it plays the 45-tick phase 2 transition, during which it takes no
+  damage. The player then sprints off the arena's edge and dies, and the boss resets to
+  full HP and Dormant while the Remnant drops outside the gate.
+  `the_golden_replay_changes_phase_and_resets_after_the_players_death` in
+  `game/crates/core/src/ai/boss.rs` checks it; the rest of that file tests the rules.
 
 Rehash only when a change to the simulation or the content data is intended. Review the
 old and new final hash it prints, and commit the updated file with that change.

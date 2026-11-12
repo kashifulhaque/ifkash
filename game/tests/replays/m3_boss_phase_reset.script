@@ -1,0 +1,31 @@
+# WP-033 golden: the test boss's fog gate, intro, a phase change, and a reset after the
+# player's death (record with `lf-tools replay record-script`). Each line: <ticks> <move_x>
+# <move_z> [BUTTONS]. In boss_gate the player spawns at (0, 0, -10) facing +Z; the fog gate
+# is the plane z = 0 and the boss waits at (0, 0, 12).
+seed 33
+scenario boss_gate
+80  0 127            # walk through the gate: it seals and the 90-tick intro starts
+100 0   0            # stand through the intro: the fight starts on tick 158
+1   0   0 LOCK       # lock on to the boss as it closes in
+60  0   0
+6   0   0 LIGHT      # nine light swings, one every 20 ticks: the third takes the boss under
+14  0   0            # 60% HP, so it plays the phase 2 transition and ignores the swings that
+6   0   0 LIGHT      # land during it
+14  0   0
+6   0   0 LIGHT
+14  0   0
+6   0   0 LIGHT
+14  0   0
+6   0   0 LIGHT
+14  0   0
+6   0   0 LIGHT
+14  0   0
+6   0   0 LIGHT
+14  0   0
+6   0   0 LIGHT
+14  0   0
+6   0   0 LIGHT
+14  0   0
+1   0   0 LOCK       # let go of the lock and sprint off the arena's east edge
+140 127 0 DODGE      # the fall kills the player; the boss resets at once
+200 0   0            # the player respawns outside the gate, the boss waits again at full HP

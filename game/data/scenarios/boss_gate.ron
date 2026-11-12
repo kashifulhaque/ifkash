@@ -1,0 +1,26 @@
+// The WP-033 boss test arena: a flat floor, a fog gate, and the test boss.
+//   - The player spawns at (0, 0, -10) facing +Z, outside the gate.
+//   - The fog gate is the plane z = 0, 8 m wide, opening into the arena (+Z).
+//   - The test boss stands at (0, 0, 12) facing the gate (-Z), with its pillar 7 m to +X.
+//   - The floor ends at x = 10 (the arena) and z = -14 (the approach); beyond is a drop to
+//     kill_y, so the player can leave the world and die.
+// Real boss arenas are placed in the level format (WP-040).
+(
+  spawn: (0.0, 0.0, -10.0),
+  spawn_yaw: 0.0,
+  kill_y: -12.0,
+  heightfield: None,
+  boxes: [
+    (name: "floor", center: (0.0, -0.5, 4.0), half_extents: (10.0, 0.5, 18.0)),
+  ],
+  start_glimmer: 500,
+  bosses: [
+    (
+      name: "test_boss",
+      boss: "test_boss",
+      pos: (0.0, 0.0, 12.0),
+      yaw: 3.1415927,
+      gate: (pos: (0.0, 0.0, 0.0), yaw: 0.0, half_width_m: 4.0, depth_m: 2.0),
+    ),
+  ],
+)

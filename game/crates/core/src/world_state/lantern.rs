@@ -170,6 +170,10 @@ pub fn respawn_enemies(world: &mut World) {
         }
     }
     for (i, s) in world.layout.enemies.iter().enumerate() {
+        // A boss's members are the boss framework's (resting doesn't reset a fight).
+        if crate::ai::boss::boss_of_spawn(&world.layout, i as u16).is_some() {
+            continue;
+        }
         let Some(fresh) = crate::ai::enemy_actor(s, i as u16, &world.ai, hurtbox) else {
             continue;
         };

@@ -35,10 +35,10 @@ pub fn is_hazard(_world: &World, _pos: [f32; 3]) -> bool {
     false
 }
 
-/// Where a Remnant dropped by a death at safe position `safe` goes. Boss arenas will
-/// move it outside the fog gate.
-pub fn remnant_position(_world: &World, safe: [f32; 3]) -> [f32; 3] {
-    safe
+/// Where a Remnant dropped by a death at safe position `safe` goes. In a boss fight it
+/// goes just outside the fog gate (`ai::boss::remnant_override`).
+pub fn remnant_position(world: &World, safe: [f32; 3]) -> [f32; 3] {
+    crate::ai::boss::remnant_override(world).unwrap_or(safe)
 }
 
 /// Tick system 9 for the player's life cycle.

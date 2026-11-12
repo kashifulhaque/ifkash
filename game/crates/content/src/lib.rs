@@ -14,6 +14,7 @@ use std::path::Path;
 use serde::{Deserialize, Serialize};
 
 pub mod attributes;
+pub mod boss;
 pub mod consumables;
 pub mod enemy;
 pub mod locomotion;
@@ -28,6 +29,7 @@ pub mod validate;
 pub mod weapons;
 
 pub use attributes::Attributes;
+pub use boss::BossDef;
 pub use consumables::{Consumables, Flask, Item, ItemKind};
 pub use enemy::{AiTuning, EnemyDef};
 pub use locomotion::{Death, EquipLoad, Guard, LockOn, Locomotion, Poise};
@@ -59,8 +61,8 @@ const PROJECTILES_FILE: &str = "projectiles.ron";
 const STATUS_FILE: &str = "status.ron";
 /// Directory (relative to the data root) holding enemy definitions, one per file.
 const ENEMIES_DIR: &str = "enemies";
-/// Directory (relative to the data root) holding enemy movesets (WP-032).
-const ENEMY_MOVES_DIR: &str = "moves/enemies";
+/// Directory (relative to the data root) holding boss definitions, one per file.
+const BOSSES_DIR: &str = "bosses";
 /// The shared AI tuning file (relative to the data root).
 const AI_FILE: &str = "ai.ron";
 
@@ -107,6 +109,10 @@ const EMBEDDED_MOVES: &[(&str, &str)] = &[
     (
         "moves/enemies/whitewarden_skeleton.ron",
         include_str!("../../../data/moves/enemies/whitewarden_skeleton.ron"),
+    ),
+    (
+        "moves/bosses/test_boss.ron",
+        include_str!("../../../data/moves/bosses/test_boss.ron"),
     ),
 ];
 const EMBEDDED_WEAPONS: &[(&str, &str)] = &[
@@ -186,7 +192,15 @@ const EMBEDDED_SCENARIOS: &[(&str, &str)] = &[
         "scenarios/fight_skeleton.ron",
         include_str!("../../../data/scenarios/fight_skeleton.ron"),
     ),
+    (
+        "scenarios/boss_gate.ron",
+        include_str!("../../../data/scenarios/boss_gate.ron"),
+    ),
 ];
+const EMBEDDED_BOSSES: &[(&str, &str)] = &[(
+    "bosses/test_boss.ron",
+    include_str!("../../../data/bosses/test_boss.ron"),
+)];
 const EMBEDDED_AI: &str = include_str!("../../../data/ai.ron");
 const EMBEDDED_ENEMIES: &[(&str, &str)] = &[
     (
@@ -265,6 +279,11 @@ pub struct Content {
     /// `enemies/test_grunt.ron`. Look one up by ID with [`Content::enemy_by_id`].
     #[cfg_attr(feature = "ts", ts(skip))]
     pub enemies: BTreeMap<String, EnemyDef>,
+    /// Boss definitions keyed by file path relative to the data root, for example
+    /// `bosses/test_boss.ron`. Look one up by ID with [`Content::boss_by_id`]. A boss's
+    /// body and parts are also in `enemies`, so the AI table builds them like any enemy.
+    #[cfg_attr(feature = "ts", ts(skip))]
+    pub bosses: BTreeMap<String, BossDef>,
 }
 
 /// A failure to load content. Validation problems are [`Issue`]s instead.
@@ -338,6 +357,18 @@ impl Content {
                 let name = entry.file_name().to_string_lossy().into_owned();
                 if name.ends_with(".ron") {
                     names.push(name);
+                } else if sub == MOVES_DIR && entry.path().is_dir() {
+                    // One level of subfolders under moves/ (moves/bosses/, ...).
+                    let nested = std::fs::read_dir(entry.path()).map_err(|e| ContentError::Io {
+                        path: entry.path().display().to_string(),
+                        message: e.to_string(),
+                    })?;
+                    for inner in nested.flatten() {
+                        let inner_name = inner.file_name().to_string_lossy().into_owned();
+                        if inner_name.ends_with(".ron") {
+                            names.push(format!("{name}/{inner_name}"));
+                        }
+                    }
                 }
             }
             names.sort();
@@ -379,18 +410,15 @@ impl Content {
         Self::from_sources(
             &read(&dir.join("registry.ron"))?,
             &read(&dir.join("attributes.ron"))?,
-            {
-                let mut moves = list(MOVES_DIR)?;
-                moves.extend(list(ENEMY_MOVES_DIR)?);
-                moves
-            },
+            list(MOVES_DIR)?,
             list(WEAPONS_DIR)?,
         )?
         .with_world(locomotion.as_deref(), list(SCENARIOS_DIR)?)?
         .with_consumables(consumables.as_deref())?
         .with_projectiles(projectiles.as_deref())?
         .with_status(status.as_deref())?
-        .with_enemies(ai.as_deref(), list(ENEMIES_DIR)?)
+        .with_enemies(ai.as_deref(), list(ENEMIES_DIR)?)?
+        .with_bosses(list(BOSSES_DIR)?)
     }
 
     /// Loads the content baked into this crate with `include_str!`.
@@ -411,7 +439,8 @@ impl Content {
         .with_consumables(Some(EMBEDDED_CONSUMABLES))?
         .with_projectiles(Some(EMBEDDED_PROJECTILES))?
         .with_status(Some(EMBEDDED_STATUS))?
-        .with_enemies(Some(EMBEDDED_AI), own(EMBEDDED_ENEMIES))
+        .with_enemies(Some(EMBEDDED_AI), own(EMBEDDED_ENEMIES))?
+        .with_bosses(own(EMBEDDED_BOSSES))
     }
 
     /// Builds content from RON text. `moves` and `weapons` are `(relative path, text)`.
@@ -446,6 +475,7 @@ impl Content {
             status: None,
             ai: None,
             enemies: BTreeMap::new(),
+            bosses: BTreeMap::new(),
         };
         content.check_registered()?;
         Ok(content)
@@ -534,6 +564,36 @@ impl Content {
             self.enemies.insert(path, def);
         }
         Ok(self)
+    }
+
+    /// Adds the boss definitions as `(relative path, text)`. A boss's body and parts join
+    /// `enemies` under the keys `<path>#body` and `<path>#part<i>`. Fails on an ID that has
+    /// no registry entry.
+    pub fn with_bosses(mut self, bosses: Vec<(String, String)>) -> Result<Self, ContentError> {
+        for (path, text) in bosses {
+            let def: BossDef = parse(&path, &text)?;
+            for (field, id) in def.references() {
+                self.check_id(&path, field, id)?;
+            }
+            for (i, e) in def.actors().enumerate() {
+                let key = if i == 0 {
+                    format!("{path}#body")
+                } else {
+                    format!("{path}#part{}", i - 1)
+                };
+                for (field, id) in e.references() {
+                    self.check_id(&path, format!("{key}.{field}"), id)?;
+                }
+                self.enemies.insert(key, e.clone());
+            }
+            self.bosses.insert(path, def);
+        }
+        Ok(self)
+    }
+
+    /// Finds a boss definition by string ID.
+    pub fn boss_by_id(&self, id: &str) -> Option<&BossDef> {
+        self.bosses.values().find(|b| b.id == id)
     }
 
     /// Finds an enemy definition by string ID.

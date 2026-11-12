@@ -1,0 +1,110 @@
+{
+  "sections": [
+    {
+      "id": "work",
+      "items": [
+        {
+          "slug": "wand-ai",
+          "title": "AI/ML Engineer \u2014 Wand AI"
+        },
+        {
+          "slug": "american-express",
+          "title": "Software Engineer I \u2014 American Express"
+        },
+        {
+          "slug": "fiery",
+          "title": "Associate Software Engineer \u2014 Fiery (Epson)"
+        },
+        {
+          "slug": "corteva",
+          "title": "Intern \u2014 Corteva Agriscience"
+        }
+      ]
+    },
+    {
+      "id": "education",
+      "items": [
+        {
+          "slug": "iit-madras",
+          "title": "Indian Institute of Technology Madras"
+        }
+      ]
+    },
+    {
+      "id": "projects",
+      "items": [
+        {
+          "slug": "politellama",
+          "title": "PoliteLlama"
+        },
+        {
+          "slug": "smol-llama",
+          "title": "smol-llama"
+        },
+        {
+          "slug": "vicharak-micro-llama",
+          "title": "Micro-Llama on Vicharak Shrike-Lite"
+        },
+        {
+          "slug": "smoltorch",
+          "title": "smoltorch"
+        },
+        {
+          "slug": "nopokedb",
+          "title": "NoPokeDB"
+        },
+        {
+          "slug": "boo",
+          "title": "Boo"
+        },
+        {
+          "slug": "ferray",
+          "title": "ferray"
+        },
+        {
+          "slug": "endark",
+          "title": "endark"
+        },
+        {
+          "slug": "opencode-theme",
+          "title": "Opencode theme for VS Code"
+        }
+      ]
+    },
+    {
+      "id": "resume",
+      "items": [
+        {
+          "slug": "resume",
+          "title": "Resume \u2014 Kashiful Haque"
+        }
+      ]
+    },
+    {
+      "id": "blog",
+      "items": [
+        {
+          "slug": "blog",
+          "title": "Blog"
+        }
+      ]
+    },
+    {
+      "id": "contact",
+      "items": [
+        {
+          "slug": "github",
+          "title": "GitHub"
+        },
+        {
+          "slug": "hugging-face",
+          "title": "Hugging Face"
+        },
+        {
+          "slug": "linkedin",
+          "title": "LinkedIn"
+        }
+      ]
+    }
+  ]
+}

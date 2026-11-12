@@ -15,12 +15,14 @@ use serde::{Deserialize, Serialize};
 
 pub mod attributes;
 pub mod moves;
+pub mod portfolio;
 pub mod registry;
 pub mod validate;
 pub mod weapons;
 
 pub use attributes::Attributes;
 pub use moves::Move;
+pub use portfolio::{Portfolio, PortfolioContent};
 pub use registry::{NumId, Registry};
 pub use validate::{Issue, Severity, Validate};
 pub use weapons::Weapon;

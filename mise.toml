@@ -88,7 +88,10 @@ cargo fmt --all --check
 dir = "game"
 env = { RUSTUP_TOOLCHAIN = "1.99.1" }
 description = "Validate game content data"
-run = "cargo run -q -p lf-tools -- validate"
+run = """
+bun ../scripts/export-content.ts
+cargo run -q -p lf-tools -- validate
+"""
 
 [tasks."game:bench"]
 dir = "game"

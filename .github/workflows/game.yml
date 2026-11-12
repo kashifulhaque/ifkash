@@ -45,11 +45,12 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      # mise reads mise.toml. Install only Rust, so CI doesn't download Typst or Wrangler.
+      # mise reads mise.toml. Install only Rust and Bun, so CI doesn't download Typst or
+      # Wrangler. game:validate runs scripts/export-content.ts with Bun first.
       - name: Install mise tools
         uses: jdx/mise-action@v5
         with:
-          install_args: rust
+          install_args: rust bun
 
       # Cargo tasks set RUSTUP_TOOLCHAIN to the pinned version, which overrides
       # game/rust-toolchain.toml. Rustup doesn't install the components or targets for a

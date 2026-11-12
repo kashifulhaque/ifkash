@@ -4,7 +4,7 @@ use std::path::Path;
 use std::process::ExitCode;
 
 use lf_content::validate::has_errors;
-use lf_content::{Content, Severity, Validate};
+use lf_content::{Content, Portfolio, Severity, Validate};
 
 /// Validates the data directory. Exits nonzero on any error; warnings alone pass.
 pub fn run(data: &Path) -> ExitCode {
@@ -15,7 +15,15 @@ pub fn run(data: &Path) -> ExitCode {
             return ExitCode::FAILURE;
         }
     };
-    let issues = content.validate();
+    let mut issues = content.validate();
+    // The portfolio is separate from Content (not hashed), so load and check it here.
+    match Portfolio::load_dir(data) {
+        Ok((portfolio, exported)) => issues.extend(portfolio.validate(&exported)),
+        Err(e) => {
+            eprintln!("error: {e}");
+            return ExitCode::FAILURE;
+        }
+    }
     for issue in &issues {
         println!("{issue}");
     }

@@ -25,7 +25,7 @@ Status values are `todo`, `in progress`, `blocked`, `split`, `review`, and `done
 | 005 | CI and frontend deploy proposal | infra | done | claude/game-m0-1730d5 | 2026-11-12 | game.yml passes actionlint and its steps run locally; not yet run on GitHub (branch not pushed). ADR 0003 is Proposed with a concrete web-deploy.yml; needs owner sign-off and the Pages project name. Installed actionlint to ~/go/bin. |
 | 006 | Browser bridge | render | todo | | | |
 | 007 | Python binding stub | rl | todo | | | |
-| 008 | Portfolio slugs | ui | todo | | | |
+| 008 | Portfolio slugs | ui | done | claude/game-m0-1730d5 | 2026-11-12 | Slugs on all 20 content.ts items; scripts/export-content.ts writes game/data/gen/portfolio_content.json, run by game:validate before lf-tools validate (CI rust job now installs Bun). Portfolio is validated separately and is not in the content hash. Nine of ten relic flavor lines are new wording that needs owner review. |
 | 010 | Physics and character controller | core | todo | | | |
 | 011 | Input mapping | render | todo | | | |
 | 012 | Third-person camera | render | todo | | | |

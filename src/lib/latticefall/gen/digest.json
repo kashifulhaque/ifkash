@@ -1,4 +1,134 @@
 {
+  "armor": [
+    {
+      "id": "arm_wayfarer_head",
+      "name": "Wayfarer's Hood",
+      "num": 16300,
+      "set": "Wayfarer's Coat",
+      "slot": "Head",
+      "weightTenths": 20
+    },
+    {
+      "id": "arm_wayfarer_body",
+      "name": "Wayfarer's Coat",
+      "num": 16301,
+      "set": "Wayfarer's Coat",
+      "slot": "Body",
+      "weightTenths": 50
+    },
+    {
+      "id": "arm_chapel_head",
+      "name": "Chapel Cowl",
+      "num": 16302,
+      "set": "Chapel Vestments",
+      "slot": "Head",
+      "weightTenths": 10
+    },
+    {
+      "id": "arm_chapel_body",
+      "name": "Chapel Vestments",
+      "num": 16303,
+      "set": "Chapel Vestments",
+      "slot": "Body",
+      "weightTenths": 40
+    },
+    {
+      "id": "arm_reedwalker_head",
+      "name": "Reedwalker Hood",
+      "num": 16304,
+      "set": "Reedwalker Garb",
+      "slot": "Head",
+      "weightTenths": 20
+    },
+    {
+      "id": "arm_reedwalker_body",
+      "name": "Reedwalker Garb",
+      "num": 16305,
+      "set": "Reedwalker Garb",
+      "slot": "Body",
+      "weightTenths": 50
+    },
+    {
+      "id": "arm_miner_head",
+      "name": "Miner's Helm",
+      "num": 16306,
+      "set": "Miner's Harness",
+      "slot": "Head",
+      "weightTenths": 30
+    },
+    {
+      "id": "arm_miner_body",
+      "name": "Miner's Harness",
+      "num": 16307,
+      "set": "Miner's Harness",
+      "slot": "Body",
+      "weightTenths": 90
+    },
+    {
+      "id": "arm_exile_head",
+      "name": "Exile's Hood",
+      "num": 16308,
+      "set": "Exile's Robe",
+      "slot": "Head",
+      "weightTenths": 10
+    },
+    {
+      "id": "arm_exile_body",
+      "name": "Exile's Robe",
+      "num": 16309,
+      "set": "Exile's Robe",
+      "slot": "Body",
+      "weightTenths": 40
+    },
+    {
+      "id": "arm_graymantle_head",
+      "name": "Graymantle Helm",
+      "num": 16310,
+      "set": "Graymantle Plate",
+      "slot": "Head",
+      "weightTenths": 70
+    },
+    {
+      "id": "arm_graymantle_body",
+      "name": "Graymantle Plate",
+      "num": 16311,
+      "set": "Graymantle Plate",
+      "slot": "Body",
+      "weightTenths": 180
+    },
+    {
+      "id": "arm_rimeforged_head",
+      "name": "Rimeforged Helm",
+      "num": 16312,
+      "set": "Rimeforged Mail",
+      "slot": "Head",
+      "weightTenths": 60
+    },
+    {
+      "id": "arm_rimeforged_body",
+      "name": "Rimeforged Mail",
+      "num": 16313,
+      "set": "Rimeforged Mail",
+      "slot": "Body",
+      "weightTenths": 160
+    },
+    {
+      "id": "arm_boo",
+      "name": "Boo",
+      "num": 16314,
+      "set": "",
+      "slot": "Head",
+      "weightTenths": 10
+    },
+    {
+      "id": "arm_endark",
+      "name": "endark",
+      "num": 16315,
+      "set": "",
+      "slot": "Body",
+      "weightTenths": 30
+    }
+  ],
   "attributes": {
     "attributes": [
       {
@@ -148,8 +278,8 @@
     "start_max": 16,
     "start_min": 4
   },
-  "contentHash": "1665983652677766156",
-  "contentHashHex": "171ec34e2b774c0c",
+  "contentHash": "9938955082688122054",
+  "contentHashHex": "89ee42fd26304cc6",
   "moves": [
     {
       "anim": "ep_sentinel_thrust",
@@ -2932,10 +3062,122 @@
       "totalFrames": 34
     }
   ],
+  "spells": [
+    {
+      "id": "spl_aether_dart",
+      "name": "Aether Dart",
+      "num": 15000,
+      "school": "Formula"
+    },
+    {
+      "id": "spl_aether_bolt",
+      "name": "Aether Bolt",
+      "num": 15001,
+      "school": "Formula"
+    },
+    {
+      "id": "spl_homing_motes",
+      "name": "Homing Motes",
+      "num": 15002,
+      "school": "Formula"
+    },
+    {
+      "id": "spl_aether_wave",
+      "name": "Aether Wave",
+      "num": 15003,
+      "school": "Formula"
+    },
+    {
+      "id": "spl_mirror_ward",
+      "name": "Mirror Ward",
+      "num": 15004,
+      "school": "Formula"
+    },
+    {
+      "id": "spl_veil",
+      "name": "Veil",
+      "num": 15005,
+      "school": "Formula"
+    },
+    {
+      "id": "spl_gradient_descent",
+      "name": "Gradient Descent",
+      "num": 15006,
+      "school": "Formula"
+    },
+    {
+      "id": "spl_glasswing_swarm",
+      "name": "Glasswing Swarm",
+      "num": 15007,
+      "school": "Formula"
+    },
+    {
+      "id": "spl_unbinding_lance",
+      "name": "Unbinding Lance",
+      "num": 15008,
+      "school": "Formula"
+    },
+    {
+      "id": "spl_mend",
+      "name": "Mend",
+      "num": 15020,
+      "school": "Litany"
+    },
+    {
+      "id": "spl_wide_mend",
+      "name": "Wide Mend",
+      "num": 15021,
+      "school": "Litany"
+    },
+    {
+      "id": "spl_ember_toss",
+      "name": "Ember Toss",
+      "num": 15022,
+      "school": "Litany"
+    },
+    {
+      "id": "spl_pyre_breath",
+      "name": "Pyre Breath",
+      "num": 15023,
+      "school": "Litany"
+    },
+    {
+      "id": "spl_storm_spear",
+      "name": "Storm Spear",
+      "num": 15024,
+      "school": "Litany"
+    },
+    {
+      "id": "spl_radiant_edge",
+      "name": "Radiant Edge",
+      "num": 15025,
+      "school": "Litany"
+    },
+    {
+      "id": "spl_choir_litany",
+      "name": "Choir Litany",
+      "num": 15026,
+      "school": "Litany"
+    },
+    {
+      "id": "spl_purge",
+      "name": "Purge",
+      "num": 15027,
+      "school": "Litany"
+    },
+    {
+      "id": "spl_steadfast",
+      "name": "Steadfast",
+      "num": 15028,
+      "school": "Litany"
+    }
+  ],
   "weapons": [
     {
       "baseDamage": 105,
+      "catalystSchool": null,
       "class": "StraightSword",
+      "element": null,
       "file": "weapons/straight_sword.ron",
       "id": "wpn_wayfarer_blade",
       "name": "Wayfarer's Blade",
@@ -2946,18 +3188,22 @@
     },
     {
       "baseDamage": 90,
+      "catalystSchool": null,
       "class": "Dagger",
+      "element": null,
       "file": "weapons/straight_sword.ron",
       "id": "wpn_parry_dagger",
       "name": "Parrying Dagger",
       "num": 1001,
-      "stub": false,
+      "stub": true,
       "unique": false,
       "weightTenths": 20
     },
     {
       "baseDamage": 80,
+      "catalystSchool": null,
       "class": "Bow",
+      "element": null,
       "file": "weapons/stub_bow.ron",
       "id": "wpn_stub_bow",
       "name": "Stub Bow",
@@ -2968,18 +3214,22 @@
     },
     {
       "baseDamage": 90,
+      "catalystSchool": "Formula",
       "class": "Catalyst",
+      "element": null,
       "file": "weapons/stylus_reliquary.ron",
       "id": "wpn_scholars_stylus",
       "name": "Scholar's Stylus",
       "num": 1100,
-      "stub": true,
+      "stub": false,
       "unique": false,
-      "weightTenths": 10
+      "weightTenths": 20
     },
     {
       "baseDamage": 90,
+      "catalystSchool": "Litany",
       "class": "Catalyst",
+      "element": null,
       "file": "weapons/stylus_reliquary.ron",
       "id": "wpn_pilgrims_reliquary",
       "name": "Pilgrim's Reliquary",
@@ -2990,7 +3240,9 @@
     },
     {
       "baseDamage": 90,
+      "catalystSchool": null,
       "class": "Dagger",
+      "element": null,
       "file": "weapons/test_classes.ron",
       "id": "wpn_test_dagger",
       "name": "Test Dagger",
@@ -3001,7 +3253,9 @@
     },
     {
       "baseDamage": 140,
+      "catalystSchool": null,
       "class": "Greatsword",
+      "element": null,
       "file": "weapons/test_classes.ron",
       "id": "wpn_test_greatsword",
       "name": "Test Greatsword",
@@ -3012,7 +3266,9 @@
     },
     {
       "baseDamage": 95,
+      "catalystSchool": null,
       "class": "CurvedSword",
+      "element": null,
       "file": "weapons/test_classes.ron",
       "id": "wpn_test_curved_sword",
       "name": "Test Curved Sword",
@@ -3023,7 +3279,9 @@
     },
     {
       "baseDamage": 100,
+      "catalystSchool": null,
       "class": "ThrustingSword",
+      "element": null,
       "file": "weapons/test_classes.ron",
       "id": "wpn_test_thrusting_sword",
       "name": "Test Thrusting Sword",
@@ -3034,7 +3292,9 @@
     },
     {
       "baseDamage": 115,
+      "catalystSchool": null,
       "class": "Axe",
+      "element": null,
       "file": "weapons/test_classes.ron",
       "id": "wpn_test_axe",
       "name": "Test Axe",
@@ -3045,7 +3305,9 @@
     },
     {
       "baseDamage": 112,
+      "catalystSchool": null,
       "class": "Hammer",
+      "element": null,
       "file": "weapons/test_classes.ron",
       "id": "wpn_test_hammer",
       "name": "Test Hammer",
@@ -3056,7 +3318,9 @@
     },
     {
       "baseDamage": 210,
+      "catalystSchool": null,
       "class": "Colossal",
+      "element": null,
       "file": "weapons/test_classes.ron",
       "id": "wpn_test_colossal",
       "name": "Test Colossal",
@@ -3067,7 +3331,9 @@
     },
     {
       "baseDamage": 100,
+      "catalystSchool": null,
       "class": "Spear",
+      "element": null,
       "file": "weapons/test_classes.ron",
       "id": "wpn_test_spear",
       "name": "Test Spear",
@@ -3078,7 +3344,9 @@
     },
     {
       "baseDamage": 125,
+      "catalystSchool": null,
       "class": "Halberd",
+      "element": null,
       "file": "weapons/test_classes.ron",
       "id": "wpn_test_halberd",
       "name": "Test Halberd",
@@ -3089,7 +3357,9 @@
     },
     {
       "baseDamage": 60,
+      "catalystSchool": null,
       "class": "Fist",
+      "element": null,
       "file": "weapons/test_classes.ron",
       "id": "wpn_test_fist",
       "name": "Test Fist",
@@ -3100,7 +3370,9 @@
     },
     {
       "baseDamage": 85,
+      "catalystSchool": null,
       "class": "Bow",
+      "element": null,
       "file": "weapons/test_classes.ron",
       "id": "wpn_test_bow",
       "name": "Test Bow",
@@ -3111,7 +3383,9 @@
     },
     {
       "baseDamage": 60,
+      "catalystSchool": null,
       "class": "Shield",
+      "element": null,
       "file": "weapons/test_classes.ron",
       "id": "wpn_test_shield",
       "name": "Test Shield",
@@ -3122,7 +3396,9 @@
     },
     {
       "baseDamage": 40,
+      "catalystSchool": "Formula",
       "class": "Catalyst",
+      "element": null,
       "file": "weapons/test_classes.ron",
       "id": "wpn_test_catalyst",
       "name": "Test Catalyst",
@@ -3130,6 +3406,448 @@
       "stub": false,
       "unique": false,
       "weightTenths": 30
+    },
+    {
+      "baseDamage": 95,
+      "catalystSchool": null,
+      "class": "StraightSword",
+      "element": "Radiance",
+      "file": "weapons/wpn_blades.ron",
+      "id": "wpn_chapel_longsword",
+      "name": "Chapel Longsword",
+      "num": 19003,
+      "stub": false,
+      "unique": false,
+      "weightTenths": 50
+    },
+    {
+      "baseDamage": 90,
+      "catalystSchool": null,
+      "class": "StraightSword",
+      "element": "Fire",
+      "file": "weapons/wpn_blades.ron",
+      "id": "wpn_lantern_sword",
+      "name": "Lantern Sword",
+      "num": 19004,
+      "stub": false,
+      "unique": true,
+      "weightTenths": 40
+    },
+    {
+      "baseDamage": 98,
+      "catalystSchool": null,
+      "class": "CurvedSword",
+      "element": null,
+      "file": "weapons/wpn_blades.ron",
+      "id": "wpn_banana_cpp",
+      "name": "banana.cpp",
+      "num": 19007,
+      "stub": false,
+      "unique": true,
+      "weightTenths": 30
+    },
+    {
+      "baseDamage": 95,
+      "catalystSchool": null,
+      "class": "CurvedSword",
+      "element": null,
+      "file": "weapons/wpn_blades.ron",
+      "id": "wpn_reedcutter",
+      "name": "Reedcutter Scimitar",
+      "num": 19008,
+      "stub": false,
+      "unique": false,
+      "weightTenths": 30
+    },
+    {
+      "baseDamage": 100,
+      "catalystSchool": null,
+      "class": "ThrustingSword",
+      "element": null,
+      "file": "weapons/wpn_blades.ron",
+      "id": "wpn_stillwater_rapier",
+      "name": "Stillwater Rapier",
+      "num": 19009,
+      "stub": false,
+      "unique": false,
+      "weightTenths": 30
+    },
+    {
+      "baseDamage": 85,
+      "catalystSchool": null,
+      "class": "ThrustingSword",
+      "element": "Aether",
+      "file": "weapons/wpn_blades.ron",
+      "id": "wpn_glassneedle_estoc",
+      "name": "Glassneedle Estoc",
+      "num": 19010,
+      "stub": false,
+      "unique": true,
+      "weightTenths": 40
+    },
+    {
+      "baseDamage": 100,
+      "catalystSchool": "Formula",
+      "class": "Catalyst",
+      "element": null,
+      "file": "weapons/wpn_catalysts.ron",
+      "id": "wpn_gradient_rod",
+      "name": "Gradient Rod",
+      "num": 19030,
+      "stub": false,
+      "unique": false,
+      "weightTenths": 20
+    },
+    {
+      "baseDamage": 110,
+      "catalystSchool": "Formula",
+      "class": "Catalyst",
+      "element": null,
+      "file": "weapons/wpn_catalysts.ron",
+      "id": "wpn_exile_stylus",
+      "name": "Exile's Stylus",
+      "num": 19031,
+      "stub": false,
+      "unique": true,
+      "weightTenths": 30
+    },
+    {
+      "baseDamage": 95,
+      "catalystSchool": "Litany",
+      "class": "Catalyst",
+      "element": null,
+      "file": "weapons/wpn_catalysts.ron",
+      "id": "wpn_chapel_reliquary",
+      "name": "Chapel Reliquary",
+      "num": 19032,
+      "stub": false,
+      "unique": false,
+      "weightTenths": 20
+    },
+    {
+      "baseDamage": 110,
+      "catalystSchool": "Litany",
+      "class": "Catalyst",
+      "element": null,
+      "file": "weapons/wpn_catalysts.ron",
+      "id": "wpn_whitewarden_seal",
+      "name": "Whitewarden Seal",
+      "num": 19033,
+      "stub": false,
+      "unique": true,
+      "weightTenths": 20
+    },
+    {
+      "baseDamage": 70,
+      "catalystSchool": null,
+      "class": "Dagger",
+      "element": null,
+      "file": "weapons/wpn_daggers.ron",
+      "id": "wpn_fungal_knife",
+      "name": "Fungal Knife",
+      "num": 19000,
+      "stub": false,
+      "unique": true,
+      "weightTenths": 20
+    },
+    {
+      "baseDamage": 65,
+      "catalystSchool": null,
+      "class": "Dagger",
+      "element": null,
+      "file": "weapons/wpn_daggers.ron",
+      "id": "wpn_parrying_dirk",
+      "name": "Parrying Dirk",
+      "num": 19001,
+      "stub": false,
+      "unique": false,
+      "weightTenths": 20
+    },
+    {
+      "baseDamage": 72,
+      "catalystSchool": null,
+      "class": "Dagger",
+      "element": null,
+      "file": "weapons/wpn_daggers.ron",
+      "id": "wpn_whisperfang",
+      "name": "Whisperfang",
+      "num": 19002,
+      "stub": false,
+      "unique": false,
+      "weightTenths": 20
+    },
+    {
+      "baseDamage": 80,
+      "catalystSchool": null,
+      "class": "Fist",
+      "element": null,
+      "file": "weapons/wpn_hands.ron",
+      "id": "wpn_bramble_claws",
+      "name": "Bramble Claws",
+      "num": 19022,
+      "stub": false,
+      "unique": false,
+      "weightTenths": 20
+    },
+    {
+      "baseDamage": 85,
+      "catalystSchool": null,
+      "class": "Fist",
+      "element": null,
+      "file": "weapons/wpn_hands.ron",
+      "id": "wpn_iron_knuckles",
+      "name": "Ironbound Knuckles",
+      "num": 19023,
+      "stub": false,
+      "unique": false,
+      "weightTenths": 30
+    },
+    {
+      "baseDamage": 80,
+      "catalystSchool": null,
+      "class": "Bow",
+      "element": null,
+      "file": "weapons/wpn_hands.ron",
+      "id": "wpn_hunter_shortbow",
+      "name": "Hunter's Shortbow",
+      "num": 19024,
+      "stub": false,
+      "unique": false,
+      "weightTenths": 30
+    },
+    {
+      "baseDamage": 100,
+      "catalystSchool": null,
+      "class": "Bow",
+      "element": null,
+      "file": "weapons/wpn_hands.ron",
+      "id": "wpn_spire_longbow",
+      "name": "Spire Longbow",
+      "num": 19025,
+      "stub": false,
+      "unique": false,
+      "weightTenths": 50
+    },
+    {
+      "baseDamage": 60,
+      "catalystSchool": null,
+      "class": "Shield",
+      "element": null,
+      "file": "weapons/wpn_hands.ron",
+      "id": "wpn_plank_buckler",
+      "name": "Plank Buckler",
+      "num": 19026,
+      "stub": false,
+      "unique": false,
+      "weightTenths": 20
+    },
+    {
+      "baseDamage": 75,
+      "catalystSchool": null,
+      "class": "Shield",
+      "element": null,
+      "file": "weapons/wpn_hands.ron",
+      "id": "wpn_nopokedb",
+      "name": "NoPokeDB",
+      "num": 19027,
+      "stub": false,
+      "unique": true,
+      "weightTenths": 50
+    },
+    {
+      "baseDamage": 75,
+      "catalystSchool": null,
+      "class": "Shield",
+      "element": null,
+      "file": "weapons/wpn_hands.ron",
+      "id": "wpn_castle_kite",
+      "name": "Castle Kite Shield",
+      "num": 19028,
+      "stub": false,
+      "unique": false,
+      "weightTenths": 50
+    },
+    {
+      "baseDamage": 90,
+      "catalystSchool": null,
+      "class": "Shield",
+      "element": null,
+      "file": "weapons/wpn_hands.ron",
+      "id": "wpn_graymantle_greatshield",
+      "name": "Graymantle Greatshield",
+      "num": 19029,
+      "stub": false,
+      "unique": false,
+      "weightTenths": 140
+    },
+    {
+      "baseDamage": 140,
+      "catalystSchool": null,
+      "class": "Greatsword",
+      "element": null,
+      "file": "weapons/wpn_heavy.ron",
+      "id": "wpn_gray_greatsword",
+      "name": "Gray Knight Greatsword",
+      "num": 19005,
+      "stub": false,
+      "unique": false,
+      "weightTenths": 100
+    },
+    {
+      "baseDamage": 120,
+      "catalystSchool": null,
+      "class": "Greatsword",
+      "element": "Aether",
+      "file": "weapons/wpn_heavy.ron",
+      "id": "wpn_rimeforged_claymore",
+      "name": "Rimeforged Claymore",
+      "num": 19006,
+      "stub": false,
+      "unique": false,
+      "weightTenths": 110
+    },
+    {
+      "baseDamage": 115,
+      "catalystSchool": null,
+      "class": "Axe",
+      "element": null,
+      "file": "weapons/wpn_heavy.ron",
+      "id": "wpn_woodcutter_axe",
+      "name": "Woodcutter's Axe",
+      "num": 19011,
+      "stub": false,
+      "unique": false,
+      "weightTenths": 50
+    },
+    {
+      "baseDamage": 112,
+      "catalystSchool": null,
+      "class": "Axe",
+      "element": null,
+      "file": "weapons/wpn_heavy.ron",
+      "id": "wpn_briar_axe",
+      "name": "Briar Axe",
+      "num": 19012,
+      "stub": false,
+      "unique": true,
+      "weightTenths": 60
+    },
+    {
+      "baseDamage": 118,
+      "catalystSchool": null,
+      "class": "Hammer",
+      "element": null,
+      "file": "weapons/wpn_heavy.ron",
+      "id": "wpn_miners_pick",
+      "name": "Miner's Pick",
+      "num": 19013,
+      "stub": false,
+      "unique": false,
+      "weightTenths": 60
+    },
+    {
+      "baseDamage": 112,
+      "catalystSchool": null,
+      "class": "Hammer",
+      "element": null,
+      "file": "weapons/wpn_heavy.ron",
+      "id": "wpn_morning_star",
+      "name": "Morning Star",
+      "num": 19014,
+      "stub": false,
+      "unique": false,
+      "weightTenths": 60
+    },
+    {
+      "baseDamage": 110,
+      "catalystSchool": null,
+      "class": "Hammer",
+      "element": "Aether",
+      "file": "weapons/wpn_heavy.ron",
+      "id": "wpn_bellwright_mallet",
+      "name": "Bellwright's Mallet",
+      "num": 19015,
+      "stub": false,
+      "unique": true,
+      "weightTenths": 90
+    },
+    {
+      "baseDamage": 160,
+      "catalystSchool": null,
+      "class": "Colossal",
+      "element": "Fire",
+      "file": "weapons/wpn_heavy.ron",
+      "id": "wpn_forgeheart_maul",
+      "name": "Forgeheart Maul",
+      "num": 19016,
+      "stub": false,
+      "unique": true,
+      "weightTenths": 180
+    },
+    {
+      "baseDamage": 175,
+      "catalystSchool": null,
+      "class": "Colossal",
+      "element": null,
+      "file": "weapons/wpn_heavy.ron",
+      "id": "wpn_greatanchor",
+      "name": "Greatanchor",
+      "num": 19017,
+      "stub": false,
+      "unique": false,
+      "weightTenths": 200
+    },
+    {
+      "baseDamage": 95,
+      "catalystSchool": null,
+      "class": "Spear",
+      "element": "Storm",
+      "file": "weapons/wpn_reach.ron",
+      "id": "wpn_ferray",
+      "name": "ferray",
+      "num": 19018,
+      "stub": false,
+      "unique": true,
+      "weightTenths": 50
+    },
+    {
+      "baseDamage": 90,
+      "catalystSchool": null,
+      "class": "Spear",
+      "element": "Aether",
+      "file": "weapons/wpn_reach.ron",
+      "id": "wpn_shardglass_spear",
+      "name": "Shardglass Spear",
+      "num": 19019,
+      "stub": false,
+      "unique": true,
+      "weightTenths": 60
+    },
+    {
+      "baseDamage": 125,
+      "catalystSchool": null,
+      "class": "Halberd",
+      "element": null,
+      "file": "weapons/wpn_reach.ron",
+      "id": "wpn_gray_halberd",
+      "name": "Gray Halberd",
+      "num": 19020,
+      "stub": false,
+      "unique": false,
+      "weightTenths": 90
+    },
+    {
+      "baseDamage": 110,
+      "catalystSchool": null,
+      "class": "Halberd",
+      "element": "Radiance",
+      "file": "weapons/wpn_reach.ron",
+      "id": "wpn_choir_glaive",
+      "name": "Choir Glaive",
+      "num": 19021,
+      "stub": false,
+      "unique": true,
+      "weightTenths": 90
     }
   ]
 }

@@ -5,6 +5,8 @@ import { InputController, ReplayRecorder, downloadBytes, encodeReplay } from '..
 import { parseDevParams } from '../dev/params';
 import { AudioEngine } from '../audio/engine';
 import { cameraOptions } from '../render/camera';
+import { parseSection, sectionCam } from '../render/equipment/layout';
+import { equippedFromMenuWords, type Equipped } from '../render/equipment/playerGear';
 import type { DevTools } from '../dev';
 import { decodeEvents } from './events';
 import { loadWasm } from './loader';
@@ -61,6 +63,11 @@ export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions
   const params = parseDevParams(window.location.search);
   const seed = opts.seed ?? params.seed ?? 1n;
   const scenario = opts.scenario ?? params.scenario ?? 'm0_flat';
+  // The dev armory (`&scene=armory`) starts its camera at a section unless `cam` says otherwise.
+  if (params.scene === 'armory' && !params.cam) {
+    const c = sectionCam(parseSection(params.armorySection));
+    params.cam = { kind: 'fixed', pos: c.pos, yaw: c.yaw, pitch: c.pitch };
+  }
   const dev = cameraOptions(params, scenario);
   const world = opts.save ? wasm.glue.LfWorld.fromSave(opts.save) : new wasm.glue.LfWorld(seed, scenario);
   const saves = new SaveManager(new SaveStore(), world, { scenario, seed }, (err) =>
@@ -100,6 +107,28 @@ export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions
   );
   // Draws the area's baked level when it has a manifest; the flat scenarios keep the stand-in ground.
   void view.loadLevel(scenario);
+  // The armory loads only for `&dev=1&scene=armory`; its code is a separate chunk.
+  let armory: { dispose(): void } | null = null;
+  if (params.scene === 'armory') {
+    void import('../render/equipment/armory').then(({ Armory }) => {
+      if (disposed) return;
+      const a = new Armory();
+      view.scene.add(a.group);
+      view.frameHooks.push((dt, camera, px) => a.update(dt, camera, px));
+      armory = a;
+    });
+  }
+  let disposed = false;
+  // What the player wears (WP-058): read from the menu state a few times a second, drawn by
+  // the actor renderer. The renderer never writes the equipment back.
+  let lastEquipped: Equipped | null = null;
+  const syncEquipment = () => {
+    const eq = equippedFromMenuWords(world.menu_state());
+    if (lastEquipped && eq.right === lastEquipped.right && eq.left === lastEquipped.left && eq.head === lastEquipped.head && eq.body === lastEquipped.body) return;
+    lastEquipped = eq;
+    view.setEquipment(eq);
+  };
+  syncEquipment();
 
   let tools: DevTools | null = null;
   let fps = 60;
@@ -139,6 +168,7 @@ export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions
       tools.recordTick(performance.now() - t0);
     } else world.tick(frame);
     snapshots.push();
+    if (world.tick_count() % 6 === 0) syncEquipment();
     if (view.props.active) view.props.setState(world.mechanics_state());
     const hudState = parseHud(world.hud_state(), names);
     // The core's interact prompt also names doors, levers, messages, and pickups (code 1 is the
@@ -251,6 +281,8 @@ export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions
       downloadBytes(bytes, `latticefall-${seed}-${recorder.ticks}t.lfr`);
     },
     dispose() {
+      disposed = true;
+      armory?.dispose();
       loop.stop();
       audio?.dispose();
       tools?.dispose();

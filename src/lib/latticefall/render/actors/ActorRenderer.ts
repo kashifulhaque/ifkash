@@ -9,7 +9,11 @@ import {
   Box3,
   type Bone,
   Group,
+  type Material,
+  Matrix4,
+  type Mesh,
   type Object3D,
+  type PerspectiveCamera,
   PropertyBinding,
   Quaternion,
   type Scene,
@@ -22,6 +26,8 @@ import { KTX2Loader } from 'three/examples/jsm/loaders/KTX2Loader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import type { DrawActor } from '../../engine/snapshot';
+import { PlayerGear, type Equipped, type RigFrame } from '../equipment/playerGear';
+import { SpellFx } from '../equipment/spellFx';
 import type { ModelDef } from '../procedural';
 import { AirTracker, LAND_SECONDS } from './airState';
 import { parsePreview, type PreviewRequest } from './devPreview';
@@ -158,6 +164,12 @@ export class ActorRenderer {
   private propPreview: PropPreview | null = null;
   private propActors: ProceduralActor[] = [];
   private propT = 0;
+  /** WP-058: what the player wears, and the catalyst effects that go with it. */
+  private gear = new Map<number, PlayerGear>();
+  private equipped: Equipped | null = null;
+  /** The actor id the equipment belongs to (the snapshot's first actor), or -1. */
+  playerId = -1;
+  readonly spellFx = new SpellFx();
 
   constructor(scene: Scene, renderer: WebGLRenderer, opts: { resolveMove?: MoveResolver } = {}) {
     this.scene = scene;
@@ -167,6 +179,7 @@ export class ActorRenderer {
       this.preview = parsePreview(location.search);
       this.propPreview = parsePropPreview(location.search);
     }
+    this.scene.add(this.spellFx.points);
     if (this.preview || import.meta.env.DEV) (globalThis as Record<string, unknown>).__lfActors = this;
   }
 
@@ -272,10 +285,53 @@ export class ActorRenderer {
     const sig = this.composePose(inst, a, tpl, dt, moveFrac);
     this.crossfade(inst, sig, dt);
     this.apply(inst);
+    if (this.equipped && a.id === this.playerId) this.applyGear(a.id, inst, tpl);
     if (pv && (pv.state === 'jump' || pv.state === 'fall' || pv.state === 'land')) {
       inst.holder.position.y += pv.state === 'land' ? 0 : PREVIEW_AIR_LIFT_M;
     }
     return true;
+  }
+
+  /** Sets what the player wears (registry numbers from the menu state). Drawn on the next frame. */
+  setEquipment(eq: Equipped): void {
+    this.equipped = eq;
+  }
+
+  /** Advances the catalyst effects. Call once per rendered frame, before the scene draws. */
+  updateFx(dt: number, camera: PerspectiveCamera, viewportPx: number): void {
+    this.spellFx.update(dt, camera, viewportPx);
+  }
+
+  private applyGear(id: number, inst: Instance, tpl: Template): void {
+    let g = this.gear.get(id);
+    if (!g) {
+      g = new PlayerGear(this.spellFx);
+      this.gear.set(id, g);
+    }
+    // The template's materials are shared by every Wayfarer, so tint a private copy.
+    let cloned = false;
+    const materials = () => {
+      const out: Material[] = [];
+      inst.holder.traverse((o) => {
+        const m = o as Mesh;
+        if (!m.isMesh) return;
+        if (!cloned) m.material = Array.isArray(m.material) ? m.material.map((x) => x.clone()) : m.material.clone();
+        out.push(...(Array.isArray(m.material) ? m.material : [m.material]));
+      });
+      cloned = true;
+      return out;
+    };
+    const named = (n: string) => tpl.boneNames[tpl.boneIndex.get(n)!];
+    const frame: RigFrame = {
+      bodyToTemplate: new Matrix4()
+        .makeTranslation(0, -tpl.footLift, 0)
+        .multiply(new Matrix4().makeScale(1 / tpl.scale, 1 / tpl.scale, 1 / tpl.scale)),
+      restBone: (n) => tpl.gltf.scene.getObjectByName(PropertyBinding.sanitizeNodeName(named(n)))!,
+      bone: (n) => inst.bones[tpl.boneIndex.get(n)!],
+      materials
+    };
+    tpl.gltf.scene.updateMatrixWorld(true);
+    g.apply(this.equipped!, frame);
   }
 
   /** Hitstop: freezes the actor's drawn animation for `seconds` (never longer than a quarter second). */
@@ -333,6 +389,8 @@ export class ActorRenderer {
     }
     for (const [id, inst] of this.instances) {
       if (!live.has(id)) {
+        this.gear.get(id)?.dispose();
+        this.gear.delete(id);
         this.scene.remove(inst.holder);
         this.instances.delete(id);
       }
@@ -340,6 +398,10 @@ export class ActorRenderer {
   }
 
   dispose(): void {
+    for (const g of this.gear.values()) g.dispose();
+    this.gear.clear();
+    this.scene.remove(this.spellFx.points);
+    this.spellFx.dispose();
     for (const inst of this.instances.values()) this.scene.remove(inst.holder);
     this.instances.clear();
     for (const e of [...this.enemies.values(), ...this.propActors]) {

@@ -38,6 +38,36 @@ fn digest(content: &Content) -> Value {
                 "weightTenths": w.weight_tenths,
                 "unique": w.unique,
                 "stub": w.stub,
+                "catalystSchool": w.catalyst_school.map(|s| format!("{s:?}")),
+                "element": w.elemental.as_ref().map(|e| format!("{:?}", e.element)),
+            })
+        })
+        .collect();
+    // Armor pieces, for the renderer's armory and equipped-armor tints (WP-058).
+    let armor: Vec<Value> = content
+        .armor
+        .iter()
+        .map(|a| {
+            json!({
+                "id": a.id,
+                "num": content.registry.num(&a.id),
+                "name": a.name,
+                "set": a.set,
+                "slot": format!("{:?}", a.slot),
+                "weightTenths": a.weight_tenths,
+            })
+        })
+        .collect();
+    // Spells, for the catalyst VFX (WP-058).
+    let spells: Vec<Value> = content
+        .spells
+        .iter()
+        .map(|sp| {
+            json!({
+                "id": sp.id,
+                "num": content.registry.num(&sp.id),
+                "name": sp.name,
+                "school": format!("{:?}", sp.school),
             })
         })
         .collect();
@@ -47,6 +77,8 @@ fn digest(content: &Content) -> Value {
         "attributes": content.attributes,
         "moves": moves,
         "weapons": weapons,
+        "armor": armor,
+        "spells": spells,
     })
 }
 

@@ -14,6 +14,10 @@
 //                           (YAW and PITCH in degrees; yaw 0 looks toward +Z and turns toward +X,
 //                           positive pitch looks down)
 //   &camt=SECONDS           with orbit-script, holds the script at that time (0 to 72)
+//   &scene=armory          (dev only) draws the armory: every weapon, armor set and catalyst effect on
+//                           racks and mannequins, off to the side of the world (WP-058)
+//   &armory=SECTION         with scene=armory, where the camera starts: blades, heavy, hands,
+//                           catalysts or armor (default blades); `cam=fixed:` still overrides it
 //   &fakelock=X,Y,Z         frames a fixed point as if it were the locked-on actor's feet
 //
 // `cam`, `camt`, `fakelock` and `scenario` predate the tools and work without `dev`.
@@ -38,6 +42,10 @@ export interface DevParams {
   /** `&dev=1`: the panel, overlays and dev commands are on. */
   dev: boolean;
   scenario: string | null;
+  /** `&scene=armory` with `&dev=1`, or null. */
+  scene: 'armory' | null;
+  /** `&armory=SECTION`, or null for the default. */
+  armorySection: string | null;
   spawn: string | null;
   seed: bigint | null;
   freeze: boolean;
@@ -109,6 +117,8 @@ export function parseDevParams(search: string): DevParams {
   return {
     dev,
     scenario: p.get('scenario') || null,
+    scene: dev && p.get('scene') === 'armory' ? 'armory' : null,
+    armorySection: p.get('armory') || null,
     spawn: dev ? p.get('spawn') || null : null,
     seed: dev ? seed : null,
     freeze: dev && ['1', 'true'].includes(p.get('freeze') ?? ''),

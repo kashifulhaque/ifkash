@@ -35,6 +35,7 @@ import {
   type DevCameraOptions,
   type RaycastFn
 } from '../render/camera';
+import type { Equipped } from '../render/equipment/playerGear';
 import type { DrawActor } from './snapshot';
 
 /** Reads a CSS custom property from `<html>` and falls back if it is missing or unparsable. */
@@ -85,6 +86,8 @@ export class SceneView {
   private resizeObserver: ResizeObserver;
   /** The Wayfarer model. Capsules draw until it loads (or if it fails to). */
   private actors: ActorRenderer;
+  /** Dev scenes (the armory) draw once per frame, right before the scene renders. */
+  readonly frameHooks: Array<(dt: number, camera: PerspectiveCamera, viewportPx: number) => void> = [];
   /** Trails, sparks, hitstop, camera shake and auras. The engine feeds it the core's events. */
   readonly vfx: CombatVfx;
 
@@ -206,6 +209,11 @@ export class SceneView {
   private projected = new Vector3();
 
   /** Sets the look input: yaw 0 puts the camera on the +Z side; pitch is elevation above the horizon. */
+  /** Sets what the player wears: registry numbers from the menu state (WP-058). */
+  setEquipment(eq: Equipped): void {
+    this.actors.setEquipment(eq);
+  }
+
   setCamera(yaw: number, pitch: number): void {
     this.camYaw = yaw;
     this.camPitch = pitch;
@@ -234,6 +242,7 @@ export class SceneView {
       mesh.position.set(a.x, a.y + CAPSULE_HEIGHT / 2, a.z);
       mesh.rotation.y = a.yaw;
     }
+    this.actors.playerId = actors[0]?.id ?? -1;
     this.actors.prune(live);
     this.actors.tickPreview(frameMs);
     for (const [id, mesh] of this.meshes) {
@@ -284,6 +293,9 @@ export class SceneView {
     if (this.props.active) this.props.update(simPaused ? 0 : frameMs);
     this.vfx.update(actors, simPaused ? 0 : Math.min(frameMs, 100) / 1000, this.camera, this.canvas.clientHeight || 1);
     this.vfx.applyCamera(this.camera);
+    const dtSeconds = simPaused ? 0 : Math.min(frameMs, 100) / 1000;
+    this.actors.updateFx(dtSeconds, this.camera, this.canvas.clientHeight || 1);
+    for (const hook of this.frameHooks) hook(Math.min(frameMs, 100) / 1000, this.camera, this.canvas.clientHeight || 1);
     this.renderer.render(this.scene, this.camera);
   }
 

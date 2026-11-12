@@ -1,5 +1,6 @@
 //! `lf-tools`: command-line tools for Latticefall content and replays.
 
+mod assets;
 mod bench;
 mod gen_ts;
 mod replay;
@@ -46,6 +47,15 @@ enum Command {
         #[command(subcommand)]
         action: replay::Action,
     },
+    /// Optimize the source art in `game/assets-src/` into `static/latticefall/`.
+    Assets {
+        /// The source directory. Defaults to `game/assets-src/`.
+        #[arg(long)]
+        src: Option<PathBuf>,
+        /// The output directory. Defaults to `static/latticefall/`.
+        #[arg(long)]
+        out: Option<PathBuf>,
+    },
     /// Generate TypeScript types and a UI digest from the content data.
     GenTs {
         /// The data directory. Defaults to `game/data/`.
@@ -64,6 +74,10 @@ fn main() -> ExitCode {
         Command::GenTs { data, out } => gen_ts::run(
             &data.unwrap_or_else(default_data),
             &out.unwrap_or_else(default_gen_out),
+        ),
+        Command::Assets { src, out } => assets::run(
+            &src.unwrap_or_else(assets::default_src),
+            &out.unwrap_or_else(assets::default_out),
         ),
         Command::Bench { ticks } => bench::run(ticks),
         Command::Replay { action } => replay::run(action, &default_data()),

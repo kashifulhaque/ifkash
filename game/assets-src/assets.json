@@ -1,0 +1,6 @@
+{
+  "assets": [
+    { "src": "quaternius-modular-characters/Adventurer.glb", "out": "actors/wayfarer.glb" },
+    { "src": "universal-animation-library/ual1_standard_trimmed.glb", "out": "actors/ual.glb" }
+  ]
+}

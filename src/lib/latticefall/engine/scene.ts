@@ -17,6 +17,7 @@ import {
   Vector3,
   WebGLRenderer
 } from 'three';
+import { ActorRenderer } from '../render/actors';
 import type { DrawActor } from './snapshot';
 
 /** Reads a CSS custom property from `<html>` and falls back if it is missing or unparsable. */
@@ -45,8 +46,11 @@ export class SceneView {
   private disposables: Array<BufferGeometry | Material> = [];
   private camTarget = new Vector3();
   private camInit = false;
+  private previewOffset = new Vector3();
   private canvas: HTMLCanvasElement;
   private resizeObserver: ResizeObserver;
+  /** The Wayfarer model. Capsules draw until it loads (or if it fails to). */
+  private actors: ActorRenderer;
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
@@ -81,6 +85,9 @@ export class SceneView {
     this.noseMaterial = new MeshStandardMaterial({ color: token('--clay', '#a4502f'), roughness: 0.6 });
     this.disposables.push(this.capsuleGeometry, this.noseGeometry, this.bodyMaterial, this.noseMaterial);
 
+    this.actors = new ActorRenderer(this.scene, this.renderer);
+    this.actors.load().catch((err) => console.error('Latticefall actor assets failed to load; keeping capsules', err));
+
     this.resizeObserver = new ResizeObserver(() => this.resize());
     this.resizeObserver.observe(canvas);
     this.resize();
@@ -102,8 +109,10 @@ export class SceneView {
   /** Draws the given actors; the first one is followed by the camera. */
   render(actors: DrawActor[], frameMs: number): void {
     const live = new Set<number>();
+    const modelsReady = this.actors.ready;
     for (const a of actors) {
       live.add(a.id);
+      if (modelsReady && this.actors.update(a, frameMs)) continue;
       let mesh = this.meshes.get(a.id);
       if (!mesh) {
         mesh = new Mesh(this.capsuleGeometry, this.bodyMaterial);
@@ -117,8 +126,9 @@ export class SceneView {
       mesh.position.set(a.x, a.y + CAPSULE_HEIGHT / 2, a.z);
       mesh.rotation.y = a.yaw;
     }
+    if (modelsReady) this.actors.prune(live);
     for (const [id, mesh] of this.meshes) {
-      if (!live.has(id)) {
+      if (!live.has(id) || modelsReady) {
         this.scene.remove(mesh);
         this.meshes.delete(id);
       }
@@ -131,7 +141,8 @@ export class SceneView {
       const k = this.camInit ? 1 - Math.exp(-frameMs / 120) : 1;
       this.camTarget.lerp(goal, k);
       this.camInit = true;
-      this.camera.position.copy(this.camTarget).add(CAM_OFFSET);
+      const off = this.actors.previewCameraOffset();
+      this.camera.position.copy(this.camTarget).add(off ? this.previewOffset.set(...off) : CAM_OFFSET);
       this.camera.lookAt(this.camTarget.x, this.camTarget.y + 0.8, this.camTarget.z);
     }
     this.renderer.render(this.scene, this.camera);
@@ -141,6 +152,7 @@ export class SceneView {
     this.resizeObserver.disconnect();
     for (const mesh of this.meshes.values()) this.scene.remove(mesh);
     this.meshes.clear();
+    this.actors.dispose();
     for (const d of this.disposables) d.dispose();
     this.disposables = [];
     this.renderer.dispose();

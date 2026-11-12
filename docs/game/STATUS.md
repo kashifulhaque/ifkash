@@ -5,6 +5,17 @@ session, as the [agent playbook](11-agent-playbook.md#definition-of-done) requir
 
 Status values are `todo`, `in progress`, `blocked`, `split`, `review`, and `done`.
 
+The orchestrator owns this file. It follows these rules, from
+[the orchestrator section of the playbook](11-agent-playbook.md#run-a-milestone-as-an-orchestrator):
+
+- **Claim before work.** Before handing out a WP, set its status to `in progress` and
+  fill in **Session** (the orchestrator's session name) and **Branch**. A row that is
+  `in progress` with another session's name belongs to that session; don't touch it.
+- **Worker** is the planned model from the roadmap card. **Done by** is the model that
+  actually finished it, including any escalation, for example `haiku, then sonnet`.
+- **Release on handoff.** A session that hands off before finishing a WP sets it back to
+  `todo` (or `blocked`) and explains why in **Notes** and in [`JOURNAL.md`](JOURNAL.md).
+
 ## Gates
 
 | Gate | Status | Date | Notes |
@@ -16,102 +27,102 @@ Status values are `todo`, `in progress`, `blocked`, `split`, `review`, and `done
 
 ## Work packages
 
-| WP | Title | Lane | Status | Branch | Date | Notes |
-|---|---|---|---|---|---|---|
-| 001 | Scaffold the game workspace | infra | done | claude/game-m0-1730d5 | 2026-11-12 | Rust pinned to 1.99.1; game:* mise tasks set RUSTUP_TOOLCHAIN because mise's root rust=stable overrides rust-toolchain.toml. Installed toolchain 1.99.1 into ~/.rustup. |
-| 002 | Deterministic math, RNG, tick skeleton | core | done | claude/game-m0-1730d5 | 2026-11-12 | nalgebra 0.35 (rapier3d 0.36.1's math crate) with libm-force; own PCG32 with splitmix64-derived streams; state hash = xxh3_64 over postcard, events excluded. clippy.toml in lf-core denies HashMap/HashSet and std transcendental f32 methods. |
-| 003 | Content crate | core | done | claude/game-m0-1730d5 | 2026-11-12 | u32 numeric IDs; content hash = xxh3_64 over postcard of parsed Content (efd431704141700b). Curves stored as integer tenths. Added game/data/weapons/straight_sword.ron (wpn_wayfarer_blade) and an optional move 'charge' field. New data files need an include_str! line in lf-content (a test catches misses). |
-| 004 | Inputs, replays, golden tests | core | done | claude/game-m0-1730d5 | 2026-11-12 | Replay = postcard .lfr (header, RLE frames, commands, hash every 30 ticks). Golden m0_random_3000.lfr: 3,196 bytes, final hash 81ea2bbe90c69441. Placeholder kinematic player movement (walk 1.6, run 4.5 m/s) until WP-010. lf-tools replay run/rehash/record-random and a minimal bench. |
-| 005 | CI and frontend deploy proposal | infra | done | claude/game-m0-1730d5 | 2026-11-12 | game.yml passes actionlint and its steps run locally; not yet run on GitHub (branch not pushed). ADR 0003 accepted 2026-11-12; web-deploy.yml added; deploys to the `ifkash` Pages project. Installed actionlint to ~/go/bin. |
-| 006 | Browser bridge | render | done | claude/game-m0-1730d5 | 2026-11-12 | WASM and native hashes match for the golden replay and content. lf_wasm_bg.wasm is 349,267 bytes raw, 130,806 gzipped. Uses wasm-bindgen 0.2.106 and wasm-opt 126 from the worker-build cache (no installs). WASM output rebuilds byte-identically; it was committed until ADR 0003 was accepted and is gitignored again. /game?engine=lf shows the new engine; old game moved unchanged to OldGame.svelte. The 60 fps check was not measured: the hidden Browser pane throttles rAF. |
-| 007 | Python binding stub | rl | done | claude/game-m0-1730d5 | 2026-11-12 | pyo3 0.30.1 (abi3-py311), maturin 1.16.0 in the project venv game/python/.venv (created with uv; maturin and pytest installed there). Python hash equals native (81ea2bbe90c69441). Bench: step 17-20M steps/s, step_many 157-181M steps/s on the near-empty M0 sim. CI python job installs uv. |
-| 008 | Portfolio slugs | ui | done | claude/game-m0-1730d5 | 2026-11-12 | Slugs on all 20 content.ts items; scripts/export-content.ts writes game/data/gen/portfolio_content.json, run by game:validate before lf-tools validate (CI rust job now installs Bun). Portfolio is validated separately and is not in the content hash. Nine of ten relic flavor lines are new wording that needs owner review. |
-| 010 | Physics and character controller | core | todo | | | |
-| 011 | Input mapping | render | todo | | | |
-| 012 | Third-person camera | render | todo | | | |
-| 013 | Character rendering and animation | render | todo | | | |
-| 014 | Developer tools and dev URLs | render | todo | | | |
-| 015 | Lock-on in the core | core | todo | | | |
-| 020 | Move system | combat | todo | | | |
-| 021 | Hitboxes and hits | combat | todo | | | |
-| 022 | Stamina, dodging, guarding | combat | todo | | | |
-| 023 | Damage pipeline | combat | todo | | | |
-| 024 | Poise, stance, parries, criticals | combat | todo | | | |
-| 025 | Status effects and buffs | combat | todo | | | |
-| 026 | Inventory, items, flasks | combat | todo | | | |
-| 027 | Projectiles | combat | todo | | | |
-| 028 | Combat VFX | render | todo | | | |
-| 029 | Death, Remnants, Lanterns | core | todo | | | |
-| 030 | AI framework | ai | todo | | | |
-| 031 | Navigation grid | world | todo | | | |
-| 032 | Enemy batch 1 | ai | todo | | | |
-| 033 | Boss framework | ai | todo | | | |
-| 034 | B01 Hollow Sentry | ai | todo | | | |
-| 035 | Enemy rendering | render | todo | | | |
-| 036 | Enemy batch 2 | ai | todo | | | |
-| 037 | Enemy batch 3 and elites | ai | todo | | | |
-| 039 | RL smoke test | rl | todo | | | |
-| 040 | Level format and baker | world | todo | | | |
-| 041 | Terrain, kits, atmosphere | render | todo | | | |
-| 042 | World mechanics | world | todo | | | |
-| 043 | Waking Hollow | world | todo | | | |
-| 044 | The Verge | world | todo | | | |
-| 045 | HUD | ui | todo | | | |
-| 046 | Menus | ui | todo | | | |
-| 047 | Saving and loading | core | todo | | | |
-| 048 | Audio engine | render | todo | | | |
-| 049 | Landing card, Ledger, codex store | ui | todo | | | |
-| 050 | Leveling and respec | combat | todo | | | |
-| 051 | Movesets batch A | combat | todo | | | |
-| 052 | Movesets batch B | combat | todo | | | |
-| 053 | Weapons, upgrades, tempering | combat | todo | | | |
-| 054 | Arts | combat | todo | | | |
-| 055 | Spell system and Formulae | combat | todo | | | |
-| 056 | Litanies | combat | todo | | | |
-| 057 | Charms, armor, consumables | combat | todo | | | |
-| 058 | Equipment rendering | render | todo | | | |
-| 059 | Echo summons | ai | todo | | | |
-| 060 | Mirrormere | world | todo | | | |
-| 061 | Sunken Ossuary, Drowned Belfry | world | todo | | | |
-| 062 | Hollowdeep, Cinderdeep Mine | world | todo | | | |
-| 063 | Mossgut Cave, Glasswing Grotto | world | todo | | | |
-| 064 | Castle Graymantle, part 1 | world | todo | | | |
-| 065 | Castle Graymantle, part 2 | world | todo | | | |
-| 066 | Rimeshelf, Whitewarden, Bound Ring | world | todo | | | |
-| 067 | Lattice Spire | world | todo | | | |
-| 068 | Hollowhearth, NPCs, questlines | ui | todo | | | |
-| 069 | Map and fast travel | ui | todo | | | |
-| 070 | B02 the Briar Stag | ai | todo | | | |
-| 071 | B03 Bridgewarden Corvane | ai | todo | | | |
-| 072 | B04 Mossgut Brood | ai | todo | | | |
-| 073 | B05 Ossuary Keeper | ai | todo | | | |
-| 074 | B06 the Drowned Choir | ai | todo | | | |
-| 075 | B07 Castellan Voss | ai | todo | | | |
-| 076 | B08 Forgeheart Colossus | ai | todo | | | |
-| 077 | B09 the Lamplight Matriarch | ai | todo | | | |
-| 078 | B10 the Bellwright | ai | todo | | | |
-| 079 | B11 the Bound Exile | ai | todo | | | |
-| 080 | B12 the Unspooled | ai | todo | | | |
-| 081 | Performance budgets | render | todo | | | |
-| 082 | Accessibility | ui | todo | | | |
-| 083 | Mobile view and touch mode | ui | todo | | | |
-| 084 | Async features and telemetry | infra | todo | | | |
-| 085 | Codex pages | ui | todo | | | |
-| 086 | Launch: replace the old game | ui | todo | | | |
-| 087 | Music and audio | render | todo | | | |
-| 088 | Marks, photo mode, gestures, timer | ui | todo | | | |
-| 089 | Balance and fairness pass | combat | todo | | | |
-| 090 | Gymnasium environment and scenarios | rl | todo | | | |
-| 091 | Observation encoders | rl | todo | | | |
-| 092 | Action spaces and masks | rl | todo | | | |
-| 093 | Rewards and safeguards | rl | todo | | | |
-| 094 | Randomization and curriculum | rl | todo | | | |
-| 095 | Vector environment | rl | todo | | | |
-| 096 | PPO baseline | rl | todo | | | |
-| 097 | Text environment and MCP server | rl | todo | | | |
-| 098 | Human demonstration pipeline | rl | todo | | | |
-| 099 | Policy in the browser | render | todo | | | |
-| 100 | OpenEnv and verifiers adapters | rl | todo | | | |
+| WP | Title | Lane | Worker | Status | Done by | Session | Branch | Date | Notes |
+|---|---|---|---|---|---|---|---|---|---|
+| 001 | Scaffold the game workspace | infra | sonnet | done | sonnet, Opus-verified | latticefall-m0 | claude/game-m0-1730d5 | 2026-11-12 | Rust pinned to 1.99.1; game:* mise tasks set RUSTUP_TOOLCHAIN because mise's root rust=stable overrides rust-toolchain.toml. Installed toolchain 1.99.1 into ~/.rustup. |
+| 002 | Deterministic math, RNG, tick skeleton | core | sonnet | done | sonnet, Opus-verified | latticefall-m0 | claude/game-m0-1730d5 | 2026-11-12 | nalgebra 0.35 (rapier3d 0.36.1's math crate) with libm-force; own PCG32 with splitmix64-derived streams; state hash = xxh3_64 over postcard, events excluded. clippy.toml in lf-core denies HashMap/HashSet and std transcendental f32 methods. |
+| 003 | Content crate | core | sonnet | done | sonnet, Opus-verified | latticefall-m0 | claude/game-m0-1730d5 | 2026-11-12 | u32 numeric IDs; content hash = xxh3_64 over postcard of parsed Content (efd431704141700b). Curves stored as integer tenths. Added game/data/weapons/straight_sword.ron (wpn_wayfarer_blade) and an optional move 'charge' field. New data files need an include_str! line in lf-content (a test catches misses). |
+| 004 | Inputs, replays, golden tests | core | sonnet | done | sonnet, Opus-verified | latticefall-m0 | claude/game-m0-1730d5 | 2026-11-12 | Replay = postcard .lfr (header, RLE frames, commands, hash every 30 ticks). Golden m0_random_3000.lfr: 3,196 bytes, final hash 81ea2bbe90c69441. Placeholder kinematic player movement (walk 1.6, run 4.5 m/s) until WP-010. lf-tools replay run/rehash/record-random and a minimal bench. |
+| 005 | CI and frontend deploy proposal | infra | sonnet | done | sonnet, Opus-verified | latticefall-m0 | claude/game-m0-1730d5 | 2026-11-12 | game.yml passes actionlint and its steps run locally; not yet run on GitHub (branch not pushed). ADR 0003 accepted 2026-11-12; web-deploy.yml added; deploys to the `ifkash` Pages project. Installed actionlint to ~/go/bin. |
+| 006 | Browser bridge | render | sonnet | done | sonnet, Opus-verified | latticefall-m0 | claude/game-m0-1730d5 | 2026-11-12 | WASM and native hashes match for the golden replay and content. lf_wasm_bg.wasm is 349,267 bytes raw, 130,806 gzipped. Uses wasm-bindgen 0.2.106 and wasm-opt 126 from the worker-build cache (no installs). WASM output rebuilds byte-identically; it was committed until ADR 0003 was accepted and is gitignored again. /game?engine=lf shows the new engine; old game moved unchanged to OldGame.svelte. The 60 fps check was not measured: the hidden Browser pane throttles rAF. |
+| 007 | Python binding stub | rl | sonnet | done | sonnet, Opus-verified | latticefall-m0 | claude/game-m0-1730d5 | 2026-11-12 | pyo3 0.30.1 (abi3-py311), maturin 1.16.0 in the project venv game/python/.venv (created with uv; maturin and pytest installed there). Python hash equals native (81ea2bbe90c69441). Bench: step 17-20M steps/s, step_many 157-181M steps/s on the near-empty M0 sim. CI python job installs uv. |
+| 008 | Portfolio slugs | ui | sonnet | done | sonnet, Opus-verified | latticefall-m0 | claude/game-m0-1730d5 | 2026-11-12 | Slugs on all 20 content.ts items; scripts/export-content.ts writes game/data/gen/portfolio_content.json, run by game:validate before lf-tools validate (CI rust job now installs Bun). Portfolio is validated separately and is not in the content hash. Nine of ten relic flavor lines are new wording that needs owner review. |
+| 010 | Physics and character controller | core | opus | todo |  |  | | | |
+| 011 | Input mapping | render | sonnet | todo |  |  | | | |
+| 012 | Third-person camera | render | sonnet | todo |  |  | | | |
+| 013 | Character rendering and animation | render | sonnet | todo |  |  | | | |
+| 014 | Developer tools and dev URLs | render | sonnet | todo |  |  | | | |
+| 015 | Lock-on in the core | core | haiku | todo |  |  | | | |
+| 020 | Move system | combat | opus | todo |  |  | | | |
+| 021 | Hitboxes and hits | combat | opus | todo |  |  | | | |
+| 022 | Stamina, dodging, guarding | combat | sonnet | todo |  |  | | | |
+| 023 | Damage pipeline | combat | sonnet | todo |  |  | | | |
+| 024 | Poise, stance, parries, criticals | combat | sonnet | todo |  |  | | | |
+| 025 | Status effects and buffs | combat | sonnet | todo |  |  | | | |
+| 026 | Inventory, items, flasks | combat | sonnet | todo |  |  | | | |
+| 027 | Projectiles | combat | sonnet | todo |  |  | | | |
+| 028 | Combat VFX | render | sonnet | todo |  |  | | | |
+| 029 | Death, Remnants, Lanterns | core | sonnet | todo |  |  | | | |
+| 030 | AI framework | ai | opus | todo |  |  | | | |
+| 031 | Navigation grid | world | sonnet | todo |  |  | | | |
+| 032 | Enemy batch 1 | ai | sonnet | todo |  |  | | | |
+| 033 | Boss framework | ai | sonnet | todo |  |  | | | |
+| 034 | B01 Hollow Sentry | ai | haiku | todo |  |  | | | |
+| 035 | Enemy rendering | render | sonnet | todo |  |  | | | |
+| 036 | Enemy batch 2 | ai | sonnet | todo |  |  | | | |
+| 037 | Enemy batch 3 and elites | ai | haiku | todo |  |  | | | |
+| 039 | RL smoke test | rl | opus | todo |  |  | | | |
+| 040 | Level format and baker | world | opus | todo |  |  | | | |
+| 041 | Terrain, kits, atmosphere | render | sonnet | todo |  |  | | | |
+| 042 | World mechanics | world | sonnet | todo |  |  | | | |
+| 043 | Waking Hollow | world | sonnet | todo |  |  | | | |
+| 044 | The Verge | world | sonnet | todo |  |  | | | |
+| 045 | HUD | ui | sonnet | todo |  |  | | | |
+| 046 | Menus | ui | sonnet | todo |  |  | | | |
+| 047 | Saving and loading | core | sonnet | todo |  |  | | | |
+| 048 | Audio engine | render | sonnet | todo |  |  | | | |
+| 049 | Landing card, Ledger, codex store | ui | sonnet | todo |  |  | | | |
+| 050 | Leveling and respec | combat | haiku | todo |  |  | | | |
+| 051 | Movesets batch A | combat | haiku | todo |  |  | | | |
+| 052 | Movesets batch B | combat | sonnet | todo |  |  | | | |
+| 053 | Weapons, upgrades, tempering | combat | haiku | todo |  |  | | | |
+| 054 | Arts | combat | haiku | todo |  |  | | | |
+| 055 | Spell system and Formulae | combat | sonnet | todo |  |  | | | |
+| 056 | Litanies | combat | haiku | todo |  |  | | | |
+| 057 | Charms, armor, consumables | combat | sonnet | todo |  |  | | | |
+| 058 | Equipment rendering | render | sonnet | todo |  |  | | | |
+| 059 | Echo summons | ai | sonnet | todo |  |  | | | |
+| 060 | Mirrormere | world | sonnet | todo |  |  | | | |
+| 061 | Sunken Ossuary, Drowned Belfry | world | sonnet | todo |  |  | | | |
+| 062 | Hollowdeep, Cinderdeep Mine | world | sonnet | todo |  |  | | | |
+| 063 | Mossgut Cave, Glasswing Grotto | world | sonnet | todo |  |  | | | |
+| 064 | Castle Graymantle, part 1 | world | sonnet | todo |  |  | | | |
+| 065 | Castle Graymantle, part 2 | world | sonnet | todo |  |  | | | |
+| 066 | Rimeshelf, Whitewarden, Bound Ring | world | sonnet | todo |  |  | | | |
+| 067 | Lattice Spire | world | sonnet | todo |  |  | | | |
+| 068 | Hollowhearth, NPCs, questlines | ui | sonnet | todo |  |  | | | |
+| 069 | Map and fast travel | ui | sonnet | todo |  |  | | | |
+| 070 | B02 the Briar Stag | ai | sonnet | todo |  |  | | | |
+| 071 | B03 Bridgewarden Corvane | ai | haiku | todo |  |  | | | |
+| 072 | B04 Mossgut Brood | ai | sonnet | todo |  |  | | | |
+| 073 | B05 Ossuary Keeper | ai | sonnet | todo |  |  | | | |
+| 074 | B06 the Drowned Choir | ai | sonnet | todo |  |  | | | |
+| 075 | B07 Castellan Voss | ai | sonnet | todo |  |  | | | |
+| 076 | B08 Forgeheart Colossus | ai | sonnet | todo |  |  | | | |
+| 077 | B09 the Lamplight Matriarch | ai | sonnet | todo |  |  | | | |
+| 078 | B10 the Bellwright | ai | sonnet | todo |  |  | | | |
+| 079 | B11 the Bound Exile | ai | sonnet | todo |  |  | | | |
+| 080 | B12 the Unspooled | ai | opus | todo |  |  | | | |
+| 081 | Performance budgets | render | sonnet | todo |  |  | | | |
+| 082 | Accessibility | ui | sonnet | todo |  |  | | | |
+| 083 | Mobile view and touch mode | ui | sonnet | todo |  |  | | | |
+| 084 | Async features and telemetry | infra | sonnet | todo |  |  | | | |
+| 085 | Codex pages | ui | haiku | todo |  |  | | | |
+| 086 | Launch: replace the old game | ui | sonnet | todo |  |  | | | |
+| 087 | Music and audio | render | haiku | todo |  |  | | | |
+| 088 | Marks, photo mode, gestures, timer | ui | haiku | todo |  |  | | | |
+| 089 | Balance and fairness pass | combat | opus | todo |  |  | | | |
+| 090 | Gymnasium environment and scenarios | rl | sonnet | todo |  |  | | | |
+| 091 | Observation encoders | rl | opus | todo |  |  | | | |
+| 092 | Action spaces and masks | rl | sonnet | todo |  |  | | | |
+| 093 | Rewards and safeguards | rl | sonnet | todo |  |  | | | |
+| 094 | Randomization and curriculum | rl | haiku | todo |  |  | | | |
+| 095 | Vector environment | rl | opus | todo |  |  | | | |
+| 096 | PPO baseline | rl | sonnet | todo |  |  | | | |
+| 097 | Text environment and MCP server | rl | sonnet | todo |  |  | | | |
+| 098 | Human demonstration pipeline | rl | sonnet | todo |  |  | | | |
+| 099 | Policy in the browser | render | sonnet | todo |  |  | | | |
+| 100 | OpenEnv and verifiers adapters | rl | haiku | todo |  |  | | | |
 
 ## Notes
 

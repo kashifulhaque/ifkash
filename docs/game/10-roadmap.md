@@ -16,6 +16,8 @@ Each WP card has the following fields:
 - **Depends on:** WPs that must be done first.
 - **Size:** S (under a third of a session), M (about half a session), or L (a full
   session). A WP bigger than L must be split.
+- **Worker:** The model the orchestrator should give the WP to: `haiku`, `sonnet`, or
+  `opus`. See [choose a worker](11-agent-playbook.md#choose-a-worker).
 - **Read:** The spec sections to read. Read nothing else unless stuck.
 - **Touch:** The paths it may change.
 - **Do:** What to build.
@@ -92,7 +94,7 @@ weekends, and M5-M8 another 6-10 weeks. M9 can start any time after M3.
 <a id="wp-001"></a>
 ### WP-001: Scaffold the game workspace
 
-- **Lane:** infra · **Depends on:** none · **Size:** M
+- **Lane:** infra · **Depends on:** none · **Size:** M · **Worker:** sonnet
 - **Read:** [Architecture: repository layout](01-architecture.md#repository-layout),
   [build, test, and deploy](01-architecture.md#build-test-and-deploy).
 - **Touch:** `game/**`, `mise.toml`, `.gitignore`, `docs/game/STATUS.md`.
@@ -112,7 +114,7 @@ weekends, and M5-M8 another 6-10 weeks. M9 can start any time after M3.
 <a id="wp-002"></a>
 ### WP-002: Add deterministic math, random streams, and the tick skeleton
 
-- **Lane:** core · **Depends on:** 001 · **Size:** M
+- **Lane:** core · **Depends on:** 001 · **Size:** M · **Worker:** sonnet
 - **Read:** [The simulation core](01-architecture.md#the-simulation-core),
   [determinism contract](01-architecture.md#determinism-contract).
 - **Touch:** `game/crates/core/src/{lib.rs,world.rs,tick.rs,math/,rng.rs}`.
@@ -137,7 +139,7 @@ weekends, and M5-M8 another 6-10 weeks. M9 can start any time after M3.
 <a id="wp-003"></a>
 ### WP-003: Build the content crate
 
-- **Lane:** core · **Depends on:** 001 · **Size:** L
+- **Lane:** core · **Depends on:** 001 · **Size:** L · **Worker:** sonnet
 - **Read:** [Content pipeline](01-architecture.md#content-pipeline),
   [move data schema](03-combat.md#move-data-schema), [attributes](03-combat.md#attributes).
 - **Touch:** `game/crates/content/**`, `game/crates/tools/src/{validate.rs,gen_ts.rs}`,
@@ -165,7 +167,7 @@ weekends, and M5-M8 another 6-10 weeks. M9 can start any time after M3.
 <a id="wp-004"></a>
 ### WP-004: Add inputs, replays, and golden replay tests
 
-- **Lane:** core · **Depends on:** 002, 003 · **Size:** M
+- **Lane:** core · **Depends on:** 002, 003 · **Size:** M · **Worker:** sonnet
 - **Read:** [Inputs](01-architecture.md#inputs),
   [state hash and golden replays](01-architecture.md#state-hash-and-golden-replays),
   [persistence](01-architecture.md#persistence).
@@ -187,7 +189,7 @@ weekends, and M5-M8 another 6-10 weeks. M9 can start any time after M3.
 <a id="wp-005"></a>
 ### WP-005: Add CI and propose the frontend deploy change
 
-- **Lane:** infra · **Depends on:** 001 · **Size:** M
+- **Lane:** infra · **Depends on:** 001 · **Size:** M · **Worker:** sonnet
 - **Read:** [Build, test, and deploy](01-architecture.md#build-test-and-deploy),
   [ADR 0003](decisions/0003-frontend-deploy.md).
 - **Touch:** `.github/workflows/game.yml`, `docs/game/decisions/0003-frontend-deploy.md`.
@@ -205,7 +207,7 @@ weekends, and M5-M8 another 6-10 weeks. M9 can start any time after M3.
 <a id="wp-006"></a>
 ### WP-006: Bridge the core to the browser
 
-- **Lane:** render · **Depends on:** 002, 004 · **Size:** L
+- **Lane:** render · **Depends on:** 002, 004 · **Size:** L · **Worker:** sonnet
 - **Read:** [The browser host](01-architecture.md#the-browser-host),
   [bundle and loading](01-architecture.md#bundle-and-loading).
 - **Touch:** `game/crates/wasm/**`, `src/lib/latticefall/engine/`,
@@ -232,7 +234,7 @@ weekends, and M5-M8 another 6-10 weeks. M9 can start any time after M3.
 <a id="wp-007"></a>
 ### WP-007: Add the Python binding stub
 
-- **Lane:** rl · **Depends on:** 002, 004 · **Size:** M
+- **Lane:** rl · **Depends on:** 002, 004 · **Size:** M · **Worker:** sonnet
 - **Read:** [The Python host](01-architecture.md#the-python-host),
   [Python API](09-rl-environment.md#python-api).
 - **Touch:** `game/crates/py/**`, `game/python/**`.
@@ -252,7 +254,7 @@ weekends, and M5-M8 another 6-10 weeks. M9 can start any time after M3.
 <a id="wp-008"></a>
 ### WP-008: Add stable portfolio slugs
 
-- **Lane:** ui · **Depends on:** 003 · **Size:** S
+- **Lane:** ui · **Depends on:** 003 · **Size:** S · **Worker:** sonnet
 - **Read:** [Portfolio integration: rules and stable slugs](08-portfolio-integration.md#rules).
 - **Touch:** `src/lib/content.ts`, `scripts/export-content.ts`,
   `game/data/portfolio.ron`, `game/data/gen/portfolio_content.json`,
@@ -272,7 +274,7 @@ weekends, and M5-M8 another 6-10 weeks. M9 can start any time after M3.
 <a id="wp-010"></a>
 ### WP-010: Add physics and the character controller
 
-- **Lane:** core · **Depends on:** 002, 003, 004 · **Size:** L
+- **Lane:** core · **Depends on:** 002, 003, 004 · **Size:** L · **Worker:** opus
 - **Read:** [Physics](01-architecture.md#physics),
   [traversal and world mechanics](02-world.md#traversal-and-world-mechanics) (jump and fall
   rows only), [combat verbs](03-combat.md#combat-verbs) (sprint and jump).
@@ -298,7 +300,7 @@ weekends, and M5-M8 another 6-10 weeks. M9 can start any time after M3.
 <a id="wp-011"></a>
 ### WP-011: Map keyboard, mouse, and gamepad input
 
-- **Lane:** render · **Depends on:** 006 · **Size:** M
+- **Lane:** render · **Depends on:** 006 · **Size:** M · **Worker:** sonnet
 - **Read:** [Controls](07-presentation.md#controls), [ActionFrame](01-architecture.md#actionframe).
 - **Touch:** `src/lib/latticefall/input/`.
 - **Do:**
@@ -317,7 +319,7 @@ weekends, and M5-M8 another 6-10 weeks. M9 can start any time after M3.
 <a id="wp-012"></a>
 ### WP-012: Build the third-person camera
 
-- **Lane:** render · **Depends on:** 006, 010 · **Size:** M
+- **Lane:** render · **Depends on:** 006, 010 · **Size:** M · **Worker:** sonnet
 - **Read:** [Camera](07-presentation.md#camera).
 - **Touch:** `src/lib/latticefall/render/camera/`.
 - **Do:** Orbit camera, pitch clamps, collision through the `raycast` export, smoothing,
@@ -330,7 +332,7 @@ weekends, and M5-M8 another 6-10 weeks. M9 can start any time after M3.
 <a id="wp-013"></a>
 ### WP-013: Render and animate characters
 
-- **Lane:** render · **Depends on:** 006 · **Size:** L
+- **Lane:** render · **Depends on:** 006 · **Size:** L · **Worker:** sonnet
 - **Read:** [Characters and animation](07-presentation.md#characters-and-animation),
   [assets](07-presentation.md#assets).
 - **Touch:** `src/lib/latticefall/render/actors/`, `game/assets-src/`,
@@ -348,7 +350,7 @@ weekends, and M5-M8 another 6-10 weeks. M9 can start any time after M3.
 <a id="wp-014"></a>
 ### WP-014: Add developer tools and dev URLs
 
-- **Lane:** render · **Depends on:** 006, 012 · **Size:** M
+- **Lane:** render · **Depends on:** 006, 012 · **Size:** M · **Worker:** sonnet
 - **Read:** [Verify visually](11-agent-playbook.md#verify-visually).
 - **Touch:** `src/lib/latticefall/dev/`, `game/crates/wasm/src/debug.rs`.
 - **Do:**
@@ -366,7 +368,7 @@ weekends, and M5-M8 another 6-10 weeks. M9 can start any time after M3.
 <a id="wp-015"></a>
 ### WP-015: Add lock-on and targeting to the core
 
-- **Lane:** core · **Depends on:** 010 · **Size:** S
+- **Lane:** core · **Depends on:** 010 · **Size:** S · **Worker:** haiku
 - **Read:** [Lock-on](03-combat.md#lock-on).
 - **Touch:** `game/crates/core/src/actor/targeting.rs`.
 - **Do:** Target acquisition, breaking, auto-retarget, switching left and right, and
@@ -389,7 +391,7 @@ superseding ADR:
 <a id="wp-020"></a>
 ### WP-020: Build the move system
 
-- **Lane:** combat · **Depends on:** 003, 010 · **Size:** L
+- **Lane:** combat · **Depends on:** 003, 010 · **Size:** L · **Worker:** opus
 - **Read:** [Combat verbs](03-combat.md#combat-verbs), [input buffer](03-combat.md#input-buffer),
   [move data schema](03-combat.md#move-data-schema).
 - **Touch:** `game/crates/core/src/combat/moves.rs`, `game/data/moves/straight_sword.ron`.
@@ -403,7 +405,7 @@ superseding ADR:
 <a id="wp-021"></a>
 ### WP-021: Resolve hitboxes and hits
 
-- **Lane:** combat · **Depends on:** 020 · **Size:** L
+- **Lane:** combat · **Depends on:** 020 · **Size:** L · **Worker:** opus
 - **Read:** [Physics](01-architecture.md#physics), [tick schedule](01-architecture.md#tick-schedule),
   [move data schema](03-combat.md#move-data-schema).
 - **Touch:** `game/crates/core/src/combat/{hitbox.rs,hurtbox.rs,resolve.rs}`,
@@ -418,7 +420,7 @@ superseding ADR:
 <a id="wp-022"></a>
 ### WP-022: Add stamina, dodging, and guarding
 
-- **Lane:** combat · **Depends on:** 020 · **Size:** M
+- **Lane:** combat · **Depends on:** 020 · **Size:** M · **Worker:** sonnet
 - **Read:** [Combat verbs](03-combat.md#combat-verbs),
   [equip load and roll tiers](03-combat.md#equip-load-and-roll-tiers),
   [regeneration](03-combat.md#regeneration),
@@ -434,7 +436,7 @@ superseding ADR:
 <a id="wp-023"></a>
 ### WP-023: Implement the damage pipeline
 
-- **Lane:** combat · **Depends on:** 021 · **Size:** M
+- **Lane:** combat · **Depends on:** 021 · **Size:** M · **Worker:** sonnet
 - **Read:** [Attributes](03-combat.md#attributes), [damage](03-combat.md#damage).
 - **Touch:** `game/crates/core/src/combat/damage.rs`, `game/crates/core/src/actor/stats.rs`,
   `game/data/attributes.ron`.
@@ -447,7 +449,7 @@ superseding ADR:
 <a id="wp-024"></a>
 ### WP-024: Add poise, stance, parries, and critical hits
 
-- **Lane:** combat · **Depends on:** 021, 022 · **Size:** L
+- **Lane:** combat · **Depends on:** 021, 022 · **Size:** L · **Worker:** sonnet
 - **Read:** [Poise and stance](03-combat.md#poise-and-stance),
   [parry and critical hits](03-combat.md#parry-and-critical-hits).
 - **Touch:** `game/crates/core/src/combat/{poise.rs,crit.rs}`, `game/data/moves/crits.ron`.
@@ -461,7 +463,7 @@ superseding ADR:
 <a id="wp-025"></a>
 ### WP-025: Add status effects and buffs
 
-- **Lane:** combat · **Depends on:** 023 · **Size:** M
+- **Lane:** combat · **Depends on:** 023 · **Size:** M · **Worker:** sonnet
 - **Read:** [Status effects](03-combat.md#status-effects), [buffs](03-combat.md#buffs).
 - **Touch:** `game/crates/core/src/combat/status.rs`, `game/data/status.ron`.
 - **Do:** Six buildup meters, decay, procs, the 60-tick lockout, boss tolerance growth,
@@ -473,7 +475,7 @@ superseding ADR:
 <a id="wp-026"></a>
 ### WP-026: Add inventory, items, and flasks
 
-- **Lane:** combat · **Depends on:** 020 · **Size:** M
+- **Lane:** combat · **Depends on:** 020 · **Size:** M · **Worker:** sonnet
 - **Read:** [Equipment slots](06-progression-and-systems.md#equipment-slots),
   [flasks](06-progression-and-systems.md#flasks), [consumables](04-arsenal-and-builds.md#consumables).
 - **Touch:** `game/crates/core/src/items/`, `game/data/consumables.ron`.
@@ -486,7 +488,7 @@ superseding ADR:
 <a id="wp-027"></a>
 ### WP-027: Add projectiles
 
-- **Lane:** combat · **Depends on:** 021 · **Size:** M
+- **Lane:** combat · **Depends on:** 021 · **Size:** M · **Worker:** sonnet
 - **Read:** [Physics](01-architecture.md#physics), [spells](03-combat.md#spells).
 - **Touch:** `game/crates/core/src/combat/projectile.rs`.
 - **Do:** Shape-cast projectiles with speed, gravity, homing, lifetime, pierce count,
@@ -497,7 +499,7 @@ superseding ADR:
 <a id="wp-028"></a>
 ### WP-028: Hook up combat VFX and hit feedback
 
-- **Lane:** render · **Depends on:** 021, 013 · **Size:** M
+- **Lane:** render · **Depends on:** 021, 013 · **Size:** M · **Worker:** sonnet
 - **Read:** [VFX](07-presentation.md#vfx).
 - **Touch:** `src/lib/latticefall/render/vfx/`.
 - **Do:** Weapon trails, hit sparks by damage type, hitstop, camera shake (off with
@@ -509,7 +511,7 @@ superseding ADR:
 <a id="wp-029"></a>
 ### WP-029: Add death, Remnants, and Lanterns
 
-- **Lane:** core · **Depends on:** 026 · **Size:** M
+- **Lane:** core · **Depends on:** 026 · **Size:** M · **Worker:** sonnet
 - **Read:** [Glimmer and death](06-progression-and-systems.md#glimmer-and-death),
   [Lanterns](06-progression-and-systems.md#lanterns).
 - **Touch:** `game/crates/core/src/world_state/{lantern.rs,death.rs,flags.rs}`.
@@ -525,7 +527,7 @@ superseding ADR:
 <a id="wp-030"></a>
 ### WP-030: Build the AI framework
 
-- **Lane:** ai · **Depends on:** 020, 021 · **Size:** L
+- **Lane:** ai · **Depends on:** 020, 021 · **Size:** L · **Worker:** opus
 - **Read:** [AI framework](05-enemies-and-bosses.md#ai-framework).
 - **Touch:** `game/crates/core/src/ai/{mod.rs,perception.rs,options.rs,behaviors.rs,tokens.rs}`,
   `game/crates/content/src/enemy.rs`.
@@ -539,7 +541,7 @@ superseding ADR:
 <a id="wp-031"></a>
 ### WP-031: Add the navigation grid and pathfinding
 
-- **Lane:** world · **Depends on:** 010 · **Size:** M
+- **Lane:** world · **Depends on:** 010 · **Size:** M · **Worker:** sonnet
 - **Read:** [Navigation](01-architecture.md#navigation).
 - **Touch:** `game/crates/core/src/nav/`, `game/crates/tools/src/bake/nav.rs`.
 - **Do:** Grid baking from colliders (walkable, floor height, cost, layers), A* with an
@@ -551,7 +553,7 @@ superseding ADR:
 <a id="wp-032"></a>
 ### WP-032: Add enemy batch 1
 
-- **Lane:** ai · **Depends on:** 030, 031, 024, 025 · **Size:** L
+- **Lane:** ai · **Depends on:** 030, 031, 024, 025 · **Size:** L · **Worker:** sonnet
 - **Read:** [Enemy roster](05-enemies-and-bosses.md#enemy-roster) (rows for Husk, Thorn
   Hound, Gray Knight, Gray Archer, Whitewarden Skeleton).
 - **Touch:** `game/data/enemies/`, `game/data/moves/enemies/`,
@@ -565,7 +567,7 @@ superseding ADR:
 <a id="wp-033"></a>
 ### WP-033: Build the boss framework
 
-- **Lane:** ai · **Depends on:** 030 · **Size:** M
+- **Lane:** ai · **Depends on:** 030 · **Size:** M · **Worker:** sonnet
 - **Read:** [Boss framework](05-enemies-and-bosses.md#boss-framework),
   [fairness rules](05-enemies-and-bosses.md#fairness-rules).
 - **Touch:** `game/crates/core/src/ai/boss.rs`, `game/crates/content/src/boss.rs`.
@@ -579,7 +581,7 @@ superseding ADR:
 <a id="wp-034"></a>
 ### WP-034: Build B01, the Hollow Sentry
 
-- **Lane:** ai · **Depends on:** 033, 032 · **Size:** M
+- **Lane:** ai · **Depends on:** 033, 032 · **Size:** M · **Worker:** haiku
 - **Read:** [B01](05-enemies-and-bosses.md#b01-hollow-sentry).
 - **Touch:** `game/data/bosses/b01_hollow_sentry.ron`, `game/data/moves/bosses/b01.ron`,
   `game/data/scenarios/boss_b01.ron`.
@@ -591,7 +593,7 @@ superseding ADR:
 <a id="wp-035"></a>
 ### WP-035: Render enemies
 
-- **Lane:** render · **Depends on:** 013, 032 · **Size:** M
+- **Lane:** render · **Depends on:** 013, 032 · **Size:** M · **Worker:** sonnet
 - **Read:** [Assets](07-presentation.md#assets), [procedural models](07-presentation.md#procedural-models).
 - **Touch:** `src/lib/latticefall/render/actors/`, `src/lib/latticefall/render/procedural/`,
   `game/assets-src/`, `static/latticefall/`.
@@ -603,7 +605,7 @@ superseding ADR:
 <a id="wp-036"></a>
 ### WP-036: Add enemy batch 2
 
-- **Lane:** ai · **Depends on:** 032, 025, 027 · **Size:** L
+- **Lane:** ai · **Depends on:** 032, 025, 027 · **Size:** L · **Worker:** sonnet
 - **Read:** [Enemy roster](05-enemies-and-bosses.md#enemy-roster) (Acolyte, Drowned,
   Reed Stalker, Marsh Crawler, Cave Moth, Lamp Mite, Shard Golem, Glasswing Stalker).
 - **Touch:** `game/data/enemies/`, `game/data/moves/enemies/`, `game/crates/core/src/ai/special/`.
@@ -616,7 +618,7 @@ superseding ADR:
 <a id="wp-037"></a>
 ### WP-037: Add enemy batch 3 and the elites
 
-- **Lane:** ai · **Depends on:** 032, 025, 027 · **Size:** L
+- **Lane:** ai · **Depends on:** 032, 025, 027 · **Size:** L · **Worker:** haiku
 - **Read:** [Enemy roster](05-enemies-and-bosses.md#enemy-roster) (Lantern Thief, Rime
   Wolf, Mimic Chest, and the five elites).
 - **Touch:** `game/data/enemies/`, `game/data/moves/enemies/`.
@@ -627,7 +629,7 @@ superseding ADR:
 <a id="wp-039"></a>
 ### WP-039: Run an RL smoke test
 
-- **Lane:** rl · **Depends on:** 007, 034 · **Size:** M
+- **Lane:** rl · **Depends on:** 007, 034 · **Size:** M · **Worker:** opus
 - **Read:** [RL environment: scenarios, observations, actions, rewards](09-rl-environment.md#scenarios).
 - **Touch:** `game/crates/py/`, `game/crates/core/src/obs/`, `game/python/latticefall/`,
   `game/python/examples/ppo_smoke.py`.
@@ -644,7 +646,7 @@ superseding ADR:
 <a id="wp-040"></a>
 ### WP-040: Build the level format and baker
 
-- **Lane:** world · **Depends on:** 010, 031 · **Size:** L
+- **Lane:** world · **Depends on:** 010, 031 · **Size:** L · **Worker:** opus
 - **Read:** [Levels](01-architecture.md#levels), [build an area](02-world.md#build-an-area),
   [procedural dressing](02-world.md#procedural-dressing).
 - **Touch:** `game/crates/content/src/level.rs`, `game/crates/tools/src/bake/`,
@@ -660,7 +662,7 @@ superseding ADR:
 <a id="wp-041"></a>
 ### WP-041: Render terrain, kits, and atmosphere
 
-- **Lane:** render · **Depends on:** 040 · **Size:** L
+- **Lane:** render · **Depends on:** 040 · **Size:** L · **Worker:** sonnet
 - **Read:** [Art direction](07-presentation.md#art-direction),
   [performance budgets](01-architecture.md#performance-budgets),
   [quality presets](07-presentation.md#quality-presets).
@@ -675,7 +677,7 @@ superseding ADR:
 <a id="wp-042"></a>
 ### WP-042: Add world mechanics
 
-- **Lane:** world · **Depends on:** 040, 029 · **Size:** L
+- **Lane:** world · **Depends on:** 040, 029 · **Size:** L · **Worker:** sonnet
 - **Read:** [Traversal and world mechanics](02-world.md#traversal-and-world-mechanics).
 - **Touch:** `game/crates/core/src/world_state/`, `src/lib/latticefall/render/props/`.
 - **Do:** Ladders, lifts, doors, levers, hollow walls, fog gates, pickups, chests,
@@ -687,7 +689,7 @@ superseding ADR:
 <a id="wp-043"></a>
 ### WP-043: Build Waking Hollow
 
-- **Lane:** world · **Depends on:** 040, 042, 034 · **Size:** L
+- **Lane:** world · **Depends on:** 040, 042, 034 · **Size:** L · **Worker:** sonnet
 - **Read:** [Hollowhearth and the Verge](02-world.md#the-verge),
   [dungeon layout template](02-world.md#dungeon-layout-template),
   [B01](05-enemies-and-bosses.md#b01-hollow-sentry).
@@ -701,7 +703,7 @@ superseding ADR:
 <a id="wp-044"></a>
 ### WP-044: Build the Verge
 
-- **Lane:** world · **Depends on:** 043, 032, 036, 037, 041 · **Size:** L (split into
+- **Lane:** world · **Depends on:** 043, 032, 036, 037, 041 · **Size:** L · **Worker:** sonnet (split into
   greybox and art passes if needed)
 - **Read:** [The Verge](02-world.md#the-verge), [design rules](02-world.md#design-rules),
   [build an area](02-world.md#build-an-area).
@@ -717,7 +719,7 @@ superseding ADR:
 <a id="wp-045"></a>
 ### WP-045: Build the HUD
 
-- **Lane:** ui · **Depends on:** 026, 033 · **Size:** M
+- **Lane:** ui · **Depends on:** 026, 033 · **Size:** M · **Worker:** sonnet
 - **Read:** [HUD](07-presentation.md#hud).
 - **Touch:** `src/lib/latticefall/ui/hud/`.
 - **Do:** Bars, status meters, quick slots, Glimmer, the boss bar, prompts,
@@ -728,7 +730,7 @@ superseding ADR:
 <a id="wp-046"></a>
 ### WP-046: Build the menus
 
-- **Lane:** ui · **Depends on:** 045, 023 · **Size:** L
+- **Lane:** ui · **Depends on:** 045, 023 · **Size:** L · **Worker:** sonnet
 - **Read:** [Menus](07-presentation.md#menus), [Lanterns](06-progression-and-systems.md#lanterns),
   [accessibility](07-presentation.md#accessibility).
 - **Touch:** `src/lib/latticefall/ui/menus/`.
@@ -742,7 +744,7 @@ superseding ADR:
 <a id="wp-047"></a>
 ### WP-047: Add saving and loading
 
-- **Lane:** core · **Depends on:** 029 · **Size:** M
+- **Lane:** core · **Depends on:** 029 · **Size:** M · **Worker:** sonnet
 - **Read:** [Persistence](01-architecture.md#persistence).
 - **Touch:** `game/crates/core/src/save.rs`, `src/lib/latticefall/engine/save.ts`.
 - **Do:** A versioned `postcard` save blob, three IndexedDB slots, autosave on rest and
@@ -754,7 +756,7 @@ superseding ADR:
 <a id="wp-048"></a>
 ### WP-048: Build the audio engine
 
-- **Lane:** render · **Depends on:** 028 · **Size:** M
+- **Lane:** render · **Depends on:** 028 · **Size:** M · **Worker:** sonnet
 - **Read:** [Audio](07-presentation.md#audio).
 - **Touch:** `src/lib/latticefall/audio/`, `static/latticefall/audio/`.
 - **Do:** Buses, positional sounds from events, footsteps by surface, a procedural
@@ -765,7 +767,7 @@ superseding ADR:
 <a id="wp-049"></a>
 ### WP-049: Add the landing card, the Ledger, and the codex store
 
-- **Lane:** ui · **Depends on:** 008, 045 · **Size:** M
+- **Lane:** ui · **Depends on:** 008, 045 · **Size:** M · **Worker:** sonnet
 - **Read:** [Portfolio integration](08-portfolio-integration.md).
 - **Touch:** `src/routes/game/`, `src/lib/latticefall/codex/`, `src/lib/latticefall/ui/portfolio/`.
 - **Do:** The landing card; the Wayfarer's Ledger; the facts panel component; the codex
@@ -790,7 +792,7 @@ The owner plays Waking Hollow and the Verge for 20-30 minutes and decides:
 <a id="wp-050"></a>
 ### WP-050: Add leveling and respec
 
-- **Lane:** combat · **Depends on:** 023, 046 · **Size:** S
+- **Lane:** combat · **Depends on:** 023, 046 · **Size:** S · **Worker:** haiku
 - **Read:** [Leveling](06-progression-and-systems.md#leveling), [respec](04-arsenal-and-builds.md#respec).
 - **Touch:** `game/crates/core/src/actor/level.rs`.
 - **Do:** Level-up commands with the cost curve, and respec.
@@ -800,7 +802,7 @@ The owner plays Waking Hollow and the Verge for 20-30 minutes and decides:
 <a id="wp-051"></a>
 ### WP-051: Add movesets, batch A
 
-- **Lane:** combat · **Depends on:** 024 · **Size:** L
+- **Lane:** combat · **Depends on:** 024 · **Size:** L · **Worker:** haiku
 - **Read:** [Weapon classes](04-arsenal-and-builds.md#weapon-classes), [combat verbs](03-combat.md#combat-verbs).
 - **Touch:** `game/data/moves/{dagger,greatsword,curved_sword,thrusting_sword,axe,hammer}.ron`.
 - **Do:** Full movesets (light chain, heavy, charged, running, rolling, backstep, jump,
@@ -811,7 +813,7 @@ The owner plays Waking Hollow and the Verge for 20-30 minutes and decides:
 <a id="wp-052"></a>
 ### WP-052: Add movesets, batch B
 
-- **Lane:** combat · **Depends on:** 051, 027 · **Size:** L
+- **Lane:** combat · **Depends on:** 051, 027 · **Size:** L · **Worker:** sonnet
 - **Read:** As WP-051.
 - **Touch:** `game/data/moves/{colossal,spear,halberd,fist,bow,shield,catalyst}.ron`,
   `game/crates/core/src/combat/{bow.rs,two_hand.rs}`.
@@ -823,7 +825,7 @@ The owner plays Waking Hollow and the Verge for 20-30 minutes and decides:
 <a id="wp-053"></a>
 ### WP-053: Add all weapons, upgrades, and tempering
 
-- **Lane:** combat · **Depends on:** 052 · **Size:** M
+- **Lane:** combat · **Depends on:** 052 · **Size:** M · **Worker:** haiku
 - **Read:** [Weapon list](04-arsenal-and-builds.md#weapon-list), [temper](04-arsenal-and-builds.md#temper),
   [upgrades](04-arsenal-and-builds.md#upgrades).
 - **Touch:** `game/data/weapons/`, `game/crates/core/src/items/upgrade.rs`.
@@ -834,7 +836,7 @@ The owner plays Waking Hollow and the Verge for 20-30 minutes and decides:
 <a id="wp-054"></a>
 ### WP-054: Add Arts
 
-- **Lane:** combat · **Depends on:** 053, 025 · **Size:** M
+- **Lane:** combat · **Depends on:** 053, 025 · **Size:** M · **Worker:** haiku
 - **Read:** [Arts](04-arsenal-and-builds.md#arts).
 - **Touch:** `game/data/moves/arts.ron`, `game/data/weapons/`.
 - **Do:** All 14 Arts, Art Scrolls, and class compatibility.
@@ -844,7 +846,7 @@ The owner plays Waking Hollow and the Verge for 20-30 minutes and decides:
 <a id="wp-055"></a>
 ### WP-055: Add the spell system and Formulae
 
-- **Lane:** combat · **Depends on:** 027, 046 · **Size:** L
+- **Lane:** combat · **Depends on:** 027, 046 · **Size:** L · **Worker:** sonnet
 - **Read:** [Spells](03-combat.md#spells), [Formulae](04-arsenal-and-builds.md#formulae-insight-stylus).
 - **Touch:** `game/crates/core/src/combat/spells.rs`, `game/data/spells/formulae.ron`.
 - **Do:** Catalysts, spell power, attunement, slots, cast speed, and all nine Formulae.
@@ -854,7 +856,7 @@ The owner plays Waking Hollow and the Verge for 20-30 minutes and decides:
 <a id="wp-056"></a>
 ### WP-056: Add Litanies
 
-- **Lane:** combat · **Depends on:** 055, 025 · **Size:** M
+- **Lane:** combat · **Depends on:** 055, 025 · **Size:** M · **Worker:** haiku
 - **Read:** [Litanies](04-arsenal-and-builds.md#litanies-devotion-reliquary).
 - **Touch:** `game/data/spells/litanies.ron`.
 - **Do:** All nine Litanies, including heals, cures, buffs, and the channeled breath.
@@ -864,7 +866,7 @@ The owner plays Waking Hollow and the Verge for 20-30 minutes and decides:
 <a id="wp-057"></a>
 ### WP-057: Add Charms, armor, and the remaining consumables
 
-- **Lane:** combat · **Depends on:** 022, 023, 027 · **Size:** M
+- **Lane:** combat · **Depends on:** 022, 023, 027 · **Size:** M · **Worker:** sonnet
 - **Read:** [Charms](04-arsenal-and-builds.md#charms), [armor](04-arsenal-and-builds.md#armor),
   [consumables](04-arsenal-and-builds.md#consumables).
 - **Touch:** `game/data/{charms.ron,armor.ron,consumables.ron}`, `game/crates/core/src/items/`.
@@ -876,7 +878,7 @@ The owner plays Waking Hollow and the Verge for 20-30 minutes and decides:
 <a id="wp-058"></a>
 ### WP-058: Render equipment
 
-- **Lane:** render · **Depends on:** 053, 057 · **Size:** L
+- **Lane:** render · **Depends on:** 053, 057 · **Size:** L · **Worker:** sonnet
 - **Read:** [Characters and animation](07-presentation.md#characters-and-animation).
 - **Touch:** `src/lib/latticefall/render/equipment/`, `game/assets-src/`, `static/latticefall/`.
 - **Do:** Weapon meshes per class, armor tints and attachments, catalyst and spell VFX.
@@ -887,7 +889,7 @@ The owner plays Waking Hollow and the Verge for 20-30 minutes and decides:
 <a id="wp-059"></a>
 ### WP-059: Add Echo summons
 
-- **Lane:** ai · **Depends on:** 030 · **Size:** M
+- **Lane:** ai · **Depends on:** 030 · **Size:** M · **Worker:** sonnet
 - **Read:** [Echo summons](05-enemies-and-bosses.md#echo-summons).
 - **Touch:** `game/crates/core/src/ai/echo.rs`, `game/data/echoes/`.
 - **Do:** Echo Stones, the Echo Bell, ally AI (following, engaging the player's target,
@@ -912,7 +914,7 @@ relics, Chronicle Page slot, materials, and key items from
 <a id="wp-060"></a>
 ### WP-060: Build Mirrormere
 
-- **Lane:** world · **Depends on:** 044, 036 · **Size:** L
+- **Lane:** world · **Depends on:** 044, 036 · **Size:** L · **Worker:** sonnet
 - **Read:** [Mirrormere](02-world.md#mirrormere).
 - **Touch:** `game/data/levels/mirrormere/`, `src/lib/latticefall/render/water/`.
 - **Do:** The lake, village, marsh, causeway, and the Drowned Cathedral, including the B06 nave; water levels tied
@@ -923,7 +925,7 @@ relics, Chronicle Page slot, materials, and key items from
 <a id="wp-061"></a>
 ### WP-061: Build the Sunken Ossuary and the Drowned Belfry
 
-- **Lane:** world · **Depends on:** 060, 037 · **Size:** L
+- **Lane:** world · **Depends on:** 060, 037 · **Size:** L · **Worker:** sonnet
 - **Read:** [Mini-dungeons](02-world.md#mini-dungeons) (D2, D3), [dungeon layout template](02-world.md#dungeon-layout-template).
 - **Touch:** `game/data/levels/{sunken_ossuary,drowned_belfry}/`.
 - **Do:** Both dungeons, the water-level lever, the bell stun, and the bell-shaft lift.
@@ -933,7 +935,7 @@ relics, Chronicle Page slot, materials, and key items from
 <a id="wp-062"></a>
 ### WP-062: Build Hollowdeep and Cinderdeep Mine
 
-- **Lane:** world · **Depends on:** 044, 036 · **Size:** L
+- **Lane:** world · **Depends on:** 044, 036 · **Size:** L · **Worker:** sonnet
 - **Read:** [Hollowdeep](02-world.md#hollowdeep), [mini-dungeons](02-world.md#mini-dungeons) (D4).
 - **Touch:** `game/data/levels/{hollowdeep,cinderdeep_mine}/`, `src/lib/latticefall/render/lighting/`.
 - **Do:** The cavern region, the darkness and light system, mine carts, the Root Stair
@@ -945,7 +947,7 @@ relics, Chronicle Page slot, materials, and key items from
 <a id="wp-063"></a>
 ### WP-063: Build Mossgut Cave and Glasswing Grotto
 
-- **Lane:** world · **Depends on:** 044, 062 · **Size:** L
+- **Lane:** world · **Depends on:** 044, 062 · **Size:** L · **Worker:** sonnet
 - **Read:** [Mini-dungeons](02-world.md#mini-dungeons) (D1, D5).
 - **Touch:** `game/data/levels/{mossgut_cave,glasswing_grotto}/`.
 - **Do:** Both caves, low ceilings, the lift to Hollowdeep, and the light-beam mirrors.
@@ -955,7 +957,7 @@ relics, Chronicle Page slot, materials, and key items from
 <a id="wp-064"></a>
 ### WP-064: Build Castle Graymantle, part 1
 
-- **Lane:** world · **Depends on:** 044, 032, 036 · **Size:** L
+- **Lane:** world · **Depends on:** 044, 032, 036 · **Size:** L · **Worker:** sonnet
 - **Read:** [Castle Graymantle](02-world.md#castle-graymantle).
 - **Touch:** `game/data/levels/castle/`.
 - **Do:** The bridge, the cliff path, the Barbican, and the Lower Ward, with the
@@ -966,7 +968,7 @@ relics, Chronicle Page slot, materials, and key items from
 <a id="wp-065"></a>
 ### WP-065: Build Castle Graymantle, part 2
 
-- **Lane:** world · **Depends on:** 064, 037 · **Size:** L
+- **Lane:** world · **Depends on:** 064, 037 · **Size:** L · **Worker:** sonnet
 - **Read:** [Castle Graymantle](02-world.md#castle-graymantle).
 - **Touch:** `game/data/levels/castle/`.
 - **Do:** The ramparts, the keep, the library, the bell tower, the hall, the second
@@ -977,7 +979,7 @@ relics, Chronicle Page slot, materials, and key items from
 <a id="wp-066"></a>
 ### WP-066: Build Rimeshelf, Whitewarden Catacombs, and the Bound Ring
 
-- **Lane:** world · **Depends on:** 065, 037 · **Size:** L
+- **Lane:** world · **Depends on:** 065, 037 · **Size:** L · **Worker:** sonnet
 - **Read:** [Rimeshelf](02-world.md#rimeshelf), [mini-dungeons](02-world.md#mini-dungeons) (D6, D7).
 - **Touch:** `game/data/levels/{rimeshelf,whitewarden,bound_ring}/`.
 - **Do:** Deep snow, the foundry, the chimney drop into the castle, the braziers, the
@@ -988,7 +990,7 @@ relics, Chronicle Page slot, materials, and key items from
 <a id="wp-067"></a>
 ### WP-067: Build the Lattice Spire
 
-- **Lane:** world · **Depends on:** 044, 036, 037 · **Size:** L
+- **Lane:** world · **Depends on:** 044, 036, 037 · **Size:** L · **Worker:** sonnet
 - **Read:** [The Lattice Spire](02-world.md#the-lattice-spire).
 - **Touch:** `game/data/levels/spire/`.
 - **Do:** The gate check for two Great Sigils, the outer spiral with fallback ladders,
@@ -999,7 +1001,7 @@ relics, Chronicle Page slot, materials, and key items from
 <a id="wp-068"></a>
 ### WP-068: Build Hollowhearth, NPCs, and questlines
 
-- **Lane:** ui · **Depends on:** 046, 049, 053, 059 · **Size:** L
+- **Lane:** ui · **Depends on:** 046, 049, 053, 059 · **Size:** L · **Worker:** sonnet
 - **Read:** [Hollowhearth](02-world.md#hollowhearth-hub),
   [NPCs and questlines](06-progression-and-systems.md#npcs-and-questlines),
   [portfolio integration](08-portfolio-integration.md).
@@ -1014,7 +1016,7 @@ relics, Chronicle Page slot, materials, and key items from
 <a id="wp-069"></a>
 ### WP-069: Build the map and fast travel
 
-- **Lane:** ui · **Depends on:** 060, 062, 064 · **Size:** M
+- **Lane:** ui · **Depends on:** 060, 062, 064 · **Size:** M · **Worker:** sonnet
 - **Read:** [Map](06-progression-and-systems.md#map).
 - **Touch:** `src/lib/latticefall/ui/map/`, `game/crates/core/src/world_state/map.rs`.
 - **Do:** Visited-cell reveal, markers, the list view, and Lantern travel.
@@ -1038,19 +1040,19 @@ Every boss WP has the same acceptance criteria:
 - Screenshots of the intro, each phase, and the defeat.
 - **Verify:** `mise run game:test`, `mise run game:validate`, `bun run check`.
 
-| WP | Boss | Depends on | Size | Read |
-|---|---|---|---|---|
-| <a id="wp-070"></a>WP-070 | B02 the Briar Stag | 044, 033 | M | [B02](05-enemies-and-bosses.md#b02-the-briar-stag) |
-| <a id="wp-071"></a>WP-071 | B03 Bridgewarden Corvane | 064, 033 | M | [B03](05-enemies-and-bosses.md#b03-bridgewarden-corvane) |
-| <a id="wp-072"></a>WP-072 | B04 Mossgut Brood | 063, 036 | M | [B04](05-enemies-and-bosses.md#b04-mossgut-brood) |
-| <a id="wp-073"></a>WP-073 | B05 Ossuary Keeper | 061, 032 | L | [B05](05-enemies-and-bosses.md#b05-ossuary-keeper) |
-| <a id="wp-074"></a>WP-074 | B06 the Drowned Choir | 060, 033 | L | [B06](05-enemies-and-bosses.md#b06-the-drowned-choir) |
-| <a id="wp-075"></a>WP-075 | B07 Castellan Voss | 065, 033 | L | [B07](05-enemies-and-bosses.md#b07-castellan-voss-the-overfit-warden) |
-| <a id="wp-076"></a>WP-076 | B08 Forgeheart Colossus | 062, 033 | L | [B08](05-enemies-and-bosses.md#b08-forgeheart-colossus) |
-| <a id="wp-077"></a>WP-077 | B09 the Lamplight Matriarch | 062, 036 | L | [B09](05-enemies-and-bosses.md#b09-the-lamplight-matriarch) |
-| <a id="wp-078"></a>WP-078 | B10 the Bellwright | 066, 048 | L | [B10](05-enemies-and-bosses.md#b10-the-bellwright) |
-| <a id="wp-079"></a>WP-079 | B11 the Bound Exile | 066, 027 | M | [B11](05-enemies-and-bosses.md#b11-the-bound-exile) |
-| <a id="wp-080"></a>WP-080 | B12 the Unspooled | 067, 074, 075, 077, 078 | L | [B12](05-enemies-and-bosses.md#b12-the-unspooled) |
+| WP | Boss | Depends on | Size | Worker | Read |
+|---|---|---|---|---|---|
+| <a id="wp-070"></a>WP-070 | B02 the Briar Stag | 044, 033 | M | sonnet | [B02](05-enemies-and-bosses.md#b02-the-briar-stag) |
+| <a id="wp-071"></a>WP-071 | B03 Bridgewarden Corvane | 064, 033 | M | haiku | [B03](05-enemies-and-bosses.md#b03-bridgewarden-corvane) |
+| <a id="wp-072"></a>WP-072 | B04 Mossgut Brood | 063, 036 | M | sonnet | [B04](05-enemies-and-bosses.md#b04-mossgut-brood) |
+| <a id="wp-073"></a>WP-073 | B05 Ossuary Keeper | 061, 032 | L | sonnet | [B05](05-enemies-and-bosses.md#b05-ossuary-keeper) |
+| <a id="wp-074"></a>WP-074 | B06 the Drowned Choir | 060, 033 | L | sonnet | [B06](05-enemies-and-bosses.md#b06-the-drowned-choir) |
+| <a id="wp-075"></a>WP-075 | B07 Castellan Voss | 065, 033 | L | sonnet | [B07](05-enemies-and-bosses.md#b07-castellan-voss-the-overfit-warden) |
+| <a id="wp-076"></a>WP-076 | B08 Forgeheart Colossus | 062, 033 | L | sonnet | [B08](05-enemies-and-bosses.md#b08-forgeheart-colossus) |
+| <a id="wp-077"></a>WP-077 | B09 the Lamplight Matriarch | 062, 036 | L | sonnet | [B09](05-enemies-and-bosses.md#b09-the-lamplight-matriarch) |
+| <a id="wp-078"></a>WP-078 | B10 the Bellwright | 066, 048 | L | sonnet | [B10](05-enemies-and-bosses.md#b10-the-bellwright) |
+| <a id="wp-079"></a>WP-079 | B11 the Bound Exile | 066, 027 | M | sonnet | [B11](05-enemies-and-bosses.md#b11-the-bound-exile) |
+| <a id="wp-080"></a>WP-080 | B12 the Unspooled | 067, 074, 075, 077, 078 | L | opus | [B12](05-enemies-and-bosses.md#b12-the-unspooled) |
 
 ### Gate G3: Content complete
 
@@ -1062,7 +1064,7 @@ possible. The owner plays it end to end before M8 starts.
 <a id="wp-081"></a>
 ### WP-081: Meet the performance budgets
 
-- **Lane:** render · **Depends on:** G3 · **Size:** L
+- **Lane:** render · **Depends on:** G3 · **Size:** L · **Worker:** sonnet
 - **Read:** [Performance budgets](01-architecture.md#performance-budgets), [bundle and loading](01-architecture.md#bundle-and-loading).
 - **Touch:** `src/lib/latticefall/render/`, `static/latticefall/`.
 - **Do:** LODs, culling, streaming and unloading by region, texture budgets, and a
@@ -1074,7 +1076,7 @@ possible. The owner plays it end to end before M8 starts.
 <a id="wp-082"></a>
 ### WP-082: Complete accessibility
 
-- **Lane:** ui · **Depends on:** G3 · **Size:** M
+- **Lane:** ui · **Depends on:** G3 · **Size:** M · **Worker:** sonnet
 - **Read:** [Accessibility](07-presentation.md#accessibility).
 - **Touch:** `src/lib/latticefall/ui/`, `src/lib/latticefall/render/`.
 - **Do:** Every option in the accessibility list, including color-blind shapes and
@@ -1086,7 +1088,7 @@ possible. The owner plays it end to end before M8 starts.
 <a id="wp-083"></a>
 ### WP-083: Add the mobile view and touch mode
 
-- **Lane:** ui · **Depends on:** G3 · **Size:** M
+- **Lane:** ui · **Depends on:** G3 · **Size:** M · **Worker:** sonnet
 - **Read:** [Mobile](07-presentation.md#mobile).
 - **Touch:** `src/routes/game/`, `src/lib/latticefall/input/touch/`.
 - **Do:** The phone codex view, the trailer clip, and touch mode.
@@ -1097,7 +1099,7 @@ possible. The owner plays it end to end before M8 starts.
 <a id="wp-084"></a>
 ### WP-084: Add asynchronous features and telemetry
 
-- **Lane:** infra · **Depends on:** G3 · **Size:** L
+- **Lane:** infra · **Depends on:** G3 · **Size:** L · **Worker:** sonnet
 - **Read:** [Asynchronous features](06-progression-and-systems.md#asynchronous-features),
   [telemetry](06-progression-and-systems.md#telemetry).
 - **Touch:** `api/src/handlers/latticefall.rs`, `api/src/routes/mod.rs`,
@@ -1113,7 +1115,7 @@ possible. The owner plays it end to end before M8 starts.
 <a id="wp-085"></a>
 ### WP-085: Build the codex pages
 
-- **Lane:** ui · **Depends on:** 068 · **Size:** M
+- **Lane:** ui · **Depends on:** 068 · **Size:** M · **Worker:** haiku
 - **Read:** [Codex](08-portfolio-integration.md#codex), [SEO and metadata](08-portfolio-integration.md#seo-and-metadata).
 - **Touch:** `src/routes/codex/`.
 - **Do:** Prerendered codex routes, locked and unlocked states, and metadata.
@@ -1124,7 +1126,7 @@ possible. The owner plays it end to end before M8 starts.
 <a id="wp-086"></a>
 ### WP-086: Launch: replace the old game
 
-- **Lane:** ui · **Depends on:** 081, 082, 083, 085 · **Size:** M
+- **Lane:** ui · **Depends on:** 081, 082, 083, 085 · **Size:** M · **Worker:** sonnet
 - **Read:** [Home page](08-portfolio-integration.md#home-page).
 - **Touch:** `src/routes/game/`, `src/routes/+page.svelte`, `src/lib/game/` (delete),
   `CLAUDE.md`, `README.md`.
@@ -1137,7 +1139,7 @@ possible. The owner plays it end to end before M8 starts.
 <a id="wp-087"></a>
 ### WP-087: Finish music and audio
 
-- **Lane:** render · **Depends on:** G3 · **Size:** M
+- **Lane:** render · **Depends on:** G3 · **Size:** M · **Worker:** haiku
 - **Read:** [Audio](07-presentation.md#audio).
 - **Touch:** `src/lib/latticefall/audio/`, `static/latticefall/audio/`, `game/assets-src/audio/`.
 - **Do:** Region loops, boss stems (including the Bellwright's beat), ambience, and
@@ -1148,7 +1150,7 @@ possible. The owner plays it end to end before M8 starts.
 <a id="wp-088"></a>
 ### WP-088: Add Marks, photo mode, gestures, and the timer
 
-- **Lane:** ui · **Depends on:** G3 · **Size:** M
+- **Lane:** ui · **Depends on:** G3 · **Size:** M · **Worker:** haiku
 - **Read:** [Achievements](06-progression-and-systems.md#achievements),
   [gestures and photo mode](06-progression-and-systems.md#gestures-and-photo-mode),
   [timer and new game plus](06-progression-and-systems.md#timer-and-new-game-plus).
@@ -1160,7 +1162,7 @@ possible. The owner plays it end to end before M8 starts.
 <a id="wp-089"></a>
 ### WP-089: Balance and fairness pass
 
-- **Lane:** combat · **Depends on:** G3 · **Size:** L
+- **Lane:** combat · **Depends on:** G3 · **Size:** L · **Worker:** opus
 - **Read:** [Tuning targets](03-combat.md#tuning-targets), [builds](04-arsenal-and-builds.md#builds),
   [fairness rules](05-enemies-and-bosses.md#fairness-rules),
   [expected level curve](06-progression-and-systems.md#expected-level-curve).
@@ -1180,7 +1182,7 @@ possible. The owner plays it end to end before M8 starts.
 <a id="wp-090"></a>
 ### WP-090: Build the full Gymnasium environment and scenarios
 
-- **Lane:** rl · **Depends on:** 039 · **Size:** L
+- **Lane:** rl · **Depends on:** 039 · **Size:** L · **Worker:** sonnet
 - **Read:** [Scenarios](09-rl-environment.md#scenarios), [Python API](09-rl-environment.md#python-api).
 - **Touch:** `game/crates/py/`, `game/data/scenarios/`, `game/python/latticefall/`.
 - **Do:** All six scenarios (adding a boss-arena option for each boss as boss WPs land),
@@ -1192,7 +1194,7 @@ possible. The owner plays it end to end before M8 starts.
 <a id="wp-091"></a>
 ### WP-091: Add the observation encoders
 
-- **Lane:** rl · **Depends on:** 090 · **Size:** L
+- **Lane:** rl · **Depends on:** 090 · **Size:** L · **Worker:** opus
 - **Read:** [Observations](09-rl-environment.md#observations).
 - **Touch:** `game/crates/core/src/obs/`.
 - **Do:** Every observation key, the `privileged` option, and the ray-cast pixel camera.
@@ -1203,7 +1205,7 @@ possible. The owner plays it end to end before M8 starts.
 <a id="wp-092"></a>
 ### WP-092: Add action spaces and masks
 
-- **Lane:** rl · **Depends on:** 090 · **Size:** M
+- **Lane:** rl · **Depends on:** 090 · **Size:** M · **Worker:** sonnet
 - **Read:** [Actions](09-rl-environment.md#actions).
 - **Touch:** `game/crates/core/src/obs/actions.rs`, `game/python/latticefall/spaces.py`.
 - **Do:** The `MultiDiscrete`, flat, and continuous variants; masks; and
@@ -1214,7 +1216,7 @@ possible. The owner plays it end to end before M8 starts.
 <a id="wp-093"></a>
 ### WP-093: Add rewards and safeguards
 
-- **Lane:** rl · **Depends on:** 090 · **Size:** M
+- **Lane:** rl · **Depends on:** 090 · **Size:** M · **Worker:** sonnet
 - **Read:** [Rewards](09-rl-environment.md#rewards).
 - **Touch:** `game/crates/core/src/obs/rewards.rs`, `game/python/latticefall/rewards.py`.
 - **Do:** Every component, weights, and the reachability gate and stall penalty.
@@ -1225,7 +1227,7 @@ possible. The owner plays it end to end before M8 starts.
 <a id="wp-094"></a>
 ### WP-094: Add randomization and curriculum configs
 
-- **Lane:** rl · **Depends on:** 090 · **Size:** M
+- **Lane:** rl · **Depends on:** 090 · **Size:** M · **Worker:** haiku
 - **Read:** [Curriculum and randomization](09-rl-environment.md#curriculum-and-randomization).
 - **Touch:** `game/crates/core/src/scenario/randomize.rs`, `game/python/latticefall/`.
 - **Do:** Every randomization option and the boss league sampler.
@@ -1235,7 +1237,7 @@ possible. The owner plays it end to end before M8 starts.
 <a id="wp-095"></a>
 ### WP-095: Build the vector environment
 
-- **Lane:** rl · **Depends on:** 091, 092 · **Size:** L
+- **Lane:** rl · **Depends on:** 091, 092 · **Size:** L · **Worker:** opus
 - **Read:** [Vector environment](09-rl-environment.md#vector-environment),
   [benchmarks and evaluation](09-rl-environment.md#benchmarks-and-evaluation).
 - **Touch:** `game/crates/py/src/vec.rs`, `game/python/latticefall/vector.py`.
@@ -1248,7 +1250,7 @@ possible. The owner plays it end to end before M8 starts.
 <a id="wp-096"></a>
 ### WP-096: Train the PPO baseline
 
-- **Lane:** rl · **Depends on:** 093, 095 · **Size:** L
+- **Lane:** rl · **Depends on:** 093, 095 · **Size:** L · **Worker:** sonnet
 - **Read:** [Experiment plan](09-rl-environment.md#experiment-plan) (E1, E2).
 - **Touch:** `game/python/examples/ppo_boss.py`, `game/python/RESULTS.md`.
 - **Do:** A single-file PPO (with an LSTM option), and runs E1 and E2 with results.
@@ -1259,7 +1261,7 @@ possible. The owner plays it end to end before M8 starts.
 <a id="wp-097"></a>
 ### WP-097: Build the text environment and MCP server
 
-- **Lane:** rl · **Depends on:** 091 · **Size:** L
+- **Lane:** rl · **Depends on:** 091 · **Size:** L · **Worker:** sonnet
 - **Read:** [Text environment](09-rl-environment.md#text-environment).
 - **Touch:** `game/crates/core/src/macros/`, `game/python/latticefall/{text.py,mcp_server.py}`,
   `game/data/**` (move descriptions for `doing`).
@@ -1272,7 +1274,7 @@ possible. The owner plays it end to end before M8 starts.
 <a id="wp-098"></a>
 ### WP-098: Build the human demonstration pipeline
 
-- **Lane:** rl · **Depends on:** 084, 091 · **Size:** L
+- **Lane:** rl · **Depends on:** 084, 091 · **Size:** L · **Worker:** sonnet
 - **Read:** [Human demonstrations](09-rl-environment.md#human-demonstrations).
 - **Touch:** `src/lib/latticefall/ui/settings/research/`, `api/src/handlers/latticefall.rs`,
   `api/src/routes/mod.rs`, `game/crates/tools/src/replay_export.rs`.
@@ -1284,7 +1286,7 @@ possible. The owner plays it end to end before M8 starts.
 <a id="wp-099"></a>
 ### WP-099: Run a policy in the browser
 
-- **Lane:** render · **Depends on:** 096 · **Size:** M
+- **Lane:** render · **Depends on:** 096 · **Size:** M · **Worker:** sonnet
 - **Read:** [Policies in the browser](09-rl-environment.md#policies-in-the-browser).
 - **Touch:** `src/routes/rl/latticefall/`, `src/lib/latticefall/agent/`.
 - **Do:** ONNX export, browser inference, and the `/rl/latticefall` page.
@@ -1295,7 +1297,7 @@ possible. The owner plays it end to end before M8 starts.
 <a id="wp-100"></a>
 ### WP-100: Add OpenEnv and verifiers adapters
 
-- **Lane:** rl · **Depends on:** 097 · **Size:** M
+- **Lane:** rl · **Depends on:** 097 · **Size:** M · **Worker:** haiku
 - **Read:** [Text environment: interfaces](09-rl-environment.md#interfaces).
 - **Touch:** `game/python/latticefall/adapters/`.
 - **Do:** Both adapters, checked against the libraries' current documentation and

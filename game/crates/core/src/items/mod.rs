@@ -13,11 +13,18 @@
 //!   [`inventory::drink_move`]) and fires its effect on the content's `effect_frame`
 //!   ([`inventory::drink_lands`]), which is when the charge is spent. A stagger or guard
 //!   break before that frame ends the move with no heal and no charge spent.
+//! - The other consumables (throwables, oils, cures, Glimmer vials, Lantern Ash) use the
+//!   same drink move; [`usage::apply_landed`] applies the effect on the tick after it
+//!   lands. Arrows are [`usage::take_ammo`].
+//! - Charms and armor are [`gear`]: [`gear::refresh`] writes the stored stats when the
+//!   loadout changes, and the combat systems query the rest.
 //! - Pickups are [`Inventory::pick_up`]; world pickups (WP-0xx) call it.
 
+pub mod gear;
 pub mod inventory;
 pub mod preview;
 pub mod table;
+pub mod usage;
 
 pub use inventory::{Equipment, FlaskKind, Flasks, Inventory, slot};
 pub use table::{FlaskRules, ItemDef, ItemTable};
@@ -31,6 +38,8 @@ const CYCLE_BUTTONS: u16 = buttons::CYCLE_ITEM | buttons::CYCLE_RIGHT | buttons:
 
 /// Applies the tick's item commands and cycle buttons to the player.
 pub fn run(world: &mut World, input: &TickInput) {
+    // The item whose effect landed last tick takes effect now (WP-057).
+    usage::apply_landed(world);
     let id = world.player;
     // The Lantern menu (Split flasks) is open only while resting at a Lantern.
     let resting = world.state.resting.is_some();
@@ -41,6 +50,7 @@ pub fn run(world: &mut World, input: &TickInput) {
         return;
     }
     let weapon_before = actor.inventory.equipment.right_weapon();
+    let gear_before = gear::gear_slots(&actor.inventory.equipment);
     for c in &input.commands {
         match *c {
             Command::Equip { slot, item } => {
@@ -82,10 +92,23 @@ pub fn run(world: &mut World, input: &TickInput) {
     }
     // Only a change of weapon swaps the moveset, so tuning applied to the active moveset
     // (the equip load tier, in tests) isn't overwritten every tick.
-    if actor.inventory.equipment.right_weapon() != weapon_before {
+    let weapon_changed = actor.inventory.equipment.right_weapon() != weapon_before;
+    let gear_changed = gear::gear_slots(&actor.inventory.equipment) != gear_before;
+    let worn = gear::any_worn(&actor.inventory.equipment);
+    if weapon_changed {
         world.sync_player_moveset();
     }
+    // A new loadout rewrites the stored stats; swapping weapons while wearing gear
+    // refreshes the load tier the new moveset reset (WP-057).
+    if gear_changed {
+        gear::refresh(world);
+    } else if weapon_changed && worn {
+        gear::sync_load_tier(world);
+    }
+    gear::tick(world);
 }
 
+#[cfg(test)]
+mod gear_tests;
 #[cfg(test)]
 mod tests;

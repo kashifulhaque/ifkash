@@ -49,4 +49,8 @@ pub struct ProjectileDef {
     /// Status buildup a hit adds (a guarded hit adds less, as for a melee hit).
     #[serde(default)]
     pub status: Option<StatusBuildup>,
+    /// A projectile that bursts where it ends: everyone within this many meters of the
+    /// end point takes the hit too. 0 means no burst (WP-057, the Pitch Bomb's 2 m).
+    #[serde(default)]
+    pub area_radius_m: f32,
 }

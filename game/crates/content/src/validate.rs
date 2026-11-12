@@ -459,6 +459,71 @@ impl Validate for Content {
                 }
                 .error("flask.drink_move", "the move is not defined");
             }
+            // WP-057: what an item's effect names has to exist.
+            for (i, item) in c.items.iter().enumerate() {
+                let mut sink = Sink {
+                    out: &mut out,
+                    file: "consumables.ron",
+                    item: "consumables",
+                };
+                if let Some(p) = item.effect.projectile()
+                    && self.projectile_by_id(p).is_none()
+                {
+                    sink.error(
+                        format!("items[{i}].effect"),
+                        format!("projectile \"{p}\" is not defined"),
+                    );
+                }
+                if let crate::ItemEffect::Oil { buff } = &item.effect
+                    && !self
+                        .status
+                        .as_ref()
+                        .is_some_and(|s| s.buffs.iter().any(|b| &b.id == buff))
+                {
+                    sink.error(
+                        format!("items[{i}].effect"),
+                        format!("buff \"{buff}\" is not defined"),
+                    );
+                }
+            }
+        }
+        for (file, problems) in [
+            ("charms.ron", crate::gear::charm_problems(&self.charms)),
+            (
+                "armor.ron",
+                crate::gear::armor_problems(&crate::ArmorFile {
+                    pieces: self.armor.clone(),
+                }),
+            ),
+        ] {
+            for (field, message) in problems {
+                Sink {
+                    out: &mut out,
+                    file,
+                    item: "gear",
+                }
+                .error(field, message);
+            }
+        }
+        // WP-057: a gear effect that grants a buff names one that exists.
+        let gear_effects = self
+            .charms
+            .iter()
+            .flat_map(|c| c.effects.iter())
+            .chain(self.armor.iter().flat_map(|p| p.effects.iter()));
+        for buff in crate::gear::effect_buffs(&gear_effects.cloned().collect::<Vec<_>>()) {
+            if !self
+                .status
+                .as_ref()
+                .is_some_and(|s| s.buffs.iter().any(|b| b.id == buff))
+            {
+                Sink {
+                    out: &mut out,
+                    file: "charms.ron",
+                    item: "gear",
+                }
+                .error("effects", format!("buff \"{buff}\" is not defined"));
+            }
         }
         if let Some(st) = &self.status {
             for (field, message) in st.problems() {

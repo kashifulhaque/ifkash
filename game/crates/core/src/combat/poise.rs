@@ -263,11 +263,20 @@ pub fn apply_landing(world: &mut World, target: Id, move_num: MoveNum, poise_dam
 /// The parry window of `id`'s weapon: only the player has a moveset until AI lands.
 pub fn parry_window_of(world: &World, id: Id) -> u8 {
     if id == world.player {
-        world
+        let base = world
             .moves
             .player_moveset
             .as_ref()
-            .map_or(0, |m| m.guard.parry_window_ticks)
+            .map_or(0, |m| m.guard.parry_window_ticks);
+        // Parrier's Eye lengthens the window of a weapon that has one (WP-057).
+        let more = world.actors.get(id).map_or(0, |p| {
+            world.items.gear.parry_window_bonus(&p.inventory.equipment)
+        });
+        if base > 0 {
+            u8::try_from(u32::from(base) + more).unwrap_or(u8::MAX)
+        } else {
+            0
+        }
     } else {
         0
     }

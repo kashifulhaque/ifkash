@@ -1,0 +1,137 @@
+// Armor: a head piece and a body piece per set, and two relic pieces outside the sets.
+// Source: docs/game/04-arsenal-and-builds.md, "Armor". Schema: crates/content/src/gear.rs.
+//
+// The spec gives each set's total weight (head + body), a qualitative physical defense
+// (Low, Medium, High), absorption highlights, and poise; the splits between head and body
+// and the defense numbers are tuning. A set's totals are its two pieces added up:
+//   - weight in tenths of a unit (the spec's "2 + 5" is 20 + 50);
+//   - flat defense: Low about 40, Medium about 70, High about 120 (physical);
+//   - the Wayfarer's Coat's 40 physical and 40 elemental equal the player's stub defense
+//     (`stub_defense` in locomotion.ron), so wearing the starting gear changes nothing;
+//   - the spec's poise per set is split head 40%, body 60%.
+// Absorption entries add up over the two pieces; the cap is `absorption_cap_percent` in
+// attributes.ron. The relic pieces' effects are the spec's.
+(
+  pieces: [
+    (
+      id: "arm_wayfarer_head", name: "Wayfarer's Hood", set: "Wayfarer's Coat", slot: Head,
+      weight_tenths: 20, // 2
+      defense: (physical: 12, elemental: 12),
+      absorption: [(All, 2)], // Balanced: 5% of everything over the set
+      poise: 3, effects: [],
+    ),
+    (
+      id: "arm_wayfarer_body", name: "Wayfarer's Coat", set: "Wayfarer's Coat", slot: Body,
+      weight_tenths: 50, // 5
+      defense: (physical: 28, elemental: 28),
+      absorption: [(All, 3)],
+      poise: 5, effects: [], // set poise 8
+    ),
+    (
+      id: "arm_chapel_head", name: "Chapel Cowl", set: "Chapel Vestments", slot: Head,
+      weight_tenths: 10, // 1
+      defense: (physical: 8, elemental: 10),
+      absorption: [(Radiance, 8)], // Radiance 20% over the set
+      poise: 1, effects: [],
+    ),
+    (
+      id: "arm_chapel_body", name: "Chapel Vestments", set: "Chapel Vestments", slot: Body,
+      weight_tenths: 40, // 4
+      defense: (physical: 20, elemental: 26),
+      absorption: [(Radiance, 12)],
+      poise: 3, effects: [], // set poise 4
+    ),
+    (
+      id: "arm_reedwalker_head", name: "Reedwalker Hood", set: "Reedwalker Garb", slot: Head,
+      weight_tenths: 20, // 2
+      defense: (physical: 10, elemental: 8),
+      absorption: [],
+      poise: 3,
+      effects: [Resist(kind: Immunity, amount: 15)], // Immunity +40 over the set
+    ),
+    (
+      id: "arm_reedwalker_body", name: "Reedwalker Garb", set: "Reedwalker Garb", slot: Body,
+      weight_tenths: 50, // 5
+      defense: (physical: 24, elemental: 16),
+      absorption: [],
+      poise: 5, // set poise 8
+      effects: [Resist(kind: Immunity, amount: 25)],
+    ),
+    (
+      id: "arm_miner_head", name: "Miner's Helm", set: "Miner's Harness", slot: Head,
+      weight_tenths: 30, // 3
+      defense: (physical: 20, elemental: 14),
+      absorption: [(Fire, 6)], // Fire 15% over the set
+      poise: 7, effects: [],
+    ),
+    (
+      id: "arm_miner_body", name: "Miner's Harness", set: "Miner's Harness", slot: Body,
+      weight_tenths: 90, // 9
+      defense: (physical: 50, elemental: 36), // Medium
+      absorption: [(Fire, 9)],
+      poise: 11, effects: [], // set poise 18
+    ),
+    (
+      id: "arm_exile_head", name: "Exile's Hood", set: "Exile's Robe", slot: Head,
+      weight_tenths: 10, // 1
+      defense: (physical: 8, elemental: 12),
+      absorption: [(Aether, 10)], // Aether 25% over the set
+      poise: 1, effects: [],
+    ),
+    (
+      id: "arm_exile_body", name: "Exile's Robe", set: "Exile's Robe", slot: Body,
+      weight_tenths: 40, // 4
+      defense: (physical: 20, elemental: 30),
+      absorption: [(Aether, 15)],
+      poise: 3, effects: [], // set poise 4
+    ),
+    (
+      id: "arm_graymantle_head", name: "Graymantle Helm", set: "Graymantle Plate", slot: Head,
+      weight_tenths: 70, // 7
+      defense: (physical: 48, elemental: 28),
+      absorption: [(Physical, 12)], // Physical 30% over the set
+      poise: 18, effects: [],
+    ),
+    (
+      id: "arm_graymantle_body", name: "Graymantle Plate", set: "Graymantle Plate", slot: Body,
+      weight_tenths: 180, // 18
+      defense: (physical: 72, elemental: 44), // High
+      absorption: [(Physical, 18)],
+      poise: 27, effects: [], // set poise 45
+    ),
+    (
+      id: "arm_rimeforged_head", name: "Rimeforged Helm", set: "Rimeforged Mail", slot: Head,
+      weight_tenths: 60, // 6
+      defense: (physical: 46, elemental: 32),
+      absorption: [],
+      poise: 16,
+      effects: [Resist(kind: Robustness, amount: 30)], // Robustness +80 over the set
+    ),
+    (
+      id: "arm_rimeforged_body", name: "Rimeforged Mail", set: "Rimeforged Mail", slot: Body,
+      weight_tenths: 160, // 16
+      defense: (physical: 70, elemental: 48), // High
+      absorption: [],
+      poise: 24, // set poise 40
+      effects: [Resist(kind: Robustness, amount: 50)],
+    ),
+    (
+      // Relic, head. Enemies notice you at 80% of their sight range.
+      id: "arm_boo", name: "Boo", set: "", slot: Head,
+      weight_tenths: 10, // 1
+      defense: (physical: 0, elemental: 0), // n/a
+      absorption: [],
+      poise: 0,
+      effects: [SightPercent(percent: 80, dark_only: false)],
+    ),
+    (
+      // Relic, body. In darkness, enemies notice you at 50% of their sight range.
+      id: "arm_endark", name: "endark", set: "", slot: Body,
+      weight_tenths: 30, // 3
+      defense: (physical: 20, elemental: 14), // Low
+      absorption: [],
+      poise: 6,
+      effects: [SightPercent(percent: 50, dark_only: true)],
+    ),
+  ],
+)

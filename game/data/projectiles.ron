@@ -95,4 +95,114 @@
     hitstop: 3, // tuning
     tags: [],
   ),
+  // WP-057: the player's throwables and the special arrows. Their damage comes from the
+  // item (`effect` in consumables.ron), not from the thrower's weapon, so `motion_value`
+  // is 1.0. None is a Formula: each carries a physical type, so a Shard Golem doesn't
+  // reflect it and Scholar's Seal doesn't boost it.
+  (
+    // Pitch Bomb: a lobbed Fire burst, 2 m radius (Consumables).
+    id: "proj_pitch_bomb_thrown",
+    speed: 14.0, // tuning
+    gravity: 9.0, // tuning
+    radius: 0.2, // tuning
+    lifetime_ticks: 90, // tuning
+    pierce: 0,
+    homing: None,
+    motion_value: 1.0,
+    phys: Blunt,
+    element: Fire,
+    poise_damage: 14, // tuning
+    knockback: 0.4, // tuning
+    hitstop: 3, // tuning
+    tags: [],
+    area_radius_m: 2.0, // Consumables: 2 m radius
+  ),
+  (
+    // Frostjar: 60 Aether and 80 Rime buildup.
+    id: "proj_frostjar",
+    speed: 14.0, // tuning
+    gravity: 9.0, // tuning
+    radius: 0.2, // tuning
+    lifetime_ticks: 90, // tuning
+    pierce: 0,
+    homing: None,
+    motion_value: 1.0,
+    phys: Blunt,
+    element: Aether,
+    poise_damage: 8, // tuning
+    knockback: 0.2, // tuning
+    hitstop: 2, // tuning
+    tags: [],
+    status: (kind: Rime, amount: 80), // Consumables: Rime 80
+  ),
+  (
+    // Blight Pot: 120 Blight buildup, and the minimum of damage.
+    id: "proj_blight_pot",
+    speed: 14.0, // tuning
+    gravity: 9.0, // tuning
+    radius: 0.2, // tuning
+    lifetime_ticks: 90, // tuning
+    pierce: 0,
+    homing: None,
+    motion_value: 1.0,
+    phys: Blunt,
+    element: None,
+    poise_damage: 4, // tuning
+    knockback: 0.1, // tuning
+    hitstop: 1, // tuning
+    tags: [],
+    status: (kind: Blight, amount: 120), // Consumables: Blight 120
+  ),
+  (
+    // Poison Knife: 40 Pierce and 40 Poison buildup. Flat and fast.
+    id: "proj_throwing_knife",
+    speed: 24.0, // tuning
+    gravity: 4.0, // tuning
+    radius: 0.08, // tuning
+    lifetime_ticks: 60, // tuning
+    pierce: 0,
+    homing: None,
+    motion_value: 1.0,
+    phys: Pierce,
+    element: None,
+    poise_damage: 6, // tuning
+    knockback: 0.1, // tuning
+    hitstop: 1, // tuning
+    tags: [],
+    status: (kind: Poison, amount: 40), // Consumables: Poison 40
+  ),
+  (
+    // Fire Arrow: an arrow with Fire added (the item's `elem_percent` of the bow's AR).
+    id: "proj_arrow_fire",
+    speed: 40.0, // as proj_arrow
+    gravity: 12.0,
+    radius: 0.05,
+    lifetime_ticks: 90,
+    pierce: 0,
+    homing: None,
+    motion_value: 1.0,
+    phys: Pierce,
+    element: Fire,
+    poise_damage: 8,
+    knockback: 0.2,
+    hitstop: 2,
+    tags: [],
+  ),
+  (
+    // Storm Arrow: as the Fire Arrow, with Storm.
+    id: "proj_arrow_storm",
+    speed: 40.0, // as proj_arrow
+    gravity: 12.0,
+    radius: 0.05,
+    lifetime_ticks: 90,
+    pierce: 0,
+    homing: None,
+    motion_value: 1.0,
+    phys: Pierce,
+    element: Storm,
+    poise_damage: 8,
+    knockback: 0.2,
+    hitstop: 2,
+    tags: [],
+  ),
 ]

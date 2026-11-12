@@ -5,6 +5,7 @@
 //! Everything here is simulation state and part of the state hash, so it uses fixed-size
 //! arrays and sorted `Vec`s only.
 
+use lf_content::gear::ArmorSlot;
 use lf_content::{ItemKind, NumId};
 use serde::{Deserialize, Serialize};
 
@@ -41,6 +42,12 @@ pub enum FlaskKind {
     Vigil,
     /// Lucid Flask: restores FP.
     Lucid,
+    /// Not a flask: the drink move is carrying this item (a throwable, oil, cure, Glimmer
+    /// vial, or Lantern Ash) and its effect hasn't landed yet (WP-057).
+    Item(NumId),
+    /// That item's effect landed on the drink move's effect frame; `items::run` applies
+    /// it on the next tick (it needs the whole world) and spends one from the stack.
+    Landed(NumId),
 }
 
 /// Flask charges and potency (docs/game/06-progression-and-systems.md, "Flasks").
@@ -65,10 +72,12 @@ impl Flasks {
         self.max_charges.saturating_sub(self.vigil_max)
     }
 
+    /// Charges left in a flask; 0 for the item kinds, which have stacks instead.
     pub fn charges(&self, kind: FlaskKind) -> u8 {
         match kind {
             FlaskKind::Vigil => self.vigil,
             FlaskKind::Lucid => self.lucid,
+            FlaskKind::Item(_) | FlaskKind::Landed(_) => 0,
         }
     }
 
@@ -109,7 +118,7 @@ impl Default for Equipment {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum Group {
     Hand,
-    Armor,
+    Armor(ArmorSlot),
     Charm(u8),
     Quick,
     Arrows,
@@ -118,7 +127,8 @@ enum Group {
 fn group(slot: u8) -> Option<Group> {
     match slot {
         slot::RIGHT_1..=slot::LEFT_2 => Some(Group::Hand),
-        slot::HEAD | slot::BODY => Some(Group::Armor),
+        slot::HEAD => Some(Group::Armor(ArmorSlot::Head)),
+        slot::BODY => Some(Group::Armor(ArmorSlot::Body)),
         6..=9 => Some(Group::Charm(slot - slot::CHARM_1)),
         10..=14 => Some(Group::Quick),
         slot::ARROWS => Some(Group::Arrows),
@@ -190,8 +200,7 @@ impl Equipment {
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Inventory {
     pub equipment: Equipment,
-    /// Owned weapons, armor, and charms, sorted. (None of the last two exist in the
-    /// content yet.)
+    /// Owned weapons, armor, and charms, sorted.
     pub gear: Vec<NumId>,
     /// Owned consumable stacks `(item, count)`, sorted by item.
     pub stacks: Vec<(NumId, u16)>,
@@ -279,6 +288,10 @@ impl Inventory {
     /// other consumable goes on its stack, up to the stack limit. The flasks themselves,
     /// and unknown items, can't be picked up.
     pub fn pick_up(&mut self, item: NumId, n: u16, items: &ItemTable) -> u16 {
+        // A charm or an armor piece goes to the owned gear: one of each.
+        if items.gear.is_gear(item) {
+            return u16::from(n > 0 && self.give_gear(item));
+        }
         let (Some(def), Some(rules)) = (items.get(item), &items.flask) else {
             return 0;
         };
@@ -322,16 +335,19 @@ impl Inventory {
     /// Equips `item` in `slot`. False (and no change) if the slot doesn't exist or isn't
     /// open, or the item doesn't fit it or isn't owned:
     /// - hands: an owned weapon;
-    /// - head, body, and charms: owned gear that isn't a weapon;
+    /// - head and body: an owned armor piece of that slot;
+    /// - charms: an owned charm, in an open charm slot;
     /// - quick slots: a flask, or a consumable with a stack, but not a Wick Bead, Flask Dew, or key;
     /// - arrows: ammunition with a stack.
     pub fn equip(&mut self, slot: u8, item: NumId, items: &ItemTable) -> bool {
         let owned_gear = self.gear.binary_search(&item).is_ok();
         let fits = match group(slot) {
             Some(Group::Hand) => items.is_weapon(item) && owned_gear,
-            Some(Group::Armor) => owned_gear && !items.is_weapon(item),
+            Some(Group::Armor(want)) => {
+                owned_gear && items.gear.armor(item).is_some_and(|a| a.slot == want)
+            }
             Some(Group::Charm(i)) => {
-                i < self.equipment.charm_slots && owned_gear && !items.is_weapon(item)
+                i < self.equipment.charm_slots && owned_gear && items.gear.charm(item).is_some()
             }
             Some(Group::Quick) => items.get(item).is_some_and(|d| match d.kind {
                 ItemKind::VigilFlask | ItemKind::LucidFlask => true,
@@ -371,6 +387,13 @@ impl Inventory {
         }
     }
 
+    /// The selected quick item if `USE_ITEM` uses it on the drink move: an item with an
+    /// effect that is in stock.
+    pub fn selected_usable(&self, rules: &FlaskRules) -> Option<NumId> {
+        let n = self.equipment.selected_quick()?;
+        (rules.usable.binary_search(&n).is_ok() && self.count(n) > 0).then_some(n)
+    }
+
     /// HP a Vigil Flask drink heals at the current potency.
     pub fn heal_amount(&self, rules: &FlaskRules) -> u32 {
         u32::from(rules.heal_base) + u32::from(rules.heal_per_level) * u32::from(self.flasks.level)
@@ -383,8 +406,8 @@ impl Inventory {
 }
 
 /// The move a `USE_ITEM` press starts now: the flask drink, if the selected quick item
-/// is a flask with a charge left and the current move (if any) has reached its
-/// `cancel_any_from`. Other items have no effect yet (WP-057).
+/// is a flask with a charge left, or an item that has an effect and is in stock, and the
+/// current move (if any) has reached its `cancel_any_from`.
 pub fn drink_move(a: &Actor, table: &MoveTable) -> Option<MoveNum> {
     let rules = table.flask.as_ref()?;
     if let Some(c) = a.moves.current {
@@ -393,14 +416,23 @@ pub fn drink_move(a: &Actor, table: &MoveTable) -> Option<MoveNum> {
             return None;
         }
     }
-    let kind = a.inventory.selected_flask(rules)?;
-    (a.inventory.flasks.charges(kind) > 0).then_some(rules.drink_move)
+    match a.inventory.selected_flask(rules) {
+        Some(kind) => (a.inventory.flasks.charges(kind) > 0).then_some(rules.drink_move),
+        None => a
+            .inventory
+            .selected_usable(rules)
+            .is_some()
+            .then_some(rules.drink_move),
+    }
 }
 
 /// Called when a flask drink starts: remembers which flask is being drunk. Spends nothing;
 /// the charge goes when the effect lands, so an interrupted drink costs no charge.
 pub fn drink_starts(a: &mut Actor, rules: &FlaskRules) {
-    a.inventory.flasks.drinking = a.inventory.selected_flask(rules);
+    a.inventory.flasks.drinking = a
+        .inventory
+        .selected_flask(rules)
+        .or_else(|| a.inventory.selected_usable(rules).map(FlaskKind::Item));
 }
 
 /// Called on the drink move's effect frame: spends one charge of the flask being drunk
@@ -409,10 +441,18 @@ pub fn drink_lands(a: &mut Actor, rules: &FlaskRules) {
     let Some(kind) = a.inventory.flasks.drinking.take() else {
         return;
     };
+    // An item's effect needs the world: hand it to `items::run` (see `FlaskKind::Landed`).
+    if let FlaskKind::Item(n) = kind {
+        if a.inventory.count(n) > 0 {
+            a.inventory.flasks.drinking = Some(FlaskKind::Landed(n));
+        }
+        return;
+    }
     if a.inventory.flasks.charges(kind) == 0 {
         return;
     }
     match kind {
+        FlaskKind::Item(_) | FlaskKind::Landed(_) => {}
         FlaskKind::Vigil => {
             a.inventory.flasks.vigil -= 1;
             let heal = a.inventory.heal_amount(rules);

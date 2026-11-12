@@ -428,7 +428,11 @@ fn think(world: &mut World, id: Id, t: &AiTuning) {
     };
     let def = &world.ai.def(brain.def);
     let target = world.actors.get(player).filter(|p| !p.dead);
-    let sees = target.is_some_and(|p| perception::sees(&world.physics, a, p, &def.perception, t));
+    // Boo and endark shorten what enemies see of the player (WP-057).
+    let sees = target.is_some_and(|p| {
+        let range = crate::items::gear::scale_sight(&world.items.gear, p, &def.perception);
+        perception::sees(&world.physics, a, p, &range, t)
+    });
     let faces = target.is_some_and(|p| perception::in_cone(a, p.pos, def.perception.sight_deg));
     let hurt = a.hp < brain.last_hp;
     let lantern_lit = def.data.backstab_immune;

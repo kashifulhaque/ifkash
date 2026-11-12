@@ -164,6 +164,8 @@ pub fn action_mask(world: &World) -> [bool; 28] {
         .map(|kind| match kind {
             FlaskKind::Vigil => p.inventory.flasks.vigil,
             FlaskKind::Lucid => p.inventory.flasks.lucid,
+            // `selected_flask` returns only the two flasks; WP-057's item kinds never get here.
+            FlaskKind::Item(_) | FlaskKind::Landed(_) => u8::MAX,
         });
     if charges == Some(0) {
         m[base + usize::from(act::USE_ITEM)] = false;

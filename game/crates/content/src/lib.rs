@@ -17,6 +17,7 @@ pub mod attributes;
 pub mod boss;
 pub mod consumables;
 pub mod enemy;
+pub mod gear;
 pub mod level;
 pub mod locomotion;
 pub mod moves;
@@ -31,8 +32,9 @@ pub mod weapons;
 
 pub use attributes::Attributes;
 pub use boss::BossDef;
-pub use consumables::{Consumables, Flask, Item, ItemKind};
+pub use consumables::{Consumables, Flask, Item, ItemEffect, ItemKind};
 pub use enemy::{AiTuning, EnemyDef};
+pub use gear::{ArmorFile, ArmorPiece, Charm, GearEffect};
 pub use level::{KitCatalog, Kits, Level};
 pub use locomotion::{Death, EquipLoad, Guard, LockOn, Locomotion, Poise};
 pub use moves::Move;
@@ -61,6 +63,10 @@ const CONSUMABLES_FILE: &str = "consumables.ron";
 const PROJECTILES_FILE: &str = "projectiles.ron";
 /// The status and buff rules file (relative to the data root).
 const STATUS_FILE: &str = "status.ron";
+/// The charms file (relative to the data root).
+const CHARMS_FILE: &str = "charms.ron";
+/// The armor file (relative to the data root).
+const ARMOR_FILE: &str = "armor.ron";
 /// Directory (relative to the data root) holding enemy definitions, one per file.
 const ENEMIES_DIR: &str = "enemies";
 /// Directory (relative to the data root) holding boss definitions, one per file.
@@ -234,6 +240,8 @@ const EMBEDDED_LOCOMOTION: &str = include_str!("../../../data/locomotion.ron");
 const EMBEDDED_CONSUMABLES: &str = include_str!("../../../data/consumables.ron");
 const EMBEDDED_PROJECTILES: &str = include_str!("../../../data/projectiles.ron");
 const EMBEDDED_STATUS: &str = include_str!("../../../data/status.ron");
+const EMBEDDED_CHARMS: &str = include_str!("../../../data/charms.ron");
+const EMBEDDED_ARMOR: &str = include_str!("../../../data/armor.ron");
 const EMBEDDED_SCENARIOS: &[(&str, &str)] = &[
     (
         "scenarios/m0_flat.ron",
@@ -622,6 +630,12 @@ pub struct Content {
     /// directories (test fixtures); the simulation needs it.
     #[cfg_attr(feature = "ts", ts(skip))]
     pub status: Option<StatusRules>,
+    /// Charms from `charms.ron` (WP-057); empty if the file is missing.
+    #[cfg_attr(feature = "ts", ts(skip))]
+    pub charms: Vec<Charm>,
+    /// Armor pieces from `armor.ron` (WP-057); empty if the file is missing.
+    #[cfg_attr(feature = "ts", ts(skip))]
+    pub armor: Vec<ArmorPiece>,
     /// The shared AI tuning from `ai.ron`. `None` only for partial data directories;
     /// a scenario with enemies needs it.
     #[cfg_attr(feature = "ts", ts(skip))]
@@ -793,6 +807,18 @@ impl Content {
         } else {
             None
         };
+        let charms_path = dir.join(CHARMS_FILE);
+        let charms = if charms_path.is_file() {
+            Some(read(&charms_path)?)
+        } else {
+            None
+        };
+        let armor_path = dir.join(ARMOR_FILE);
+        let armor = if armor_path.is_file() {
+            Some(read(&armor_path)?)
+        } else {
+            None
+        };
         let ai_path = dir.join(AI_FILE);
         let ai = if ai_path.is_file() {
             Some(read(&ai_path)?)
@@ -809,6 +835,8 @@ impl Content {
         .with_consumables(consumables.as_deref())?
         .with_projectiles(projectiles.as_deref())?
         .with_status(status.as_deref())?
+        .with_charms(charms.as_deref())?
+        .with_armor(armor.as_deref())?
         .with_enemies(ai.as_deref(), list(ENEMIES_DIR)?)?
         .with_bosses(list(BOSSES_DIR)?)?
         .with_levels(list(KITS_DIR)?, list_levels(dir)?)
@@ -832,6 +860,8 @@ impl Content {
         .with_consumables(Some(EMBEDDED_CONSUMABLES))?
         .with_projectiles(Some(EMBEDDED_PROJECTILES))?
         .with_status(Some(EMBEDDED_STATUS))?
+        .with_charms(Some(EMBEDDED_CHARMS))?
+        .with_armor(Some(EMBEDDED_ARMOR))?
         .with_enemies(Some(EMBEDDED_AI), own(EMBEDDED_ENEMIES))?
         .with_bosses(own(EMBEDDED_BOSSES))?
         .with_levels(own(EMBEDDED_KITS), own(EMBEDDED_LEVELS))
@@ -867,6 +897,8 @@ impl Content {
             consumables: None,
             projectiles: Vec::new(),
             status: None,
+            charms: Vec::new(),
+            armor: Vec::new(),
             ai: None,
             enemies: BTreeMap::new(),
             bosses: BTreeMap::new(),
@@ -940,6 +972,31 @@ impl Content {
             for (field, id) in s.references() {
                 self.check_id(STATUS_FILE, field, id)?;
             }
+        }
+        Ok(self)
+    }
+
+    /// Adds the charms file (RON text, if any). Fails on a charm that has no registry entry.
+    pub fn with_charms(mut self, text: Option<&str>) -> Result<Self, ContentError> {
+        self.charms = text
+            .map(|t| parse::<Vec<Charm>>(CHARMS_FILE, t))
+            .transpose()?
+            .unwrap_or_default();
+        for (i, c) in self.charms.iter().enumerate() {
+            self.check_id(CHARMS_FILE, format!("[{i}].id"), &c.id)?;
+        }
+        Ok(self)
+    }
+
+    /// Adds the armor file (RON text, if any). Fails on a piece that has no registry entry.
+    pub fn with_armor(mut self, text: Option<&str>) -> Result<Self, ContentError> {
+        self.armor = text
+            .map(|t| parse::<ArmorFile>(ARMOR_FILE, t))
+            .transpose()?
+            .map(|f| f.pieces)
+            .unwrap_or_default();
+        for (i, p) in self.armor.iter().enumerate() {
+            self.check_id(ARMOR_FILE, format!("pieces[{i}].id"), &p.id)?;
         }
         Ok(self)
     }

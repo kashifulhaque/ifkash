@@ -6,7 +6,7 @@
 
 use serde::{Deserialize, Serialize};
 
-use crate::moves::StatusBuildup;
+use crate::moves::{Element, StatusBuildup};
 
 /// A burst of damage: a share of max HP plus a flat amount.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -93,6 +93,10 @@ pub struct BuffDef {
     pub duration_ticks: u32,
     /// The renderer's effect tag.
     pub vfx: String,
+    /// A weapon buff can add an element to every hit: the element and the percent of the
+    /// hit's physical attack rating it adds (an oil's "Fire at 20% of AR", WP-057).
+    #[serde(default)]
+    pub element: Option<(Element, u8)>,
 }
 
 /// The whole `status.ron` file.
@@ -166,6 +170,12 @@ impl StatusRules {
             }
             if b.vfx.is_empty() {
                 out.push((format!("buffs[{i}].vfx"), "needs a VFX tag".to_owned()));
+            }
+            if b.slot == BuffSlot::Body && b.element.is_some() {
+                out.push((
+                    format!("buffs[{i}].element"),
+                    "only a weapon buff adds an element".to_owned(),
+                ));
             }
             if b.slot == BuffSlot::Body && !b.status.is_empty() {
                 out.push((

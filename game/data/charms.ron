@@ -1,0 +1,64 @@
+// Charms. Source: docs/game/04-arsenal-and-builds.md, "Charms" (the player has 2 Charm
+// slots at the start and up to 4; docs/game/06-progression-and-systems.md, "Equipment
+// slots"). Schema: crates/content/src/gear.rs. Effects are summed over the equipped
+// charms by lf_core::items::gear. Where the spec fixes no number, a comment says "tuning".
+[
+  (
+    id: "chm_vital", name: "Vital Charm",
+    effects: [MaxHpPercent(8)], // +8% max HP
+  ),
+  (
+    id: "chm_ox", name: "Ox Charm",
+    effects: [EquipLoadPercent(15)], // +15% max equip load
+  ),
+  (
+    id: "chm_quickening", name: "Quickening Charm",
+    effects: [StaminaRegenPercent(12)], // +12% stamina regeneration
+  ),
+  (
+    id: "chm_parriers_eye", name: "Parrier's Eye",
+    effects: [ParryWindowTicks(2)], // parry window +2 ticks
+  ),
+  (
+    id: "chm_thornheart", name: "Thornheart",
+    // +12% damage for 600 ticks after a Rupture proc near you (buf_thornheart in
+    // status.ron). "Near you" is 8 m: tuning.
+    effects: [ProcBuff(status: Rupture, buff: "buf_thornheart", radius_m: 8.0)],
+  ),
+  (
+    id: "chm_ember_locket", name: "Ember Locket",
+    effects: [ElementDamagePercent(element: Fire, percent: 12)], // +12% Fire damage
+  ),
+  (
+    id: "chm_scholars_seal", name: "Scholar's Seal", relic: true,
+    effects: [FormulaDamagePercent(10), SpellSlots(1)], // +10% Formula damage, +1 spell slot
+  ),
+  (
+    id: "chm_shrike_lite", name: "Shrike-Lite Circuit", relic: true,
+    effects: [SpellStartupReducePercent(12)], // spell startup -12%
+  ),
+  (
+    id: "chm_smol_llama", name: "smol-llama", relic: true,
+    effects: [WeaponWeightReducePercent(25)], // equipped weapons weigh 25% less
+  ),
+  (
+    id: "chm_bulwark", name: "Bulwark Charm",
+    effects: [GuardStaminaReducePercent(15)], // guard stamina cost -15%
+  ),
+  (
+    id: "chm_last_stand", name: "Last Stand Charm",
+    effects: [LowHpDamage(below_percent: 20, percent: 15)], // +15% damage under 20% HP
+  ),
+  (
+    id: "chm_lantern_moth", name: "Lantern Moth Charm",
+    effects: [FpRegen(every_ticks: 60, amount: 1)], // 1 FP every 2 seconds (30 ticks a second)
+  ),
+  (
+    id: "chm_rimeward", name: "Rimeward Charm",
+    effects: [Resist(kind: Robustness, amount: 60)], // +60 Robustness
+  ),
+  (
+    id: "chm_clearblood", name: "Clearblood Charm",
+    effects: [Resist(kind: Immunity, amount: 60)], // +60 Immunity
+  ),
+]

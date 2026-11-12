@@ -47,6 +47,7 @@ use super::resolve::{self, Landing};
 use crate::actor::Actor;
 use crate::arena::Id;
 use crate::events::{Event, ProjectileEvent, ProjectileEventKind};
+use crate::items::gear;
 use crate::math::dmath::{atan2, cos, lerp, sin, sqrt};
 use crate::world::{DT, World};
 
@@ -297,6 +298,18 @@ fn landing_for(
         counter,
         buff_percent: p.buff_percent,
     };
+    // The shooter's gear scales the damage (WP-057): Ember Locket, Last Stand, and the
+    // Formula bonus.
+    let dealt = damage::damage(&world.damage.rules, &hit, &target.stats.defense);
+    let dealt = world.actors.get(p.shooter).map_or(dealt, |s| {
+        gear::outgoing(
+            s,
+            &world.items.gear,
+            &hit,
+            dealt,
+            crate::ai::special::reflect::is_formula(def),
+        )
+    });
     // The knockback direction is the way the projectile was flying, flattened.
     let flat = [heading[0], 0.0, heading[2]];
     let dir = if len(flat) > EPS {
@@ -319,7 +332,7 @@ fn landing_for(
         charge_frac: 0.0,
         point,
         dir,
-        damage: damage::damage(&world.damage.rules, &hit, &target.stats.defense),
+        damage: dealt,
         counter,
         poise_damage: u32::from(def.poise_damage),
         unblockable: def.tags.contains(&HitTag::Unblockable),
@@ -503,7 +516,12 @@ pub fn spawn(
     move_num: MoveNum,
     spawn: &ProjectileSpawn,
 ) -> Option<Id> {
-    let num = world.projectile_defs.num_of(&spawn.projectile)?;
+    // A bow's shot takes the arrow slot's ammunition, if any (WP-057).
+    let ammo = crate::items::usage::take_ammo(world, shooter, &spawn.projectile);
+    let (name, elem_percent) = ammo
+        .as_ref()
+        .map_or((spawn.projectile.as_str(), 0), |(n, e)| (n.as_str(), *e));
+    let num = world.projectile_defs.num_of(name)?;
     let def = world.projectile_defs.get(num)?;
     let a = world.actors.get(shooter)?;
     let origin = Pose {
@@ -530,6 +548,13 @@ pub fn spawn(
         // An enemy has no weapon: its definition's attack rating (WP-032).
         .or_else(|| crate::ai::attack::rating(world, a))
         .unwrap_or_default();
+    // Special ammunition adds its element at a share of the physical attack rating.
+    let mut ar = ar;
+    if let Some(e) = def.element
+        && elem_percent > 0
+    {
+        ar.elem_milli[gear::element_index(e)] = ar.phys_milli * u64::from(elem_percent) / 100;
+    }
     let p = Projectile {
         def: num,
         shooter,
@@ -615,6 +640,10 @@ fn advance(world: &mut World) {
                 ended,
             );
         }
+        // A bursting projectile (the Pitch Bomb) also hits what stands near where it ended.
+        if let Some((_, at)) = step.end {
+            burst(world, step.id, &mut p, at, &mut landed);
+        }
         match step.end {
             Some((End::Impact, at)) => {
                 emit(
@@ -664,6 +693,55 @@ fn advance(world: &mut World) {
         {
             a.dead = true;
         }
+    }
+}
+
+/// The burst of a projectile whose definition has an `area_radius_m` (WP-057): every actor
+/// within that many meters of `at` that it hasn't struck takes the hit, in arena order.
+/// A burst ignores cover; the shooter and its allies aren't hurt.
+fn burst(world: &mut World, pid: Id, p: &mut Projectile, at: V3, landed: &mut Vec<Id>) {
+    let Some(def) = world.projectile_defs.get(p.def) else {
+        return;
+    };
+    let radius = def.area_radius_m;
+    if radius <= 0.0 {
+        return;
+    }
+    let shooter = world.actors.get(p.shooter);
+    let mut hits: Vec<(Id, Landing)> = Vec::new();
+    for (id, t) in world.actors.iter() {
+        if t.dead
+            || id == p.shooter
+            || p.struck.binary_search(&id).is_ok()
+            || shooter.is_some_and(|s| crate::ai::attack::allied(s, t))
+        {
+            continue;
+        }
+        let c = t.hurtbox.capsule(t.pos);
+        let d = sub(midpoint(c.a, c.b), at);
+        if dot(d, d) <= radius * radius {
+            hits.push((id, landing_for(world, p, def, t, id, at, [0.0; 3])));
+        }
+    }
+    for (id, l) in hits {
+        if !resolve::apply_landing(world, &l) {
+            continue;
+        }
+        landed.push(id);
+        if let Err(i) = p.struck.binary_search(&id) {
+            p.struck.insert(i, id);
+        }
+        // `ended` is false: the projectile's own end event follows.
+        let snapshot = p.clone();
+        emit(
+            world,
+            ProjectileEventKind::Struck,
+            pid,
+            &snapshot,
+            Some(id),
+            l.point,
+            false,
+        );
     }
 }
 

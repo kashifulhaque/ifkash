@@ -4,8 +4,10 @@
 
 use serde::{Deserialize, Serialize};
 
-/// What an item is. Only the flasks, Wick Bead, and Flask Dew have effects in the
-/// simulation so far; the other kinds are inventory entries until WP-057 gives them effects.
+use crate::moves::StatusKind;
+
+/// What an item is. The kind says where it can go (a quick slot, the arrow slot); the
+/// item's [`ItemEffect`] says what using it does.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum ItemKind {
     /// The HP flask. Charges are shared with the Lucid Flask, so it has no stack.
@@ -26,6 +28,47 @@ pub enum ItemKind {
     Key,
 }
 
+/// What using an item does (WP-057). `phys` and `elem` are attack rating in whole
+/// points, so a thrown item's damage doesn't scale with the thrower's weapon.
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub enum ItemEffect {
+    /// Nothing happens on use (flasks, pickups, keys, and items nobody has wired yet).
+    #[default]
+    None,
+    /// Throw a projectile that deals `phys` physical and `elem` elemental damage; the
+    /// projectile definition says which type and element, and its status buildup.
+    Throw {
+        projectile: String,
+        phys: u32,
+        elem: u32,
+    },
+    /// Put the weapon buff `buff` on the player's weapon.
+    Oil { buff: String },
+    /// Clear the meters and effects of these statuses.
+    Cure { kinds: Vec<StatusKind> },
+    /// Add Glimmer.
+    Glimmer { amount: u32 },
+    /// Return to the last Lantern rested at.
+    LanternAsh,
+    /// Ammunition: a bow fires `projectile` instead of its arrow while this item sits in
+    /// the arrow slot. `elem_percent` adds the projectile's element at that percent of
+    /// the shooter's physical attack rating.
+    Ammo {
+        projectile: String,
+        elem_percent: u8,
+    },
+}
+
+impl ItemEffect {
+    /// The projectile ID this effect names, if any.
+    pub fn projectile(&self) -> Option<&str> {
+        match self {
+            Self::Throw { projectile, .. } | Self::Ammo { projectile, .. } => Some(projectile),
+            _ => None,
+        }
+    }
+}
+
 /// One item.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -36,6 +79,9 @@ pub struct Item {
     /// The most the inventory holds. 0 for items with no stack (the flasks, and the
     /// pickups that apply on the spot).
     pub stack: u16,
+    /// What using it does. Omitted for items with no effect.
+    #[serde(default)]
+    pub effect: ItemEffect,
 }
 
 /// Flask numbers (docs/game/06-progression-and-systems.md, "Flasks"; docs/game/03-combat.md,
@@ -115,6 +161,31 @@ impl Consumables {
             );
             if stackable && item.stack == 0 {
                 out.push((format!("items[{i}].stack"), "must be at least 1".to_owned()));
+            }
+            // WP-057: a usable kind needs the matching effect, and other kinds none.
+            let consistent = match (item.kind, &item.effect) {
+                (ItemKind::Throwable, ItemEffect::Throw { .. })
+                | (ItemKind::WeaponBuff, ItemEffect::Oil { .. })
+                | (ItemKind::Cure, ItemEffect::Cure { .. })
+                | (ItemKind::Glimmer, ItemEffect::Glimmer { .. })
+                | (ItemKind::LanternAsh, ItemEffect::LanternAsh)
+                | (ItemKind::Ammunition, ItemEffect::Ammo { .. }) => true,
+                (
+                    ItemKind::Throwable
+                    | ItemKind::WeaponBuff
+                    | ItemKind::Cure
+                    | ItemKind::Glimmer
+                    | ItemKind::LanternAsh
+                    | ItemKind::Ammunition,
+                    _,
+                ) => false,
+                (_, e) => *e == ItemEffect::None,
+            };
+            if !consistent {
+                out.push((
+                    format!("items[{i}].effect"),
+                    "doesn't match the item's kind".to_owned(),
+                ));
             }
         }
         for (field, id, want) in [

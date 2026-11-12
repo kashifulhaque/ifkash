@@ -347,6 +347,8 @@ pub fn add_buildup(world: &mut World, target: Id, kind: StatusKind, milli: u64) 
         status: kind,
         damage,
     }));
+    // Thornheart and the like react to a proc near the wearer (WP-057).
+    crate::items::gear::on_status_proc(world, target, kind);
     true
 }
 
@@ -1094,6 +1096,7 @@ mod tests {
             status: Vec::new(),
             duration_ticks: 100,
             vfx: "test".to_owned(),
+            element: None,
         });
         w.status.buffs.push((num, i));
         w.status.buffs.sort_by_key(|(n, _)| *n);

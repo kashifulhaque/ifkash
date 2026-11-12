@@ -1,7 +1,8 @@
 //! Item definitions from `consumables.ron`, with every ID resolved to its registry number.
 //! Built from content, so it's not hashed: the content hash covers it.
 
-use lf_content::{Content, ItemKind, NumId};
+use super::gear::GearTable;
+use lf_content::{Content, ItemEffect, ItemKind, NumId};
 use serde::{Deserialize, Serialize};
 
 /// One item.
@@ -13,6 +14,8 @@ pub struct ItemDef {
     pub kind: ItemKind,
     /// The most the inventory holds; 0 for the flasks and the on-the-spot pickups.
     pub stack: u16,
+    /// What using it does (WP-057).
+    pub effect: ItemEffect,
 }
 
 /// Flask numbers with the item and move references resolved. See
@@ -34,6 +37,9 @@ pub struct FlaskRules {
     pub fp_per_level: u16,
     pub effect_frame: u16,
     pub walk_percent: u8,
+    /// The items other than the flasks that `USE_ITEM` uses on the same drink move
+    /// (throwables, oils, cures, Glimmer vials, Lantern Ash), sorted (WP-057).
+    pub usable: Vec<NumId>,
 }
 
 impl FlaskRules {
@@ -50,6 +56,21 @@ impl FlaskRules {
                 .ok_or_else(|| format!("\"{id}\" is missing from registry.ron"))
         };
         let f = &c.flask;
+        let mut usable = Vec::new();
+        for i in &c.items {
+            if matches!(
+                i.kind,
+                ItemKind::Throwable
+                    | ItemKind::WeaponBuff
+                    | ItemKind::Cure
+                    | ItemKind::Glimmer
+                    | ItemKind::LanternAsh
+            ) && i.effect != ItemEffect::None
+            {
+                usable.push(num(&i.id)?);
+            }
+        }
+        usable.sort_unstable();
         Ok(Some(Self {
             vigil: num(&f.vigil)?,
             lucid: num(&f.lucid)?,
@@ -66,12 +87,13 @@ impl FlaskRules {
             fp_per_level: f.fp_per_level,
             effect_frame: f.effect_frame,
             walk_percent: f.walk_percent,
+            usable,
         }))
     }
 }
 
-/// Every item in the content, plus the weapons (for equip checks).
-#[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+/// Every item in the content, plus the weapons (for equip checks) and the gear.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ItemTable {
     /// Sorted by `num`.
     defs: Vec<ItemDef>,
@@ -82,6 +104,8 @@ pub struct ItemTable {
     /// The weapon the player starts with: the first in the content (file and list order).
     pub default_weapon: Option<NumId>,
     pub flask: Option<FlaskRules>,
+    /// Charms and armor (WP-057).
+    pub gear: GearTable,
 }
 
 impl ItemTable {
@@ -101,6 +125,7 @@ impl ItemTable {
                     name: i.name.clone(),
                     kind: i.kind,
                     stack: i.stack,
+                    effect: i.effect.clone(),
                 });
             }
         }
@@ -121,6 +146,7 @@ impl ItemTable {
             weights,
             default_weapon,
             flask: FlaskRules::from_content(content)?,
+            gear: GearTable::from_content(content)?,
         })
     }
 

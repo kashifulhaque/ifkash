@@ -7,12 +7,12 @@
 //! [`Inventory::equip`] and [`Inventory::unequip`] the commands use, so what it says can
 //! fit is exactly what the command would accept.
 //!
-//! Equip load counts the weapons in all four hand slots plus the armor stub
-//! (`stub_armor_weight_tenths`) until armor exists. The roll tier the simulation uses is
-//! still the per-moveset stub in `combat::moves`, so it doesn't follow equipment changes
-//! yet; the preview shows the tier the spec's rule gives.
+//! Equip load counts the weapons in all four hand slots plus the armor (the stub,
+//! `stub_armor_weight_tenths`, while none is worn), and the maximum includes Ox Charm (see
+//! `gear`). The roll tier the simulation uses follows armor and charm changes
+//! (`gear::refresh`); the preview shows the tier the spec's rule gives for the new loadout.
 
-use super::{Inventory, slot};
+use super::{Inventory, gear};
 use crate::combat::dodge::{LoadTier, load_tier};
 use crate::world::World;
 
@@ -47,22 +47,12 @@ pub fn loadout_stats(world: &World, inv: &Inventory) -> Option<LoadoutStats> {
         }
         None => (0, false),
     };
-    let hands = &eq.slots[usize::from(slot::RIGHT_1)..=usize::from(slot::LEFT_2)];
-    let weapons: u32 = hands
-        .iter()
-        .flatten()
-        .map(|&n| u32::from(world.items.weight_tenths(n)))
-        .sum();
-    let load = weapons + u32::from(world.locomotion.stub_armor_weight_tenths);
-    let max = world
-        .attributes
-        .max_equip_load_tenths(p.stats.attrs.endurance)
-        .max(0) as u32;
+    let load = gear::load_tenths(world, inv);
+    let max = gear::max_load_tenths(world, p.stats.attrs.endurance, inv);
     Some(LoadoutStats {
         ar_phys_milli: ar,
         unwieldy,
-        // Index 0 is `DamageType::Neutral`, the stub's single physical defense.
-        defense: p.stats.defense.flat[0],
+        defense: gear::defense_physical(world, inv),
         load_tenths: load,
         max_load_tenths: max,
         tier: load_tier(load, max, &world.locomotion.equip_load),
@@ -96,6 +86,7 @@ pub fn preview_equip(world: &World, slot: u8, item: u32) -> Option<(bool, Loadou
 mod tests {
     use lf_content::Content;
 
+    use super::super::slot;
     use super::*;
 
     fn field() -> World {

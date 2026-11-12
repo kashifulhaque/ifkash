@@ -140,6 +140,8 @@ fn hash_ignores_comments_and_whitespace() {
             .with_consumables(Some(&format!("// noise\n{}", read("consumables.ron"))))?
             .with_projectiles(Some(&format!("// noise\n{}", read("projectiles.ron"))))?
             .with_status(Some(&format!("// noise\n{}", read("status.ron"))))?
+            .with_charms(Some(&format!("// noise\n{}", read("charms.ron"))))?
+            .with_armor(Some(&format!("// noise\n{}", read("armor.ron"))))?
             .with_enemies(
                 Some(&format!("// noise\n{}", read("ai.ron"))),
                 ron_files("enemies")

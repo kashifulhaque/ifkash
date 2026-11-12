@@ -55,5 +55,18 @@
       id: "buf_rallying_roar", slot: Body, damage_percent: 115,
       status: [], duration_ticks: 900, vfx: "roar_rally",
     ), // Rallying Roar: +15% damage, 900 ticks (its +20% poise isn't modelled yet)
+    // WP-057: the elemental oils and Thornheart's buff.
+    (
+      id: "buf_pitch_oil", slot: Weapon, damage_percent: 100,
+      status: [], duration_ticks: 900, vfx: "oil_pitch", element: Some((Fire, 20)),
+    ), // Pitch Oil: Fire at 20% of AR, 900 ticks
+    (
+      id: "buf_spark_oil", slot: Weapon, damage_percent: 100,
+      status: [], duration_ticks: 900, vfx: "oil_spark", element: Some((Storm, 20)),
+    ), // Spark Oil: Storm at 20% of AR, 900 ticks
+    (
+      id: "buf_thornheart", slot: Body, damage_percent: 112,
+      status: [], duration_ticks: 600, vfx: "charm_thornheart",
+    ), // Thornheart: +12% damage for 600 ticks after a Rupture proc near you
   ],
 )

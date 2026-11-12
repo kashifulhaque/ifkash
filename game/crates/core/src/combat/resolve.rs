@@ -39,6 +39,8 @@ use serde::{Deserialize, Serialize};
 use lf_content::GuardStats;
 use lf_content::moves::HitTag;
 
+use crate::items::gear;
+
 use super::damage::{self, Damage};
 use super::dodge;
 use super::guard::{self, IncomingHit};
@@ -179,7 +181,22 @@ fn dir_xz(from: [f32; 3], to: [f32; 3], fallback: [f32; 3]) -> [f32; 3] {
 pub(crate) fn apply_landing(world: &mut World, l: &Landing) -> bool {
     // The player's guard comes from its weapon; an enemy's from its definition.
     let guard_stats = if l.target == world.player {
-        world.moves.player_moveset.as_ref().map(|m| m.guard)
+        world.moves.player_moveset.as_ref().map(|m| {
+            let mut g = m.guard;
+            // Bulwark Charm: a block costs less stamina. The cost is `poise_damage * 100 /
+            // guard_boost`, so a larger boost is a smaller cost (WP-057).
+            let less = world.actors.get(l.target).map_or(0, |p| {
+                world
+                    .items
+                    .gear
+                    .guard_stamina_reduce_percent(&p.inventory.equipment)
+            });
+            if less > 0 && less < 100 {
+                g.guard_boost = u16::try_from(u32::from(g.guard_boost) * 100 / (100 - less))
+                    .unwrap_or(u16::MAX);
+            }
+            g
+        })
     } else {
         world
             .actors
@@ -422,6 +439,16 @@ pub fn run(world: &mut World) {
             counter,
             buff_percent: a.stats.buff_percent,
         };
+        // An oil on the weapon adds its element; the attacker's gear scales the damage
+        // (WP-057).
+        let hit = gear::weapon_element(a, &world.status, hit);
+        let dealt = gear::outgoing(
+            a,
+            &world.items.gear,
+            &hit,
+            damage::damage(&world.damage.rules, &hit, &t.stats.defense),
+            false,
+        );
         landings.push(Landing {
             attacker: cand.attacker,
             target: cand.target,
@@ -431,7 +458,7 @@ pub fn run(world: &mut World) {
             charge_frac,
             point: cand.point,
             dir: dir_xz(a.pos, t.pos, pose(a).forward()),
-            damage: damage::damage(&world.damage.rules, &hit, &t.stats.defense),
+            damage: dealt,
             counter,
             poise_damage: u32::from(hb.poise_damage),
             unblockable: hb.tags.contains(&HitTag::Unblockable),

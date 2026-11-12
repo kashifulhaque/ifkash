@@ -1,6 +1,9 @@
-//! Hit resolution. Empty until a later work package fills it in.
+//! Hit resolution: active hitboxes against hurtboxes (see `combat::resolve::run`).
 
+use crate::combat::resolve;
 use crate::input::TickInput;
 use crate::world::World;
 
-pub fn run(_world: &mut World, _input: &TickInput) {}
+pub fn run(world: &mut World, _input: &TickInput) {
+    resolve::run(world);
+}

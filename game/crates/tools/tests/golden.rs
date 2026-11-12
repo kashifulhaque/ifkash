@@ -173,3 +173,48 @@ fn m1_movement_route_does_what_it_says() {
         p.pos
     );
 }
+
+/// The WP-021 golden: the three-hit light chain against the training dummy lands exactly
+/// three hits, one per light, all on `dummy_ahead`.
+#[test]
+fn m2_three_hit_chain_lands_exactly_three_hits() {
+    use lf_core::events::Event;
+    use lf_core::input::TickInput;
+    use lf_core::{World, tick};
+
+    let content = content();
+    let replay =
+        Replay::decode(&std::fs::read(replays_dir().join("m2_three_hit_chain.lfr")).unwrap())
+            .unwrap();
+    assert_eq!(replay.header.scenario, "test_field");
+    let mut w = World::new(replay.header.seed, &content, "test_field").unwrap();
+    let dummy = w
+        .actors
+        .iter()
+        .find(|(_, a)| a.pos == [0.0, 0.0, 6.0])
+        .map(|(id, _)| id)
+        .expect("dummy_ahead");
+    let mut hits = Vec::new();
+    for frame in expand(&replay.frames) {
+        tick(
+            &mut w,
+            &TickInput {
+                frame,
+                commands: Vec::new(),
+            },
+        );
+        for event in w.events.drain() {
+            match event {
+                Event::Hit(h) => hits.push(h),
+            }
+        }
+    }
+    assert_eq!(hits.len(), 3, "{hits:?}");
+    let chain: Vec<_> = ["ss_light_1", "ss_light_2", "ss_light_3"]
+        .iter()
+        .map(|id| w.moves.num_of(id).unwrap())
+        .collect();
+    for (h, &num) in hits.iter().zip(&chain) {
+        assert_eq!((h.attacker, h.target, h.move_num), (w.player, dummy, num));
+    }
+}

@@ -43,6 +43,10 @@ lf-tools replay record-script tests/replays/m1_movement.script --out tests/repla
   `m1_movement.script`. It walks, sprints up the slope, jumps the 1 m ledge, and walks
   off the 10 m drop. The `m1_movement_route_does_what_it_says` test in
   `game/crates/tools/tests/golden.rs` checks each of those happens.
+- `m2_three_hit_chain.lfr`: the WP-021 golden on `test_field`, recorded from
+  `m2_three_hit_chain.script`. The player walks up to `dummy_ahead` and attacks with
+  the three-hit light chain. The `m2_three_hit_chain_lands_exactly_three_hits` test
+  checks it produces exactly three `Hit` events, one per light.
 
 Rehash only when a change to the simulation or the content data is intended. Review the
 old and new final hash it prints, and commit the updated file with that change.

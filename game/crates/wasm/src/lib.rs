@@ -7,7 +7,8 @@
 //! Memory growth detaches `memory.buffer`, so re-create views after any call that can grow it.
 
 use lf_content::Content;
-use lf_core::snapshot::{ACTOR_SNAP_BYTES, ActorSnap, write_snapshot};
+use lf_core::events::Event;
+use lf_core::snapshot::{ACTOR_SNAP_BYTES, ActorSnap, pack_id, write_snapshot};
 use lf_core::{ActionFrame, Replay, TickInput, World, run_replay as core_run_replay, tick};
 use wasm_bindgen::prelude::*;
 
@@ -115,16 +116,31 @@ impl LfWorld {
         self.snapshot.len() as u32
     }
 
-    /// Drains queued events as a `Uint32Array`. The encoding will be `[kind, payload...]`
-    /// per event once the first `Event` variants land; the queue is always empty today.
+    /// Drains queued events as a `Uint32Array`: `[kind, payload...]` per event, with
+    /// `f32` values as their bit patterns.
+    ///
+    /// - Kind 1, `Hit`, 13 words: kind, attacker and target (`pack_id`), move number,
+    ///   hitbox index, motion value, charge fraction, contact point (3), and direction (3).
     pub fn drain_events(&mut self) -> Vec<u32> {
-        // `Event` has no variants yet, so this maps nothing; the match must grow with it.
-        self.world
-            .events
-            .drain()
-            .into_iter()
-            .map(|event| match event {})
-            .collect()
+        let mut out = Vec::new();
+        for event in self.world.events.drain() {
+            match event {
+                Event::Hit(h) => {
+                    out.extend([
+                        1,
+                        pack_id(h.attacker),
+                        pack_id(h.target),
+                        h.move_num,
+                        u32::from(h.hitbox),
+                        h.motion_value.to_bits(),
+                        h.charge_frac.to_bits(),
+                    ]);
+                    out.extend(h.point.map(f32::to_bits));
+                    out.extend(h.dir.map(f32::to_bits));
+                }
+            }
+        }
+        out
     }
 
     /// Ray query against the level. `origin` and `dir` are 3 floats each. Returns the

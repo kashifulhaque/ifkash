@@ -7,7 +7,9 @@ pub mod targeting;
 mod tests;
 
 use crate::arena::Id;
+use crate::combat::hurtbox::Hurtbox;
 use crate::combat::moves::MoveState;
+use crate::combat::resolve::HitState;
 use serde::{Deserialize, Serialize};
 
 /// One actor. Every field is simulation state and is part of the state hash.
@@ -33,6 +35,10 @@ pub struct Actor {
     pub lock_target: Option<Id>,
     /// The move being performed and the input buffer. See `combat::moves`.
     pub moves: MoveState,
+    /// The capsule this actor is hit on. See `combat::hurtbox`.
+    pub hurtbox: Hurtbox,
+    /// The sweep start and the targets the current move has hit. See `combat::resolve`.
+    pub hit: HitState,
 }
 
 /// Character controller state between ticks.

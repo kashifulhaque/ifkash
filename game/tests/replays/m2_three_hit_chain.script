@@ -1,0 +1,15 @@
+# WP-021 golden: the player hits the training dummy with the three-hit light chain
+# (record with `lf-tools replay record-script`). Each line: <ticks> <move_x> <move_z>
+# [BUTTONS]. The player spawns at the origin facing +Z; dummy_ahead stands at z = 6.
+# Walking 60 ticks at 1.6 m/s stops the player 2.8 m short of the dummy, so each light's
+# root motion carries it into range without passing through the dummy.
+seed 21
+scenario test_field
+60 0  30           # walk forward 3.2 m
+5  0  0            # stand
+1  0  0  LIGHT     # ss_light_1, frame 0
+15 0  0
+1  0  0  LIGHT     # frame 16: buffered, ss_light_2 starts on frame 21
+20 0  0
+1  0  0  LIGHT     # ss_light_2 frame 16: buffered, ss_light_3 starts on frame 21
+60 0  0            # ss_light_3 runs out; stand

@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 pub use crate::actor::Actor;
 use crate::actor::Motor;
 use crate::arena::{Arena, Id};
+use crate::combat::hurtbox::Hurtbox;
 use crate::combat::moves::MoveTable;
 use crate::events::EventQueue;
 use crate::physics::PhysicsState;
@@ -80,6 +81,7 @@ impl World {
         let max_stamina = attrs.max_stamina_tenths(locomotion.stub_endurance) as f32 / 10.0;
         let max_fp = attrs.max_fp_tenths(locomotion.stub_focus) as f32 / 10.0;
         let moves = MoveTable::from_content(content).map_err(WorldError::Moves)?;
+        let hurtbox = Hurtbox::from_locomotion(&locomotion);
         let mut actors = Arena::new();
         let player = actors.insert(Actor {
             pos: level.spawn,
@@ -97,6 +99,7 @@ impl World {
                 fall_peak_y: level.spawn[1],
                 ..Motor::default()
             },
+            hurtbox,
             ..Actor::default()
         });
         for d in &level.dummies {
@@ -111,6 +114,7 @@ impl World {
                     fall_peak_y: d.pos[1],
                     ..Motor::default()
                 },
+                hurtbox,
                 ..Actor::default()
             });
         }

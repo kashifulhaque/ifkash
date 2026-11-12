@@ -30,18 +30,38 @@ Copy this block to the top of the entries and fill it in as you go:
 
 ### 2026-11-12: latticefall-m1 (M1)
 
-- **Orchestrator:** Opus 5.5, low effort
-- **Branch and PR:** `game/m1-movement`; PR not opened yet
+- **Orchestrator:** Opus 5.5, low effort; session `local_e9f21284-d98a-499d-989a-a9b9aee9498c`
+- **Branch and PR:** `game/m1-movement`; PR linked below once opened
 - **Started from:** `origin/main` at `daffff9` (M0 and the playbook are merged)
 - **WPs:**
-  - WP-010: in progress (opus)
-  - WP-011: in progress (sonnet, in its own worktree)
-  - WP-013: in progress (sonnet, in its own worktree). The owner approved downloading
-    the Quaternius Universal Animation Library, `@gltf-transform/cli`, and toktx.
-- **Context:** recorded as WPs finish (budget 500K)
-- **Not verified:** to be filled in
-- **Waiting on the owner:** to be filled in
-- **Next steps:** to be filled in
+  - WP-010: done by opus; commit `99b31ed`; 235K worker tokens
+  - WP-011: done by sonnet in its own worktree, merged in `543fdb4`, with a follow-up
+    fix for WP-010's new `Replay::record` signature; 126K worker tokens
+  - WP-013: review, by sonnet in its own worktree, merged in `9a34f77` (resolved a
+    `scene.ts` conflict with WP-011's camera); 215K worker tokens. The owner approved
+    downloading the Quaternius Universal Animation Library, `@gltf-transform/cli`, and
+    toktx.
+  - WP-012, WP-014, WP-015: not started (budget)
+- **Context:** orchestrator 163K + workers 576K = 739K total (budget 500K). The three
+  workers alone passed the hard stop, so this session stopped after verifying them.
+  The playbook's "6-10 WPs per session" estimate doesn't hold when worker tokens count:
+  two L workers and one M worker used 576K. Either raise the budget or count only the
+  orchestrator's context; that's the owner's call.
+- **Not verified:** WP-013 foot sliding in live motion; pointer lock and gamepad input
+  (WP-011 was checked with synthetic key events); x86 determinism (macOS arm64 only);
+  the `game` CI workflow on GitHub for this branch.
+- **Waiting on the owner:** review the WP-013 animation in motion
+  (`/game?engine=lf&anim=run&animcam=side`, then play with WASD) and set it to done or
+  send it back; decide the context-budget rule above; merge the PR.
+- **Next steps:**
+  1. Branch from `game/m1-movement` if the PR isn't merged, otherwise from `origin/main`.
+  2. Run WP-015 (haiku; it touches `actor/targeting.rs` and `test_field.ron`) and
+     WP-012 (sonnet; render/camera) in parallel. Agree on the snapshot's lock-target
+     field first: WP-012 reads what WP-015 writes. WP-012 must take over the orbit yaw
+     and pitch that WP-011 put in `engine/scene.ts`.
+  3. Then WP-014. Then stop at gate G1 with the numbers: WASM 356,445 bytes gzipped;
+     native bench 51,242 ticks/s on `test_field`; golden replays green on native, WASM,
+     and Python.
 
 ### 2026-11-12: latticefall-m0 (M0)
 

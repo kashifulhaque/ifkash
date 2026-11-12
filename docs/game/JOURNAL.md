@@ -28,6 +28,23 @@ Copy this block to the top of the entries and fill it in as you go:
 
 ## Entries
 
+### 2026-11-12: latticefall-m1b (M1: WP-015, WP-012, WP-014, gate G1)
+
+- **Orchestrator:** Opus 5.5, low effort; session started from `latticefall-m1`
+  (`local_e9f21284-d98a-499d-989a-a9b9aee9498c`)
+- **Branch:** `game/m1-camera`
+- **Started from:** `origin/main` at `a5d0e60`
+- **WPs:**
+  - WP-015: in progress. Moved up from haiku to sonnet: the card names one file, but the
+    work also changes the shared actor module, the tick systems, the snapshot flags, the
+    test field, and the golden replay hashes.
+  - WP-012: in progress (sonnet, own worktree, in parallel with WP-015)
+- **Snapshot contract for lock-on:** `ActorSnap.flags` bits follow the order in the
+  architecture doc: dead `1<<0`, staggered `1<<1`, guarding `1<<2`, invulnerable
+  `1<<3`, locked target `1<<4`, two-handing `1<<5`. The core sets `1<<4` on the actor
+  the player is locked on to; the camera reads it.
+- **Context:** running total kept here.
+
 ### 2026-11-12: latticefall-m1 (M1)
 
 - **Orchestrator:** Opus 5.5, low effort; session `local_e9f21284-d98a-499d-989a-a9b9aee9498c`

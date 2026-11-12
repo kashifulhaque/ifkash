@@ -48,7 +48,9 @@ Copy this block to the top of the entries and fill it in as you go:
   - WP-024: in progress (sonnet), main checkout
   - WP-027: in progress (sonnet), worktree
   - WP-028: in progress (sonnet), worktree
-  - WP-029: in progress (sonnet), worktree
+  - WP-029: done by sonnet (no escalation) in a worktree; commit `f1922f8`; 211K worker
+    tokens. The orchestrator rebased it onto WP-023 (kept both sides in `world.rs` and
+    the WASM encoder; moved dummy defense into `dummy_actor`) and rehashed.
 - **Context:** orchestrator 126K + workers 181K = 307K after WP-020 (budget 500K).
   Started WP-022 rather than WP-021: an opus L worker would likely pass the hard stop.
   The owner then clarified the budget: 500K applies to each session and each agent

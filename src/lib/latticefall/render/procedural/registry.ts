@@ -10,8 +10,11 @@ import { huskDef } from './models/husk';
 import { skeletonDef } from './models/skeleton';
 import { thornHoundDef } from './models/thornHound';
 
-/** Registry number of the B01 enemy definition (block 9010-9019 is reserved for B01). */
-export const B01_KIND = 9010;
+/**
+ * Registry number of B01's body: `b01_hollow_sentry_body`. The boss definition
+ * (`b01_hollow_sentry`, 9010) isn't an actor; the snapshot carries the body's enemy number.
+ */
+export const B01_KIND = 9011;
 
 const defs = new Map<number, ModelDef>([
   [7000, huskDef('husk')],

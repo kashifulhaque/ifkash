@@ -377,6 +377,9 @@ fn m2_parry_riposte_parries_then_ripostes() {
             Event::Revive(_) => "revive",
             Event::Boss(_) => "boss",
             Event::Pickup(_) => "pickup",
+            Event::Mechanic(_) => "mechanic",
+            Event::Loot(_) => "loot",
+            Event::Message(_) => "message",
         })
         .collect();
     assert_eq!(kinds, ["parry", "critical", "hit"], "{events:?}");

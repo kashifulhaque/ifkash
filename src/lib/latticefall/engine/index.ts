@@ -135,6 +135,7 @@ export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions
       tools.recordTick(performance.now() - t0);
     } else world.tick(frame);
     snapshots.push();
+    if (view.props.active) view.props.setState(world.mechanics_state());
     const hudState = parseHud(world.hud_state(), names);
     lastPrompt = hudState.prompt;
     opts.hud?.state(hudState);

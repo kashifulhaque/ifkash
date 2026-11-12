@@ -30,6 +30,10 @@ pub struct PickupSpot {
     pub pos: [f32; 3],
     pub radius_m: f32,
     pub codex: Option<String>,
+    /// How many of the item (WP-042).
+    pub count: u16,
+    /// Taken with `INTERACT` instead of by walking up (WP-042).
+    pub interact: bool,
 }
 
 /// Flag name for "this pickup has been taken".
@@ -54,13 +58,53 @@ pub fn extend_layout(
             pos: p.pos,
             radius_m: p.radius_m,
             codex: p.codex.clone(),
+            count: p.count.max(1),
+            interact: p.interact,
         });
     }
     Ok(())
 }
 
-/// Part of tick system 10 (`systems::world_logic`): takes every untaken pickup the living
-/// player is standing within reach of.
+/// Takes pickup `i`: puts the item in the inventory if the item table knows it (a relic
+/// or page is only a flag and an event), raises the flags, and emits the event. Returns
+/// false, taking nothing, if the inventory can't hold the item or it was already taken.
+pub fn take(world: &mut World, i: usize) -> bool {
+    let Some(s) = world.layout.pickups.get(i) else {
+        return false;
+    };
+    let (id, item, count, codex) = (s.id.clone(), s.item, s.count, s.codex.clone());
+    let flag = taken_flag(&id);
+    if world.state.flags.is_set(&flag) {
+        return false;
+    }
+    if world.items.get(item).is_some() || world.items.is_weapon(item) {
+        let player = world.player;
+        let Some(p) = world.actors.get_mut(player) else {
+            return false;
+        };
+        let took = if world.items.is_weapon(item) {
+            u16::from(p.inventory.give_gear(item))
+        } else {
+            p.inventory.pick_up(item, count, &world.items)
+        };
+        if took == 0 {
+            return false;
+        }
+    }
+    world.state.flags.raise(&flag);
+    if let Some(entry) = codex {
+        world.state.flags.raise(&flags::codex(&entry));
+    }
+    world.events.push(Event::Pickup(PickupEvent {
+        index: i as u16,
+        item,
+    }));
+    true
+}
+
+/// Part of tick system 10 (`systems::world_logic`): takes every untaken walk-up pickup
+/// (not an `interact` one; see `world_state::mechanics`) the living player is standing
+/// within reach of.
 pub fn run(world: &mut World) {
     if world.layout.pickups.is_empty() {
         return;
@@ -77,19 +121,9 @@ pub fn run(world: &mut World) {
         let (dx, dz) = (s.pos[0] - feet[0], s.pos[2] - feet[2]);
         let near = dx * dx + dz * dz <= s.radius_m * s.radius_m
             && (s.pos[1] - feet[1]).abs() <= REACH_HEIGHT_M;
-        let flag = taken_flag(&s.id);
-        if !near || world.state.flags.is_set(&flag) {
-            continue;
+        if near && !s.interact {
+            take(world, i);
         }
-        let (item, codex) = (s.item, s.codex.clone());
-        world.state.flags.raise(&flag);
-        if let Some(entry) = codex {
-            world.state.flags.raise(&flags::codex(&entry));
-        }
-        world.events.push(Event::Pickup(PickupEvent {
-            index: i as u16,
-            item,
-        }));
     }
 }
 

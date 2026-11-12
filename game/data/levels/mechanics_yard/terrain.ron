@@ -1,0 +1,5 @@
+// Flat ground; every raised feature in the yard is a greybox block (see layout.ron).
+(
+  spacing_m: 2.0,
+  base_y: 0.0,
+)

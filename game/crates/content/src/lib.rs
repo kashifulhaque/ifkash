@@ -474,6 +474,22 @@ const EMBEDDED_KITS: &[(&str, &str)] = &[
 /// Level files as `(levels/<area>/<file>, text)`.
 const EMBEDDED_LEVELS: &[(&str, &str)] = &[
     (
+        "levels/mechanics_yard/area.ron",
+        include_str!("../../../data/levels/mechanics_yard/area.ron"),
+    ),
+    (
+        "levels/mechanics_yard/terrain.ron",
+        include_str!("../../../data/levels/mechanics_yard/terrain.ron"),
+    ),
+    (
+        "levels/mechanics_yard/layout.ron",
+        include_str!("../../../data/levels/mechanics_yard/layout.ron"),
+    ),
+    (
+        "levels/mechanics_yard/entities.ron",
+        include_str!("../../../data/levels/mechanics_yard/entities.ron"),
+    ),
+    (
         "levels/test_field/area.ron",
         include_str!("../../../data/levels/test_field/area.ron"),
     ),
@@ -944,6 +960,17 @@ impl Content {
             self.check_id(&format!("{dir}/area.ron"), "id".to_owned(), &lvl.area.id)?;
             lvl.check(name, &index).map_err(err)?;
             let scenario = lvl.compile(&index).map_err(err)?;
+            let entities = format!("{dir}/entities.ron");
+            for c in &scenario.chests {
+                if let Some(item) = &c.loot.item {
+                    self.check_id(&entities, format!("chest {}: loot.item", c.id), item)?;
+                }
+            }
+            for d in &scenario.doors {
+                if let scenario::DoorKind::Keyed(key) = &d.kind {
+                    self.check_id(&entities, format!("door {}: key", d.id), key)?;
+                }
+            }
             if self.scenario(name).is_some() {
                 return Err(err(format!(
                     "{SCENARIOS_DIR}/{name}.ron already defines a scenario with this name"

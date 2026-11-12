@@ -74,6 +74,7 @@
     (id: "itm_arrows_storm", num: 4019),
     (id: "itm_wick_bead", num: 4020),
     (id: "itm_flask_dew", num: 4021),
+    (id: "itm_yard_key", num: 4500), // WP-042: key items are the 4500s
 
     (id: "proj_arrow", num: 5000),
     (id: "proj_seeker_bolt", num: 5001),
@@ -214,5 +215,6 @@
 
     // 12000-12099: portfolio pickups (WP-049). 12000 is the stub relic on the test field.
     (id: "relic_test_stub", num: 12000),
+    (id: "mechanics_yard", num: 10500), // WP-042: the 10500s are world mechanics
   ],
 )

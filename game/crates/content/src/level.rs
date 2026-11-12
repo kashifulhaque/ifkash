@@ -13,7 +13,9 @@
 //! - `layout.ron` ([`Layout`], optional): kit pieces snapped to the 2-meter grid, plus
 //!   freely placed and scaled landmarks.
 //! - `entities.ron` ([`Entities`], required): the player spawn and a list of [`Entity`]
-//!   values: Lanterns, dummies, enemies, bosses with their fog gates, water, and reeds.
+//!   values: Lanterns, dummies, enemies, bosses with their fog gates, water, reeds, and the
+//!   world mechanics (ladders, lifts, doors, levers, hollow walls, pickups, chests,
+//!   messages, pools, and snow).
 //! - `dressing.ron` ([`Dressing`], optional): scatter rules and a few hand-placed props.
 //!
 //! Kit catalogs live in `kits/<name>.ron` ([`KitCatalog`]). Each piece has a model path
@@ -41,10 +43,11 @@
 //!
 //! # Extending
 //!
-//! A new entity kind (ladders, lifts, doors, levers, hollow walls, pickups, chests,
-//! messages) is a new [`Entity`] variant, a line in [`Entity::kind`], [`Entity::label`],
-//! and [`Entity::anchor`] (so the bake checks it), and whatever [`Level::compile`] has to
-//! hand the core. A new sculpt operation is a new [`Sculpt`] variant and a match arm in
+//! A new entity kind is a new [`Entity`] variant, a line in [`Entity::kind`],
+//! [`Entity::label`], and [`Entity::anchor`] (so the bake checks it), and whatever
+//! [`Level::compile`] has to hand the core (a list on [`Scenario`]). WP-042 added the world
+//! mechanics this way: ladders, lifts, doors, levers, hollow walls, pickups, chests,
+//! messages, pools, and snow. A new sculpt operation is a new [`Sculpt`] variant and a match arm in
 //! [`Sculpt::apply`].
 
 use std::collections::BTreeMap;
@@ -53,7 +56,8 @@ use serde::{Deserialize, Serialize};
 
 use crate::Scenario;
 use crate::scenario::{
-    BossSpawn, BoxCollider, Dummy, EnemySpawn, Heightfield, Lantern, Pickup, Zone,
+    BossSpawn, BoxCollider, Chest, Door, Dummy, EnemySpawn, Heightfield, HollowWall, Ladder,
+    Lantern, Lever, LeverTarget, Lift, Message, Pickup, Pool, Zone,
 };
 
 /// The files an area directory can hold, in load order.
@@ -793,6 +797,24 @@ pub enum Entity {
     Reeds(Zone),
     /// An item lying in the level that unlocks a codex entry (WP-049).
     Pickup(Pickup),
+    /// A ladder (WP-042).
+    Ladder(Ladder),
+    /// A lift: a platform between two stops, called by a lever at each (WP-042).
+    Lift(Lift),
+    /// A locked, one-way, or keyed door (WP-042).
+    Door(Door),
+    /// A lever that works a door, a lift, or a pool's water level (WP-042).
+    Lever(Lever),
+    /// A wall one hit reveals a passage in (WP-042).
+    HollowWall(HollowWall),
+    /// A treasure chest (WP-042).
+    Chest(Chest),
+    /// An authored ground message (WP-042).
+    Message(Message),
+    /// A pool of water: shallow slows, deep blocks, blight builds Blight (WP-042).
+    Pool(Pool),
+    /// Deep snow: slows and costs more stamina to sprint through (WP-042).
+    Snow(Zone),
 }
 
 impl Entity {
@@ -806,6 +828,15 @@ impl Entity {
             Self::Water(_) => "Water",
             Self::Reeds(_) => "Reeds",
             Self::Pickup(_) => "Pickup",
+            Self::Ladder(_) => "Ladder",
+            Self::Lift(_) => "Lift",
+            Self::Door(_) => "Door",
+            Self::Lever(_) => "Lever",
+            Self::HollowWall(_) => "HollowWall",
+            Self::Chest(_) => "Chest",
+            Self::Message(_) => "Message",
+            Self::Pool(_) => "Pool",
+            Self::Snow(_) => "Snow",
         }
     }
 
@@ -816,8 +847,16 @@ impl Entity {
             Self::Dummy(d) => &d.name,
             Self::Enemy(e) => &e.name,
             Self::Boss(b) => &b.name,
-            Self::Water(z) | Self::Reeds(z) => &z.name,
             Self::Pickup(p) => &p.id,
+            Self::Water(z) | Self::Reeds(z) | Self::Snow(z) => &z.name,
+            Self::Ladder(l) => &l.id,
+            Self::Lift(l) => &l.id,
+            Self::Door(d) => &d.id,
+            Self::Lever(l) => &l.id,
+            Self::HollowWall(w) => &w.id,
+            Self::Chest(c) => &c.id,
+            Self::Message(m) => &m.id,
+            Self::Pool(p) => &p.name,
         }
     }
 
@@ -831,7 +870,17 @@ impl Entity {
             Self::Enemy(e) => Some(e.pos),
             Self::Boss(b) => Some(b.pos),
             Self::Pickup(p) => Some(p.pos),
-            Self::Water(_) | Self::Reeds(_) => None,
+            Self::Ladder(l) => Some(l.pos),
+            Self::Lift(l) => Some([l.pos[0], l.bottom_y, l.pos[1]]),
+            Self::Lever(l) => Some(l.pos),
+            Self::Chest(c) => Some(c.pos),
+            Self::Message(m) => Some(m.pos),
+            Self::Water(_)
+            | Self::Reeds(_)
+            | Self::Snow(_)
+            | Self::Pool(_)
+            | Self::Door(_)
+            | Self::HollowWall(_) => None,
         }
     }
 
@@ -1221,6 +1270,23 @@ impl Level {
             }
             names.push(p.name);
         }
+        // A lift must never strand the player: both stops have a call lever
+        // (docs/game/02-world.md, "Traversal and world mechanics").
+        for e in &self.entities.entities {
+            let Entity::Lift(l) = e else { continue };
+            for stop in 0..=1u8 {
+                let called = self.entities.entities.iter().any(|o| {
+                    matches!(o, Entity::Lever(v) if matches!(&v.target,
+                        LeverTarget::Lift { id, stop: s } if id == &l.id && *s == stop))
+                });
+                if !called {
+                    return Err(format!(
+                        "entities.ron: lift {:?} has no lever that calls it to stop {stop}",
+                        l.id
+                    ));
+                }
+            }
+        }
         for (i, p) in self.dressing.props.iter().enumerate() {
             if kits.get(&p.kit).is_none() {
                 return Err(format!(
@@ -1422,6 +1488,15 @@ impl Level {
             water: Vec::new(),
             reeds: Vec::new(),
             pickups: Vec::new(),
+            ladders: Vec::new(),
+            lifts: Vec::new(),
+            doors: Vec::new(),
+            levers: Vec::new(),
+            hollow_walls: Vec::new(),
+            chests: Vec::new(),
+            messages: Vec::new(),
+            pools: Vec::new(),
+            snow: Vec::new(),
             start_glimmer: self.area.start_glimmer,
             player_weapon: self.area.player_weapon.clone(),
         };
@@ -1434,6 +1509,15 @@ impl Level {
                 Entity::Water(z) => sc.water.push(z.clone()),
                 Entity::Reeds(z) => sc.reeds.push(z.clone()),
                 Entity::Pickup(p) => sc.pickups.push(p.clone()),
+                Entity::Ladder(l) => sc.ladders.push(l.clone()),
+                Entity::Lift(l) => sc.lifts.push(l.clone()),
+                Entity::Door(d) => sc.doors.push(d.clone()),
+                Entity::Lever(l) => sc.levers.push(l.clone()),
+                Entity::HollowWall(w) => sc.hollow_walls.push(w.clone()),
+                Entity::Chest(c) => sc.chests.push(c.clone()),
+                Entity::Message(m) => sc.messages.push(m.clone()),
+                Entity::Pool(p) => sc.pools.push(p.clone()),
+                Entity::Snow(z) => sc.snow.push(z.clone()),
             }
         }
         sc.check().map_err(|e| format!("entities.ron: {e}"))?;

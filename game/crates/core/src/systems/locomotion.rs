@@ -7,7 +7,11 @@ use crate::world::World;
 
 pub fn run(world: &mut World, _input: &TickInput) {
     let id = world.player;
-    if let Some(actor) = world.actors.get_mut(id) {
+    crate::world_state::mechanics::before_locomotion(world);
+    // A player on a ladder is moved by the ladder (WP-042).
+    if !crate::world_state::mechanics::climbing(world)
+        && let Some(actor) = world.actors.get_mut(id)
+    {
         controller::step(actor, &world.physics, &world.locomotion);
     }
     // AI actors share the player's capsule and controller tuning. Scripted dummies stand.

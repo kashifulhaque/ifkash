@@ -21,6 +21,7 @@ use crate::nav::{NavGrid, NavQueue, bake::bake};
 use crate::physics::PhysicsState;
 use crate::rng::RngStreams;
 use crate::world_state::lantern::dummy_actor;
+use crate::world_state::mechanics::MechState;
 use crate::world_state::{Layout, WorldState};
 
 /// Seconds per tick (30 Hz).
@@ -71,6 +72,8 @@ pub struct World {
     pub bosses: Vec<BossRun>,
     /// Lanterns, the respawn point, the Remnant, and world flags (WP-029).
     pub state: WorldState,
+    /// Lifts and the ladder the player is on (WP-042). Hashed only while it isn't at rest.
+    pub mech: MechState,
     /// Drained by the host every tick; excluded from the state hash.
     pub events: EventQueue,
 }
@@ -126,6 +129,9 @@ struct HashView<'a> {
     /// Left out when the scenario has no boss, for the same reason as `projectiles`.
     #[serde(skip_serializing_if = "no_bosses")]
     bosses: &'a Vec<BossRun>,
+    /// Left out while the world mechanics are at rest, for the same reason.
+    #[serde(skip_serializing_if = "MechState::is_inert")]
+    mech: &'a MechState,
 }
 
 fn no_bosses(bosses: &&Vec<BossRun>) -> bool {
@@ -218,6 +224,7 @@ impl World {
         }
         let bosses = layout.bosses.iter().map(|_| BossRun::default()).collect();
         let state = WorldState::new(&layout, enemies, ai_enemies);
+        let mech = MechState::new(&layout);
         let physics = PhysicsState::new(scenario, level);
         // Enemies steer along nav paths, so a scenario with any gets its grid baked here
         // (in process: the bake is deterministic and quick for the small scenarios).
@@ -243,8 +250,10 @@ impl World {
             layout,
             bosses,
             state,
+            mech,
             events: EventQueue::default(),
         };
+        crate::world_state::mechanics::install(&mut world);
         if let Some(id) = &level.player_weapon {
             let weapon = content
                 .registry
@@ -287,6 +296,7 @@ impl World {
             state: &self.state,
             projectiles: &self.projectiles,
             bosses: &self.bosses,
+            mech: &self.mech,
         };
         let bytes = postcard::to_allocvec(&view).expect("world serialization cannot fail");
         xxhash_rust::xxh3::xxh3_64(&bytes)

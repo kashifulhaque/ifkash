@@ -22,6 +22,8 @@ pub enum ItemKind {
     WickBead,
     /// Picked up and used on the spot: raises both flasks' potency by one level.
     FlaskDew,
+    /// A key item: it sits in the inventory until a keyed door takes it (WP-042).
+    Key,
 }
 
 /// One item.

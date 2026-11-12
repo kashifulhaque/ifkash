@@ -22,6 +22,9 @@ export const EVENT_WORDS: Readonly<Record<number, number>> = {
   // Kinds 10 and 12 are reserved for other work packages.
   11: 4, // Boss: boss index, what happened, phase (WP-033)
   13: 3, // Revive: enemy, HP it got back up with (WP-032)
+  14: 3, // Mechanic: what happened, index of the door, lever, lift, ladder, or wall (WP-042)
+  15: 6, // Loot: source (1 chest), index, item, count, Glimmer (WP-042)
+  16: 2, // Message: index in the scenario's messages (WP-042)
   17: 3 // Pickup: index in the scenario's pickup list, item registry number (WP-049)
   // Kinds 2-9, 11, and 13 aren't decoded into events yet; the decoder skips them by length.
 };

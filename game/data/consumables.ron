@@ -44,5 +44,6 @@
     (id: "itm_arrows_storm", name: "Storm Arrows", kind: Ammunition, stack: 99),
     (id: "itm_wick_bead", name: "Wick Bead", kind: WickBead, stack: 0),
     (id: "itm_flask_dew", name: "Flask Dew", kind: FlaskDew, stack: 0),
+    (id: "itm_yard_key", name: "Yard Key", kind: Key, stack: 1), // WP-042: opens a keyed door
   ],
 )

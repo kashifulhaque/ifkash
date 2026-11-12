@@ -1,0 +1,45 @@
+// Mechanics yard entities. +X is to the player's left while facing +Z. Yaw is in radians
+// from +Z toward +X: 0 faces +Z, 3.1415927 faces -Z, 1.5707964 faces +X.
+(
+  spawn: (pos: (0.0, 0.0, 0.0), yaw: 0.0),
+  entities: [
+    Lantern(id: "lantern_yard", pos: (0.0, 0.0, -3.0), yaw: 0.0),
+
+    // An authored message on the way in.
+    Message(id: "msg_welcome", pos: (3.0, 0.0, 4.0),
+      text: "Levers call the lift. A ladder drops when kicked from above. Cracked walls sound hollow."),
+
+    // The lift: a 3 m climb to the lift terrace (x -12..-4, z 12..20). A lever at each stop.
+    Lift(id: "yard_lift", pos: (-8.0, 10.5), bottom_y: 0.0, top_y: 3.0, half_extents: (1.5, 1.5)),
+    Lever(id: "lever_lift_low", pos: (-5.5, 0.0, 10.5), yaw: 1.5707964, target: Lift(id: "yard_lift", stop: 0)),
+    Lever(id: "lever_lift_high", pos: (-6.0, 3.0, 13.5), yaw: 0.0, target: Lift(id: "yard_lift", stop: 1)),
+
+    // Ladders up the ladder terrace (x 4..12, z 12..20). The east one starts raised and
+    // drops when kicked from the top.
+    Ladder(id: "ladder_south", pos: (8.0, 0.0, 11.4), yaw: 0.0, height_m: 3.0),
+    Ladder(id: "ladder_east", pos: (12.6, 0.0, 16.0), yaw: -1.5707964, height_m: 3.0, kick_down: true),
+
+    // Doors in the wall line at z = 26. The one-way door faces -Z, so it opens from the
+    // yard side; the gate is shut until its lever is pulled.
+    Door(id: "door_oneway", pos: (0.0, 0.0, 26.0), yaw: 3.1415927, half_width_m: 1.0, height_m: 3.0, kind: OneWay),
+    Door(id: "gate_locked", pos: (-6.0, 0.0, 26.0), yaw: 3.1415927, half_width_m: 1.0, height_m: 3.0, kind: Locked),
+    Lever(id: "lever_gate", pos: (-4.0, 0.0, 23.5), yaw: 0.0, target: Door("gate_locked")),
+
+    // The closet: a hollow wall hides it. A pickup waits inside.
+    HollowWall(id: "wall_closet", center: (10.0, 1.5, 32.0), half_extents: (1.0, 1.5, 0.25)),
+    Pickup(id: "salts_closet", item: "itm_waking_salts", pos: (10.0, 0.0, 35.0), count: 2, interact: true),
+
+    // The vault: a key on the ground opens the door; a chest waits inside.
+    Pickup(id: "key_yard", item: "itm_yard_key", pos: (16.0, 0.0, 1.0), interact: true),
+    Door(id: "door_vault", pos: (20.0, 0.0, 6.0), yaw: 1.5707964, half_width_m: 1.0, height_m: 3.0, kind: Keyed("itm_yard_key")),
+    Chest(id: "chest_vault", pos: (22.0, 0.0, 6.0), yaw: -1.5707964, loot: (item: "itm_clotweed", count: 3, glimmer: 200)),
+
+    // Water and snow: a shallow pond a lever can raise into a wall, a deep mere, a blight
+    // pool, and a drift of deep snow.
+    Pool(name: "pond", center: (-14.0, -6.0), half_extents: (3.0, 3.0), depth_m: 0.4, raised_depth_m: 2.0),
+    Lever(id: "lever_pond", pos: (-9.5, 0.0, -6.0), yaw: 1.5707964, target: Water("pond")),
+    Pool(name: "mere", center: (14.0, -6.0), half_extents: (3.0, 3.0), depth_m: 1.8),
+    Pool(name: "bog", center: (0.0, -12.0), half_extents: (3.0, 2.5), depth_m: 0.4, blight: true),
+    Snow(name: "drift", center: (18.0, 20.0), half_extents: (4.0, 4.0)),
+  ],
+)

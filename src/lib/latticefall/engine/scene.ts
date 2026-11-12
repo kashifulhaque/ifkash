@@ -23,6 +23,7 @@ import { ActorRenderer } from '../render/actors';
 import { digestMoveResolver } from '../render/actors/moveTable';
 import { CombatVfx } from '../render/vfx';
 import { LevelRenderer } from '../render/terrain';
+import { PropsRenderer } from '../render/props';
 import { getQuality, pixelRatioFor, subscribeQuality } from '../render/lighting';
 import {
   CameraRig,
@@ -66,6 +67,8 @@ export class SceneView {
   private disposables: Array<BufferGeometry | Material> = [];
   /** The level renderer, once `loadLevel` finds a manifest. Null for the flat scenarios. */
   private level: LevelRenderer | null = null;
+  /** Ladders, lifts, doors, levers, pickups and the other world mechanics (WP-042). */
+  readonly props = new PropsRenderer(this.scene);
   /** The stand-in ground, proxy and lights that the level renderer replaces. */
   private standIns: Object3D[] = [];
   private offQuality: () => void;
@@ -171,6 +174,7 @@ export class SceneView {
    * Areas without a manifest keep the stand-in ground. Safe to call once, after construction.
    */
   async loadLevel(scenario: string): Promise<void> {
+    this.props.load(scenario).catch((err) => console.error('Latticefall props failed to load', err));
     const level = new LevelRenderer(this.scene, this.renderer);
     try {
       if (!(await level.load(scenario))) return level.dispose();
@@ -277,6 +281,7 @@ export class SceneView {
       }
     }
     if (this.level) this.level.update(this.camera, focus ?? ORIGIN, frameMs);
+    if (this.props.active) this.props.update(simPaused ? 0 : frameMs);
     this.vfx.update(actors, simPaused ? 0 : Math.min(frameMs, 100) / 1000, this.camera, this.canvas.clientHeight || 1);
     this.vfx.applyCamera(this.camera);
     this.renderer.render(this.scene, this.camera);
@@ -289,6 +294,7 @@ export class SceneView {
     this.offQuality();
     this.level?.dispose();
     this.level = null;
+    this.props.dispose();
     this.vfx.dispose();
     this.actors.dispose();
     for (const d of this.disposables) d.dispose();

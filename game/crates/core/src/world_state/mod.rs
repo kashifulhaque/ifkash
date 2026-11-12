@@ -19,11 +19,14 @@ pub mod death;
 pub mod flags;
 pub mod lantern;
 pub mod lantern_menu;
+pub mod mechanics;
 #[cfg(test)]
 mod tests;
 
 use lf_content::Scenario;
-use lf_content::scenario::{Dummy, EnemySpawn, Lantern, Zone};
+use lf_content::scenario::{
+    Chest, Door, Dummy, EnemySpawn, HollowWall, Ladder, Lantern, Lever, Lift, Message, Pool, Zone,
+};
 use serde::{Deserialize, Serialize};
 
 use crate::arena::Id;
@@ -51,6 +54,17 @@ pub struct Layout {
     pub reeds: Vec<Zone>,
     /// Pickups with their items resolved (WP-049; see `pickups`).
     pub pickups: Vec<crate::pickups::PickupSpot>,
+    /// The world mechanics (WP-042; see `mechanics`). Their state is flags, plus
+    /// `mechanics::MechState` for lifts and the ladder the player is on.
+    pub ladders: Vec<Ladder>,
+    pub lifts: Vec<Lift>,
+    pub doors: Vec<Door>,
+    pub levers: Vec<Lever>,
+    pub hollow_walls: Vec<HollowWall>,
+    pub chests: Vec<Chest>,
+    pub messages: Vec<Message>,
+    pub pools: Vec<Pool>,
+    pub snow: Vec<Zone>,
 }
 
 impl Layout {
@@ -65,6 +79,15 @@ impl Layout {
             water: level.water.clone(),
             reeds: level.reeds.clone(),
             pickups: Vec::new(),
+            ladders: level.ladders.clone(),
+            lifts: level.lifts.clone(),
+            doors: level.doors.clone(),
+            levers: level.levers.clone(),
+            hollow_walls: level.hollow_walls.clone(),
+            chests: level.chests.clone(),
+            messages: level.messages.clone(),
+            pools: level.pools.clone(),
+            snow: level.snow.clone(),
         }
     }
 

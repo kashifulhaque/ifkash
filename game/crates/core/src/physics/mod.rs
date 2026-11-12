@@ -29,6 +29,10 @@ pub struct PhysicsState {
     colliders: ColliderSet,
     broad_phase: BroadPhaseBvh,
     narrow_phase: NarrowPhase,
+    /// Box colliders that world mechanics move (lifts, doors, hollow walls; see
+    /// `world_state::mechanics`), added after the level is built, with their current
+    /// centers. Not hashed: the mechanics state is.
+    movers: Vec<(ColliderHandle, [f32; 3])>,
 }
 
 impl core::fmt::Debug for PhysicsState {
@@ -90,7 +94,54 @@ impl PhysicsState {
             colliders,
             broad_phase,
             narrow_phase,
+            movers: Vec::new(),
         }
+    }
+
+    /// Adds a box collider that `set_mover` can move later (WP-042). Returns its index,
+    /// which counts up from 0 in the order of the calls.
+    pub fn add_mover(&mut self, center: [f32; 3], half_extents: [f32; 3]) -> usize {
+        let [hx, hy, hz] = half_extents;
+        let handle = self
+            .colliders
+            .insert(ColliderBuilder::cuboid(hx, hy, hz).translation(vec3(center)));
+        self.refresh(handle);
+        self.movers.push((handle, center));
+        self.movers.len() - 1
+    }
+
+    /// Moves mover `index` so its box is centered on `center`. Does nothing if it is
+    /// already there or there is no such mover.
+    pub fn set_mover(&mut self, index: usize, center: [f32; 3]) {
+        let Some(&(handle, at)) = self.movers.get(index) else {
+            return;
+        };
+        if at == center {
+            return;
+        }
+        if let Some(c) = self.colliders.get_mut(handle) {
+            c.set_translation(vec3(center));
+        }
+        self.movers[index].1 = center;
+        self.refresh(handle);
+    }
+
+    /// The center mover `index` is at now.
+    pub fn mover_center(&self, index: usize) -> Option<[f32; 3]> {
+        self.movers.get(index).map(|m| m.1)
+    }
+
+    /// Tells the broad phase that `handle`'s collider is new or moved.
+    fn refresh(&mut self, handle: ColliderHandle) {
+        let mut events = Vec::new();
+        self.broad_phase.update(
+            &IntegrationParameters::default(),
+            &self.colliders,
+            &self.bodies,
+            &[handle],
+            &[],
+            &mut events,
+        );
     }
 
     /// A query view over the level for the character controller and ray casts.

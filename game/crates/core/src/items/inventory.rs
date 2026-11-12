@@ -323,7 +323,7 @@ impl Inventory {
     /// open, or the item doesn't fit it or isn't owned:
     /// - hands: an owned weapon;
     /// - head, body, and charms: owned gear that isn't a weapon;
-    /// - quick slots: a flask, or a consumable with a stack, but not a Wick Bead or Flask Dew;
+    /// - quick slots: a flask, or a consumable with a stack, but not a Wick Bead, Flask Dew, or key;
     /// - arrows: ammunition with a stack.
     pub fn equip(&mut self, slot: u8, item: NumId, items: &ItemTable) -> bool {
         let owned_gear = self.gear.binary_search(&item).is_ok();
@@ -335,7 +335,7 @@ impl Inventory {
             }
             Some(Group::Quick) => items.get(item).is_some_and(|d| match d.kind {
                 ItemKind::VigilFlask | ItemKind::LucidFlask => true,
-                ItemKind::WickBead | ItemKind::FlaskDew => false,
+                ItemKind::WickBead | ItemKind::FlaskDew | ItemKind::Key => false,
                 _ => self.count(item) > 0,
             }),
             Some(Group::Arrows) => {

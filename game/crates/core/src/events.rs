@@ -32,6 +32,13 @@ pub enum Event {
     Boss(BossEvent),
     /// The player took a pickup (`pickups`, WP-049).
     Pickup(PickupEvent),
+    /// A door, lever, lift, ladder, or hollow wall did something
+    /// (`world_state::mechanics`, WP-042; WASM event kind 14).
+    Mechanic(MechanicEvent),
+    /// The player opened a chest (WP-042; WASM event kind 15).
+    Loot(LootEvent),
+    /// The player read an authored message (WP-042; WASM event kind 16).
+    Message(MessageEvent),
 }
 
 /// The player took the pickup at `index` of `Layout::pickups` (WASM event kind 17).
@@ -40,6 +47,61 @@ pub enum Event {
 pub struct PickupEvent {
     pub index: u16,
     pub item: u32,
+}
+
+/// What a world mechanic did. `index` is the entity's index in its scenario list: doors
+/// for the door kinds, levers for `LEVER_PULLED`, lifts for the lift kinds, ladders for the
+/// ladder kinds, hollow walls for `WALL_REVEALED`. `kind` is one of the consts.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct MechanicEvent {
+    pub kind: u8,
+    pub index: u16,
+}
+
+impl MechanicEvent {
+    /// A door opened.
+    pub const DOOR_OPENED: u8 = 0;
+    /// A lever shut a door.
+    pub const DOOR_CLOSED: u8 = 1;
+    /// The player tried a locked door that only a lever opens.
+    pub const DOOR_LOCKED: u8 = 2;
+    /// The player tried a one-way door from the wrong side ("Opens from the other
+    /// side").
+    pub const DOOR_ONE_WAY: u8 = 3;
+    /// The player tried a keyed door without the key.
+    pub const DOOR_NEEDS_KEY: u8 = 4;
+    /// The player pulled a lever.
+    pub const LEVER_PULLED: u8 = 5;
+    /// A lift set off.
+    pub const LIFT_STARTED: u8 = 6;
+    /// A lift reached a stop.
+    pub const LIFT_ARRIVED: u8 = 7;
+    /// The player grabbed a ladder.
+    pub const LADDER_GRABBED: u8 = 8;
+    /// The player let go of a ladder, or climbed off it.
+    pub const LADDER_RELEASED: u8 = 9;
+    /// The player kicked a raised ladder down.
+    pub const LADDER_KICKED: u8 = 10;
+    /// A hit revealed a hollow wall's passage.
+    pub const WALL_REVEALED: u8 = 11;
+}
+
+/// The player opened a chest (`source` is always 1; pickups send `PickupEvent`), and
+/// `index` is its index in the scenario's chest list. `item` is the registry number (0 if none) and `count` how
+/// many were taken.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct LootEvent {
+    pub source: u8,
+    pub index: u16,
+    pub item: u32,
+    pub count: u16,
+    pub glimmer: u32,
+}
+
+/// The player read the authored message at `index` of the scenario's messages.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct MessageEvent {
+    pub index: u16,
 }
 
 /// A reviver got back up with `hp` HP (WASM event kind 13).

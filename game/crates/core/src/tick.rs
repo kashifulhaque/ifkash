@@ -7,6 +7,9 @@ use crate::world::World;
 /// Advances the world by one tick, running the eleven systems in spec order.
 pub fn tick(world: &mut World, input: &TickInput) {
     systems::apply_commands::run(world, input);
+    // A player on a ladder (or who just let go) can't attack, dodge, or jump (WP-042).
+    let masked = crate::world_state::mechanics::mask_input(world, input);
+    let input = masked.as_ref().unwrap_or(input);
     systems::player_intent::run(world, input);
     systems::ai_think::run(world, input);
     systems::move_state::run(world, input);

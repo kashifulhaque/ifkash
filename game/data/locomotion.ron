@@ -95,4 +95,25 @@
     backstab_range_m: 1.2, // Critical hits: within 1.2 m of an unaware actor's back
     backstab_arc_deg: 90.0, // Critical hits: inside a 90-degree rear arc
   ),
+  // World mechanics (docs/game/02-world.md, "Traversal and world mechanics")
+  mechanics: (
+    interact_radius_m: 1.6, // tuning: how close INTERACT reaches
+    interact_height_m: 1.5, // tuning
+    ladder_grab_radius_m: 1.0, // tuning
+    ladder_climb_speed_mps: 2.0, // tuning
+    ladder_stick_threshold: 0.3, // tuning
+    ladder_top_exit_m: 0.9, // tuning: steps off onto the ledge above
+    ladder_bottom_exit_m: 0.7, // tuning
+    ladder_top_grab_below_m: 0.6, // tuning
+    lift_speed_mps: 1.5, // tuning
+    lift_thickness_m: 0.4, // tuning
+    lift_rider_tolerance_m: 0.15, // tuning
+    door_half_thickness_m: 0.25, // tuning
+    sink_extra_m: 0.1, // tuning
+    water_slow_percent: 20, // Water: shallow (under 0.6 m) slows 20%
+    water_deep_over_m: 1.4, // Water: deep (over 1.4 m) blocks
+    snow_slow_percent: 25, // Deep snow: slows 25%
+    snow_sprint_stamina_percent: 150, // Deep snow: sprint costs 1.5x stamina
+    blight_buildup_per_tick_milli: 800, // tuning: 24 points a second; Blight fills in a few seconds
+  ),
 )

@@ -178,6 +178,15 @@ impl LfWorld {
     ///   4 reset), and the phase (the new one for 2, 1 for 1, otherwise 0).
     /// - Kind 13, `Revive` (WP-032), 3 words: kind, the enemy that got back up
     ///   (`pack_id`), and the HP it has.
+    /// - Kind 14, `Mechanic` (WP-042), 3 words: kind, what happened (0 door opened, 1 door
+    ///   shut, 2 locked door tried, 3 one-way door tried from the wrong side, 4 keyed door
+    ///   tried without its key, 5 lever pulled, 6 lift set off, 7 lift arrived, 8 ladder
+    ///   grabbed, 9 ladder released, 10 ladder kicked down, 11 hollow wall revealed), and
+    ///   the index of the door, lever, lift, ladder, or wall in its scenario list.
+    /// - Kind 15, `Loot` (WP-042), 6 words: kind, source (1 chest), the chest's index, the
+    ///   item's registry number (0 for none), how many, and Glimmer.
+    /// - Kind 16, `Message` (WP-042), 2 words: kind, the message's index (see
+    ///   `message_text`).
     /// - Kind 17, `Pickup` (WP-049), 3 words: kind, the pickup's index in the scenario's
     ///   pickup list, and the item's registry number.
     pub fn drain_events(&mut self) -> Vec<u32> {
@@ -256,6 +265,22 @@ impl LfWorld {
                 }
                 Event::Pickup(e) => {
                     out.extend([17, u32::from(e.index), e.item]);
+                }
+                Event::Mechanic(e) => {
+                    out.extend([14, u32::from(e.kind), u32::from(e.index)]);
+                }
+                Event::Loot(e) => {
+                    out.extend([
+                        15,
+                        u32::from(e.source),
+                        u32::from(e.index),
+                        e.item,
+                        u32::from(e.count),
+                        e.glimmer,
+                    ]);
+                }
+                Event::Message(e) => {
+                    out.extend([16, u32::from(e.index)]);
                 }
                 Event::Boss(e) => {
                     out.extend([11, u32::from(e.boss), u32::from(e.kind), u32::from(e.phase)]);
@@ -432,6 +457,37 @@ impl LfWorld {
     /// Display name of a weapon or consumable by registry number; empty if unknown.
     pub fn item_name(&self, num: u32) -> String {
         self.names.get(&num).cloned().unwrap_or_default()
+    }
+
+    /// The renderer's view of the world mechanics, as floats (WP-042). Read-only. See
+    /// `lf_core::world_state::mechanics::render_state` for the layout: the ladder the
+    /// player is on plus one, then per scenario list the ladders' climbable flags, the
+    /// lifts' rise in meters, and the open, pulled, revealed, taken, opened, and read
+    /// flags, then the pools' depths.
+    pub fn mechanics_state(&self) -> Vec<f32> {
+        lf_core::world_state::mechanics::render_state(&self.world)
+    }
+
+    /// What `INTERACT` would do now, for the prompt: 0 nothing, 1 rest at a Lantern,
+    /// 2 take or open, 3 pull a lever, 4 open a door, 5 read a message, 6 climb a ladder,
+    /// 7 kick a ladder down (WP-042).
+    pub fn interact_prompt(&self) -> u32 {
+        if lf_core::world_state::lantern::in_reach(&self.world).is_some() {
+            1
+        } else {
+            lf_core::world_state::mechanics::prompt(&self.world)
+        }
+    }
+
+    /// The text of the authored message at `index` of the scenario's messages; empty if
+    /// none (WP-042).
+    pub fn message_text(&self, index: u32) -> String {
+        self.world
+            .layout
+            .messages
+            .get(index as usize)
+            .map(|m| m.text.clone())
+            .unwrap_or_default()
     }
 
     /// Name on the boss bar for the boss at `index` in the scenario; empty if none.

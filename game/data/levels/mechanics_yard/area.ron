@@ -1,0 +1,23 @@
+// The mechanics yard (WP-042): a small greybox area with one of every world mechanic, so
+// the golden replay and the screenshots have somewhere to stand. Y is up; the player
+// spawns at the origin facing +Z. See docs/game/02-world.md, "Traversal and world
+// mechanics".
+(
+  id: "mechanics_yard",
+  name: "Mechanics Yard",
+  seed: 20261113,
+  bounds: (min: (-24.0, -16.0), max: (24.0, 40.0)),
+  kill_y: -50.0,
+  start_glimmer: 100,
+  ambient: (
+    sky: "day",
+    fog_color: (0.75, 0.8, 0.85),
+    fog_near_m: 40.0,
+    fog_far_m: 160.0,
+    sun_dir: (-0.4, -1.0, -0.3),
+    sun_color: (1.0, 0.96, 0.9),
+    sun_intensity: 1.0,
+    ambient_color: (0.6, 0.65, 0.75),
+    ambient_intensity: 0.5,
+  ),
+)

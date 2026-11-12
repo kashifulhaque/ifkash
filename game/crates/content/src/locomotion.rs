@@ -90,6 +90,55 @@ pub struct Locomotion {
     pub death: Death,
     /// Poise, stance, parry, and critical hit numbers.
     pub poise: Poise,
+    /// Ladders, lifts, doors, water, and snow (WP-042).
+    pub mechanics: Mechanics,
+}
+
+/// World mechanics tuning (docs/game/02-world.md, "Traversal and world mechanics").
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Mechanics {
+    /// `INTERACT` reaches a lever, door, pickup, chest, or message within this horizontal
+    /// distance of the player's feet, in meters.
+    pub interact_radius_m: f32,
+    /// ...and within this vertical distance, in meters.
+    pub interact_height_m: f32,
+    /// The player can grab a ladder (at its foot or its top) within this horizontal
+    /// distance of it, in meters.
+    pub ladder_grab_radius_m: f32,
+    /// Vertical climb speed at full stick, in meters per second.
+    pub ladder_climb_speed_mps: f32,
+    /// The stick's component along the climb direction (0 to 1) must exceed this to climb.
+    pub ladder_stick_threshold: f32,
+    /// Climbing off the top lands the player this far past the top rail, in meters.
+    pub ladder_top_exit_m: f32,
+    /// Climbing off the bottom puts the player this far back from the foot, in meters.
+    pub ladder_bottom_exit_m: f32,
+    /// A player grabbing the ladder from its top starts this far below the top, in meters.
+    pub ladder_top_grab_below_m: f32,
+    /// Lift speed, in meters per second.
+    pub lift_speed_mps: f32,
+    /// Lift platform thickness, in meters.
+    pub lift_thickness_m: f32,
+    /// An actor stands on a lift when its feet are within this height of the platform's
+    /// top and its position is over the platform, in meters.
+    pub lift_rider_tolerance_m: f32,
+    /// Half the thickness of a door slab, in meters.
+    pub door_half_thickness_m: f32,
+    /// An open door or revealed wall sinks this far below the floor line past its own
+    /// height, in meters.
+    pub sink_extra_m: f32,
+    /// Shallow water slows the player by this percent (Water: 20%).
+    pub water_slow_percent: u8,
+    /// Water deeper than this blocks the player with an invisible wall (Water: 1.4 m).
+    pub water_deep_over_m: f32,
+    /// Deep snow slows the player by this percent (Deep snow: 25%).
+    pub snow_slow_percent: u8,
+    /// Sprinting through deep snow costs this percent of the normal stamina (Deep snow:
+    /// 1.5x).
+    pub snow_sprint_stamina_percent: u16,
+    /// Blight buildup per tick while wading in blight water, in thousandths of a point.
+    pub blight_buildup_per_tick_milli: u32,
 }
 
 /// Death, Remnants, and Lanterns (docs/game/06-progression-and-systems.md, "Glimmer and

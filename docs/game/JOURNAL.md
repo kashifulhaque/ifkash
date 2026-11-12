@@ -42,6 +42,7 @@ Copy this block to the top of the entries and fill it in as you go:
   - WP-030.a: sonnet; `c2bae96`; 98K. All 27 m3 goldens rehashed once.
   - WP-048: sonnet, worktree; `185f063`; 108K. Not listened to; only hits make sound so far.
   - WP-047: sonnet, worktree; `a241b74`; 133K. Autosave from a real rest not exercised in play.
+  - WP-045: sonnet, worktree; `f438ef1`; 200K. Merged onto WP-047 by the orchestrator (2 conflicts: WASM struct, engine loop).
 
 ### 2026-11-12: latticefall-m3 (M3)
 

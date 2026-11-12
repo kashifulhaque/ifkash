@@ -167,13 +167,15 @@ exact same observations for a policy running on the site.
 |---|---|---|
 | `proprio` | `(48,)` float32 | HP, FP, stamina (fractions); equip load tier; current move ID (embedded as an index into a separate `move` key), move frame fraction; i-frame, hyperarmor, and guard flags; flask charges; status buildups; buff timers; velocity; grounded flag; lock-on flag |
 | `move` | `(2,)` int32 | Own current move ID and the lock target's current move ID, for embedding tables |
-| `target` | `(32,)` float32 | Lock target (or nearest enemy): relative position and velocity in the player's frame, facing, HP and stance fractions, move frame fraction, distance, angle, phase, status flags |
+| `target` | `(32,)` float32 | Lock target (or nearest enemy): relative position and velocity in the player's frame, facing, HP and stance fractions, move frame fraction, move timing (hitbox active now, ticks to the next hit frame, ticks left, last attack of its combo; see [ADR 0006](decisions/0006-rl-smoke-test.md)), distance, angle, phase, status flags |
 | `entities` | `(16, 24)` float32, plus a `(16,)` mask | Nearest actors and projectiles: kind, relative position and velocity, facing, HP fraction, hostility, move ID, move frame fraction |
 | `rays` | `(2, 32)` float32 | 32 horizontal rays at knee and head height: distance and a hit-class code (wall, ledge, hazard, actor) |
 | `grid` | `(6, 32, 32)` uint8 | Egocentric top-down semantic grid at 0.5 m: walkable, height, hazards, enemies, projectiles, items |
 | `pixels` | `(2, 64, 64)` uint8 | Optional ray-cast depth and semantic class from the player's eye, rendered in the core with Rapier rays (no GPU) |
 
-Two notes on observations:
+The exact layout of each vector is documented on its encoder in
+`game/crates/core/src/obs/encode.rs`, and every feature is scaled into `[-1, 1]`. Two
+notes on observations:
 
 - **The boss fight isn't Markov from one frame.** Phase timers and the Overfit Warden's
   action counts are hidden state. Use frame stacking or a recurrent policy, or turn on
@@ -200,6 +202,13 @@ Each head has a mask in `info["action_mask"]`. For example, `action` masks attac
 stamina is 0 and the move can't be buffered, and masks `use item` when no flask charges
 remain. Masking is advisory: unmasked illegal actions do nothing, as they would for a
 human.
+
+Every button is a press edge in the core, so a step decodes its taps (light, heavy tap,
+dodge, Art, use item, jump, interact, and the `lock` and `quick` heads) as a press on the
+step's first tick and a release on the rest. Guard and heavy (hold) are held for the whole
+step, and dodge chosen on consecutive steps is held, so it becomes a sprint. A step must
+therefore be at least 2 ticks for the same tap on two steps in a row to count twice (see
+[ADR 0006](decisions/0006-rl-smoke-test.md)).
 
 Variants:
 
@@ -388,7 +397,7 @@ be a weekend to a week for the owner.
 
 ```text
 game/python/
-  pyproject.toml            # maturin build backend; extras: [train], [llm], [dev]
+  pyproject.toml            # maturin build backend; extras: [env], [train], [llm], [dev]
   latticefall/
     __init__.py             # gymnasium.register calls
     envs.py                 # Gymnasium Env classes

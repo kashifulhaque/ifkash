@@ -1,7 +1,8 @@
 //! `lf-py`: the PyO3 module over `lf-core`.
 //!
-//! This is the stub from WP-007: one `Sim` plus replay helpers. `VecSim`, observations,
-//! and rewards come with the RL work packages. Python imports this module as
+//! WP-007 added one `Sim` plus replay helpers. WP-039 added `BossArena`, the Rust half of
+//! the `Latticefall/BossArena-v0` Gymnasium environment (see `arena.rs`). `VecSim` comes
+//! with a later RL work package. Python imports this module as
 //! `latticefall._latticefall`; the `latticefall` package re-exports the public names.
 //!
 //! # Where content comes from
@@ -26,6 +27,8 @@ use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use pyo3::pybacked::PyBackedBytes;
 use pyo3::types::PyBytes;
+
+mod arena;
 
 /// The scenario a new `Sim` starts in, and the default for `reset`.
 const DEFAULT_SCENARIO: &str = "m0_flat";
@@ -66,6 +69,9 @@ fn step_world(world: &mut World, frame: ActionFrame) {
         commands: Vec::new(),
     };
     tick(world, &input);
+    // Nothing reads the events through `Sim` yet; drain them so a long run doesn't grow
+    // the queue without bound. Events aren't part of the state hash.
+    world.events.drain();
 }
 
 /// One simulation world.
@@ -236,7 +242,7 @@ fn replay_scenario(data: PyBackedBytes) -> PyResult<String> {
 mod _latticefall {
     #[pymodule_export]
     use super::{
-        Sim, content_hash, embedded_content_hash, replay_final_expected, replay_frames,
-        replay_scenario, replay_seed, run_replay,
+        Sim, arena::BossArena, content_hash, embedded_content_hash, replay_final_expected,
+        replay_frames, replay_scenario, replay_seed, run_replay,
     };
 }

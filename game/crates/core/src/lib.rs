@@ -22,3 +22,4 @@ pub use input::{ActionFrame, Command, TickInput};
 pub use replay::{Replay, ReplayError, ReplayReport, run_replay};
 pub use tick::tick;
 pub use world::{World, WorldError};
+pub mod obs;

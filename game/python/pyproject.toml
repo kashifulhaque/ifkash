@@ -7,6 +7,12 @@ name = "latticefall"
 version = "0.1.0"
 description = "Python bindings for the Latticefall simulation."
 requires-python = ">=3.11"
+# The base package needs nothing beyond the extension. The extras are for RL work
+# (ADR 0006): `env` for the Gymnasium environments, `train` for the PPO examples.
+
+[project.optional-dependencies]
+env = ["gymnasium>=1.0,<2", "numpy>=1.26"]
+train = ["latticefall[env]", "torch>=2.4"]
 
 [tool.maturin]
 manifest-path = "../crates/py/Cargo.toml"

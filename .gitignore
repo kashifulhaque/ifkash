@@ -26,6 +26,8 @@ game/target/
 src/lib/latticefall/wasm/
 game/python/.venv/
 game/python/target/
+# Training runs from examples/ppo_smoke.py (WP-039).
+game/python/runs/
 game/python/**/*.so
 game/python/**/*.pyd
 __pycache__/

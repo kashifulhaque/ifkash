@@ -28,6 +28,18 @@ Copy this block to the top of the entries and fill it in as you go:
 
 ## Entries
 
+### 2026-11-12: latticefall-m4 (M4)
+
+- **Orchestrator:** Opus 5.5, low effort
+- **Branch:** `game/m4-slice`
+- **Started from:** `origin/main` at `54850f0`
+- **Reservations:** registry numbers: WP-040 10000-10499, WP-042 10500-10999 (items
+  4500-4599), WP-043 11000-11199, WP-044 11200-11499, WP-049 12000-12099. WASM event
+  kinds: WP-042 14-16, WP-049 17; WP-047 and WP-035.a add none.
+- **Added cards:** WP-030.a (the M3 journal's `AiState.def` fix) and WP-035.a (models for
+  enemy batches 2 and 3 and the elites).
+- **WPs:** (in progress)
+
 ### 2026-11-12: latticefall-m3 (M3)
 
 - **Orchestrator:** Opus 5.5, low effort

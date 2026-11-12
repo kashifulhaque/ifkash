@@ -538,6 +538,22 @@ superseding ADR:
   10 m makes it suspicious; three enemies never attack at once.
 - **Verify:** `mise run game:test`.
 
+<a id="wp-030a"></a>
+### WP-030.a: Key AI state to registry numbers
+
+Added by the latticefall-m4 session, from the M3 journal's lessons.
+
+- **Lane:** ai · **Depends on:** 037 · **Size:** S · **Worker:** sonnet
+- **Read:** [AI framework](05-enemies-and-bosses.md#ai-framework).
+- **Touch:** `game/crates/core/src/ai/`, `game/crates/core/src/systems/ai_think.rs`,
+  `game/tests/replays/`.
+- **Do:** Store the enemy's registry number in `AiState.def` instead of its index in the
+  enemy table, and look the definition up by number, so adding an enemy doesn't change
+  the state hash of unrelated fights.
+- **Acceptance:** A test adds an extra enemy definition and shows an existing fight's
+  hash doesn't change; goldens are re-recorded once.
+- **Verify:** `mise run game:test`, `mise run game:lint`.
+
 <a id="wp-031"></a>
 ### WP-031: Add the navigation grid and pathfinding
 
@@ -600,6 +616,22 @@ superseding ADR:
 - **Do:** Models and animation mapping for batch 1 and B01, and the procedural model
   framework (primitives, bone hierarchy, procedural animation by move frame).
 - **Acceptance:** Screenshots of each enemy idle and mid-attack.
+- **Verify:** `bun run check`, screenshots.
+
+<a id="wp-035a"></a>
+### WP-035.a: Render enemy batches 2 and 3 and the elites
+
+Added by the latticefall-m4 session: [WP-036](#wp-036) and [WP-037](#wp-037) added
+enemies with no models, and [WP-044](#wp-044) places them in the Verge.
+
+- **Lane:** render · **Depends on:** 035, 036, 037 · **Size:** M · **Worker:** sonnet
+- **Read:** [Procedural models](07-presentation.md#procedural-models), the batch 2, batch 3,
+  and elite sections of [enemies](05-enemies-and-bosses.md).
+- **Touch:** `src/lib/latticefall/render/procedural/`, `src/lib/latticefall/render/actors/`.
+- **Do:** Procedural models and move poses for every batch 2 and batch 3 enemy and every
+  elite, modeled on WP-035's batch 1 rigs; draw the `CLOAKED` and `HIDDEN` actor flags.
+- **Acceptance:** Screenshots of each enemy idle and mid-attack; a hidden Reed Stalker
+  isn't drawn and a cloaked one is drawn faint.
 - **Verify:** `bun run check`, screenshots.
 
 <a id="wp-036"></a>

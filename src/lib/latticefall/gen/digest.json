@@ -278,8 +278,8 @@
     "start_max": 16,
     "start_min": 4
   },
-  "contentHash": "9938955082688122054",
-  "contentHashHex": "89ee42fd26304cc6",
+  "contentHash": "13811485675471608175",
+  "contentHashHex": "bfac410ba2e1996f",
   "moves": [
     {
       "anim": "ep_sentinel_thrust",
@@ -380,6 +380,156 @@
       "stamina": 0,
       "stub": false,
       "totalFrames": 58
+    },
+    {
+      "anim": "dash_feint",
+      "file": "moves/arts.ron",
+      "fp": 6,
+      "id": "amv_feint_step",
+      "num": 20000,
+      "stamina": 10,
+      "stub": false,
+      "totalFrames": 20
+    },
+    {
+      "anim": "spin_slash",
+      "file": "moves/arts.ron",
+      "fp": 10,
+      "id": "amv_rending_sweep",
+      "num": 20001,
+      "stamina": 16,
+      "stub": false,
+      "totalFrames": 40
+    },
+    {
+      "anim": "guard_brace",
+      "file": "moves/arts.ron",
+      "fp": 0,
+      "id": "amv_bastion",
+      "num": 20002,
+      "stamina": 20,
+      "stub": false,
+      "totalFrames": 150
+    },
+    {
+      "anim": "parry_raise",
+      "file": "moves/arts.ron",
+      "fp": 0,
+      "id": "amv_windward_parry",
+      "num": 20003,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 40
+    },
+    {
+      "anim": "sword_rising",
+      "file": "moves/arts.ron",
+      "fp": 10,
+      "id": "amv_rising_cleave",
+      "num": 20004,
+      "stamina": 20,
+      "stub": false,
+      "totalFrames": 40
+    },
+    {
+      "anim": "roar",
+      "file": "moves/arts.ron",
+      "fp": 12,
+      "id": "amv_rallying_roar",
+      "num": 20005,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 48
+    },
+    {
+      "anim": "thrust_lunge",
+      "file": "moves/arts.ron",
+      "fp": 9,
+      "id": "amv_lunging_thrust",
+      "num": 20006,
+      "stamina": 16,
+      "stub": false,
+      "totalFrames": 36
+    },
+    {
+      "anim": "hammer_slam",
+      "file": "moves/arts.ron",
+      "fp": 14,
+      "id": "amv_earthsplit",
+      "num": 20007,
+      "stamina": 25,
+      "stub": false,
+      "totalFrames": 60
+    },
+    {
+      "anim": "edge_infuse",
+      "file": "moves/arts.ron",
+      "fp": 15,
+      "id": "amv_rime_edge",
+      "num": 20008,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 40
+    },
+    {
+      "anim": "edge_infuse",
+      "file": "moves/arts.ron",
+      "fp": 15,
+      "id": "amv_radiant_blade",
+      "num": 20009,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 40
+    },
+    {
+      "anim": "bow_volley",
+      "file": "moves/arts.ron",
+      "fp": 10,
+      "id": "amv_spark_volley",
+      "num": 20010,
+      "stamina": 12,
+      "stub": false,
+      "totalFrames": 42
+    },
+    {
+      "anim": "lantern_swing",
+      "file": "moves/arts.ron",
+      "fp": 12,
+      "id": "amv_lantern_flare",
+      "num": 20011,
+      "stamina": 18,
+      "stub": false,
+      "totalFrames": 44
+    },
+    {
+      "anim": "glass_cast",
+      "file": "moves/arts.ron",
+      "fp": 14,
+      "id": "amv_glass_barrage",
+      "num": 20012,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 36
+    },
+    {
+      "anim": "mallet_toll",
+      "file": "moves/arts.ron",
+      "fp": 18,
+      "id": "amv_bell_toll",
+      "num": 20013,
+      "stamina": 30,
+      "stub": false,
+      "totalFrames": 56
+    },
+    {
+      "anim": "mallet_toll",
+      "file": "moves/arts.ron",
+      "fp": 18,
+      "id": "amv_choir_toll",
+      "num": 20014,
+      "stamina": 30,
+      "stub": false,
+      "totalFrames": 56
     },
     {
       "anim": "axe_chop_r",

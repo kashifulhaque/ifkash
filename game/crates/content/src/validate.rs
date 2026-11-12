@@ -421,9 +421,18 @@ fn check_arts(content: &Content, out: &mut Vec<Issue>) {
         let mut elements = BTreeSet::new();
         for (i, v) in a.variants.iter().enumerate() {
             if !elements.insert(format!("{:?}", v.element)) {
-                s.error(format!("variants[{i}].element"), "two variants for one element");
+                s.error(
+                    format!("variants[{i}].element"),
+                    "two variants for one element",
+                );
             }
-            check_art_move(&mut s, content, &format!("variants[{i}].move_id"), &v.move_id, a.fp);
+            check_art_move(
+                &mut s,
+                content,
+                &format!("variants[{i}].move_id"),
+                &v.move_id,
+                a.fp,
+            );
         }
         if let Some(b) = &a.buff {
             let known = content

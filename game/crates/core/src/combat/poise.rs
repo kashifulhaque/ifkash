@@ -490,15 +490,30 @@ mod tests {
         let mut attacker = actor(40, 0);
         attacker.pos = [0.0, 0.0, 1.0];
         assert!(is_parry(&attacker, &target, 6, false, &t, false));
-        assert!(!is_parry(&attacker, &target, 6, true, &t, false), "unparryable");
-        assert!(!is_parry(&attacker, &target, 0, false, &t, false), "no parry tool");
+        assert!(
+            !is_parry(&attacker, &target, 6, true, &t, false),
+            "unparryable"
+        );
+        assert!(
+            !is_parry(&attacker, &target, 0, false, &t, false),
+            "no parry tool"
+        );
         attacker.pos = [0.0, 0.0, -1.0];
-        assert!(!is_parry(&attacker, &target, 6, false, &t, false), "from behind");
+        assert!(
+            !is_parry(&attacker, &target, 6, false, &t, false),
+            "from behind"
+        );
         attacker.pos = [0.0, 0.0, 1.0];
         target.moves.guard.held = 9;
-        assert!(!is_parry(&attacker, &target, 6, false, &t, false), "window closed");
+        assert!(
+            !is_parry(&attacker, &target, 6, false, &t, false),
+            "window closed"
+        );
         target.moves.guard.held = 2;
-        assert!(!is_parry(&attacker, &target, 6, false, &t, false), "not open yet");
+        assert!(
+            !is_parry(&attacker, &target, 6, false, &t, false),
+            "not open yet"
+        );
     }
 
     #[test]

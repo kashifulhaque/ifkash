@@ -224,10 +224,7 @@ pub fn apply_scroll(world: &mut World, art_id: &str) -> bool {
     if row.unique || !a.classes.contains(&row.class) {
         return false;
     }
-    world
-        .state
-        .flags
-        .set(&format!("{ART_PREFIX}{weapon}"), art);
+    world.state.flags.set(&format!("{ART_PREFIX}{weapon}"), art);
     world.sync_player_moveset();
     true
 }

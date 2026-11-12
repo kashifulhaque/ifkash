@@ -244,7 +244,13 @@ fn m5_art_rime_edge_coats_the_weapon_for_15_fp() {
     let r = run("m5_art_rime_edge", "m5_art_rime_edge");
     assert_eq!(r.fp_paid(PRESS), 15.0);
     let buff = r.world.status.buff_num("buf_rime_edge").unwrap();
-    let weapon = r.world.actors.get(r.world.player).unwrap().status.weapon_buff;
+    let weapon = r
+        .world
+        .actors
+        .get(r.world.player)
+        .unwrap()
+        .status
+        .weapon_buff;
     assert_eq!(weapon.map(|b| b.num), Some(buff));
 }
 
@@ -253,7 +259,13 @@ fn m5_art_radiant_blade_adds_radiance_for_15_fp() {
     let r = run("m5_art_radiant_blade", "m5_art_radiant_blade");
     assert_eq!(r.fp_paid(PRESS), 15.0);
     let buff = r.world.status.buff_num("buf_radiant_blade").unwrap();
-    let weapon = r.world.actors.get(r.world.player).unwrap().status.weapon_buff;
+    let weapon = r
+        .world
+        .actors
+        .get(r.world.player)
+        .unwrap()
+        .status
+        .weapon_buff;
     assert_eq!(weapon.map(|b| b.num), Some(buff));
 }
 

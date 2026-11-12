@@ -41,7 +41,9 @@ Copy this block to the top of the entries and fill it in as you go:
 - **WPs:**
   - WP-030: opus; 264K worker tokens (reported 190K).
   - WP-031: sonnet, worktree; 139K. Cherry-picked onto WP-030 by the orchestrator, no conflicts.
-- **Context:**
+  - WP-032: sonnet; `93f07b7`; 313K.
+  - WP-033: sonnet, worktree; `cc074cd`; 295K. Merged onto WP-032 by the orchestrator (18 conflicts, keep-both, then a rehash; only the boss golden's final hash moved).
+- **Context:** orchestrator 173K after WP-033.
 - **Not verified:**
 - **Waiting on the owner:**
 - **Next steps:**

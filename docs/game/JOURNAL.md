@@ -38,7 +38,8 @@ Copy this block to the top of the entries and fill it in as you go:
   kinds: WP-042 14-16, WP-049 17; WP-047 and WP-035.a add none.
 - **Added cards:** WP-030.a (the M3 journal's `AiState.def` fix) and WP-035.a (models for
   enemy batches 2 and 3 and the elites).
-- **WPs:** (in progress)
+- **WPs:**
+  - WP-030.a: sonnet; `c2bae96`; 98K. All 27 m3 goldens rehashed once.
 
 ### 2026-11-12: latticefall-m3 (M3)
 

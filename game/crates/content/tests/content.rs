@@ -65,6 +65,8 @@ fn hash_ignores_comments_and_whitespace() {
     let common = std::fs::read_to_string(data_dir().join("moves/common.ron")).unwrap();
     let crits = std::fs::read_to_string(data_dir().join("moves/crits.ron")).unwrap();
     let weapons = std::fs::read_to_string(data_dir().join("weapons/straight_sword.ron")).unwrap();
+    let bow_moves = std::fs::read_to_string(data_dir().join("moves/stub_bow.ron")).unwrap();
+    let bow = std::fs::read_to_string(data_dir().join("weapons/stub_bow.ron")).unwrap();
     let other = Content::from_sources(
         &noisy,
         &attrs,
@@ -72,8 +74,12 @@ fn hash_ignores_comments_and_whitespace() {
             ("moves/common.ron".into(), common),
             ("moves/crits.ron".into(), crits),
             ("moves/straight_sword.ron".into(), moves),
+            ("moves/stub_bow.ron".into(), bow_moves),
         ],
-        vec![("weapons/straight_sword.ron".into(), weapons)],
+        vec![
+            ("weapons/straight_sword.ron".into(), weapons),
+            ("weapons/stub_bow.ron".into(), bow),
+        ],
     )
     .and_then(|c| {
         let read = |p: &str| std::fs::read_to_string(data_dir().join(p)).unwrap();
@@ -82,15 +88,42 @@ fn hash_ignores_comments_and_whitespace() {
             "scenarios/duel_parry.ron",
             "scenarios/duel_stance.ron",
             "scenarios/m0_flat.ron",
+            "scenarios/m2_range.ron",
             "scenarios/test_field.ron",
         ]
         .map(|p| (p.to_owned(), format!("// noise\n{}", read(p))))
         .to_vec();
         c.with_world(Some(&read("locomotion.ron")), scenarios)?
-            .with_consumables(Some(&format!("// noise\n{}", read("consumables.ron"))))
+            .with_consumables(Some(&format!("// noise\n{}", read("consumables.ron"))))?
+            .with_projectiles(Some(&format!("// noise\n{}", read("projectiles.ron"))))
     })
     .expect("loads");
     assert_eq!(base.content_hash(), other.content_hash());
+}
+
+#[test]
+fn projectile_spawns_are_validated() {
+    let mut c = Content::load_embedded().unwrap();
+    let m = c
+        .moves
+        .get_mut("moves/stub_bow.ron")
+        .and_then(|v| v.first_mut())
+        .unwrap();
+    m.projectiles[0].projectile = "proj_nope".to_owned();
+    m.charge = Some(lf_content::moves::Charge {
+        charge_from: m.projectiles[0].frame,
+        max_frames: 10,
+        motion_value_max: 1.0,
+    });
+    let issues = c.validate();
+    let has = |field: &str| issues.iter().any(|i| i.field.starts_with(field));
+    assert!(has("projectiles[0].projectile"), "{issues:?}");
+    assert!(
+        issues
+            .iter()
+            .any(|i| i.field == "projectiles[0].frame" && i.message.contains("charge_from")),
+        "{issues:?}"
+    );
 }
 
 #[test]

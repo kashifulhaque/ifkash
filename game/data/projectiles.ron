@@ -1,0 +1,42 @@
+// Projectile definitions. Schema: crates/content/src/projectiles.rs. A move launches one
+// from its `projectiles` list. Sources: docs/game/01-architecture.md, "Physics"
+// (projectiles are shape casts) and docs/game/03-combat.md, "Spells". The numbers are
+// tuning: no spec row fixes a projectile's speed, drop, or turn rate yet.
+#![enable(implicit_some)]
+[
+  (
+    // An arrow: fast, falls under gravity, stops at the first actor or wall it hits.
+    id: "proj_arrow",
+    speed: 40.0, // tuning: 1.3 m a tick
+    gravity: 12.0, // tuning: drops 0.4 m over 10 m
+    radius: 0.05, // tuning
+    lifetime_ticks: 90, // tuning: 3 seconds
+    pierce: 0,
+    homing: None,
+    motion_value: 1.0,
+    phys: Pierce,
+    element: None,
+    poise_damage: 8, // tuning
+    knockback: 0.2, // tuning
+    hitstop: 2, // tuning
+    tags: [],
+  ),
+  (
+    // A seeker bolt (a stand-in for the Formulae spells of WP-055): flies straight and
+    // turns toward the shooter's lock target, or else the nearest actor.
+    id: "proj_seeker_bolt",
+    speed: 12.0, // tuning: 0.4 m a tick
+    gravity: 0.0,
+    radius: 0.15, // tuning
+    lifetime_ticks: 90, // tuning
+    pierce: 0,
+    homing: (turn_deg_per_tick: 8.0, range_m: 20.0), // tuning
+    motion_value: 1.2, // tuning
+    phys: Neutral,
+    element: Aether,
+    poise_damage: 10, // tuning
+    knockback: 0.3, // tuning
+    hitstop: 3, // tuning
+    tags: [],
+  ),
+]

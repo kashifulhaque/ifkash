@@ -123,6 +123,7 @@ impl LfWorld {
     ///   hitbox index, motion value, charge fraction, contact point (3), direction (3),
     ///   then (WP-023) damage taken, result (0 connected, 1 guarded, 2 guard broken),
     ///   flags (bit 0 counter hit, bit 1 killed the target), and the target's HP after.
+    ///   A hit from a projectile has hitbox index 255.
     /// - Kind 2, `Life`, 6 words: kind, code, value, and a position (3). Codes: 1 died,
     ///   2 respawned, 3 rested (value is the Lantern's index in the scenario), 4 Remnant
     ///   dropped, 5 Remnant recovered, 6 Remnant lost (value is its Glimmer for 4 to 6,
@@ -132,6 +133,12 @@ impl LfWorld {
     /// - Kind 5, `Parry` (WP-024), 4 words: kind, attacker, target, the parried move number.
     /// - Kind 6, `Critical` (WP-024), 5 words: kind, attacker, target, crit kind (0 riposte,
     ///   1 backstab), the attacker's crit move number. The damage follows as a `Hit`.
+    /// - Kind 8, `Projectile` (WP-027), 10 words (kinds 2 to 6 belong to other events and
+    ///   kind 7 is reserved for status): kind, what happened (0 spawned, 1 struck
+    ///   an actor, 2 hit the level, 3 expired), projectile handle and definition number
+    ///   (`proj_arrow` is 5000), shooter and target (`pack_id`; target is `0xFFFFFFFF`
+    ///   unless it struck an actor), position (3), and 1 if the projectile is gone after
+    ///   this event.
     pub fn drain_events(&mut self) -> Vec<u32> {
         let mut out = Vec::new();
         for event in self.world.events.drain() {
@@ -184,6 +191,18 @@ impl LfWorld {
                         c.kind.code(),
                         c.move_num,
                     ]);
+                }
+                Event::Projectile(e) => {
+                    out.extend([
+                        8,
+                        e.kind.code(),
+                        pack_id(e.projectile),
+                        e.def,
+                        pack_id(e.shooter),
+                        e.target.map_or(u32::MAX, pack_id),
+                    ]);
+                    out.extend(e.pos.map(f32::to_bits));
+                    out.push(u32::from(e.ended));
                 }
             }
         }

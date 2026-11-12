@@ -143,8 +143,8 @@
     "start_max": 16,
     "start_min": 4
   },
-  "contentHash": "10242018522310171967",
-  "contentHashHex": "8e22f594dd44dd3f",
+  "contentHash": "5306991493527581101",
+  "contentHashHex": "49a638a54dbb31ad",
   "moves": [
     {
       "anim": "roll_quick",
@@ -365,6 +365,26 @@
       "stamina": 18,
       "stub": false,
       "totalFrames": 30
+    },
+    {
+      "anim": "bow_shoot",
+      "file": "moves/stub_bow.ron",
+      "fp": 0,
+      "id": "stub_bow_shot",
+      "num": 2100,
+      "stamina": 6,
+      "stub": true,
+      "totalFrames": 24
+    },
+    {
+      "anim": "cast_formula",
+      "file": "moves/stub_bow.ron",
+      "fp": 0,
+      "id": "stub_bow_seeker",
+      "num": 2101,
+      "stamina": 6,
+      "stub": true,
+      "totalFrames": 30
     }
   ],
   "weapons": [
@@ -387,6 +407,17 @@
       "name": "Parrying Dagger",
       "num": 1001,
       "stub": false,
+      "unique": false,
+      "weightTenths": 20
+    },
+    {
+      "baseDamage": 80,
+      "class": "Bow",
+      "file": "weapons/stub_bow.ron",
+      "id": "wpn_stub_bow",
+      "name": "Stub Bow",
+      "num": 1002,
+      "stub": true,
       "unique": false,
       "weightTenths": 20
     }

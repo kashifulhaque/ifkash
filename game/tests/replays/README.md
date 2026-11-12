@@ -68,5 +68,11 @@ lf-tools replay record-script tests/replays/m1_movement.script --out tests/repla
   player presses `LIGHT` behind an unaware dummy that faces away, and a backstab lands.
   `m2_backstab_stabs_the_unaware` checks it.
 
+- `m2_projectiles.lfr`: the WP-027 golden on `m2_range`, recorded from
+  `m2_projectiles.script`. The player fires an arrow that falls into the floor, locks on
+  and fires an arrow at the dummy, then a seeker bolt that curves onto it. The
+  `m2_projectiles_arrow_and_seeker_do_what_the_script_says` test checks the projectile
+  and `Hit` events.
+
 Rehash only when a change to the simulation or the content data is intended. Review the
 old and new final hash it prints, and commit the updated file with that change.

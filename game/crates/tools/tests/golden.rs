@@ -371,6 +371,7 @@ fn m2_parry_riposte_parries_then_ripostes() {
             Event::Stagger(_) => "stagger",
             Event::StanceBreak(_) => "stance_break",
             Event::Life(_) => "life",
+            Event::Projectile(_) => "projectile",
         })
         .collect();
     assert_eq!(kinds, ["parry", "critical", "hit"], "{events:?}");
@@ -465,4 +466,97 @@ fn m2_backstab_stabs_the_unaware() {
         !w.actors.get(sentry).unwrap().poise.unaware,
         "the stab alerts it"
     );
+}
+
+/// The WP-027 golden: an arrow that falls into the floor, an arrow at the locked dummy,
+/// and a seeker bolt launched sideways that curves onto it.
+#[test]
+fn m2_projectiles_arrow_and_seeker_do_what_the_script_says() {
+    use lf_core::events::{Event, ProjectileEventKind as K};
+    use lf_core::input::TickInput;
+    use lf_core::{World, tick};
+
+    let content = content();
+    let replay =
+        Replay::decode(&std::fs::read(replays_dir().join("m2_projectiles.lfr")).unwrap()).unwrap();
+    assert_eq!(replay.header.scenario, "m2_range");
+    let mut w = World::new(replay.header.seed, &content, "m2_range").unwrap();
+    let mark = w
+        .actors
+        .iter()
+        .find(|(_, a)| a.pos == [3.0, 0.0, 10.0])
+        .map(|(id, _)| id)
+        .expect("dummy_mark");
+    let aside = w
+        .actors
+        .iter()
+        .find(|(_, a)| a.pos == [-5.0, 0.0, 8.0])
+        .map(|(id, _)| id)
+        .expect("dummy_aside");
+    let (mut hits, mut life) = (Vec::new(), Vec::new());
+    let mut first_bolt_vel = None;
+    for frame in expand(&replay.frames) {
+        tick(
+            &mut w,
+            &TickInput {
+                frame,
+                commands: Vec::new(),
+            },
+        );
+        for event in w.events.drain() {
+            match event {
+                Event::Hit(h) => hits.push(h),
+                Event::Projectile(p) => life.push(p),
+                _ => {}
+            }
+        }
+        if first_bolt_vel.is_none() {
+            first_bolt_vel = w
+                .projectiles
+                .iter()
+                .find(|(_, p)| p.def == 5001)
+                .map(|(_, p)| p.vel);
+        }
+    }
+    let arrow = w.projectile_defs.num_of("proj_arrow").unwrap();
+    let bolt = w.projectile_defs.num_of("proj_seeker_bolt").unwrap();
+    let kinds: Vec<(K, u32)> = life.iter().map(|e| (e.kind, e.def)).collect();
+    assert_eq!(
+        kinds,
+        [
+            (K::Spawned, arrow),
+            (K::Impact, arrow),
+            (K::Spawned, arrow),
+            (K::Struck, arrow),
+            (K::Spawned, bolt),
+            (K::Struck, bolt),
+        ],
+        "{life:?}"
+    );
+    // Arrow 1 fell into the floor about 20 m out, short of the 29.5 m wall.
+    let floor = &life[1];
+    assert!(floor.ended && floor.pos[1] < 0.1, "{floor:?}");
+    assert!((19.0..20.5).contains(&floor.pos[2]), "{floor:?}");
+    // Arrows and bolt struck the locked dummy and nothing else.
+    assert!(life[3].ended && life[5].ended);
+    assert_eq!((life[3].target, life[5].target), (Some(mark), Some(mark)));
+    let shot = w.moves.num_of("stub_bow_shot").unwrap();
+    let seeker = w.moves.num_of("stub_bow_seeker").unwrap();
+    assert_eq!(hits.len(), 2, "{hits:?}");
+    assert_eq!(
+        (hits[0].move_num, hits[1].move_num),
+        (shot, seeker),
+        "{hits:?}"
+    );
+    for h in &hits {
+        assert_eq!((h.attacker, h.target, h.hitbox), (w.player, mark, 255));
+        assert!(h.damage > 0 && !h.killed);
+    }
+    let taken: u32 = hits.iter().map(|h| h.damage).sum();
+    assert_eq!(w.actors.get(mark).unwrap().hp, 300 - taken);
+    assert_eq!(w.actors.get(aside).unwrap().hp, 300);
+    // The bolt left sideways (+X, 70 degrees off the facing) and still hit: it curved.
+    let v = first_bolt_vel.expect("the bolt flew");
+    assert!(v[0] > 10.0 && v[2] < 4.0, "{v:?}");
+    assert!(w.projectiles.iter().next().is_none());
 }

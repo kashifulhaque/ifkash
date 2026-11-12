@@ -2,6 +2,7 @@
 import type { Charge } from "./Charge";
 import type { FrameWindow } from "./FrameWindow";
 import type { Hitbox } from "./Hitbox";
+import type { ProjectileSpawn } from "./ProjectileSpawn";
 
 export type Move = { id: string, 
 /**
@@ -15,7 +16,11 @@ root_motion: Array<[number, number]>,
 /**
  * Turn toward the lock target, startup only.
  */
-track_deg_per_tick: number, hyperarmor: FrameWindow | null, iframes: FrameWindow | null, cancel_attack_from: number | null, cancel_dodge_from: number | null, cancel_any_from: number | null, next_chain: string | null, charge: Charge | null, hitboxes: Array<Hitbox>, sfx: Array<[number, string]>, vfx: Array<[number, string]>, 
+track_deg_per_tick: number, hyperarmor: FrameWindow | null, iframes: FrameWindow | null, cancel_attack_from: number | null, cancel_dodge_from: number | null, cancel_any_from: number | null, next_chain: string | null, charge: Charge | null, hitboxes: Array<Hitbox>, 
+/**
+ * Projectiles the move launches.
+ */
+projectiles: Array<ProjectileSpawn>, sfx: Array<[number, string]>, vfx: Array<[number, string]>, 
 /**
  * A placeholder for a move a later WP implements; the validator warns on it.
  */

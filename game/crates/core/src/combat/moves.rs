@@ -237,7 +237,14 @@ impl MoveTable {
                 num: num(&m.id)?,
                 data: m.clone(),
                 next_chain: m.next_chain.as_deref().map(num).transpose()?,
-                track_until: m.hitboxes.iter().map(|h| h.frames.0).min().unwrap_or(0),
+                // A move that launches projectiles aims until the first one leaves (WP-027).
+                track_until: m
+                    .hitboxes
+                    .iter()
+                    .map(|h| h.frames.0)
+                    .chain(m.projectiles.iter().map(|p| p.frame))
+                    .min()
+                    .unwrap_or(0),
             });
         }
         defs.sort_by_key(|d| d.num);

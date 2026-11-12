@@ -1,0 +1,36 @@
+// A stub bow for WP-027 (projectiles). It exists to fire the stub bow moves until the
+// bows (docs/game/04-arsenal-and-builds.md, "Weapon list") and the catalysts land.
+#![enable(implicit_some)]
+[
+  (
+    id: "wpn_stub_bow",
+    name: "Stub Bow",
+    class: Bow,
+    base_damage: 80, // tuning
+    phys: Pierce,
+    scaling: (might: 0.0, finesse: 0.6, insight: 0.0, devotion: 0.0), // tuning
+    requirements: (might: 0, finesse: 10, insight: 0, devotion: 0), // tuning
+    weight_tenths: 20, // tuning
+    unique: false,
+    guard: (absorb_phys_percent: 0, absorb_elem_percent: 0, guard_boost: 40), // tuning
+    // The movesets of bows and catalysts differ from a sword's. Until they exist, the
+    // moves a bow doesn't use point at the sword's and the shared dodges.
+    moveset: (
+      light_chain: ["stub_bow_shot"],
+      heavy: "stub_bow_seeker",
+      charged_heavy: "stub_bow_seeker",
+      running: "ss_running",
+      rolling: "ss_rolling",
+      backstep: "ss_backstep",
+      jump_light: "ss_jump_light",
+      jump_heavy: "ss_jump_heavy",
+      plunge: "ss_plunge",
+      guard_counter: "ss_guard_counter",
+      roll_light: "dodge_roll_light",
+      roll_medium: "dodge_roll_medium",
+      roll_heavy: "dodge_roll_heavy",
+      dodge_backstep: "dodge_backstep",
+    ),
+    stub: true,
+  ),
+]

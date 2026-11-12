@@ -60,6 +60,51 @@ pub const ACTOR_SNAP_WORDS: usize = ACTOR_SNAP_BYTES / 4;
 const _: () = assert!(size_of::<ActorSnap>() == ACTOR_SNAP_BYTES);
 const _: () = assert!(align_of::<ActorSnap>() == 4);
 
+/// One projectile in flight, for the renderer (WP-027). 32 bytes, 4-byte aligned, no
+/// padding. Kept in a separate buffer from the actor records, so the actor layout the
+/// TypeScript reader mirrors doesn't change; WP-028 wires the buffer into `lf-wasm` and
+/// the reader (`write_projectile_snapshot` is the hook).
+///
+/// | Offset | Field | Type |
+/// |---|---|---|
+/// | 0 | `id` | `u32` |
+/// | 4 | `def` | `u32` |
+/// | 8 | `pos` | `f32 x 3` |
+/// | 20 | `vel` | `f32 x 3` |
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Default, PartialEq)]
+pub struct ProjectileSnap {
+    /// Arena handle, packed like [`ActorSnap::id`]. The same handle for a projectile's
+    /// whole flight; it may be reused after the projectile ends.
+    pub id: u32,
+    /// The projectile definition's registry number (`proj_arrow` is 5000): model lookup.
+    pub def: u32,
+    /// Meters.
+    pub pos: [f32; 3],
+    /// Meters per second. Orient the model along it.
+    pub vel: [f32; 3],
+}
+
+/// Size of one projectile record in bytes, and in 4-byte words.
+pub const PROJECTILE_SNAP_BYTES: usize = 32;
+pub const PROJECTILE_SNAP_WORDS: usize = PROJECTILE_SNAP_BYTES / 4;
+
+const _: () = assert!(size_of::<ProjectileSnap>() == PROJECTILE_SNAP_BYTES);
+const _: () = assert!(align_of::<ProjectileSnap>() == 4);
+
+/// Clears `out` and writes one record per projectile in flight, in arena (index) order.
+pub fn write_projectile_snapshot(world: &World, out: &mut Vec<ProjectileSnap>) {
+    out.clear();
+    for (id, p) in world.projectiles.iter() {
+        out.push(ProjectileSnap {
+            id: pack_id(id),
+            def: p.def,
+            pos: p.pos,
+            vel: p.vel,
+        });
+    }
+}
+
 /// Packs an arena handle into one `u32` for the host: `generation (12 bits) << 20 | index (20 bits)`.
 pub fn pack_id(id: Id) -> u32 {
     ((id.generation & 0xFFF) << 20) | (id.index & 0xF_FFFF)

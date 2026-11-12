@@ -1,0 +1,22 @@
+// The WP-027 archery range: a flat floor, a back wall, and two padded dummies. The player
+// spawns at the origin facing +Z with the stub bow (docs/game/10-roadmap.md, "Stub
+// items"). +X is to the player's left while facing +Z.
+//   - The floor's top is at y = 0.
+//   - The back wall spans x -10..10, y 0..4, z 29.5..30.5 (a 1 m thick wall).
+//   - dummy_mark stands 10.4 m away, 16.7 degrees to the left: LOCK picks it.
+//   - dummy_aside stands 9.4 m away, 32 degrees to the right.
+(
+  spawn: (0.0, 0.0, 0.0),
+  spawn_yaw: 0.0,
+  kill_y: -50.0,
+  player_weapon: Some("wpn_stub_bow"),
+  heightfield: None,
+  boxes: [
+    (name: "floor", center: (0.0, -0.5, 0.0), half_extents: (60.0, 0.5, 60.0)),
+    (name: "back_wall", center: (0.0, 2.0, 30.0), half_extents: (10.0, 2.0, 0.5)),
+  ],
+  dummies: [
+    (name: "dummy_mark", pos: (3.0, 0.0, 10.0), yaw: 3.1415927, hp: 300, defense: (flat: 100)),
+    (name: "dummy_aside", pos: (-5.0, 0.0, 8.0), yaw: 3.1415927, hp: 300, defense: (flat: 100)),
+  ],
+)

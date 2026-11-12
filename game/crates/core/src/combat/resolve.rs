@@ -108,7 +108,7 @@ pub fn hit_outcome(attacker: &Actor, target: &Actor, hb: &Hitbox) -> HitOutcome 
 /// True when `target` is in the startup or active frames of one of its own attacks: it
 /// has a move with hitboxes and hasn't passed the last active frame of the last one
 /// (docs/game/03-combat.md, "Damage dealt", `counter_mult`).
-fn is_counter(target: &Actor, moves: &MoveTable) -> bool {
+pub(crate) fn is_counter(target: &Actor, moves: &MoveTable) -> bool {
     let Some(c) = target.moves.current else {
         return false;
     };
@@ -118,21 +118,22 @@ fn is_counter(target: &Actor, moves: &MoveTable) -> bool {
         .is_some_and(|last_active| c.frame <= last_active)
 }
 
-/// A hit that landed, decided from the world at the start of the system.
-struct Landing {
-    attacker: Id,
-    target: Id,
-    move_num: MoveNum,
-    hitbox: u8,
-    motion_value: f32,
-    charge_frac: f32,
-    point: [f32; 3],
-    dir: [f32; 3],
+/// A hit that landed, decided from the world at the start of the system. Projectiles
+/// (`combat::projectile`) build these too and apply them with [`apply_landing`].
+pub(crate) struct Landing {
+    pub(crate) attacker: Id,
+    pub(crate) target: Id,
+    pub(crate) move_num: MoveNum,
+    pub(crate) hitbox: u8,
+    pub(crate) motion_value: f32,
+    pub(crate) charge_frac: f32,
+    pub(crate) point: [f32; 3],
+    pub(crate) dir: [f32; 3],
     /// Damage before the guard.
-    damage: Damage,
-    counter: bool,
-    poise_damage: u32,
-    unblockable: bool,
+    pub(crate) damage: Damage,
+    pub(crate) counter: bool,
+    pub(crate) poise_damage: u32,
+    pub(crate) unblockable: bool,
 }
 
 /// A hitbox touching a hurtbox this tick, before its outcome is decided.
@@ -166,6 +167,67 @@ fn dir_xz(from: [f32; 3], to: [f32; 3], fallback: [f32; 3]) -> [f32; 3] {
     } else {
         fallback
     }
+}
+
+/// Applies one landing: through the target's guard, to its HP, and out as a `Hit` event.
+/// The apply step shared by melee ([`run`]) and projectiles (`combat::projectile`).
+/// Returns false if the hit passed through (the target is gone or can't be hit), and then
+/// changes nothing. The caller marks the target struck, because what that means differs:
+/// a move's struck list for melee, a projectile's for a shot.
+pub(crate) fn apply_landing(world: &mut World, l: &Landing) -> bool {
+    // Only the player has a moveset until AI lands; anyone else can't be guarding.
+    let guard_stats = if l.target == world.player {
+        world.moves.player_moveset.as_ref().map(|m| m.guard)
+    } else {
+        None
+    }
+    .unwrap_or(GuardStats {
+        absorb_phys_percent: 0,
+        absorb_elem_percent: 0,
+        guard_boost: 1,
+        parry_window_ticks: 0,
+    });
+    let Some(t) = world.actors.get_mut(l.target) else {
+        return false;
+    };
+    let incoming = IncomingHit {
+        damage: l.damage.total,
+        poise_damage: l.poise_damage,
+        elemental: l.damage.mostly_elemental(),
+        unblockable: l.unblockable,
+    };
+    let (taken, result) =
+        match guard::apply_incoming_hit(t, incoming, &guard_stats, &world.locomotion.guard) {
+            // Decided as a landing from the same state, so this can't happen; if it
+            // ever does, the hit passes through like an i-frame hit.
+            guard::HitOutcome::Ignored => return false,
+            guard::HitOutcome::Connected { damage } => (damage, HitResult::Connected),
+            guard::HitOutcome::Guarded { damage, .. } => (damage, HitResult::Guarded),
+            guard::HitOutcome::GuardBroken { damage } => (damage, HitResult::GuardBroken),
+        };
+    let hp_before = t.hp;
+    t.hp = hp_before.saturating_sub(taken);
+    world.events.push(Event::Hit(Hit {
+        attacker: l.attacker,
+        target: l.target,
+        move_num: l.move_num,
+        hitbox: l.hitbox,
+        motion_value: l.motion_value,
+        charge_frac: l.charge_frac,
+        point: l.point,
+        dir: l.dir,
+        damage: hp_before - t.hp,
+        result,
+        counter: l.counter,
+        killed: hp_before > 0 && t.hp == 0,
+        hp: t.hp,
+    }));
+    // A hit that wasn't blocked adds poise and stance damage (see `poise`). Projectile
+    // hits count too.
+    if result == HitResult::Connected {
+        poise::apply_landing(world, l.target, l.move_num, l.poise_damage);
+    }
+    true
 }
 
 /// Tick system 7. See the module docs for the order.
@@ -328,56 +390,8 @@ pub fn run(world: &mut World) {
     // 4. Apply the parries, then the landings in the same order. See the module docs.
     poise::apply_parries(world, &parries);
     for l in &landings {
-        // Only the player has a moveset until AI lands; anyone else can't be guarding.
-        let guard_stats = if l.target == world.player {
-            world.moves.player_moveset.as_ref().map(|m| m.guard)
-        } else {
-            None
-        }
-        .unwrap_or(GuardStats {
-            absorb_phys_percent: 0,
-            absorb_elem_percent: 0,
-            guard_boost: 1,
-            parry_window_ticks: 0,
-        });
-        let Some(t) = world.actors.get_mut(l.target) else {
+        if !apply_landing(world, l) {
             continue;
-        };
-        let incoming = IncomingHit {
-            damage: l.damage.total,
-            poise_damage: l.poise_damage,
-            elemental: l.damage.mostly_elemental(),
-            unblockable: l.unblockable,
-        };
-        let (taken, result) =
-            match guard::apply_incoming_hit(t, incoming, &guard_stats, &world.locomotion.guard) {
-                // Decided as a landing from the same state, so this can't happen; if it
-                // ever does, the hit passes through like an i-frame hit.
-                guard::HitOutcome::Ignored => continue,
-                guard::HitOutcome::Connected { damage } => (damage, HitResult::Connected),
-                guard::HitOutcome::Guarded { damage, .. } => (damage, HitResult::Guarded),
-                guard::HitOutcome::GuardBroken { damage } => (damage, HitResult::GuardBroken),
-            };
-        let hp_before = t.hp;
-        t.hp = hp_before.saturating_sub(taken);
-        world.events.push(Event::Hit(Hit {
-            attacker: l.attacker,
-            target: l.target,
-            move_num: l.move_num,
-            hitbox: l.hitbox,
-            motion_value: l.motion_value,
-            charge_frac: l.charge_frac,
-            point: l.point,
-            dir: l.dir,
-            damage: hp_before - t.hp,
-            result,
-            counter: l.counter,
-            killed: hp_before > 0 && t.hp == 0,
-            hp: t.hp,
-        }));
-        // A hit that wasn't blocked adds poise and stance damage (see `poise`).
-        if result == HitResult::Connected {
-            poise::apply_landing(world, l.target, l.move_num, l.poise_damage);
         }
         if let Some(a) = world.actors.get_mut(l.attacker)
             && let Err(at) = a.hit.struck.binary_search(&l.target)

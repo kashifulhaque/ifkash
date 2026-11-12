@@ -51,6 +51,12 @@ impl<T> Arena<T> {
         }
     }
 
+    /// True if nothing was ever inserted. Unlike "no live values", this stays false after
+    /// a value is removed, since the slot's generation is state.
+    pub fn is_unused(&self) -> bool {
+        self.slots.is_empty()
+    }
+
     pub fn remove(&mut self, id: Id) -> Option<T> {
         let slot = self.slots.get_mut(id.index as usize)?;
         if slot.generation != id.generation {

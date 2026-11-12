@@ -18,6 +18,7 @@ pub mod consumables;
 pub mod locomotion;
 pub mod moves;
 pub mod portfolio;
+pub mod projectiles;
 pub mod registry;
 pub mod scenario;
 pub mod validate;
@@ -28,6 +29,7 @@ pub use consumables::{Consumables, Flask, Item, ItemKind};
 pub use locomotion::{Death, EquipLoad, Guard, LockOn, Locomotion, Poise};
 pub use moves::Move;
 pub use portfolio::{Portfolio, PortfolioContent};
+pub use projectiles::{Homing, ProjectileDef};
 pub use registry::{NumId, Registry};
 pub use scenario::{Lantern, Scenario};
 pub use validate::{Issue, Severity, Validate};
@@ -45,6 +47,8 @@ const SCENARIOS_DIR: &str = "scenarios";
 const LOCOMOTION_FILE: &str = "locomotion.ron";
 /// The consumables file (relative to the data root).
 const CONSUMABLES_FILE: &str = "consumables.ron";
+/// The projectile definitions file (relative to the data root).
+const PROJECTILES_FILE: &str = "projectiles.ron";
 
 /// Embedded copies of every data file, as `(path relative to the data root, text)`.
 /// A new data file needs a line here; the `embedded_matches_data_dir` test fails if one
@@ -62,19 +66,34 @@ const EMBEDDED_MOVES: &[(&str, &str)] = &[
         "moves/crits.ron",
         include_str!("../../../data/moves/crits.ron"),
     ),
+    (
+        "moves/stub_bow.ron",
+        include_str!("../../../data/moves/stub_bow.ron"),
+    ),
 ];
-const EMBEDDED_WEAPONS: &[(&str, &str)] = &[(
-    "weapons/straight_sword.ron",
-    include_str!("../../../data/weapons/straight_sword.ron"),
-)];
+const EMBEDDED_WEAPONS: &[(&str, &str)] = &[
+    (
+        "weapons/straight_sword.ron",
+        include_str!("../../../data/weapons/straight_sword.ron"),
+    ),
+    (
+        "weapons/stub_bow.ron",
+        include_str!("../../../data/weapons/stub_bow.ron"),
+    ),
+];
 const EMBEDDED_REGISTRY: &str = include_str!("../../../data/registry.ron");
 const EMBEDDED_ATTRIBUTES: &str = include_str!("../../../data/attributes.ron");
 const EMBEDDED_LOCOMOTION: &str = include_str!("../../../data/locomotion.ron");
 const EMBEDDED_CONSUMABLES: &str = include_str!("../../../data/consumables.ron");
+const EMBEDDED_PROJECTILES: &str = include_str!("../../../data/projectiles.ron");
 const EMBEDDED_SCENARIOS: &[(&str, &str)] = &[
     (
         "scenarios/m0_flat.ron",
         include_str!("../../../data/scenarios/m0_flat.ron"),
+    ),
+    (
+        "scenarios/m2_range.ron",
+        include_str!("../../../data/scenarios/m2_range.ron"),
     ),
     (
         "scenarios/test_field.ron",
@@ -117,6 +136,9 @@ pub struct Content {
     /// directories (test fixtures); the player has no inventory without it.
     #[cfg_attr(feature = "ts", ts(skip))]
     pub consumables: Option<Consumables>,
+    /// Projectile definitions from `projectiles.ron`; empty if the file is missing.
+    #[cfg_attr(feature = "ts", ts(skip))]
+    pub projectiles: Vec<ProjectileDef>,
 }
 
 /// A failure to load content. Validation problems are [`Issue`]s instead.
@@ -210,6 +232,12 @@ impl Content {
         } else {
             None
         };
+        let projectiles_path = dir.join(PROJECTILES_FILE);
+        let projectiles = if projectiles_path.is_file() {
+            Some(read(&projectiles_path)?)
+        } else {
+            None
+        };
         Self::from_sources(
             &read(&dir.join("registry.ron"))?,
             &read(&dir.join("attributes.ron"))?,
@@ -217,7 +245,8 @@ impl Content {
             list(WEAPONS_DIR)?,
         )?
         .with_world(locomotion.as_deref(), list(SCENARIOS_DIR)?)?
-        .with_consumables(consumables.as_deref())
+        .with_consumables(consumables.as_deref())?
+        .with_projectiles(projectiles.as_deref())
     }
 
     /// Loads the content baked into this crate with `include_str!`.
@@ -235,7 +264,8 @@ impl Content {
             own(EMBEDDED_WEAPONS),
         )?
         .with_world(Some(EMBEDDED_LOCOMOTION), own(EMBEDDED_SCENARIOS))?
-        .with_consumables(Some(EMBEDDED_CONSUMABLES))
+        .with_consumables(Some(EMBEDDED_CONSUMABLES))?
+        .with_projectiles(Some(EMBEDDED_PROJECTILES))
     }
 
     /// Builds content from RON text. `moves` and `weapons` are `(relative path, text)`.
@@ -266,6 +296,7 @@ impl Content {
             locomotion: None,
             scenarios: BTreeMap::new(),
             consumables: None,
+            projectiles: Vec::new(),
         };
         content.check_registered()?;
         Ok(content)
@@ -307,6 +338,19 @@ impl Content {
                 "flask.drink_move".to_owned(),
                 &c.flask.drink_move,
             )?;
+        }
+        Ok(self)
+    }
+
+    /// Adds the projectile definitions (RON text, if any). Fails on a projectile that has
+    /// no registry entry.
+    pub fn with_projectiles(mut self, text: Option<&str>) -> Result<Self, ContentError> {
+        self.projectiles = text
+            .map(|t| parse::<Vec<ProjectileDef>>(PROJECTILES_FILE, t))
+            .transpose()?
+            .unwrap_or_default();
+        for (i, p) in self.projectiles.iter().enumerate() {
+            self.check_id(PROJECTILES_FILE, format!("[{i}].id"), &p.id)?;
         }
         Ok(self)
     }
@@ -387,6 +431,11 @@ impl Content {
     /// Finds a move by string ID.
     pub fn move_by_id(&self, id: &str) -> Option<&Move> {
         self.all_moves().map(|(_, m)| m).find(|m| m.id == id)
+    }
+
+    /// Finds a projectile definition by string ID.
+    pub fn projectile_by_id(&self, id: &str) -> Option<&ProjectileDef> {
+        self.projectiles.iter().find(|p| p.id == id)
     }
 
     /// Finds a weapon by string ID.

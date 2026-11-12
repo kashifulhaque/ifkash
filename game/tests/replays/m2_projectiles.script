@@ -1,0 +1,15 @@
+# WP-027 golden: the player fires an arrow, locks on and fires another, then a homing
+# seeker bolt (record with `lf-tools replay record-script`). Each line: <ticks> <move_x>
+# <move_z> [BUTTONS]. The player spawns at the origin facing +Z with the stub bow on
+# m2_range; dummy_mark stands at (3, 0, 10), dummy_aside at (-5, 0, 8).
+seed 27
+scenario m2_range
+5  0 0            # stand
+1  0 0  LIGHT      # stub_bow_shot: the arrow leaves on frame 8, straight ahead
+50 0 0            # it falls and sticks in the floor about 20 m out
+1  0 0  LOCK       # lock on to dummy_mark (the smallest angle to the facing)
+2  0 0
+1  0 0  LIGHT      # the move turns toward dummy_mark before the arrow leaves, and hits it
+40 0 0
+1  0 0  HEAVY      # stub_bow_seeker: a bolt launched 70 degrees left, curving onto the lock
+70 0 0

@@ -15,8 +15,10 @@ export const EVENT_WORDS: Readonly<Record<number, number>> = {
   3: 4, // Stagger: target, heavy, ticks (WP-024)
   4: 3, // StanceBreak: target, kneel ticks (WP-024)
   5: 4, // Parry: attacker, target, parried move (WP-024)
-  6: 5 // Critical: attacker, target, crit kind, crit move (WP-024)
-  // Kinds 2-6 aren't decoded into events yet; the decoder skips them by length.
+  6: 5, // Critical: attacker, target, crit kind, crit move (WP-024)
+  // Kind 7 is reserved for the status event (WP-025).
+  8: 10 // Projectile: what, handle, def, shooter, target, position, ended (WP-027)
+  // Kinds 2-6 and 8 aren't decoded into events yet; the decoder skips them by length.
 };
 
 export const EVENT_HIT = 1;

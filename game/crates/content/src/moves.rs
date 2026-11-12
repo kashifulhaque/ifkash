@@ -89,6 +89,26 @@ pub struct Hitbox {
     pub tags: Vec<HitTag>,
 }
 
+/// A projectile a move launches (docs/game/03-combat.md, "Spells"). It spawns on the
+/// move's frame `frame`, from `offset` in the actor's local space, flying along the
+/// actor's facing turned by `yaw_deg` and `pitch_deg`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "ts", derive(ts_rs::TS))]
+#[serde(deny_unknown_fields)]
+pub struct ProjectileSpawn {
+    /// The move frame it spawns on. Not the frame a chargeable move holds at.
+    pub frame: u16,
+    /// A projectile ID from `projectiles.ron`.
+    pub projectile: String,
+    /// Spawn point: x right, y up, z forward, origin at the feet.
+    pub offset: [f32; 3],
+    /// Turn from the facing, in degrees, positive toward the actor's left (the way yaw
+    /// grows). 0 flies straight ahead.
+    pub yaw_deg: f32,
+    /// Elevation above the horizontal, in degrees.
+    pub pitch_deg: f32,
+}
+
 /// A chargeable move. The move holds at `charge_from` for up to `max_frames` ticks and
 /// the hitbox motion value rises from its listed value to `motion_value_max`.
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
@@ -123,6 +143,9 @@ pub struct Move {
     #[serde(default)]
     pub charge: Option<Charge>,
     pub hitboxes: Vec<Hitbox>,
+    /// Projectiles the move launches.
+    #[serde(default)]
+    pub projectiles: Vec<ProjectileSpawn>,
     pub sfx: Vec<(u16, String)>,
     pub vfx: Vec<(u16, String)>,
     /// A placeholder for a move a later WP implements; the validator warns on it.

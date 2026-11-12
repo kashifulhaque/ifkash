@@ -1,0 +1,53 @@
+// Stub bow moves for WP-027 (projectiles): stand-ins until the bow movesets and the
+// Formulae spells (WP-055) exist. Each only launches a projectile, and both are
+// `stub: true`. Schema: crates/content/src/moves.rs.
+#![enable(implicit_some)]
+[
+  (
+    // LIGHT: an arrow from the chest, aimed along the facing. The move turns toward the
+    // lock target until the arrow leaves.
+    id: "stub_bow_shot",
+    anim: "bow_shoot",
+    total_frames: 24, // tuning
+    stamina: 6, // tuning
+    fp: 0,
+    root_motion: [],
+    track_deg_per_tick: 12.0,
+    hyperarmor: None,
+    iframes: None,
+    cancel_attack_from: 20, // tuning
+    cancel_dodge_from: 14, // tuning
+    cancel_any_from: 20, // tuning
+    next_chain: None,
+    hitboxes: [],
+    projectiles: [
+      (frame: 8, projectile: "proj_arrow", offset: (0.0, 1.4, 0.5), yaw_deg: 0.0, pitch_deg: 0.0),
+    ],
+    sfx: [(8, "bow_release")],
+    vfx: [],
+    stub: true,
+  ),
+  (
+    // HEAVY: a seeker bolt launched 70 degrees to the left, which curves toward its target.
+    id: "stub_bow_seeker",
+    anim: "cast_formula",
+    total_frames: 30, // tuning
+    stamina: 6, // tuning
+    fp: 0,
+    root_motion: [],
+    track_deg_per_tick: 0.0,
+    hyperarmor: None,
+    iframes: None,
+    cancel_attack_from: 26, // tuning
+    cancel_dodge_from: 16, // tuning
+    cancel_any_from: 26, // tuning
+    next_chain: None,
+    hitboxes: [],
+    projectiles: [
+      (frame: 10, projectile: "proj_seeker_bolt", offset: (0.0, 1.4, 0.3), yaw_deg: 70.0, pitch_deg: 0.0),
+    ],
+    sfx: [],
+    vfx: [],
+    stub: true,
+  ),
+]

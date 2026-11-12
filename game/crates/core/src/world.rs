@@ -11,8 +11,9 @@ use crate::combat::damage::DamageTable;
 use crate::combat::hurtbox::Hurtbox;
 use crate::combat::moves::MoveTable;
 use crate::combat::poise::PoiseState;
+use crate::combat::projectile::{Projectile, ProjectileTable};
 use crate::events::EventQueue;
-use crate::items::{Inventory, ItemTable};
+use crate::items::{Inventory, ItemTable, slot};
 use crate::physics::PhysicsState;
 use crate::rng::RngStreams;
 use crate::world_state::lantern::dummy_actor;
@@ -37,7 +38,11 @@ pub struct World {
     /// The damage rules and every weapon's attack rating inputs, from content. Not
     /// hashed: the content hash covers them.
     pub damage: DamageTable,
+    /// Every projectile definition, from content. Not hashed: the content hash covers it.
+    pub projectile_defs: ProjectileTable,
     pub actors: Arena<Actor>,
+    /// Projectiles in flight (docs/game/01-architecture.md, "World and actors").
+    pub projectiles: Arena<Projectile>,
     /// The player actor, spawned by `World::new`.
     pub player: Id,
     /// Lanterns and enemy spawns from the scenario, for the world state to refer to. Not
@@ -86,6 +91,11 @@ struct HashView<'a> {
     scenario: &'a str,
     actors: &'a Arena<Actor>,
     state: &'a WorldState,
+    /// Left out until the first projectile spawns, so a world that never fires one hashes
+    /// as it did before projectiles existed. The view is only ever serialized, never read
+    /// back, so a skipped field is safe.
+    #[serde(skip_serializing_if = "Arena::is_unused")]
+    projectiles: &'a Arena<Projectile>,
 }
 
 impl World {
@@ -103,20 +113,9 @@ impl World {
         let moves = MoveTable::from_content(content).map_err(WorldError::Moves)?;
         let hurtbox = Hurtbox::from_locomotion(&locomotion);
         let items = ItemTable::from_content(content).map_err(WorldError::Items)?;
+        let projectile_defs = ProjectileTable::from_content(content).map_err(WorldError::Moves)?;
         let mut actors = Arena::new();
-        let mut inventory = Inventory::starting(&items);
-        // A scenario can start the player with another weapon in the right hand.
-        if let Some(id) = &level.player_weapon {
-            let w = content
-                .registry
-                .num(id)
-                .filter(|&n| items.is_weapon(n))
-                .ok_or_else(|| {
-                    WorldError::Items(format!("player_weapon \"{id}\" is not a weapon"))
-                })?;
-            inventory.give_gear(w);
-            inventory.equipment.slots[usize::from(crate::items::slot::RIGHT_1)] = Some(w);
-        }
+        let inventory = Inventory::starting(&items);
         let player = actors.insert(Actor {
             pos: level.spawn,
             yaw: level.spawn_yaw,
@@ -170,12 +169,29 @@ impl World {
             moves,
             items,
             damage,
+            projectile_defs,
             actors,
+            projectiles: Arena::new(),
             player,
             layout,
             state,
             events: EventQueue::default(),
         };
+        if let Some(id) = &level.player_weapon {
+            let weapon = content
+                .registry
+                .num(id)
+                .filter(|&n| world.items.is_weapon(n))
+                .ok_or_else(|| {
+                    WorldError::Items(format!(
+                        "scenario {scenario:?}: player_weapon \"{id}\" is not a weapon"
+                    ))
+                })?;
+            if let Some(p) = world.actors.get_mut(player) {
+                p.inventory.give_gear(weapon);
+                p.inventory.equip(slot::RIGHT_1, weapon, &world.items);
+            }
+        }
         world.sync_player_moveset();
         Ok(world)
     }
@@ -201,6 +217,7 @@ impl World {
             scenario: &self.physics.scenario,
             actors: &self.actors,
             state: &self.state,
+            projectiles: &self.projectiles,
         };
         let bytes = postcard::to_allocvec(&view).expect("world serialization cannot fail");
         xxhash_rust::xxh3::xxh3_64(&bytes)

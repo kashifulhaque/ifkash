@@ -20,6 +20,9 @@ pub enum Event {
     Parry(Parry),
     /// A critical hit started (`combat::crit`).
     Critical(Critical),
+    /// A projectile spawned, struck an actor, hit the level, or expired
+    /// (`combat::projectile`). A strike also emits a `Hit` for the damage.
+    Projectile(ProjectileEvent),
 }
 
 /// What happened to the player's life cycle (docs/game/06-progression-and-systems.md,
@@ -94,6 +97,48 @@ pub struct Critical {
     pub kind: CritKind,
     /// The attacker's crit move.
     pub move_num: MoveNum,
+}
+
+/// What happened to a projectile.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub enum ProjectileEventKind {
+    /// It left the shooter. `pos` is the spawn point.
+    Spawned,
+    /// It struck `target`. If `ended` is false it flew on through (pierce).
+    Struck,
+    /// It hit level geometry and stopped.
+    Impact,
+    /// Its lifetime ran out.
+    Expired,
+}
+
+impl ProjectileEventKind {
+    /// The code the WASM event stream uses.
+    pub fn code(self) -> u32 {
+        match self {
+            Self::Spawned => 0,
+            Self::Struck => 1,
+            Self::Impact => 2,
+            Self::Expired => 3,
+        }
+    }
+}
+
+/// One step in a projectile's life, for the renderer's effects and sounds.
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+pub struct ProjectileEvent {
+    pub kind: ProjectileEventKind,
+    /// The projectile's arena handle. The same handle appears in every event of its life.
+    pub projectile: Id,
+    /// The projectile's registry number (`proj_arrow` is 5000).
+    pub def: u32,
+    pub shooter: Id,
+    /// The actor struck, for `Struck`.
+    pub target: Option<Id>,
+    /// Where it was: the spawn point, the contact point, or where it expired.
+    pub pos: [f32; 3],
+    /// The projectile is gone after this event (the handle may be reused later).
+    pub ended: bool,
 }
 
 /// One hitbox connecting with one target: the raw inputs to damage, poise, status, and

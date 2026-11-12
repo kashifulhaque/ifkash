@@ -11,6 +11,7 @@
 //! `actor::controller`). Actor-versus-actor collision arrives with enemies.
 
 use lf_content::Scenario;
+use rapier3d::parry::query::ShapeCastOptions;
 use rapier3d::parry::utils::Array2;
 use rapier3d::prelude::*;
 use serde::{Deserialize, Serialize};
@@ -100,6 +101,19 @@ impl PhysicsState {
             &self.colliders,
             QueryFilter::default(),
         )
+    }
+
+    /// Sweeps a sphere of `radius` from `from` along `delta` against the level. Returns
+    /// the fraction of `delta` (0 to 1) at which it first touches, or `None` if it gets
+    /// all the way. A sphere that starts touching the level returns 0. Read-only.
+    pub fn sphere_cast(&self, from: [f32; 3], delta: [f32; 3], radius: f32) -> Option<f32> {
+        let ball = Ball::new(radius);
+        let at = Pose::from_translation(vec3(from));
+        // The velocity is the whole move, so time 0 to 1 is the move.
+        let options = ShapeCastOptions::with_max_time_of_impact(1.0);
+        self.queries()
+            .cast_shape(&at, vec3(delta), &ball, options)
+            .map(|(_, hit)| hit.time_of_impact)
     }
 
     /// Casts a ray against the level. Returns the distance along `dir` (which need not be

@@ -7,6 +7,7 @@ use std::fmt;
 use crate::Content;
 use crate::attributes::{Attributes, Curve};
 use crate::moves::{FrameWindow, Move};
+use crate::projectiles::ProjectileDef;
 use crate::weapons::Weapon;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -190,6 +191,35 @@ fn check_move(m: &Move, file: &str, content: &Content, out: &mut Vec<Issue>) {
             );
         }
     }
+    for (i, p) in m.projectiles.iter().enumerate() {
+        s.frame(&format!("projectiles[{i}].frame"), p.frame, total);
+        if content.projectile_by_id(&p.projectile).is_none() {
+            s.error(
+                format!("projectiles[{i}].projectile"),
+                format!("unknown projectile \"{}\"", p.projectile),
+            );
+        }
+        // A chargeable move holds on `charge_from`, and a spawn there would fire every
+        // held tick.
+        if m.charge.is_some_and(|c| c.charge_from == p.frame) {
+            s.error(
+                format!("projectiles[{i}].frame"),
+                "must differ from charge.charge_from, where the move holds",
+            );
+        }
+        s.range_f32(
+            &format!("projectiles[{i}].yaw_deg"),
+            p.yaw_deg,
+            -180.0,
+            180.0,
+        );
+        s.range_f32(
+            &format!("projectiles[{i}].pitch_deg"),
+            p.pitch_deg,
+            -90.0,
+            90.0,
+        );
+    }
     for (name, list) in [("sfx", &m.sfx), ("vfx", &m.vfx)] {
         for (i, (frame, _)) in list.iter().enumerate() {
             s.frame(&format!("{name}[{i}].frame"), *frame, total);
@@ -197,6 +227,47 @@ fn check_move(m: &Move, file: &str, content: &Content, out: &mut Vec<Issue>) {
     }
     if m.stub {
         s.warn("stub", "move is a stub placeholder");
+    }
+}
+
+fn check_projectile(p: &ProjectileDef, out: &mut Vec<Issue>) {
+    let mut s = Sink {
+        out,
+        file: "projectiles.ron",
+        item: &p.id,
+    };
+    s.range_f32("speed", p.speed, 0.0, 400.0);
+    if p.speed <= 0.0 {
+        s.error("speed", "must be above 0");
+    }
+    s.range_f32("gravity", p.gravity, 0.0, 100.0);
+    s.range_f32("radius", p.radius, 0.0, 2.0);
+    if p.radius <= 0.0 {
+        s.error("radius", "must be above 0");
+    }
+    if p.lifetime_ticks == 0 {
+        s.error("lifetime_ticks", "must be at least 1");
+    }
+    if p.pierce > 10 {
+        s.error("pierce", format!("{} is outside 0..=10", p.pierce));
+    }
+    if let Some(h) = &p.homing {
+        s.range_f32("homing.turn_deg_per_tick", h.turn_deg_per_tick, 0.0, 90.0);
+        s.range_f32("homing.range_m", h.range_m, 0.0, 100.0);
+    }
+    s.range_f32("motion_value", p.motion_value, 0.0, 10.0);
+    if p.motion_value <= 0.0 {
+        s.error("motion_value", "must be above 0");
+    }
+    if p.poise_damage > 1000 {
+        s.error(
+            "poise_damage",
+            format!("{} is outside 0..=1000", p.poise_damage),
+        );
+    }
+    s.range_f32("knockback", p.knockback, 0.0, 10.0);
+    if p.hitstop > 30 {
+        s.error("hitstop", format!("{} is outside 0..=30", p.hitstop));
     }
 }
 
@@ -346,6 +417,18 @@ impl Validate for Content {
                 .error("id", "duplicate move ID");
             }
             check_move(m, file, self, &mut out);
+        }
+        let mut seen = BTreeSet::new();
+        for p in &self.projectiles {
+            if !seen.insert(p.id.as_str()) {
+                Sink {
+                    out: &mut out,
+                    file: "projectiles.ron",
+                    item: &p.id,
+                }
+                .error("id", "duplicate projectile ID");
+            }
+            check_projectile(p, &mut out);
         }
         let mut seen = BTreeSet::new();
         for (file, w) in self.all_weapons() {

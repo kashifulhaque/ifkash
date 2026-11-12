@@ -1,0 +1,19 @@
+[build-system]
+requires = ["maturin>=1.9.4,<2"]
+build-backend = "maturin"
+
+[project]
+name = "latticefall"
+version = "0.1.0"
+description = "Python bindings for the Latticefall simulation."
+requires-python = ">=3.11"
+
+[tool.maturin]
+manifest-path = "../crates/py/Cargo.toml"
+python-source = "."
+module-name = "latticefall._latticefall"
+# No `features = ["pyo3/extension-module"]`: PyO3 0.30 deprecated that feature, and
+# maturin >= 1.9.4 sets PYO3_BUILD_EXTENSION_MODULE during the build instead.
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

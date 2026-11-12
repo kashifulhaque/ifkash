@@ -10,5 +10,17 @@ publish.workspace = true
 workspace = true
 
 [lib]
-# PyO3 and the extension-module feature arrive in WP-007.
+# Must match the last part of `module-name` in python/pyproject.toml.
+name = "_latticefall"
 crate-type = ["cdylib", "rlib"]
+# The test harness would link libpython, which macOS cannot find at run time. The Python
+# tests in game/python/tests cover this crate instead.
+test = false
+doctest = false
+
+[dependencies]
+lf-core.workspace = true
+lf-content.workspace = true
+# No `extension-module` feature (deprecated in PyO3 0.30): maturin >= 1.9.4 sets
+# PYO3_BUILD_EXTENSION_MODULE itself, so plain cargo test and clippy still link.
+pyo3 = { version = "0.30", features = ["abi3-py311"] }

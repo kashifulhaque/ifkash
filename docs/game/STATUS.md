@@ -24,7 +24,7 @@ Status values are `todo`, `in progress`, `blocked`, `split`, `review`, and `done
 | 004 | Inputs, replays, golden tests | core | done | claude/game-m0-1730d5 | 2026-11-12 | Replay = postcard .lfr (header, RLE frames, commands, hash every 30 ticks). Golden m0_random_3000.lfr: 3,196 bytes, final hash 81ea2bbe90c69441. Placeholder kinematic player movement (walk 1.6, run 4.5 m/s) until WP-010. lf-tools replay run/rehash/record-random and a minimal bench. |
 | 005 | CI and frontend deploy proposal | infra | done | claude/game-m0-1730d5 | 2026-11-12 | game.yml passes actionlint and its steps run locally; not yet run on GitHub (branch not pushed). ADR 0003 is Proposed with a concrete web-deploy.yml; needs owner sign-off and the Pages project name. Installed actionlint to ~/go/bin. |
 | 006 | Browser bridge | render | todo | | | |
-| 007 | Python binding stub | rl | todo | | | |
+| 007 | Python binding stub | rl | done | claude/game-m0-1730d5 | 2026-11-12 | pyo3 0.30.1 (abi3-py311), maturin 1.16.0 in the project venv game/python/.venv (created with uv; maturin and pytest installed there). Python hash equals native (81ea2bbe90c69441). Bench: step 17-20M steps/s, step_many 157-181M steps/s on the near-empty M0 sim. CI python job installs uv. |
 | 008 | Portfolio slugs | ui | done | claude/game-m0-1730d5 | 2026-11-12 | Slugs on all 20 content.ts items; scripts/export-content.ts writes game/data/gen/portfolio_content.json, run by game:validate before lf-tools validate (CI rust job now installs Bun). Portfolio is validated separately and is not in the content hash. Nine of ten relic flavor lines are new wording that needs owner review. |
 | 010 | Physics and character controller | core | todo | | | |
 | 011 | Input mapping | render | todo | | | |

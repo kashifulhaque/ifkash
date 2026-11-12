@@ -104,5 +104,13 @@ description = "Build lf-wasm into src/lib/latticefall/wasm/ (stub until WP-006)"
 run = "echo 'game:wasm: not yet implemented'"
 
 [tasks."game:py"]
-description = "Build and test the Python bindings (stub until WP-007)"
-run = "echo 'game:py: not yet implemented'"
+dir = "game/python"
+env = { RUSTUP_TOOLCHAIN = "1.99.1" }
+description = "Build, test, and benchmark the Python bindings"
+run = """
+[ -x .venv/bin/python ] || uv venv --python 3.11 .venv
+[ -x .venv/bin/maturin ] && [ -x .venv/bin/pytest ] || uv pip install --python .venv/bin/python maturin pytest
+VIRTUAL_ENV="$PWD/.venv" PATH="$PWD/.venv/bin:$PATH" maturin develop --release
+.venv/bin/python -m pytest -q
+.venv/bin/python examples/bench.py
+"""

@@ -1,0 +1,173 @@
+// Castle Graymantle layout (WP-064, part 1): greybox blocks (scaled `block_unit`, centered on
+// `pos`). Y is up, +Z is north. The ground is 0 m except the gorge, the cliff path (-8 m), and
+// the cistern (-8 m); see terrain.ron. Places, with extents (x, z):
+//   the cliff plaza        x -70..70, z -90..0   L14 at (-12, -26); the arrival road; the
+//                          trench stair down to the cliff path at (0, -18)
+//   Graymantle Bridge      x -6..6, z 0..60      B03's arena. The deck's top is at 0, 1.5 m
+//                          thick, on three pairs of piers; 1.3 m parapets; two pylons at the
+//                          south end frame the fog gate (the plane z = 3.5)
+//   the cliff path         x -2..2, z 2..58      a shelf at -8 m under the deck, with 0.7 m rock
+//                          lips; the trench stair joins it at z 2 and the cistern closes it
+//   the Barbican           x -32..32, z 60..114
+//     cistern              x -14..14, z 60..92   floor -8 m, L15 at (-4, -8, 74); a stair at
+//                          x 6..12 climbs to the courtyard at z 90
+//     gatehouse            z 62..76              a tunnel x -4..4 closed by two doors in the
+//                          bridge's north end (main gate and postern); the lever is inside
+//     guard room           x 5..31, z 63..75     the east tower, door on its north face
+//     forecourt            x -30..30, z 76..112
+//   the Lower Ward         x -48..48, z 114..212 an inner arch at (0, 112); kennel (west),
+//                          armory (east), chapel (north-east), a guard post, a wall-walk on the
+//                          west wall (a ladder at z 130, a ballista at z 150, a drop to the
+//                          item ledge at z 160..170) and the keep stair at x -6..6, z 196..212
+//   the keep landing       x -6..6, z 212..224   y = 6 m, closed by a placeholder wall at
+//                          z 224..226 that WP-065 replaces with the way on
+// Colliders are axis-aligned boxes, so every doorway is a gap between two boxes plus a lintel.
+// Walks between Lanterns are checked by world_state/castle_tests.rs.
+(
+  landmarks: [
+    // --- Borders: 6 m walls on the edge of the south plaza -----------------------------------
+    (name: "border_s", kit: "block_unit", pos: (0.00, 3.00, -90.00), scale: (140.00, 6.00, 2.00)),
+    (name: "border_w", kit: "block_unit", pos: (-70.00, 3.00, -44.00), scale: (2.00, 6.00, 92.00)),
+    (name: "border_e", kit: "block_unit", pos: (70.00, 3.00, -44.00), scale: (2.00, 6.00, 92.00)),
+    // --- The cliff plaza (z -90..0): L14, ruined posts, a toppled column ---------------------
+    (name: "plaza_post_w", kit: "block_unit", pos: (-21.25, 2.50, -7.25), scale: (1.50, 5.00, 1.50)),
+    (name: "plaza_post_e", kit: "block_unit", pos: (21.25, 2.50, -7.25), scale: (1.50, 5.00, 1.50)),
+    (name: "plaza_wall_w", kit: "block_unit", pos: (-44.00, 1.10, -51.25), scale: (28.00, 2.20, 1.50)),
+    (name: "plaza_wall_e", kit: "block_unit", pos: (44.00, 1.10, -51.25), scale: (28.00, 2.20, 1.50)),
+    (name: "plaza_column", kit: "block_unit", pos: (-17.00, 0.80, -33.25), scale: (4.00, 1.60, 1.50)),
+    (name: "plaza_cart", kit: "block_unit", pos: (16.00, 0.70, -28.50), scale: (4.00, 1.40, 3.00)),
+    (name: "plaza_banner_a", kit: "block_unit", pos: (-8.00, 3.00, -43.50), scale: (1.00, 6.00, 1.00)),
+    (name: "plaza_banner_b", kit: "block_unit", pos: (8.00, 3.00, -43.50), scale: (1.00, 6.00, 1.00)),
+    (name: "cliff_lip_w", kit: "block_unit", pos: (-39.25, -0.85, 0.00), scale: (59.50, 4.30, 1.00)),
+    (name: "cliff_lip_e", kit: "block_unit", pos: (39.25, -0.85, 0.00), scale: (59.50, 4.30, 1.00)),
+    // --- The cliff path: a stair cut into the cliff, walls along the trench, lips on the shelf ---
+    (name: "trench_w", kit: "block_unit", pos: (-2.70, -4.35, -10.00), scale: (0.50, 11.30, 16.00)),
+    (name: "trench_e", kit: "block_unit", pos: (2.70, -4.35, -10.00), scale: (0.50, 11.30, 16.00)),
+    (name: "trench_under_w", kit: "block_unit", pos: (-2.70, -11.40, 0.00), scale: (0.50, 11.20, 4.00)),
+    (name: "trench_under_e", kit: "block_unit", pos: (2.70, -11.40, 0.00), scale: (0.50, 11.20, 4.00)),
+    (name: "trench_post_w", kit: "block_unit", pos: (-3.50, 1.60, -18.60), scale: (1.00, 3.20, 1.20)),
+    (name: "trench_post_e", kit: "block_unit", pos: (3.50, 1.60, -18.60), scale: (1.00, 3.20, 1.20)),
+    (name: "shelf_lip_w", kit: "block_unit", pos: (-2.60, -12.15, 30.00), scale: (0.50, 9.70, 56.00)),
+    (name: "shelf_lip_e", kit: "block_unit", pos: (2.60, -12.15, 30.00), scale: (0.50, 9.70, 56.00)),
+    // --- Graymantle Bridge (B03's arena): deck x -6..6, z -2..62, top at 0; parapets; piers; pylons ---
+    (name: "bridge_deck", kit: "block_unit", pos: (0.00, -0.75, 30.00), scale: (12.00, 1.50, 64.00)),
+    (name: "bridge_parapet_w", kit: "block_unit", pos: (-6.00, 0.65, 31.00), scale: (0.80, 1.30, 54.00)),
+    (name: "bridge_parapet_e", kit: "block_unit", pos: (6.00, 0.65, 31.00), scale: (0.80, 1.30, 54.00)),
+    (name: "bridge_pier_w0", kit: "block_unit", pos: (-5.00, -15.75, 14.00), scale: (1.20, 28.50, 2.00)),
+    (name: "bridge_pier_e0", kit: "block_unit", pos: (5.00, -15.75, 14.00), scale: (1.20, 28.50, 2.00)),
+    (name: "bridge_pier_w1", kit: "block_unit", pos: (-5.00, -15.75, 30.00), scale: (1.20, 28.50, 2.00)),
+    (name: "bridge_pier_e1", kit: "block_unit", pos: (5.00, -15.75, 30.00), scale: (1.20, 28.50, 2.00)),
+    (name: "bridge_pier_w2", kit: "block_unit", pos: (-5.00, -15.75, 46.00), scale: (1.20, 28.50, 2.00)),
+    (name: "bridge_pier_e2", kit: "block_unit", pos: (5.00, -15.75, 46.00), scale: (1.20, 28.50, 2.00)),
+    (name: "bridge_pylon_w", kit: "block_unit", pos: (-7.95, 5.00, 1.75), scale: (3.10, 10.00, 3.50)),
+    (name: "bridge_pylon_e", kit: "block_unit", pos: (7.95, 5.00, 1.75), scale: (3.10, 10.00, 3.50)),
+    (name: "bridge_cover_a", kit: "block_unit", pos: (-2.75, 0.60, 24.75), scale: (1.50, 1.20, 1.50)),
+    (name: "bridge_cover_b", kit: "block_unit", pos: (2.75, 0.60, 36.75), scale: (1.50, 1.20, 1.50)),
+    // --- The Barbican cistern (floor y -8, ceiling slab top at 0): walls, arch, pillars, stair well ---
+    (name: "cistern_s_w", kit: "block_unit", pos: (-9.50, -15.00, 61.00), scale: (13.00, 30.00, 2.00)),
+    (name: "cistern_s_e", kit: "block_unit", pos: (9.50, -15.00, 61.00), scale: (13.00, 30.00, 2.00)),
+    (name: "cistern_arch_lintel", kit: "block_unit", pos: (0.00, -1.00, 61.00), scale: (6.00, 2.00, 2.00)),
+    (name: "cistern_w", kit: "block_unit", pos: (-15.00, -15.00, 76.00), scale: (2.00, 30.00, 32.00)),
+    (name: "cistern_e", kit: "block_unit", pos: (15.00, -15.00, 76.00), scale: (2.00, 30.00, 32.00)),
+    (name: "cistern_n_w", kit: "block_unit", pos: (-5.50, -15.00, 91.00), scale: (21.00, 30.00, 2.00)),
+    (name: "cistern_n_e", kit: "block_unit", pos: (14.50, -15.00, 91.00), scale: (3.00, 30.00, 2.00)),
+    (name: "cistern_slab_w", kit: "block_unit", pos: (-4.50, -0.75, 77.00), scale: (19.00, 1.50, 30.00)),
+    (name: "cistern_slab_se", kit: "block_unit", pos: (9.50, -0.75, 68.00), scale: (9.00, 1.50, 12.00)),
+    (name: "cistern_slab_e", kit: "block_unit", pos: (13.50, -0.75, 83.00), scale: (1.00, 1.50, 18.00)),
+    (name: "cistern_pillar_0", kit: "block_unit", pos: (-9.00, -4.75, 68.00), scale: (1.80, 6.50, 1.80)),
+    (name: "cistern_pillar_1", kit: "block_unit", pos: (-9.00, -4.75, 80.00), scale: (1.80, 6.50, 1.80)),
+    (name: "cistern_pillar_2", kit: "block_unit", pos: (1.00, -4.75, 66.00), scale: (1.80, 6.50, 1.80)),
+    (name: "cistern_pillar_3", kit: "block_unit", pos: (1.00, -4.75, 82.00), scale: (1.80, 6.50, 1.80)),
+    (name: "well_w", kit: "block_unit", pos: (5.00, -0.10, 83.00), scale: (0.50, 2.80, 18.00)),
+    (name: "well_s", kit: "block_unit", pos: (9.00, -0.10, 74.00), scale: (8.00, 2.80, 0.50)),
+    (name: "well_e", kit: "block_unit", pos: (13.00, -0.10, 83.00), scale: (0.50, 2.80, 18.00)),
+    (name: "stair_wall_w", kit: "block_unit", pos: (5.45, -4.50, 82.00), scale: (0.90, 8.00, 16.00)),
+    (name: "stair_wall_e", kit: "block_unit", pos: (13.10, -4.50, 82.00), scale: (1.80, 8.00, 16.00)),
+    // --- The Barbican gatehouse (z 62..76): gate tunnel x -4..4, west tower solid, east tower a guard room ---
+    (name: "gate_w_tower", kit: "block_unit", pos: (-18.00, 7.00, 69.00), scale: (28.00, 14.00, 14.00)),
+    (name: "gate_lintel", kit: "block_unit", pos: (0.00, 9.50, 63.00), scale: (8.00, 9.00, 2.00)),
+    (name: "gate_tunnel_roof", kit: "block_unit", pos: (0.00, 6.00, 70.00), scale: (8.00, 2.00, 12.00)),
+    (name: "guard_s", kit: "block_unit", pos: (18.00, 7.00, 62.50), scale: (28.00, 14.00, 1.00)),
+    (name: "guard_e", kit: "block_unit", pos: (31.50, 7.00, 69.50), scale: (1.00, 14.00, 13.00)),
+    (name: "guard_w", kit: "block_unit", pos: (4.50, 7.00, 69.50), scale: (1.00, 14.00, 13.00)),
+    (name: "guard_n_w", kit: "block_unit", pos: (9.50, 7.00, 75.50), scale: (9.00, 14.00, 1.00)),
+    (name: "guard_n_e", kit: "block_unit", pos: (24.50, 7.00, 75.50), scale: (13.00, 14.00, 1.00)),
+    (name: "guard_door_lintel", kit: "block_unit", pos: (16.00, 9.10, 75.50), scale: (4.00, 9.80, 1.00)),
+    (name: "guard_roof", kit: "block_unit", pos: (18.00, 7.50, 69.00), scale: (26.00, 1.00, 12.00)),
+    (name: "guard_table", kit: "block_unit", pos: (26.00, 0.50, 67.00), scale: (4.00, 1.00, 2.00)),
+    (name: "guard_rack", kit: "block_unit", pos: (28.25, 1.10, 72.70), scale: (4.50, 2.20, 1.40)),
+    // --- The Barbican forecourt (x -30..30, z 76..112): curtain walls, crates, pillars, the west alcove ---
+    (name: "fore_w_wall", kit: "block_unit", pos: (-31.00, 4.00, 94.00), scale: (2.00, 8.00, 36.00)),
+    (name: "fore_e_wall", kit: "block_unit", pos: (31.00, 4.00, 94.00), scale: (2.00, 8.00, 36.00)),
+    (name: "inner_wall_w", kit: "block_unit", pos: (-28.00, 4.50, 113.00), scale: (48.00, 9.00, 2.00)),
+    (name: "inner_wall_e", kit: "block_unit", pos: (28.00, 4.50, 113.00), scale: (48.00, 9.00, 2.00)),
+    (name: "inner_arch_lintel", kit: "block_unit", pos: (0.00, 7.50, 113.00), scale: (8.00, 3.00, 2.00)),
+    (name: "fore_crate_a", kit: "block_unit", pos: (-19.10, 0.70, 84.90), scale: (1.80, 1.40, 1.80)),
+    (name: "fore_crate_b", kit: "block_unit", pos: (-17.10, 1.20, 85.40), scale: (1.80, 2.40, 1.80)),
+    (name: "fore_crate_c", kit: "block_unit", pos: (21.00, 0.70, 100.90), scale: (2.00, 1.40, 1.80)),
+    (name: "fore_pillar_a", kit: "block_unit", pos: (-10.40, 3.00, 92.60), scale: (1.20, 6.00, 1.20)),
+    (name: "fore_pillar_b", kit: "block_unit", pos: (-10.40, 3.00, 104.60), scale: (1.20, 6.00, 1.20)),
+    (name: "fore_pillar_c", kit: "block_unit", pos: (19.40, 3.00, 92.60), scale: (1.20, 6.00, 1.20)),
+    (name: "fore_pillar_d", kit: "block_unit", pos: (19.40, 3.00, 104.60), scale: (1.20, 6.00, 1.20)),
+    (name: "fore_alcove_s", kit: "block_unit", pos: (-25.00, 2.00, 100.50), scale: (10.00, 4.00, 1.00)),
+    (name: "fore_alcove_n", kit: "block_unit", pos: (-25.00, 2.00, 111.50), scale: (10.00, 4.00, 1.00)),
+    (name: "fore_alcove_e", kit: "block_unit", pos: (-20.50, 2.00, 103.00), scale: (1.00, 4.00, 4.00)),
+    // --- The Lower Ward (x -48..48, z 114..212): curtain walls with the wall-walk, stair to the keep ---
+    (name: "ward_w", kit: "block_unit", pos: (-50.00, 3.50, 164.00), scale: (4.00, 7.00, 100.00)),
+    (name: "ward_e", kit: "block_unit", pos: (50.00, 4.00, 164.00), scale: (4.00, 8.00, 100.00)),
+    (name: "ward_n_w", kit: "block_unit", pos: (-30.00, 4.50, 213.00), scale: (44.00, 9.00, 2.00)),
+    (name: "ward_n_e", kit: "block_unit", pos: (30.00, 4.50, 213.00), scale: (44.00, 9.00, 2.00)),
+    (name: "keep_stair_w", kit: "block_unit", pos: (-7.00, 3.50, 211.00), scale: (0.50, 11.00, 30.00)),
+    (name: "keep_stair_e", kit: "block_unit", pos: (7.00, 3.50, 211.00), scale: (0.50, 11.00, 30.00)),
+    (name: "keep_stair_cap", kit: "block_unit", pos: (0.00, 7.00, 225.00), scale: (14.50, 14.00, 2.00)),
+    (name: "walk_outer", kit: "block_unit", pos: (-51.75, 7.65, 164.00), scale: (0.50, 1.30, 100.00)),
+    (name: "walk_inner_a", kit: "block_unit", pos: (-48.25, 7.60, 121.50), scale: (0.50, 1.20, 15.00)),
+    (name: "walk_inner_b", kit: "block_unit", pos: (-48.25, 7.60, 144.00), scale: (0.50, 1.20, 26.00)),
+    (name: "walk_inner_c", kit: "block_unit", pos: (-48.25, 7.60, 193.50), scale: (0.50, 1.20, 41.00)),
+    (name: "walk_end", kit: "block_unit", pos: (-50.00, 8.25, 213.00), scale: (4.00, 2.50, 2.00)),
+    (name: "ballista_base", kit: "block_unit", pos: (-50.95, 7.45, 151.30), scale: (1.10, 0.90, 2.60)),
+    (name: "ballista_arm", kit: "block_unit", pos: (-50.95, 8.20, 151.30), scale: (0.90, 0.60, 5.40)),
+    (name: "ledge", kit: "block_unit", pos: (-45.00, 1.25, 165.00), scale: (6.00, 2.50, 10.00)),
+    // --- The kennel (x -44..-26, z 120..144) and the guard post by the stair -----------------
+    (name: "kennel_s", kit: "block_unit", pos: (-35.00, 1.50, 120.50), scale: (18.00, 3.00, 1.00)),
+    (name: "kennel_n", kit: "block_unit", pos: (-35.00, 1.50, 143.50), scale: (18.00, 3.00, 1.00)),
+    (name: "kennel_w", kit: "block_unit", pos: (-43.50, 1.50, 132.00), scale: (1.00, 3.00, 22.00)),
+    (name: "kennel_e_a", kit: "block_unit", pos: (-26.50, 1.50, 124.50), scale: (1.00, 3.00, 7.00)),
+    (name: "kennel_e_b", kit: "block_unit", pos: (-26.50, 1.50, 138.50), scale: (1.00, 3.00, 9.00)),
+    (name: "kennel_rack", kit: "block_unit", pos: (-41.50, 0.80, 136.50), scale: (3.00, 1.60, 3.00)),
+    (name: "post_s", kit: "block_unit", pos: (-38.00, 1.50, 186.50), scale: (16.00, 3.00, 1.00)),
+    (name: "post_n", kit: "block_unit", pos: (-38.00, 1.50, 199.50), scale: (16.00, 3.00, 1.00)),
+    (name: "post_e_a", kit: "block_unit", pos: (-30.50, 1.50, 189.00), scale: (1.00, 3.00, 4.00)),
+    (name: "post_e_b", kit: "block_unit", pos: (-30.50, 1.50, 197.00), scale: (1.00, 3.00, 4.00)),
+    (name: "post_rack", kit: "block_unit", pos: (-42.00, 0.80, 193.00), scale: (4.00, 1.60, 2.00)),
+    // --- The armory (x 24..46, z 120..150): door gap on the west face, racks along the walls ---
+    (name: "armory_s", kit: "block_unit", pos: (35.00, 2.00, 120.50), scale: (22.00, 4.00, 1.00)),
+    (name: "armory_n", kit: "block_unit", pos: (35.00, 2.00, 149.50), scale: (22.00, 4.00, 1.00)),
+    (name: "armory_e", kit: "block_unit", pos: (45.50, 2.00, 135.00), scale: (1.00, 4.00, 28.00)),
+    (name: "armory_w_a", kit: "block_unit", pos: (24.50, 2.00, 125.50), scale: (1.00, 4.00, 9.00)),
+    (name: "armory_w_b", kit: "block_unit", pos: (24.50, 2.00, 143.50), scale: (1.00, 4.00, 11.00)),
+    (name: "armory_door_lintel", kit: "block_unit", pos: (24.50, 3.50, 134.00), scale: (1.00, 1.00, 8.00)),
+    (name: "armory_rack_s", kit: "block_unit", pos: (36.00, 1.00, 121.60), scale: (16.00, 2.00, 1.20)),
+    (name: "armory_rack_n", kit: "block_unit", pos: (36.00, 1.00, 148.40), scale: (16.00, 2.00, 1.20)),
+    (name: "armory_dais", kit: "block_unit", pos: (43.50, 0.15, 135.00), scale: (3.00, 0.30, 6.00)),
+    // --- The chapel (x 22..46, z 158..190): door on the west face, an altar at the east end ---
+    (name: "chapel_s", kit: "block_unit", pos: (34.00, 2.50, 158.50), scale: (24.00, 5.00, 1.00)),
+    (name: "chapel_n", kit: "block_unit", pos: (34.00, 2.50, 189.50), scale: (24.00, 5.00, 1.00)),
+    (name: "chapel_e", kit: "block_unit", pos: (45.50, 2.50, 174.00), scale: (1.00, 5.00, 30.00)),
+    (name: "chapel_w_a", kit: "block_unit", pos: (22.50, 2.50, 164.00), scale: (1.00, 5.00, 10.00)),
+    (name: "chapel_w_b", kit: "block_unit", pos: (22.50, 2.50, 183.00), scale: (1.00, 5.00, 12.00)),
+    (name: "chapel_door_lintel", kit: "block_unit", pos: (22.50, 4.50, 173.00), scale: (1.00, 1.00, 8.00)),
+    (name: "chapel_altar", kit: "block_unit", pos: (43.50, 0.60, 174.00), scale: (3.00, 1.20, 6.00)),
+    (name: "chapel_pew_a", kit: "block_unit", pos: (31.00, 0.40, 164.50), scale: (6.00, 0.80, 1.00)),
+    (name: "chapel_pew_b", kit: "block_unit", pos: (31.00, 0.40, 183.50), scale: (6.00, 0.80, 1.00)),
+    // --- Ward dressing: a dry fountain, banner posts, the stair's flanking pillars -----------
+    (name: "ward_fountain", kit: "block_unit", pos: (0.00, 0.60, 148.50), scale: (5.00, 1.20, 5.00)),
+    (name: "ward_fountain_stone", kit: "block_unit", pos: (0.00, 2.20, 148.50), scale: (1.00, 2.00, 1.00)),
+    (name: "ward_pillar_a", kit: "block_unit", pos: (-15.40, 3.50, 170.60), scale: (1.20, 7.00, 1.20)),
+    (name: "ward_pillar_b", kit: "block_unit", pos: (15.40, 3.50, 170.60), scale: (1.20, 7.00, 1.20)),
+    (name: "ward_pillar_c", kit: "block_unit", pos: (-15.40, 3.50, 126.60), scale: (1.20, 7.00, 1.20)),
+    (name: "ward_pillar_d", kit: "block_unit", pos: (15.40, 3.50, 126.60), scale: (1.20, 7.00, 1.20)),
+    (name: "ward_crate_a", kit: "block_unit", pos: (-11.10, 0.70, 160.90), scale: (1.80, 1.40, 1.80)),
+    (name: "ward_crate_b", kit: "block_unit", pos: (11.00, 0.70, 196.90), scale: (2.00, 1.40, 1.80)),
+  ],
+)

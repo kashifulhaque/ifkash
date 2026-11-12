@@ -234,6 +234,8 @@
     // WP-061: the Mirrormere mini-dungeons. 22000-22999 are their content.
     (id: "sunken_ossuary", num: 22000),
     (id: "drowned_belfry", num: 22001),
+    // WP-064: Castle Graymantle, part 1. 25000-25999 are the castle's content (WP-065 shares it).
+    (id: "castle", num: 25000),
 
     // WP-050: 14000-14099 are leveling and respec entries.
     (id: "itm_rewrite_quill", num: 14000), // WP-050: the Rewrite Quill, consumed by respec

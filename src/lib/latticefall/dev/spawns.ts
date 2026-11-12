@@ -8,6 +8,12 @@ export interface SpawnPoint {
   z: number;
   yaw: number;
   note: string;
+  /**
+   * The feet height, for a floor under another floor (the castle's cliff path under the bridge
+   * and its cistern under the courtyard). Left out, the height comes from a ray cast from above,
+   * which lands on the topmost floor.
+   */
+  y?: number;
 }
 
 const HALF_PI = Math.PI / 2;
@@ -117,6 +123,33 @@ const DROWNED_BELFRY: Record<string, SpawnPoint> = {
   sluice: { x: 12, z: 46, yaw: Math.PI, note: 'beside the sluice lever, behind the Knight' }
 };
 
+// Castle Graymantle, part 1 (WP-064): the Lanterns, the bridge and B03's arena, the cliff path,
+// the Barbican, and the Lower Ward. `y` is set where one floor stands under another.
+const CASTLE: Record<string, SpawnPoint> = {
+  road: { x: -20, z: -62, yaw: 0.2187, note: 'the arrival road, facing the bridge' },
+  l14: { x: -12, z: -23.5, yaw: 0, note: 'beside L14, Graymantle Bridge, facing the bridge' },
+  landmark: { x: -12, z: -23.5, yaw: 0, note: 'the landmark view: L14 looking at the bridge and the Barbican (use a fixed camera)' },
+  bridge_head: { x: 0, z: -8, yaw: 0, note: 'the head of the bridge, before the two pylons' },
+  gate: { x: 0, z: 0.5, yaw: 0, note: "at B03's fog gate (the plane z = 3.5)" },
+  arena: { x: 0, z: 10, yaw: 0, note: "inside B03's arena, on the bridge, facing north" },
+  cliff_top: { x: 0, z: -22, yaw: 0, note: 'the top of the cut stair down to the cliff path' },
+  shelf: { x: 0, y: -8, z: 20, yaw: 0, note: 'on the cliff path under the bridge, facing north' },
+  l15: { x: -4, y: -8, z: 71.5, yaw: 0, note: 'beside L15, the Barbican cistern, facing the Lantern' },
+  cistern_stair: { x: 9, y: -8, z: 73, yaw: 0, note: "at the foot of the cistern's stair" },
+  lever: { x: -3, z: 77.5, yaw: Math.PI, note: 'in the gate tunnel, facing the gatehouse lever and the main gate' },
+  guard_room: { x: 16, z: 73, yaw: Math.PI, note: 'inside the guard room (the Castle Kite Shield, the Bulwark Charm)' },
+  forecourt: { x: 9, z: 98, yaw: 0, note: 'the Barbican forecourt, facing the inner arch' },
+  ward: { x: 0, z: 118, yaw: 0, note: 'the Lower Ward, just inside the inner arch' },
+  armory: { x: 21, z: 134, yaw: HALF_PI, note: "at the armory's door, facing the Mimic's chest" },
+  armory_inside: { x: 27, z: 134, yaw: HALF_PI, note: 'inside the armory, 4 m from the chest that is a Mimic' },
+  kennel: { x: -22, z: 131, yaw: -HALF_PI, note: "at the kennel's gate, facing the Thorn Hounds" },
+  chapel: { x: 19, z: 173, yaw: HALF_PI, note: "at the chapel's door, facing the altar" },
+  ladder: { x: -44, z: 130, yaw: -HALF_PI, note: "at the wall-walk ladder's foot" },
+  wall_walk: { x: -49.5, z: 125, yaw: 0, note: 'on the wall-walk, facing the ballista' },
+  stair: { x: 0, z: 186, yaw: 0, note: 'at the foot of the keep stair, before the two Gray Knights' },
+  landing: { x: 0, z: 217, yaw: 0, note: "the keep landing, where part 2's way on begins" }
+};
+
 const TABLES: Record<string, Record<string, SpawnPoint>> = {
   sunken_ossuary: SUNKEN_OSSUARY,
   drowned_belfry: DROWNED_BELFRY,
@@ -125,6 +158,7 @@ const TABLES: Record<string, Record<string, SpawnPoint>> = {
   verge: VERGE,
   hollowhearth: HOLLOWHEARTH,
   mirrormere: MIRRORMERE,
+  castle: CASTLE,
   m0_flat: {
     far: { x: 40, z: 40, yaw: Math.PI, note: 'far corner of the flat floor' }
   }

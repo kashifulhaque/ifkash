@@ -15,6 +15,8 @@
 //! Everything in [`WorldState`] (it is all in the state hash), plus the player's
 //! `inventory.glimmer`. [`Layout`] is rebuilt from the scenario and isn't saved.
 
+#[cfg(test)]
+mod castle_tests;
 pub mod death;
 #[cfg(test)]
 mod dungeon_tests;

@@ -1,0 +1,125 @@
+// The Castle Graymantle entities (WP-064, part 1). Yaw is in radians from +Z toward +X: 0 faces
+// +Z (north, toward the castle), 3.1415927 faces -Z, 1.5707964 faces +X, -1.5707964 faces -X.
+//
+// Part 1 is Bridge and Barbican (L14, L15) and the Lower Ward. The main route: the spawn on the
+// cliff plaza -> L14 -> the trench stair down to the cliff path under the bridge -> the Barbican
+// cistern (L15) -> the cistern's stair -> the forecourt -> the gatehouse lever -> the inner arch
+// -> the Lower Ward -> the foot of the keep stair (two Gray Knights stand there). Every walk
+// between two Lanterns is under 45 seconds at run speed (world_state/castle_tests.rs).
+//
+// THE BRIDGE AND THE SKIP. The bridge (z 0..60) is B03's arena; its fog gate is the plane
+// z = 3.5 between the two pylons. The cliff path (a shelf at -8 m under the deck) lets the
+// player skip Corvane. Both ways end at the Barbican's gatehouse, whose south face is two doors
+// side by side across the bridge's north end:
+//   - door_postern (one-way, opens from the bridge): the way in for a player who beat B03;
+//   - gate_main (locked): the main gate. The gatehouse lever, just inside, opens it, and the
+//     bridge is then the first shortcut from the Barbican back to L14.
+// B03 has no boss definition yet (an M7 work package), so no Boss entity is placed.
+//
+// WP-065 (part 2) continues north from the keep landing at (0, 6, 218): it replaces the
+// placeholder wall `keep_stair_cap` (layout.ron) with the way on, and adds L16 and L17.
+//
+// Registry numbers used here (25000 block): castle 25000.
+(
+  // The arrival road, south-west of the plaza, facing the bridge.
+  spawn: (pos: (-20.0, 0.0, -62.0), yaw: 0.2187),
+  entities: [
+    // --- Lanterns: L14 and L15 (L16 and L17 are WP-065's) ------------------------------------
+    // L14 stands 30 m from B03's fog gate; L15 is in the cistern, at the cliff path's end.
+    Lantern(id: "lantern_l14", pos: (-12.0, 0.0, -26.0), yaw: 0.0),
+    Lantern(id: "lantern_l15", pos: (-4.0, -8.0, 74.0), yaw: 1.5707964),
+
+    // --- Doors and the lever: the Barbican's main gate and postern -----------------------------
+    Door(id: "gate_main", pos: (1.0, 0.0, 62.5), yaw: 3.1415927, half_width_m: 3.0, height_m: 5.0, kind: Locked),
+    Door(id: "door_postern", pos: (-3.0, 0.0, 62.5), yaw: 3.1415927, half_width_m: 1.0, height_m: 5.0, kind: OneWay),
+    Lever(id: "lever_gate_main", pos: (-3.0, 0.0, 75.0), yaw: 0.0, target: Door("gate_main")),
+    // The wall-walk's ladder, on the west wall's inner face (the wall-walk is the rampart route
+    // WP-065 continues).
+    Ladder(id: "ladder_wall_west", pos: (-47.4, 0.0, 130.0), yaw: -1.5707964, height_m: 7.0),
+
+    // --- Authored messages -----------------------------------------------------------------------
+    Message(id: "msg_castle_arrive", pos: (-18.0, 0.0, -58.0),
+      text: "Castle Graymantle, three tiers of gray stone on a sea cliff. The road runs north to the bridge. The wind off the water smells of salt and old iron."),
+    Message(id: "msg_bridge", pos: (-9.0, 0.0, -23.0),
+      text: "Graymantle Bridge. A knight in gray holds it, they say: Corvane, who fenced every traveler who tried to cross. A stair cut into the cliff beside the bridge runs down under its deck."),
+    Message(id: "msg_cliff_path", pos: (-1.5, 0.0, -21.5),
+      text: "The cliff path. It runs under the bridge, narrow, with the sea far below. It ends at the Barbican's cistern. Mind the edge."),
+    Message(id: "msg_cistern", pos: (3.0, -8.0, 64.5),
+      text: "The Barbican cistern. A stair at the east wall climbs to the courtyard. The gatehouse lever is up there, by the main gate."),
+    Message(id: "msg_gate", pos: (-1.0, 0.0, 77.0),
+      text: "The main gate bars the bridge from this side. The lever beside it lifts the bar. Once it is open, the road back to the Lantern across the bridge is short."),
+    Message(id: "msg_ward", pos: (-3.0, 0.0, 118.0),
+      text: "The Lower Ward. A kennel on the west, an armory on the east, a chapel beyond it. A ladder climbs to the wall-walk. The main stair to the keep is straight ahead, and it is guarded."),
+    Message(id: "msg_armory", pos: (21.0, 0.0, 134.0),
+      text: "The armory. Racks of gray plate and greatshields. One chest here sits crooked: its latch is on the wrong side."),
+    Message(id: "msg_ballista", pos: (-45.5, 0.0, 144.0),
+      text: "A ballista crouches on the wall above, its bolts rusted in the rack. The wall-walk is reached by the ladder to the north, and it leads on, past the archers, toward the ramparts."),
+    Message(id: "msg_keep_stair", pos: (0.0, 0.0, 188.0),
+      text: "The stair to the keep. Two Gray Knights keep it. Their shields are high, so strike low and wide, or bash the guard open."),
+
+    // --- Enemies: Husk Servants (the castle's husks), Gray Knights, Thorn Hounds, Acolytes, the Mimic, an Archer
+    // The plaza: two Servants walk the road in plain sight before anything else is met.
+    Enemy(name: "servant_plaza_a", enemy: "husk_servant", pos: (6.0, 0.0, -48.0), yaw: 3.1415927),
+    Enemy(name: "servant_plaza_b", enemy: "husk_servant", pos: (-4.0, 0.0, -40.0), yaw: 3.1415927),
+    // The cliff path: a lone Servant on the shelf (the path is narrow, the fight is close).
+    Enemy(name: "servant_path", enemy: "husk_servant", pos: (0.0, -8.0, 30.0), yaw: 3.1415927),
+    // The cistern: two Servants among the pillars.
+    Enemy(name: "servant_cistern_a", enemy: "husk_servant", pos: (-8.0, -8.0, 70.0), yaw: 0.7854),
+    Enemy(name: "servant_cistern_b", enemy: "husk_servant", pos: (9.0, -8.0, 66.0), yaw: 3.1415927),
+    // The forecourt: a Gray Knight guards the west alcove's Wick Bead (off the route); two
+    // Servants walk the yard; one more sits in the guard room.
+    Enemy(name: "knight_alcove", enemy: "gray_knight", pos: (-24.0, 0.0, 108.0), yaw: 1.5707964),
+    Enemy(name: "servant_fore_a", enemy: "husk_servant", pos: (16.0, 0.0, 98.0), yaw: 3.1415927),
+    Enemy(name: "servant_fore_b", enemy: "husk_servant", pos: (-4.0, 0.0, 100.0), yaw: 3.1415927),
+    Enemy(name: "servant_guard_room", enemy: "husk_servant", pos: (20.0, 0.0, 70.0), yaw: 3.1415927),
+    // The Lower Ward: the kennel's three Thorn Hounds (west), two Servants in the yard, the
+    // Chapel Acolytes (north-east), the Mimic (armory), an Archer on the wall by the ballista, and
+    // the two Gray Knights at the keep stair.
+    Enemy(name: "hound_kennel_a", enemy: "thorn_hound", pos: (-34.0, 0.0, 128.0), yaw: 1.5707964),
+    Enemy(name: "hound_kennel_b", enemy: "thorn_hound", pos: (-36.0, 0.0, 132.0), yaw: 1.5707964),
+    Enemy(name: "hound_kennel_c", enemy: "thorn_hound", pos: (-33.0, 0.0, 138.0), yaw: 1.5707964),
+    Enemy(name: "servant_ward_a", enemy: "husk_servant", pos: (-8.0, 0.0, 134.0), yaw: 3.1415927),
+    Enemy(name: "servant_ward_b", enemy: "husk_servant", pos: (10.0, 0.0, 162.0), yaw: 3.1415927),
+    Enemy(name: "acolyte_chapel_a", enemy: "acolyte", pos: (33.0, 0.0, 176.0), yaw: -1.5707964),
+    Enemy(name: "acolyte_chapel_b", enemy: "acolyte", pos: (37.0, 0.0, 166.0), yaw: -1.5707964),
+    Enemy(name: "mimic_armory", enemy: "mimic_chest", pos: (31.0, 0.0, 134.0), yaw: -1.5707964),
+    Enemy(name: "archer_wall", enemy: "gray_archer", pos: (-50.0, 7.0, 140.0), yaw: 1.5707964),
+    Enemy(name: "knight_stair_w", enemy: "gray_knight", pos: (-9.0, 0.0, 194.0), yaw: 3.1415927),
+    Enemy(name: "knight_stair_e", enemy: "gray_knight", pos: (9.0, 0.0, 194.0), yaw: 3.1415927),
+
+    // --- Items, relics, and materials (docs/game/04-arsenal-and-builds.md) ----------------------
+    // The cliff path and the cistern.
+    Pickup(id: "vial_cliff_path", item: "itm_glimmer_vial", pos: (0.0, -8.0, 50.0), interact: true),
+    Pickup(id: "oil_cistern", item: "itm_spark_oil", pos: (-12.0, -8.0, 64.0), count: 2, interact: true),
+    Chest(id: "chest_cistern", pos: (-12.5, -8.0, 88.0), yaw: 1.5707964, loot: (item: "itm_forgeglass_shard", count: 3, glimmer: 200)),
+    // The guard room (the east tower): the Castle Kite Shield and the Bulwark Charm.
+    Pickup(id: "wpn_castle_kite_guard", item: "wpn_castle_kite", pos: (22.5, 0.0, 67.0), interact: true),
+    Pickup(id: "chm_bulwark_guard", item: "chm_bulwark", pos: (27.5, 0.0, 70.5), interact: true),
+    // The forecourt: a Wick Bead in the west alcove (the knight guards it), a chest by the east wall.
+    Pickup(id: "bead_alcove", item: "itm_wick_bead", pos: (-27.0, 0.0, 106.0), interact: true),
+    Chest(id: "chest_forecourt", pos: (26.0, 0.0, 84.0), yaw: -1.5707964, loot: (item: "itm_pitch_oil", count: 3, glimmer: 250)),
+    // The Lower Ward: Whisperfang near the ladder's foot, the Morning Star in the kennel, the Gray
+    // Halberd in the guard post, the armory's racks (Graymantle Plate, the Ox Charm, and the
+    // Graymantle Greatshield on the dais past the Mimic), the Steadfast scroll at the chapel's
+    // altar, and a chest on the item ledge below the wall-walk.
+    Pickup(id: "wpn_whisperfang_ward", item: "wpn_whisperfang", pos: (-44.5, 0.0, 127.0), interact: true),
+    Pickup(id: "wpn_morning_star_kennel", item: "wpn_morning_star", pos: (-41.5, 0.0, 139.5), interact: true),
+    Pickup(id: "wpn_gray_halberd_post", item: "wpn_gray_halberd", pos: (-42.0, 0.0, 196.0), interact: true),
+    Pickup(id: "arm_graymantle_body_armory", item: "arm_graymantle_body", pos: (36.0, 0.0, 146.5), interact: true),
+    Pickup(id: "arm_graymantle_head_armory", item: "arm_graymantle_head", pos: (40.0, 0.0, 146.5), interact: true),
+    Pickup(id: "chm_ox_armory", item: "chm_ox", pos: (43.5, 0.0, 124.0), interact: true),
+    Pickup(id: "wpn_graymantle_greatshield_armory", item: "wpn_graymantle_greatshield", pos: (43.5, 0.3, 135.0), interact: true),
+    Pickup(id: "spl_steadfast_chapel", item: "spl_steadfast", pos: (40.5, 0.0, 174.0), interact: true),
+    Chest(id: "chest_ledge", pos: (-45.0, 2.5, 165.0), yaw: 1.5707964, loot: (item: "itm_forgeglass_shard", count: 2, glimmer: 400)),
+
+    // --- B03's arena: Graymantle Bridge (x -6..6, z 0..60) -----------------------------------
+    // The boss: PLACEHOLDER. B03 (Bridgewarden Corvane, an M7 work package) has no boss
+    // definition yet, so no Boss entity is placed. When it exists, add:
+    //   Boss(name: "b03", boss: "<b03 id>", pos: (0.0, 0.0, 32.0), yaw: 3.1415927,
+    //     gate: (pos: (0.0, 0.0, 3.5), yaw: 0.0, half_width_m: 6.0, depth_m: 3.0)),
+    // The fog gate is the plane z = 3.5 across the deck, between the two pylons, opening north
+    // along the bridge; Corvane waits mid-span facing south. L14 is about 30 m from the gate.
+    // The Echo Stone stands just inside the gate, on the west side of the deck.
+    EchoStone(id: "stone_b03", pos: (-4.5, 0.0, 9.0), yaw: 0.4),
+  ],
+)

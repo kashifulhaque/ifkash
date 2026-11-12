@@ -62,7 +62,7 @@ export class DevCommands {
     } else {
       const point = findSpawn(scenario, id);
       if (!point) return false;
-      const y = this.groundY(point.x, point.z);
+      const y = point.y ?? this.groundY(point.x, point.z);
       if (y === null || !world.dev_teleport(point.x, y, point.z, point.yaw)) return false;
     }
     this.deps.refresh();

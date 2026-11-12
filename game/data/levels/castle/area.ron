@@ -1,0 +1,31 @@
+// Castle Graymantle (WP-064, part 1): the legacy dungeon on its sea cliff. Y is up, +Z is north,
+// toward the castle. The south plateau (the cliff plaza) holds L14; the gorge across z 2..58
+// holds Graymantle Bridge (B03's arena); the Barbican stands on the north side, the Lower Ward
+// behind it. 140 x 390 m. WP-065 (part 2) extends this folder north: the ramparts, the keep,
+// the library, the bell tower, and Castellan's Hall (L16, L17). See docs/game/02-world.md,
+// "Castle Graymantle", and the notes at the top of layout.ron and entities.ron.
+(
+  id: "castle",
+  name: "Castle Graymantle",
+  seed: 20262501,
+  bounds: (min: (-70.0, -90.0), max: (70.0, 300.0)),
+  kill_y: -50.0,
+  start_glimmer: 0,
+  // Flat overcast, sea fog (docs/game/07-presentation.md, region palettes): stone gray and sea
+  // green under a pale sky, with a medium far plane so the Barbican shows from the plaza.
+  ambient: (
+    sky: "day",
+    fog_color: (0.62, 0.68, 0.68),
+    fog_near_m: 90.0,
+    fog_far_m: 420.0,
+    sun_dir: (-0.25, -0.85, -0.3),
+    sun_color: (0.85, 0.9, 0.92),
+    sun_intensity: 0.55,
+    ambient_color: (0.66, 0.72, 0.76),
+    ambient_intensity: 0.75,
+  ),
+  regions: [
+    // Dry ground for grass: the cliff plaza south of the bridge.
+    (name: "plaza", points: [(-66.0, -86.0), (66.0, -86.0), (66.0, -4.0), (-66.0, -4.0)]),
+  ],
+)

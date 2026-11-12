@@ -1,0 +1,36 @@
+// The Castle Graymantle terrain (WP-064): flat ground at 0 m, cut by the gorge. Vertices are 2 m
+// apart (71 x 196). The castle's floors that stand over another floor (the bridge deck over the
+// cliff path, the cistern's ceiling over the cistern) are boxes in layout.ron; the heightfield
+// holds only the lowest floor of each column.
+//
+// The gorge (z 2..58, full width) drops to the sea at -30 m (a fall of over 20 m is death).
+// Everything beside the castle on the north side is sea too, so the Barbican and the Lower Ward
+// stand on a headland (x -54..54). The cliff path is a shelf at -8 m, 4 m wide, under the
+// bridge's deck (top at 0, 1.5 m thick); a stair cut into the plaza (the trench) reaches it, and
+// the cistern (also -8 m) closes it at the north end. See layout.ron for the walls.
+#![enable(implicit_some)]
+(
+  spacing_m: 2.0,
+  base_y: 0.0,
+  ops: [
+    // The gorge, and the sea on both sides of the headland.
+    SetRect(min: (-70.0, 2.0), max: (70.0, 58.0), height: -30.0),
+    SetRect(min: (-70.0, 60.0), max: (-56.0, 300.0), height: -30.0),
+    SetRect(min: (56.0, 60.0), max: (70.0, 300.0), height: -30.0),
+
+    // The cliff path: a shelf 4 m wide (vertices x -2, 0, 2) at -8 m under the bridge.
+    SetRect(min: (-3.0, 2.0), max: (3.0, 58.0), height: -8.0),
+    // The stair cut into the plaza: 20 m long, 21.8 degrees, from the plaza (0 m, z -18) to
+    // the shelf (-8 m, z 2).
+    Ramp(min: (-3.0, -18.0), max: (3.0, 2.0), axis: Z, from: 0.0, to: -8.0),
+
+    // The Barbican cistern: a hall at -8 m, x -14..14, z 60..90, under the courtyard.
+    SetRect(min: (-14.0, 60.0), max: (14.0, 90.0), height: -8.0),
+    // The cistern's stair: 16 m long (26.6 degrees), x 6..12, rising to the courtyard at z 90.
+    Ramp(min: (6.0, 74.0), max: (12.0, 90.0), axis: Z, from: -8.0, to: 0.0),
+
+    // The main stair of the Lower Ward: 16 m long (20.6 degrees) to the keep landing at 6 m.
+    Ramp(min: (-6.0, 196.0), max: (6.0, 212.0), axis: Z, from: 0.0, to: 6.0),
+    SetRect(min: (-6.0, 212.0), max: (6.0, 224.0), height: 6.0),
+  ],
+)

@@ -917,6 +917,22 @@ const EMBEDDED_LEVELS: &[(&str, &str)] = &[
         "levels/drowned_belfry/entities.ron",
         include_str!("../../../data/levels/drowned_belfry/entities.ron"),
     ),
+    (
+        "levels/castle/area.ron",
+        include_str!("../../../data/levels/castle/area.ron"),
+    ),
+    (
+        "levels/castle/terrain.ron",
+        include_str!("../../../data/levels/castle/terrain.ron"),
+    ),
+    (
+        "levels/castle/layout.ron",
+        include_str!("../../../data/levels/castle/layout.ron"),
+    ),
+    (
+        "levels/castle/entities.ron",
+        include_str!("../../../data/levels/castle/entities.ron"),
+    ),
 ];
 
 /// All parsed content.

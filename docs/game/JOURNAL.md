@@ -44,6 +44,7 @@ Copy this block to the top of the entries and fill it in as you go:
   - WP-047: sonnet, worktree; `a241b74`; 133K. Autosave from a real rest not exercised in play.
   - WP-045: sonnet, worktree; `f438ef1`; 200K. Merged onto WP-047 by the orchestrator (2 conflicts: WASM struct, engine loop).
   - WP-035.a: sonnet, worktree; `2ec2d05`; 281K. No WASM or simulation change.
+  - WP-040: opus, worktree; `02ec373`; 248K. Golden conflict with WP-030.a resolved by one rehash (content hash only).
 
 ### 2026-11-12: latticefall-m3 (M3)
 

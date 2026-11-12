@@ -19,7 +19,7 @@ Status values are `todo`, `in progress`, `blocked`, `split`, `review`, and `done
 | WP | Title | Lane | Status | Branch | Date | Notes |
 |---|---|---|---|---|---|---|
 | 001 | Scaffold the game workspace | infra | done | claude/game-m0-1730d5 | 2026-11-12 | Rust pinned to 1.99.1; game:* mise tasks set RUSTUP_TOOLCHAIN because mise's root rust=stable overrides rust-toolchain.toml. Installed toolchain 1.99.1 into ~/.rustup. |
-| 002 | Deterministic math, RNG, tick skeleton | core | todo | | | |
+| 002 | Deterministic math, RNG, tick skeleton | core | done | claude/game-m0-1730d5 | 2026-11-12 | nalgebra 0.35 (rapier3d 0.36.1's math crate) with libm-force; own PCG32 with splitmix64-derived streams; state hash = xxh3_64 over postcard, events excluded. clippy.toml in lf-core denies HashMap/HashSet and std transcendental f32 methods. |
 | 003 | Content crate | core | todo | | | |
 | 004 | Inputs, replays, golden tests | core | todo | | | |
 | 005 | CI and frontend deploy proposal | infra | done | claude/game-m0-1730d5 | 2026-11-12 | game.yml passes actionlint and its steps run locally; not yet run on GitHub (branch not pushed). ADR 0003 is Proposed with a concrete web-deploy.yml; needs owner sign-off and the Pages project name. Installed actionlint to ~/go/bin. |

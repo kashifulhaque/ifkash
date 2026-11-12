@@ -1,0 +1,58 @@
+//! The tick schedule. The order is part of the determinism contract.
+
+use crate::input::TickInput;
+use crate::systems;
+use crate::world::World;
+
+/// Advances the world by one tick, running the eleven systems in spec order.
+pub fn tick(world: &mut World, input: &TickInput) {
+    systems::apply_commands::run(world, input);
+    systems::player_intent::run(world, input);
+    systems::ai_think::run(world, input);
+    systems::move_state::run(world, input);
+    systems::locomotion::run(world, input);
+    systems::projectiles::run(world, input);
+    systems::hit_resolution::run(world, input);
+    systems::status_regen::run(world, input);
+    systems::deaths_drops::run(world, input);
+    systems::world_logic::run(world, input);
+    systems::snapshot::run(world, input);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn run(seed: u64, ticks: u64) -> World {
+        let mut w = World::new(seed);
+        let input = TickInput::default();
+        for _ in 0..ticks {
+            tick(&mut w, &input);
+        }
+        w
+    }
+
+    #[test]
+    fn ten_thousand_ticks_are_reproducible() {
+        let start = World::new(42).state_hash();
+        let a = run(42, 10_000);
+        let b = run(42, 10_000);
+        assert_eq!(a.tick, 10_000);
+        assert_eq!(a.state_hash(), b.state_hash());
+        assert_ne!(a.state_hash(), start);
+        assert_ne!(run(43, 10_000).state_hash(), a.state_hash());
+    }
+
+    #[test]
+    fn cloned_world_stays_in_lockstep() {
+        let mut a = run(42, 500);
+        let mut b = a.clone();
+        assert_eq!(a.state_hash(), b.state_hash());
+        let input = TickInput::default();
+        for _ in 0..500 {
+            tick(&mut a, &input);
+            tick(&mut b, &input);
+        }
+        assert_eq!(a.state_hash(), b.state_hash());
+    }
+}

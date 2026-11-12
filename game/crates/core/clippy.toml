@@ -1,0 +1,17 @@
+# Determinism contract (docs/game/01-architecture.md#determinism-contract).
+disallowed-types = [
+  { path = "std::collections::HashMap", reason = "iteration order is not deterministic; use Vec, BTreeMap, or an arena" },
+  { path = "std::collections::HashSet", reason = "iteration order is not deterministic; use Vec, BTreeSet, or an arena" },
+]
+disallowed-methods = [
+  { path = "f32::sin", reason = "use lf_core::math::dmath::sin (libm)" },
+  { path = "f32::cos", reason = "use lf_core::math::dmath::cos (libm)" },
+  { path = "f32::tan", reason = "use libm through lf_core::math::dmath" },
+  { path = "f32::powf", reason = "use lf_core::math::dmath::powf (libm)" },
+  { path = "f32::exp", reason = "use lf_core::math::dmath::exp (libm)" },
+  { path = "f32::sqrt", reason = "use lf_core::math::dmath::sqrt (libm)" },
+  { path = "f32::atan2", reason = "use lf_core::math::dmath::atan2 (libm)" },
+  { path = "f32::mul_add", reason = "fused multiply-add differs across targets" },
+  { path = "std::time::Instant::now", reason = "the only clock is World.tick" },
+  { path = "std::time::SystemTime::now", reason = "the only clock is World.tick" },
+]

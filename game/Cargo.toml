@@ -18,6 +18,12 @@ publish = false
 clap = { version = "4", features = ["derive"] }
 lf-core = { path = "crates/core" }
 lf-content = { path = "crates/content" }
+# Shared by several crates. Pinned through Cargo.lock; upgrading any of these can
+# change state or content hashes (see docs/game/01-architecture.md#determinism-contract).
+serde = { version = "1", features = ["derive"] }
+postcard = { version = "1", default-features = false, features = ["alloc"] }
+xxhash-rust = { version = "0.8", features = ["xxh3"] }
+libm = "0.2"
 
 [workspace.lints.rust]
 unsafe_code = "forbid"

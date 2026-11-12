@@ -20,7 +20,7 @@ The orchestrator owns this file. It follows these rules, from
 
 | Gate | Status | Date | Notes |
 |---|---|---|---|
-| G1: Rust-core decision (after M1) | review | 2026-11-12 | Waiting on the owner. WASM 366,194 B gzipped (936,707 raw; budget 1.5 MB). Native bench: test_field 49,019 ticks/s, m0_flat 482,910. WASM under Node 25: test_field 30,131 ticks/s, m0_flat 563,253 (30 Hz needed). Golden replays match on native, WASM, and Python (Python last run after WP-015). |
+| G1: Rust-core decision (after M1) | done | 2026-11-12 | Owner confirmed the Rust core (ADR 0001) on 2026-11-12; M2 may start. WASM 366,194 B gzipped (936,707 raw; budget 1.5 MB). Native bench: test_field 49,019 ticks/s, m0_flat 482,910. WASM under Node 25: test_field 30,131 ticks/s, m0_flat 563,253 (30 Hz needed). Golden replays match on native, WASM, and Python (Python last run after WP-015). |
 | G2: Vertical slice playtest (after M4) | todo | | |
 | G3: Content complete (after M7) | todo | | |
 | Launch (after M8) | todo | | |

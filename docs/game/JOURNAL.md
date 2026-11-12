@@ -45,11 +45,11 @@ Copy this block to the top of the entries and fill it in as you go:
 - **Not verified:** the orchestrator did not re-run the browser screenshots (the worker did);
   `overlay=hitboxes|hurtboxes|nav|ai` draw nothing until those systems exist; pointer lock,
   gamepad, mouse-wheel target switching; the `game` CI workflow on GitHub.
-- **Waiting on the owner:** gate G1 (confirm or supersede ADR 0001); the open context-budget
+- **Gate G1:** the owner confirmed the Rust core (ADR 0001) on 2026-11-12.
+- **Waiting on the owner:** the open context-budget
   rule; the lock-on cone reading and camera-direction acquisition (see the m1b entry).
 - **Next steps:**
-  1. The owner decides G1.
-  2. Then start M2 with WP-020 (opus).
+  1. Start M2 with WP-020 (opus).
 
 ### 2026-11-12: latticefall-m1b (M1: WP-015, WP-012, WP-014, gate G1)
 

@@ -43,7 +43,7 @@ Copy this block to the top of the entries and fill it in as you go:
   G2's tuning answers don't block.
 - **Reservations:** registry numbers: WP-050 14000-14099, WP-051 13000-13999,
   WP-055 15000-15499 (catalyst weapons 1100-1149), WP-057 16000-16999,
-  WP-059 17000-17499, WP-052 18000-18999. WASM event kinds: WP-052 23, WP-055 18-19, WP-057 20, WP-059 21-22;
+  WP-059 17000-17499, WP-052 18000-18999, WP-053 19000-19999, WP-056 15020-15499 (sub-blocks per WP-055). WASM event kinds: WP-052 23, WP-053 24, WP-056 25, WP-055 18-19, WP-057 20, WP-059 21-22;
   WP-050 and WP-051 add none.
 - **WPs:**
   - WP-050: haiku, worktree; `cbccd54`; 189K. Touched `wasm/src/menu.rs` (signature change). Goldens rehashed (content hash only).

@@ -37,8 +37,8 @@ The orchestrator owns this file. It follows these rules, from
 | 006 | Browser bridge | render | sonnet | done | sonnet, Opus-verified | latticefall-m0 | claude/game-m0-1730d5 | 2026-11-12 | WASM and native hashes match for the golden replay and content. lf_wasm_bg.wasm is 349,267 bytes raw, 130,806 gzipped. Uses wasm-bindgen 0.2.106 and wasm-opt 126 from the worker-build cache (no installs). WASM output rebuilds byte-identically; it was committed until ADR 0003 was accepted and is gitignored again. /game?engine=lf shows the new engine; old game moved unchanged to OldGame.svelte. The 60 fps check was not measured: the hidden Browser pane throttles rAF. |
 | 007 | Python binding stub | rl | sonnet | done | sonnet, Opus-verified | latticefall-m0 | claude/game-m0-1730d5 | 2026-11-12 | pyo3 0.30.1 (abi3-py311), maturin 1.16.0 in the project venv game/python/.venv (created with uv; maturin and pytest installed there). Python hash equals native (81ea2bbe90c69441). Bench: step 17-20M steps/s, step_many 157-181M steps/s on the near-empty M0 sim. CI python job installs uv. |
 | 008 | Portfolio slugs | ui | sonnet | done | sonnet, Opus-verified | latticefall-m0 | claude/game-m0-1730d5 | 2026-11-12 | Slugs on all 20 content.ts items; scripts/export-content.ts writes game/data/gen/portfolio_content.json, run by game:validate before lf-tools validate (CI rust job now installs Bun). Portfolio is validated separately and is not in the content hash. Nine of ten relic flavor lines are new wording that needs owner review. |
-| 010 | Physics and character controller | core | opus | todo |  |  | | | |
-| 011 | Input mapping | render | sonnet | todo |  |  | | | |
+| 010 | Physics and character controller | core | opus | in progress |  | latticefall-m1 | game/m1-movement | 2026-11-12 | |
+| 011 | Input mapping | render | sonnet | in progress |  | latticefall-m1 | game/m1-movement | 2026-11-12 | |
 | 012 | Third-person camera | render | sonnet | todo |  |  | | | |
 | 013 | Character rendering and animation | render | sonnet | todo |  |  | | | |
 | 014 | Developer tools and dev URLs | render | sonnet | todo |  |  | | | |

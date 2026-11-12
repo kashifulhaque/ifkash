@@ -28,6 +28,19 @@ Copy this block to the top of the entries and fill it in as you go:
 
 ## Entries
 
+### 2026-11-12: latticefall-m1 (M1)
+
+- **Orchestrator:** Opus 5.5, low effort
+- **Branch and PR:** `game/m1-movement`; PR not opened yet
+- **Started from:** `origin/main` at `daffff9` (M0 and the playbook are merged)
+- **WPs:**
+  - WP-010: in progress (opus)
+  - WP-011: in progress (sonnet, in its own worktree)
+- **Context:** recorded as WPs finish (budget 500K)
+- **Not verified:** to be filled in
+- **Waiting on the owner:** to be filled in
+- **Next steps:** to be filled in
+
 ### 2026-11-12: latticefall-m0 (M0)
 
 - **Orchestrator:** Opus 5.5, medium effort; session `local_9d89a627-8c84-46ee-a494-c285e2afed9c`

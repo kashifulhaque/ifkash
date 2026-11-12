@@ -57,6 +57,8 @@ pub fn encode_replay(seed: u64, scenario: &str, frames: &[u8]) -> Result<Vec<u8>
 #[wasm_bindgen]
 pub struct LfWorld {
     world: World,
+    /// The seed the world started from, kept for `save`.
+    seed: u64,
     snapshot: Vec<ActorSnap>,
     /// Dev-tool state (god mode, set level). Present only in `dev` builds.
     #[cfg(feature = "dev")]
@@ -77,6 +79,7 @@ impl LfWorld {
         write_snapshot(&world, &mut snapshot);
         Ok(LfWorld {
             world,
+            seed,
             snapshot,
             #[cfg(feature = "dev")]
             dev: debug::DevState::default(),
@@ -249,5 +252,42 @@ impl LfWorld {
     /// Ticks simulated so far.
     pub fn tick_count(&self) -> f64 {
         self.world.tick as f64
+    }
+
+    /// Serializes the persistent state (see `lf_core::save`) as a versioned blob for the
+    /// IndexedDB save slots.
+    pub fn save(&self) -> Result<Vec<u8>, JsError> {
+        let content = Content::load_embedded().map_err(|e| JsError::new(&e.to_string()))?;
+        Ok(lf_core::save::save(&self.world, self.seed, &content))
+    }
+
+    /// Builds a world from a blob made by `save`: a fresh world for the saved scenario and
+    /// seed with the persistent state applied. Throws if the blob isn't a save, is from an
+    /// unsupported version, or names a scenario the content doesn't have.
+    #[wasm_bindgen(js_name = fromSave)]
+    pub fn from_save(bytes: &[u8]) -> Result<LfWorld, JsError> {
+        let content = Content::load_embedded().map_err(|e| JsError::new(&e.to_string()))?;
+        let data = lf_core::save::decode(bytes).map_err(|e| JsError::new(&e.to_string()))?;
+        let world =
+            lf_core::save::restore(&data, &content).map_err(|e| JsError::new(&e.to_string()))?;
+        let mut snapshot = Vec::new();
+        write_snapshot(&world, &mut snapshot);
+        Ok(LfWorld {
+            world,
+            seed: data.seed,
+            snapshot,
+            #[cfg(feature = "dev")]
+            dev: debug::DevState::default(),
+        })
+    }
+
+    /// Hash of the persistent state only, as 16 lowercase hex digits. Equal before a save
+    /// and after loading it. Unrelated to `state_hash`.
+    pub fn persistent_hash(&self) -> Result<String, JsError> {
+        let content = Content::load_embedded().map_err(|e| JsError::new(&e.to_string()))?;
+        Ok(format!(
+            "{:016x}",
+            lf_core::save::persistent_hash(&self.world, self.seed, &content)
+        ))
     }
 }

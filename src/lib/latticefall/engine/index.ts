@@ -8,6 +8,7 @@ import { cameraOptions } from '../render/camera';
 import type { DevTools } from '../dev';
 import { decodeEvents } from './events';
 import { loadWasm } from './loader';
+import { SaveManager, SaveStore } from './save';
 import { FixedStepLoop } from './loop';
 import { SceneView } from './scene';
 import { SnapshotBuffer } from './snapshot';
@@ -22,6 +23,13 @@ export interface EngineStats {
 export interface EngineOptions {
   seed?: bigint;
   scenario?: string;
+  /**
+   * A blob from a save slot (`SaveManager.load(slot)`): starts from it instead of a fresh
+   * world. Pass the slot's `scenario` and `seed` too, for the camera and the replay header.
+   */
+  save?: Uint8Array;
+  /** Autosave when the player rests at a Lantern. On unless set to false. */
+  autosave?: boolean;
   /** Called about four times a second with the dev readout values. */
   onStats?: (stats: EngineStats) => void;
 }
@@ -30,6 +38,8 @@ export interface Engine {
   setPaused(paused: boolean): void;
   /** Ticks recorded for the replay so far. */
   replayTicks(): number;
+  /** The three save slots and the autosave hooks (`onAreaChange` is for the level code). */
+  saves: SaveManager;
   /** Downloads everything recorded since the world started as a `.lfr` replay file. */
   downloadReplay(): void;
   dispose(): void;
@@ -41,7 +51,10 @@ export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions
   const seed = opts.seed ?? params.seed ?? 1n;
   const scenario = opts.scenario ?? params.scenario ?? 'm0_flat';
   const dev = cameraOptions(params, scenario);
-  const world = new wasm.glue.LfWorld(seed, scenario);
+  const world = opts.save ? wasm.glue.LfWorld.fromSave(opts.save) : new wasm.glue.LfWorld(seed, scenario);
+  const saves = new SaveManager(new SaveStore(), world, { scenario, seed }, (err) =>
+    console.warn('latticefall: autosave failed', err)
+  );
   const snapshots = new SnapshotBuffer(wasm, world);
   const input = new InputController();
   input.attach(canvas);
@@ -86,7 +99,9 @@ export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions
       } else world.tick(frame);
       snapshots.push();
       // Events go to presentation only; the renderer reads them and never answers.
-      const events = decodeEvents(world.drain_events());
+      const words = world.drain_events();
+      if (opts.autosave !== false) saves.onEventWords(words);
+      const events = decodeEvents(words);
       if (events.length) {
         audio?.handleEvents(events);
         view.vfx.handleEvents(events);
@@ -147,6 +162,7 @@ export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions
 
   return {
     setPaused: (paused) => (tools ? tools.commands.setFrozen(paused) : loop.setPaused(paused)),
+    saves,
     replayTicks: () => recorder.ticks,
     downloadReplay() {
       const bytes = encodeReplay(wasm.glue, recorder, seed, scenario);

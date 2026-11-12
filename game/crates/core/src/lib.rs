@@ -12,6 +12,7 @@ pub mod nav;
 pub mod physics;
 pub mod replay;
 pub mod rng;
+pub mod save;
 pub mod snapshot;
 pub mod systems;
 pub mod tick;

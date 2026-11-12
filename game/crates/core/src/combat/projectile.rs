@@ -379,6 +379,13 @@ fn plan(world: &World, id: Id, p: &Projectile, def: &ProjectileDef, bodies: &[Bo
         let Some(t) = world.actors.get(b.id) else {
             continue;
         };
+        if world
+            .actors
+            .get(p.shooter)
+            .is_some_and(|s| crate::ai::attack::allied(s, t))
+        {
+            continue;
+        }
         // Passing an actor in i-frames (a roll) doesn't count: it can still hit it later.
         if t.dead || dodge::is_invulnerable(&t.moves) {
             continue;
@@ -480,6 +487,8 @@ pub fn spawn(
                 a.stats.two_handing,
             )
         })
+        // An enemy has no weapon: its definition's attack rating (WP-032).
+        .or_else(|| crate::ai::attack::rating(world, a))
         .unwrap_or_default();
     let p = Projectile {
         def: num,

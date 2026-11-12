@@ -1,0 +1,62 @@
+// Enemy moves for WP-032 (the Gray Archer). Registry numbers 8030-8031. Schema:
+// crates/content/src/moves.rs. Every attack telegraphs for at least 12 frames before its
+// first active hitbox frame or projectile (docs/game/05-enemies-and-bosses.md, "Enemy
+// roster"; checked by the validator). Damage comes from the enemy's `attack` in
+// enemies/*.ron, so `motion_value` is the only multiplier here. Numbers are tuning.
+#![enable(implicit_some)]
+[
+  (
+    // Draws for 26 frames (the telegraph) and looses an arrow, aimed 5 degrees down: tuned for a shooter 1.2 m up and a target 8 to 18 m away, so it meets the arrow's drop.
+    id: "ga_shoot",
+    anim: "ga_shoot",
+    total_frames: 70,
+    stamina: 0,
+    fp: 0,
+    root_motion: [(0, 0.0), (70, 0.0)],
+    track_deg_per_tick: 5.0,
+    hyperarmor: None,
+    iframes: None,
+    cancel_attack_from: None,
+    cancel_dodge_from: None,
+    cancel_any_from: None,
+    next_chain: None,
+    hitboxes: [],
+    projectiles: [
+      (frame: 26, projectile: "proj_arrow", offset: (0.0, 1.4, 0.6), yaw_deg: 0.0, pitch_deg: -5.0),
+    ],
+    sfx: [(8, "bow_draw"), (26, "bow_release")],
+    vfx: [(8, "glow_arrow")],
+  ),
+  (
+    // A close shove with the bow for a player who rushes the rampart.
+    id: "ga_shove",
+    anim: "ga_shove",
+    total_frames: 46,
+    stamina: 0,
+    fp: 0,
+    root_motion: [(0, 0.0), (12, 0.0), (16, 0.5), (46, 0.5)],
+    track_deg_per_tick: 6.0,
+    hyperarmor: None,
+    iframes: None,
+    cancel_attack_from: None,
+    cancel_dodge_from: None,
+    cancel_any_from: None,
+    next_chain: None,
+    hitboxes: [
+      (
+        frames: (14, 16),
+        shape: Capsule(a: (0.0, 1.2, 0.2), b: (0.0, 1.2, 1.0), radius: 0.4),
+        motion_value: 0.6,
+        phys: Blunt,
+        element: None,
+        poise_damage: 20,
+        status: [],
+        knockback: 1.0,
+        hitstop: 4,
+        tags: [],
+      ),
+    ],
+    sfx: [(12, "swing_light")],
+    vfx: [],
+  ),
+]

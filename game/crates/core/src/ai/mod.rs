@@ -26,9 +26,12 @@
 //! - Navigation (WP-032 with WP-031's grid): [`behaviors::desired_move`] is the steering
 //!   seam; it moves straight at the goal and stops at a wall.
 
+pub mod attack;
 pub mod behaviors;
 pub mod options;
+pub mod pathing;
 pub mod perception;
+pub mod special;
 pub mod tokens;
 
 use lf_content::enemy::{AiTuning, Behavior, Condition, Perception};
@@ -136,6 +139,24 @@ pub struct AiState {
     pub last_hp: u32,
     /// Boss phase for `Condition::Phase`; 0 for regular enemies (WP-033 sets it).
     pub phase: u8,
+    /// The guard is held up (an enemy's `Guard` behavior); `combat::moves::step` reads it
+    /// like the player's guard button (WP-032).
+    pub guarding: bool,
+    /// Ticks since it last lost HP, saturating (`Condition::HurtWithin`). `u16::MAX` at spawn.
+    pub since_hurt: u16,
+    /// The nav path it follows: waypoints still to walk, nearest first (WP-032, see
+    /// [`pathing`]). Empty when it steers straight.
+    pub path: Vec<[f32; 3]>,
+    /// The goal `path` was requested for.
+    pub path_goal: [f32; 3],
+    /// A path request in the queue, by ticket.
+    pub path_ticket: Option<u32>,
+    /// Ticks until it may ask for a path again after a failed request.
+    pub path_retry: u16,
+    /// Ticks lying dead, for a reviver (see [`special`]).
+    pub dead_ticks: u16,
+    /// The killing blow keeps it down for good (see [`special`]).
+    pub stays_dead: bool,
 }
 
 /// What an option does once picked.
@@ -278,6 +299,8 @@ pub fn enemy_actor(
             unaware: true,
             ..PoiseState::default()
         },
+        stamina: f32::from(d.stamina),
+        max_stamina: f32::from(d.stamina),
         stats: Stats {
             defense: Defense::from_data(&d.defense),
             ..Stats::default()
@@ -295,6 +318,7 @@ pub fn enemy_actor(
             spawn: index,
             cooldowns: vec![0; table.defs[def_i].options.len()],
             last_hp: d.hp,
+            since_hurt: u16::MAX,
             ..AiState::default()
         }),
         ..Actor::default()
@@ -316,11 +340,17 @@ pub fn run(world: &mut World) {
         return;
     }
     let noise = perception::player_noise(world, &tuning);
+    pathing::deliver(world);
     for id in ids {
         tokens::release_finished(world, id);
-        if world.actors.get(id).is_none_or(|a| a.dead) {
+        if world.actors.get(id).is_some_and(|a| a.dead) {
+            special::tick_dead(world, id);
             continue;
         }
+        if world.actors.get(id).is_none() {
+            continue;
+        }
+        attack::regen_stamina(world, id);
         perception::listen(world, id, noise);
         if thinks_on(world.tick, id.index, tuning.think_every_ticks) {
             think(world, id, &tuning);
@@ -361,6 +391,7 @@ fn think(world: &mut World, id: Id, t: &AiTuning) {
     let sees = target.is_some_and(|p| perception::sees(&world.physics, a, p, &def.perception, t));
     let faces = target.is_some_and(|p| perception::in_cone(a, p.pos, def.perception.sight_deg));
     let hurt = a.hp < brain.last_hp;
+    let lantern_lit = def.data.backstab_immune;
     let home = world
         .layout
         .enemies
@@ -382,6 +413,9 @@ fn think(world: &mut World, id: Id, t: &AiTuning) {
     if let Some(a) = world.actors.get_mut(id) {
         let hp = a.hp;
         if let Some(b) = a.ai.as_mut() {
+            if hp < b.last_hp {
+                b.since_hurt = 0;
+            }
             b.last_hp = hp;
         }
     }
@@ -407,7 +441,8 @@ fn think(world: &mut World, id: Id, t: &AiTuning) {
                 .and_then(|a| a.ai.as_ref())
                 .is_some_and(|b| matches!(b.awareness, Awareness::Idle | Awareness::Suspicious));
             if let Some(a) = world.actors.get_mut(id) {
-                a.poise.unaware = still && !faces;
+                // A carried lit lantern gives it away (the Miner husk).
+                a.poise.unaware = still && !faces && !lantern_lit;
             }
         }
         Awareness::Aware => {
@@ -510,5 +545,7 @@ fn return_home(world: &mut World, id: Id) {
     set_awareness(world, id, Awareness::Idle);
 }
 
+#[cfg(test)]
+mod enemy_tests;
 #[cfg(test)]
 mod tests;

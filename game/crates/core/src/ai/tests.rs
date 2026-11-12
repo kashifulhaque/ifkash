@@ -348,6 +348,7 @@ fn conditions_read_the_context() {
         target_healing: false,
         target_guarding: false,
         phase: 0,
+        since_hurt: 20,
     };
     assert!(holds(&Condition::DistBetween(2.0, 3.4), &x));
     assert!(!holds(&Condition::DistBetween(3.4, 5.0), &x));
@@ -362,6 +363,8 @@ fn conditions_read_the_context() {
     assert!(!holds(&Condition::TargetHealing, &x));
     assert!(!holds(&Condition::TargetCasting, &x));
     assert!(holds(&Condition::Phase(0), &x));
+    assert!(holds(&Condition::HurtWithin(20), &x));
+    assert!(!holds(&Condition::HurtWithin(19), &x));
 }
 
 #[test]

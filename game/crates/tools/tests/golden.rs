@@ -374,6 +374,7 @@ fn m2_parry_riposte_parries_then_ripostes() {
             Event::Projectile(_) => "projectile",
             Event::StatusProc(_) => "status_proc",
             Event::Awareness(_) => "awareness",
+            Event::Revive(_) => "revive",
         })
         .collect();
     assert_eq!(kinds, ["parry", "critical", "hit"], "{events:?}");
@@ -591,4 +592,154 @@ fn m3_ai_notice_grunts_notice_attack_and_leash() {
         )
         .count();
     assert!(hits > 0, "{events:?}");
+}
+
+// --- WP-032: enemy batch 1 ---
+
+/// The `Hit` events of a replay run, in order.
+fn hits(events: &[lf_core::events::Event]) -> Vec<&lf_core::events::Hit> {
+    events
+        .iter()
+        .filter_map(|e| match e {
+            lf_core::events::Event::Hit(h) => Some(h),
+            _ => None,
+        })
+        .collect()
+}
+
+/// The WP-032 Husk golden: the husk walks up and lands both swings of its combo (62 and 79
+/// damage from its attack rating of 90), then dies to the player's light.
+#[test]
+fn m3_husk_lands_its_two_hit_combo_and_dies() {
+    let (w, events) = run_duel("m3_husk", "fight_husk");
+    let husk = w.state.ai_enemies[0];
+    let hs = hits(&events);
+    let on_player: Vec<_> = hs
+        .iter()
+        .filter(|h| h.attacker == husk && h.target == w.player)
+        .collect();
+    let swipe = |id: &str| w.moves.num_of(id).unwrap();
+    assert_eq!(on_player[0].move_num, swipe("husk_swipe_1"));
+    assert_eq!(on_player[0].damage, 62);
+    assert_eq!(on_player[1].move_num, swipe("husk_swipe_2"));
+    assert_eq!(on_player[1].damage, 79);
+    assert!(hs.iter().any(|h| h.target == husk && h.killed), "{hs:?}");
+    assert!(w.actors.get(husk).unwrap().dead);
+}
+
+/// The Servant, Miner, and Frost Husk each land a swing; the Frost Husk's carries Rime.
+#[test]
+fn m3_husk_variants_each_swing() {
+    let (w, events) = run_duel("m3_husk_variants", "fight_husk_variants");
+    let hs = hits(&events);
+    let by = |name: &str| {
+        let i = w
+            .layout
+            .enemies
+            .iter()
+            .position(|s| s.name == name)
+            .unwrap();
+        w.state.ai_enemies[i]
+    };
+    let moves_by = |name: &str| -> Vec<u32> {
+        hs.iter()
+            .filter(|h| h.attacker == by(name) && h.target == w.player)
+            .map(|h| h.move_num)
+            .collect()
+    };
+    let m = |id: &str| w.moves.num_of(id).unwrap();
+    assert!(moves_by("servant").contains(&m("husk_swipe_1")));
+    assert!(moves_by("miner").contains(&m("husk_miner_pick")));
+    assert!(moves_by("frost").contains(&m("husk_frost_swipe_1")));
+    // The Frost Husk's swing built Rime on the player.
+    let player = w.actors.get(w.player).unwrap();
+    let rime = lf_core::combat::status::index(lf_content::moves::StatusKind::Rime);
+    assert!(player.status.meter_milli[rime] > 0 || player.status.active[rime] > 0);
+}
+
+/// The pack attacks with lunges and snaps, never more than two at once, and dies to lights.
+#[test]
+fn m3_thorn_hounds_bite_and_die() {
+    let (w, events) = run_duel("m3_thorn_hounds", "fight_thorn_hounds");
+    let pack: Vec<_> = w.state.ai_enemies.clone();
+    let hs = hits(&events);
+    let on_player: Vec<_> = hs.iter().filter(|h| h.target == w.player).collect();
+    assert!(on_player.len() >= 2, "{hs:?}");
+    let attackers: std::collections::BTreeSet<_> = on_player.iter().map(|h| h.attacker).collect();
+    assert!(attackers.len() >= 2, "more than one hound bit the player");
+    assert!(on_player.iter().all(|h| pack.contains(&h.attacker)));
+    let killed = hs
+        .iter()
+        .filter(|h| h.killed && pack.contains(&h.target))
+        .count();
+    assert!(killed >= 2, "{killed}");
+}
+
+/// The Gray Knight's guard takes most of the player's lights, then it attacks.
+#[test]
+fn m3_gray_knight_guards_then_cuts() {
+    use lf_core::events::HitResult;
+    let (w, events) = run_duel("m3_gray_knight", "fight_gray_knight");
+    let knight = w.state.ai_enemies[0];
+    let hs = hits(&events);
+    let guarded: Vec<_> = hs
+        .iter()
+        .filter(|h| h.target == knight && h.result == HitResult::Guarded)
+        .collect();
+    assert!(!guarded.is_empty(), "{hs:?}");
+    // A light does about 100 unguarded against the knight's defense; the guard takes 80%.
+    assert!(guarded.iter().all(|h| h.damage < 30), "{guarded:?}");
+    let cuts: Vec<_> = hs
+        .iter()
+        .filter(|h| h.attacker == knight && h.target == w.player)
+        .collect();
+    assert!(
+        cuts.iter()
+            .any(|h| h.move_num == w.moves.num_of("gk_slash_1").unwrap())
+    );
+    assert!(
+        cuts.iter()
+            .any(|h| h.move_num == w.moves.num_of("gk_slash_2").unwrap())
+    );
+}
+
+/// The archer looses arrows about every 90 ticks, and each lands (81 damage).
+#[test]
+fn m3_gray_archer_shoots_on_a_cadence() {
+    use lf_core::events::{Event, ProjectileEventKind};
+    let (w, events) = run_duel("m3_gray_archer", "fight_gray_archer");
+    let archer = w.state.ai_enemies[0];
+    let spawns = events
+        .iter()
+        .filter(|e| matches!(e, Event::Projectile(p) if p.shooter == archer && p.kind == ProjectileEventKind::Spawned))
+        .count();
+    assert!(spawns >= 2, "{spawns}");
+    let hs = hits(&events);
+    let arrows: Vec<_> = hs.iter().filter(|h| h.attacker == archer).collect();
+    assert!(arrows.len() >= 2);
+    assert!(
+        arrows
+            .iter()
+            .all(|h| h.damage == 81 && h.move_num == w.moves.num_of("ga_shoot").unwrap())
+    );
+}
+
+/// The skeleton dies, lies still for 180 ticks, and revives at half HP.
+#[test]
+fn m3_whitewarden_revive_gets_back_up() {
+    use lf_core::events::Event;
+    let (w, events) = run_duel("m3_whitewarden_revive", "fight_skeleton");
+    let sk = w.state.ai_enemies[0];
+    let kill_tick = events
+        .iter()
+        .position(|e| matches!(e, Event::Hit(h) if h.target == sk && h.killed));
+    let revive = events
+        .iter()
+        .position(|e| matches!(e, Event::Revive(r) if r.actor == sk));
+    assert!(kill_tick.is_some() && revive.is_some(), "{events:?}");
+    let Some(Event::Revive(r)) = revive.map(|i| &events[i]) else {
+        unreachable!()
+    };
+    assert_eq!(r.hp, 90);
+    assert!(!w.actors.get(sk).unwrap().dead);
 }

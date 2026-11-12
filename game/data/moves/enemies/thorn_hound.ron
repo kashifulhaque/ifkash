@@ -1,0 +1,72 @@
+// Enemy moves for WP-032 (the Thorn Hound). Registry numbers 8010-8011. Schema:
+// crates/content/src/moves.rs. Every attack telegraphs for at least 12 frames before its
+// first active hitbox frame or projectile (docs/game/05-enemies-and-bosses.md, "Enemy
+// roster"; checked by the validator). Damage comes from the enemy's `attack` in
+// enemies/*.ron, so `motion_value` is the only multiplier here. Numbers are tuning.
+#![enable(implicit_some)]
+[
+  (
+    // A leaping bite that closes about 2.8 m. 30 Rupture buildup.
+    id: "th_lunge",
+    anim: "th_lunge",
+    total_frames: 46,
+    stamina: 0,
+    fp: 0,
+    root_motion: [(0, 0.0), (12, 0.0), (16, 2.6), (46, 2.8)],
+    track_deg_per_tick: 8.0,
+    hyperarmor: None,
+    iframes: None,
+    cancel_attack_from: None,
+    cancel_dodge_from: None,
+    cancel_any_from: None,
+    next_chain: None,
+    hitboxes: [
+      (
+        frames: (14, 18),
+        shape: Capsule(a: (0.0, 0.8, 0.2), b: (0.0, 0.8, 1.2), radius: 0.35),
+        motion_value: 0.9,
+        phys: Pierce,
+        element: None,
+        poise_damage: 14,
+        status: [(kind: Rupture, amount: 30)],
+        knockback: 0.5,
+        hitstop: 4,
+        tags: [],
+      ),
+    ],
+    sfx: [(12, "hound_snarl")],
+    vfx: [(14, "trail_dull")],
+  ),
+  (
+    // A close snap. 15 Rupture buildup.
+    id: "th_snap",
+    anim: "th_snap",
+    total_frames: 40,
+    stamina: 0,
+    fp: 0,
+    root_motion: [(0, 0.0), (12, 0.0), (15, 0.4), (40, 0.4)],
+    track_deg_per_tick: 8.0,
+    hyperarmor: None,
+    iframes: None,
+    cancel_attack_from: None,
+    cancel_dodge_from: None,
+    cancel_any_from: None,
+    next_chain: None,
+    hitboxes: [
+      (
+        frames: (13, 15),
+        shape: Capsule(a: (0.0, 0.8, 0.2), b: (0.0, 0.8, 1.0), radius: 0.35),
+        motion_value: 0.7,
+        phys: Pierce,
+        element: None,
+        poise_damage: 10,
+        status: [(kind: Rupture, amount: 15)],
+        knockback: 0.3,
+        hitstop: 4,
+        tags: [],
+      ),
+    ],
+    sfx: [(12, "hound_snarl")],
+    vfx: [],
+  ),
+]

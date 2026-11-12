@@ -500,6 +500,7 @@ fn check_ai(content: &Content, out: &mut Vec<Issue>) {
         for (field, message) in e.problems() {
             sink.error(field, message);
         }
+        telegraph_check(e, content, &mut sink);
         for (i, o) in e.options.iter().enumerate() {
             if let Some(m) = &o.move_id {
                 match content.move_by_id(m) {
@@ -526,6 +527,48 @@ fn check_ai(content: &Content, out: &mut Vec<Issue>) {
             if content.ai.is_none() {
                 sink.error(format!("enemies[{i}]"), "enemies need ai.ron");
             }
+        }
+    }
+}
+
+/// The fewest frames an enemy attack telegraphs before it can hurt (docs
+/// "Enemy roster", WP-032): its first hitbox frame or projectile spawn is at least this.
+pub const MIN_TELEGRAPH_FRAMES: u16 = 12;
+
+/// Every move an enemy attacks with, which is each option's move and, transitively, its
+/// `next_chain` follow-ups, must telegraph for `MIN_TELEGRAPH_FRAMES`.
+fn telegraph_check(e: &crate::EnemyDef, content: &Content, sink: &mut Sink<'_>) {
+    let mut seen = BTreeSet::new();
+    let mut todo: Vec<&str> = e
+        .options
+        .iter()
+        .filter_map(|o| o.move_id.as_deref())
+        .collect();
+    while let Some(id) = todo.pop() {
+        if !seen.insert(id) {
+            continue;
+        }
+        let Some(m) = content.move_by_id(id) else {
+            continue;
+        };
+        let first = m
+            .hitboxes
+            .iter()
+            .map(|h| h.frames.0)
+            .chain(m.projectiles.iter().map(|p| p.frame))
+            .min();
+        if let Some(f) = first
+            && f < MIN_TELEGRAPH_FRAMES
+        {
+            sink.error(
+                format!("move \"{id}\""),
+                format!(
+                    "its first active frame is {f}; an enemy attack needs a telegraph of at least {MIN_TELEGRAPH_FRAMES} frames"
+                ),
+            );
+        }
+        if let Some(n) = &m.next_chain {
+            todo.push(n);
         }
     }
 }

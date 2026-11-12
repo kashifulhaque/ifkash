@@ -59,6 +59,8 @@ const PROJECTILES_FILE: &str = "projectiles.ron";
 const STATUS_FILE: &str = "status.ron";
 /// Directory (relative to the data root) holding enemy definitions, one per file.
 const ENEMIES_DIR: &str = "enemies";
+/// Directory (relative to the data root) holding enemy movesets (WP-032).
+const ENEMY_MOVES_DIR: &str = "moves/enemies";
 /// The shared AI tuning file (relative to the data root).
 const AI_FILE: &str = "ai.ron";
 
@@ -85,6 +87,26 @@ const EMBEDDED_MOVES: &[(&str, &str)] = &[
     (
         "moves/test_enemy.ron",
         include_str!("../../../data/moves/test_enemy.ron"),
+    ),
+    (
+        "moves/enemies/husk.ron",
+        include_str!("../../../data/moves/enemies/husk.ron"),
+    ),
+    (
+        "moves/enemies/thorn_hound.ron",
+        include_str!("../../../data/moves/enemies/thorn_hound.ron"),
+    ),
+    (
+        "moves/enemies/gray_knight.ron",
+        include_str!("../../../data/moves/enemies/gray_knight.ron"),
+    ),
+    (
+        "moves/enemies/gray_archer.ron",
+        include_str!("../../../data/moves/enemies/gray_archer.ron"),
+    ),
+    (
+        "moves/enemies/whitewarden_skeleton.ron",
+        include_str!("../../../data/moves/enemies/whitewarden_skeleton.ron"),
     ),
 ];
 const EMBEDDED_WEAPONS: &[(&str, &str)] = &[
@@ -136,12 +158,74 @@ const EMBEDDED_SCENARIOS: &[(&str, &str)] = &[
         "scenarios/ai_yard.ron",
         include_str!("../../../data/scenarios/ai_yard.ron"),
     ),
+    (
+        "scenarios/fight_husk.ron",
+        include_str!("../../../data/scenarios/fight_husk.ron"),
+    ),
+    (
+        "scenarios/fight_nav_wall.ron",
+        include_str!("../../../data/scenarios/fight_nav_wall.ron"),
+    ),
+    (
+        "scenarios/fight_husk_variants.ron",
+        include_str!("../../../data/scenarios/fight_husk_variants.ron"),
+    ),
+    (
+        "scenarios/fight_thorn_hounds.ron",
+        include_str!("../../../data/scenarios/fight_thorn_hounds.ron"),
+    ),
+    (
+        "scenarios/fight_gray_knight.ron",
+        include_str!("../../../data/scenarios/fight_gray_knight.ron"),
+    ),
+    (
+        "scenarios/fight_gray_archer.ron",
+        include_str!("../../../data/scenarios/fight_gray_archer.ron"),
+    ),
+    (
+        "scenarios/fight_skeleton.ron",
+        include_str!("../../../data/scenarios/fight_skeleton.ron"),
+    ),
 ];
 const EMBEDDED_AI: &str = include_str!("../../../data/ai.ron");
-const EMBEDDED_ENEMIES: &[(&str, &str)] = &[(
-    "enemies/test_grunt.ron",
-    include_str!("../../../data/enemies/test_grunt.ron"),
-)];
+const EMBEDDED_ENEMIES: &[(&str, &str)] = &[
+    (
+        "enemies/test_grunt.ron",
+        include_str!("../../../data/enemies/test_grunt.ron"),
+    ),
+    (
+        "enemies/husk.ron",
+        include_str!("../../../data/enemies/husk.ron"),
+    ),
+    (
+        "enemies/husk_servant.ron",
+        include_str!("../../../data/enemies/husk_servant.ron"),
+    ),
+    (
+        "enemies/husk_miner.ron",
+        include_str!("../../../data/enemies/husk_miner.ron"),
+    ),
+    (
+        "enemies/husk_frost.ron",
+        include_str!("../../../data/enemies/husk_frost.ron"),
+    ),
+    (
+        "enemies/thorn_hound.ron",
+        include_str!("../../../data/enemies/thorn_hound.ron"),
+    ),
+    (
+        "enemies/gray_knight.ron",
+        include_str!("../../../data/enemies/gray_knight.ron"),
+    ),
+    (
+        "enemies/gray_archer.ron",
+        include_str!("../../../data/enemies/gray_archer.ron"),
+    ),
+    (
+        "enemies/whitewarden_skeleton.ron",
+        include_str!("../../../data/enemies/whitewarden_skeleton.ron"),
+    ),
+];
 
 /// All parsed content.
 ///
@@ -238,7 +322,7 @@ impl Content {
         };
         let list = |sub: &str| -> Result<Vec<(String, String)>, ContentError> {
             let sub_dir = dir.join(sub);
-            if (sub == SCENARIOS_DIR || sub == ENEMIES_DIR) && !sub_dir.is_dir() {
+            if sub != MOVES_DIR && sub != WEAPONS_DIR && !sub_dir.is_dir() {
                 return Ok(Vec::new());
             }
             let mut names = Vec::new();
@@ -295,7 +379,11 @@ impl Content {
         Self::from_sources(
             &read(&dir.join("registry.ron"))?,
             &read(&dir.join("attributes.ron"))?,
-            list(MOVES_DIR)?,
+            {
+                let mut moves = list(MOVES_DIR)?;
+                moves.extend(list(ENEMY_MOVES_DIR)?);
+                moves
+            },
             list(WEAPONS_DIR)?,
         )?
         .with_world(locomotion.as_deref(), list(SCENARIOS_DIR)?)?

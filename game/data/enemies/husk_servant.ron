@@ -1,0 +1,23 @@
+// The Servant, the castle's Husk variant (registry 7001): the same combo from a sturdier
+// body. Source: docs/game/05-enemies-and-bosses.md, "Enemy roster", Husk. Stats are tuning.
+#![enable(implicit_some)]
+(
+  id: "husk_servant",
+  model: "husk_servant",
+  hp: 140,
+  poise: 30,
+  defense: (flat: 45),
+  resist: (immunity: 100, robustness: 100, composure: 100),
+  can_go_mad: true,
+  glimmer: 17,
+  attack: 105,
+  speed_percent: 75,
+  perception: (sight_deg: 100.0, sight_m: 14.0, hearing_mult: 1.0),
+  moveset: "enemies/husk.ron",
+  options: [
+    (move: "husk_swipe_1", when: [DistBelow(2.3), FacingWithin(50.0)], weight: 6, cooldown: 60),
+    (behavior: Approach(dur: 30), when: [DistAbove(2.0)], weight: 5),
+    (behavior: Strafe(dur: 40), when: [DistBetween(1.5, 5.0)], weight: 1, cooldown: 90),
+  ],
+  drops: [(item: "itm_glimmer_vial", chance: 0.03)],
+)

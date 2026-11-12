@@ -30,6 +30,8 @@ pub struct Context {
     pub target_healing: bool,
     pub target_guarding: bool,
     pub phase: u8,
+    /// Ticks since the enemy last lost HP (`u16::MAX` if it never has).
+    pub since_hurt: u16,
 }
 
 fn frac(hp: u32, max: u32) -> f32 {
@@ -57,6 +59,7 @@ impl Context {
             },
             target_guarding: target.moves.guard.active,
             phase: me.ai.as_ref().map_or(0, |b| b.phase),
+            since_hurt: me.ai.as_ref().map_or(u16::MAX, |b| b.since_hurt),
         }
     }
 }
@@ -78,6 +81,7 @@ pub fn holds(c: &Condition, x: &Context) -> bool {
         // No spells yet.
         Condition::TargetCasting => false,
         Condition::Phase(p) => x.phase == p,
+        Condition::HurtWithin(t) => x.since_hurt <= t,
     }
 }
 
@@ -208,6 +212,8 @@ fn start_option(world: &mut World, me: Id, target: Id, i: usize) {
             };
             let free_from = d.data.cancel_any_from.unwrap_or(d.data.total_frames);
             if let Some(a) = world.actors.get_mut(me) {
+                // Starting a move drops a raised guard, like the player's.
+                a.moves.guard.drop_guard();
                 a.moves.current = Some(ActiveMove {
                     num,
                     frame: 0,
@@ -218,6 +224,7 @@ fn start_option(world: &mut World, me: Id, target: Id, i: usize) {
                 // The move's tracking turns toward the lock target (`combat::moves`).
                 a.lock_target = Some(target);
                 if let Some(b) = a.ai.as_mut() {
+                    b.guarding = false;
                     b.token = token;
                     b.token_target = (token != Token::None).then_some(target);
                     b.doing = Doing::Attack {
@@ -238,6 +245,7 @@ pub fn start_behavior(world: &mut World, me: Id, beh: Behavior) {
     if let Some(b) = world.actors.get_mut(me).and_then(|a| a.ai.as_mut()) {
         b.doing = Doing::Behavior(beh);
         b.doing_ticks = beh.dur().unwrap_or(0);
+        b.guarding = false;
         if matches!(beh, Behavior::Strafe { .. }) {
             b.strafe_left = left;
         }

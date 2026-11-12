@@ -9,6 +9,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::moves::StatusKind;
 use crate::scenario::{DefenseData, ResistData};
+use crate::weapons::GuardStats;
 
 /// One enemy type.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -51,11 +52,61 @@ pub struct EnemyDef {
     /// Ignores attack tokens (bosses and their adds; docs "Attack tokens").
     #[serde(default)]
     pub ignores_tokens: bool,
+    /// Attack rating: the physical attack rating of every hit it lands, in the damage
+    /// formula's `AR` (docs/game/03-combat.md, "Damage dealt"). 0 deals the minimum of 1.
+    #[serde(default)]
+    pub attack: u32,
+    /// Stamina a raised guard spends on blocks. 0 means none: a guard breaks on the first
+    /// block. Only an enemy with `guard` needs any.
+    #[serde(default)]
+    pub stamina: u16,
+    /// Block stats while its `Guard` behavior holds the guard up. `None`: it can't block.
+    #[serde(default)]
+    pub guard: Option<GuardStats>,
+    /// Walk and run speed as a percent of the shared speeds in `ai.ron`.
+    #[serde(default = "full_speed")]
+    pub speed_percent: u16,
+    /// It carries a lit lantern and is never unaware, so it can't be backstabbed (the
+    /// Miner husk).
+    #[serde(default)]
+    pub backstab_immune: bool,
+    /// It gets back up after dying, unless something stops it (the Whitewarden Skeleton).
+    #[serde(default)]
+    pub revive: Option<Revive>,
     /// What it picks from in Combat.
     pub options: Vec<AiOption>,
     /// Item drops. Not rolled yet (enemy drops arrive later).
     #[serde(default)]
     pub drops: Vec<EnemyDrop>,
+}
+
+fn full_speed() -> u16 {
+    100
+}
+
+/// A revive rule (docs "Enemy roster", Whitewarden Skeleton): `after_ticks` after dying
+/// the enemy stands up again with `hp_percent` of its HP, unless a [`ReviveStop`] applies.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Revive {
+    /// Ticks lying dead before it stands up.
+    pub after_ticks: u16,
+    /// HP it gets back up with, as a percent of its maximum.
+    pub hp_percent: u8,
+    /// Any one of these on its death keeps it down for good.
+    pub stopped_by: Vec<ReviveStop>,
+}
+
+/// What keeps a reviver dead.
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+pub enum ReviveStop {
+    /// The killing blow dealt Radiance damage.
+    Radiance,
+    /// The killing blow was a critical hit (a riposte or a backstab).
+    Critical,
+    /// It died within this many meters of a lit Lantern (the scenario's light sources
+    /// stand in for braziers until those exist).
+    LitLantern(f32),
 }
 
 /// Sight cone and hearing (docs "Perception").
@@ -155,6 +206,8 @@ pub enum Condition {
     TargetCasting,
     /// The boss phase equals this (0 for regular enemies; WP-033 sets it).
     Phase(u8),
+    /// The enemy lost HP within this many ticks (an archer repositions after a hit).
+    HurtWithin(u16),
 }
 
 /// An item drop.
@@ -205,6 +258,11 @@ pub struct AiTuning {
     pub fallback_ticks: u16,
     /// How far ahead `desired_move` checks for a wall in the way.
     pub probe_m: f32,
+    /// A nav path is replanned once its goal has moved this far, in meters (WP-032).
+    pub repath_m: f32,
+    /// After a path request fails, an actor steers straight for this many ticks before it
+    /// asks again (WP-032).
+    pub path_retry_ticks: u16,
 }
 
 /// Noise radius of each player action, in meters (docs "Perception", Hearing).
@@ -278,6 +336,38 @@ impl EnemyDef {
         }
         if let Some(p) = &self.perception {
             out.extend(p.problems("perception"));
+        }
+        if self.speed_percent == 0 {
+            out.push(("speed_percent".to_owned(), "must be positive".to_owned()));
+        }
+        if let Some(r) = &self.revive {
+            if r.after_ticks == 0 {
+                out.push((
+                    "revive.after_ticks".to_owned(),
+                    "must be positive".to_owned(),
+                ));
+            }
+            if r.hp_percent == 0 || r.hp_percent > 100 {
+                out.push((
+                    "revive.hp_percent".to_owned(),
+                    "must be 1 to 100".to_owned(),
+                ));
+            }
+            if r.stopped_by
+                .iter()
+                .any(|s| matches!(s, ReviveStop::LitLantern(m) if *m <= 0.0))
+            {
+                out.push((
+                    "revive.stopped_by".to_owned(),
+                    "LitLantern needs a positive radius".to_owned(),
+                ));
+            }
+        }
+        if self.guard.is_some() && self.stamina == 0 {
+            out.push((
+                "stamina".to_owned(),
+                "an enemy that guards needs stamina to block with".to_owned(),
+            ));
         }
         if self.leash_m.is_some_and(|m| m <= 0.0) {
             out.push(("leash_m".to_owned(), "must be positive".to_owned()));

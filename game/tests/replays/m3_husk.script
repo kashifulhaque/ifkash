@@ -1,0 +1,11 @@
+# WP-032 golden: a Husk walks up, lands its two-hit combo, and dies to a light (record with `lf-tools replay record-script`). Each line:
+# <ticks> <move_x> <move_z> [BUTTONS]. The player spawns at the origin facing +Z in fight_husk.
+seed 32
+scenario fight_husk
+170 0 0              # stand: the husk notices, walks up, and swings twice
+1   0 0  LOCK        # lock on
+10  0 0
+1   0 0  LIGHT       # one light kills it (120 HP)
+60  0 0
+1   0 0  LIGHT
+60  0 0

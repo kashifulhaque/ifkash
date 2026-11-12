@@ -86,5 +86,32 @@
 
     (id: "te_slash", num: 8900),
     (id: "te_lunge", num: 8901),
+
+    // WP-032 enemy batch 1: definitions 7000-7099, moves 8000-8299.
+    (id: "husk", num: 7000),
+    (id: "husk_servant", num: 7001),
+    (id: "husk_miner", num: 7002),
+    (id: "husk_frost", num: 7003),
+    (id: "thorn_hound", num: 7010),
+    (id: "gray_knight", num: 7020),
+    (id: "gray_archer", num: 7030),
+    (id: "whitewarden_skeleton", num: 7040),
+
+    (id: "husk_swipe_1", num: 8000),
+    (id: "husk_swipe_2", num: 8001),
+    (id: "husk_miner_pick", num: 8002),
+    (id: "husk_frost_swipe_1", num: 8003),
+    (id: "husk_frost_swipe_2", num: 8004),
+    (id: "th_lunge", num: 8010),
+    (id: "th_snap", num: 8011),
+    (id: "gk_shield_advance", num: 8020),
+    (id: "gk_slash_1", num: 8021),
+    (id: "gk_slash_2", num: 8022),
+    (id: "gk_thrust", num: 8023),
+    (id: "gk_shield_bash", num: 8024),
+    (id: "ga_shoot", num: 8030),
+    (id: "ga_shove", num: 8031),
+    (id: "ws_slash", num: 8040),
+    (id: "ws_lunge", num: 8041),
   ],
 )

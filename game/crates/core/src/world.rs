@@ -16,6 +16,7 @@ use crate::combat::projectile::{Projectile, ProjectileTable};
 use crate::combat::status::{StatusState, StatusTable};
 use crate::events::EventQueue;
 use crate::items::{Inventory, ItemTable, slot};
+use crate::nav::{NavGrid, NavQueue, bake::bake};
 use crate::physics::PhysicsState;
 use crate::rng::RngStreams;
 use crate::world_state::lantern::dummy_actor;
@@ -52,6 +53,12 @@ pub struct World {
     /// Every enemy definition and the AI tuning, from content. Not hashed: the content
     /// hash covers it.
     pub ai: AiTable,
+    /// The baked navigation grid of the scenario, for scenarios with AI enemies (WP-032).
+    /// Not hashed: it is baked from the scenario, which the content hash covers.
+    pub nav: Option<NavGrid>,
+    /// Path requests from AI actors waiting for the grid (WP-032). Not hashed: an actor's
+    /// path state is, and the queue only holds requests it made.
+    pub nav_queue: NavQueue,
     /// Lanterns and enemy spawns from the scenario, for the world state to refer to. Not
     /// hashed: the scenario name is, and the content hash covers the scenario.
     pub layout: Layout,
@@ -193,10 +200,15 @@ impl World {
             ai_enemies.push(actors.insert(actor));
         }
         let state = WorldState::new(&layout, enemies, ai_enemies);
+        let physics = PhysicsState::new(scenario, level);
+        // Enemies steer along nav paths, so a scenario with any gets its grid baked here
+        // (in process: the bake is deterministic and quick for the small scenarios).
+        let nav_config = lf_content::NavConfig::embedded().map_err(WorldError::Ai)?;
+        let nav = (!layout.enemies.is_empty()).then(|| bake(&physics, level, &nav_config));
         let mut world = Self {
             tick: 0,
             rng: RngStreams::from_seed(seed),
-            physics: PhysicsState::new(scenario, level),
+            physics,
             locomotion,
             moves,
             items,
@@ -204,6 +216,8 @@ impl World {
             projectile_defs,
             status: status_table,
             ai,
+            nav,
+            nav_queue: NavQueue::new(&nav_config),
             actors,
             projectiles: Arena::new(),
             player,

@@ -1,0 +1,28 @@
+// The Gray Archer (registry 7030): a ranged enemy on the ramparts. Source:
+// docs/game/05-enemies-and-bosses.md, "Enemy roster" (HP 200, fires on a 90-tick cadence
+// from high ground, repositions after being hit). The 90-tick cooldown on ga_shoot is the
+// cadence; it takes the one ranged token. Defense and attack are tuning.
+#![enable(implicit_some)]
+(
+  id: "gray_archer",
+  model: "archer_gray",
+  hp: 200,
+  poise: 20,
+  defense: (flat: 30),
+  resist: (immunity: 120, robustness: 120, composure: 100),
+  can_go_mad: true,
+  glimmer: 60,
+  attack: 110,
+  perception: (sight_deg: 120.0, sight_m: 30.0, hearing_mult: 1.0),
+  leash_m: 40.0,
+  moveset: "enemies/gray_archer.ron",
+  options: [
+    (move: "ga_shoot", when: [DistBetween(8.0, 18.0), FacingWithin(60.0)], weight: 8, cooldown: 90),
+    (behavior: Strafe(dur: 45), when: [HurtWithin(30)], weight: 12),
+    (move: "ga_shove", when: [DistBelow(1.8)], weight: 5, cooldown: 60),
+    (behavior: Retreat(dur: 40), when: [DistBelow(5.0)], weight: 4, cooldown: 60),
+    (behavior: Wait(dur: 20), when: [DistAbove(5.0)], weight: 2),
+    (behavior: Strafe(dur: 40), when: [DistAbove(5.0)], weight: 1, cooldown: 120),
+  ],
+  drops: [(item: "itm_arrows", chance: 0.25)],
+)

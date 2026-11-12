@@ -73,17 +73,36 @@ fn hash_ignores_comments_and_whitespace() {
     let weapons = std::fs::read_to_string(data_dir().join("weapons/straight_sword.ron")).unwrap();
     let bow_moves = std::fs::read_to_string(data_dir().join("moves/stub_bow.ron")).unwrap();
     let bow = std::fs::read_to_string(data_dir().join("weapons/stub_bow.ron")).unwrap();
+    // Every .ron file in a data subdirectory, as (relative path, text), sorted.
+    let ron_files = |sub: &str| -> Vec<(String, String)> {
+        let mut names: Vec<String> = std::fs::read_dir(data_dir().join(sub))
+            .unwrap()
+            .filter_map(|e| e.ok())
+            .map(|e| e.file_name().to_string_lossy().into_owned())
+            .filter(|n| n.ends_with(".ron"))
+            .collect();
+        names.sort();
+        names
+            .into_iter()
+            .map(|n| {
+                let text = std::fs::read_to_string(data_dir().join(sub).join(&n)).unwrap();
+                (format!("{sub}/{n}"), text)
+            })
+            .collect()
+    };
     let test_enemy = std::fs::read_to_string(data_dir().join("moves/test_enemy.ron")).unwrap();
+    let mut all_moves = vec![
+        ("moves/common.ron".to_owned(), common),
+        ("moves/crits.ron".to_owned(), crits),
+        ("moves/straight_sword.ron".to_owned(), moves),
+        ("moves/stub_bow.ron".to_owned(), bow_moves),
+        ("moves/test_enemy.ron".to_owned(), test_enemy),
+    ];
+    all_moves.extend(ron_files("moves/enemies"));
     let other = Content::from_sources(
         &noisy,
         &attrs,
-        vec![
-            ("moves/common.ron".into(), common),
-            ("moves/crits.ron".into(), crits),
-            ("moves/straight_sword.ron".into(), moves),
-            ("moves/stub_bow.ron".into(), bow_moves),
-            ("moves/test_enemy.ron".into(), test_enemy),
-        ],
+        all_moves,
         vec![
             ("weapons/straight_sword.ron".into(), weapons),
             ("weapons/stub_bow.ron".into(), bow),
@@ -91,28 +110,20 @@ fn hash_ignores_comments_and_whitespace() {
     )
     .and_then(|c| {
         let read = |p: &str| std::fs::read_to_string(data_dir().join(p)).unwrap();
-        let scenarios = [
-            "scenarios/ai_yard.ron",
-            "scenarios/duel_backstab.ron",
-            "scenarios/duel_parry.ron",
-            "scenarios/duel_stance.ron",
-            "scenarios/duel_status.ron",
-            "scenarios/m0_flat.ron",
-            "scenarios/m2_range.ron",
-            "scenarios/test_field.ron",
-        ]
-        .map(|p| (p.to_owned(), format!("// noise\n{}", read(p))))
-        .to_vec();
+        let scenarios: Vec<(String, String)> = ron_files("scenarios")
+            .into_iter()
+            .map(|(p, t)| (p, format!("// noise\n{t}")))
+            .collect();
         c.with_world(Some(&read("locomotion.ron")), scenarios)?
             .with_consumables(Some(&format!("// noise\n{}", read("consumables.ron"))))?
             .with_projectiles(Some(&format!("// noise\n{}", read("projectiles.ron"))))?
             .with_status(Some(&format!("// noise\n{}", read("status.ron"))))?
             .with_enemies(
                 Some(&format!("// noise\n{}", read("ai.ron"))),
-                vec![(
-                    "enemies/test_grunt.ron".to_owned(),
-                    format!("// noise\n{}", read("enemies/test_grunt.ron")),
-                )],
+                ron_files("enemies")
+                    .into_iter()
+                    .map(|(p, t)| (p, format!("// noise\n{t}")))
+                    .collect(),
             )
     })
     .expect("loads");
@@ -281,3 +292,35 @@ fn derived_stats_match_the_spec_table() {
 }
 
 use lf_content::Attributes;
+
+#[test]
+fn enemy_attacks_must_telegraph_for_12_frames() {
+    // The shipped enemies pass (`real_data_has_no_errors`). Shorten the first hitbox of
+    // the Husk's follow-up swing, which only a chained move reaches, and of a projectile
+    // move, and the validator names each one.
+    let mut c = Content::load_embedded().unwrap();
+    let moves = c.moves.get_mut("moves/enemies/husk.ron").unwrap();
+    let swipe_2 = moves.iter_mut().find(|m| m.id == "husk_swipe_2").unwrap();
+    swipe_2.hitboxes[0].frames = (11, 14);
+    let moves = c.moves.get_mut("moves/enemies/gray_archer.ron").unwrap();
+    let shoot = moves.iter_mut().find(|m| m.id == "ga_shoot").unwrap();
+    shoot.projectiles[0].frame = 5;
+    let errors: Vec<String> = c
+        .validate()
+        .into_iter()
+        .filter(|i| i.severity == Severity::Error)
+        .map(|i| i.to_string())
+        .collect();
+    // The Husk and the Servant share husk_swipe_2.
+    assert_eq!(errors.len(), 3, "{errors:#?}");
+    assert!(
+        errors
+            .iter()
+            .any(|e| e.contains("husk_swipe_2") && e.contains("11"))
+    );
+    assert!(
+        errors
+            .iter()
+            .any(|e| e.contains("ga_shoot") && e.contains("5"))
+    );
+}

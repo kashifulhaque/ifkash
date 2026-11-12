@@ -1,0 +1,19 @@
+# WP-032 golden: a Whitewarden Skeleton is killed, lies still for 180 ticks, and gets back up (record with `lf-tools replay record-script`). Each line:
+# <ticks> <move_x> <move_z> [BUTTONS]. The player spawns at the origin facing +Z in fight_skeleton.
+seed 37
+scenario fight_skeleton
+50  0 0              # stand: the skeleton notices and walks up
+1   0 0  LOCK
+40  0 0
+1   0 0  LIGHT
+35  0 0
+1   0 0  LIGHT       # it dies
+35  0 0
+1   0 0  LIGHT
+190 0 0              # it revives 180 ticks after dying, at half HP
+1   0 0  LOCK
+30  0 0
+1   0 0  LIGHT
+40  0 0
+1   0 0  LIGHT
+60  0 0

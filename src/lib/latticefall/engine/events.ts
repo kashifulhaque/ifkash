@@ -18,8 +18,10 @@ export const EVENT_WORDS: Readonly<Record<number, number>> = {
   6: 5, // Critical: attacker, target, crit kind, crit move (WP-024)
   7: 4, // StatusProc: target, status, burst damage (WP-025)
   8: 10, // Projectile: what, handle, def, shooter, target, position, ended (WP-027)
-  9: 4 // Awareness: AI actor, state left, state entered (WP-030)
-  // Kinds 2-9 aren't decoded into events yet; the decoder skips them by length.
+  9: 4, // Awareness: AI actor, state left, state entered (WP-030)
+  // Kinds 10-12 are reserved for other work packages.
+  13: 3 // Revive: enemy, HP it got back up with (WP-032)
+  // Kinds 2-9 and 13 aren't decoded into events yet; the decoder skips them by length.
 };
 
 export const EVENT_HIT = 1;

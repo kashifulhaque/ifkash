@@ -32,4 +32,6 @@
   approach_stop_m: 1.6, // tuning: just inside te_slash's reach
   fallback_ticks: 30, // tuning
   probe_m: 0.8, // tuning: one step and a bit
+  repath_m: 2.0, // tuning: replan when the goal has moved this far (WP-032)
+  path_retry_ticks: 60, // tuning: wait this long after a failed path request (WP-032)
 )

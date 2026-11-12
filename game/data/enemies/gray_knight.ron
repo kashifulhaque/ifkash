@@ -1,0 +1,30 @@
+// The Gray Knight (registry 7020): a shield-bearer. Source: docs/game/05-enemies-and-bosses.md,
+// "Enemy roster" and the excerpt in "Decision making" (HP 520, poise 40, Pierce weakness
+// 1.15, a high guard punished by guard counters, bashes, and Pierce). Defense, guard
+// numbers, stamina, and speed are tuning.
+#![enable(implicit_some)]
+(
+  id: "gray_knight",
+  model: "knight_gray",
+  hp: 520,
+  poise: 40,
+  defense: (flat: 60, weakness: [(Pierce, 115)]),
+  resist: (immunity: 150, robustness: 180, composure: 120),
+  glimmer: 140,
+  attack: 130,
+  stamina: 120,
+  guard: (absorb_phys_percent: 80, absorb_elem_percent: 50, guard_boost: 100),
+  speed_percent: 80,
+  perception: (sight_deg: 110.0, sight_m: 18.0, hearing_mult: 1.0),
+  moveset: "enemies/gray_knight.ron",
+  options: [
+    (move: "gk_shield_advance", when: [DistBetween(3.0, 9.0)], weight: 3, cooldown: 60),
+    (move: "gk_slash_1", when: [DistBelow(2.4), FacingWithin(45.0)], weight: 5, cooldown: 0),
+    (move: "gk_thrust", when: [DistBetween(2.0, 3.4)], weight: 3, cooldown: 30),
+    (move: "gk_shield_bash", when: [DistBelow(1.8), TargetGuarding], weight: 4, cooldown: 90),
+    (behavior: Strafe(dur: 45), when: [DistBetween(2.5, 6.0)], weight: 2),
+    (behavior: Guard(dur: 30), when: [TargetAttacking, DistBelow(4.0)], weight: 4),
+    (behavior: Approach(dur: 30), when: [DistAbove(3.0)], weight: 2),
+  ],
+  drops: [(item: "itm_glimmer_vial_large", chance: 0.08)],
+)

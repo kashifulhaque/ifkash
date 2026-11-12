@@ -1,0 +1,25 @@
+// The Miner, Hollowdeep's Husk variant (registry 7002): carries a lit lantern, so it is never
+// unaware and can't be backstabbed (`backstab_immune`), and swings a pickaxe in one slow
+// overhead. Source: docs/game/05-enemies-and-bosses.md, "Enemy roster", Husk. Stats are tuning.
+#![enable(implicit_some)]
+(
+  id: "husk_miner",
+  model: "husk_miner",
+  hp: 130,
+  poise: 25,
+  defense: (flat: 35),
+  resist: (immunity: 100, robustness: 100, composure: 100),
+  backstab_immune: true,
+  can_go_mad: true,
+  glimmer: 16,
+  attack: 100,
+  speed_percent: 70,
+  perception: (sight_deg: 120.0, sight_m: 16.0, hearing_mult: 1.0),
+  moveset: "enemies/husk.ron",
+  options: [
+    (move: "husk_miner_pick", when: [DistBelow(2.3), FacingWithin(50.0)], weight: 6, cooldown: 75),
+    (behavior: Approach(dur: 30), when: [DistAbove(2.0)], weight: 5),
+    (behavior: Strafe(dur: 40), when: [DistBetween(1.5, 5.0)], weight: 1, cooldown: 90),
+  ],
+  drops: [(item: "itm_glimmer_vial", chance: 0.03)],
+)

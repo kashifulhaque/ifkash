@@ -175,11 +175,14 @@ fn dir_xz(from: [f32; 3], to: [f32; 3], fallback: [f32; 3]) -> [f32; 3] {
 /// changes nothing. The caller marks the target struck, because what that means differs:
 /// a move's struck list for melee, a projectile's for a shot.
 pub(crate) fn apply_landing(world: &mut World, l: &Landing) -> bool {
-    // Only the player has a moveset until AI lands; anyone else can't be guarding.
+    // The player's guard comes from its weapon; an enemy's from its definition.
     let guard_stats = if l.target == world.player {
         world.moves.player_moveset.as_ref().map(|m| m.guard)
     } else {
-        None
+        world
+            .actors
+            .get(l.target)
+            .and_then(|t| crate::ai::attack::guard_stats(world, t))
     }
     .unwrap_or(GuardStats {
         absorb_phys_percent: 0,
@@ -208,6 +211,7 @@ pub(crate) fn apply_landing(world: &mut World, l: &Landing) -> bool {
         };
     let hp_before = t.hp;
     t.hp = hp_before.saturating_sub(taken);
+    let killed = hp_before > 0 && t.hp == 0;
     world.events.push(Event::Hit(Hit {
         attacker: l.attacker,
         target: l.target,
@@ -220,9 +224,12 @@ pub(crate) fn apply_landing(world: &mut World, l: &Landing) -> bool {
         damage: hp_before - t.hp,
         result,
         counter: l.counter,
-        killed: hp_before > 0 && t.hp == 0,
+        killed,
         hp: t.hp,
     }));
+    if killed {
+        note_death_blow(world, l);
+    }
     // A hit that wasn't blocked adds poise and stance damage (see `poise`). Projectile
     // hits count too.
     if result == HitResult::Connected {
@@ -231,6 +238,24 @@ pub(crate) fn apply_landing(world: &mut World, l: &Landing) -> bool {
     // Buildup from the hitbox and the attacker's weapon buff (see `status`).
     status::apply_landing(world, l.attacker, l.target, l.move_num, l.hitbox, result);
     true
+}
+
+/// Tells the target's special rules (the skeleton's revive) how the killing blow was dealt.
+fn note_death_blow(world: &mut World, l: &Landing) {
+    let radiance = world
+        .moves
+        .get(l.move_num)
+        .and_then(|d| d.data.hitboxes.get(usize::from(l.hitbox)))
+        .is_some_and(|h| h.element == Some(lf_content::moves::Element::Radiance));
+    let critical = world
+        .moves
+        .crits
+        .is_some_and(|c| c.is_attacker_move(l.move_num));
+    crate::ai::special::note_death_blow(
+        world,
+        l.target,
+        crate::ai::special::revive::DeathBlow { radiance, critical },
+    );
 }
 
 /// Tick system 7. See the module docs for the order.
@@ -277,6 +302,14 @@ pub fn run(world: &mut World) {
             let hit1 = Capsule::from_shape(&hb.shape, &now);
             for body in &bodies {
                 if body.id == aid || a.hit.struck.binary_search(&body.id).is_ok() {
+                    continue;
+                }
+                // Enemies don't hurt each other (WP-032).
+                if world
+                    .actors
+                    .get(body.id)
+                    .is_some_and(|t| crate::ai::attack::allied(a, t))
+                {
                     continue;
                 }
                 if let Some((_, point)) =
@@ -363,6 +396,8 @@ pub fn run(world: &mut World) {
                     a.stats.two_handing,
                 )
             })
+            // An enemy has no weapon: its definition's attack rating (WP-032).
+            .or_else(|| crate::ai::attack::rating(world, a))
             .unwrap_or_default();
         let counter = is_counter(t, &world.moves);
         let hit = damage::Hit {

@@ -1,0 +1,27 @@
+// The Thorn Hound (registry 7010): a fast pack hunter that lunges and backs off. Source:
+// docs/game/05-enemies-and-bosses.md, "Enemy roster" (HP 90, packs of 3, lunges, retreats,
+// Rupture buildup). The attack tokens keep a pack of three to two attackers at once.
+// Everything else is tuning.
+#![enable(implicit_some)]
+(
+  id: "thorn_hound",
+  model: "thorn_hound",
+  hp: 90,
+  poise: 12,
+  defense: (flat: 20),
+  resist: (immunity: 100, robustness: 120, composure: 100),
+  can_go_mad: true,
+  glimmer: 14,
+  attack: 75,
+  speed_percent: 150,
+  perception: (sight_deg: 140.0, sight_m: 20.0, hearing_mult: 1.3),
+  moveset: "enemies/thorn_hound.ron",
+  options: [
+    (move: "th_lunge", when: [DistBetween(2.5, 5.5), FacingWithin(25.0)], weight: 5, cooldown: 75),
+    (move: "th_snap", when: [DistBelow(1.7), FacingWithin(40.0)], weight: 3, cooldown: 45),
+    (behavior: Retreat(dur: 25), when: [DistBelow(2.2)], weight: 4, cooldown: 40),
+    (behavior: Strafe(dur: 40), when: [DistBetween(2.0, 7.0)], weight: 4),
+    (behavior: Approach(dur: 25), when: [DistAbove(4.0)], weight: 3),
+  ],
+  drops: [(item: "itm_glimmer_vial", chance: 0.03)],
+)

@@ -1,0 +1,72 @@
+// Enemy moves for WP-032 (the Whitewarden Skeleton). Registry numbers 8040-8041. Schema:
+// crates/content/src/moves.rs. Every attack telegraphs for at least 12 frames before its
+// first active hitbox frame or projectile (docs/game/05-enemies-and-bosses.md, "Enemy
+// roster"; checked by the validator). Damage comes from the enemy's `attack` in
+// enemies/*.ron, so `motion_value` is the only multiplier here. Numbers are tuning.
+#![enable(implicit_some)]
+[
+  (
+    // A rusted blade slash.
+    id: "ws_slash",
+    anim: "ws_slash",
+    total_frames: 54,
+    stamina: 0,
+    fp: 0,
+    root_motion: [(0, 0.0), (15, 0.0), (19, 0.5), (54, 0.5)],
+    track_deg_per_tick: 5.0,
+    hyperarmor: None,
+    iframes: None,
+    cancel_attack_from: None,
+    cancel_dodge_from: None,
+    cancel_any_from: None,
+    next_chain: None,
+    hitboxes: [
+      (
+        frames: (17, 20),
+        shape: Capsule(a: (0.0, 1.2, 0.3), b: (0.0, 1.2, 1.8), radius: 0.3),
+        motion_value: 1.0,
+        phys: Slash,
+        element: None,
+        poise_damage: 16,
+        status: [],
+        knockback: 0.4,
+        hitstop: 4,
+        tags: [],
+      ),
+    ],
+    sfx: [(15, "swing_light")],
+    vfx: [(17, "trail_frost")],
+  ),
+  (
+    // A stiff lunge that closes about 1.6 m.
+    id: "ws_lunge",
+    anim: "ws_lunge",
+    total_frames: 60,
+    stamina: 0,
+    fp: 0,
+    root_motion: [(0, 0.0), (16, 0.0), (22, 1.6), (60, 1.6)],
+    track_deg_per_tick: 6.0,
+    hyperarmor: None,
+    iframes: None,
+    cancel_attack_from: None,
+    cancel_dodge_from: None,
+    cancel_any_from: None,
+    next_chain: None,
+    hitboxes: [
+      (
+        frames: (20, 23),
+        shape: Capsule(a: (0.0, 1.2, 0.4), b: (0.0, 1.2, 2.0), radius: 0.25),
+        motion_value: 1.1,
+        phys: Pierce,
+        element: None,
+        poise_damage: 18,
+        status: [],
+        knockback: 0.5,
+        hitstop: 4,
+        tags: [],
+      ),
+    ],
+    sfx: [(16, "swing_light")],
+    vfx: [(20, "trail_frost")],
+  ),
+]

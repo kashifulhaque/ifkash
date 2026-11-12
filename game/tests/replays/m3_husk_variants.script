@@ -1,0 +1,9 @@
+# WP-032 golden: the Servant, the Miner, and the Frost Husk close in and swing; the player ends on a light (record with `lf-tools replay record-script`). Each line:
+# <ticks> <move_x> <move_z> [BUTTONS]. The player spawns at the origin facing +Z in fight_husk_variants.
+seed 33
+scenario fight_husk_variants
+220 0 0             # stand: each variant swings (the Miner with its pickaxe, the Frost Husk with Rime)
+1   0 0  LOCK
+5   0 0
+1   0 0  LIGHT
+20  0 0

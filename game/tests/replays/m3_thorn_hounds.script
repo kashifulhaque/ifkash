@@ -1,0 +1,13 @@
+# WP-032 golden: a pack of three Thorn Hounds snap at the player, which then cuts them down (record with `lf-tools replay record-script`). Each line:
+# <ticks> <move_x> <move_z> [BUTTONS]. The player spawns at the origin facing +Z in fight_thorn_hounds.
+seed 34
+scenario fight_thorn_hounds
+200 0 0             # stand: the pack closes in and attacks two at a time
+1   0 0  LOCK
+5   0 0
+1   0 0  LIGHT
+40  0 0
+1   0 0  LIGHT
+40  0 0
+1   0 0  LIGHT
+60  0 0

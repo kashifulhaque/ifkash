@@ -50,6 +50,9 @@ pub fn available(world: &World, me: Id, target: Id, pool: Token, t: &AiTuning) -
 /// Ends `id`'s attack once its move is over (finished, interrupted, or dead), releasing
 /// the token it held.
 pub fn release_finished(world: &mut World, id: Id) {
+    if start_chain(world, id) {
+        return;
+    }
     let Some(a) = world.actors.get_mut(id) else {
         return;
     };
@@ -69,4 +72,48 @@ pub fn release_finished(world: &mut World, id: Id) {
         b.token = Token::None;
         b.token_target = None;
     }
+}
+
+/// A finished attack move that names a `next_chain` flows into it on the spot, keeping the
+/// token: an enemy's combo (WP-032). Nothing chains after an interrupted move (a stagger,
+/// a parry, or a death leaves the actor unable to start one). Returns true if it started.
+fn start_chain(world: &mut World, id: Id) -> bool {
+    let Some(a) = world.actors.get(id) else {
+        return false;
+    };
+    let Some(b) = a.ai.as_ref() else {
+        return false;
+    };
+    let Doing::Attack { option, move_num } = b.doing else {
+        return false;
+    };
+    if !super::options::can_start_move(a) {
+        return false;
+    }
+    let Some(next) = world.moves.get(move_num).and_then(|d| d.next_chain) else {
+        return false;
+    };
+    let Some(nd) = world.moves.get(next) else {
+        return false;
+    };
+    let free_from = nd.data.cancel_any_from.unwrap_or(nd.data.total_frames);
+    let target = b.target;
+    if let Some(a) = world.actors.get_mut(id) {
+        a.moves.guard.drop_guard();
+        a.moves.current = Some(crate::combat::moves::ActiveMove {
+            num: next,
+            frame: 0,
+            charge_ticks: 0,
+            hold_button: 0,
+            free_from,
+        });
+        a.lock_target = target;
+        if let Some(b) = a.ai.as_mut() {
+            b.doing = Doing::Attack {
+                option,
+                move_num: next,
+            };
+        }
+    }
+    true
 }

@@ -143,8 +143,8 @@
     "start_max": 16,
     "start_min": 4
   },
-  "contentHash": "5115948726482639963",
-  "contentHashHex": "46ff8042e31c1c5b",
+  "contentHash": "12349800714265159623",
+  "contentHashHex": "ab634e514ca3e7c7",
   "moves": [
     {
       "anim": "roll_quick",
@@ -255,6 +255,166 @@
       "stamina": 0,
       "stub": false,
       "totalFrames": 44
+    },
+    {
+      "anim": "ga_shoot",
+      "file": "moves/enemies/gray_archer.ron",
+      "fp": 0,
+      "id": "ga_shoot",
+      "num": 8030,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 70
+    },
+    {
+      "anim": "ga_shove",
+      "file": "moves/enemies/gray_archer.ron",
+      "fp": 0,
+      "id": "ga_shove",
+      "num": 8031,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 46
+    },
+    {
+      "anim": "gk_shield_advance",
+      "file": "moves/enemies/gray_knight.ron",
+      "fp": 0,
+      "id": "gk_shield_advance",
+      "num": 8020,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 56
+    },
+    {
+      "anim": "gk_slash_1",
+      "file": "moves/enemies/gray_knight.ron",
+      "fp": 0,
+      "id": "gk_slash_1",
+      "num": 8021,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 52
+    },
+    {
+      "anim": "gk_slash_2",
+      "file": "moves/enemies/gray_knight.ron",
+      "fp": 0,
+      "id": "gk_slash_2",
+      "num": 8022,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 60
+    },
+    {
+      "anim": "gk_thrust",
+      "file": "moves/enemies/gray_knight.ron",
+      "fp": 0,
+      "id": "gk_thrust",
+      "num": 8023,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 54
+    },
+    {
+      "anim": "gk_shield_bash",
+      "file": "moves/enemies/gray_knight.ron",
+      "fp": 0,
+      "id": "gk_shield_bash",
+      "num": 8024,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 50
+    },
+    {
+      "anim": "husk_swipe_1",
+      "file": "moves/enemies/husk.ron",
+      "fp": 0,
+      "id": "husk_swipe_1",
+      "num": 8000,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 58
+    },
+    {
+      "anim": "husk_swipe_2",
+      "file": "moves/enemies/husk.ron",
+      "fp": 0,
+      "id": "husk_swipe_2",
+      "num": 8001,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 66
+    },
+    {
+      "anim": "husk_miner_pick",
+      "file": "moves/enemies/husk.ron",
+      "fp": 0,
+      "id": "husk_miner_pick",
+      "num": 8002,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 70
+    },
+    {
+      "anim": "husk_frost_swipe_1",
+      "file": "moves/enemies/husk.ron",
+      "fp": 0,
+      "id": "husk_frost_swipe_1",
+      "num": 8003,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 58
+    },
+    {
+      "anim": "husk_frost_swipe_2",
+      "file": "moves/enemies/husk.ron",
+      "fp": 0,
+      "id": "husk_frost_swipe_2",
+      "num": 8004,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 66
+    },
+    {
+      "anim": "th_lunge",
+      "file": "moves/enemies/thorn_hound.ron",
+      "fp": 0,
+      "id": "th_lunge",
+      "num": 8010,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 46
+    },
+    {
+      "anim": "th_snap",
+      "file": "moves/enemies/thorn_hound.ron",
+      "fp": 0,
+      "id": "th_snap",
+      "num": 8011,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 40
+    },
+    {
+      "anim": "ws_slash",
+      "file": "moves/enemies/whitewarden_skeleton.ron",
+      "fp": 0,
+      "id": "ws_slash",
+      "num": 8040,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 54
+    },
+    {
+      "anim": "ws_lunge",
+      "file": "moves/enemies/whitewarden_skeleton.ron",
+      "fp": 0,
+      "id": "ws_lunge",
+      "num": 8041,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 60
     },
     {
       "anim": "sword_slash_r",

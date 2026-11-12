@@ -1,0 +1,13 @@
+# WP-032 golden: a Gray Knight guards against the player's lights, then attacks (record with `lf-tools replay record-script`). Each line:
+# <ticks> <move_x> <move_z> [BUTTONS]. The player spawns at the origin facing +Z in fight_gray_knight.
+seed 35
+scenario fight_gray_knight
+60  0 0              # stand: the knight notices and advances
+1   0 0  LOCK
+60  0 0
+1   0 0  LIGHT       # the knight's guard takes most of it
+30  0 0
+1   0 0  LIGHT
+30  0 0
+1   0 0  LIGHT
+240 0 0              # stand: the knight cuts, thrusts, and bashes

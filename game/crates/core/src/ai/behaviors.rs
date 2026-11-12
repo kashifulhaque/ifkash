@@ -21,8 +21,13 @@
 //! "The target" is where the actor last saw it (`AiState::last_seen`), so a target that
 //! slips out of sight is lost rather than tracked through walls.
 //!
-//! Guard doesn't raise the guard yet: an AI actor has no input, and hit resolution only
-//! lets the player block. It holds position facing the target until it can.
+//! Guard raises the guard (`AiState::guarding`, read by `combat::moves::step`) for as long
+//! as the behavior lasts; an enemy blocks only if its definition has `guard` stats.
+//!
+//! Walking goals (the target, a noise, a waypoint, home) go through [`super::pathing`]:
+//! straight when clear, along a nav path when a wall is in the way. Strafing, retreating,
+//! and fleeing only pick a direction, so they steer straight and stop at a wall. A
+//! definition's `speed_percent` scales every speed.
 
 use lf_content::enemy::{AiTuning, Behavior};
 
@@ -44,7 +49,8 @@ const AIM_AHEAD_M: f32 = 2.0;
 /// The steering seam: the planar velocity that takes an actor at `from` toward `goal` at
 /// `speed`, or `None` once it's within `arrive_m` or a wall is in the way. It moves in a
 /// straight line and probes `probe_m` ahead at the capsule's center height (`lift`, above
-/// the steps the controller climbs). WP-032 swaps this for a navigation-grid path.
+/// the steps the controller climbs). [`super::pathing::steer`] calls it for each straight
+/// stretch and for each waypoint of a nav path.
 pub fn desired_move(
     physics: &PhysicsState,
     lift: f32,
@@ -84,6 +90,8 @@ enum Plan {
         goal: [f32; 3],
         speed: f32,
         face: Option<[f32; 3]>,
+        /// The goal is a place to reach (so a wall means a nav path), not a direction.
+        nav: bool,
     },
 }
 
@@ -107,6 +115,10 @@ pub fn execute(world: &mut World, id: Id, t: &AiTuning) {
         if matches!(b.doing, Doing::Behavior(_)) {
             b.doing_ticks = b.doing_ticks.saturating_sub(1);
         }
+        b.since_hurt = b.since_hurt.saturating_add(1);
+        b.guarding = b.awareness == Awareness::Combat
+            && b.doing_ticks > 0
+            && matches!(b.doing, Doing::Behavior(Behavior::Guard { .. }));
         if a.moves.current.is_some() {
             return;
         }
@@ -143,6 +155,7 @@ pub fn execute(world: &mut World, id: Id, t: &AiTuning) {
                         goal,
                         speed: t.walk_speed,
                         face: None,
+                        nav: true,
                     }
                 }
             }
@@ -152,12 +165,14 @@ pub fn execute(world: &mut World, id: Id, t: &AiTuning) {
             goal: b.noise_at,
             speed: t.walk_speed,
             face: None,
+            nav: true,
         },
         Awareness::Aware => Plan::Stand { face: target },
         Awareness::Return => Plan::Go {
             goal: home,
             speed: t.run_speed,
             face: None,
+            nav: true,
         },
         Awareness::Combat => match (b.doing, target) {
             (Doing::Behavior(beh), Some(tp)) if b.doing_ticks > 0 => {
@@ -171,6 +186,7 @@ pub fn execute(world: &mut World, id: Id, t: &AiTuning) {
                                 goal: tp,
                                 speed: t.run_speed,
                                 face: target,
+                                nav: true,
                             }
                         }
                     }
@@ -180,17 +196,20 @@ pub fn execute(world: &mut World, id: Id, t: &AiTuning) {
                             goal: ahead(pos, to + side * core::f32::consts::FRAC_PI_2),
                             speed: t.walk_speed,
                             face: target,
+                            nav: false,
                         }
                     }
                     Behavior::Retreat { .. } => Plan::Go {
                         goal: ahead(pos, to + core::f32::consts::PI),
                         speed: t.walk_speed,
                         face: target,
+                        nav: false,
                     },
                     Behavior::Flee { .. } => Plan::Go {
                         goal: ahead(pos, to + core::f32::consts::PI),
                         speed: t.run_speed,
                         face: None,
+                        nav: false,
                     },
                     Behavior::Guard { .. } | Behavior::Wait { .. } | Behavior::Patrol => {
                         Plan::Stand { face: target }
@@ -201,10 +220,32 @@ pub fn execute(world: &mut World, id: Id, t: &AiTuning) {
         },
     };
 
+    let speed_scale = f32::from(
+        world.ai.defs[usize::from(
+            world
+                .actors
+                .get(id)
+                .and_then(|a| a.ai.as_ref())
+                .map_or(0, |b| b.def),
+        )]
+        .data
+        .speed_percent,
+    ) / 100.0;
     let (vel, face) = match plan {
         Plan::Stand { face } => (None, face),
-        Plan::Go { goal, speed, face } => (
-            desired_move(&world.physics, lift, pos, goal, speed, t),
+        Plan::Go {
+            goal,
+            speed,
+            face,
+            nav: true,
+        } => (
+            super::pathing::steer(world, id, lift, pos, goal, speed * speed_scale, t),
+            face,
+        ),
+        Plan::Go {
+            goal, speed, face, ..
+        } => (
+            desired_move(&world.physics, lift, pos, goal, speed * speed_scale, t),
             face,
         ),
     };

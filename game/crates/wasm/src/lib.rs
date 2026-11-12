@@ -144,6 +144,9 @@ impl LfWorld {
     /// - Kind 9, `Awareness` (WP-030), 4 words: kind, the AI actor (`pack_id`), and the
     ///   awareness state it left and entered (0 Idle, 1 Suspicious, 2 Aware, 3 Combat,
     ///   4 Return).
+    /// - Kinds 10 to 12 are reserved for other work packages.
+    /// - Kind 13, `Revive` (WP-032), 3 words: kind, the enemy that got back up
+    ///   (`pack_id`), and the HP it has.
     pub fn drain_events(&mut self) -> Vec<u32> {
         let mut out = Vec::new();
         for event in self.world.events.drain() {
@@ -214,6 +217,9 @@ impl LfWorld {
                 }
                 Event::Awareness(e) => {
                     out.extend([9, pack_id(e.actor), u32::from(e.from), u32::from(e.to)]);
+                }
+                Event::Revive(e) => {
+                    out.extend([13, pack_id(e.actor), e.hp]);
                 }
             }
         }

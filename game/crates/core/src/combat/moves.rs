@@ -527,7 +527,8 @@ pub fn step(
     // The guard raises and lowers (see `combat::guard`). Whether a move may start is read
     // before the update, so a stagger of N ticks blocks exactly N ticks of starts.
     let can_act = a.moves.guard.can_act();
-    let wants_guard = held & buttons::GUARD != 0;
+    // An AI actor has no buttons; its `Guard` behavior raises the guard (WP-032).
+    let wants_guard = held & buttons::GUARD != 0 || a.ai.as_ref().is_some_and(|b| b.guarding);
     a.moves
         .guard
         .update(wants_guard, a.moves.current.is_none(), &t.guard);

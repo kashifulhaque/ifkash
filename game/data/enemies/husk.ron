@@ -1,0 +1,24 @@
+// The Husk (registry 7000): fodder with a slow two-hit combo (the AI chains husk_swipe_2
+// after husk_swipe_1). Source: docs/game/05-enemies-and-bosses.md, "Enemy roster" (HP 120).
+// Everything else is tuning. The variants are their own files.
+#![enable(implicit_some)]
+(
+  id: "husk",
+  model: "husk",
+  hp: 120,
+  poise: 20,
+  defense: (flat: 30),
+  resist: (immunity: 100, robustness: 100, composure: 100),
+  can_go_mad: true,
+  glimmer: 15,
+  attack: 90,
+  speed_percent: 70,
+  perception: (sight_deg: 100.0, sight_m: 14.0, hearing_mult: 1.0),
+  moveset: "enemies/husk.ron",
+  options: [
+    (move: "husk_swipe_1", when: [DistBelow(2.3), FacingWithin(50.0)], weight: 6, cooldown: 60),
+    (behavior: Approach(dur: 30), when: [DistAbove(2.0)], weight: 5),
+    (behavior: Strafe(dur: 40), when: [DistBetween(1.5, 5.0)], weight: 1, cooldown: 90),
+  ],
+  drops: [(item: "itm_glimmer_vial", chance: 0.03)],
+)

@@ -1,0 +1,28 @@
+// The Whitewarden Skeleton (registry 7040): a reviver. Source:
+// docs/game/05-enemies-and-bosses.md, "Enemy roster" (HP 180; revives after 180 ticks
+// unless killed by Radiance, a critical, or near a lit brazier). The scenario's lit
+// Lanterns stand in for braziers until those exist. The revive HP, the 6 m radius,
+// defense, and attack are tuning.
+#![enable(implicit_some)]
+(
+  id: "whitewarden_skeleton",
+  model: "skeleton_whitewarden",
+  hp: 180,
+  poise: 25,
+  defense: (flat: 40),
+  resist: (immunity: 200, robustness: 200, composure: 200),
+  immune: [Poison, Blight, Drowse],
+  glimmer: 45,
+  attack: 100,
+  speed_percent: 85,
+  perception: (sight_deg: 100.0, sight_m: 14.0, hearing_mult: 0.8),
+  moveset: "enemies/whitewarden_skeleton.ron",
+  revive: (after_ticks: 180, hp_percent: 50, stopped_by: [Radiance, Critical, LitLantern(6.0)]),
+  options: [
+    (move: "ws_slash", when: [DistBelow(2.3), FacingWithin(50.0)], weight: 5, cooldown: 45),
+    (move: "ws_lunge", when: [DistBetween(2.4, 4.0), FacingWithin(30.0)], weight: 3, cooldown: 90),
+    (behavior: Approach(dur: 30), when: [DistAbove(2.0)], weight: 4),
+    (behavior: Strafe(dur: 40), when: [DistBetween(1.5, 5.0)], weight: 1, cooldown: 90),
+  ],
+  drops: [(item: "itm_glimmer_vial", chance: 0.05)],
+)

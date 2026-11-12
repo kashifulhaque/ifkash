@@ -80,5 +80,25 @@ lf-tools replay record-script tests/replays/m1_movement.script --out tests/repla
   leash, walk home, and heal. `m3_ai_notice_grunts_notice_attack_and_leash` checks the
   awareness events and the hits; `game/crates/core/src/ai/tests.rs` tests the rules.
 
+- `m3_husk.lfr`: the WP-032 golden on `fight_husk`, from `m3_husk.script`. A Husk walks up
+  and lands both swings of its combo (62 and 79 damage), and the player's light kills it.
+  `m3_husk_lands_its_two_hit_combo_and_dies` checks it.
+- `m3_husk_variants.lfr`: the WP-032 golden on `fight_husk_variants`, from
+  `m3_husk_variants.script`. The Servant, Miner (pickaxe), and Frost Husk (Rime) each
+  swing. `m3_husk_variants_each_swing` checks it.
+- `m3_thorn_hounds.lfr`: the WP-032 golden on `fight_thorn_hounds`, from
+  `m3_thorn_hounds.script`. A pack of three snaps and lunges at the player, who then kills
+  them. `m3_thorn_hounds_bite_and_die` checks it.
+- `m3_gray_knight.lfr`: the WP-032 golden on `fight_gray_knight`, from
+  `m3_gray_knight.script`. The knight guards the player's lights (80% absorbed), then cuts
+  with its two-hit combo. `m3_gray_knight_guards_then_cuts` checks it.
+- `m3_gray_archer.lfr`: the WP-032 golden on `fight_gray_archer`, from
+  `m3_gray_archer.script`. The archer on its platform looses arrows about every 90 ticks.
+  `m3_gray_archer_shoots_on_a_cadence` checks it.
+- `m3_whitewarden_revive.lfr`: the WP-032 golden on `fight_skeleton`, from
+  `m3_whitewarden_revive.script`. The player kills a Whitewarden Skeleton, which lies down
+  for 180 ticks and revives at half HP (WASM event kind 13). `m3_whitewarden_revive_gets_back_up`
+  checks it.
+
 Rehash only when a change to the simulation or the content data is intended. Review the
 old and new final hash it prints, and commit the updated file with that change.

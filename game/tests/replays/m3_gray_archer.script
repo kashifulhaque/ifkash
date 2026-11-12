@@ -1,0 +1,9 @@
+# WP-032 golden: a Gray Archer on its platform shoots the player every 90 ticks or so (record with `lf-tools replay record-script`). Each line:
+# <ticks> <move_x> <move_z> [BUTTONS]. The player spawns at the origin facing +Z in fight_gray_archer.
+seed 36
+scenario fight_gray_archer
+200 0 0             # stand: the archer draws and looses an arrow about every 90 ticks
+1   0 0  LOCK
+100 0 127            # walk toward the platform, as far as its wall
+1   0 0  LIGHT
+60  0 0

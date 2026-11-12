@@ -26,6 +26,15 @@ pub enum Event {
     /// A status meter filled and the effect took hold (`combat::status`).
     StatusProc(StatusProc),
     Awareness(AwarenessEvent),
+    /// A dead enemy stood up again (`ai::special::revive`, WP-032).
+    Revive(ReviveEvent),
+}
+
+/// A reviver got back up with `hp` HP (WASM event kind 13).
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct ReviveEvent {
+    pub actor: Id,
+    pub hp: u32,
 }
 
 /// An AI actor changed awareness state (WP-030). `from` and `to` are

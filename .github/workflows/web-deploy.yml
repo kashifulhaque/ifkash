@@ -101,12 +101,18 @@ jobs:
         env:
           PUBLIC_GOOGLE_CLIENT_ID: ${{ vars.PUBLIC_GOOGLE_CLIENT_ID }}
 
-      # adapter-cloudflare writes the Pages bundle here.
+      # adapter-cloudflare writes the Pages bundle to .svelte-kit/cloudflare.
       - name: Upload build output
         uses: actions/upload-artifact@v7
         with:
           name: pages-bundle
-          path: .svelte-kit/cloudflare
+          # _worker.js imports from ../output and ../cloudflare-tmp, and Wrangler
+          # bundles it at deploy time, so ship all of .svelte-kit, not just cloudflare/.
+          path: |
+            .svelte-kit/cloudflare
+            .svelte-kit/cloudflare-tmp
+            .svelte-kit/output
+          include-hidden-files: true
           if-no-files-found: error
 
   deploy-production:
@@ -120,7 +126,7 @@ jobs:
         uses: actions/download-artifact@v7
         with:
           name: pages-bundle
-          path: dist
+          path: .svelte-kit
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
@@ -128,7 +134,7 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_PAGES_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           wranglerVersion: '4.50.0'
-          command: pages deploy dist --project-name=${{ env.PAGES_PROJECT }} --branch=main
+          command: pages deploy .svelte-kit/cloudflare --project-name=${{ env.PAGES_PROJECT }} --branch=main
 
   deploy-preview:
     name: Deploy preview
@@ -141,7 +147,7 @@ jobs:
         uses: actions/download-artifact@v7
         with:
           name: pages-bundle
-          path: dist
+          path: .svelte-kit
 
       - name: Deploy preview to Cloudflare Pages
         id: deploy
@@ -150,7 +156,7 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_PAGES_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           wranglerVersion: '4.50.0'
-          command: pages deploy dist --project-name=${{ env.PAGES_PROJECT }} --branch=pr-${{ github.event.number }}
+          command: pages deploy .svelte-kit/cloudflare --project-name=${{ env.PAGES_PROJECT }} --branch=pr-${{ github.event.number }}
 
       - name: Comment preview URL
         env:

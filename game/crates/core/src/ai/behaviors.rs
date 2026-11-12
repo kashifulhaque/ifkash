@@ -242,17 +242,13 @@ pub fn execute(world: &mut World, id: Id, t: &AiTuning) {
         },
     };
 
-    let speed_scale = f32::from(
-        world.ai.defs[usize::from(
-            world
-                .actors
-                .get(id)
-                .and_then(|a| a.ai.as_ref())
-                .map_or(0, |b| b.def),
-        )]
-        .data
-        .speed_percent,
-    ) / 100.0;
+    let speed_percent = world
+        .actors
+        .get(id)
+        .and_then(|a| a.ai.as_ref())
+        .and_then(|b| world.ai.get(b.def))
+        .map_or(100, |d| d.data.speed_percent);
+    let speed_scale = f32::from(speed_percent) / 100.0;
     let (vel, face) = match plan {
         Plan::Stand { face } => (None, face),
         Plan::Go {

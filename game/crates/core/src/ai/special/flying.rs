@@ -57,7 +57,7 @@ pub fn flies(world: &World, id: Id) -> bool {
         .actors
         .get(id)
         .and_then(|a| a.ai.as_ref())
-        .is_some_and(|b| world.ai.defs[usize::from(b.def)].data.flying.is_some())
+        .is_some_and(|b| world.ai.def(b.def).data.flying.is_some())
 }
 
 /// One tick of a flyer's motion. Does nothing for an actor that doesn't fly.
@@ -68,7 +68,7 @@ pub fn step(world: &mut World, id: Id) {
     let Some(b) = a.ai.as_ref() else {
         return;
     };
-    let Some(f) = world.ai.defs[usize::from(b.def)].data.flying.as_ref() else {
+    let Some(f) = world.ai.def(b.def).data.flying.as_ref() else {
         return;
     };
     // The dive the actor is in, as (its height now), decided before the actor is borrowed
@@ -113,7 +113,7 @@ pub fn step(world: &mut World, id: Id) {
 pub fn light_goal(world: &World, id: Id) -> Option<[f32; 3]> {
     let a = world.actors.get(id)?;
     let b = a.ai.as_ref()?;
-    let f = world.ai.defs[usize::from(b.def)].data.flying.as_ref()?;
+    let f = world.ai.def(b.def).data.flying.as_ref()?;
     if f.light_m <= 0.0 {
         return None;
     }

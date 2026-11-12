@@ -152,7 +152,7 @@ pub fn write_snapshot(world: &World, out: &mut Vec<ActorSnap>) {
             kind: actor
                 .ai
                 .as_ref()
-                .and_then(|b| world.ai.defs.get(usize::from(b.def)))
+                .and_then(|b| world.ai.get(b.def))
                 .map_or(0, |d| u16::try_from(d.num).unwrap_or(0)),
             flags: bits,
             pos: actor.pos,

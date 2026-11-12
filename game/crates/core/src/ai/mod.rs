@@ -103,8 +103,9 @@ pub enum Token {
 /// One AI actor's state. Simulation state: part of the state hash.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct AiState {
-    /// Index into `AiTable::defs`.
-    pub def: u16,
+    /// The enemy's registry number. Not an index into `AiTable::defs`: an index shifts
+    /// when an enemy is added, which would change the hash of unrelated fights.
+    pub def: NumId,
     /// Index into `Layout::enemies`: the spawn it leashes to and its patrol.
     pub spawn: u16,
     pub awareness: Awareness,
@@ -277,6 +278,21 @@ impl AiTable {
         })
     }
 
+    /// The definition of the enemy with registry number `num`.
+    pub fn get(&self, num: NumId) -> Option<&AiDef> {
+        self.defs
+            .binary_search_by_key(&num, |d| d.num)
+            .ok()
+            .map(|i| &self.defs[i])
+    }
+
+    /// The definition of the enemy with registry number `num`. Panics if there is none:
+    /// an `AiState` is only built from a defined enemy.
+    pub fn def(&self, num: NumId) -> &AiDef {
+        self.get(num)
+            .unwrap_or_else(|| panic!("no enemy definition with registry number {num}"))
+    }
+
     /// The index in `defs` of the enemy with this string ID.
     pub fn index_of(&self, id: &str) -> Option<usize> {
         self.defs.iter().position(|d| d.data.id == id)
@@ -325,7 +341,7 @@ pub fn enemy_actor(
         },
         hurtbox,
         ai: Some(AiState {
-            def: def_i as u16,
+            def: table.defs[def_i].num,
             spawn: index,
             cooldowns: vec![0; table.defs[def_i].options.len()],
             last_hp: d.hp,
@@ -410,7 +426,7 @@ fn think(world: &mut World, id: Id, t: &AiTuning) {
     let Some(brain) = a.ai.as_ref() else {
         return;
     };
-    let def = &world.ai.defs[usize::from(brain.def)];
+    let def = &world.ai.def(brain.def);
     let target = world.actors.get(player).filter(|p| !p.dead);
     let sees = target.is_some_and(|p| perception::sees(&world.physics, a, p, &def.perception, t));
     let faces = target.is_some_and(|p| perception::in_cone(a, p.pos, def.perception.sight_deg));

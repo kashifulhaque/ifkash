@@ -15,7 +15,7 @@ pub fn cloaked(world: &World, a: &Actor) -> bool {
     let Some(b) = a.ai.as_ref() else {
         return false;
     };
-    let Some(d) = world.ai.defs.get(usize::from(b.def)) else {
+    let Some(d) = world.ai.get(b.def) else {
         return false;
     };
     d.data.shimmers

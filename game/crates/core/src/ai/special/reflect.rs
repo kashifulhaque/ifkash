@@ -25,11 +25,7 @@ pub fn reflects(world: &World, target: Id, def: &ProjectileDef) -> bool {
     let Some(b) = world.actors.get(target).and_then(|a| a.ai.as_ref()) else {
         return false;
     };
-    b.cracked == 0
-        && world.ai.defs[usize::from(b.def)]
-            .data
-            .reflects_formulae
-            .is_some()
+    b.cracked == 0 && world.ai.def(b.def).data.reflects_formulae.is_some()
 }
 
 /// Records that a Blunt hit landed on `target`: its crystals crack.
@@ -37,7 +33,7 @@ pub fn note_blunt(world: &mut World, target: Id) {
     let Some(b) = world.actors.get(target).and_then(|a| a.ai.as_ref()) else {
         return;
     };
-    let Some(rule) = world.ai.defs[usize::from(b.def)].data.reflects_formulae else {
+    let Some(rule) = world.ai.def(b.def).data.reflects_formulae else {
         return;
     };
     if let Some(b) = world.actors.get_mut(target).and_then(|a| a.ai.as_mut()) {

@@ -30,7 +30,7 @@ pub fn tick(world: &mut World, id: Id) {
     let Some(b) = a.ai.as_ref() else {
         return;
     };
-    let Some(rule) = world.ai.defs[usize::from(b.def)].data.hides_in_reeds else {
+    let Some(rule) = world.ai.def(b.def).data.hides_in_reeds else {
         return;
     };
     let attacking = a.moves.current.is_some();

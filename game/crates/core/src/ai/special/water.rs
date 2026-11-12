@@ -51,7 +51,7 @@ pub fn confine(world: &mut World, id: Id) {
     let Some(b) = a.ai.as_ref() else {
         return;
     };
-    if !world.ai.defs[usize::from(b.def)].data.water_only || world.layout.water.is_empty() {
+    if !world.ai.def(b.def).data.water_only || world.layout.water.is_empty() {
         return;
     }
     let zones = &world.layout.water;

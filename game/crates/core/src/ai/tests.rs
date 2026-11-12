@@ -60,7 +60,7 @@ fn run(w: &mut World, frame: ActionFrame, n: u32) -> Vec<AwarenessEvent> {
 fn sees(w: &World, id: Id) -> bool {
     let a = w.actors.get(id).unwrap();
     let p = w.actors.get(w.player).unwrap();
-    let def = &w.ai.defs[usize::from(brain(w, id).def)];
+    let def = w.ai.def(brain(w, id).def);
     perception::sees(&w.physics, a, p, &def.perception, &w.ai.tuning.unwrap())
 }
 
@@ -408,4 +408,44 @@ fn ai_worlds_stay_in_lockstep() {
         tick(&mut c, &input);
     }
     assert_eq!(a.state_hash(), c.state_hash());
+}
+
+/// The state hash after `ticks` ticks of the yard fight, with the player standing in
+/// grunt_mid's sight so the enemies wake and fight.
+fn fight_hash(content: &Content, ticks: u32) -> u64 {
+    let mut w = World::new(7, content, "ai_yard").unwrap();
+    place_player(&mut w, [0.0, 0.0, 0.0], 0.0);
+    run(&mut w, ActionFrame::default(), ticks);
+    w.state_hash()
+}
+
+#[test]
+fn adding_an_enemy_definition_does_not_change_an_existing_fights_hash() {
+    let content = Content::load_embedded().unwrap();
+    let before = fight_hash(&content, 240);
+
+    // A new enemy whose number sorts before every existing one, so every index into the
+    // sorted enemy table shifts by one.
+    let mut extra = content.clone();
+    let lowest = extra
+        .enemies
+        .values()
+        .filter_map(|e| extra.registry.num(&e.id))
+        .min()
+        .unwrap();
+    let num = lowest - 1;
+    assert!(!extra.registry.ids.values().any(|&n| n == num));
+    let mut def = extra
+        .enemies
+        .values()
+        .find(|e| e.id == "test_grunt")
+        .unwrap()
+        .clone();
+    def.id = "extra_test_enemy".to_string();
+    extra.registry.ids.insert(def.id.clone(), num);
+    extra.enemies.insert("extra_test_enemy".to_string(), def);
+
+    let w = World::new(7, &extra, "ai_yard").unwrap();
+    assert_eq!(w.ai.defs[0].num, num, "the new enemy sorts first");
+    assert_eq!(fight_hash(&extra, 240), before);
 }

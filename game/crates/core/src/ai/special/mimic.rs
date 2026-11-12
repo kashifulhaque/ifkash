@@ -22,7 +22,7 @@ pub fn dormant(world: &World, id: Id) -> bool {
     let Some(b) = world.actors.get(id).and_then(|a| a.ai.as_ref()) else {
         return false;
     };
-    world.ai.defs[usize::from(b.def)].data.disguise.is_some() && b.awareness == Awareness::Idle
+    world.ai.def(b.def).data.disguise.is_some() && b.awareness == Awareness::Idle
 }
 
 /// Checks the wake triggers for a dormant `id` and wakes it if one holds.
@@ -34,7 +34,7 @@ pub fn wake(world: &mut World, id: Id) {
     let Some(b) = a.ai.as_ref() else {
         return;
     };
-    let Some(rule) = world.ai.defs[usize::from(b.def)].data.disguise else {
+    let Some(rule) = world.ai.def(b.def).data.disguise else {
         return;
     };
     if p.dead {

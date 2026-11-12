@@ -7,6 +7,7 @@
 //! are taken): the actor then approaches if it's out of reach, or strafes at range,
 //! for `fallback_ticks`.
 
+use lf_content::NumId;
 use lf_content::enemy::{AiTuning, Behavior, Condition};
 
 use super::perception::{dist_xz, off_facing_deg};
@@ -119,7 +120,7 @@ pub fn eligible(world: &World, me: Id, target: Id, t: &AiTuning) -> Vec<usize> {
     let Some(b) = a.ai.as_ref() else {
         return Vec::new();
     };
-    let def = &world.ai.defs[usize::from(b.def)];
+    let def = &world.ai.def(b.def);
     let x = Context::new(a, tg, &world.moves);
     let free = can_start_move(a);
     def.options
@@ -141,8 +142,8 @@ pub fn eligible(world: &World, me: Id, target: Id, t: &AiTuning) -> Vec<usize> {
 }
 
 /// Samples one index from `eligible` by weight, drawing once from the `ai` stream.
-pub fn sample(world: &mut World, def: usize, eligible: &[usize]) -> Option<usize> {
-    let opts = &world.ai.defs[def].options;
+pub fn sample(world: &mut World, def: NumId, eligible: &[usize]) -> Option<usize> {
+    let opts = &world.ai.def(def).options;
     let total: u64 = eligible
         .iter()
         .map(|&i| u64::from(opts[i].weight.max(1)))
@@ -153,7 +154,7 @@ pub fn sample(world: &mut World, def: usize, eligible: &[usize]) -> Option<usize
     // Scale a 32-bit draw into [0, total) without the modulo's bias toward low values.
     let mut r = (u64::from(world.rng.ai.next_u32()) * total) >> 32;
     for &i in eligible {
-        let w = u64::from(world.ai.defs[def].options[i].weight.max(1));
+        let w = u64::from(world.ai.def(def).options[i].weight.max(1));
         if r < w {
             return Some(i);
         }
@@ -175,7 +176,7 @@ pub fn decide(world: &mut World, me: Id, target: Id, t: &AiTuning) {
     if busy {
         return;
     }
-    let def = usize::from(b.def);
+    let def = b.def;
     let choices = eligible(world, me, target, t);
     match sample(world, def, &choices) {
         Some(i) => start_option(world, me, target, i),
@@ -200,7 +201,7 @@ fn start_option(world: &mut World, me: Id, target: Id, i: usize) {
     let Some(b) = world.actors.get(me).and_then(|a| a.ai.as_ref()) else {
         return;
     };
-    let def = &world.ai.defs[usize::from(b.def)];
+    let def = &world.ai.def(b.def);
     let o = def.options[i].clone();
     let token = pool(o.kind, def);
     if let Some(c) = world

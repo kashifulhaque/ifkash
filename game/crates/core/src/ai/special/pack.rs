@@ -23,7 +23,7 @@ fn mates(world: &World, me: Id) -> Vec<Id> {
     let Some(b) = a.ai.as_ref() else {
         return Vec::new();
     };
-    let Some(rule) = world.ai.defs[usize::from(b.def)].data.pack else {
+    let Some(rule) = world.ai.def(b.def).data.pack else {
         return Vec::new();
     };
     world

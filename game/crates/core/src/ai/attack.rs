@@ -17,7 +17,7 @@ use crate::world::World;
 
 /// `a`'s attack rating if it is an AI enemy with an `attack`; `None` otherwise.
 pub fn rating(world: &World, a: &Actor) -> Option<AttackRating> {
-    let d = &world.ai.defs[usize::from(a.ai.as_ref()?.def)].data;
+    let d = &world.ai.def(a.ai.as_ref()?.def).data;
     (d.attack > 0 || d.element_attack.is_some()).then(|| {
         // Aether, Fire, Storm, Radiance: the order `AttackRating::elem_milli` uses.
         let mut elem_milli = [0; 4];
@@ -35,7 +35,7 @@ pub fn rating(world: &World, a: &Actor) -> Option<AttackRating> {
 
 /// The block stats of an enemy that can guard.
 pub fn guard_stats(world: &World, a: &Actor) -> Option<GuardStats> {
-    world.ai.defs[usize::from(a.ai.as_ref()?.def)].data.guard
+    world.ai.def(a.ai.as_ref()?.def).data.guard
 }
 
 /// Regenerates an enemy's stamina like the player's, if it has any (it only matters to a

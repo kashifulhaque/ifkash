@@ -47,7 +47,7 @@ pub fn note_death_blow(world: &mut World, id: Id, blow: DeathBlow) {
     let Some(b) = a.ai.as_ref() else {
         return;
     };
-    let Some(rule) = &world.ai.defs[usize::from(b.def)].data.revive else {
+    let Some(rule) = &world.ai.def(b.def).data.revive else {
         return;
     };
     let final_death = rule.stopped_by.iter().any(|&s| stops(world, a, s, blow));
@@ -66,7 +66,7 @@ pub fn tick_dead(world: &mut World, id: Id) {
     let Some(b) = a.ai.as_ref() else {
         return;
     };
-    let Some(rule) = &world.ai.defs[usize::from(b.def)].data.revive else {
+    let Some(rule) = &world.ai.def(b.def).data.revive else {
         return;
     };
     if b.stays_dead {

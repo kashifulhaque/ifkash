@@ -258,7 +258,7 @@ fn an_archer_that_was_hit_may_strafe_and_one_that_was_not_may_not() {
     step(&mut w, 40);
     let strafe = |w: &World, hurt: bool| -> bool {
         let b = w.actors.get(archer).unwrap().ai.as_ref().unwrap();
-        let def = &w.ai.defs[usize::from(b.def)];
+        let def = &w.ai.def(b.def);
         let i = def
             .options
             .iter()

@@ -112,10 +112,10 @@ pub fn listen(world: &mut World, id: Id, noise: Option<([f32; 3], f32)>) {
     let Some(a) = world.actors.get(id) else {
         return;
     };
-    let Some(def) = a.ai.as_ref().map(|b| usize::from(b.def)) else {
+    let Some(def) = a.ai.as_ref().map(|b| b.def) else {
         return;
     };
-    let mult = world.ai.defs[def].perception.hearing_mult;
+    let mult = world.ai.def(def).perception.hearing_mult;
     if dist_xz(a.pos, at) <= radius * mult
         && let Some(b) = world.actors.get_mut(id).and_then(|a| a.ai.as_mut())
     {

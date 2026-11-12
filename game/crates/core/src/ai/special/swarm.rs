@@ -19,7 +19,7 @@ pub fn tick(world: &mut World, id: Id) {
     let Some(b) = a.ai.as_ref() else {
         return;
     };
-    let Some(rule) = world.ai.defs[usize::from(b.def)].data.explodes.clone() else {
+    let Some(rule) = world.ai.def(b.def).data.explodes.clone() else {
         return;
     };
     if a.dead {

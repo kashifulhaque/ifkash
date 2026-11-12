@@ -37,6 +37,7 @@ Copy this block to the top of the entries and fill it in as you go:
   - WP-020: done by opus (no escalation); commit `9858e66`; 181K worker tokens.
     The orchestrator regenerated `gen/Moveset.ts` (the worker's Touch list excluded `src/`).
   - WP-022: in progress (sonnet)
+  - WP-021: in progress (opus), in its own worktree in parallel with WP-022
 - **Context:** orchestrator 126K + workers 181K = 307K after WP-020 (budget 500K).
   Started WP-022 rather than WP-021: an opus L worker would likely pass the hard stop.
   The owner then clarified the budget: 500K applies to each session and each agent

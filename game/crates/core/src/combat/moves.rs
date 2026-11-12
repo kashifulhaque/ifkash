@@ -37,6 +37,7 @@ use crate::combat::dodge::{self, LoadTier};
 use crate::combat::guard::GuardState;
 use crate::combat::stamina;
 use crate::input::{ActionFrame, buttons};
+use crate::items::table::FlaskRules;
 use crate::math::dmath::{atan2, cos, sin};
 use crate::world::DT;
 
@@ -68,6 +69,9 @@ pub enum Action {
     /// `DODGE` tapped (released before sprint starts): a roll toward `dir`, or a
     /// backstep when `dir` is zero.
     Dodge,
+    /// `USE_ITEM` pressed (or a `Command::UseItem`): drinks the selected flask. See
+    /// `crate::items`.
+    UseItem,
 }
 
 /// The most recent action that couldn't fire yet. See docs/game/03-combat.md,
@@ -112,6 +116,9 @@ pub struct MoveState {
     pub prev_buttons: u16,
     /// Guard, guard counter window, and guard-break stagger. See `combat::guard`.
     pub guard: GuardState,
+    /// While above 0 the current move lets the actor walk at this percent of the walk
+    /// speed instead of locking movement (a flask drink). Set at the end of each `step`.
+    pub slow_walk_percent: u8,
 }
 
 impl MoveState {
@@ -120,9 +127,10 @@ impl MoveState {
     /// intent runs before this system, so it asks about next tick's frame.
     pub fn locks_movement(&self) -> bool {
         self.guard.stagger > 0
-            || self
-                .current
-                .is_some_and(|c| c.frame.saturating_add(1) < c.free_from)
+            || (self.slow_walk_percent == 0
+                && self
+                    .current
+                    .is_some_and(|c| c.frame.saturating_add(1) < c.free_from))
     }
 
     /// True if the flag in [`flags`] is set for this tick's frame.
@@ -136,6 +144,7 @@ impl MoveState {
         self.current = None;
         self.buffer = None;
         self.flags = 0;
+        self.slow_walk_percent = 0;
     }
 
     /// Queues `action`, replacing any older buffered action (only the most recent is
@@ -199,7 +208,13 @@ pub struct MoveTable {
     defs: Vec<MoveDef>,
     /// The player's moveset. Until equipment lands, the player wields the first weapon
     /// in the content (in file and list order). `None` if the content has no weapon.
+    /// The player's active moveset. `World::sync_player_moveset` sets it from the
+    /// equipped right-hand weapon; it starts as the default (first) weapon's.
     pub player_moveset: Option<Moveset>,
+    /// The moveset of every weapon, sorted by weapon number. See [`MoveTable::moveset_of`].
+    movesets: Vec<(NumId, Moveset)>,
+    /// Flask numbers, copied from `consumables.ron` (`None` if the content has none).
+    pub flask: Option<FlaskRules>,
 }
 
 impl MoveTable {
@@ -224,7 +239,7 @@ impl MoveTable {
         defs.sort_by_key(|d| d.num);
         let mut table = Self {
             defs,
-            player_moveset: None,
+            ..Self::default()
         };
         let defined = |id: &str| {
             let n = num(id)?;
@@ -234,48 +249,69 @@ impl MoveTable {
                 Err(format!("move \"{id}\" is not defined"))
             }
         };
+        let mut movesets = Vec::new();
+        for (_, w) in content.all_weapons() {
+            let s = &w.moveset;
+            // Equip load stub: the armor is a constant until equipment has weight.
+            let load_tier = match content.locomotion {
+                Some(t) => dodge::load_tier(
+                    u32::from(w.weight_tenths) + u32::from(t.stub_armor_weight_tenths),
+                    content
+                        .attributes
+                        .max_equip_load_tenths(t.stub_endurance)
+                        .max(0) as u32,
+                    &t.equip_load,
+                ),
+                None => LoadTier::Medium,
+            };
+            let set = Moveset {
+                light_chain: s
+                    .light_chain
+                    .iter()
+                    .map(|id| defined(id.as_str()))
+                    .collect::<Result<_, _>>()?,
+                heavy: defined(&s.heavy)?,
+                charged_heavy: defined(&s.charged_heavy)?,
+                running: defined(&s.running)?,
+                rolling: defined(&s.rolling)?,
+                backstep: defined(&s.backstep)?,
+                jump_light: defined(&s.jump_light)?,
+                jump_heavy: defined(&s.jump_heavy)?,
+                plunge: defined(&s.plunge)?,
+                guard_counter: defined(&s.guard_counter)?,
+                roll_light: defined(&s.roll_light)?,
+                roll_medium: defined(&s.roll_medium)?,
+                roll_heavy: defined(&s.roll_heavy)?,
+                dodge_backstep: defined(&s.dodge_backstep)?,
+                load_tier,
+                guard: w.guard,
+            };
+            movesets.push((num(&w.id)?, set));
+        }
+        // The default is the first weapon in the content (file and list order).
         let player_moveset = match content.all_weapons().next() {
             Some((_, w)) => {
-                let s = &w.moveset;
-                // Equip load stub: the armor is a constant until equipment exists.
-                let load_tier = match content.locomotion {
-                    Some(t) => dodge::load_tier(
-                        u32::from(w.weight_tenths) + u32::from(t.stub_armor_weight_tenths),
-                        content
-                            .attributes
-                            .max_equip_load_tenths(t.stub_endurance)
-                            .max(0) as u32,
-                        &t.equip_load,
-                    ),
-                    None => LoadTier::Medium,
-                };
-                Some(Moveset {
-                    light_chain: s
-                        .light_chain
-                        .iter()
-                        .map(|id| defined(id.as_str()))
-                        .collect::<Result<_, _>>()?,
-                    heavy: defined(&s.heavy)?,
-                    charged_heavy: defined(&s.charged_heavy)?,
-                    running: defined(&s.running)?,
-                    rolling: defined(&s.rolling)?,
-                    backstep: defined(&s.backstep)?,
-                    jump_light: defined(&s.jump_light)?,
-                    jump_heavy: defined(&s.jump_heavy)?,
-                    plunge: defined(&s.plunge)?,
-                    guard_counter: defined(&s.guard_counter)?,
-                    roll_light: defined(&s.roll_light)?,
-                    roll_medium: defined(&s.roll_medium)?,
-                    roll_heavy: defined(&s.roll_heavy)?,
-                    dodge_backstep: defined(&s.dodge_backstep)?,
-                    load_tier,
-                    guard: w.guard,
-                })
+                let n = num(&w.id)?;
+                movesets
+                    .iter()
+                    .find(|(k, _)| *k == n)
+                    .map(|(_, s)| s.clone())
             }
             None => None,
         };
+        movesets.sort_by_key(|(n, _)| *n);
+        table.movesets = movesets;
+        table.flask = FlaskRules::from_content(content)?;
         table.player_moveset = player_moveset;
         Ok(table)
+    }
+
+    /// The moveset of the weapon with registry number `weapon`.
+    pub fn moveset_of(&self, weapon: NumId) -> Option<&Moveset> {
+        self.movesets
+            .binary_search_by_key(&weapon, |(n, _)| *n)
+            .ok()
+            .map(|i| &self.movesets[i].1)
     }
 
     pub fn get(&self, num: MoveNum) -> Option<&MoveDef> {
@@ -351,6 +387,9 @@ fn read_input(ms: &mut MoveState, f: ActionFrame, t: &Locomotion) {
     if pressed & buttons::LIGHT != 0 {
         ms.press(Action::Light, dir);
     }
+    if pressed & buttons::USE_ITEM != 0 {
+        ms.press(Action::UseItem, dir);
+    }
     // A tap is a release before sprint could start (docs/game/03-combat.md, "Combat
     // verbs": Roll and Backstep are a `DODGE` tap, Sprint a hold of more than
     // `sprint_delay_ticks`).
@@ -380,6 +419,7 @@ fn resolve(
         let window = match b.action {
             Action::Light | Action::Heavy => d.data.cancel_attack_from,
             Action::Dodge => d.data.cancel_dodge_from,
+            Action::UseItem => None,
         };
         if !reached(window) && !reached(d.data.cancel_any_from) {
             return None;
@@ -396,6 +436,8 @@ fn resolve(
         Action::Heavy if counter => set.guard_counter,
         Action::Heavy => set.heavy,
         Action::Dodge => dodge::select(set, set.load_tier, b.dir != [0, 0])?,
+        // Items are resolved by `crate::items::drink_move` before this is called.
+        Action::UseItem => return None,
     };
     Some(num)
 }
@@ -453,6 +495,13 @@ pub fn step(
             c.num = s.charged_heavy;
             c.free_from = ch.data.cancel_any_from.unwrap_or(ch.data.total_frames);
         }
+        // A flask's effect lands on its effect frame; an interrupted drink never gets here.
+        if let Some(f) = &table.flask
+            && c.num == f.drink_move
+            && c.frame == f.effect_frame
+        {
+            crate::items::inventory::drink_lands(a, f);
+        }
         let total = table.get(c.num).map_or(0, |d| d.data.total_frames);
         let walked_out = stick && c.frame >= c.free_from;
         a.moves.current = if c.frame >= total || walked_out {
@@ -475,7 +524,11 @@ pub fn step(
     if let (Some(b), Some(s)) = (a.moves.buffer, set) {
         let grounded = a.motor.grounded && a.motor.jump_startup == 0 && a.motor.landing == 0;
         let counter = a.moves.guard.counter > 0;
-        let num = resolve(b, a.moves.current, a.motor.sprinting, counter, s, table);
+        let num = if b.action == Action::UseItem {
+            crate::items::inventory::drink_move(a, table)
+        } else {
+            resolve(b, a.moves.current, a.motor.sprinting, counter, s, table)
+        };
         if grounded
             && can_act
             && let Some(d) = num.and_then(|n| table.get(n))
@@ -500,6 +553,9 @@ pub fn step(
                 },
                 free_from: d.data.cancel_any_from.unwrap_or(d.data.total_frames),
             });
+            if let (Action::UseItem, Some(f)) = (b.action, &table.flask) {
+                crate::items::inventory::drink_starts(a, f);
+            }
             a.moves.buffer = None;
             charging = false;
         }
@@ -516,6 +572,10 @@ pub fn step(
 
     // 4. Flags, tracking, and root motion for the frame executed this tick.
     a.moves.flags = 0;
+    a.moves.slow_walk_percent = match (a.moves.current, &table.flask) {
+        (Some(c), Some(f)) if c.num == f.drink_move => f.walk_percent,
+        _ => 0,
+    };
     let Some(c) = a.moves.current else {
         return;
     };
@@ -533,6 +593,17 @@ pub fn step(
         bits |= flags::CHARGING;
     }
     a.moves.flags = bits;
+    // A slow-walk move (a flask drink) keeps the stick's velocity, capped at its percent
+    // of the walk speed; it has no root motion or tracking.
+    if a.moves.slow_walk_percent > 0 {
+        let cap = t.walk_speed * f32::from(a.moves.slow_walk_percent) / 100.0;
+        let speed = crate::math::dmath::sqrt(a.vel[0] * a.vel[0] + a.vel[2] * a.vel[2]);
+        if speed > cap {
+            a.vel[0] *= cap / speed;
+            a.vel[2] *= cap / speed;
+        }
+        return;
+    }
     if c.frame < d.track_until
         && let Some(p) = lock_pos
     {

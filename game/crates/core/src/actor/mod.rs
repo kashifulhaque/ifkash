@@ -10,6 +10,7 @@ use crate::arena::Id;
 use crate::combat::hurtbox::Hurtbox;
 use crate::combat::moves::MoveState;
 use crate::combat::resolve::HitState;
+use crate::items::Inventory;
 use serde::{Deserialize, Serialize};
 
 /// One actor. Every field is simulation state and is part of the state hash.
@@ -39,6 +40,8 @@ pub struct Actor {
     pub hurtbox: Hurtbox,
     /// The sweep start and the targets the current move has hit. See `combat::resolve`.
     pub hit: HitState,
+    /// Equipment, items, and flasks. Only the player has any (see `items`).
+    pub inventory: Inventory,
 }
 
 /// Character controller state between ticks.

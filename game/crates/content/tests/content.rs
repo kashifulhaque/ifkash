@@ -49,6 +49,8 @@ fn embedded_matches_data_dir() {
         embedded.scenarios.keys().collect::<Vec<_>>()
     );
     assert!(embedded.locomotion.is_some());
+    assert_eq!(dir.consumables, embedded.consumables);
+    assert!(embedded.consumables.is_some());
     assert!(embedded.scenario("m0_flat").is_some());
     assert!(embedded.scenario("test_field").is_some());
 }
@@ -76,7 +78,8 @@ fn hash_ignores_comments_and_whitespace() {
         let scenarios = ["scenarios/m0_flat.ron", "scenarios/test_field.ron"]
             .map(|p| (p.to_owned(), format!("// noise\n{}", read(p))))
             .to_vec();
-        c.with_world(Some(&read("locomotion.ron")), scenarios)
+        c.with_world(Some(&read("locomotion.ron")), scenarios)?
+            .with_consumables(Some(&format!("// noise\n{}", read("consumables.ron"))))
     })
     .expect("loads");
     assert_eq!(base.content_hash(), other.content_hash());

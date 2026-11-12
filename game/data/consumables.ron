@@ -1,0 +1,48 @@
+// Consumables, flasks, and pickups.
+// Source: docs/game/04-arsenal-and-builds.md, "Consumables"; docs/game/06-progression-and-systems.md,
+// "Flasks" and "Equipment slots"; docs/game/03-combat.md, "Combat verbs" (Drink a flask).
+// Schema: crates/content/src/consumables.rs. Only the flasks, Wick Bead, and Flask Dew have
+// effects in the simulation so far; the other items are inventory entries until WP-057.
+(
+  flask: (
+    vigil: "itm_vigil_flask",
+    lucid: "itm_lucid_flask",
+    drink_move: "flask_drink",
+    wick_bead: "itm_wick_bead",
+    flask_dew: "itm_flask_dew",
+    start_charges: 4, // Flasks: start with 4 charges
+    start_vigil: 3, // tuning: the spec doesn't fix the starting split; 3 Vigil, 1 Lucid
+    max_charges: 10, // Flasks: Wick Beads raise it up to 10
+    max_level: 6, // Flasks: Flask Dew raises potency up to +6
+    heal_base: 300, // Consumables, Vigil Flask: heal 300 HP at +0
+    heal_per_level: 50, // +50 per upgrade
+    fp_base: 60, // Consumables, Lucid Flask: restore 60 FP at +0
+    fp_per_level: 10, // +10 per upgrade
+    effect_frame: 16, // Combat verbs, Drink a flask: 16 (heal lands)
+    walk_percent: 40, // Combat verbs, Drink a flask: walk speed 40%
+  ),
+  items: [
+    (id: "itm_vigil_flask", name: "Vigil Flask", kind: VigilFlask, stack: 0),
+    (id: "itm_lucid_flask", name: "Lucid Flask", kind: LucidFlask, stack: 0),
+    (id: "itm_pitch_bomb", name: "Pitch Bomb", kind: Throwable, stack: 10),
+    (id: "itm_frostjar", name: "Frostjar", kind: Throwable, stack: 10),
+    (id: "itm_blight_pot", name: "Blight Pot", kind: Throwable, stack: 5),
+    (id: "itm_throwing_knife", name: "Poison Knife", kind: Throwable, stack: 20),
+    (id: "itm_pitch_oil", name: "Pitch Oil", kind: WeaponBuff, stack: 5),
+    (id: "itm_spark_oil", name: "Spark Oil", kind: WeaponBuff, stack: 5),
+    (id: "itm_bloodbloom_oil", name: "Bloodbloom Oil", kind: WeaponBuff, stack: 5),
+    (id: "itm_clotweed", name: "Clotweed", kind: Cure, stack: 10),
+    (id: "itm_antidote_root", name: "Antidote Root", kind: Cure, stack: 10),
+    (id: "itm_clearwater", name: "Clearwater Draught", kind: Cure, stack: 5),
+    (id: "itm_hearth_ember", name: "Hearth Ember", kind: Cure, stack: 5),
+    (id: "itm_waking_salts", name: "Waking Salts", kind: Cure, stack: 5),
+    (id: "itm_glimmer_vial", name: "Glimmer Vial (small)", kind: Glimmer, stack: 99),
+    (id: "itm_glimmer_vial_large", name: "Glimmer Vial (large)", kind: Glimmer, stack: 99),
+    (id: "itm_lantern_ash", name: "Lantern Ash", kind: LanternAsh, stack: 5),
+    (id: "itm_arrows", name: "Iron Arrows", kind: Ammunition, stack: 99),
+    (id: "itm_arrows_fire", name: "Fire Arrows", kind: Ammunition, stack: 99),
+    (id: "itm_arrows_storm", name: "Storm Arrows", kind: Ammunition, stack: 99),
+    (id: "itm_wick_bead", name: "Wick Bead", kind: WickBead, stack: 0),
+    (id: "itm_flask_dew", name: "Flask Dew", kind: FlaskDew, stack: 0),
+  ],
+)

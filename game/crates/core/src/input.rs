@@ -51,8 +51,13 @@ impl ActionFrame {
     }
 }
 
-/// A discrete, menu-level action. Commands are no-ops in the simulation until the
-/// systems that consume them land.
+/// A discrete, menu-level action. `Rest`, `LevelUp`, and `Gesture` are no-ops in the
+/// simulation until the systems that consume them land. Variants are serialized by
+/// position in replays, so only ever append.
+///
+/// - `Equip` and `Unequip` take an equipment slot number from `items::slot`.
+/// - `UseItem` takes a quick slot index, 0 to 4: it selects that slot and uses its item.
+/// - `SplitFlasks` sets the Vigil Flask's share of the charges (the Lantern menu).
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Command {
     Rest,
@@ -61,6 +66,7 @@ pub enum Command {
     Unequip { slot: u8 },
     UseItem { slot: u8 },
     Gesture(u16),
+    SplitFlasks { vigil: u8 },
 }
 
 /// Everything the simulation consumes in one tick.

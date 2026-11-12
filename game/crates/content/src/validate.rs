@@ -328,6 +328,24 @@ impl Validate for Content {
             }
             check_weapon(w, file, self, &mut out);
         }
+        if let Some(c) = &self.consumables {
+            for (field, message) in c.problems() {
+                Sink {
+                    out: &mut out,
+                    file: "consumables.ron",
+                    item: "consumables",
+                }
+                .error(field, message);
+            }
+            if self.move_by_id(&c.flask.drink_move).is_none() {
+                Sink {
+                    out: &mut out,
+                    file: "consumables.ron",
+                    item: "consumables",
+                }
+                .error("flask.drink_move", "the move is not defined");
+            }
+        }
         out
     }
 }

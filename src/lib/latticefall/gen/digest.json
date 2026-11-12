@@ -118,8 +118,8 @@
     "start_max": 16,
     "start_min": 4
   },
-  "contentHash": "9097020054217734454",
-  "contentHashHex": "7e3f1b8a8e40b936",
+  "contentHash": "2631511537094725617",
+  "contentHashHex": "248501ccf6df8ff1",
   "moves": [
     {
       "anim": "roll_quick",
@@ -160,6 +160,16 @@
       "stamina": 10,
       "stub": false,
       "totalFrames": 15
+    },
+    {
+      "anim": "flask_drink",
+      "file": "moves/common.ron",
+      "fp": 0,
+      "id": "flask_drink",
+      "num": 3010,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 30
     },
     {
       "anim": "sword_slash_r",

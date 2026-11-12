@@ -80,4 +80,25 @@
     sfx: [],
     vfx: [],
   ),
+  (
+    // Drink a flask (Combat verbs, Drink a flask): `USE_ITEM` with a flask selected. The heal
+    // lands on frame 16 (consumables.ron `effect_frame`). Walk speed is 40% while drinking, so
+    // the move never locks movement (consumables.ron `walk_percent`).
+    id: "flask_drink",
+    anim: "flask_drink",
+    total_frames: 30, // startup 16 + recovery 14
+    stamina: 0, // Combat verbs, Drink a flask: 0
+    fp: 0,
+    root_motion: [],
+    track_deg_per_tick: 0.0,
+    hyperarmor: None,
+    iframes: None,
+    cancel_attack_from: None,
+    cancel_dodge_from: None,
+    cancel_any_from: None, // no cancels: it ends on its last frame
+    next_chain: None,
+    hitboxes: [],
+    sfx: [],
+    vfx: [],
+  ),
 ]

@@ -9,6 +9,7 @@ use crate::arena::{Arena, Id};
 use crate::combat::hurtbox::Hurtbox;
 use crate::combat::moves::MoveTable;
 use crate::events::EventQueue;
+use crate::items::{Inventory, ItemTable};
 use crate::physics::PhysicsState;
 use crate::rng::RngStreams;
 
@@ -26,6 +27,8 @@ pub struct World {
     /// Every move and the player's moveset, from content. Not hashed: the content hash
     /// covers it.
     pub moves: MoveTable,
+    /// Item definitions from content. Not hashed: the content hash covers them.
+    pub items: ItemTable,
     pub actors: Arena<Actor>,
     /// The player actor, spawned by `World::new`.
     pub player: Id,
@@ -41,6 +44,8 @@ pub enum WorldError {
     MissingLocomotion,
     /// A move or moveset references a move the content doesn't define.
     Moves(String),
+    /// An item or flask references an ID the registry doesn't have.
+    Items(String),
 }
 
 impl core::fmt::Display for WorldError {
@@ -52,6 +57,7 @@ impl core::fmt::Display for WorldError {
             ),
             Self::MissingLocomotion => write!(f, "the content has no locomotion.ron"),
             Self::Moves(message) => write!(f, "{message}"),
+            Self::Items(message) => write!(f, "{message}"),
         }
     }
 }
@@ -82,6 +88,7 @@ impl World {
         let max_fp = attrs.max_fp_tenths(locomotion.stub_focus) as f32 / 10.0;
         let moves = MoveTable::from_content(content).map_err(WorldError::Moves)?;
         let hurtbox = Hurtbox::from_locomotion(&locomotion);
+        let items = ItemTable::from_content(content).map_err(WorldError::Items)?;
         let mut actors = Arena::new();
         let player = actors.insert(Actor {
             pos: level.spawn,
@@ -93,6 +100,7 @@ impl World {
             max_stamina,
             fp: max_fp,
             max_fp,
+            inventory: Inventory::starting(&items),
             motor: Motor {
                 grounded: true,
                 ground_y: level.spawn[1],
@@ -118,16 +126,32 @@ impl World {
                 ..Actor::default()
             });
         }
-        Ok(Self {
+        let mut world = Self {
             tick: 0,
             rng: RngStreams::from_seed(seed),
             physics: PhysicsState::new(scenario, level),
             locomotion,
             moves,
+            items,
             actors,
             player,
             events: EventQueue::default(),
-        })
+        };
+        world.sync_player_moveset();
+        Ok(world)
+    }
+
+    /// Points the player's active moveset (`moves.player_moveset`) at the equipped
+    /// right-hand weapon. With nothing in the right hand the moveset stays as it was, a
+    /// stand-in until fists exist. Called whenever equipment can change.
+    pub fn sync_player_moveset(&mut self) {
+        let weapon = self
+            .actors
+            .get(self.player)
+            .and_then(|p| p.inventory.equipment.right_weapon());
+        if let Some(set) = weapon.and_then(|w| self.moves.moveset_of(w)) {
+            self.moves.player_moveset = Some(set.clone());
+        }
     }
 
     /// 64-bit xxh3 of the canonical postcard serialization, excluding events.

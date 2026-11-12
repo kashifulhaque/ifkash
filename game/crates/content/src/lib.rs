@@ -14,6 +14,7 @@ use std::path::Path;
 use serde::{Deserialize, Serialize};
 
 pub mod attributes;
+pub mod consumables;
 pub mod locomotion;
 pub mod moves;
 pub mod portfolio;
@@ -23,6 +24,7 @@ pub mod validate;
 pub mod weapons;
 
 pub use attributes::Attributes;
+pub use consumables::{Consumables, Flask, Item, ItemKind};
 pub use locomotion::{EquipLoad, Guard, LockOn, Locomotion};
 pub use moves::Move;
 pub use portfolio::{Portfolio, PortfolioContent};
@@ -41,6 +43,8 @@ const WEAPONS_DIR: &str = "weapons";
 const SCENARIOS_DIR: &str = "scenarios";
 /// The locomotion tuning file (relative to the data root).
 const LOCOMOTION_FILE: &str = "locomotion.ron";
+/// The consumables file (relative to the data root).
+const CONSUMABLES_FILE: &str = "consumables.ron";
 
 /// Embedded copies of every data file, as `(path relative to the data root, text)`.
 /// A new data file needs a line here; the `embedded_matches_data_dir` test fails if one
@@ -62,6 +66,7 @@ const EMBEDDED_WEAPONS: &[(&str, &str)] = &[(
 const EMBEDDED_REGISTRY: &str = include_str!("../../../data/registry.ron");
 const EMBEDDED_ATTRIBUTES: &str = include_str!("../../../data/attributes.ron");
 const EMBEDDED_LOCOMOTION: &str = include_str!("../../../data/locomotion.ron");
+const EMBEDDED_CONSUMABLES: &str = include_str!("../../../data/consumables.ron");
 const EMBEDDED_SCENARIOS: &[(&str, &str)] = &[
     (
         "scenarios/m0_flat.ron",
@@ -92,6 +97,10 @@ pub struct Content {
     /// `scenarios/test_field.ron`. Look one up by name with [`Content::scenario`].
     #[cfg_attr(feature = "ts", ts(skip))]
     pub scenarios: BTreeMap<String, Scenario>,
+    /// Items and flask numbers from `consumables.ron`. `None` only for partial data
+    /// directories (test fixtures); the player has no inventory without it.
+    #[cfg_attr(feature = "ts", ts(skip))]
+    pub consumables: Option<Consumables>,
 }
 
 /// A failure to load content. Validation problems are [`Issue`]s instead.
@@ -179,13 +188,20 @@ impl Content {
         } else {
             None
         };
+        let consumables_path = dir.join(CONSUMABLES_FILE);
+        let consumables = if consumables_path.is_file() {
+            Some(read(&consumables_path)?)
+        } else {
+            None
+        };
         Self::from_sources(
             &read(&dir.join("registry.ron"))?,
             &read(&dir.join("attributes.ron"))?,
             list(MOVES_DIR)?,
             list(WEAPONS_DIR)?,
         )?
-        .with_world(locomotion.as_deref(), list(SCENARIOS_DIR)?)
+        .with_world(locomotion.as_deref(), list(SCENARIOS_DIR)?)?
+        .with_consumables(consumables.as_deref())
     }
 
     /// Loads the content baked into this crate with `include_str!`.
@@ -202,7 +218,8 @@ impl Content {
             own(EMBEDDED_MOVES),
             own(EMBEDDED_WEAPONS),
         )?
-        .with_world(Some(EMBEDDED_LOCOMOTION), own(EMBEDDED_SCENARIOS))
+        .with_world(Some(EMBEDDED_LOCOMOTION), own(EMBEDDED_SCENARIOS))?
+        .with_consumables(Some(EMBEDDED_CONSUMABLES))
     }
 
     /// Builds content from RON text. `moves` and `weapons` are `(relative path, text)`.
@@ -232,6 +249,7 @@ impl Content {
             weapons: weapon_map,
             locomotion: None,
             scenarios: BTreeMap::new(),
+            consumables: None,
         };
         content.check_registered()?;
         Ok(content)
@@ -256,6 +274,37 @@ impl Content {
             self.scenarios.insert(path, scenario);
         }
         Ok(self)
+    }
+
+    /// Adds the consumables file (RON text, if any). Fails on an item that has no
+    /// registry entry.
+    pub fn with_consumables(mut self, text: Option<&str>) -> Result<Self, ContentError> {
+        self.consumables = text
+            .map(|t| parse::<Consumables>(CONSUMABLES_FILE, t))
+            .transpose()?;
+        if let Some(c) = &self.consumables {
+            for (i, item) in c.items.iter().enumerate() {
+                self.check_id(CONSUMABLES_FILE, format!("items[{i}].id"), &item.id)?;
+            }
+            self.check_id(
+                CONSUMABLES_FILE,
+                "flask.drink_move".to_owned(),
+                &c.flask.drink_move,
+            )?;
+        }
+        Ok(self)
+    }
+
+    fn check_id(&self, file: &str, field: String, id: &str) -> Result<(), ContentError> {
+        if self.registry.contains(id) {
+            Ok(())
+        } else {
+            Err(ContentError::Unregistered {
+                file: file.to_owned(),
+                field,
+                id: id.to_owned(),
+            })
+        }
     }
 
     /// Finds a scenario by name: `test_field` is `scenarios/test_field.ron`.

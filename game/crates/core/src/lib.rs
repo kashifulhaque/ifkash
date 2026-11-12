@@ -5,6 +5,7 @@ pub mod arena;
 pub mod combat;
 pub mod events;
 pub mod input;
+pub mod items;
 pub mod math;
 pub mod physics;
 pub mod replay;

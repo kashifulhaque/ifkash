@@ -101,6 +101,7 @@ pub fn intent(
         let mut speed = stick_speed(mag, t);
         // Sprint starts once DODGE has been held for more than `sprint_delay_ticks`.
         if can_sprint
+            && a.moves.slow_walk_percent == 0
             && m.dodge_held > t.sprint_delay_ticks
             && a.stamina > 0.0
             && m.jump_startup == 0
@@ -117,7 +118,12 @@ pub fn intent(
         }
     }
 
-    if pressed & buttons::JUMP != 0 && m.grounded && m.jump_startup == 0 && a.stamina > 0.0 {
+    if pressed & buttons::JUMP != 0
+        && a.moves.slow_walk_percent == 0
+        && m.grounded
+        && m.jump_startup == 0
+        && a.stamina > 0.0
+    {
         m.jump_startup = t.jump_startup_ticks.max(1);
         a.stamina = (a.stamina - t.jump_stamina).max(0.0);
         spent = true;

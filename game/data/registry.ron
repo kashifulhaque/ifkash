@@ -5,7 +5,7 @@
 // any content ID that has no entry here.
 //
 // Number blocks (a convention, not enforced): 100s attributes, 1000s weapons,
-// 2000s straight-sword moves, 3000s common moves (dodges). ss_roll (2012) and
+// 2000s straight-sword moves, 3000s common moves (dodges, flask drink), 4000s items. ss_roll (2012) and
 // ss_backstep_dodge (2013) are retired: WP-022 moved the dodges to moves/common.ron.
 (
   entries: [
@@ -38,5 +38,29 @@
     (id: "dodge_roll_medium", num: 3001),
     (id: "dodge_roll_heavy", num: 3002),
     (id: "dodge_backstep", num: 3003),
+    (id: "flask_drink", num: 3010),
+
+    (id: "itm_vigil_flask", num: 4000),
+    (id: "itm_lucid_flask", num: 4001),
+    (id: "itm_pitch_bomb", num: 4002),
+    (id: "itm_frostjar", num: 4003),
+    (id: "itm_blight_pot", num: 4004),
+    (id: "itm_throwing_knife", num: 4005),
+    (id: "itm_pitch_oil", num: 4006),
+    (id: "itm_spark_oil", num: 4007),
+    (id: "itm_bloodbloom_oil", num: 4008),
+    (id: "itm_clotweed", num: 4009),
+    (id: "itm_antidote_root", num: 4010),
+    (id: "itm_clearwater", num: 4011),
+    (id: "itm_hearth_ember", num: 4012),
+    (id: "itm_waking_salts", num: 4013),
+    (id: "itm_glimmer_vial", num: 4014),
+    (id: "itm_glimmer_vial_large", num: 4015),
+    (id: "itm_lantern_ash", num: 4016),
+    (id: "itm_arrows", num: 4017),
+    (id: "itm_arrows_fire", num: 4018),
+    (id: "itm_arrows_storm", num: 4019),
+    (id: "itm_wick_bead", num: 4020),
+    (id: "itm_flask_dew", num: 4021),
   ],
 )

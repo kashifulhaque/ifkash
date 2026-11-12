@@ -72,7 +72,7 @@ The orchestrator owns this file. It follows these rules, from
 | 045 | HUD | ui | sonnet | in progress |  | latticefall-m4 | game/m4-slice | 2026-11-12 | |
 | 046 | Menus | ui | sonnet | todo |  |  | | | |
 | 047 | Saving and loading | core | sonnet | in progress |  | latticefall-m4 | game/m4-slice | 2026-11-12 | |
-| 048 | Audio engine | render | sonnet | in progress |  | latticefall-m4 | game/m4-slice | 2026-11-12 | |
+| 048 | Audio engine | render | sonnet | done | sonnet, Opus-verified | latticefall-m4 | game/m4-slice (worker worktree) | 2026-11-12 | `audio/{settings,engine,synth,beds,index}.ts`, all Web Audio, all sounds synthesized (no files in `static/latticefall/audio/`). Buses master/music/effects/ambience/ui; `settings.ts` has no Web Audio import (for WP-046) and persists to `localStorage` `latticefall-audio`; mute zeroes master only. Only `Hit` events make sound; `setRegion`, `setBossMusic`, and `play` have no callers yet; footstep surface is always stone. Wired in `engine/index.ts` (+15, outside Touch). Orchestrator checked mute and bus volume survive a reload in the browser; not listened to. |
 | 049 | Landing card, Ledger, codex store | ui | sonnet | todo |  |  | | | |
 | 050 | Leveling and respec | combat | haiku | todo |  |  | | | |
 | 051 | Movesets batch A | combat | haiku | todo |  |  | | | |

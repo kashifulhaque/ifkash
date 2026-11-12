@@ -40,6 +40,7 @@ Copy this block to the top of the entries and fill it in as you go:
   enemy batches 2 and 3 and the elites).
 - **WPs:**
   - WP-030.a: sonnet; `c2bae96`; 98K. All 27 m3 goldens rehashed once.
+  - WP-048: sonnet, worktree; `185f063`; 108K. Not listened to; only hits make sound so far.
 
 ### 2026-11-12: latticefall-m3 (M3)
 

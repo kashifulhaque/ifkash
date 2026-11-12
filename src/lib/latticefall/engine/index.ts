@@ -8,12 +8,13 @@ import { cameraOptions } from '../render/camera';
 import type { DevTools } from '../dev';
 import { decodeEvents } from './events';
 import { loadWasm } from './loader';
-import { SaveManager, SaveStore } from './save';
+import { SaveManager, SaveStore, restedIn } from './save';
 import { FixedStepLoop } from './loop';
 import { SceneView } from './scene';
 import { FLAG_LOCKED, SnapshotBuffer } from './snapshot';
 import { parseHud, type NameLookup } from '../ui/hud/hudState';
 import type { HudSink } from '../ui/hud/hudStore';
+import { COMMAND, createMenuHost, type MenuHost, type MenuSink } from '../ui/menus/menuHost';
 
 export interface EngineStats {
   tick: number;
@@ -36,6 +37,8 @@ export interface EngineOptions {
   onStats?: (stats: EngineStats) => void;
   /** Receives the HUD's read-only view of the world each tick (WP-045). */
   hud?: HudSink;
+  /** Receives the menu and map presses and the Lantern rest, to open the menus (WP-046). */
+  menu?: MenuSink;
 }
 
 export interface Engine {
@@ -44,6 +47,10 @@ export interface Engine {
   replayTicks(): number;
   /** The three save slots and the autosave hooks (`onAreaChange` is for the level code). */
   saves: SaveManager;
+  /** What the menus read and the commands they send (WP-046). */
+  menus: MenuHost;
+  /** The input controller, for the controls menu (bindings and options). */
+  input: InputController;
   /** Downloads everything recorded since the world started as a `.lfr` replay file. */
   downloadReplay(): void;
   dispose(): void;
@@ -109,30 +116,60 @@ export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions
   }
   const pushHud = () => opts.hud?.state(parseHud(world.hud_state(), names));
   pushHud();
+  // The Lantern prompt (HUD word 17) and the interact edge turn a press of Interact into a
+  // `Rest` command; the menus' commands are recorded with their tick for replays.
+  let lastPrompt = 0;
+  let prevInteract = false;
+  let paused = false;
+  const commandLog: number[] = [];
+  function sendCommand(kind: number, a = 0, b = 0): boolean {
+    if (!world.queue_command(kind, a, b)) return false;
+    commandLog.push(world.tick_count(), kind, a, b);
+    return true;
+  }
+  function runTick(frame: Uint8Array): void {
+    recorder.record(frame); // Every tick's input goes into the replay.
+    if (tools) {
+      const t0 = performance.now();
+      world.tick(frame);
+      tools.recordTick(performance.now() - t0);
+    } else world.tick(frame);
+    snapshots.push();
+    const hudState = parseHud(world.hud_state(), names);
+    lastPrompt = hudState.prompt;
+    opts.hud?.state(hudState);
+    // Events go to presentation only; the renderer reads them and never answers.
+    const words = world.drain_events();
+    if (opts.autosave !== false) saves.onEventWords(words);
+    if (words.length) {
+      opts.hud?.events(words);
+      if (restedIn(words)) opts.menu?.rested();
+    }
+    const events = decodeEvents(words);
+    if (events.length) {
+      audio?.handleEvents(events);
+      view.vfx.handleEvents(events);
+      tools?.onEvents(events);
+    }
+  }
+  const menus = createMenuHost(world, {
+    command(kind, a, b) {
+      if (!sendCommand(kind, a, b)) return;
+      // A paused world takes no ticks, so a menu command spends one with no input.
+      if (paused) runTick(new Uint8Array(4));
+    }
+  });
   const loop = new FixedStepLoop({
     tick() {
       input.poll();
       const frame = input.frame();
-      recorder.record(frame); // Every tick's input goes into the replay.
-      if (tools) {
-        const t0 = performance.now();
-        world.tick(frame);
-        tools.recordTick(performance.now() - t0);
-      } else world.tick(frame);
-      snapshots.push();
-      pushHud();
-      // Events go to presentation only; the renderer reads them and never answers.
-      const words = world.drain_events();
-      if (opts.autosave !== false) saves.onEventWords(words);
-      if (words.length) opts.hud?.events(words);
-      const events = decodeEvents(words);
-      if (events.length) {
-        audio?.handleEvents(events);
-        view.vfx.handleEvents(events);
-        tools?.onEvents(events);
-      }
+      const interact = (frame[2] & 0x80) !== 0;
+      if (interact && !prevInteract && lastPrompt === 1) sendCommand(COMMAND.Rest);
+      prevInteract = interact;
+      runTick(frame);
     },
     render(alpha, frameMs) {
+      for (const action of input.drainUi()) opts.menu?.ui(action);
       input.updateLook(frameMs);
       view.setCamera(input.cameraYaw, input.cameraPitch);
       const drawn = snapshots.interpolate(alpha);
@@ -189,11 +226,18 @@ export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions
   loop.start();
 
   return {
-    setPaused: (paused) => (tools ? tools.commands.setFrozen(paused) : loop.setPaused(paused)),
+    setPaused(p) {
+      paused = p;
+      if (tools) tools.commands.setFrozen(p);
+      else loop.setPaused(p);
+      input.setSuspended(p && opts.menu !== undefined);
+    },
     saves,
+    menus,
+    input,
     replayTicks: () => recorder.ticks,
     downloadReplay() {
-      const bytes = encodeReplay(wasm.glue, recorder, seed, scenario);
+      const bytes = encodeReplay(wasm.glue, recorder, seed, scenario, commandLog);
       downloadBytes(bytes, `latticefall-${seed}-${recorder.ticks}t.lfr`);
     },
     dispose() {

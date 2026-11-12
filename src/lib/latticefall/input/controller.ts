@@ -86,6 +86,27 @@ export class InputController {
     saveSettings(this.settings);
   }
 
+  private suspended = false;
+
+  /**
+   * While a menu is open the game takes no input: held keys and buttons are released, and new
+   * presses are ignored (the menus read the keyboard and gamepad themselves). Pad buttons still
+   * held when the game resumes stay ignored until they are let go, so the press that closed a
+   * menu doesn't also jump.
+   */
+  setSuspended(on: boolean): void {
+    if (on === this.suspended) return;
+    this.suspended = on;
+    this.composer.releaseAll();
+    this.pressed.clear();
+    this.padPressed.clear();
+    this.skipNextClick = false;
+    if (!on) {
+      const pad = this.pickPad();
+      this.padLast = pad ? pad.buttons.map((b) => !!b.pressed) : [];
+    }
+  }
+
   /** Polls the gamepad. Call once per rendered frame, before the ticks it feeds. */
   poll(): void {
     const pad = this.pickPad();
@@ -194,7 +215,7 @@ export class InputController {
   }
 
   private onKeyDown = (e: KeyboardEvent): void => {
-    if (InputController.isTyping(e) || e.ctrlKey || e.metaKey || e.altKey) return;
+    if (this.suspended || InputController.isTyping(e) || e.ctrlKey || e.metaKey || e.altKey) return;
     if (e.repeat) {
       if (this.isBound(e.code)) e.preventDefault();
       return;
@@ -215,7 +236,7 @@ export class InputController {
   };
 
   private onMouseDown = (e: MouseEvent): void => {
-    if (!this.canvas || InputController.isTyping(e)) return;
+    if (this.suspended || !this.canvas || InputController.isTyping(e)) return;
     if (!this.locked) {
       // The first click on the canvas captures the mouse and is not an attack.
       if (e.target === this.canvas && e.button === 0) {
@@ -243,7 +264,7 @@ export class InputController {
   };
 
   private onWheel = (e: WheelEvent): void => {
-    if (!this.locked || e.deltaY === 0) return;
+    if (this.suspended || !this.locked || e.deltaY === 0) return;
     e.preventDefault();
     const base = e.deltaY < 0 ? 'WheelUp' : 'WheelDown';
     for (const a of resolveActions(this.settings.bindings, base, e.shiftKey)) this.composer.pulse(a);

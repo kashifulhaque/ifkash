@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onDestroy, onMount } from 'svelte';
   import { browser } from '$app/environment';
+  import { goto } from '$app/navigation';
   import { name } from '$lib/content';
   import type { Engine, EngineStats } from '$lib/latticefall/engine';
   import Hud from '$lib/latticefall/ui/hud/Hud.svelte';
@@ -11,6 +12,8 @@
   import { unlockFromEvents } from '$lib/latticefall/codex/pickups';
   import Ledger from '$lib/latticefall/ui/portfolio/Ledger.svelte';
   import UnlockToast from '$lib/latticefall/ui/portfolio/UnlockToast.svelte';
+  import Menus from '$lib/latticefall/ui/menus/Menus.svelte';
+  import { createMenuSettings } from '$lib/latticefall/ui/menus/menuSettings';
 
   /** Show the dev readout (tick, fps, state hash). Set with `&dev=1`. */
   export let showDev = false;
@@ -26,6 +29,10 @@
   // The HUD reads the world through the engine; `&hud-demo=1` shows a fixed full HUD instead.
   const hud = createHudController();
   const hudSettings = createHudSettings(browser ? window.location.search : '');
+  // The menus open on Escape or Start, and when the player rests at a Lantern (WP-046).
+  const menuSettings = createMenuSettings();
+  let menus: Menus | undefined;
+  let menuOpen = false;
   let demoTimer: ReturnType<typeof setInterval> | undefined;
   const hudDemo = browser && new URLSearchParams(window.location.search).get('hud-demo') === '1';
 
@@ -47,7 +54,11 @@
       // Dynamic import keeps Three.js and the WASM glue out of every other route.
       const { startEngine } = await import('$lib/latticefall/engine');
       if (destroyed) return;
-      const started = await startEngine(canvas, { onStats: (s) => (stats = s), hud: hudDemo ? undefined : hudSink });
+      const started = await startEngine(canvas, {
+        onStats: (s) => (stats = s),
+        hud: hudDemo ? undefined : hudSink,
+        menu: { ui: (a) => menus?.handleUi(a), rested: () => menus?.handleRested() }
+      });
       if (destroyed) {
         started.dispose();
         return;
@@ -90,6 +101,7 @@
   }
 
   function onKey(e: KeyboardEvent): void {
+    if (menuOpen) return; // The menus handle their own keys.
     if (e.code === 'KeyP' && !e.repeat && !e.ctrlKey && !e.metaKey && !e.altKey) togglePause();
     if (e.code === 'KeyL' && !e.repeat && !e.ctrlKey && !e.metaKey && !e.altKey) ledgerOpen = !ledgerOpen;
   }
@@ -116,6 +128,19 @@
     <Hud {hud} settings={hudSettings} />
     <UnlockToast bind:this={toast} />
     {#if ledgerOpen}<Ledger on:close={() => (ledgerOpen = false)} />{/if}
+  {/if}
+
+  {#if status === 'ready' && engine}
+    <Menus
+      bind:this={menus}
+      bind:open={menuOpen}
+      host={engine.menus}
+      {engine}
+      {hudSettings}
+      {menuSettings}
+      onPlain={() => goto('/')}
+      onQuit={() => goto('/')}
+    />
   {/if}
 
   {#if showDev && status === 'ready'}

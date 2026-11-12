@@ -16,6 +16,7 @@
 //! - Pickups are [`Inventory::pick_up`]; world pickups (WP-0xx) call it.
 
 pub mod inventory;
+pub mod preview;
 pub mod table;
 
 pub use inventory::{Equipment, FlaskKind, Flasks, Inventory, slot};

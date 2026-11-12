@@ -82,6 +82,60 @@ impl LfWorld {
     pub fn dev_level(&self) -> u32 {
         self.dev.level
     }
+
+    /// Gives the player `n` of the item or weapon with registry number `num` (a weapon, armor
+    /// piece, or charm goes into the owned gear; a consumable goes on its stack) and returns
+    /// how many were taken. For trying the menus; there is no world pickup yet.
+    pub fn dev_give_item(&mut self, num: u32, n: u32) -> u32 {
+        let id = self.world.player;
+        let Some(p) = self.world.actors.get_mut(id) else {
+            return 0;
+        };
+        if self.world.items.is_weapon(num) {
+            return u32::from(p.inventory.give_gear(num));
+        }
+        let n = u16::try_from(n).unwrap_or(u16::MAX);
+        u32::from(p.inventory.pick_up(num, n, &self.world.items))
+    }
+
+    /// Sets the Glimmer the player holds, for trying the level-up menu.
+    pub fn dev_set_glimmer(&mut self, glimmer: u32) {
+        let id = self.world.player;
+        if let Some(p) = self.world.actors.get_mut(id) {
+            p.inventory.glimmer = glimmer;
+        }
+    }
+
+    /// Adds a lit Lantern named `lantern_dev_N` at `(x, y, z)` (every scenario has only one
+    /// so far, so Travel has nowhere to go) and returns its index. Not saved.
+    pub fn dev_add_lantern(&mut self, x: f32, y: f32, z: f32) -> u32 {
+        let index = self.world.layout.lanterns.len();
+        let id = format!("lantern_dev_{index}");
+        self.world
+            .state
+            .flags
+            .raise(&lf_core::world_state::flags::lantern_lit(&id));
+        self.world
+            .layout
+            .lanterns
+            .push(lf_content::scenario::Lantern {
+                id,
+                pos: [x, y, z],
+                yaw: 0.0,
+            });
+        index as u32
+    }
+
+    /// Lights the Lantern at `index` of the scenario without resting there (so Travel has
+    /// somewhere to go). Returns false if there is no such Lantern.
+    pub fn dev_light_lantern(&mut self, index: u32) -> bool {
+        let Some(l) = self.world.layout.lanterns.get(index as usize) else {
+            return false;
+        };
+        let key = lf_core::world_state::flags::lantern_lit(&l.id);
+        self.world.state.flags.raise(&key);
+        true
+    }
 }
 
 impl LfWorld {

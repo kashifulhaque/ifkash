@@ -42,6 +42,9 @@ pub struct World {
     /// The damage rules and every weapon's attack rating inputs, from content. Not
     /// hashed: the content hash covers them.
     pub damage: DamageTable,
+    /// The attribute curves and level rules, from content, for level-ups and the menu's
+    /// stat previews. Not hashed: the content hash covers them.
+    pub attributes: lf_content::Attributes,
     /// Every projectile definition, from content. Not hashed: the content hash covers it.
     pub projectile_defs: ProjectileTable,
     /// The status and buff rules, from content. Not hashed: the content hash covers them.
@@ -228,6 +231,7 @@ impl World {
             moves,
             items,
             damage,
+            attributes: content.attributes.clone(),
             projectile_defs,
             status: status_table,
             ai,

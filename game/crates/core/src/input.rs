@@ -51,8 +51,8 @@ impl ActionFrame {
     }
 }
 
-/// A discrete, menu-level action. `LevelUp` and `Gesture` are no-ops in the simulation
-/// until the systems that consume them land. `Rest` rests at the Lantern in reach
+/// A discrete, menu-level action. `Gesture` is a no-op in the simulation until the system
+/// that consumes it lands. `Rest` rests at the Lantern in reach
 /// (`world_state::lantern`); it does nothing with none in reach. Variants are serialized by
 /// position in replays, so only ever append.
 ///
@@ -60,6 +60,10 @@ impl ActionFrame {
 /// - `UseItem` takes a quick slot index, 0 to 4: it selects that slot and uses its item.
 /// - `SplitFlasks` sets the Vigil Flask's share of the charges (the Lantern menu). It
 ///   applies only while resting at a Lantern.
+/// - `LevelUp` raises attribute `attribute` (0 to 6: Vitality, Focus, Endurance, Might,
+///   Finesse, Insight, Devotion) by one, for the Glimmer the next level costs. `Travel`
+///   moves the player to the lit Lantern at index `lantern` of the scenario. Both apply
+///   only while resting at a Lantern (`world_state::lantern_menu`).
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Command {
     Rest,
@@ -69,6 +73,7 @@ pub enum Command {
     UseItem { slot: u8 },
     Gesture(u16),
     SplitFlasks { vigil: u8 },
+    Travel { lantern: u8 },
 }
 
 /// Everything the simulation consumes in one tick.

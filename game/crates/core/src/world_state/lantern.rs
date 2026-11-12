@@ -9,8 +9,8 @@
 //!
 //! Resting also cures every status (meters and effects; buffs run on).
 //!
-//! Not built yet: the other menu entries (level up, attune, travel, loadouts), and Lantern
-//! Ash.
+//! Level up and travel are in `lantern_menu`. Not built yet: attuning spells, loadouts, and
+//! Lantern Ash.
 
 use lf_content::scenario::Dummy;
 
@@ -63,6 +63,7 @@ pub fn run(world: &mut World, input: &TickInput) {
     if input.commands.contains(&Command::Rest) {
         try_rest(world);
     }
+    super::lantern_menu::run(world, input);
 }
 
 /// Rests at the Lantern in reach, if the player is standing still enough to: on the

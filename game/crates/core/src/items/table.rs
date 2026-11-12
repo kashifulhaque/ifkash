@@ -77,6 +77,8 @@ pub struct ItemTable {
     defs: Vec<ItemDef>,
     /// Weapon registry numbers, sorted.
     weapons: Vec<NumId>,
+    /// Each weapon's weight in tenths of a unit, sorted by number (equip load).
+    weights: Vec<(NumId, u16)>,
     /// The weapon the player starts with: the first in the content (file and list order).
     pub default_weapon: Option<NumId>,
     pub flask: Option<FlaskRules>,
@@ -104,14 +106,19 @@ impl ItemTable {
         }
         defs.sort_by_key(|d| d.num);
         let mut weapons = Vec::new();
+        let mut weights = Vec::new();
         for (_, w) in content.all_weapons() {
-            weapons.push(num(&w.id)?);
+            let n = num(&w.id)?;
+            weapons.push(n);
+            weights.push((n, w.weight_tenths));
         }
         let default_weapon = weapons.first().copied();
         weapons.sort_unstable();
+        weights.sort_unstable();
         Ok(Self {
             defs,
             weapons,
+            weights,
             default_weapon,
             flask: FlaskRules::from_content(content)?,
         })
@@ -127,6 +134,13 @@ impl ItemTable {
     /// Finds an item by string ID. A linear scan, for tools and tests.
     pub fn num_of(&self, id: &str) -> Option<NumId> {
         self.defs.iter().find(|d| d.id == id).map(|d| d.num)
+    }
+
+    /// A weapon's weight in tenths of a unit; 0 for anything else.
+    pub fn weight_tenths(&self, num: NumId) -> u16 {
+        self.weights
+            .binary_search_by_key(&num, |w| w.0)
+            .map_or(0, |i| self.weights[i].1)
     }
 
     pub fn is_weapon(&self, num: NumId) -> bool {

@@ -9,11 +9,14 @@
 use lf_content::Content;
 use lf_core::events::{Event, LifeEvent};
 use lf_core::snapshot::{ACTOR_SNAP_BYTES, ActorSnap, pack_id, write_snapshot};
-use lf_core::{ActionFrame, Replay, TickInput, World, run_replay as core_run_replay, tick};
+use lf_core::{
+    ActionFrame, Command, Replay, TickInput, World, run_replay as core_run_replay, tick,
+};
 use wasm_bindgen::prelude::*;
 
 #[cfg(feature = "dev")]
 mod debug;
+mod menu;
 
 /// Bytes between consecutive snapshot records (`size_of::<ActorSnap>()`).
 #[wasm_bindgen]
@@ -62,6 +65,8 @@ pub struct LfWorld {
     snapshot: Vec<ActorSnap>,
     /// Display names by registry number (weapons and consumables), for the HUD.
     names: std::collections::HashMap<u32, String>,
+    /// Commands from `queue_command`, applied by the first tick of the next `tick` call.
+    pending: Vec<Command>,
     /// Dev-tool state (god mode, set level). Present only in `dev` builds.
     #[cfg(feature = "dev")]
     dev: debug::DevState,
@@ -85,9 +90,25 @@ impl LfWorld {
             seed,
             snapshot,
             names,
+            pending: Vec::new(),
             #[cfg(feature = "dev")]
             dev: debug::DevState::default(),
         })
+    }
+
+    /// Queues a menu-level `Command` for the next tick (the first one of the next `tick`
+    /// call), by `kind`: 0 Rest, 1 LevelUp (`a` is the attribute, 0 to 6), 2 Equip (`a` is
+    /// the slot, `b` the item), 3 Unequip (`a` the slot), 4 UseItem (`a` the quick slot),
+    /// 5 Gesture (`a`), 6 SplitFlasks (`a` is the Vigil Flask's charges), 7 Travel (`a` is
+    /// the Lantern's index). Returns false, queuing nothing, for an unknown kind or an
+    /// operand that doesn't fit its type. The core decides whether the command does
+    /// anything; the host records `(tick_count(), kind, a, b)` for replays.
+    pub fn queue_command(&mut self, kind: u32, a: u32, b: u32) -> bool {
+        let Some(c) = menu::command_from_words(kind, a, b) else {
+            return false;
+        };
+        self.pending.push(c);
+        true
     }
 
     /// Advances one tick per 4-byte `ActionFrame` in `frames` (`[move_x, move_z, buttons_lo,
@@ -102,7 +123,7 @@ impl LfWorld {
                 &mut self.world,
                 &TickInput {
                     frame,
-                    commands: Vec::new(),
+                    commands: std::mem::take(&mut self.pending),
                 },
             );
             #[cfg(feature = "dev")]
@@ -286,6 +307,7 @@ impl LfWorld {
             seed: data.seed,
             snapshot,
             names: display_names(&content),
+            pending: Vec::new(),
             #[cfg(feature = "dev")]
             dev: debug::DevState::default(),
         })

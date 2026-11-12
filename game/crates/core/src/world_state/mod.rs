@@ -18,6 +18,7 @@
 pub mod death;
 pub mod flags;
 pub mod lantern;
+pub mod lantern_menu;
 #[cfg(test)]
 mod tests;
 

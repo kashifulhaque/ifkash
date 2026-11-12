@@ -38,6 +38,8 @@ export class ReplayRecorder {
 /** The subset of the lf-wasm glue the recorder needs. */
 export interface ReplayEncoder {
   encode_replay(seed: bigint, scenario: string, frames: Uint8Array): Uint8Array;
+  /** With the menu commands: four words per command, `[tick, kind, a, b]`. */
+  encode_replay_with_commands?(seed: bigint, scenario: string, frames: Uint8Array, commands: Uint32Array): Uint8Array;
 }
 
 /** Encodes the recording as `.lfr` bytes for the world started with `seed` and `scenario`. */
@@ -45,8 +47,12 @@ export function encodeReplay(
   glue: ReplayEncoder,
   recorder: ReplayRecorder,
   seed: bigint,
-  scenario: string
+  scenario: string,
+  commands: ArrayLike<number> = []
 ): Uint8Array {
+  if (commands.length > 0 && glue.encode_replay_with_commands) {
+    return glue.encode_replay_with_commands(seed, scenario, recorder.frames(), Uint32Array.from(commands));
+  }
   return glue.encode_replay(seed, scenario, recorder.frames());
 }
 

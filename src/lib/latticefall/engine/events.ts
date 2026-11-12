@@ -27,7 +27,11 @@ export const EVENT_WORDS: Readonly<Record<number, number>> = {
   16: 2, // Message: index in the scenario's messages (WP-042)
   17: 3, // Pickup: index in the scenario's pickup list, item registry number (WP-049)
   // Kinds 18-20 are reserved for other work packages.
-  21: 5 // Echo: what happened, Echo registry number, body, refusal reason (WP-059)
+  21: 5, // Echo: what happened, Echo registry number, body, refusal reason (WP-059)
+  // Kinds 22-30 are reserved for other work packages.
+  31: 5, // Dialogue: what happened, NPC or station, its index, open topic (WP-068)
+  32: 3, // Quest: the giver's index, the new state (WP-068)
+  33: 3 // Appearance: the Mirror's preset and dye (WP-068)
   // Kinds 2-9, 11, and 13 aren't decoded into events yet; the decoder skips them by length.
 };
 

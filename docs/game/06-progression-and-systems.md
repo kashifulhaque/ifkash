@@ -114,6 +114,31 @@ Until the player first visits Hollowhearth, the Peddler stands at Verge Crossroa
 - Dialogue lives in `game/data/npcs/*.ron` with portfolio fields pulled from
   `src/lib/content.ts` at build time.
 
+### How dialogue and quests are built
+
+[WP-068](10-roadmap.md#wp-068) built Hollowhearth, the five NPCs, and the stations.
+The following list states what is decided:
+
+- **The simulation owns the conversation.** Pressing Interact near an NPC or a station
+  opens it; `Command::Ask`, `Command::EndTalk`, and `Command::Appearance` drive it. The
+  state is world flags (`dialogue.*`, `quest.<id>.state`, `mirror.*`), so it saves and
+  replays with the world. The DOM reads the state and sends commands.
+- **A topic names facts by section and slug**, never by text. A slug of `*` names every
+  item of the section, so an entry added to `content.ts` reaches the hub without editing
+  the data. `lf-tools validate` fails if a portfolio entry is not shown by some NPC or
+  station, and a core test walks the dialogue tree to prove it.
+- **A quest has three states** (0 before, 1 during, 2 after). Asking about the quest takes
+  it up, and asking again with everything brought turns it in. A quest that is already
+  satisfied when taken up finishes at once. A quest's `needs` are world flags (a pickup
+  raises `pickup.<id>.taken`) or a held item. `at_least` lets the Cartographer finish
+  with four of the five Chronicle Pages, because four work entries leave one slot empty.
+- **Quest pickups belong to the areas that hold them.** The flag names the NPC data waits
+  for are `pickup.folio_ninefold`, `pickup.folio_library`, `pickup.folio_whitewarden`,
+  `pickup.page_chronicle_1` to `5`, `pickup.satchel_verge`, `pickup.satchel_mirrormere`,
+  and `pickup.satchel_rimeshelf` (each with the suffix `.taken`).
+- **Hollowhearth is a safe zone** (`safe_zone: true` in `area.ron`): the core clears the
+  attack, guard, dodge, and Art buttons and caps the stick at a walk.
+
 ## Map
 
 - The map reveals as the player explores: the core records visited 16-meter map cells

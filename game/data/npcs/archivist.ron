@@ -1,0 +1,67 @@
+// The Archivist (WP-068): education, the blog's Letters, the codex, and respec. See
+// docs/game/06-progression-and-systems.md, "NPCs and questlines".
+//
+// The facts a topic shows are named by `facts` (section and slug) and pulled from
+// src/lib/content.ts by the browser: nothing in this file states a fact. Every topic is
+// open from the first conversation; the quest only changes the greeting and adds a reward.
+//
+// Quest needs: three Lost Folios, in Ninefold Chapel, the castle library, and Whitewarden
+// Catacombs. Those areas place pickups with the ids below (the pickup raises the flag
+// `pickup.<id>.taken`); until they exist, a test raises the flags.
+(
+  id: "npc_archivist",
+  name: "The Archivist",
+  role: "Keeper of the Archive",
+  greeting: (
+    before: "Mind the dust. Everything on these shelves has been read twice, and most of it was worth it.",
+    during: "Three folios still missing. I can wait; paper is patient.",
+    after: "The shelves are whole again. Ask me anything.",
+  ),
+  farewell: "Come back when the candles are low and the questions are good.",
+  topics: [
+    (
+      id: "education",
+      label: "Where the Wayfarer studied",
+      line: "Four years of schooling, the long way round and the right way up. The facts are on the card.",
+      facts: [(section: "education", slug: "*")],
+    ),
+    (
+      id: "letters",
+      label: "The Letters on the shelves",
+      line: "The Wayfarer writes things down, which is why there is a shelf at all. Each Letter is a page of that writing.",
+      facts: [(section: "blog", slug: "*")],
+    ),
+    (
+      id: "relics",
+      label: "The relics",
+      line: "Every relic out there began as someone's weekend project. I keep their cards, whether or not you have found the things themselves.",
+      facts: [(section: "projects", slug: "*")],
+    ),
+    (
+      id: "respec",
+      label: "Rewriting a Wayfarer",
+      line: "A Rewrite Quill lets you redraw your attributes, though not the hours you spent earning them. Rest at a Lantern and I will lend you the page.",
+      service: Some(Respec),
+    ),
+  ],
+  quest: Some((
+    id: "lost_folios",
+    name: "The Three Lost Folios",
+    label: "About the missing folios",
+    replies: (
+      before: "Three folios walked off the shelf in three different ruins: Ninefold Chapel, the castle library, and Whitewarden Catacombs. Bring them back and I will make it worth your while.",
+      during: "Still short. The chapel, the castle library, the catacombs: one folio each, and they will not come to you.",
+      after: "All three, safe and a little singed. The Seal is yours, and so is my thanks.",
+    ),
+    needs: [
+      Flag("pickup.folio_ninefold.taken"),
+      Flag("pickup.folio_library.taken"),
+      Flag("pickup.folio_whitewarden.taken"),
+    ],
+    done_line: "Ah. Ninefold, the library, and the catacombs. Take the Seal; it has been waiting for a reader.",
+    reward: (
+      flags: ["reward.scholars_seal"],
+      items: ["chm_scholars_seal"],
+    ),
+  )),
+)

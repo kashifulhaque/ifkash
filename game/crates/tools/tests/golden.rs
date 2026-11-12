@@ -381,6 +381,9 @@ fn m2_parry_riposte_parries_then_ripostes() {
             Event::Loot(_) => "loot",
             Event::Message(_) => "message",
             Event::Echo(_) => "echo",
+            Event::Dialogue(_) => "dialogue",
+            Event::Quest(_) => "quest",
+            Event::Appearance(_) => "appearance",
         })
         .collect();
     assert_eq!(kinds, ["parry", "critical", "hit"], "{events:?}");

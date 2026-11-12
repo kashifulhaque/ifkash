@@ -25,6 +25,8 @@ export const REGION_VOICES: Record<string, RegionVoice> = {
   'waking-hollow': { mix: { wind: 0.35, water: 0.3, drips: 0.15, fire: 0 }, root: 50, chord: [0, 7, 12, 16], tone: 900 },
   // The Verge: open and windy.
   verge: { mix: { wind: 0.7, water: 0.1, drips: 0, fire: 0 }, root: 53, chord: [0, 7, 12, 15], tone: 700 },
+  // Hollowhearth (WP-068): the safe hub, a crackling hearth and almost no wind.
+  hollowhearth: { mix: { wind: 0.05, water: 0, drips: 0.05, fire: 0.6 }, root: 48, chord: [0, 7, 12, 16], tone: 1100 },
   // Used when a region has no voice of its own, and on the test field.
   default: { mix: { wind: 0.3, water: 0, drips: 0, fire: 0 }, root: 50, chord: [0, 7, 12], tone: 800 }
 };

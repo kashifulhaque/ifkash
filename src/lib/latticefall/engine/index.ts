@@ -17,6 +17,8 @@ import { FLAG_LOCKED, SnapshotBuffer } from './snapshot';
 import { parseHud, type NameLookup } from '../ui/hud/hudState';
 import { messageIndexesFromWords, type HudSink } from '../ui/hud/hudStore';
 import { COMMAND, createMenuHost, type MenuHost, type MenuSink } from '../ui/menus/menuHost';
+import { createDialogueHost, type DialogueHost, type DialogueSink } from '../ui/dialogue/dialogueHost';
+import { dialogueEventsFromWords } from '../ui/dialogue/dialogueState';
 
 export interface EngineStats {
   tick: number;
@@ -41,6 +43,8 @@ export interface EngineOptions {
   hud?: HudSink;
   /** Receives the menu and map presses and the Lantern rest, to open the menus (WP-046). */
   menu?: MenuSink;
+  /** Receives the conversation events of the hub's NPCs and stations (WP-068). */
+  dialogue?: DialogueSink;
 }
 
 export interface Engine {
@@ -51,6 +55,8 @@ export interface Engine {
   saves: SaveManager;
   /** What the menus read and the commands they send (WP-046). */
   menus: MenuHost;
+  /** What the dialogue reads and the commands it sends (WP-068). */
+  dialogue: DialogueHost;
   /** The input controller, for the controls menu (bindings and options). */
   input: InputController;
   /** Downloads everything recorded since the world started as a `.lfr` replay file. */
@@ -86,6 +92,8 @@ export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions
     if (scenario === 'waking_hollow') audio.setRegion('waking-hollow');
     // The Verge (WP-044) is open and windy.
     if (scenario === 'verge') audio.setRegion('verge');
+    // Hollowhearth (WP-068) crackles by its hearth.
+    if (scenario === 'hollowhearth') audio.setRegion('hollowhearth');
   } catch (err) {
     console.warn('Latticefall audio unavailable', err);
   }
@@ -184,6 +192,8 @@ export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions
       // Authored ground messages (the cave's tutorial lines): the HUD shows the text.
       for (const i of messageIndexesFromWords(words)) opts.hud?.message(world.message_text(i));
       if (restedIn(words)) opts.menu?.rested();
+      // Conversations with the hub's NPCs and stations (WP-068).
+      if (opts.dialogue) for (const e of dialogueEventsFromWords(words)) opts.dialogue.event(e);
     }
     const events = decodeEvents(words);
     if (events.length) {
@@ -196,6 +206,12 @@ export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions
     command(kind, a, b) {
       if (!sendCommand(kind, a, b)) return;
       // A paused world takes no ticks, so a menu command spends one with no input.
+      if (paused) runTick(new Uint8Array(4));
+    }
+  });
+  const dialogue = createDialogueHost(world, {
+    command(kind, a, b) {
+      if (!sendCommand(kind, a, b)) return;
       if (paused) runTick(new Uint8Array(4));
     }
   });
@@ -274,6 +290,7 @@ export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions
     },
     saves,
     menus,
+    dialogue,
     input,
     replayTicks: () => recorder.ticks,
     downloadReplay() {

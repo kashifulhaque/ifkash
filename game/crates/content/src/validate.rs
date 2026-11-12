@@ -781,6 +781,7 @@ impl Validate for Content {
         check_ai(self, &mut out);
         out.extend(crate::boss::check(self));
         check_echoes(self, &mut out);
+        out.extend(crate::npc::check(self));
         out
     }
 }

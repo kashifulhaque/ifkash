@@ -10,9 +10,11 @@
   import { DEMO_NOTICES, demoHud } from '$lib/latticefall/ui/hud/hudDemo';
   import { codex } from '$lib/latticefall/codex/store';
   import { unlockFromEvents } from '$lib/latticefall/codex/pickups';
+  import { entryByKey } from '$lib/latticefall/codex/entries';
   import Ledger from '$lib/latticefall/ui/portfolio/Ledger.svelte';
   import UnlockToast from '$lib/latticefall/ui/portfolio/UnlockToast.svelte';
   import Menus from '$lib/latticefall/ui/menus/Menus.svelte';
+  import Dialogue from '$lib/latticefall/ui/dialogue/Dialogue.svelte';
   import { createMenuSettings } from '$lib/latticefall/ui/menus/menuSettings';
 
   /** Show the dev readout (tick, fps, state hash). Set with `&dev=1`. */
@@ -33,6 +35,9 @@
   const menuSettings = createMenuSettings();
   let menus: Menus | undefined;
   let menuOpen = false;
+  // Hollowhearth's NPCs and stations (WP-068): the core runs the conversation, the DOM shows it.
+  let dialogue: Dialogue | undefined;
+  let dialogueOpen = false;
   let demoTimer: ReturnType<typeof setInterval> | undefined;
   const hudDemo = browser && new URLSearchParams(window.location.search).get('hud-demo') === '1';
 
@@ -57,7 +62,8 @@
       const started = await startEngine(canvas, {
         onStats: (s) => (stats = s),
         hud: hudDemo ? undefined : hudSink,
-        menu: { ui: (a) => menus?.handleUi(a), rested: () => menus?.handleRested() }
+        menu: { ui: (a) => menus?.handleUi(a), rested: () => menus?.handleRested() },
+        dialogue: { event: (e) => dialogue?.handleEvent(e) }
       });
       if (destroyed) {
         started.dispose();
@@ -101,7 +107,7 @@
   }
 
   function onKey(e: KeyboardEvent): void {
-    if (menuOpen) return; // The menus handle their own keys.
+    if (menuOpen || dialogueOpen) return; // The menus and the dialogue handle their own keys.
     if (e.code === 'KeyP' && !e.repeat && !e.ctrlKey && !e.metaKey && !e.altKey) togglePause();
     if (e.code === 'KeyL' && !e.repeat && !e.ctrlKey && !e.metaKey && !e.altKey) ledgerOpen = !ledgerOpen;
   }
@@ -140,6 +146,19 @@
       {menuSettings}
       onPlain={() => goto('/')}
       onQuit={() => goto('/')}
+    />
+    <Dialogue
+      bind:this={dialogue}
+      bind:open={dialogueOpen}
+      host={engine.dialogue}
+      {engine}
+      on:unlock={(e) => {
+        // A quest reward unlocks codex entries (the core raised the flags; this records them).
+        for (const key of e.detail) {
+          const entry = entryByKey(key);
+          if (entry && codex.unlock(key)) toast?.show(entry);
+        }
+      }}
     />
   {/if}
 

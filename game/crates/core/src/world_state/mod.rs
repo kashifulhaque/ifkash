@@ -22,6 +22,7 @@ mod hollow_tests;
 pub mod lantern;
 pub mod lantern_menu;
 pub mod mechanics;
+pub mod quests;
 #[cfg(test)]
 mod tests;
 #[cfg(test)]
@@ -69,6 +70,11 @@ pub struct Layout {
     pub messages: Vec<Message>,
     pub pools: Vec<Pool>,
     pub snow: Vec<Zone>,
+    /// The NPCs and stations (WP-068; see `quests`).
+    pub npcs: Vec<quests::NpcSpot>,
+    pub stations: Vec<quests::StationSpot>,
+    /// A safe zone: no combat, weapons sheathed, walk only (WP-068).
+    pub safe_zone: bool,
 }
 
 impl Layout {
@@ -92,6 +98,9 @@ impl Layout {
             messages: level.messages.clone(),
             pools: level.pools.clone(),
             snow: level.snow.clone(),
+            npcs: Vec::new(),
+            stations: Vec::new(),
+            safe_zone: false,
         }
     }
 

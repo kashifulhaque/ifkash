@@ -14,5 +14,7 @@ pub fn run(world: &mut World, input: &TickInput) {
     crate::items::run(world, fed);
     // The Echo Bell and the bow gesture (WP-059).
     crate::ai::echo::apply_commands(world, fed);
+    // Conversations and quests (WP-068).
+    crate::world_state::quests::run(world, fed);
     crate::world_state::mechanics::run(world, input);
 }

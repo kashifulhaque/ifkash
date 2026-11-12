@@ -92,6 +92,50 @@ pub struct Scenario {
     /// ones their world flags unlock. Used by test scenarios (WP-059).
     #[serde(default)]
     pub echoes_unlocked: Vec<String>,
+    /// NPCs (WP-068): people the player talks to. Real levels place them in the level
+    /// format.
+    #[serde(default)]
+    pub npcs: Vec<NpcSpawn>,
+    /// Stations (WP-068): the Archive shelves, the Ledger Stand, the Mirror, and the like.
+    #[serde(default)]
+    pub stations: Vec<StationSpawn>,
+    /// A safe place (WP-068, Hollowhearth): no combat, weapons sheathed, walk only. The
+    /// core clears the combat buttons and caps the stick at a walk.
+    #[serde(default)]
+    pub safe_zone: bool,
+}
+
+/// Where an NPC stands. The NPC's lines and quest are in `npcs/<name>.ron`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct NpcSpawn {
+    /// The NPC's registry ID (`npc_archivist`).
+    pub npc: String,
+    /// Where they stand (feet level), in meters.
+    pub pos: [f32; 3],
+    /// The direction they face, in radians from +Z toward +X.
+    pub yaw: f32,
+    /// How close the player's feet must be horizontally to speak, in meters. Defaults to 3.0
+    /// (the NPC stands behind a counter).
+    #[serde(default = "default_talk_radius")]
+    pub radius_m: f32,
+}
+
+fn default_talk_radius() -> f32 {
+    3.0
+}
+
+/// Where a station stands. The station's content is in `npcs/stations.ron`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct StationSpawn {
+    /// The station's registry ID (`stn_archive`).
+    pub station: String,
+    pub pos: [f32; 3],
+    pub yaw: f32,
+    /// How close the player's feet must be horizontally to use it, in meters.
+    #[serde(default = "default_talk_radius")]
+    pub radius_m: f32,
 }
 
 /// An Echo Stone: stand within the Echo rules' `stone_ring_m` of it and ring the Echo Bell
@@ -683,6 +727,18 @@ impl Scenario {
                 "message",
                 &m.id,
             )?;
+        }
+        for (i, n) in self.npcs.iter().enumerate() {
+            unique(self.npcs[..i].iter().any(|o| o.npc == n.npc), "npc", &n.npc)?;
+            positive("npc", &n.npc, "radius_m", n.radius_m)?;
+        }
+        for (i, n) in self.stations.iter().enumerate() {
+            unique(
+                self.stations[..i].iter().any(|o| o.station == n.station),
+                "station",
+                &n.station,
+            )?;
+            positive("station", &n.station, "radius_m", n.radius_m)?;
         }
         for (i, p) in self.pools.iter().enumerate() {
             unique(

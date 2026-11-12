@@ -1,0 +1,32 @@
+// The Peddler (WP-068): the shop. No quest. Until the player first visits Hollowhearth the
+// Peddler stands at Verge Crossroads (a later WP places that copy). The shop itself is a
+// separate work package; here the Peddler talks about the stock.
+(
+  id: "npc_peddler",
+  name: "The Peddler",
+  role: "Consumables, arrows, and odds and ends",
+  greeting: (
+    before: "Ah, a customer! Or a lost traveler, which is nearly the same thing. What are you after?",
+    during: "Ah, a customer! Or a lost traveler, which is nearly the same thing. What are you after?",
+    after: "Ah, a customer! Or a lost traveler, which is nearly the same thing. What are you after?",
+  ),
+  farewell: "Mind the road, and my prices are firm but fair.",
+  topics: [
+    (
+      id: "wares",
+      label: "What is for sale",
+      line: "Consumables, arrows, Lantern Ash, Forgeglass Shards, and a Hunter's Shortbow I would rather someone else carried.",
+      service: Some(Shop),
+    ),
+    (
+      id: "ash",
+      label: "About Lantern Ash",
+      line: "Burn it at a Lantern and the whole world resets a little. It is not magic, only habit, but it works.",
+    ),
+    (
+      id: "road",
+      label: "About the road",
+      line: "I move from one safe place to the next, and the road moves with me. I sold my first arrow to a man who had never seen one.",
+    ),
+  ],
+)

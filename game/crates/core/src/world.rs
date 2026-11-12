@@ -227,6 +227,8 @@ impl World {
         crate::ai::boss::extend_layout(&mut layout, level, content, &moves)
             .map_err(WorldError::Ai)?;
         crate::pickups::extend_layout(&mut layout, level, content).map_err(WorldError::Items)?;
+        crate::world_state::quests::extend_layout(&mut layout, level, content)
+            .map_err(WorldError::Items)?;
         let enemies = layout
             .dummies
             .iter()

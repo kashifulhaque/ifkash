@@ -27,6 +27,14 @@ pub(crate) fn command_from_words(kind: u32, a: u32, b: u32) -> Option<Command> {
         5 => Command::Gesture(u16::try_from(a).ok()?),
         6 => Command::SplitFlasks { vigil: byte(a)? },
         7 => Command::Travel { lantern: byte(a)? },
+        // The dialogue commands (WP-068) start at 40, clear of the kinds other work packages
+        // add to the menu range.
+        40 => Command::Ask { topic: byte(a)? },
+        41 => Command::EndTalk,
+        42 => Command::Appearance {
+            preset: byte(a)?,
+            dye: byte(b)?,
+        },
         _ => return None,
     })
 }

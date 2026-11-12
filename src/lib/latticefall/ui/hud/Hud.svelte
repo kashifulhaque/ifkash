@@ -22,7 +22,9 @@
     4: 'Open the door',
     5: 'Read the message',
     6: 'Climb the ladder',
-    7: 'Kick the ladder down'
+    7: 'Kick the ladder down',
+    8: 'Speak',
+    9: 'Look closer'
   };
 
   let innerWidth = 1280;

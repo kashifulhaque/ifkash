@@ -42,6 +42,49 @@ pub enum Event {
     /// An Echo was summoned, fell, was dismissed, was bowed to, or a summoning was refused
     /// (`ai::echo`, WP-059; WASM event kind 21).
     Echo(EchoEvent),
+    /// A conversation opened, changed topic, or closed (`world_state::quests`, WP-068; WASM
+    /// event kind 31).
+    Dialogue(DialogueEvent),
+    /// A questline was taken up or finished (WP-068; WASM event kind 32).
+    Quest(QuestEvent),
+    /// The Mirror changed the appearance preset or the dye (WP-068; WASM event kind 33).
+    Appearance(AppearanceEvent),
+}
+
+/// What happened to a conversation (WASM event kind 31). `what` is one of the consts;
+/// `target` says whether it is an NPC (0) or a station (1); `index` is its index in the
+/// scenario's `npcs` or `stations`; `topic` is the open topic (0 for the menu, a topic's
+/// index plus one, or 255 for the quest line).
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct DialogueEvent {
+    pub what: u8,
+    pub target: u8,
+    pub index: u16,
+    pub topic: u8,
+}
+
+impl DialogueEvent {
+    /// The player started talking.
+    pub const OPENED: u8 = 0;
+    /// The conversation ended: the player closed it, walked off, or died.
+    pub const CLOSED: u8 = 1;
+    /// The player asked about a topic, or went back to the menu.
+    pub const TOPIC: u8 = 2;
+}
+
+/// A quest's state changed (WASM event kind 32): `npc` is the giver's index in the scenario's
+/// `npcs`, `state` the new state (1 taken up, 2 done).
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct QuestEvent {
+    pub npc: u16,
+    pub state: u8,
+}
+
+/// The Mirror's preset and dye changed (WASM event kind 33).
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct AppearanceEvent {
+    pub preset: u8,
+    pub dye: u8,
 }
 
 /// What happened to an Echo (WASM event kind 21). `kind` is one of the consts. `echo` is the

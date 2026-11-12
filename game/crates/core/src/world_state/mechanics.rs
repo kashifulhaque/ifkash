@@ -266,8 +266,11 @@ pub fn sync_colliders(world: &mut World) {
 /// let go of one) the attack, guard, dodge, jump, item, and lock-on buttons are cleared.
 /// `None` means use the input as it is.
 pub fn mask_input(world: &World, input: &TickInput) -> Option<TickInput> {
+    // A safe zone (Hollowhearth, WP-068) clears the combat buttons and caps the stick.
+    let safe = crate::world_state::quests::safe_zone_input(world, input);
+    let input = safe.as_ref().unwrap_or(input);
     if world.mech.climb.is_none() && !world.mech.suppress {
-        return None;
+        return safe;
     }
     let mut masked = input.clone();
     masked.frame.buttons &= !LADDER_BLOCKED;

@@ -1,0 +1,45 @@
+// Hollowhearth's stations (WP-068): the Archive shelves, the Ledger Stand, the Mirror, the
+// keepsake table, and the Hearth. The facts a station shows are named here and pulled from
+// src/lib/content.ts by the browser. The Hearth's inscription is the owner's name and tagline,
+// drawn by the browser from content.ts.
+[
+  (
+    id: "stn_archive",
+    kind: Archive,
+    name: "The Archive shelves",
+    line: "Shelves of loose pages and bound writing, each one a Letter left by the Wayfarer.",
+    facts: [(section: "blog", slug: "*")],
+  ),
+  (
+    id: "stn_ledger",
+    kind: Ledger,
+    name: "The Ledger Stand",
+    line: "A stand of dark wood with the Wayfarer's Ledger open on it. A bookmark marks the page that matters.",
+    facts: [(section: "resume", slug: "*")],
+  ),
+  (
+    id: "stn_mirror",
+    kind: Mirror,
+    name: "The Mirror",
+    line: "A tall glass in a frame of roots. It shows you a little more clearly than you showed yourself.",
+    presets: ["Wayfarer", "Pilgrim", "Reedwalker", "Exile"],
+    dyes: [
+      (name: "None"),
+      (name: "Opencode", unlock_flag: Some("dye.opencode")),
+    ],
+  ),
+  (
+    id: "stn_keepsakes",
+    kind: Keepsakes,
+    name: "The keepsake table",
+    line: "A low table of small things that have no story of their own yet. Each one is only a fact, waiting for a better name.",
+    facts: [(section: "projects", slug: "*")],
+    unmapped_only: true,
+  ),
+  (
+    id: "stn_hearth",
+    kind: Hearth,
+    name: "The Hearth",
+    line: "The fire in the middle has been lit longer than anyone has been counting. An inscription runs around its stone.",
+  ),
+]

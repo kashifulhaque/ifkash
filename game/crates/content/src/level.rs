@@ -57,7 +57,7 @@ use serde::{Deserialize, Serialize};
 use crate::Scenario;
 use crate::scenario::{
     BossSpawn, BoxCollider, Chest, Door, Dummy, EnemySpawn, Heightfield, HollowWall, Ladder,
-    Lantern, Lever, LeverTarget, Lift, Message, Pickup, Pool, Zone,
+    Lantern, Lever, LeverTarget, Lift, Message, NpcSpawn, Pickup, Pool, StationSpawn, Zone,
 };
 
 /// The files an area directory can hold, in load order.
@@ -135,6 +135,9 @@ pub struct Area {
     /// Spell IDs the player knows from the start (test areas).
     #[serde(default)]
     pub player_spells: Vec<String>,
+    /// A safe place (WP-068): no combat, weapons sheathed, walk only (Hollowhearth).
+    #[serde(default)]
+    pub safe_zone: bool,
 }
 
 /// An axis-aligned rectangle on the ground plane, as (x, z) corners in meters.
@@ -818,6 +821,10 @@ pub enum Entity {
     Pool(Pool),
     /// Deep snow: slows and costs more stamina to sprint through (WP-042).
     Snow(Zone),
+    /// A person to talk to (WP-068).
+    Npc(NpcSpawn),
+    /// A station: the Archive shelves, the Ledger Stand, the Mirror (WP-068).
+    Station(StationSpawn),
 }
 
 impl Entity {
@@ -840,6 +847,8 @@ impl Entity {
             Self::Message(_) => "Message",
             Self::Pool(_) => "Pool",
             Self::Snow(_) => "Snow",
+            Self::Npc(_) => "Npc",
+            Self::Station(_) => "Station",
         }
     }
 
@@ -860,6 +869,8 @@ impl Entity {
             Self::Chest(c) => &c.id,
             Self::Message(m) => &m.id,
             Self::Pool(p) => &p.name,
+            Self::Npc(n) => &n.npc,
+            Self::Station(s) => &s.station,
         }
     }
 
@@ -878,6 +889,8 @@ impl Entity {
             Self::Lever(l) => Some(l.pos),
             Self::Chest(c) => Some(c.pos),
             Self::Message(m) => Some(m.pos),
+            Self::Npc(n) => Some(n.pos),
+            Self::Station(s) => Some(s.pos),
             Self::Water(_)
             | Self::Reeds(_)
             | Self::Snow(_)
@@ -1505,6 +1518,9 @@ impl Level {
             player_spells: self.area.player_spells.clone(),
             echo_stones: Vec::new(),
             echoes_unlocked: Vec::new(),
+            npcs: Vec::new(),
+            stations: Vec::new(),
+            safe_zone: self.area.safe_zone,
         };
         for e in &self.entities.entities {
             match e {
@@ -1524,6 +1540,8 @@ impl Level {
                 Entity::Message(m) => sc.messages.push(m.clone()),
                 Entity::Pool(p) => sc.pools.push(p.clone()),
                 Entity::Snow(z) => sc.snow.push(z.clone()),
+                Entity::Npc(n) => sc.npcs.push(n.clone()),
+                Entity::Station(s) => sc.stations.push(s.clone()),
             }
         }
         sc.check().map_err(|e| format!("entities.ron: {e}"))?;
@@ -1564,6 +1582,7 @@ mod tests {
                 start_glimmer: 0,
                 player_weapon: None,
                 player_spells: Vec::new(),
+                safe_zone: false,
             },
             terrain: Some(Terrain {
                 spacing_m: 1.0,

@@ -76,16 +76,50 @@ impl ActionFrame {
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Command {
     Rest,
-    LevelUp { attribute: u8 },
-    Equip { slot: u8, item: u32 },
-    Unequip { slot: u8 },
-    UseItem { slot: u8 },
+    LevelUp {
+        attribute: u8,
+    },
+    Equip {
+        slot: u8,
+        item: u32,
+    },
+    Unequip {
+        slot: u8,
+    },
+    UseItem {
+        slot: u8,
+    },
     Gesture(u16),
-    SplitFlasks { vigil: u8 },
-    Travel { lantern: u8 },
-    Respec { attributes: [u16; 7] },
-    Upgrade { slot: u8 },
-    Temper { slot: u8, temper: u8 },
+    SplitFlasks {
+        vigil: u8,
+    },
+    Travel {
+        lantern: u8,
+    },
+    Respec {
+        attributes: [u16; 7],
+    },
+    Upgrade {
+        slot: u8,
+    },
+    Temper {
+        slot: u8,
+        temper: u8,
+    },
+    /// While talking to an NPC (WP-068): ask about topic `topic`, an index into the NPC's
+    /// topics; 254 is the quest line (it takes the quest up, or turns it in), and 255 goes
+    /// back to the NPC's menu. The core decides whether it does anything.
+    Ask {
+        topic: u8,
+    },
+    /// Ends the conversation (WP-068).
+    EndTalk,
+    /// While at the Mirror (WP-068): sets the appearance preset and the dye (indexes into the
+    /// Mirror's `presets` and `dyes`). A dye the player doesn't own changes nothing.
+    Appearance {
+        preset: u8,
+        dye: u8,
+    },
 }
 
 /// Everything the simulation consumes in one tick.

@@ -100,7 +100,9 @@ impl LfWorld {
     /// call), by `kind`: 0 Rest, 1 LevelUp (`a` is the attribute, 0 to 6), 2 Equip (`a` is
     /// the slot, `b` the item), 3 Unequip (`a` the slot), 4 UseItem (`a` the quick slot),
     /// 5 Gesture (`a`), 6 SplitFlasks (`a` is the Vigil Flask's charges), 7 Travel (`a` is
-    /// the Lantern's index). Returns false, queuing nothing, for an unknown kind or an
+    /// the Lantern's index), and the dialogue commands (WP-068): 40 Ask (`a` is a topic of the
+    /// open NPC's menu, 254 for its quest, 255 to go back), 41 EndTalk, 42 Appearance (`a`
+    /// is the Mirror's preset, `b` its dye). Returns false, queuing nothing, for an unknown kind or an
     /// operand that doesn't fit its type. The core decides whether the command does
     /// anything; the host records `(tick_count(), kind, a, b)` for replays.
     pub fn queue_command(&mut self, kind: u32, a: u32, b: u32) -> bool {
@@ -193,6 +195,13 @@ impl LfWorld {
     ///   2 dismissed, 3 bowed to, 4 the Bell was rung and nothing came), the Echo's registry
     ///   number, the body it concerns (`pack_id`; `0xFFFFFFFF` for none), and for 4 why (1 no
     ///   Echo Stone in reach, 2 no Echo owned, 3 not enough FP, 4 an Echo is already out).
+    /// - Kind 31, `Dialogue` (WP-068), 5 words: kind, what happened (0 opened, 1 closed, 2 the
+    ///   topic changed), what is open (0 an NPC, 1 a station), its index in the scenario's
+    ///   NPCs or stations, and the open topic (0 the menu, a topic's index plus one, 255 the
+    ///   quest line).
+    /// - Kind 32, `Quest` (WP-068), 3 words: kind, the giver's index in the scenario's NPCs,
+    ///   the new state (1 taken up, 2 done).
+    /// - Kind 33, `Appearance` (WP-068), 3 words: kind, the Mirror's preset, and its dye.
     pub fn drain_events(&mut self) -> Vec<u32> {
         let mut out = Vec::new();
         for event in self.world.events.drain() {
@@ -288,6 +297,21 @@ impl LfWorld {
                 }
                 Event::Boss(e) => {
                     out.extend([11, u32::from(e.boss), u32::from(e.kind), u32::from(e.phase)]);
+                }
+                Event::Dialogue(e) => {
+                    out.extend([
+                        31,
+                        u32::from(e.what),
+                        u32::from(e.target),
+                        u32::from(e.index),
+                        u32::from(e.topic),
+                    ]);
+                }
+                Event::Quest(e) => {
+                    out.extend([32, u32::from(e.npc), u32::from(e.state)]);
+                }
+                Event::Appearance(e) => {
+                    out.extend([33, u32::from(e.preset), u32::from(e.dye)]);
                 }
                 Event::Echo(e) => {
                     out.extend([
@@ -488,8 +512,41 @@ impl LfWorld {
         if lf_core::world_state::lantern::in_reach(&self.world).is_some() {
             1
         } else {
-            lf_core::world_state::mechanics::prompt(&self.world)
+            match lf_core::world_state::mechanics::prompt(&self.world) {
+                // 8 speak with someone, 9 use a station (WP-068).
+                0 => lf_core::world_state::quests::prompt(&self.world),
+                code => code,
+            }
         }
+    }
+
+    /// The dialogue as floats (WP-068): see `lf_core::world_state::quests::render_state` for
+    /// the layout. Read-only.
+    pub fn dialogue_state(&self) -> Vec<f32> {
+        lf_core::world_state::quests::render_state(&self.world)
+    }
+
+    /// The definition of the NPC at `index` of the scenario's NPCs as JSON (its name, role,
+    /// greetings, topics, and quest); empty if none (WP-068). Facts are named by section and
+    /// slug, never written out.
+    pub fn npc_json(&self, index: u32) -> String {
+        self.world
+            .layout
+            .npcs
+            .get(index as usize)
+            .map(|n| n.def.to_json())
+            .unwrap_or_default()
+    }
+
+    /// The definition of the station at `index` of the scenario's stations as JSON; empty if
+    /// none (WP-068).
+    pub fn station_json(&self, index: u32) -> String {
+        self.world
+            .layout
+            .stations
+            .get(index as usize)
+            .map(|s| s.def.to_json())
+            .unwrap_or_default()
     }
 
     /// The text of the authored message at `index` of the scenario's messages; empty if

@@ -24,6 +24,7 @@ pub mod level;
 pub mod locomotion;
 pub mod moves;
 pub mod nav;
+pub mod npc;
 pub mod portfolio;
 pub mod projectiles;
 pub mod registry;
@@ -45,6 +46,7 @@ pub use level::{KitCatalog, Kits, Level};
 pub use locomotion::{Death, EquipLoad, Guard, LockOn, Locomotion, Poise};
 pub use moves::Move;
 pub use nav::NavConfig;
+pub use npc::{NpcDef, StationDef};
 pub use portfolio::{Portfolio, PortfolioContent};
 pub use projectiles::{Homing, ProjectileDef};
 pub use registry::{NumId, Registry};
@@ -90,6 +92,9 @@ const BOSSES_DIR: &str = "bosses";
 const ECHOES_DIR: &str = "echoes";
 /// The Echo rules file (relative to the data root).
 const ECHO_RULES_FILE: &str = "echoes/rules.ron";
+/// Directory (relative to the data root) holding NPC definitions, one per file, and
+/// `stations.ron` (WP-068).
+const NPCS_DIR: &str = "npcs";
 /// The shared AI tuning file (relative to the data root).
 const AI_FILE: &str = "ai.ron";
 /// Directory (relative to the data root) holding kit catalogs, one per file.
@@ -633,6 +638,32 @@ const EMBEDDED_ECHOES: &[(&str, &str)] = &[
         include_str!("../../../data/echoes/echo_briar_hounds.ron"),
     ),
 ];
+const EMBEDDED_NPCS: &[(&str, &str)] = &[
+    (
+        "npcs/archivist.ron",
+        include_str!("../../../data/npcs/archivist.ron"),
+    ),
+    (
+        "npcs/cartographer.ron",
+        include_str!("../../../data/npcs/cartographer.ron"),
+    ),
+    (
+        "npcs/smith.ron",
+        include_str!("../../../data/npcs/smith.ron"),
+    ),
+    (
+        "npcs/courier.ron",
+        include_str!("../../../data/npcs/courier.ron"),
+    ),
+    (
+        "npcs/peddler.ron",
+        include_str!("../../../data/npcs/peddler.ron"),
+    ),
+    (
+        "npcs/stations.ron",
+        include_str!("../../../data/npcs/stations.ron"),
+    ),
+];
 const EMBEDDED_AI: &str = include_str!("../../../data/ai.ron");
 const EMBEDDED_ENEMIES: &[(&str, &str)] = &[
     (
@@ -821,6 +852,18 @@ const EMBEDDED_LEVELS: &[(&str, &str)] = &[
         "levels/test_field/dressing.ron",
         include_str!("../../../data/levels/test_field/dressing.ron"),
     ),
+    (
+        "levels/hollowhearth/area.ron",
+        include_str!("../../../data/levels/hollowhearth/area.ron"),
+    ),
+    (
+        "levels/hollowhearth/layout.ron",
+        include_str!("../../../data/levels/hollowhearth/layout.ron"),
+    ),
+    (
+        "levels/hollowhearth/entities.ron",
+        include_str!("../../../data/levels/hollowhearth/entities.ron"),
+    ),
 ];
 
 /// All parsed content.
@@ -903,6 +946,13 @@ pub struct Content {
     /// same key, so [`Content::scenario`] finds it by name.
     #[cfg_attr(feature = "ts", ts(skip))]
     pub levels: BTreeMap<String, Level>,
+    /// NPC definitions keyed by file path relative to the data root, for example
+    /// `npcs/archivist.ron` (WP-068). Look one up by ID with [`Content::npc_by_id`].
+    #[cfg_attr(feature = "ts", ts(skip))]
+    pub npcs: BTreeMap<String, NpcDef>,
+    /// The stations of `npcs/stations.ron` (WP-068), in file order.
+    #[cfg_attr(feature = "ts", ts(skip))]
+    pub stations: Vec<StationDef>,
 }
 
 /// A failure to load content. Validation problems are [`Issue`]s instead.
@@ -1100,6 +1150,7 @@ impl Content {
         .with_enemies(ai.as_deref(), list(ENEMIES_DIR)?)?
         .with_bosses(list(BOSSES_DIR)?)?
         .with_echoes(list(ECHOES_DIR)?)?
+        .with_npcs(list(NPCS_DIR)?)?
         .with_levels(list(KITS_DIR)?, list_levels(dir)?)
     }
 
@@ -1129,6 +1180,7 @@ impl Content {
         .with_enemies(Some(EMBEDDED_AI), own(EMBEDDED_ENEMIES))?
         .with_bosses(own(EMBEDDED_BOSSES))?
         .with_echoes(own(EMBEDDED_ECHOES))?
+        .with_npcs(own(EMBEDDED_NPCS))?
         .with_levels(own(EMBEDDED_KITS), own(EMBEDDED_LEVELS))
     }
 
@@ -1175,6 +1227,8 @@ impl Content {
             echoes: BTreeMap::new(),
             kits: BTreeMap::new(),
             levels: BTreeMap::new(),
+            npcs: BTreeMap::new(),
+            stations: Vec::new(),
         };
         content.check_registered()?;
         Ok(content)
@@ -1418,6 +1472,50 @@ impl Content {
         Ok(self)
     }
 
+    /// Adds the NPC files as `(npcs/<file>, text)` (WP-068): one `NpcDef` each, and
+    /// `npcs/stations.ron` (a list of `StationDef`). Fails on an ID that has no registry
+    /// entry, or on an NPC or station listed twice.
+    pub fn with_npcs(mut self, files: Vec<(String, String)>) -> Result<Self, ContentError> {
+        for (path, text) in files {
+            if path == npc::STATIONS_FILE {
+                let list: Vec<StationDef> = parse(&path, &text)?;
+                for (i, s) in list.iter().enumerate() {
+                    self.check_id(&path, format!("[{i}].id"), &s.id)?;
+                    if self.stations.iter().any(|o| o.id == s.id) {
+                        return Err(ContentError::Parse {
+                            file: path.clone(),
+                            message: format!("station {:?} is listed twice", s.id),
+                        });
+                    }
+                    self.stations.push(s.clone());
+                }
+                continue;
+            }
+            let def: NpcDef = parse(&path, &text)?;
+            for (field, id) in def.references() {
+                self.check_id(&path, field, id)?;
+            }
+            if self.npc_by_id(&def.id).is_some() {
+                return Err(ContentError::Parse {
+                    file: path,
+                    message: format!("NPC {:?} is listed twice", def.id),
+                });
+            }
+            self.npcs.insert(path, def);
+        }
+        Ok(self)
+    }
+
+    /// Finds an NPC definition by string ID.
+    pub fn npc_by_id(&self, id: &str) -> Option<&NpcDef> {
+        self.npcs.values().find(|n| n.id == id)
+    }
+
+    /// Finds a station definition by string ID.
+    pub fn station_by_id(&self, id: &str) -> Option<&StationDef> {
+        self.stations.iter().find(|s| s.id == id)
+    }
+
     /// Finds an Echo definition by string ID.
     pub fn echo_by_id(&self, id: &str) -> Option<&EchoDef> {
         self.echoes.values().find(|e| e.id == id)
@@ -1486,6 +1584,19 @@ impl Content {
             for d in &scenario.doors {
                 if let scenario::DoorKind::Keyed(key) = &d.kind {
                     self.check_id(&entities, format!("door {}: key", d.id), key)?;
+                }
+            }
+            for n in &scenario.npcs {
+                if self.npc_by_id(&n.npc).is_none() {
+                    return Err(err(format!("npc {:?} has no definition in npcs/", n.npc)));
+                }
+            }
+            for s in &scenario.stations {
+                if self.station_by_id(&s.station).is_none() {
+                    return Err(err(format!(
+                        "station {:?} has no definition in npcs/stations.ron",
+                        s.station
+                    )));
                 }
             }
             if self.scenario(name).is_some() {

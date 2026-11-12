@@ -1,0 +1,75 @@
+// The Hollowhearth layout (WP-068): greybox blocks (scaled `block_unit`, centered on `pos`).
+// Y is up; the floor is 0 m everywhere. The hub is a 60 x 60 m hollow:
+//   root-door       (  0, -29)   the way in, a sealed arch in the south wall
+//   L00 Lantern     (  0, -24)   the arrival point; the player spawns beside it
+//   the Hearth      (  0,   0)   the central fire, with its inscription
+//   Archive shelves (-27,   8)   west wall; the Archivist's desk at (-21, 16)
+//   keepsake table  (-24,  -8)   beside the Archive
+//   map table       (-14, -14.5) the Cartographer's desk
+//   forge and counter (21..25, -6) the Smith, on the east side
+//   mail counter    ( 21,  12)   the Courier
+//   wares counter   ( 10, -18)   the Peddler, near the door
+//   Ledger Stand    (  8,  24)   north, east of the Mirror
+//   the Mirror      ( -8,  26)   north wall
+// Every NPC stands behind a counter, 1.4 m back, so the player stops at the counter and is
+// within the NPC's talk radius. The walks between features are checked by the test in
+// world_state/quests.rs.
+(
+  landmarks: [
+    // --- Floor ---------------------------------------------------------------------------
+    (name: "floor", kit: "block_unit", pos: (0.0, -0.5, 0.0), scale: (60.0, 1.0, 60.0)),
+
+    // --- The trunk wall: 12 m tall, 2 m thick, on the edge of the hollow ---------------------
+    (name: "wall_n", kit: "block_unit", pos: (0.0, 6.0, 29.0), scale: (60.0, 12.0, 2.0)),
+    (name: "wall_e", kit: "block_unit", pos: (29.0, 6.0, 0.0), scale: (2.0, 12.0, 60.0)),
+    (name: "wall_w", kit: "block_unit", pos: (-29.0, 6.0, 0.0), scale: (2.0, 12.0, 60.0)),
+    // The south wall has the root-door: two jambs and a lintel, with the sealed door in them.
+    (name: "wall_s_w", kit: "block_unit", pos: (-16.0, 6.0, -29.0), scale: (28.0, 12.0, 2.0)),
+    (name: "wall_s_e", kit: "block_unit", pos: (16.0, 6.0, -29.0), scale: (28.0, 12.0, 2.0)),
+    (name: "door_lintel", kit: "block_unit", pos: (0.0, 9.0, -29.0), scale: (4.0, 6.0, 2.0)),
+    (name: "door_sealed", kit: "block_unit", pos: (0.0, 3.0, -28.4), scale: (4.0, 6.0, 0.8)),
+
+    // --- Roots: tall columns along the walls ---------------------------------------------------
+    (name: "root_nw", kit: "block_unit", pos: (-25.0, 7.0, 25.0), scale: (4.0, 14.0, 4.0)),
+    (name: "root_ne", kit: "block_unit", pos: (25.0, 7.0, 25.0), scale: (4.0, 14.0, 4.0)),
+    (name: "root_sw", kit: "block_unit", pos: (-25.0, 7.0, -25.0), scale: (4.0, 14.0, 4.0)),
+    (name: "root_se", kit: "block_unit", pos: (25.0, 7.0, -25.0), scale: (4.0, 14.0, 4.0)),
+    (name: "root_w_mid", kit: "block_unit", pos: (-27.0, 6.0, -16.0), scale: (3.0, 12.0, 3.0)),
+    (name: "root_e_mid", kit: "block_unit", pos: (27.0, 6.0, 20.0), scale: (3.0, 12.0, 3.0)),
+    (name: "root_n_mid", kit: "block_unit", pos: (0.0, 6.0, 27.0), scale: (3.0, 12.0, 3.0)),
+
+    // --- The Hearth: the central fire -------------------------------------------------------------
+    (name: "hearth_stone", kit: "block_unit", pos: (0.0, 0.4, 0.0), scale: (3.0, 0.8, 3.0)),
+    (name: "hearth_flame", kit: "block_unit", pos: (0.0, 1.1, 0.0), scale: (1.0, 0.6, 1.0)),
+
+    // --- The Archive: shelves on the west wall -------------------------------------------------------
+    (name: "archive_shelves_a", kit: "block_unit", pos: (-27.5, 2.0, 3.0), scale: (2.0, 4.0, 4.0)),
+    (name: "archive_shelves_b", kit: "block_unit", pos: (-27.5, 2.0, 8.0), scale: (2.0, 4.0, 4.0)),
+    (name: "archive_shelves_c", kit: "block_unit", pos: (-27.5, 2.0, 13.0), scale: (2.0, 4.0, 4.0)),
+    // The Archivist's desk (the Archivist stands behind it, at (-21, 17.4)).
+    (name: "archivist_desk", kit: "block_unit", pos: (-21.0, 0.5, 16.0), scale: (5.0, 1.0, 1.0)),
+    // The keepsake table.
+    (name: "keepsake_table", kit: "block_unit", pos: (-24.0, 0.45, -8.0), scale: (2.4, 0.9, 4.0)),
+
+    // --- The Cartographer: a map table (the Cartographer stands behind it, at (-14, -15.9)) -----------
+    (name: "map_table", kit: "block_unit", pos: (-14.0, 0.5, -14.5), scale: (5.0, 1.0, 1.0)),
+    (name: "map_chest", kit: "block_unit", pos: (-19.0, 0.4, -18.0), scale: (1.6, 0.8, 1.0)),
+
+    // --- The Smith: counter, anvil, and forge (the Smith stands at (22.4, -6)) --------------------------
+    (name: "smith_counter", kit: "block_unit", pos: (21.0, 0.5, -6.0), scale: (1.0, 1.0, 5.0)),
+    (name: "smith_anvil", kit: "block_unit", pos: (25.0, 0.7, -6.0), scale: (2.0, 1.4, 3.0)),
+    (name: "smith_forge", kit: "block_unit", pos: (27.0, 1.5, -11.0), scale: (3.0, 3.0, 3.0)),
+
+    // --- The Courier: a mail counter (the Courier stands at (22.4, 12)) ---------------------------------
+    (name: "courier_counter", kit: "block_unit", pos: (21.0, 0.5, 12.0), scale: (1.0, 1.0, 5.0)),
+    (name: "courier_racks", kit: "block_unit", pos: (27.0, 1.5, 12.0), scale: (1.0, 3.0, 6.0)),
+
+    // --- The Peddler: a wagon and a counter (the Peddler stands at (10, -19.4)) ---------------------------
+    (name: "peddler_counter", kit: "block_unit", pos: (10.0, 0.5, -18.0), scale: (5.0, 1.0, 1.0)),
+    (name: "peddler_wagon", kit: "block_unit", pos: (10.0, 1.0, -23.5), scale: (5.0, 2.0, 3.0)),
+
+    // --- Ledger Stand and the Mirror, on the north side ------------------------------------------------------
+    (name: "ledger_stand", kit: "block_unit", pos: (8.0, 0.6, 24.0), scale: (1.4, 1.2, 1.4)),
+    (name: "mirror_frame", kit: "block_unit", pos: (-8.0, 1.6, 26.0), scale: (3.0, 3.2, 0.4)),
+  ],
+)

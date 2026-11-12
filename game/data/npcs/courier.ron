@@ -1,0 +1,48 @@
+// The Courier (WP-068): how to reach the Wayfarer. The Courier's menu lists every `contact`
+// entry from the first conversation. The quest: three lost mail satchels, in the Verge,
+// Mirrormere, and Rimeshelf (pickup ids below; the pickup raises `pickup.<id>.taken`). The
+// reward is the PoliteLlama Echo, which unlocks through its flag (echoes/echo_politellama.ron).
+(
+  id: "npc_courier",
+  name: "The Courier",
+  role: "Letters and how to reach the Wayfarer",
+  greeting: (
+    before: "Post for the Wayfarer, post from the Wayfarer, and post that went astray on the way. Ask away.",
+    during: "Two satchels still out there, I would wager. Letters do not walk themselves, but they do get lost.",
+    after: "All three satchels, and the post is flowing again. You are a decent sort.",
+  ),
+  farewell: "I will be here. The post always is.",
+  topics: [
+    (
+      id: "reach",
+      label: "How to reach the Wayfarer",
+      line: "Every road I know leads to one of these. Pick the one you like and write.",
+      facts: [(section: "contact", slug: "*")],
+    ),
+    (
+      id: "post",
+      label: "About the post",
+      line: "I carry whatever I am handed, no questions asked, and I am rarely thanked. This is mostly fine.",
+    ),
+  ],
+  quest: Some((
+    id: "lost_satchels",
+    name: "Three Lost Satchels",
+    label: "About the lost satchels",
+    replies: (
+      before: "Three satchels went missing on my rounds: one in the Verge, one at Mirrormere, one on Rimeshelf. Find them and I will introduce you to a very polite friend.",
+      during: "Not all three yet. The Verge, Mirrormere, Rimeshelf: one satchel each, and they will be where the road was worst.",
+      after: "My three satchels, back in the post. The llama is waiting for you; say please.",
+    ),
+    needs: [
+      Flag("pickup.satchel_verge.taken"),
+      Flag("pickup.satchel_mirrormere.taken"),
+      Flag("pickup.satchel_rimeshelf.taken"),
+    ],
+    done_line: "All three. Here, a courteous llama spirit is yours. It bows before it fights, so do bow back.",
+    reward: (
+      flags: ["echo.politellama.unlocked"],
+      codex: ["projects.politellama"],
+    ),
+  )),
+)

@@ -1,0 +1,47 @@
+// The Smith (WP-068): weapon upgrades. The Smith's upgrades run at the Lantern menu
+// (WP-053); the quest raises `quest.forgeheart_ember.state`. The Forgeheart Ember is B08's
+// reward, an inventory key item the Smith inspects and the player keeps.
+(
+  id: "npc_smith",
+  name: "The Smith",
+  role: "Upgrades and tempering",
+  greeting: (
+    before: "Hands off the anvil, warm hands off the cold iron. What can I do for you?",
+    during: "Still no Ember? Then the steel stays where it is. Some metal waits for the right fire.",
+    after: "With the Ember in my forge there is nothing I cannot take further. Bring me your blade.",
+  ),
+  farewell: "Keep your edge clean and your sleeves short.",
+  topics: [
+    (
+      id: "upgrades",
+      label: "Upgrading a weapon",
+      line: "Glimmer and the right stone, and I will bring a weapon one step further. Rest at a Lantern and I will meet you there.",
+      service: Some(Upgrade),
+    ),
+    (
+      id: "tempering",
+      label: "Tempering",
+      line: "A common blade can learn a different temper: a new scaling, a touch of element. It forgets nothing it was.",
+    ),
+    (
+      id: "ember",
+      label: "About this hearth",
+      line: "It is warm, not hot. The real fire is the Forgeheart Ember, which the Maul's keeper holds far from here.",
+    ),
+  ],
+  quest: Some((
+    id: "forgeheart_ember",
+    name: "The Forgeheart Ember",
+    label: "About the Forgeheart Ember",
+    replies: (
+      before: "Past a certain edge, my hearth is too cold. Bring me the Forgeheart Ember from the foundry boss's keeping and I will take weapons up to +10.",
+      during: "Foundry and Maul, remember. Without the Ember I stop at the sixth step.",
+      after: "The Ember sits in my hearth now. Common weapons to +10, Starglass to +5: say the word.",
+    ),
+    needs: [Item("itm_forgeheart_ember")],
+    done_line: "There it is, the old red heart. Weapons up to +10 and Starglass to +5, whenever you like.",
+    reward: (
+      flags: ["smith.advanced_upgrades"],
+    ),
+  )),
+)

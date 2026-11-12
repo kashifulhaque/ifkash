@@ -18,7 +18,11 @@ pub fn run(data: &Path) -> ExitCode {
     let mut issues = content.validate();
     // The portfolio is separate from Content (not hashed), so load and check it here.
     match Portfolio::load_dir(data) {
-        Ok((portfolio, exported)) => issues.extend(portfolio.validate(&exported)),
+        Ok((portfolio, exported)) => {
+            issues.extend(portfolio.validate(&exported));
+            // The hub's NPCs must reach every portfolio entry (WP-068).
+            issues.extend(lf_content::npc::check_facts(&content, &exported));
+        }
         Err(e) => {
             eprintln!("error: {e}");
             return ExitCode::FAILURE;

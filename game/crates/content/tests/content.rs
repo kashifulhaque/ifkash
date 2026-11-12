@@ -175,6 +175,12 @@ fn hash_ignores_comments_and_whitespace() {
                     .map(|(p, t)| (p, format!("// noise\n{t}")))
                     .collect(),
             )?
+            .with_npcs(
+                ron_files("npcs")
+                    .into_iter()
+                    .map(|(p, t)| (p, format!("// noise\n{t}")))
+                    .collect(),
+            )?
             .with_levels(
                 ron_files("kits")
                     .into_iter()
@@ -185,6 +191,7 @@ fn hash_ignores_comments_and_whitespace() {
                     .chain(ron_files("levels/mechanics_yard"))
                     .chain(ron_files("levels/waking_hollow"))
                     .chain(ron_files("levels/verge"))
+                    .chain(ron_files("levels/hollowhearth"))
                     .map(|(p, t)| (p, format!("// noise\n{t}")))
                     .collect(),
             )

@@ -23,6 +23,7 @@ import {
   type Scene
 } from 'three';
 import { manifestUrl } from '../kits/manifest';
+import { HearthProps } from './hearth';
 
 type V3 = [number, number, number];
 
@@ -55,6 +56,8 @@ function ease(cur: number, goal: number, dt: number, ms = 90): number {
 
 export class PropsRenderer {
   private root = new Group();
+  /** Hollowhearth's NPCs and stations (WP-068). */
+  private hearth = new HearthProps(this.root);
   private geometries: BufferGeometry[] = [];
   private materials: Material[] = [];
   private updaters: Array<{ kind: StateKind; index: number; update: Updater; value: number }> = [];
@@ -103,6 +106,11 @@ export class PropsRenderer {
         any = true;
         continue;
       }
+      if (kind === 'Npc' || kind === 'Station') {
+        this.hearth.add(kind, d);
+        any = true;
+        continue;
+      }
       if (kind === 'Snow') {
         this.snow(d);
         any = true;
@@ -128,6 +136,7 @@ export class PropsRenderer {
   /** Moves the props toward the state. Call once per frame. */
   update(frameMs: number): void {
     this.clock += frameMs;
+    this.hearth.update(frameMs);
     for (const u of this.updaters) {
       const word = this.state[(this.offsets.get(u.kind) ?? 0) + u.index];
       if (word === undefined) continue;
@@ -137,6 +146,7 @@ export class PropsRenderer {
 
   dispose(): void {
     this.disposed = true;
+    this.hearth.dispose();
     this.scene.remove(this.root);
     for (const g of this.geometries) g.dispose();
     for (const m of this.materials) m.dispose();

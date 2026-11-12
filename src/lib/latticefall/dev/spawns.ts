@@ -56,10 +56,27 @@ const VERGE: Record<string, SpawnPoint> = {
   spire_view: { x: -40, z: -64, yaw: 0, note: 'the landmark view: L02 looking at the Spire' }
 };
 
+// Hollowhearth (WP-068): the spot in front of each NPC's counter and each station, facing it.
+const HOLLOWHEARTH: Record<string, SpawnPoint> = {
+  lantern: { x: 0, z: -21, yaw: 0, note: 'beside Lantern L00, facing the Hearth' },
+  hearth: { x: 0, z: -2.6, yaw: 0, note: 'at the Hearth and its inscription' },
+  archivist: { x: -21, z: 15, yaw: 0, note: 'at the Archivist\'s desk' },
+  archive: { x: -25, z: 8, yaw: -HALF_PI, note: 'at the Archive shelves' },
+  keepsakes: { x: -21.6, z: -8, yaw: -HALF_PI, note: 'at the keepsake table' },
+  cartographer: { x: -14, z: -13.5, yaw: Math.PI, note: 'at the Cartographer\'s map table' },
+  smith: { x: 20, z: -6, yaw: HALF_PI, note: 'at the Smith\'s counter' },
+  courier: { x: 20, z: 12, yaw: HALF_PI, note: 'at the Courier\'s counter' },
+  peddler: { x: 10, z: -17, yaw: Math.PI, note: 'at the Peddler\'s counter' },
+  ledger: { x: 8, z: 22.4, yaw: 0, note: 'at the Ledger Stand' },
+  mirror: { x: -8, z: 23.8, yaw: 0, note: 'before the Mirror' },
+  overview: { x: 0, z: -14, yaw: 0, note: 'mid-hall, looking north across the hub' }
+};
+
 const TABLES: Record<string, Record<string, SpawnPoint>> = {
   test_field: TEST_FIELD,
   waking_hollow: WAKING_HOLLOW,
   verge: VERGE,
+  hollowhearth: HOLLOWHEARTH,
   m0_flat: {
     far: { x: 40, z: 40, yaw: Math.PI, note: 'far corner of the flat floor' }
   }

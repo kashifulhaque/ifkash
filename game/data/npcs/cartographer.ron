@@ -1,0 +1,58 @@
+// The Cartographer (WP-068): the Wayfarer's work history and the map. The quest binds the
+// Chronicle Pages (one per work entry; see docs/game/08-portfolio-integration.md, "Chronicle
+// Pages") into *The Wayfarer's Chronicle*. Pages are pickups with the ids below; five slots
+// exist, and with four work entries one slot stays empty, so four pages finish the quest.
+(
+  id: "npc_cartographer",
+  name: "The Cartographer",
+  role: "Maps and the Wayfarer's road",
+  greeting: (
+    before: "A map is only a promise that someone walked there first. Sit, if you can find a clear stool.",
+    during: "Pages, pages. Every one you bring is another stretch of road I do not have to guess at.",
+    after: "The Chronicle is bound, and the map is better for it. What shall we look at?",
+  ),
+  farewell: "Mind the edges of the map. That is where all the interesting trouble is.",
+  topics: [
+    (
+      id: "current_post",
+      label: "Where the Wayfarer works now",
+      line: "The newest mark on my map, still drying. The plain card has the details.",
+      facts: [(section: "work", slug: "wand-ai")],
+    ),
+    (
+      id: "road",
+      label: "The whole road so far",
+      line: "Four stops, oldest to newest, each one a page in the Chronicle. Read them in order and the shape of the road shows.",
+      facts: [(section: "work", slug: "*")],
+    ),
+    (
+      id: "map",
+      label: "About the map",
+      line: "It fills in as you walk. Press M, and if reading a map is not your thing, the list view says the same in words.",
+    ),
+  ],
+  quest: Some((
+    id: "chronicle_pages",
+    name: "The Wayfarer's Chronicle",
+    label: "About the Chronicle Pages",
+    replies: (
+      before: "Pages from the Wayfarer's work lie scattered across the world, one to a place. Bring me every one and I will bind them into a Chronicle, with a pigment for your trouble.",
+      during: "Not yet bound. Look in the chapel, the village, the castle, the foundry, and at the very top of the Spire.",
+      after: "Bound and shelved. The pigment is yours: it recolors armor and the lantern's glow.",
+    ),
+    needs: [
+      Flag("pickup.page_chronicle_1.taken"),
+      Flag("pickup.page_chronicle_2.taken"),
+      Flag("pickup.page_chronicle_3.taken"),
+      Flag("pickup.page_chronicle_4.taken"),
+      Flag("pickup.page_chronicle_5.taken"),
+    ],
+    at_least: 4,
+    done_line: "Every page, and in order. Here is the Chronicle, and here is the pigment I promised.",
+    reward: (
+      flags: ["dye.opencode"],
+      codex: ["projects.opencode-theme"],
+      items: ["relic_opencode"],
+    ),
+  )),
+)

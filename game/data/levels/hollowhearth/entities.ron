@@ -1,0 +1,31 @@
+// The Hollowhearth entities (WP-068). +X is to the player's left while facing +Z. Yaw is in
+// radians from +Z toward +X: 0 faces +Z, 3.1415927 faces -Z, 1.5707964 faces +X, -1.5707964
+// faces -X.
+//
+// The player arrives beside Lantern L00 (any Lantern travels here once B01 is down) and
+// walks in. No enemies, no doors. Five NPCs and five stations; see npcs/*.ron for what they
+// say. Registry numbers used here (29000 block): npc_archivist 29000 .. npc_peddler 29004,
+// stn_archive 29100 .. stn_hearth 29104.
+(
+  // Just inside the root-door, facing the Hearth.
+  spawn: (pos: (0.0, 0.0, -21.0), yaw: 0.0),
+  entities: [
+    // --- The Lantern: L00 -------------------------------------------------------------------
+    Lantern(id: "lantern_l00", pos: (0.0, 0.0, -24.0), yaw: 0.0),
+
+    // --- The people ---------------------------------------------------------------------------------
+    // Each stands 1.4 m behind a counter, facing the side the player comes from.
+    Npc(npc: "npc_archivist", pos: (-21.0, 0.0, 17.4), yaw: 3.1415927),
+    Npc(npc: "npc_cartographer", pos: (-14.0, 0.0, -15.9), yaw: 0.0),
+    Npc(npc: "npc_smith", pos: (22.4, 0.0, -6.0), yaw: -1.5707964),
+    Npc(npc: "npc_courier", pos: (22.4, 0.0, 12.0), yaw: -1.5707964),
+    Npc(npc: "npc_peddler", pos: (10.0, 0.0, -19.4), yaw: 0.0),
+
+    // --- The stations -------------------------------------------------------------------------------
+    Station(station: "stn_hearth", pos: (0.0, 0.0, -2.6), yaw: 0.0),
+    Station(station: "stn_archive", pos: (-25.0, 0.0, 8.0), yaw: -1.5707964),
+    Station(station: "stn_keepsakes", pos: (-21.6, 0.0, -8.0), yaw: -1.5707964),
+    Station(station: "stn_ledger", pos: (8.0, 0.0, 22.4), yaw: 3.1415927),
+    Station(station: "stn_mirror", pos: (-8.0, 0.0, 23.8), yaw: 3.1415927),
+  ],
+)

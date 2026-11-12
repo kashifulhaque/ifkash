@@ -40,7 +40,9 @@ Copy this block to the top of the entries and fill it in as you go:
   - WP-021: done by opus (no escalation) in a worktree; commit `5e4f88b`; 181K worker
     tokens. The orchestrator rebased it onto WP-022, fixed one test for the renamed roll
     field, and rehashed the goldens. Guard wiring into the resolver moves to WP-023.
-  - WP-026: in progress (sonnet), in the main checkout in parallel with WP-021
+  - WP-026: done by sonnet (no escalation); commit `2964b82`; 180K worker tokens. The
+    orchestrator rebased it onto WP-021 (kept both sides in `actor/mod.rs` and
+    `world.rs`) and rehashed the goldens.
 - **Context:** orchestrator 126K + workers 181K = 307K after WP-020 (budget 500K).
   Started WP-022 rather than WP-021: an opus L worker would likely pass the hard stop.
   The owner then clarified the budget: 500K applies to each session and each agent

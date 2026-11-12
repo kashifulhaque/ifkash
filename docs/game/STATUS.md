@@ -49,7 +49,7 @@ The orchestrator owns this file. It follows these rules, from
 | 023 | Damage pipeline | combat | sonnet | todo |  |  | | | |
 | 024 | Poise, stance, parries, criticals | combat | sonnet | todo |  |  | | | |
 | 025 | Status effects and buffs | combat | sonnet | todo |  |  | | | |
-| 026 | Inventory, items, flasks | combat | sonnet | in progress |  | latticefall-m2 | game/m2-combat | 2026-11-12 | |
+| 026 | Inventory, items, flasks | combat | sonnet | done | sonnet, Opus-verified | latticefall-m2 | game/m2-combat | 2026-11-12 | `items/` (inventory, 16 equipment slots, quick slots, `ItemTable`); commands `Equip`, `Unequip`, `UseItem`, `SplitFlasks`; `flask_drink` move (30 frames, heals and spends the charge on frame 16; a stagger before then: no heal, no charge lost; 40% walk, no sprint or jump). Start split 3 Vigil / 1 Lucid (tuning). Equipped right weapon sets the moveset. consumables.ron has flask rules and 21 items (added `itm_glimmer_vial_large`, `itm_arrows_fire`, `itm_arrows_storm`); registry 3010, 4000-4021. Not done: non-flask item effects (WP-057), world pickups, HUD snapshot record (ActorSnap untouched; WP-045), FlaskDrunk/ItemPickedUp events. `SplitFlasks` not gated on a Lantern: WP-029 must gate it and call `refill_flasks()` on rest. Goldens: m0_random_3000 -> aca8a8a694ae262b, m1_movement -> bd2f62d7deb6f767, m2_three_hit_chain -> e01931055715e740; content hash 248501ccf6df8ff1. Native = WASM = Python. WASM 408,444 B gzipped. |
 | 027 | Projectiles | combat | sonnet | todo |  |  | | | |
 | 028 | Combat VFX | render | sonnet | todo |  |  | | | |
 | 029 | Death, Remnants, Lanterns | core | sonnet | todo |  |  | | | |

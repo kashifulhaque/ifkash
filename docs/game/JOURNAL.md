@@ -28,6 +28,15 @@ Copy this block to the top of the entries and fill it in as you go:
 
 ## Entries
 
+### 2026-11-12: latticefall-m1c (M1: WP-014, gate G1)
+
+- **Orchestrator:** Sonnet 5.5; started from `origin/main` at `9263599`
+- **Branch:** `game/m1-devtools`
+- **Started from:** `origin/main` at `9263599` (the local `main` was behind it; fast-forwarded)
+- **WPs:**
+  - WP-014: claimed; worker sonnet
+- **Next steps:** finish WP-014, measure WASM ticks per second, stop at gate G1.
+
 ### 2026-11-12: latticefall-m1b (M1: WP-015, WP-012, WP-014, gate G1)
 
 - **Orchestrator:** Opus 5.5, low effort; side session started from `latticefall-m1`

@@ -40,7 +40,7 @@ pub struct ActorSnap {
     pub id: u32,
     /// Content ID of the actor type, for model lookup. 0 until actor kinds exist.
     pub kind: u16,
-    /// See [`flags`]. Only dead and locked target are set so far.
+    /// See [`flags`]. Only dead, invulnerable (i-frames), and locked target are set so far.
     pub flags: u16,
     /// Meters.
     pub pos: [f32; 3],
@@ -77,11 +77,18 @@ pub fn write_snapshot(world: &World, out: &mut Vec<ActorSnap>) {
         if locked == Some(id) {
             bits |= flags::LOCKED_TARGET;
         }
+        if actor.moves.has(crate::combat::moves::flags::IFRAMES) {
+            bits |= flags::INVULNERABLE;
+        }
+        let current = actor.moves.current;
         out.push(ActorSnap {
             id: pack_id(id),
             flags: bits,
             pos: actor.pos,
             yaw: actor.yaw,
+            // The move's registry number (0 for none); registry numbers fit in a u16.
+            move_id: current.map_or(0, |c| u16::try_from(c.num).unwrap_or(u16::MAX)),
+            move_frame: current.map_or(0, |c| c.frame),
             hp_frac: if actor.max_hp > 0 {
                 actor.hp as f32 / actor.max_hp as f32
             } else {

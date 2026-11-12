@@ -25,6 +25,8 @@
   stamina_regen_delay_ticks: 15, // Regeneration: after 15 ticks without spending
   stub_vitality: 10, // stub until characters have attributes
   stub_endurance: 10, // stub until characters have attributes
+  stub_focus: 10, // stub until characters have attributes
+  input_buffer_ticks: 8, // Input buffer: buffered for up to 8 ticks
   fall_damage_from_m: 8.0, // Traversal, Fall damage: over 8 m
   fall_damage_per_m: 0.04, // Traversal, Fall damage: 4% of max HP per meter above 8
   fall_death_over_m: 20.0, // Traversal, Fall damage: over 20 m, death

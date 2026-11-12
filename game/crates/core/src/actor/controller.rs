@@ -62,6 +62,13 @@ pub fn intent(a: &mut Actor, frame: ActionFrame, lock_pos: Option<[f32; 3]>, t: 
         a.vel[2] = 0.0;
         return;
     }
+    // A move owns the velocity and facing until its `cancel_any_from` frame
+    // (combat::moves sets them from root motion and tracking).
+    if a.moves.locks_movement() {
+        a.vel[0] = 0.0;
+        a.vel[2] = 0.0;
+        return;
+    }
     if let Some(p) = lock_pos {
         a.yaw = super::targeting::bearing(a.pos, p, a.yaw);
     }

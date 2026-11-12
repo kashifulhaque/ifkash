@@ -64,8 +64,9 @@ fn changing_one_input_fails_at_the_next_checkpoint() {
     let good = Replay::decode(&std::fs::read(&path).unwrap()).unwrap();
     let content = content();
     let mut frames = expand(&good.frames);
-    // The stick only steers a player that is on the ground, out of landing recovery, and
-    // alive; in the air it keeps its takeoff velocity. Record which ticks it steers.
+    // The stick only steers a player that is on the ground, out of landing recovery,
+    // alive, and not locked in a move; in the air it keeps its takeoff velocity. Record
+    // which ticks it steers.
     let steerable: Vec<bool> = {
         use lf_core::input::TickInput;
         use lf_core::{World, tick};
@@ -73,8 +74,9 @@ fn changing_one_input_fails_at_the_next_checkpoint() {
         frames
             .iter()
             .map(|&frame| {
-                let m = &w.actors.get(w.player).unwrap().motor;
-                let free = m.grounded && m.landing == 0;
+                let p = w.actors.get(w.player).unwrap();
+                let m = &p.motor;
+                let free = m.grounded && m.landing == 0 && !p.moves.locks_movement();
                 tick(
                     &mut w,
                     &TickInput {
@@ -87,11 +89,15 @@ fn changing_one_input_fails_at_the_next_checkpoint() {
             .collect()
     };
     let last = frames.len() - 1;
-    // Each target, moved forward to the first tick where the stick steers (no later than
-    // its checkpoint, so the expected checkpoint stays the same).
+    // Each target, moved to the nearest tick where the stick steers inside the same
+    // checkpoint window (forward first, then back), so the expected checkpoint stays the
+    // same. Attacks and dodges lock the stick for whole moves.
     for target in [0usize, 29, 30, 1234, last] {
-        let changed = (target..frames.len())
+        let window = target / 30 * 30..(target / 30 * 30 + 30).min(frames.len());
+        let changed = (target..window.end)
             .find(|&i| steerable[i])
+            .or_else(|| (window.start..target).rev().find(|&i| steerable[i]))
+            .or_else(|| (target..frames.len()).find(|&i| steerable[i]))
             .expect("a steerable tick");
         assert!(
             changed / 30 == target / 30 || target == last,

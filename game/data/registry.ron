@@ -30,5 +30,7 @@
     (id: "ss_jump_heavy", num: 2009),
     (id: "ss_plunge", num: 2010),
     (id: "ss_guard_counter", num: 2011),
+    (id: "ss_roll", num: 2012),
+    (id: "ss_backstep_dodge", num: 2013),
   ],
 )

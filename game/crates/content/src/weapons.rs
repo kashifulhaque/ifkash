@@ -61,6 +61,10 @@ pub struct Moveset {
     pub jump_heavy: String,
     pub plunge: String,
     pub guard_counter: String,
+    /// Roll: `DODGE` tapped with a direction (docs/game/03-combat.md, "Combat verbs").
+    pub dodge_roll: String,
+    /// Backstep: `DODGE` tapped with no direction.
+    pub dodge_backstep: String,
 }
 
 impl Moveset {
@@ -82,6 +86,8 @@ impl Moveset {
             ("jump_heavy", &self.jump_heavy),
             ("plunge", &self.plunge),
             ("guard_counter", &self.guard_counter),
+            ("dodge_roll", &self.dodge_roll),
+            ("dodge_backstep", &self.dodge_backstep),
         ] {
             out.push((format!("moveset.{field}"), id.as_str()));
         }

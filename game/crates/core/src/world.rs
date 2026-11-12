@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 pub use crate::actor::Actor;
 use crate::actor::Motor;
 use crate::arena::{Arena, Id};
+use crate::combat::moves::MoveTable;
 use crate::events::EventQueue;
 use crate::physics::PhysicsState;
 use crate::rng::RngStreams;
@@ -21,6 +22,9 @@ pub struct World {
     pub physics: PhysicsState,
     /// Player locomotion tuning copied from content. Not hashed: the content hash covers it.
     pub locomotion: Locomotion,
+    /// Every move and the player's moveset, from content. Not hashed: the content hash
+    /// covers it.
+    pub moves: MoveTable,
     pub actors: Arena<Actor>,
     /// The player actor, spawned by `World::new`.
     pub player: Id,
@@ -34,6 +38,8 @@ pub enum WorldError {
     UnknownScenario(String),
     /// The content has no `locomotion.ron`.
     MissingLocomotion,
+    /// A move or moveset references a move the content doesn't define.
+    Moves(String),
 }
 
 impl core::fmt::Display for WorldError {
@@ -44,6 +50,7 @@ impl core::fmt::Display for WorldError {
                 "unknown scenario {name:?} (no scenarios/{name}.ron in the content)"
             ),
             Self::MissingLocomotion => write!(f, "the content has no locomotion.ron"),
+            Self::Moves(message) => write!(f, "{message}"),
         }
     }
 }
@@ -71,6 +78,8 @@ impl World {
         let attrs = &content.attributes;
         let max_hp = (attrs.max_hp_tenths(locomotion.stub_vitality) / 10).max(1) as u32;
         let max_stamina = attrs.max_stamina_tenths(locomotion.stub_endurance) as f32 / 10.0;
+        let max_fp = attrs.max_fp_tenths(locomotion.stub_focus) as f32 / 10.0;
+        let moves = MoveTable::from_content(content).map_err(WorldError::Moves)?;
         let mut actors = Arena::new();
         let player = actors.insert(Actor {
             pos: level.spawn,
@@ -80,6 +89,8 @@ impl World {
             max_hp,
             stamina: max_stamina,
             max_stamina,
+            fp: max_fp,
+            max_fp,
             motor: Motor {
                 grounded: true,
                 ground_y: level.spawn[1],
@@ -108,6 +119,7 @@ impl World {
             rng: RngStreams::from_seed(seed),
             physics: PhysicsState::new(scenario, level),
             locomotion,
+            moves,
             actors,
             player,
             events: EventQueue::default(),

@@ -42,6 +42,11 @@ pub struct Locomotion {
     pub stub_vitality: u16,
     /// Endurance used for the player's max stamina until characters have attributes (stub).
     pub stub_endurance: u16,
+    /// Focus used for the player's max FP until characters have attributes (stub).
+    pub stub_focus: u16,
+    /// Ticks a pressed action stays buffered while the current move can't be canceled
+    /// (docs/game/03-combat.md, "Input buffer").
+    pub input_buffer_ticks: u16,
     /// Falls of this many meters or less deal no damage.
     pub fall_damage_from_m: f32,
     /// Fraction of max HP lost per meter fallen above `fall_damage_from_m`.

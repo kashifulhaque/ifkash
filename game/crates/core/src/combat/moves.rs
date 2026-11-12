@@ -1,0 +1,769 @@
+//! The move system: per-actor move state, frame advance, chains, cancel windows, the
+//! input buffer, root motion, tracking toward the lock target, hyperarmor and i-frame
+//! flags, and stamina and FP costs. See docs/game/03-combat.md, "Combat verbs", "Input
+//! buffer", and "Move data schema".
+//!
+//! # Frames
+//!
+//! Frame 0 of a move executes on the tick the move starts, and frame `f` on the `f`-th
+//! tick after that. A move ends on the tick it would advance to `total_frames`. Every
+//! window in the move data (hitboxes, hyperarmor, i-frames, cancels) uses these frame
+//! numbers, so a straight-sword light attack with 10 startup frames has its hitbox on
+//! frames 10 to 12.
+//!
+//! # Per-tick order
+//!
+//! [`step`] runs once per actor in tick system 4 (`systems::move_state`), after player
+//! intent and before locomotion:
+//!
+//! 1. Read the actor's input into the buffer (the player only, for now).
+//! 2. Advance the current move one frame, or hold it while a chargeable move charges.
+//!    Free movement ends a move once it reaches `cancel_any_from`.
+//! 3. Fire the buffered action if the current move allows that kind of cancel.
+//! 4. Set the flags, turn toward the lock target, and set the velocity from root motion.
+//!    Locomotion then moves the actor with the character controller, so root motion
+//!    respects walls.
+//!
+//! While a move locks movement, `actor::controller::intent` leaves the velocity and
+//! facing alone (see [`MoveState::locks_movement`]).
+
+use lf_content::{Content, Locomotion, Move, NumId};
+use serde::{Deserialize, Serialize};
+
+use crate::actor::Actor;
+use crate::actor::targeting::{bearing, wrap_pi};
+use crate::input::{ActionFrame, buttons};
+use crate::math::dmath::{atan2, cos, sin};
+use crate::world::DT;
+
+/// Degrees to radians. Plain multiplication, no transcendental call.
+const DEG_TO_RAD: f32 = core::f32::consts::PI / 180.0;
+
+/// A move's stable numeric ID from `registry.ron`.
+pub type MoveNum = NumId;
+
+/// Bits of [`MoveState::flags`], set for the frame executed this tick.
+pub mod flags {
+    /// Inside the move's `hyperarmor` window: hits don't stagger (WP-023 reads it).
+    pub const HYPERARMOR: u8 = 1 << 0;
+    /// Inside the move's `iframes` window: hits don't land (WP-021 reads it).
+    pub const IFRAMES: u8 = 1 << 1;
+    /// The move is held at its `charge.charge_from` frame, charging.
+    pub const CHARGING: u8 = 1 << 2;
+}
+
+/// An input that starts a move. See docs/game/03-combat.md, "Combat verbs".
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub enum Action {
+    /// `LIGHT` pressed: the next light in the chain, a running, rolling, or backstep
+    /// attack, or the first light.
+    Light,
+    /// `HEAVY` pressed: the heavy attack, which becomes the charged heavy if `HEAVY` is
+    /// still held when it reaches the charged heavy's `charge_from` frame.
+    Heavy,
+    /// `DODGE` tapped (released before sprint starts): a roll toward `dir`, or a
+    /// backstep when `dir` is zero.
+    Dodge,
+}
+
+/// The most recent action that couldn't fire yet. See docs/game/03-combat.md,
+/// "Input buffer".
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct Buffered {
+    pub action: Action,
+    /// Ticks since the press. Age 0 is the press tick; the action is dropped once its
+    /// age passes `Locomotion::input_buffer_ticks`.
+    pub age: u16,
+    /// The stick (`move_x`, `move_z`) when the action was pressed: the roll direction.
+    pub dir: [i8; 2],
+}
+
+/// The move an actor is performing.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ActiveMove {
+    pub num: MoveNum,
+    /// The frame executed this tick.
+    pub frame: u16,
+    /// Ticks spent holding at `charge.charge_from`, up to `charge.max_frames`. WP-021
+    /// scales the hitbox motion value with it (see [`MoveTable::charge_frac`]).
+    pub charge_ticks: u16,
+    /// The button that started the move. Holding it charges a chargeable move.
+    pub hold_button: u16,
+    /// The first frame free movement can interrupt: `cancel_any_from`, or
+    /// `total_frames` when the move has none.
+    pub free_from: u16,
+}
+
+/// Per-actor move state. Simulation state: part of the state hash.
+#[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct MoveState {
+    pub current: Option<ActiveMove>,
+    pub buffer: Option<Buffered>,
+    /// See [`flags`]. Describes the frame executed this tick; 0 with no move.
+    pub flags: u8,
+    /// Consecutive ticks `DODGE` has been held, to tell a tap (dodge) from a hold
+    /// (sprint).
+    pub dodge_hold: u16,
+    /// Buttons of the previous tick, for press edges.
+    pub prev_buttons: u16,
+}
+
+impl MoveState {
+    /// True while the current move ignores the stick: until the frame about to execute
+    /// next tick reaches `cancel_any_from`. Player intent runs before this system, so it
+    /// asks about next tick's frame.
+    pub fn locks_movement(&self) -> bool {
+        self.current
+            .is_some_and(|c| c.frame.saturating_add(1) < c.free_from)
+    }
+
+    /// True if the flag in [`flags`] is set for this tick's frame.
+    pub fn has(&self, flag: u8) -> bool {
+        self.flags & flag != 0
+    }
+
+    /// Ends the current move and clears the buffer. The hook for stagger, guard break,
+    /// and death (WP-022, WP-023).
+    pub fn interrupt(&mut self) {
+        self.current = None;
+        self.buffer = None;
+        self.flags = 0;
+    }
+
+    /// Queues `action`, replacing any older buffered action (only the most recent is
+    /// kept). The entry point for AI (WP-030 and later) as well as player input.
+    pub fn press(&mut self, action: Action, dir: [i8; 2]) {
+        self.buffer = Some(Buffered {
+            action,
+            age: 0,
+            dir,
+        });
+    }
+}
+
+/// One move from the content with its references resolved.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct MoveDef {
+    pub num: MoveNum,
+    pub data: Move,
+    /// `next_chain` as a numeric ID.
+    pub next_chain: Option<MoveNum>,
+    /// Tracking turns the actor on frames before this one: the startup, which ends at
+    /// the first hitbox frame (docs/game/03-combat.md, "Move data schema",
+    /// `track_deg_per_tick`). 0 for a move with no hitbox.
+    pub track_until: u16,
+}
+
+/// A weapon moveset with every move as a numeric ID.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct Moveset {
+    pub light_chain: Vec<MoveNum>,
+    pub heavy: MoveNum,
+    pub charged_heavy: MoveNum,
+    pub running: MoveNum,
+    pub rolling: MoveNum,
+    pub backstep: MoveNum,
+    /// Jump, plunge, and guard counter moves are resolved but not started yet: they
+    /// need airborne attacks (jump, plunge) and guarding (WP-022).
+    pub jump_light: MoveNum,
+    pub jump_heavy: MoveNum,
+    pub plunge: MoveNum,
+    pub guard_counter: MoveNum,
+    pub dodge_roll: MoveNum,
+    pub dodge_backstep: MoveNum,
+}
+
+/// Every move in the content, by numeric ID, plus the player's moveset. Built from
+/// content, so it's not hashed: the content hash covers it.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct MoveTable {
+    /// Sorted by `num`.
+    defs: Vec<MoveDef>,
+    /// The player's moveset. Until equipment lands, the player wields the first weapon
+    /// in the content (in file and list order). `None` if the content has no weapon.
+    pub player_moveset: Option<Moveset>,
+}
+
+impl MoveTable {
+    /// Resolves every move and the player's moveset. Fails on a reference to a move that
+    /// isn't defined (the validator reports those too).
+    pub fn from_content(content: &Content) -> Result<Self, String> {
+        let num = |id: &str| {
+            content
+                .registry
+                .num(id)
+                .ok_or_else(|| format!("move \"{id}\" is missing from registry.ron"))
+        };
+        let mut defs = Vec::new();
+        for (_, m) in content.all_moves() {
+            defs.push(MoveDef {
+                num: num(&m.id)?,
+                data: m.clone(),
+                next_chain: m.next_chain.as_deref().map(num).transpose()?,
+                track_until: m.hitboxes.iter().map(|h| h.frames.0).min().unwrap_or(0),
+            });
+        }
+        defs.sort_by_key(|d| d.num);
+        let mut table = Self {
+            defs,
+            player_moveset: None,
+        };
+        let defined = |id: &str| {
+            let n = num(id)?;
+            if table.get(n).is_some() {
+                Ok(n)
+            } else {
+                Err(format!("move \"{id}\" is not defined"))
+            }
+        };
+        let player_moveset = match content.all_weapons().next() {
+            Some((_, w)) => {
+                let s = &w.moveset;
+                Some(Moveset {
+                    light_chain: s
+                        .light_chain
+                        .iter()
+                        .map(|id| defined(id.as_str()))
+                        .collect::<Result<_, _>>()?,
+                    heavy: defined(&s.heavy)?,
+                    charged_heavy: defined(&s.charged_heavy)?,
+                    running: defined(&s.running)?,
+                    rolling: defined(&s.rolling)?,
+                    backstep: defined(&s.backstep)?,
+                    jump_light: defined(&s.jump_light)?,
+                    jump_heavy: defined(&s.jump_heavy)?,
+                    plunge: defined(&s.plunge)?,
+                    guard_counter: defined(&s.guard_counter)?,
+                    dodge_roll: defined(&s.dodge_roll)?,
+                    dodge_backstep: defined(&s.dodge_backstep)?,
+                })
+            }
+            None => None,
+        };
+        table.player_moveset = player_moveset;
+        Ok(table)
+    }
+
+    pub fn get(&self, num: MoveNum) -> Option<&MoveDef> {
+        self.defs
+            .binary_search_by_key(&num, |d| d.num)
+            .ok()
+            .map(|i| &self.defs[i])
+    }
+
+    /// Finds a move by string ID. A linear scan, for tools and tests.
+    pub fn num_of(&self, id: &str) -> Option<MoveNum> {
+        self.defs.iter().find(|d| d.data.id == id).map(|d| d.num)
+    }
+
+    /// How far a charge has gone, from 0 to 1: WP-021 lerps the hitbox motion value from
+    /// its listed value to `charge.motion_value_max` by this.
+    pub fn charge_frac(&self, m: &ActiveMove) -> f32 {
+        match self.get(m.num).and_then(|d| d.data.charge) {
+            Some(c) if c.max_frames > 0 => f32::from(m.charge_ticks) / f32::from(c.max_frames),
+            _ => 0.0,
+        }
+    }
+}
+
+/// Meters forward at `frame` on a root-motion curve: linear between `(frame, meters)`
+/// keys, held flat before the first key and after the last.
+pub fn root_motion_at(keys: &[(u16, f32)], frame: u16) -> f32 {
+    let Some(&(first_f, first_m)) = keys.first() else {
+        return 0.0;
+    };
+    if frame <= first_f {
+        return first_m;
+    }
+    for w in keys.windows(2) {
+        let (f0, m0) = w[0];
+        let (f1, m1) = w[1];
+        if frame <= f1 {
+            if f1 == f0 {
+                return m1;
+            }
+            let t = f32::from(frame - f0) / f32::from(f1 - f0);
+            return crate::math::dmath::lerp(m0, m1, t);
+        }
+    }
+    keys.last().map_or(0.0, |k| k.1)
+}
+
+/// Meters forward the actor moves while executing `frame`: the curve from `frame` to
+/// `frame + 1`. Summed over a whole move, this is the last key's distance.
+pub fn root_motion_delta(keys: &[(u16, f32)], frame: u16) -> f32 {
+    root_motion_at(keys, frame.saturating_add(1)) - root_motion_at(keys, frame)
+}
+
+/// Turns `yaw` toward `target` by at most `max_step` radians, the short way round.
+pub fn turn_toward(yaw: f32, target: f32, max_step: f32) -> f32 {
+    let diff = wrap_pi(target - yaw);
+    wrap_pi(yaw + diff.clamp(-max_step, max_step))
+}
+
+fn in_window(w: Option<lf_content::moves::FrameWindow>, frame: u16) -> bool {
+    w.is_some_and(|w| (w.from..=w.to).contains(&frame))
+}
+
+/// Records press edges into the buffer. Only the most recent action is kept; when
+/// several land on one tick, a dodge beats a light and a light beats a heavy.
+fn read_input(ms: &mut MoveState, f: ActionFrame, t: &Locomotion) {
+    let pressed = f.buttons & !ms.prev_buttons;
+    ms.prev_buttons = f.buttons;
+    let dir = [f.move_x, f.move_z];
+    if pressed & buttons::HEAVY != 0 {
+        ms.press(Action::Heavy, dir);
+    }
+    if pressed & buttons::LIGHT != 0 {
+        ms.press(Action::Light, dir);
+    }
+    // A tap is a release before sprint could start (docs/game/03-combat.md, "Combat
+    // verbs": Roll and Backstep are a `DODGE` tap, Sprint a hold of more than
+    // `sprint_delay_ticks`).
+    if f.pressed(buttons::DODGE) {
+        ms.dodge_hold = ms.dodge_hold.saturating_add(1);
+    } else {
+        if ms.dodge_hold > 0 && ms.dodge_hold <= t.sprint_delay_ticks {
+            ms.press(Action::Dodge, dir);
+        }
+        ms.dodge_hold = 0;
+    }
+}
+
+/// The move `b` would start now, or `None` if the current move doesn't allow that kind
+/// of cancel yet (docs/game/03-combat.md, "Input buffer").
+fn resolve(
+    b: Buffered,
+    current: Option<ActiveMove>,
+    sprinting: bool,
+    set: &Moveset,
+    table: &MoveTable,
+) -> Option<MoveNum> {
+    let cur = current.and_then(|c| table.get(c.num).map(|d| (c, d)));
+    if let Some((c, d)) = cur {
+        let reached = |w: Option<u16>| w.is_some_and(|from| c.frame >= from);
+        let window = match b.action {
+            Action::Light | Action::Heavy => d.data.cancel_attack_from,
+            Action::Dodge => d.data.cancel_dodge_from,
+        };
+        if !reached(window) && !reached(d.data.cancel_any_from) {
+            return None;
+        }
+    }
+    let num = match b.action {
+        Action::Light => match cur {
+            Some((c, _)) if c.num == set.dodge_roll => set.rolling,
+            Some((c, _)) if c.num == set.dodge_backstep => set.backstep,
+            Some((_, d)) if d.next_chain.is_some() => d.next_chain?,
+            _ if sprinting => set.running,
+            _ => *set.light_chain.first()?,
+        },
+        Action::Heavy => set.heavy,
+        Action::Dodge if b.dir == [0, 0] => set.dodge_backstep,
+        Action::Dodge => set.dodge_roll,
+    };
+    Some(num)
+}
+
+/// Spends a move's costs. Stamina is a stub until WP-022: a move needs more than 0
+/// stamina (not the full cost) and drains to 0 at worst. FP must cover the full cost.
+fn try_spend(a: &mut Actor, d: &Move) -> bool {
+    let stamina = f32::from(d.stamina);
+    let fp = f32::from(d.fp);
+    if (stamina > 0.0 && a.stamina <= 0.0) || a.fp < fp {
+        return false;
+    }
+    if stamina > 0.0 {
+        a.stamina = (a.stamina - stamina).max(0.0);
+        a.motor.stamina_idle = 0;
+    }
+    a.fp -= fp;
+    true
+}
+
+/// Advances one actor's move by a tick. `input` is the actor's action frame (`None` for
+/// actors without input yet), `lock_pos` the position of its lock target, and `set` its
+/// moveset (`None` means it can't start moves).
+pub fn step(
+    a: &mut Actor,
+    input: Option<ActionFrame>,
+    lock_pos: Option<[f32; 3]>,
+    table: &MoveTable,
+    set: Option<&Moveset>,
+    t: &Locomotion,
+) {
+    if a.dead {
+        a.moves.interrupt();
+        return;
+    }
+    if let Some(f) = input {
+        read_input(&mut a.moves, f, t);
+    }
+    let held = input.map_or(0, |f| f.buttons);
+    let stick = input.is_some_and(|f| f.move_x != 0 || f.move_z != 0);
+
+    // 2. Advance, hold a charge, or end the current move.
+    let mut charging = false;
+    if let Some(mut c) = a.moves.current {
+        let def = table.get(c.num);
+        let charge = def.and_then(|d| d.data.charge);
+        match charge {
+            Some(ch)
+                if c.frame == ch.charge_from
+                    && held & c.hold_button != 0
+                    && c.charge_ticks < ch.max_frames =>
+            {
+                c.charge_ticks += 1;
+                charging = true;
+            }
+            _ => c.frame = c.frame.saturating_add(1),
+        }
+        // The heavy becomes the charged heavy if its button is still held when the move
+        // reaches the charged heavy's charge frame (Combat verbs: tap versus hold).
+        if let Some(s) = set
+            && c.num == s.heavy
+            && held & c.hold_button != 0
+            && let Some(ch) = table.get(s.charged_heavy)
+            && ch.data.charge.is_some_and(|x| x.charge_from == c.frame)
+        {
+            let extra = ch
+                .data
+                .stamina
+                .saturating_sub(def.map_or(0, |d| d.data.stamina));
+            a.stamina = (a.stamina - f32::from(extra)).max(0.0);
+            if extra > 0 {
+                a.motor.stamina_idle = 0;
+            }
+            c.num = s.charged_heavy;
+            c.free_from = ch.data.cancel_any_from.unwrap_or(ch.data.total_frames);
+        }
+        let total = table.get(c.num).map_or(0, |d| d.data.total_frames);
+        let walked_out = stick && c.frame >= c.free_from;
+        a.moves.current = if c.frame >= total || walked_out {
+            None
+        } else {
+            Some(c)
+        };
+    }
+
+    // 3. Fire the buffered action if the current move allows it.
+    if let (Some(b), Some(s)) = (a.moves.buffer, set) {
+        let grounded = a.motor.grounded && a.motor.jump_startup == 0 && a.motor.landing == 0;
+        let num = resolve(b, a.moves.current, a.motor.sprinting, s, table);
+        if let (true, Some(d)) = (grounded, num.and_then(|n| table.get(n)))
+            && try_spend(a, &d.data)
+        {
+            if b.action == Action::Dodge && b.dir != [0, 0] {
+                a.yaw = atan2(f32::from(b.dir[0]), f32::from(b.dir[1]));
+            }
+            a.moves.current = Some(ActiveMove {
+                num: d.num,
+                frame: 0,
+                charge_ticks: 0,
+                hold_button: if b.action == Action::Heavy {
+                    buttons::HEAVY
+                } else {
+                    0
+                },
+                free_from: d.data.cancel_any_from.unwrap_or(d.data.total_frames),
+            });
+            a.moves.buffer = None;
+            charging = false;
+        }
+    }
+    if let Some(b) = a.moves.buffer.as_mut() {
+        b.age += 1;
+        if b.age > t.input_buffer_ticks {
+            a.moves.buffer = None;
+        }
+    }
+
+    // 4. Flags, tracking, and root motion for the frame executed this tick.
+    a.moves.flags = 0;
+    let Some(c) = a.moves.current else {
+        return;
+    };
+    let Some(d) = table.get(c.num) else {
+        return;
+    };
+    let mut bits = 0;
+    if in_window(d.data.hyperarmor, c.frame) {
+        bits |= flags::HYPERARMOR;
+    }
+    if in_window(d.data.iframes, c.frame) {
+        bits |= flags::IFRAMES;
+    }
+    if charging {
+        bits |= flags::CHARGING;
+    }
+    a.moves.flags = bits;
+    if c.frame < d.track_until
+        && let Some(p) = lock_pos
+    {
+        let step = d.data.track_deg_per_tick * DEG_TO_RAD;
+        a.yaw = turn_toward(a.yaw, bearing(a.pos, p, a.yaw), step);
+    }
+    let meters = if charging {
+        0.0
+    } else {
+        root_motion_delta(&d.data.root_motion, c.frame)
+    };
+    let speed = meters / DT;
+    a.vel[0] = sin(a.yaw) * speed;
+    a.vel[2] = cos(a.yaw) * speed;
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::input::TickInput;
+    use crate::snapshot::{self, write_snapshot};
+    use crate::tick::tick;
+    use crate::world::World;
+
+    /// How far a move through the character controller may land from its root-motion
+    /// distance, in meters. Not a gameplay number: the controller's skin and snapping.
+    const KCC_TOLERANCE_M: f32 = 0.01;
+
+    fn flat() -> World {
+        let content = Content::load_embedded().expect("embedded content");
+        World::new(5, &content, "m0_flat").expect("m0_flat exists")
+    }
+
+    /// Runs one tick with these buttons and stick, and returns the player's move.
+    fn step(w: &mut World, buttons: u16, x: i8, z: i8) -> Option<ActiveMove> {
+        let input = TickInput {
+            frame: ActionFrame {
+                move_x: x,
+                move_z: z,
+                buttons,
+            },
+            commands: Vec::new(),
+        };
+        tick(w, &input);
+        player(w).moves.current
+    }
+
+    fn idle(w: &mut World, ticks: u32) {
+        for _ in 0..ticks {
+            step(w, 0, 0, 0);
+        }
+    }
+
+    fn player(w: &World) -> &Actor {
+        w.actors.get(w.player).unwrap()
+    }
+
+    fn num(w: &World, id: &str) -> MoveNum {
+        w.moves.num_of(id).unwrap()
+    }
+
+    fn data<'a>(w: &'a World, id: &str) -> &'a Move {
+        &w.moves.get(num(w, id)).unwrap().data
+    }
+
+    #[test]
+    fn light_chain_of_three() {
+        let mut w = flat();
+        let ids = ["ss_light_1", "ss_light_2", "ss_light_3"];
+        let c = step(&mut w, buttons::LIGHT, 0, 0).unwrap();
+        assert_eq!((c.num, c.frame), (num(&w, ids[0]), 0));
+        for pair in ids.windows(2) {
+            let chain_from = data(&w, pair[0]).cancel_attack_from.unwrap();
+            // Press early in recovery: the press is buffered until `cancel_attack_from`.
+            let press_at = chain_from - 4;
+            for f in 1..press_at {
+                let c = step(&mut w, 0, 0, 0).unwrap();
+                assert_eq!((c.num, c.frame), (num(&w, pair[0]), f));
+            }
+            let c = step(&mut w, buttons::LIGHT, 0, 0).unwrap();
+            assert_eq!((c.num, c.frame), (num(&w, pair[0]), press_at));
+            for f in press_at + 1..chain_from {
+                assert_eq!(step(&mut w, 0, 0, 0).unwrap().frame, f);
+            }
+            let c = step(&mut w, 0, 0, 0).unwrap();
+            assert_eq!((c.num, c.frame), (num(&w, pair[1]), 0), "{pair:?}");
+        }
+        // The chain ends at the third light: it runs to its end with no fourth.
+        let total = data(&w, ids[2]).total_frames;
+        for f in 1..total {
+            assert_eq!(step(&mut w, 0, 0, 0).unwrap().frame, f);
+        }
+        assert_eq!(step(&mut w, 0, 0, 0), None);
+    }
+
+    #[test]
+    fn dodge_buffered_in_recovery_fires_on_cancel_dodge_from() {
+        let mut w = flat();
+        let light = num(&w, "ss_light_1");
+        let dodge_from = data(&w, "ss_light_1").cancel_dodge_from.unwrap();
+        // The first recovery frame: startup 10 plus active 3 (Combat verbs).
+        let recovery = data(&w, "ss_light_1").hitboxes[0].frames.1 + 1;
+        assert_eq!(dodge_from, recovery + 4);
+        step(&mut w, buttons::LIGHT, 0, 0);
+        idle(&mut w, u32::from(recovery) - 1);
+        // Tap DODGE with the stick to the right (+X): down, then up.
+        assert_eq!(
+            step(&mut w, buttons::DODGE, 127, 0).unwrap().frame,
+            recovery
+        );
+        let c = step(&mut w, 0, 127, 0).unwrap();
+        assert_eq!((c.num, c.frame), (light, recovery + 1));
+        assert!(player(&w).moves.buffer.is_some());
+        for f in recovery + 2..dodge_from {
+            let c = step(&mut w, 0, 127, 0).unwrap();
+            assert_eq!((c.num, c.frame), (light, f));
+        }
+        let c = step(&mut w, 0, 127, 0).unwrap();
+        assert_eq!((c.num, c.frame), (num(&w, "ss_roll"), 0));
+        assert!(player(&w).moves.buffer.is_none());
+        // The roll faces the stick, and its i-frames start on frame 2.
+        let yaw = player(&w).yaw;
+        assert!((yaw - core::f32::consts::FRAC_PI_2).abs() < 1e-6, "{yaw}");
+        assert!(!player(&w).moves.has(flags::IFRAMES));
+        step(&mut w, 0, 0, 0);
+        step(&mut w, 0, 0, 0);
+        assert!(player(&w).moves.has(flags::IFRAMES));
+        let mut snap = Vec::new();
+        write_snapshot(&w, &mut snap);
+        assert_eq!(u32::from(snap[0].move_id), num(&w, "ss_roll"));
+        assert_eq!(snap[0].move_frame, 2);
+        assert_ne!(snap[0].flags & snapshot::flags::INVULNERABLE, 0);
+    }
+
+    #[test]
+    fn root_motion_moves_0_9_m() {
+        let w = flat();
+        let keys = &data(&w, "ss_light_1").root_motion;
+        let sum: f32 = (0..27).map(|f| root_motion_delta(keys, f)).sum();
+        assert!((sum - 0.9).abs() < 1e-6, "{sum}");
+
+        let mut w = w;
+        let start = player(&w).pos;
+        step(&mut w, buttons::LIGHT, 0, 0);
+        idle(&mut w, 40);
+        assert_eq!(player(&w).moves.current, None);
+        // Through the character controller, which keeps a 0.02 m skin from the floor
+        // and can drift a few millimeters; the curve itself is exact (above).
+        let end = player(&w).pos;
+        let dz = end[2] - start[2];
+        assert!((dz - 0.9).abs() < KCC_TOLERANCE_M, "moved {dz} m forward");
+        assert!(
+            (end[0] - start[0]).abs() < KCC_TOLERANCE_M,
+            "{start:?} -> {end:?}"
+        );
+    }
+
+    #[test]
+    fn buffer_holds_a_press_for_eight_ticks() {
+        for (press_at, chains) in [(13, true), (12, false)] {
+            let mut w = flat();
+            let chain_from = data(&w, "ss_light_1").cancel_attack_from.unwrap();
+            assert_eq!(chain_from - 8, 13);
+            step(&mut w, buttons::LIGHT, 0, 0);
+            idle(&mut w, u32::from(press_at) - 1);
+            step(&mut w, buttons::LIGHT, 0, 0);
+            idle(&mut w, u32::from(chain_from - press_at));
+            let c = player(&w).moves.current.unwrap();
+            let want = if chains { "ss_light_2" } else { "ss_light_1" };
+            assert_eq!(c.num, num(&w, want), "pressed on frame {press_at}");
+        }
+    }
+
+    #[test]
+    fn holding_dodge_sprints_without_rolling_and_no_stick_backsteps() {
+        let mut w = flat();
+        for _ in 0..30 {
+            step(&mut w, buttons::DODGE, 0, 127);
+        }
+        assert!(player(&w).motor.sprinting);
+        assert_eq!(step(&mut w, 0, 0, 0), None);
+
+        let mut w = flat();
+        let start = player(&w).pos;
+        step(&mut w, buttons::DODGE, 0, 0);
+        let c = step(&mut w, 0, 0, 0).unwrap();
+        assert_eq!(c.num, num(&w, "ss_backstep_dodge"));
+        idle(&mut w, 30);
+        let dz = player(&w).pos[2] - start[2];
+        assert!((dz + 1.8).abs() < KCC_TOLERANCE_M, "moved {dz} m");
+    }
+
+    #[test]
+    fn costs_and_hyperarmor() {
+        let mut w = flat();
+        let max = player(&w).max_stamina;
+        step(&mut w, buttons::HEAVY, 0, 0);
+        let cost = f32::from(data(&w, "ss_heavy").stamina);
+        assert_eq!(player(&w).stamina, max - cost);
+        let from = data(&w, "ss_heavy").hyperarmor.unwrap().from;
+        idle(&mut w, u32::from(from) - 1);
+        assert!(!player(&w).moves.has(flags::HYPERARMOR));
+        idle(&mut w, 1);
+        assert!(player(&w).moves.has(flags::HYPERARMOR));
+    }
+
+    #[test]
+    fn holding_heavy_charges() {
+        let mut w = flat();
+        let charge = data(&w, "ss_heavy_charged").charge.unwrap();
+        for _ in 0..=charge.charge_from {
+            step(&mut w, buttons::HEAVY, 0, 0);
+        }
+        let c = player(&w).moves.current.unwrap();
+        assert_eq!(
+            (c.num, c.frame),
+            (num(&w, "ss_heavy_charged"), charge.charge_from)
+        );
+        for i in 1..=charge.max_frames {
+            let c = step(&mut w, buttons::HEAVY, 0, 0).unwrap();
+            assert_eq!((c.frame, c.charge_ticks), (charge.charge_from, i));
+            assert!(player(&w).moves.has(flags::CHARGING));
+        }
+        // Fully charged: the move goes on even with the button held.
+        let c = step(&mut w, buttons::HEAVY, 0, 0).unwrap();
+        assert_eq!(c.frame, charge.charge_from + 1);
+        assert_eq!(w.moves.charge_frac(&c), 1.0);
+    }
+
+    #[test]
+    fn walking_cancels_from_cancel_any_from() {
+        let mut w = flat();
+        let any = data(&w, "ss_light_1").cancel_any_from.unwrap();
+        step(&mut w, buttons::LIGHT, 0, 0);
+        for _ in 1..any {
+            assert!(step(&mut w, 0, 0, 127).is_some());
+        }
+        assert_eq!(step(&mut w, 0, 0, 127), None);
+        assert!(player(&w).vel[2] > 0.0);
+    }
+
+    #[test]
+    fn tracking_turns_by_at_most_the_step() {
+        let max = 12.0 * DEG_TO_RAD;
+        assert_eq!(turn_toward(0.0, 1.0, max), max);
+        assert_eq!(turn_toward(0.0, 0.1, max), 0.1);
+        // The short way round across +-pi.
+        let y = turn_toward(3.0, -3.0, max);
+        assert!((y - wrap_pi(3.0 + max)).abs() < 1e-6 && y < -3.0, "{y}");
+
+        let mut w = flat();
+        let target = w.actors.insert(Actor {
+            pos: [5.0, 0.0, 0.0],
+            hp: 10,
+            max_hp: 10,
+            ..Actor::default()
+        });
+        let track = data(&w, "ss_light_1").track_deg_per_tick * DEG_TO_RAD;
+        // Start the attack facing +Z, then lock on to the target at +X: tracking turns
+        // 12 degrees a tick in startup. The lock-on snap in player intent is off while
+        // the move runs.
+        step(&mut w, buttons::LIGHT, 0, 0);
+        assert_eq!(player(&w).yaw, 0.0);
+        w.actors.get_mut(w.player).unwrap().lock_target = Some(target);
+        step(&mut w, 0, 0, 0);
+        assert!((player(&w).yaw - track).abs() < 1e-6);
+        step(&mut w, 0, 0, 0);
+        assert!((player(&w).yaw - 2.0 * track).abs() < 1e-6);
+    }
+}

@@ -3,4 +3,12 @@
 /**
  * The move each input maps to for a weapon.
  */
-export type Moveset = { light_chain: Array<string>, heavy: string, charged_heavy: string, running: string, rolling: string, backstep: string, jump_light: string, jump_heavy: string, plunge: string, guard_counter: string, };
+export type Moveset = { light_chain: Array<string>, heavy: string, charged_heavy: string, running: string, rolling: string, backstep: string, jump_light: string, jump_heavy: string, plunge: string, guard_counter: string, 
+/**
+ * Roll: `DODGE` tapped with a direction (docs/game/03-combat.md, "Combat verbs").
+ */
+dodge_roll: string, 
+/**
+ * Backstep: `DODGE` tapped with no direction.
+ */
+dodge_backstep: string, };

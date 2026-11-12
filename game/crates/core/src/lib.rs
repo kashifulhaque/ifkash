@@ -2,6 +2,7 @@
 
 pub mod actor;
 pub mod arena;
+pub mod combat;
 pub mod events;
 pub mod input;
 pub mod math;

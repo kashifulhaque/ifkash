@@ -7,6 +7,7 @@ pub mod targeting;
 mod tests;
 
 use crate::arena::Id;
+use crate::combat::moves::MoveState;
 use serde::{Deserialize, Serialize};
 
 /// One actor. Every field is simulation state and is part of the state hash.
@@ -24,10 +25,14 @@ pub struct Actor {
     pub dead: bool,
     pub stamina: f32,
     pub max_stamina: f32,
+    pub fp: f32,
+    pub max_fp: f32,
     pub motor: Motor,
     /// The actor this one is locked on to (the player's lock-on target), if any.
     /// See `targeting`.
     pub lock_target: Option<Id>,
+    /// The move being performed and the input buffer. See `combat::moves`.
+    pub moves: MoveState,
 }
 
 /// Character controller state between ticks.

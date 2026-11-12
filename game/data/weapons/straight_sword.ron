@@ -23,6 +23,8 @@
       jump_heavy: "ss_jump_heavy",
       plunge: "ss_plunge",
       guard_counter: "ss_guard_counter",
+      dodge_roll: "ss_roll",
+      dodge_backstep: "ss_backstep_dodge",
     ),
   ),
 ]

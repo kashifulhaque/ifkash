@@ -378,4 +378,44 @@
     sfx: [(7, "swing_heavy")],
     vfx: [(8, "trail_steel_heavy")],
   ),
+  (
+    // Roll at medium equip load (Combat verbs, Roll; Equip load and roll tiers, Medium).
+    // WP-022 adds the light and heavy tiers. Recovery is the frames after the i-frames;
+    // the rolling attack starts from there.
+    id: "ss_roll",
+    anim: "roll",
+    total_frames: 24, // to 24
+    stamina: 14,
+    fp: 0,
+    root_motion: [(0, 0.0), (2, 0.3), (14, 2.9), (18, 3.2), (24, 3.2)], // travels 3.2 m
+    track_deg_per_tick: 0.0,
+    hyperarmor: None,
+    iframes: (from: 2, to: 14), // i-frames 2-14
+    cancel_attack_from: 15, // the rolling attack: LIGHT during roll recovery
+    cancel_dodge_from: 18, // tuning
+    cancel_any_from: 20, // tuning
+    next_chain: None,
+    hitboxes: [],
+    sfx: [],
+    vfx: [],
+  ),
+  (
+    // Backstep (Combat verbs, Backstep): DODGE tapped with no direction. Moves backward.
+    id: "ss_backstep_dodge",
+    anim: "backstep",
+    total_frames: 15, // to 15
+    stamina: 10,
+    fp: 0,
+    root_motion: [(0, 0.0), (2, -0.3), (7, -1.4), (10, -1.8), (15, -1.8)], // travels 1.8 m
+    track_deg_per_tick: 0.0,
+    hyperarmor: None,
+    iframes: (from: 2, to: 7), // i-frames 2-7
+    cancel_attack_from: 8, // the backstep attack: LIGHT during backstep recovery
+    cancel_dodge_from: 10, // tuning
+    cancel_any_from: 12, // tuning
+    next_chain: None,
+    hitboxes: [],
+    sfx: [],
+    vfx: [],
+  ),
 ]

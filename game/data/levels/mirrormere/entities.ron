@@ -1,0 +1,134 @@
+// The Mirrormere entities (WP-060). Yaw is in radians from +Z toward +X: 0 faces +Z (north),
+// 3.1415927 faces -Z, 1.5707964 faces +X, -1.5707964 faces -X.
+//
+// The main route runs spawn -> L06 -> L07 -> L08 -> L09 on dry ground: the west shore road, the
+// strip between the marsh and the lake, the north shore, and the causeway. Every walk between
+// two Lanterns is under 45 seconds at run speed (world_state/mirrormere_tests.rs). Side
+// branches: Stillwater Village and its flooded houses, the Reed Marsh, the backwater islet
+// (a short wade past the moored rowboat), the Cathedral forecourt and the nave.
+//
+// WATER. The lake is six deep pools (4 m, an invisible wall at the lip) around the Cathedral
+// island, with the causeway (land) and the ford (a seventh pool, 1.6 m deep) between them.
+// The Drowned Belfry's sluice lever (WP-061) raises the world flag `sluice.mirrormere.open`
+// (lf_core::world_state::mechanics::water_level::open_sluice). Pools that name it in `lowered_by`
+// drop to `lowered_depth_m`: the lake to 2.5 m (still a wall), the ford to 0.1 m (a wade), so
+// the village's shore opens a dry path to the Cathedral's side door. See terrain.ron for how the
+// basin matches the pools.
+//
+// Registry numbers used here (21000 block): mirrormere 21000, relic_nopokedb 21010,
+// chronicle_page_2 21011, itm_mail_satchel 21012 (a stub key item for the Courier's quest).
+(
+  // The Verge road's end, west of Reedwater Landing, facing the landing.
+  spawn: (pos: (-120.0, 0.0, -140.0), yaw: 1.2217),
+  entities: [
+    // --- Lanterns: L06 to L09 ---------------------------------------------------------------
+    Lantern(id: "lantern_l06", pos: (-72.0, 0.0, -128.0), yaw: 0.7854),
+    Lantern(id: "lantern_l07", pos: (-76.0, 0.0, -34.0), yaw: 3.1415927),
+    Lantern(id: "lantern_l08", pos: (-44.0, 0.0, 116.0), yaw: 0.0),
+    Lantern(id: "lantern_l09", pos: (85.0, 0.0, 56.0), yaw: 0.0),
+
+    // --- Water: the lake, the ford, the backwater, the village flood, the marsh --------------
+    // The lake: six deep pools around the island and the causeway. Surface at y = 0 (floor -4,
+    // depth 4); the sluice lowers it by 1.5 m (depth 2.5, still deep).
+    Pool(name: "mere_west_south", center: (0.0, -50.0), half_extents: (60.0, 70.0), depth_m: 4.0, floor_y_m: -4.0, lowered_by: "sluice.mirrormere.open", lowered_depth_m: 2.5),
+    Pool(name: "mere_west_north", center: (0.0, 63.0), half_extents: (60.0, 37.0), depth_m: 4.0, floor_y_m: -4.0, lowered_by: "sluice.mirrormere.open", lowered_depth_m: 2.5),
+    Pool(name: "mere_south", center: (100.0, -70.0), half_extents: (40.0, 50.0), depth_m: 4.0, floor_y_m: -4.0, lowered_by: "sluice.mirrormere.open", lowered_depth_m: 2.5),
+    Pool(name: "mere_east", center: (125.0, 5.0), half_extents: (15.0, 25.0), depth_m: 4.0, floor_y_m: -4.0, lowered_by: "sluice.mirrormere.open", lowered_depth_m: 2.5),
+    Pool(name: "mere_north_west", center: (70.0, 65.0), half_extents: (10.0, 35.0), depth_m: 4.0, floor_y_m: -4.0, lowered_by: "sluice.mirrormere.open", lowered_depth_m: 2.5),
+    Pool(name: "mere_north_east", center: (115.0, 65.0), half_extents: (25.0, 35.0), depth_m: 4.0, floor_y_m: -4.0, lowered_by: "sluice.mirrormere.open", lowered_depth_m: 2.5),
+    // The ford: a ridge 1.6 m under the surface from the village shore (x -60) to the island's
+    // side door (x 60). Deep until the sluice opens, then 0.1 m.
+    Pool(name: "ford", center: (0.0, 23.0), half_extents: (60.0, 3.0), depth_m: 1.6, floor_y_m: -1.6, lowered_by: "sluice.mirrormere.open", lowered_depth_m: 0.1),
+    // The backwater behind the village: 1 m deep, wades. The islet is at its middle.
+    Pool(name: "backwater", center: (-145.0, -28.0), half_extents: (11.0, 22.0), depth_m: 1.0, floor_y_m: -1.0),
+    // Stillwater Village is flooded to the knees (0.5 m on flat ground).
+    Pool(name: "stillwater", center: (-107.0, -28.0), half_extents: (23.0, 28.0), depth_m: 0.5),
+    // The Reed Marsh: shallow Blight water.
+    Pool(name: "marsh_west", center: (-110.0, 62.0), half_extents: (30.0, 20.0), depth_m: 0.4, blight: true),
+    Pool(name: "marsh_north", center: (-88.0, 110.0), half_extents: (16.0, 14.0), depth_m: 0.4, blight: true),
+    // Where the Drowned and the Reed Stalkers may go (`water_only`), and where reeds hide.
+    Water(name: "water_stillwater", center: (-107.0, -28.0), half_extents: (23.0, 28.0)),
+    Water(name: "water_backwater", center: (-145.0, -28.0), half_extents: (11.0, 22.0)),
+    Water(name: "water_marsh_west", center: (-110.0, 62.0), half_extents: (30.0, 20.0)),
+    Water(name: "water_marsh_north", center: (-88.0, 110.0), half_extents: (16.0, 14.0)),
+    Reeds(name: "reeds_marsh_east", center: (-90.0, 60.0), half_extents: (8.0, 12.0)),
+    Reeds(name: "reeds_marsh_west", center: (-120.0, 52.0), half_extents: (8.0, 6.0)),
+    Reeds(name: "reeds_marsh_north", center: (-88.0, 108.0), half_extents: (8.0, 8.0)),
+
+    // --- Authored messages -------------------------------------------------------------------
+    Message(id: "msg_mirrormere_arrive", pos: (-116.0, 0.0, -137.0),
+      text: "Mirrormere: a lake so still it holds the whole sky. The road runs east to a landing. Deep water is a wall; shallow water only slows you. Keep to the shore."),
+    Message(id: "msg_landing", pos: (-70.0, 0.0, -125.0),
+      text: "Reedwater Landing. Across the water, a drowned cathedral and its tower. The road north follows the shore to a village that kept its roofs and lost its floors."),
+    Message(id: "msg_village", pos: (-80.0, 0.0, -38.0),
+      text: "Stillwater Village, flooded to the knees. The Drowned stand in the streets as if waiting. Slow ones, but they grab. The chief's house is the largest."),
+    Message(id: "msg_belfry_shore", pos: (-61.0, 0.0, -52.0),
+      text: "A stair runs down into the lake here and does not come up. Something rings a bell below. A sluice is down there too, they say."),
+    Message(id: "msg_rowboat", pos: (-130.0, 0.0, -30.0),
+      text: "A rowboat, moored behind the village. The water past it is only chest deep, and an islet sits in the middle."),
+    Message(id: "msg_marsh", pos: (-74.0, 0.0, 36.0),
+      text: "The Reed Marsh. The green water is Blight: it eats at you while you stand in it. Antidote and clearwater are for after. Something moves in the reeds."),
+    Message(id: "msg_ossuary", pos: (-42.0, 0.0, 112.0),
+      text: "Ossuary Stair. The crypt below is sealed by fallen stone. The causeway to the cathedral runs from the east end of this shore."),
+    Message(id: "msg_causeway", pos: (82.0, 0.0, 90.0),
+      text: "The causeway to the Drowned Cathedral. Bell Acolytes keep it. Their bells ring the water. On a quiet day you can hear the choir inside."),
+    Message(id: "msg_forecourt", pos: (84.0, 0.0, 22.0),
+      text: "The nave's doors are open and the air in them is thick as fog. Whatever sings in there will not let you leave until one of you falls."),
+    Message(id: "msg_side_door", pos: (66.0, 0.0, 23.0),
+      text: "The side door. On the far side of the lake, a ford once ran from the village to here. The water covers it now."),
+
+    // --- Enemies: Drowned (slow, grab), Reed Stalkers, Marsh Crawlers, Bell Acolytes, Choir Knight
+    // Stillwater Village: the Drowned, standing in the flooded streets, in plain sight.
+    Enemy(name: "drowned_street_a", enemy: "drowned", pos: (-104.0, 0.0, -28.0), yaw: 1.5707964),
+    Enemy(name: "drowned_street_b", enemy: "drowned", pos: (-102.0, 0.0, -46.0), yaw: 0.0),
+    Enemy(name: "drowned_street_c", enemy: "drowned", pos: (-124.0, 0.0, -44.0), yaw: 1.5707964),
+    Enemy(name: "drowned_islet", enemy: "drowned", pos: (-148.0, 0.0, -40.0), yaw: 0.0),
+    // The Reed Marsh: stalkers in the reeds beside the road, crawlers in the open water.
+    Enemy(name: "stalker_road", enemy: "reed_stalker", pos: (-88.0, 0.0, 58.0), yaw: 1.5707964),
+    Enemy(name: "stalker_west", enemy: "reed_stalker", pos: (-120.0, 0.0, 52.0), yaw: 0.0),
+    Enemy(name: "stalker_north", enemy: "reed_stalker", pos: (-88.0, 0.0, 108.0), yaw: 0.0),
+    Enemy(name: "crawler_marsh_a", enemy: "marsh_crawler", pos: (-108.0, 0.0, 70.0), yaw: 3.1415927),
+    Enemy(name: "crawler_marsh_b", enemy: "marsh_crawler", pos: (-104.0, 0.0, 74.0), yaw: 3.1415927),
+    Enemy(name: "crawler_marsh_c", enemy: "marsh_crawler", pos: (-112.0, 0.0, 76.0), yaw: 3.1415927),
+    Enemy(name: "crawler_north_a", enemy: "marsh_crawler", pos: (-94.0, 0.0, 116.0), yaw: 3.1415927),
+    Enemy(name: "crawler_north_b", enemy: "marsh_crawler", pos: (-84.0, 0.0, 114.0), yaw: 3.1415927),
+    // The causeway and the forecourt: Bell Acolytes (casters) and the Choir Knight (elite).
+    Enemy(name: "bell_acolyte_head", enemy: "acolyte_bell", pos: (85.0, 0.0, 84.0), yaw: 3.1415927),
+    Enemy(name: "bell_acolyte_mid", enemy: "acolyte_bell", pos: (85.0, 0.0, 40.0), yaw: 3.1415927),
+    Enemy(name: "bell_acolyte_court", enemy: "acolyte_bell", pos: (94.0, 0.0, 25.0), yaw: 3.1415927),
+    Enemy(name: "choir_knight_court", enemy: "choir_knight", pos: (74.0, 0.0, 24.0), yaw: 3.1415927),
+
+    // --- Items, relics, and materials ---------------------------------------------------------
+    // Reedwater Landing.
+    Pickup(id: "clotweed_landing", item: "itm_clotweed", pos: (-76.0, 0.0, -124.0), count: 2, interact: true),
+    Chest(id: "chest_landing", pos: (-92.0, 0.0, -128.0), yaw: 1.5707964, loot: (item: "itm_forgeglass_shard", count: 3, glimmer: 150)),
+    // Stillwater Village: the chief's house holds Chronicle Page slot 2 and a Wick Bead; the
+    // Mail satchel (the Courier's quest) is in a house across the street.
+    Pickup(id: "page_chronicle_2", item: "chronicle_page_2", pos: (-98.0, 0.0, -10.0), codex: Some("work.fiery"), interact: true),
+    Pickup(id: "bead_chief", item: "itm_wick_bead", pos: (-94.0, 0.0, -12.0), interact: true),
+    Pickup(id: "satchel_village", item: "itm_mail_satchel", pos: (-114.0, 0.0, -18.0), interact: true),
+    Chest(id: "chest_village", pos: (-96.0, 0.0, -40.0), yaw: 3.1415927, loot: (item: "itm_pitch_oil", count: 2, glimmer: 200)),
+    Pickup(id: "salts_village", item: "itm_waking_salts", pos: (-80.0, 0.0, -30.0), count: 2, interact: true),
+    // The backwater islet: the NoPokeDB shield (a relic) and Flask Dew.
+    Pickup(id: "relic_nopokedb", item: "relic_nopokedb", pos: (-146.0, 0.0, -27.0), codex: Some("projects.nopokedb"), interact: true),
+    Pickup(id: "dew_islet", item: "itm_flask_dew", pos: (-146.0, 0.0, -24.0), interact: true),
+    // The Reed Marsh: cures for its Blight and Poison, left before the water; a chest inside.
+    Pickup(id: "clearwater_marsh", item: "itm_clearwater", pos: (-72.0, 0.0, 34.0), count: 2, interact: true),
+    Pickup(id: "antidote_marsh", item: "itm_antidote_root", pos: (-70.0, 0.0, 38.0), count: 2, interact: true),
+    Chest(id: "chest_marsh", pos: (-118.0, 0.0, 86.0), yaw: 3.1415927, loot: (item: "itm_forgeglass_shard", count: 3, glimmer: 250)),
+    // Ossuary Stair, the causeway, and the forecourt.
+    Pickup(id: "oil_ossuary", item: "itm_spark_oil", pos: (-48.0, 0.0, 112.0), count: 2, interact: true),
+    Pickup(id: "vial_causeway", item: "itm_glimmer_vial", pos: (86.0, 0.0, 70.0), interact: true),
+    Chest(id: "chest_forecourt", pos: (98.0, 0.0, 22.0), yaw: 3.1415927, loot: (item: "itm_glimmer_vial_large", count: 1, glimmer: 300)),
+
+    // --- B06's arena: the Drowned Cathedral's nave (x 68..104, z -17..17) ----------------------
+    // The boss: PLACEHOLDER. B06 (the Drowned Choir, an M7 work package) has no boss definition
+    // yet, so no Boss entity is placed. When it exists, add:
+    //   Boss(name: "b06", boss: "<b06 id>", pos: (86.0, 0.0, -9.0), yaw: 0.0,
+    //     gate: (pos: (85.0, 0.0, 19.0), yaw: 3.1415927, half_width_m: 4.0, depth_m: 3.0)),
+    // The fog gate is the plane z = 19 across the front door (x 81..89), opening south into the
+    // nave; the Choir waits at (86, 0, -9) facing it. L09 is 39 m from the gate (about 9 s).
+    // The Echo Stone stands just inside the door, west of the pillar row (the nave's lone one).
+    EchoStone(id: "stone_b06", pos: (72.0, 0.0, 12.0), yaw: 0.7854),
+  ],
+)

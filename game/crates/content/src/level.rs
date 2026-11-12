@@ -15,7 +15,7 @@
 //! - `entities.ron` ([`Entities`], required): the player spawn and a list of [`Entity`]
 //!   values: Lanterns, dummies, enemies, bosses with their fog gates, water, reeds, and the
 //!   world mechanics (ladders, lifts, doors, levers, hollow walls, pickups, chests,
-//!   messages, pools, and snow).
+//!   messages, pools, snow, and Echo Stones).
 //! - `dressing.ron` ([`Dressing`], optional): scatter rules and a few hand-placed props.
 //!
 //! Kit catalogs live in `kits/<name>.ron` ([`KitCatalog`]). Each piece has a model path
@@ -48,7 +48,9 @@
 //! [`Level::compile`] has to hand the core (a list on [`Scenario`]). WP-042 added the world
 //! mechanics this way: ladders, lifts, doors, levers, hollow walls, pickups, chests,
 //! messages, pools, and snow. A new sculpt operation is a new [`Sculpt`] variant and a match arm in
-//! [`Sculpt::apply`].
+//! [`Sculpt::apply`]. WP-060 added `EchoStone(id:, pos:, yaw:)` the same way: a level places
+//! the summoning spot of a boss arena in `entities.ron` instead of in a scenario file, and
+//! compile hands it to the core's Echo rules (`Scenario::echo_stones`).
 
 use std::collections::BTreeMap;
 
@@ -56,8 +58,8 @@ use serde::{Deserialize, Serialize};
 
 use crate::Scenario;
 use crate::scenario::{
-    BossSpawn, BoxCollider, Chest, Door, Dummy, EnemySpawn, Heightfield, HollowWall, Ladder,
-    Lantern, Lever, LeverTarget, Lift, Message, NpcSpawn, Pickup, Pool, StationSpawn, Zone,
+    BossSpawn, BoxCollider, Chest, Door, Dummy, EchoStone, EnemySpawn, Heightfield, HollowWall,
+    Ladder, Lantern, Lever, LeverTarget, Lift, Message, NpcSpawn, Pickup, Pool, StationSpawn, Zone,
 };
 
 /// The files an area directory can hold, in load order.
@@ -825,6 +827,11 @@ pub enum Entity {
     Npc(NpcSpawn),
     /// A station: the Archive shelves, the Ledger Stand, the Mirror (WP-068).
     Station(StationSpawn),
+    /// An Echo Stone: stand within its ring and ring the Echo Bell to summon the selected
+    /// Echo beside it (WP-060). Place one inside each boss arena's fog gate, for example
+    /// `EchoStone(id: "stone_b06", pos: (72.0, 0.0, 13.0), yaw: 2.356)`. `id` is unique in
+    /// the level; `yaw` is the direction the Echo faces when it appears.
+    EchoStone(EchoStone),
 }
 
 impl Entity {
@@ -849,6 +856,7 @@ impl Entity {
             Self::Snow(_) => "Snow",
             Self::Npc(_) => "Npc",
             Self::Station(_) => "Station",
+            Self::EchoStone(_) => "EchoStone",
         }
     }
 
@@ -871,6 +879,7 @@ impl Entity {
             Self::Pool(p) => &p.name,
             Self::Npc(n) => &n.npc,
             Self::Station(s) => &s.station,
+            Self::EchoStone(s) => &s.id,
         }
     }
 
@@ -891,6 +900,7 @@ impl Entity {
             Self::Message(m) => Some(m.pos),
             Self::Npc(n) => Some(n.pos),
             Self::Station(s) => Some(s.pos),
+            Self::EchoStone(s) => Some(s.pos),
             Self::Water(_)
             | Self::Reeds(_)
             | Self::Snow(_)
@@ -1542,6 +1552,7 @@ impl Level {
                 Entity::Snow(z) => sc.snow.push(z.clone()),
                 Entity::Npc(n) => sc.npcs.push(n.clone()),
                 Entity::Station(s) => sc.stations.push(s.clone()),
+                Entity::EchoStone(s) => sc.echo_stones.push(s.clone()),
             }
         }
         sc.check().map_err(|e| format!("entities.ron: {e}"))?;

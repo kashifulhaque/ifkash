@@ -405,7 +405,9 @@ Each area directory in `game/data/levels/` holds:
   rotation, plus freely placed, scalable landmarks.
 - `entities.ron`: the player spawn and a list of entities: Lanterns, enemies, bosses
   with their fog gates, dummies, water, and reeds. Doors, levers, lifts, items, and
-  messages join this list as new entity kinds.
+  messages join this list as new entity kinds. An Echo Stone is
+  `EchoStone(id:, pos:, yaw:)`: a boss arena's region WP places one inside its fog gate
+  (WP-060 added it).
 - `dressing.ron`: scatter rules (Poisson-disk sampled props by tag and density, masked
   by region, terrain slope, and paths) and a few hand-placed props. The renderer
   applies these; the core ignores them unless a rule marks props as colliders.

@@ -22,6 +22,8 @@ mod hollow_tests;
 pub mod lantern;
 pub mod lantern_menu;
 pub mod mechanics;
+#[cfg(test)]
+mod mirrormere_tests;
 pub mod quests;
 #[cfg(test)]
 mod tests;

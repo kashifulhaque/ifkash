@@ -192,6 +192,7 @@ fn hash_ignores_comments_and_whitespace() {
                     .chain(ron_files("levels/waking_hollow"))
                     .chain(ron_files("levels/verge"))
                     .chain(ron_files("levels/hollowhearth"))
+                    .chain(ron_files("levels/mirrormere"))
                     .map(|(p, t)| (p, format!("// noise\n{t}")))
                     .collect(),
             )

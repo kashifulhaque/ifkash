@@ -1,0 +1,108 @@
+// Mirrormere layout (WP-060): greybox blocks (scaled `block_unit`, centered on `pos`). Y is up;
+// the ground is 0 m everywhere except the lake basin (terrain.ron). Places, with centers (x, z):
+//   Reedwater Landing   ( -72,-128)  boat shed and quay on the south shore (L06)
+//   Stillwater Village  (-107, -28)  five houses in knee-deep water; the chief's house at
+//                                    (-96, -10) holds Chronicle Page 2; L07 stands on the dry
+//                                    east edge at (-76, -34); the belfry shore plug is south of it
+//   the backwater       (-145, -28)  a wading pool behind the village, an islet at its middle
+//   the Reed Marsh      (-110,  62)  Blight water, reeds, crawlers and stalkers; the road skirts it
+//   Ossuary Stair       ( -44, 128)  L08 on the north shore, a sealed crypt mouth behind it
+//   the lake            x -60..140, z -120..100: deep water (entities.ron pools); the causeway
+//                       (x 80..90, z 30..100) and the ford (z 20..26, 1.6 m under) cross it
+//   the Cathedral       island x 60..110, z -20..30: nave x 68..104, z -17..17; forecourt north
+//   L09 Cathedral Causeway (85, 56)  on the causeway, 39 m from the nave's fog gate
+// Walks between Lanterns are checked by world_state/mirrormere_tests.rs.
+(
+  landmarks: [
+    // --- Borders: 6 m walls on the edge of the world -------------------------------------
+    (name: "border_n", kit: "block_unit", pos: (0.0, 3.00, 159.0), scale: (320.0, 6.0, 2.0)),
+    (name: "border_s", kit: "block_unit", pos: (0.0, 3.00, -159.0), scale: (320.0, 6.0, 2.0)),
+    (name: "border_e", kit: "block_unit", pos: (159.0, 3.00, 0.0), scale: (2.0, 6.0, 320.0)),
+    (name: "border_w", kit: "block_unit", pos: (-159.0, 3.00, 0.0), scale: (2.0, 6.0, 320.0)),
+    // --- The Spire: a far, thin silhouette over the north shore; the lake 'reflects' it ----
+    (name: "spire_base", kit: "block_unit", pos: (-20.0, 8.00, 148.0), scale: (18.0, 16.0, 18.0)),
+    (name: "spire_mid", kit: "block_unit", pos: (-20.0, 29.00, 148.0), scale: (11.0, 26.0, 11.0)),
+    (name: "spire_top", kit: "block_unit", pos: (-20.0, 53.00, 148.0), scale: (6.0, 22.0, 6.0)),
+    (name: "spire_tip", kit: "block_unit", pos: (-20.0, 75.00, 148.0), scale: (2.5, 22.0, 2.5)),
+    // --- The Drowned Cathedral (island x 60..110, z -20..30): nave, forecourt, bell tower ---
+    // The nave (B06's arena): interior x 68..104, z -17..17, open to the sky, 10 m walls. The
+    // front wall (north, z 17..19) has a door gap x 81..89 and a lintel; the fog gate is the
+    // plane z = 19 across it, opening south into the nave. Eight pillars stand in two rows.
+    (name: "nave_w", kit: "block_unit", pos: (67.0, 5.00, 0.0), scale: (2.0, 10.0, 36.0)),
+    (name: "nave_e", kit: "block_unit", pos: (105.0, 5.00, 0.0), scale: (2.0, 10.0, 36.0)),
+    (name: "nave_apse", kit: "block_unit", pos: (86.0, 5.00, -17.0), scale: (40.0, 10.0, 2.0)),
+    (name: "nave_front_w", kit: "block_unit", pos: (73.5, 5.00, 18.0), scale: (15.0, 10.0, 2.0)),
+    (name: "nave_front_e", kit: "block_unit", pos: (97.5, 5.00, 18.0), scale: (17.0, 10.0, 2.0)),
+    (name: "nave_lintel", kit: "block_unit", pos: (85.0, 9.00, 18.0), scale: (8.0, 2.0, 2.0)),
+    (name: "nave_pillar_w0", kit: "block_unit", pos: (76.0, 3.50, -10.0), scale: (1.5, 7.0, 1.5)),
+    (name: "nave_pillar_e0", kit: "block_unit", pos: (96.0, 3.50, -10.0), scale: (1.5, 7.0, 1.5)),
+    (name: "nave_pillar_w1", kit: "block_unit", pos: (76.0, 3.50, -3.0), scale: (1.5, 7.0, 1.5)),
+    (name: "nave_pillar_e1", kit: "block_unit", pos: (96.0, 3.50, -3.0), scale: (1.5, 7.0, 1.5)),
+    (name: "nave_pillar_w2", kit: "block_unit", pos: (76.0, 3.50, 4.0), scale: (1.5, 7.0, 1.5)),
+    (name: "nave_pillar_e2", kit: "block_unit", pos: (96.0, 3.50, 4.0), scale: (1.5, 7.0, 1.5)),
+    (name: "nave_pillar_w3", kit: "block_unit", pos: (76.0, 3.50, 11.0), scale: (1.5, 7.0, 1.5)),
+    (name: "nave_pillar_e3", kit: "block_unit", pos: (96.0, 3.50, 11.0), scale: (1.5, 7.0, 1.5)),
+    (name: "nave_dais", kit: "block_unit", pos: (86.0, 0.25, -13.0), scale: (10.0, 0.5, 6.0)),
+    // The forecourt (x 62..110, z 19..30): a low wall on the west with the side door's gap
+    // (z 21..25, where the ford lands), the bell tower on the east end.
+    (name: "court_w_s", kit: "block_unit", pos: (63.0, 2.50, 20.0), scale: (2.0, 5.0, 2.0)),
+    (name: "court_w_n", kit: "block_unit", pos: (63.0, 2.50, 27.5), scale: (2.0, 5.0, 5.0)),
+    (name: "court_arch_lintel", kit: "block_unit", pos: (63.0, 4.50, 23.0), scale: (2.0, 1.0, 4.0)),
+    (name: "court_e", kit: "block_unit", pos: (109.0, 2.50, 24.5), scale: (2.0, 5.0, 11.0)),
+    (name: "tower_body", kit: "block_unit", pos: (104.0, 18.00, 24.0), scale: (8.0, 36.0, 8.0)),
+    (name: "tower_belfry", kit: "block_unit", pos: (104.0, 40.00, 24.0), scale: (6.0, 8.0, 6.0)),
+    (name: "tower_spire", kit: "block_unit", pos: (104.0, 50.00, 24.0), scale: (2.0, 12.0, 2.0)),
+    (name: "court_column_a", kit: "block_unit", pos: (74.0, 2.00, 26.0), scale: (1.2, 4.0, 1.2)),
+    (name: "court_column_b", kit: "block_unit", pos: (96.0, 1.50, 26.0), scale: (1.2, 3.0, 1.2)),
+    // --- Stillwater Village: roofless houses, 3 m walls, standing in knee-deep water -------
+    (name: "chief_s", kit: "block_unit", pos: (-96.0, 1.50, -14.0), scale: (10.0, 3.0, 1.0)),
+    (name: "chief_n", kit: "block_unit", pos: (-96.0, 1.50, -6.0), scale: (10.0, 3.0, 1.0)),
+    (name: "chief_w", kit: "block_unit", pos: (-101.0, 1.50, -10.0), scale: (1.0, 3.0, 8.0)),
+    (name: "chief_e_a", kit: "block_unit", pos: (-91.0, 1.50, -12.8), scale: (1.0, 3.0, 2.5)),
+    (name: "chief_e_b", kit: "block_unit", pos: (-91.0, 1.50, -7.2), scale: (1.0, 3.0, 2.5)),
+    (name: "house_b_s_a", kit: "block_unit", pos: (-114.8, 1.50, -19.0), scale: (2.5, 3.0, 1.0)),
+    (name: "house_b_s_b", kit: "block_unit", pos: (-109.2, 1.50, -19.0), scale: (2.5, 3.0, 1.0)),
+    (name: "house_b_n", kit: "block_unit", pos: (-112.0, 1.50, -13.0), scale: (8.0, 3.0, 1.0)),
+    (name: "house_b_w", kit: "block_unit", pos: (-116.0, 1.50, -16.0), scale: (1.0, 3.0, 6.0)),
+    (name: "house_b_e", kit: "block_unit", pos: (-108.0, 1.50, -16.0), scale: (1.0, 3.0, 6.0)),
+    (name: "house_c_s", kit: "block_unit", pos: (-112.0, 1.50, -44.0), scale: (8.0, 3.0, 1.0)),
+    (name: "house_c_n", kit: "block_unit", pos: (-112.0, 1.50, -36.0), scale: (8.0, 3.0, 1.0)),
+    (name: "house_c_w", kit: "block_unit", pos: (-116.0, 1.50, -40.0), scale: (1.0, 3.0, 8.0)),
+    (name: "house_c_e_a", kit: "block_unit", pos: (-108.0, 1.50, -42.8), scale: (1.0, 3.0, 2.5)),
+    (name: "house_c_e_b", kit: "block_unit", pos: (-108.0, 1.50, -37.2), scale: (1.0, 3.0, 2.5)),
+    (name: "house_d_s", kit: "block_unit", pos: (-96.0, 1.50, -41.0), scale: (8.0, 3.0, 1.0)),
+    (name: "house_d_n_a", kit: "block_unit", pos: (-98.8, 1.50, -35.0), scale: (2.5, 3.0, 1.0)),
+    (name: "house_d_n_b", kit: "block_unit", pos: (-93.2, 1.50, -35.0), scale: (2.5, 3.0, 1.0)),
+    (name: "house_d_w", kit: "block_unit", pos: (-100.0, 1.50, -38.0), scale: (1.0, 3.0, 6.0)),
+    (name: "house_d_e", kit: "block_unit", pos: (-92.0, 1.50, -38.0), scale: (1.0, 3.0, 6.0)),
+    (name: "house_e_s", kit: "block_unit", pos: (-122.0, 1.50, -31.0), scale: (6.0, 3.0, 1.0)),
+    (name: "house_e_n", kit: "block_unit", pos: (-122.0, 1.50, -25.0), scale: (6.0, 3.0, 1.0)),
+    (name: "house_e_w", kit: "block_unit", pos: (-125.0, 1.50, -28.0), scale: (1.0, 3.0, 6.0)),
+    (name: "house_e_e_a", kit: "block_unit", pos: (-119.0, 1.50, -30.2), scale: (1.0, 3.0, 1.5)),
+    (name: "house_e_e_b", kit: "block_unit", pos: (-119.0, 1.50, -25.8), scale: (1.0, 3.0, 1.5)),
+    // The belfry shore: the sealed way down to the Drowned Belfry (D3, WP-061).
+    (name: "belfry_w", kit: "block_unit", pos: (-66.0, 3.00, -62.0), scale: (4.0, 6.0, 10.0)),
+    // The moored rowboat behind the village, at the backwater's near shore.
+    (name: "rowboat", kit: "block_unit", pos: (-132.0, 0.40, -26.0), scale: (4.0, 0.8, 1.6)),
+    (name: "rowboat_stern", kit: "block_unit", pos: (-134.0, 0.70, -26.0), scale: (0.6, 1.4, 1.6)),
+    // --- Reedwater Landing: a boat shed and a quay of stacked crates ---------------------
+    (name: "shed_back", kit: "block_unit", pos: (-96.0, 2.00, -134.0), scale: (10.0, 4.0, 1.0)),
+    (name: "shed_w", kit: "block_unit", pos: (-101.0, 2.00, -130.0), scale: (1.0, 4.0, 8.0)),
+    (name: "shed_e", kit: "block_unit", pos: (-91.0, 2.00, -130.0), scale: (1.0, 4.0, 8.0)),
+    (name: "quay_a", kit: "block_unit", pos: (-66.0, 0.50, -123.0), scale: (8.0, 1.0, 2.0)),
+    (name: "quay_b", kit: "block_unit", pos: (-60.0, 1.00, -124.0), scale: (2.0, 2.0, 2.0)),
+    // --- Ossuary Stair (L08): a stair down into a sealed crypt mouth (D2, WP-061) ----------
+    (name: "ossuary_w", kit: "block_unit", pos: (-56.0, 3.50, 128.0), scale: (14.0, 7.0, 10.0)),
+    (name: "ossuary_e", kit: "block_unit", pos: (-32.0, 3.50, 128.0), scale: (14.0, 7.0, 10.0)),
+    (name: "ossuary_lintel", kit: "block_unit", pos: (-44.0, 8.50, 128.0), scale: (10.0, 3.0, 10.0)),
+    (name: "ossuary_plug", kit: "block_unit", pos: (-44.0, 2.50, 132.5), scale: (10.0, 5.0, 1.0)),
+    // --- Marsh and causeway ruins: broken arches along the causeway, a sunken shrine -------
+    (name: "causeway_arch_w", kit: "block_unit", pos: (80.5, 2.50, 84.0), scale: (1.0, 5.0, 1.0)),
+    (name: "causeway_arch_e", kit: "block_unit", pos: (89.5, 2.50, 84.0), scale: (1.0, 5.0, 1.0)),
+    (name: "causeway_post_w", kit: "block_unit", pos: (80.5, 1.25, 40.0), scale: (1.0, 2.5, 1.0)),
+    (name: "causeway_post_e", kit: "block_unit", pos: (89.5, 1.25, 40.0), scale: (1.0, 2.5, 1.0)),
+    (name: "marsh_shrine", kit: "block_unit", pos: (-118.0, 1.25, 90.0), scale: (4.0, 2.5, 4.0)),
+    (name: "marsh_stump_a", kit: "block_unit", pos: (-96.0, 1.00, 70.0), scale: (1.5, 2.0, 1.5)),
+    (name: "marsh_stump_b", kit: "block_unit", pos: (-126.0, 1.00, 56.0), scale: (1.5, 2.0, 1.5)),
+  ],
+)

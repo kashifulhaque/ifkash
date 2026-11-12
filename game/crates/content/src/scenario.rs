@@ -390,6 +390,19 @@ pub struct Pool {
     /// Builds Blight while the player wades in it.
     #[serde(default)]
     pub blight: bool,
+    /// The ground level under the pool, in meters (WP-060). The water's surface is
+    /// `floor_y_m + depth`; the core only reads the depth, so this is for the renderer.
+    /// Defaults to 0, a pool lying on flat ground (the surface is then `depth` above it).
+    #[serde(default)]
+    pub floor_y_m: f32,
+    /// A world flag that lowers the water (WP-060): while it is set, the pool's depth is
+    /// `lowered_depth_m`. The Drowned Belfry's sluice sets `sluice.mirrormere.open`. Needs
+    /// `lowered_depth_m`.
+    #[serde(default)]
+    pub lowered_by: Option<String>,
+    /// The depth while `lowered_by` is set, in meters.
+    #[serde(default)]
+    pub lowered_depth_m: Option<f32>,
 }
 
 /// A training dummy.
@@ -750,6 +763,15 @@ impl Scenario {
             if p.raised_depth_m.is_some_and(|r| r <= 0.0) {
                 return Err(format!(
                     "pool {:?}: raised_depth_m must be positive",
+                    p.name
+                ));
+            }
+            if p.lowered_by.is_some() != p.lowered_depth_m.is_some()
+                || p.lowered_by.as_deref() == Some("")
+                || p.lowered_depth_m.is_some_and(|d| d <= 0.0)
+            {
+                return Err(format!(
+                    "pool {:?}: lowered_by (a flag) and a positive lowered_depth_m go together",
                     p.name
                 ));
             }

@@ -225,6 +225,12 @@
     (id: "relic_shrike_lite_circuit", num: 11211),
     (id: "chronicle_page_1", num: 11212),
 
+    // WP-060: Mirrormere. 21000-21999 are the lake region's content.
+    (id: "mirrormere", num: 21000),
+    (id: "relic_nopokedb", num: 21010),
+    (id: "chronicle_page_2", num: 21011),
+    (id: "itm_mail_satchel", num: 21012), // stub key item for the Courier's quest (WP-068); no item-table entry yet
+
     // WP-050: 14000-14099 are leveling and respec entries.
     (id: "itm_rewrite_quill", num: 14000), // WP-050: the Rewrite Quill, consumed by respec
     // WP-051: class movesets (13000s dagger, 13100s greatsword, 13200s curved sword, 13300s

@@ -1,0 +1,43 @@
+// The Mirrormere terrain: flat ground at 0 m with a lake basin. Vertices are 2 m apart (161 x 161).
+//
+// Water model (see entities.ron's Pool entries): a pool's `depth_m` is the water above its
+// `floor_y_m`, and the surface is their sum, so the lake's surface is at y = 0 and its basin
+// floor at -4 m. A pool's rectangle runs out to the TOP of the bank, so the invisible wall of
+// deep water stops the player at the lip, never on the slope. Banks are sheer (4 m over one
+// 2 m cell, 63 degrees), which the navigation grid treats as a wall: nothing path-finds into
+// the basin. The two ways across are land: the causeway (0 m), and the ford, a ridge 1.6 m under
+// the surface that wades once the Belfry's sluice lowers the water by 1.5 m.
+#![enable(implicit_some)]
+(
+  spacing_m: 2.0,
+  base_y: 0.0,
+  ops: [
+    // Distant hills, scenery only, outside the playable ground.
+    RaiseCircle(center: (-150.0, 150.0), radius: 40.0, height: 12.0),
+    RaiseCircle(center: (150.0, 150.0), radius: 40.0, height: 14.0),
+    RaiseCircle(center: (150.0, -150.0), radius: 35.0, height: 9.0),
+
+    // The lake basin: the rectangle x -60..140, z -120..100, set 2 m in from its lip.
+    SetRect(min: (-58.0, -118.0), max: (138.0, 98.0), height: -4.0),
+    // The Cathedral island, x 60..110, z -20..30.
+    SetRect(min: (60.0, -20.0), max: (110.0, 30.0), height: 0.0),
+    // The causeway, x 80..90, from the island (z 30) to the north shore (z 100).
+    SetRect(min: (80.0, 30.0), max: (90.0, 100.0), height: 0.0),
+    // The ford: a ridge 1.6 m under the surface, z 20..26, from the village shore to the island.
+    SetRect(min: (-58.0, 20.0), max: (58.0, 26.0), height: -1.6),
+
+    // The backwater behind the village: a wading pool 1 m deep with an islet in the middle.
+    SetRect(min: (-154.0, -48.0), max: (-136.0, -8.0), height: -1.0),
+    SetRect(min: (-150.0, -32.0), max: (-142.0, -22.0), height: 0.0),
+
+    // Roads, flat at 0 m (scatter keeps clear of them).
+    // R1: the Verge road to Reedwater Landing (L06).
+    FlattenPath(points: [(-130.0, -142.0), (-100.0, -136.0), (-72.0, -128.0)], width: 6.0, height: 0.0),
+    // R2: L06 north along the west shore to Stillwater Village (L07).
+    FlattenPath(points: [(-72.0, -128.0), (-84.0, -100.0), (-82.0, -70.0), (-80.0, -44.0), (-76.0, -34.0)], width: 6.0, height: 0.0),
+    // R3: L07 north between the marsh and the lake to the north shore and L08.
+    FlattenPath(points: [(-76.0, -34.0), (-76.0, -10.0), (-72.0, 20.0), (-70.0, 50.0), (-68.0, 84.0), (-64.0, 104.0), (-52.0, 114.0), (-44.0, 116.0)], width: 6.0, height: 0.0),
+    // R4: L08 east along the north shore to the causeway, then down it to L09.
+    FlattenPath(points: [(-44.0, 116.0), (0.0, 112.0), (60.0, 106.0), (85.0, 100.0), (85.0, 56.0)], width: 6.0, height: 0.0),
+  ],
+)

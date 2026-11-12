@@ -805,6 +805,26 @@ const EMBEDDED_LEVELS: &[(&str, &str)] = &[
         include_str!("../../../data/levels/verge/dressing.ron"),
     ),
     (
+        "levels/mirrormere/area.ron",
+        include_str!("../../../data/levels/mirrormere/area.ron"),
+    ),
+    (
+        "levels/mirrormere/terrain.ron",
+        include_str!("../../../data/levels/mirrormere/terrain.ron"),
+    ),
+    (
+        "levels/mirrormere/layout.ron",
+        include_str!("../../../data/levels/mirrormere/layout.ron"),
+    ),
+    (
+        "levels/mirrormere/entities.ron",
+        include_str!("../../../data/levels/mirrormere/entities.ron"),
+    ),
+    (
+        "levels/mirrormere/dressing.ron",
+        include_str!("../../../data/levels/mirrormere/dressing.ron"),
+    ),
+    (
         "levels/waking_hollow/area.ron",
         include_str!("../../../data/levels/waking_hollow/area.ron"),
     ),

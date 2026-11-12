@@ -1,0 +1,32 @@
+// Mirrormere (WP-060): the lake region, 320 x 320 m. Y is up. The Verge road reaches the south-
+// west corner; the Lantern chain runs L06 Reedwater Landing -> L07 Stillwater Village -> L08
+// Ossuary Stair -> L09 Cathedral Causeway. See docs/game/02-world.md, "Mirrormere", and the
+// notes at the top of layout.ron and entities.ron.
+(
+  id: "mirrormere",
+  name: "Mirrormere",
+  seed: 20261301,
+  bounds: (min: (-160.0, -160.0), max: (160.0, 160.0)),
+  kill_y: -50.0,
+  start_glimmer: 0,
+  // A still, pale morning: a long fog far plane so the Cathedral's tower shows from L06.
+  ambient: (
+    sky: "day",
+    fog_color: (0.72, 0.78, 0.8),
+    fog_near_m: 140.0,
+    fog_far_m: 520.0,
+    sun_dir: (-0.35, -0.7, -0.45),
+    sun_color: (0.92, 0.95, 1.0),
+    sun_intensity: 0.85,
+    ambient_color: (0.58, 0.66, 0.74),
+    ambient_intensity: 0.6,
+  ),
+  regions: [
+    // Dry ground for grass: the west and south shores and the north shore.
+    (name: "shore_w", points: [(-156.0, -156.0), (-64.0, -156.0), (-64.0, 34.0), (-156.0, 34.0)]),
+    (name: "shore_s", points: [(-62.0, -156.0), (156.0, -156.0), (156.0, -124.0), (-62.0, -124.0)]),
+    (name: "shore_n", points: [(-60.0, 104.0), (156.0, 104.0), (156.0, 156.0), (-60.0, 156.0)]),
+    // The Reed Marsh: dead trees, stones, no grass.
+    (name: "marsh", points: [(-146.0, 38.0), (-72.0, 38.0), (-72.0, 126.0), (-146.0, 126.0)]),
+  ],
+)

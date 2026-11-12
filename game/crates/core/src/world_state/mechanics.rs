@@ -767,13 +767,10 @@ fn inside(center: [f32; 2], half: [f32; 2], x: f32, z: f32) -> bool {
     (x - center[0]).abs() <= half[0] && (z - center[1]).abs() <= half[1]
 }
 
-/// A pool's depth now, in meters: a lever may have raised it.
+/// A pool's depth now, in meters: a lever may have raised it, or a sluice lowered it
+/// (`water_level`).
 fn pool_depth(world: &World, i: usize) -> f32 {
-    let p = &world.layout.pools[i];
-    match p.raised_depth_m {
-        Some(r) if world.state.flags.is_set(&flags::pool_raised(&p.name)) => r,
-        _ => p.depth_m,
-    }
+    water_level::depth(world, i)
 }
 
 /// Applies water and snow to the player before the controller moves them: shallow water
@@ -947,6 +944,8 @@ pub fn render_state(world: &World) -> Vec<f32> {
     out.extend((0..l.pools.len()).map(|i| pool_depth(world, i)));
     out
 }
+
+pub mod water_level;
 
 #[cfg(test)]
 mod tests;

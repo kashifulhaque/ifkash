@@ -72,11 +72,32 @@ const HOLLOWHEARTH: Record<string, SpawnPoint> = {
   overview: { x: 0, z: -14, yaw: 0, note: 'mid-hall, looking north across the hub' }
 };
 
+// Mirrormere (WP-060): each Lantern, the landmark view, and the side branches. Lantern spawns
+// stand one meter or two off the Lantern. Yaw is from +Z toward +X.
+const MIRRORMERE: Record<string, SpawnPoint> = {
+  road: { x: -120, z: -140, yaw: 1.2217, note: 'the Verge road, the area start' },
+  l06: { x: -74, z: -126, yaw: 0.8, note: 'beside L06, Reedwater Landing, facing the Cathedral tower across the lake' },
+  landmark: { x: -74, z: -126, yaw: 0.8, note: 'the landmark view: L06 looking at the Drowned Cathedral' },
+  l07: { x: -78, z: -31, yaw: HALF_PI, note: 'beside L07, Stillwater Village, facing the lake' },
+  village: { x: -88, z: -34, yaw: -HALF_PI, note: 'the flooded village street, facing the Drowned' },
+  chief: { x: -92, z: -10, yaw: -HALF_PI, note: "at the chief's house door, Chronicle Page 2 inside" },
+  islet: { x: -131, z: -27, yaw: -HALF_PI, note: 'behind the village at the rowboat, facing the islet' },
+  marsh: { x: -74, z: 34, yaw: 0, note: 'the road beside the Reed Marsh' },
+  l08: { x: -44, z: 113.5, yaw: 0, note: 'beside L08, Ossuary Stair' },
+  causeway: { x: 85, z: 98, yaw: Math.PI, note: 'the head of the causeway, facing the Cathedral' },
+  l09: { x: 85, z: 59, yaw: Math.PI, note: 'beside L09, Cathedral Causeway, facing the nave doors' },
+  forecourt: { x: 85, z: 26, yaw: Math.PI, note: "the Cathedral forecourt, before the nave's fog gate" },
+  nave: { x: 86, z: 8, yaw: Math.PI, note: "inside B06's nave, facing the apse" },
+  ford_west: { x: -64, z: 23, yaw: HALF_PI, note: 'the village end of the ford (a wall until the sluice opens)' },
+  side_door: { x: 66, z: 23, yaw: -HALF_PI, note: "the Cathedral's side door, where the ford lands" }
+};
+
 const TABLES: Record<string, Record<string, SpawnPoint>> = {
   test_field: TEST_FIELD,
   waking_hollow: WAKING_HOLLOW,
   verge: VERGE,
   hollowhearth: HOLLOWHEARTH,
+  mirrormere: MIRRORMERE,
   m0_flat: {
     far: { x: 40, z: 40, yaw: Math.PI, note: 'far corner of the flat floor' }
   }

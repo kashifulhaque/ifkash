@@ -24,6 +24,7 @@ import {
 } from 'three';
 import { manifestUrl } from '../kits/manifest';
 import { HearthProps } from './hearth';
+import { createPoolWater, type PoolData } from '../water';
 
 type V3 = [number, number, number];
 
@@ -113,6 +114,11 @@ export class PropsRenderer {
       }
       if (kind === 'Snow') {
         this.snow(d);
+        any = true;
+        continue;
+      }
+      if (kind === 'EchoStone') {
+        this.echoStone(d);
         any = true;
         continue;
       }
@@ -337,18 +343,17 @@ export class PropsRenderer {
   }
 
   private pool(d: Record<string, unknown>): Updater {
-    const [hx, hz] = d.half_extents as [number, number];
-    const [x, z] = d.center as [number, number];
-    const blight = d.blight as boolean;
-    const m = this.mat(blight ? '#6a8f3a' : '#2f6d8f', { transparent: true, opacity: 0.55, side: DoubleSide });
-    const plane = new Mesh(this.geo(new PlaneGeometry(hx * 2, hz * 2)), m);
-    plane.rotation.x = -Math.PI / 2;
-    const g = this.add(plane, [x, d.depth_m as number, z]);
-    let y = d.depth_m as number;
-    return (v, dt) => {
-      y = ease(y, v, dt, 200);
-      g.position.y = y;
-    };
+    // The water is drawn by `render/water` (WP-060): its surface is the pool's floor plus the
+    // core's depth, so a lake in a basin sits level with its shore and drains when the sluice opens.
+    const water = createPoolWater(
+      d as unknown as PoolData,
+      token('--fjord', '#2f6d8f'),
+      token('--moss', '#6a8f3a')
+    );
+    this.root.add(water.group);
+    this.geometries.push(...water.geometries);
+    this.materials.push(...water.materials);
+    return (v, dt) => water.update(v, dt, this.clock);
   }
 
   private snow(d: Record<string, unknown>): void {
@@ -357,6 +362,20 @@ export class PropsRenderer {
     const plane = new Mesh(this.geo(new PlaneGeometry(hx * 2, hz * 2)), this.mat('#f2f5f7', { side: DoubleSide }));
     plane.rotation.x = -Math.PI / 2;
     this.add(plane, [x, 0.12, z]);
+  }
+
+  /** An Echo Stone (WP-060): a short standing stone with a faint glow, where the Echo Bell works. */
+  private echoStone(d: Record<string, unknown>): void {
+    const stone = new Mesh(this.geo(new CylinderGeometry(0.35, 0.5, 1.3, 6)), this.mat('#8a8f98'));
+    stone.position.y = 0.65;
+    const glow = new Mesh(
+      this.geo(new OctahedronGeometry(0.16)),
+      this.mat('#d8e2ea', { emissive: new Color('#9fb6c6'), emissiveIntensity: 0.7 })
+    );
+    glow.position.y = 1.5;
+    const g = new Group();
+    g.add(stone, glow);
+    this.add(g, d.pos as V3, d.yaw as number);
   }
 
   private fogGate(g: Record<string, unknown>): void {

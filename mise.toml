@@ -100,8 +100,12 @@ description = "Run game simulation benchmarks"
 run = "cargo run -q --release -p lf-tools -- bench"
 
 [tasks."game:wasm"]
-description = "Build lf-wasm into src/lib/latticefall/wasm/ (stub until WP-006)"
-run = "echo 'game:wasm: not yet implemented'"
+env = { RUSTUP_TOOLCHAIN = "1.99.1" }
+description = "Build lf-wasm into src/lib/latticefall/wasm/ and check it against native replays"
+run = """
+bash game/scripts/build-wasm.sh
+mise exec -- node game/crates/wasm/tests/golden.mjs
+"""
 
 [tasks."game:py"]
 dir = "game/python"

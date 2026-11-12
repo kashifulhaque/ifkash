@@ -22,7 +22,8 @@ api.old/
 
 # Latticefall game
 game/target/
-src/lib/latticefall/wasm/
+# src/lib/latticefall/wasm/ is committed until ADR 0003 (GitHub Actions deploy) is approved,
+# because the Pages Git integration can't build Rust. `mise run game:wasm` regenerates it.
 game/python/.venv/
 game/python/target/
 game/python/**/*.so

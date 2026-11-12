@@ -11,3 +11,9 @@ workspace = true
 
 [lib]
 crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+lf-core.workspace = true
+lf-content.workspace = true
+# The CLI that generates the JS glue must be the same version; scripts/build-wasm.sh checks.
+wasm-bindgen = "=0.2.106"

@@ -6,6 +6,7 @@ pub mod input;
 pub mod math;
 pub mod replay;
 pub mod rng;
+pub mod snapshot;
 pub mod systems;
 pub mod tick;
 pub mod world;

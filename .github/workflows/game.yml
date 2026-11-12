@@ -120,15 +120,26 @@ jobs:
         with:
           tool: wasm-bindgen-cli@${{ steps.wbg.outputs.version }}
 
-      # wasm-opt comes from binaryen.
+      # wasm-opt comes from binaryen. Use the same release as local builds (version 126);
+      # the apt package is too old for the --enable-* flags in game/scripts/build-wasm.sh.
       - name: Install binaryen
         run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends binaryen
-          wasm-opt --version
+          curl -sSfL https://github.com/WebAssembly/binaryen/releases/download/version_126/binaryen-version_126-x86_64-linux.tar.gz \
+            | tar -xz -C "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/binaryen-version_126/bin" >> "$GITHUB_PATH"
 
       - name: Build WASM and run determinism test
         run: mise run game:wasm
+
+      # The WASM output is committed while ADR 0003 is pending. Warn (don't fail yet) when
+      # the committed files differ from a fresh build, until cross-host builds are proven
+      # byte-identical.
+      - name: Check the committed WASM output is current
+        run: |
+          if ! git diff --quiet -- src/lib/latticefall/wasm; then
+            echo "::warning::src/lib/latticefall/wasm differs from a fresh build. Run 'mise run game:wasm' and commit the result."
+            git diff --stat -- src/lib/latticefall/wasm
+          fi
 
   python:
     name: Python bindings

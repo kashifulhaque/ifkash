@@ -34,8 +34,9 @@ const CAPSULE_RADIUS = 0.35;
 const CAPSULE_LENGTH = 1.0;
 const CAPSULE_HEIGHT = CAPSULE_LENGTH + CAPSULE_RADIUS * 2;
 
-/** Camera offset from the followed actor: behind (+Z) and above. */
-const CAM_OFFSET = new Vector3(0, 6, 8);
+/** Camera distance from the followed actor, and its resting elevation angle (6 up, 8 back). */
+const CAM_DISTANCE = 10;
+const CAM_BASE_PITCH = Math.atan2(6, 8);
 
 export class SceneView {
   readonly renderer: WebGLRenderer;
@@ -45,6 +46,8 @@ export class SceneView {
   private disposables: Array<BufferGeometry | Material> = [];
   private camTarget = new Vector3();
   private camInit = false;
+  private camYaw = 0;
+  private camPitch = 0;
   private canvas: HTMLCanvasElement;
   private resizeObserver: ResizeObserver;
 
@@ -99,6 +102,12 @@ export class SceneView {
     this.camera.updateProjectionMatrix();
   }
 
+  /** Orbits the camera around the followed actor. Yaw 0 puts it on the +Z side. */
+  setCamera(yaw: number, pitch: number): void {
+    this.camYaw = yaw;
+    this.camPitch = pitch;
+  }
+
   /** Draws the given actors; the first one is followed by the camera. */
   render(actors: DrawActor[], frameMs: number): void {
     const live = new Set<number>();
@@ -131,7 +140,12 @@ export class SceneView {
       const k = this.camInit ? 1 - Math.exp(-frameMs / 120) : 1;
       this.camTarget.lerp(goal, k);
       this.camInit = true;
-      this.camera.position.copy(this.camTarget).add(CAM_OFFSET);
+      const p = CAM_BASE_PITCH + this.camPitch;
+      this.camera.position.copy(this.camTarget).add(
+        new Vector3(Math.sin(this.camYaw) * Math.cos(p), Math.sin(p), Math.cos(this.camYaw) * Math.cos(p)).multiplyScalar(
+          CAM_DISTANCE
+        )
+      );
       this.camera.lookAt(this.camTarget.x, this.camTarget.y + 0.8, this.camTarget.z);
     }
     this.renderer.render(this.scene, this.camera);

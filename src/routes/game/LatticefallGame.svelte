@@ -46,6 +46,14 @@
     engine?.setPaused(paused);
   }
 
+  function downloadReplay(): void {
+    try {
+      engine?.downloadReplay();
+    } catch (err) {
+      console.error('Replay export failed', err);
+    }
+  }
+
   function onKey(e: KeyboardEvent): void {
     if (e.code === 'KeyP' && !e.repeat && !e.ctrlKey && !e.metaKey && !e.altKey) togglePause();
   }
@@ -65,7 +73,7 @@
   {:else if status === 'failed'}
     <p class="lf-note" role="alert">Latticefall could not start: {failure}</p>
   {:else}
-    <p class="lf-hint"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> move · <kbd>Shift</kbd> run · <kbd>P</kbd> pause</p>
+    <p class="lf-hint"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> move · click to capture the mouse · <kbd>P</kbd> pause</p>
   {/if}
 
   {#if showDev && status === 'ready'}
@@ -75,6 +83,7 @@
       <dt>hash</dt><dd>{stats.hash}</dd>
       {#if paused}<dt>state</dt><dd>paused</dd>{/if}
     </dl>
+    <button type="button" class="lf-replay" on:click={downloadReplay}>Download replay</button>
   {/if}
 </div>
 
@@ -136,6 +145,23 @@
     color: var(--ink);
     font-family: var(--font-mono);
     font-size: var(--text-xs);
+  }
+
+  .lf-replay {
+    position: absolute;
+    top: var(--s-4);
+    right: var(--s-4);
+    padding: var(--s-2) var(--s-3);
+    background: var(--surface);
+    border: 1px solid var(--line-strong);
+    color: var(--ink);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    cursor: pointer;
+  }
+
+  .lf-replay:hover {
+    border-color: var(--ink-3);
   }
 
   .lf-dev dt {

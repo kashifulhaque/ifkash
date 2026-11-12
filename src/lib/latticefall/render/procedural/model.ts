@@ -29,5 +29,5 @@ export interface ModelDef {
   /** Rotation axis for the whole-body fall: 'x' tips back, 'z' tips onto the side. */
   fallAxis: 'x' | 'z';
   /** Optional per-frame hook after the pose is applied (an arrow vanishing, a lantern flaring). */
-  tick?(rig: Rig, ctx: { frame: number; total: number; inMove: boolean }): void;
+  tick?(rig: Rig, ctx: { frame: number; total: number; inMove: boolean; anim: string }): void;
 }

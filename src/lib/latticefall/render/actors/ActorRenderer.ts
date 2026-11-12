@@ -36,7 +36,7 @@ import {
   parsePropPreview,
   type PropPreview
 } from '../procedural';
-import { FLAG_DEAD } from '../../engine/snapshot';
+import { FLAG_CLOAKED, FLAG_DEAD, FLAG_HIDDEN } from '../../engine/snapshot';
 
 /** Where the optimized assets live (`lf-tools assets` writes them). */
 export const ACTOR_ASSET_BASE = '/latticefall/actors/';
@@ -382,7 +382,19 @@ export class ActorRenderer {
     const info = a.moveId !== 0 ? this.resolveMove(a.moveId) : undefined;
     const frac = Math.min((performance.now() - this.enemyFrameAt(a)) / 1000 / TICK_SECONDS, 1);
     const move = info ? { anim: info.anim, total: info.totalFrames, frame: a.moveFrame + frac } : undefined;
-    e.update({ x: a.x, y: a.y, z: a.z, yaw: a.yaw, dead: (a.flags & FLAG_DEAD) !== 0 }, move, Math.max(frameMs, 0) / 1000);
+    e.update(
+      {
+        x: a.x,
+        y: a.y,
+        z: a.z,
+        yaw: a.yaw,
+        dead: (a.flags & FLAG_DEAD) !== 0,
+        hidden: (a.flags & FLAG_HIDDEN) !== 0,
+        cloaked: (a.flags & FLAG_CLOAKED) !== 0
+      },
+      move,
+      Math.max(frameMs, 0) / 1000
+    );
   }
 
   private enemyFrames = new Map<number, { frame: number; at: number }>();

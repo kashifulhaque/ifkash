@@ -33,6 +33,8 @@ export interface MeshOpts {
   glow?: number;
   /** Shared material key: meshes with the same key and color share one material. */
   key?: string;
+  /** Base opacity below 1 for glass and the like. A cloaked model multiplies it down further. */
+  alpha?: number;
 }
 
 export class Rig {
@@ -42,6 +44,7 @@ export class Rig {
   private geoms: BufferGeometry[] = [];
   private mats: MeshStandardMaterial[] = [];
   private glowMats: Array<{ mat: MeshStandardMaterial; base: number }> = [];
+  private alphaOf = new Map<MeshStandardMaterial, number>();
 
   /** Adds a bone under `parent` (or the root) at a rest position. */
   bone(name: string, parent: string | null, pos: Vec3 = [0, 0, 0]): this {
@@ -67,6 +70,12 @@ export class Rig {
       mat.emissive = new Color(color);
       mat.emissiveIntensity = opts.glow;
       this.glowMats.push({ mat, base: opts.glow });
+    }
+    if (opts.alpha !== undefined && opts.alpha < 1) {
+      mat.transparent = true;
+      mat.opacity = opts.alpha;
+      mat.depthWrite = false;
+      this.alphaOf.set(mat, opts.alpha);
     }
     this.mats.push(mat);
     return mat;
@@ -123,6 +132,24 @@ export class Rig {
   /** Scales every glowing material's emissive strength (lanterns flaring, eyes burning). */
   setGlow(scale: number): void {
     for (const g of this.glowMats) g.mat.emissiveIntensity = g.base * scale;
+  }
+
+  private opacity = 1;
+
+  /**
+   * Draws the whole model at `o` (0 to 1) opacity: faint for a cloaked enemy. Materials turn
+   * transparent only while `o` is below 1, so an ordinary model keeps its opaque sorting.
+   */
+  setOpacity(o: number): void {
+    if (o === this.opacity) return;
+    this.opacity = o;
+    for (const m of this.mats) {
+      const base = this.alphaOf.get(m) ?? 1;
+      m.transparent = o * base < 1;
+      m.opacity = o * base;
+      m.depthWrite = o * base >= 1;
+      m.needsUpdate = true;
+    }
   }
 
   dispose(): void {

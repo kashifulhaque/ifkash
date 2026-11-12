@@ -3,10 +3,26 @@
 // docs/game/07-presentation.md.
 
 import type { ModelDef } from './model';
+import { acolyteDef } from './models/acolyte';
+import { bellWardenDef } from './models/bellWarden';
+import { brambleBruteDef } from './models/brambleBrute';
+import { caveMothDef } from './models/caveMoth';
+import { choirKnightDef } from './models/choirKnight';
+import { drownedDef } from './models/drowned';
+import { foundrySmithDef } from './models/foundrySmith';
+import { glasswingStalkerDef } from './models/glasswingStalker';
+import { grayCaptainDef } from './models/grayCaptain';
 import { grayArcherDef } from './models/grayArcher';
 import { grayKnightDef } from './models/grayKnight';
 import { hollowSentryDef } from './models/hollowSentry';
 import { huskDef } from './models/husk';
+import { lampMiteDef } from './models/lampMite';
+import { lanternThiefDef } from './models/lanternThief';
+import { marshCrawlerDef } from './models/marshCrawler';
+import { mimicChestDef } from './models/mimicChest';
+import { reedStalkerDef } from './models/reedStalker';
+import { rimeWolfDef } from './models/rimeWolf';
+import { shardGolemDef } from './models/shardGolem';
 import { skeletonDef } from './models/skeleton';
 import { thornHoundDef } from './models/thornHound';
 
@@ -25,6 +41,25 @@ const defs = new Map<number, ModelDef>([
   [7020, grayKnightDef],
   [7030, grayArcherDef],
   [7040, skeletonDef],
+  // WP-036 batch 2 (7050-7058).
+  [7050, acolyteDef('acolyte')],
+  [7051, drownedDef],
+  [7052, reedStalkerDef],
+  [7053, marshCrawlerDef],
+  [7054, caveMothDef],
+  [7055, lampMiteDef],
+  [7056, shardGolemDef],
+  [7057, glasswingStalkerDef],
+  [7058, acolyteDef('bell')],
+  // WP-037 batch 3 and the elites (7080-7087).
+  [7080, lanternThiefDef],
+  [7081, rimeWolfDef],
+  [7082, mimicChestDef],
+  [7083, brambleBruteDef],
+  [7084, choirKnightDef],
+  [7085, grayCaptainDef],
+  [7086, foundrySmithDef],
+  [7087, bellWardenDef],
   [B01_KIND, hollowSentryDef]
 ]);
 

@@ -69,7 +69,7 @@ const idle = (t: number): Pose => ({
 });
 
 /** A gallop-trot: diagonal pairs swing together. */
-const walk = (phase: number, amp: number): Pose => {
+export const houndWalk = (phase: number, amp: number): Pose => {
   const s = Math.sin(phase) * 0.8 * amp;
   const c = Math.cos(phase);
   const bend = (v: number) => Math.max(0, v) * 0.7 * amp;
@@ -142,7 +142,7 @@ export const thornHoundDef: ModelDef = {
   height: 0.95,
   build,
   idle,
-  walk,
+  walk: houndWalk,
   stride: 1.5,
   moves: { th_lunge: lunge, th_snap: snap },
   fallback: snap,

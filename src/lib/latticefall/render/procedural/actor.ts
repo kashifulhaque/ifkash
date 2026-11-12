@@ -24,7 +24,14 @@ export interface ActorFrame {
   z: number;
   yaw: number;
   dead: boolean;
+  /** Hidden in reeds: nothing is drawn (the snapshot's `HIDDEN` flag). */
+  hidden?: boolean;
+  /** Shimmering and still: drawn faint (the snapshot's `CLOAKED` flag). */
+  cloaked?: boolean;
 }
+
+/** Opacity of a cloaked enemy: enough to catch the eye against a plain wall, no more. */
+export const CLOAKED_OPACITY = 0.16;
 
 export interface MoveFrame {
   anim: string;
@@ -71,6 +78,8 @@ export class ProceduralActor {
   update(a: ActorFrame, move: MoveFrame | undefined, dt: number, speedOverride?: number): void {
     this.holder.position.set(a.x, a.y, a.z);
     this.holder.rotation.y = a.yaw;
+    this.holder.visible = !a.hidden;
+    this.rig.setOpacity(a.cloaked && !a.dead ? CLOAKED_OPACITY : 1);
     if (speedOverride !== undefined) this.speed = speedOverride;
     else if (this.last && dt > 0) {
       const d = Math.hypot(a.x - this.last[0], a.z - this.last[2]);
@@ -114,7 +123,7 @@ export class ProceduralActor {
     }
     this.rig.apply(pose);
     this.rig.setGlow(glow);
-    def.tick?.(this.rig, { frame: move?.frame ?? 0, total: move?.total ?? 0, inMove: !!move && !a.dead });
+    def.tick?.(this.rig, { frame: move?.frame ?? 0, total: move?.total ?? 0, inMove: !!move && !a.dead, anim: move?.anim ?? '' });
   }
 
   dispose(): void {

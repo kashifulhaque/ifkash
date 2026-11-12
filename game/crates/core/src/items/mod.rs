@@ -24,6 +24,7 @@ pub mod gear;
 pub mod inventory;
 pub mod preview;
 pub mod table;
+pub mod upgrade;
 pub mod usage;
 
 pub use inventory::{Equipment, FlaskKind, Flasks, Inventory, slot};

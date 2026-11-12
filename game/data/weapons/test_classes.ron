@@ -34,6 +34,7 @@
       roll_heavy: "dodge_roll_heavy",
       dodge_backstep: "dodge_backstep",
     ),
+    default_art: "art_feint_step",
   ),
   (
     id: "wpn_test_greatsword",
@@ -62,6 +63,7 @@
       roll_heavy: "dodge_roll_heavy",
       dodge_backstep: "dodge_backstep",
     ),
+    default_art: "art_rising_cleave",
   ),
   (
     id: "wpn_test_curved_sword",
@@ -90,6 +92,7 @@
       roll_heavy: "dodge_roll_heavy",
       dodge_backstep: "dodge_backstep",
     ),
+    default_art: "art_rending_sweep",
   ),
   (
     id: "wpn_test_thrusting_sword",
@@ -118,6 +121,7 @@
       roll_heavy: "dodge_roll_heavy",
       dodge_backstep: "dodge_backstep",
     ),
+    default_art: "art_lunging_thrust",
   ),
   (
     id: "wpn_test_axe",
@@ -146,6 +150,7 @@
       roll_heavy: "dodge_roll_heavy",
       dodge_backstep: "dodge_backstep",
     ),
+    default_art: "art_rallying_roar",
   ),
   (
     id: "wpn_test_hammer",
@@ -174,6 +179,7 @@
       roll_heavy: "dodge_roll_heavy",
       dodge_backstep: "dodge_backstep",
     ),
+    default_art: "art_earthsplit",
   ),
   (
     id: "wpn_test_colossal",
@@ -202,6 +208,7 @@
       roll_heavy: "dodge_roll_heavy",
       dodge_backstep: "dodge_backstep",
     ),
+    default_art: "art_earthsplit",
   ),
   (
     id: "wpn_test_spear",
@@ -231,6 +238,7 @@
       dodge_backstep: "dodge_backstep",
       guard_attack: "sp_guard_thrust",
     ),
+    default_art: "art_lunging_thrust",
   ),
   (
     id: "wpn_test_halberd",
@@ -259,6 +267,7 @@
       roll_heavy: "dodge_roll_heavy",
       dodge_backstep: "dodge_backstep",
     ),
+    default_art: "art_rising_cleave",
   ),
   (
     id: "wpn_test_fist",
@@ -287,6 +296,7 @@
       roll_heavy: "dodge_roll_heavy",
       dodge_backstep: "dodge_backstep",
     ),
+    default_art: "art_feint_step",
   ),
   (
     id: "wpn_test_bow",
@@ -315,6 +325,7 @@
       roll_heavy: "dodge_roll_heavy",
       dodge_backstep: "dodge_backstep",
     ),
+    default_art: "art_spark_volley",
   ),
   (
     id: "wpn_test_shield",
@@ -344,6 +355,7 @@
       dodge_backstep: "dodge_backstep",
       guard_attack: "sh_guard_bash",
     ),
+    default_art: "art_bastion",
   ),
   (
     id: "wpn_test_catalyst",

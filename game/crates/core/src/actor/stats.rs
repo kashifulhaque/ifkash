@@ -119,8 +119,8 @@ impl Defense {
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Stats {
     pub attrs: Attrs,
-    /// Upgrade level of the equipped weapon, 0 to `damage.max_upgrade` (stub: no
-    /// upgrades exist yet).
+    /// Retired by WP-053: upgrade levels are per weapon, in the world's flags
+    /// (`items::upgrade`). Kept at 0 so the stub loadout stays as it was.
     pub weapon_upgrade: u8,
     /// Two-handing the right weapon (`TWO_HAND` toggles it once the player intent system
     /// wires that button).

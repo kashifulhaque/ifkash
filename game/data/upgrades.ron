@@ -1,0 +1,43 @@
+// Weapon upgrades and tempering, at the Smith (docs/game/04-arsenal-and-builds.md, "Temper"
+// and "Upgrades"). Schema: crates/content/src/upgrades.rs. Logic: crates/core/src/items/upgrade.rs.
+//
+// Common weapons go from +0 to +10 with Forgeglass. Unique and relic weapons go from +0 to
+// +5 Starglass; each Starglass level counts as two common levels. Levels above `ember_above`
+// (common +6 and up, Starglass +3 and up) need the Forgeheart Ember held.
+//
+// The spec gives the Forgeglass cost as "1-3" per level and the Glimmer cost as
+// 200 * level^1.5. The bands below pick the counts: 1 shard for +1 and +2, 2 for +3 and +4,
+// 3 for +5; 1 chunk for +6 and +7, 2 for +8 and +9, 3 for +10. The counts are tuning.
+//
+// Glimmer uses the effective common level being reached (a Starglass level 1 is level 2).
+// The Smith's refusals and costs are tested in core::items::upgrade.
+#![enable(implicit_some)]
+(
+  glimmer_base: 200,
+  common_costs: [
+    (through: 2, item: "itm_forgeglass_shard", count: 1),
+    (through: 4, item: "itm_forgeglass_shard", count: 2),
+    (through: 5, item: "itm_forgeglass_shard", count: 3),
+    (through: 7, item: "itm_forgeglass_chunk", count: 1),
+    (through: 9, item: "itm_forgeglass_chunk", count: 2),
+    (through: 10, item: "itm_forgeglass_chunk", count: 3),
+  ],
+  starglass_item: "itm_starglass",
+  starglass_common_levels: 2,
+  starglass_max: 5,
+  ember_above: 5,
+  ember_item: "itm_forgeheart_ember",
+  whetstone_item: "itm_temper_whetstone",
+  // Tempers, in the spec's order. A common weapon takes one temper, and the Smith's
+  // `Temper` command names the temper by its index here (0 is Heavy).
+  // Heavy: Might x1.5, Finesse removed. Keen: Finesse x1.5, Might x0.5.
+  // Lucid: 40% of base becomes Aether, plus Insight 0.7. Sacred: 40% becomes Radiance, plus
+  // Devotion 0.7. Rimed: 25% of base becomes Aether, plus Rime buildup 40.
+  tempers: [
+    (id: "heavy", name: "Heavy", scaling_percent: (150, 0, 100, 100), scaling_add_permille: (0, 0, 0, 0)),
+    (id: "keen", name: "Keen", scaling_percent: (50, 150, 100, 100), scaling_add_permille: (0, 0, 0, 0)),
+    (id: "lucid", name: "Lucid", scaling_percent: (100, 100, 100, 100), scaling_add_permille: (0, 0, 700, 0), element: Aether, element_percent: 40),
+    (id: "sacred", name: "Sacred", scaling_percent: (100, 100, 100, 100), scaling_add_permille: (0, 0, 0, 700), element: Radiance, element_percent: 40),
+    (id: "rimed", name: "Rimed", scaling_percent: (100, 100, 100, 100), scaling_add_permille: (0, 0, 0, 0), element: Aether, element_percent: 25, status: [(kind: Rime, amount: 40)]),
+  ],
+)

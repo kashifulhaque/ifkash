@@ -48,6 +48,9 @@ pub struct World {
     /// The attribute curves and level rules, from content, for level-ups and the menu's
     /// stat previews. Not hashed: the content hash covers them.
     pub attributes: lf_content::Attributes,
+    /// The Smith's upgrade and temper rules, from content (`upgrades.ron`, WP-053). `None`
+    /// means the Smith has no rules, so nothing can be upgraded. Not hashed.
+    pub upgrades: Option<lf_content::UpgradeRules>,
     /// Every projectile definition, from content. Not hashed: the content hash covers it.
     pub projectile_defs: ProjectileTable,
     /// The status and buff rules, from content. Not hashed: the content hash covers them.
@@ -263,6 +266,7 @@ impl World {
             items,
             damage,
             attributes: content.attributes.clone(),
+            upgrades: content.upgrades.clone(),
             projectile_defs,
             status: status_table,
             ai,

@@ -417,10 +417,10 @@ pub fn run(world: &mut World) {
         let ar = super::spells::power(world, a, c.num)
             .or_else(|| {
                 a.inventory.equipment.right_weapon().and_then(|w| {
-                    world.damage.attack_rating(
+                    crate::items::upgrade::weapon_rating(
+                        world,
                         w,
                         &a.stats.attrs,
-                        a.stats.weapon_upgrade,
                         a.stats.two_handing,
                     )
                 })
@@ -432,7 +432,11 @@ pub fn run(world: &mut World) {
         let hit = damage::Hit {
             ar,
             phys: damage::phys_type(hb.phys),
-            element: hb.element.map(damage::element_type),
+            // A weapon with an elemental part deals it when the hitbox has no element.
+            element: hb
+                .element
+                .map(damage::element_type)
+                .or(ar.element.map(damage::element_type)),
             // Thousandths. Rounding the f32 is exact for the listed values (1.3 -> 1300).
             motion_milli: (motion_value * 1000.0).round().max(0.0) as u32,
             counter,

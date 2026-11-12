@@ -201,10 +201,21 @@ pub fn parse_script(text: &str) -> Result<Script, String> {
                     ("UseItem", Some(v)) => Command::UseItem {
                         slot: v.parse().map_err(|_| err("bad quick slot index"))?,
                     },
+                    ("Upgrade", Some(v)) => Command::Upgrade {
+                        slot: v.parse().map_err(|_| err("bad slot number"))?,
+                    },
+                    ("Temper", Some(v)) => Command::Temper {
+                        slot: v.parse().map_err(|_| err("bad slot number"))?,
+                        temper: words
+                            .get(3)
+                            .and_then(|t| t.parse().ok())
+                            .ok_or_else(|| err("Temper needs a slot and a temper index"))?,
+                    },
                     _ => {
                         return Err(err(
                             "unknown command (Rest, SplitFlasks <vigil>, LevelUp <attribute>, \
-                             Equip <slot> <item>, Unequip <slot>, UseItem <quick slot>)",
+                             Equip <slot> <item>, Unequip <slot>, UseItem <quick slot>, \
+                             Upgrade <slot>, Temper <slot> <temper>)",
                         ));
                     }
                 };
@@ -308,5 +319,21 @@ mod tests {
             [(3, Command::Rest), (3, Command::SplitFlasks { vigil: 2 })]
         );
         assert!(parse_script("seed 1\nscenario x\ncmd Dance\n").is_err());
+    }
+
+    #[test]
+    fn smith_commands_parse_with_their_slot_and_temper() {
+        let s = parse_script(
+            "seed 1\nscenario test_field\n1 0 0\ncmd Upgrade 0\ncmd Temper 0 2\n1 0 0\n",
+        )
+        .unwrap();
+        assert_eq!(
+            s.commands,
+            [
+                (1, Command::Upgrade { slot: 0 }),
+                (1, Command::Temper { slot: 0, temper: 2 }),
+            ]
+        );
+        assert!(parse_script("seed 1\nscenario x\ncmd Temper 0\n").is_err());
     }
 }

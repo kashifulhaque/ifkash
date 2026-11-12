@@ -1,42 +1,43 @@
 // Weapon files load in path order and the first weapon in the content is the player's
 // default, so this file must sort after straight_sword.ron: don't rename it to sort earlier.
 //
-// Minimal catalysts for WP-055 (the spell system): a stylus for the Formulae and a reliquary
-// for the Litanies (WP-056). WP-053 adds the full catalyst list (docs/game/04-arsenal-and-builds.md,
-// "Weapon list"). A catalyst's `base_damage` and scaling make its spell power, which replaces
-// attack rating in the damage formula for spells (docs/game/03-combat.md, "Spells"). With
-// no spell attuned and selected, the moveset below is what it swings: the straight sword's
-// moves, until the catalysts get their own.
+// Catalysts. The Scholar's Stylus is complete (WP-053, docs/game/04-arsenal-and-builds.md,
+// "Weapon list"): it casts Formulae with the catalyst moves (moves/catalyst.ron). A catalyst's
+// `base_damage` and scaling make its spell power, which replaces attack rating in the damage
+// formula for spells (docs/game/03-combat.md, "Spells"). The other catalysts are in
+// wpn_catalysts.ron.
+//
+// The Pilgrim's Reliquary is not on the spec's weapon list, so it stays a stub. Its moves
+// are the straight sword's until someone decides whether it exists.
 #![enable(implicit_some)]
 [
   (
     id: "wpn_scholars_stylus",
     name: "Scholar's Stylus",
     class: Catalyst,
-    base_damage: 90, // tuning
+    base_damage: 90,
     phys: Neutral,
-    scaling: (might: 0.0, finesse: 0.0, insight: 1.0, devotion: 0.0), // tuning
-    requirements: (might: 0, finesse: 0, insight: 0, devotion: 0),
-    weight_tenths: 10, // tuning
+    scaling: (might: 0.0, finesse: 0.0, insight: 0.9, devotion: 0.0),
+    requirements: (might: 0, finesse: 0, insight: 10, devotion: 0),
+    weight_tenths: 20,
     unique: false,
     guard: (absorb_phys_percent: 0, absorb_elem_percent: 0, guard_boost: 0), // catalysts can't guard
     moveset: (
-      light_chain: ["ss_light_1"],
-      heavy: "ss_heavy",
-      charged_heavy: "ss_heavy_charged",
-      running: "ss_running",
-      rolling: "ss_rolling",
-      backstep: "ss_backstep",
-      jump_light: "ss_jump_light",
-      jump_heavy: "ss_jump_heavy",
-      plunge: "ss_plunge",
-      guard_counter: "ss_guard_counter",
+      light_chain: ["ct_light_1", "ct_light_2", "ct_light_3"],
+      heavy: "ct_heavy",
+      charged_heavy: "ct_heavy_charged",
+      running: "ct_running",
+      rolling: "ct_rolling",
+      backstep: "ct_backstep",
+      jump_light: "ct_jump_light",
+      jump_heavy: "ct_jump_heavy",
+      plunge: "ct_plunge",
+      guard_counter: "ct_guard_counter",
       roll_light: "dodge_roll_light",
       roll_medium: "dodge_roll_medium",
       roll_heavy: "dodge_roll_heavy",
       dodge_backstep: "dodge_backstep",
     ),
-    stub: true,
     catalyst_school: Formula,
   ),
   (

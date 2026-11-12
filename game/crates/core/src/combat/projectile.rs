@@ -289,6 +289,8 @@ fn landing_for(
         ar: AttackRating {
             phys_milli: p.ar_phys_milli,
             elem_milli: p.ar_elem_milli,
+            // A projectile carries no weapon element; its hitbox or definition sets one.
+            element: None,
             unwieldy: false,
         },
         phys: damage::phys_type(def.phys),
@@ -551,12 +553,7 @@ pub fn spawn(
     let ar = super::spells::power(world, a, move_num)
         .or_else(|| {
             a.inventory.equipment.right_weapon().and_then(|w| {
-                world.damage.attack_rating(
-                    w,
-                    &a.stats.attrs,
-                    a.stats.weapon_upgrade,
-                    a.stats.two_handing,
-                )
+                crate::items::upgrade::weapon_rating(world, w, &a.stats.attrs, a.stats.two_handing)
             })
         })
         // An enemy has no weapon: its definition's attack rating (WP-032).

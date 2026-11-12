@@ -13,6 +13,7 @@ use std::path::Path;
 
 use serde::{Deserialize, Serialize};
 
+pub mod arts;
 pub mod attributes;
 pub mod boss;
 pub mod consumables;
@@ -29,9 +30,11 @@ pub mod registry;
 pub mod scenario;
 pub mod spells;
 pub mod status;
+pub mod upgrades;
 pub mod validate;
 pub mod weapons;
 
+pub use arts::{Art, ArtFile};
 pub use attributes::Attributes;
 pub use boss::BossDef;
 pub use consumables::{Consumables, Flask, Item, ItemEffect, ItemKind};
@@ -48,6 +51,7 @@ pub use registry::{NumId, Registry};
 pub use scenario::{Lantern, Pickup, Scenario};
 pub use spells::{SpellDef, SpellRules, SpellSchool};
 pub use status::StatusRules;
+pub use upgrades::{ForgeCost, Temper, UpgradeRules};
 pub use validate::{Issue, Severity, Validate};
 pub use weapons::{GuardStats, Weapon};
 
@@ -71,6 +75,10 @@ const STATUS_FILE: &str = "status.ron";
 const CHARMS_FILE: &str = "charms.ron";
 /// The armor file (relative to the data root).
 const ARMOR_FILE: &str = "armor.ron";
+/// The Arts file (relative to the data root).
+const ARTS_FILE: &str = "arts.ron";
+/// The upgrade and temper rules file (relative to the data root).
+const UPGRADES_FILE: &str = "upgrades.ron";
 /// Directory (relative to the data root) holding spell files.
 const SPELLS_DIR: &str = "spells";
 /// Directory (relative to the data root) holding enemy definitions, one per file.
@@ -273,6 +281,30 @@ const EMBEDDED_WEAPONS: &[(&str, &str)] = &[
         "weapons/test_classes.ron",
         include_str!("../../../data/weapons/test_classes.ron"),
     ),
+    (
+        "weapons/wpn_daggers.ron",
+        include_str!("../../../data/weapons/wpn_daggers.ron"),
+    ),
+    (
+        "weapons/wpn_blades.ron",
+        include_str!("../../../data/weapons/wpn_blades.ron"),
+    ),
+    (
+        "weapons/wpn_heavy.ron",
+        include_str!("../../../data/weapons/wpn_heavy.ron"),
+    ),
+    (
+        "weapons/wpn_reach.ron",
+        include_str!("../../../data/weapons/wpn_reach.ron"),
+    ),
+    (
+        "weapons/wpn_hands.ron",
+        include_str!("../../../data/weapons/wpn_hands.ron"),
+    ),
+    (
+        "weapons/wpn_catalysts.ron",
+        include_str!("../../../data/weapons/wpn_catalysts.ron"),
+    ),
 ];
 const EMBEDDED_REGISTRY: &str = include_str!("../../../data/registry.ron");
 const EMBEDDED_ATTRIBUTES: &str = include_str!("../../../data/attributes.ron");
@@ -293,6 +325,8 @@ const EMBEDDED_PROJECTILES: &str = include_str!("../../../data/projectiles.ron")
 const EMBEDDED_STATUS: &str = include_str!("../../../data/status.ron");
 const EMBEDDED_CHARMS: &str = include_str!("../../../data/charms.ron");
 const EMBEDDED_ARMOR: &str = include_str!("../../../data/armor.ron");
+const EMBEDDED_ARTS: &str = include_str!("../../../data/arts.ron");
+const EMBEDDED_UPGRADES: &str = include_str!("../../../data/upgrades.ron");
 const EMBEDDED_SCENARIOS: &[(&str, &str)] = &[
     (
         "scenarios/m0_flat.ron",
@@ -765,6 +799,12 @@ pub struct Content {
     /// Armor pieces from `armor.ron` (WP-057); empty if the file is missing.
     #[cfg_attr(feature = "ts", ts(skip))]
     pub armor: Vec<ArmorPiece>,
+    /// Arts from `arts.ron` (WP-053); empty if the file is missing.
+    #[cfg_attr(feature = "ts", ts(skip))]
+    pub arts: Vec<Art>,
+    /// Upgrade and temper rules from `upgrades.ron` (WP-053); `None` if the file is missing.
+    #[cfg_attr(feature = "ts", ts(skip))]
+    pub upgrades: Option<UpgradeRules>,
     /// Every spell from `spells/*.ron`, in file then list order (WP-055). Their moves,
     /// projectiles, and buffs are also in `moves`, `projectiles`, and `status`.
     #[cfg_attr(feature = "ts", ts(skip))]
@@ -964,6 +1004,18 @@ impl Content {
         } else {
             None
         };
+        let arts_path = dir.join(ARTS_FILE);
+        let arts = if arts_path.is_file() {
+            Some(read(&arts_path)?)
+        } else {
+            None
+        };
+        let upgrades_path = dir.join(UPGRADES_FILE);
+        let upgrades = if upgrades_path.is_file() {
+            Some(read(&upgrades_path)?)
+        } else {
+            None
+        };
         let ai_path = dir.join(AI_FILE);
         let ai = if ai_path.is_file() {
             Some(read(&ai_path)?)
@@ -982,6 +1034,8 @@ impl Content {
         .with_status(status.as_deref())?
         .with_charms(charms.as_deref())?
         .with_armor(armor.as_deref())?
+        .with_arts(arts.as_deref())?
+        .with_upgrades(upgrades.as_deref())?
         .with_spells(list(SPELLS_DIR)?)?
         .with_enemies(ai.as_deref(), list(ENEMIES_DIR)?)?
         .with_bosses(list(BOSSES_DIR)?)?
@@ -1009,6 +1063,8 @@ impl Content {
         .with_status(Some(EMBEDDED_STATUS))?
         .with_charms(Some(EMBEDDED_CHARMS))?
         .with_armor(Some(EMBEDDED_ARMOR))?
+        .with_arts(Some(EMBEDDED_ARTS))?
+        .with_upgrades(Some(EMBEDDED_UPGRADES))?
         .with_spells(own(EMBEDDED_SPELLS))?
         .with_enemies(Some(EMBEDDED_AI), own(EMBEDDED_ENEMIES))?
         .with_bosses(own(EMBEDDED_BOSSES))?
@@ -1048,6 +1104,8 @@ impl Content {
             status: None,
             charms: Vec::new(),
             armor: Vec::new(),
+            arts: Vec::new(),
+            upgrades: None,
             spells: Vec::new(),
             spell_rules: None,
             ai: None,
@@ -1186,6 +1244,44 @@ impl Content {
             .unwrap_or_default();
         for (i, p) in self.armor.iter().enumerate() {
             self.check_id(ARMOR_FILE, format!("pieces[{i}].id"), &p.id)?;
+        }
+        Ok(self)
+    }
+
+    /// Adds the Arts file (RON text, if any). Fails on an Art with no registry entry.
+    pub fn with_arts(mut self, text: Option<&str>) -> Result<Self, ContentError> {
+        self.arts = text
+            .map(|t| parse::<ArtFile>(ARTS_FILE, t))
+            .transpose()?
+            .map(|f| f.arts)
+            .unwrap_or_default();
+        for (i, a) in self.arts.iter().enumerate() {
+            self.check_id(ARTS_FILE, format!("arts[{i}].id"), &a.id)?;
+        }
+        Ok(self)
+    }
+
+    /// Adds the upgrade and temper rules (RON text, if any). Fails on an ID with no
+    /// registry entry; the validator checks the rest.
+    pub fn with_upgrades(mut self, text: Option<&str>) -> Result<Self, ContentError> {
+        self.upgrades = text
+            .map(|t| parse::<UpgradeRules>(UPGRADES_FILE, t))
+            .transpose()?;
+        if let Some(u) = &self.upgrades {
+            for (i, c) in u.common_costs.iter().enumerate() {
+                self.check_id(UPGRADES_FILE, format!("common_costs[{i}].item"), &c.item)?;
+            }
+            self.check_id(
+                UPGRADES_FILE,
+                "starglass_item".to_owned(),
+                &u.starglass_item,
+            )?;
+            self.check_id(UPGRADES_FILE, "ember_item".to_owned(), &u.ember_item)?;
+            self.check_id(
+                UPGRADES_FILE,
+                "whetstone_item".to_owned(),
+                &u.whetstone_item,
+            )?;
         }
         Ok(self)
     }
@@ -1410,6 +1506,9 @@ impl Content {
                 check(file, format!("[{i}].id (weapon {})", w.id), &w.id)?;
                 for (field, id) in w.moveset.references() {
                     check(file, format!("{}: {field}", w.id), id)?;
+                }
+                if let Some(art) = &w.default_art {
+                    check(file, format!("{}: default_art", w.id), art)?;
                 }
             }
         }

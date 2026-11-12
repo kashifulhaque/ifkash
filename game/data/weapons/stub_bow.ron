@@ -31,6 +31,7 @@
       roll_heavy: "dodge_roll_heavy",
       dodge_backstep: "dodge_backstep",
     ),
+    default_art: "art_spark_volley",
     stub: true,
   ),
 ]

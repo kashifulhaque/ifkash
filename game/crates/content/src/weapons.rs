@@ -3,7 +3,7 @@
 
 use serde::{Deserialize, Serialize};
 
-use crate::moves::PhysType;
+use crate::moves::{Element, PhysType, StatusBuildup};
 use crate::spells::SpellSchool;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -160,4 +160,26 @@ pub struct Weapon {
     /// every `Catalyst` weapon and on no other.
     #[serde(default)]
     pub catalyst_school: Option<SpellSchool>,
+    /// The elemental part of the attack, on top of `base_damage` (docs/game/04-arsenal-and-
+    /// builds.md, "Weapon list", the "+ N Element" bases). `None` for a physical weapon.
+    #[serde(default)]
+    pub elemental: Option<ElementalPart>,
+    /// Status buildup a hit adds (the "Status" column of the weapon list). The combat
+    /// pipeline doesn't apply weapon buildup yet; see WP-053.
+    #[serde(default)]
+    pub status: Vec<StatusBuildup>,
+    /// The Art the weapon starts with (`arts.ron`). Set on every weapon that isn't a
+    /// catalyst, and on no catalyst, which casts spells instead of Arts.
+    #[serde(default)]
+    pub default_art: Option<String>,
+}
+
+/// A weapon's elemental attack: `base` is in the same units as `base_damage`, and scales
+/// with the weapon's upgrade level and scaling like the physical part does.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "ts", derive(ts_rs::TS))]
+#[serde(deny_unknown_fields)]
+pub struct ElementalPart {
+    pub element: Element,
+    pub base: u16,
 }

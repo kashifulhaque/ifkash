@@ -54,11 +54,16 @@ pub fn element_type(e: Element) -> DamageType {
 /// A weapon's attack rating inputs, from its content entry.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct WeaponStats {
+    /// The physical base damage. A temper can move part of it into `elem`.
     pub base_damage: u32,
+    /// The elemental base damage and its element, if the weapon has one (WP-053).
+    pub elem: Option<(Element, u32)>,
     /// Scaling in thousandths, in Might, Finesse, Insight, Devotion order.
     pub scaling_permille: [u32; 4],
     /// Requirements in the same order.
     pub requirements: [u16; 4],
+    /// A unique or relic weapon: upgraded with Starglass and never tempered (WP-053).
+    pub unique: bool,
 }
 
 impl WeaponStats {
@@ -67,6 +72,7 @@ impl WeaponStats {
         let pm = |s: f32| (s * 1000.0).round() as u32;
         Self {
             base_damage: u32::from(w.base_damage),
+            elem: w.elemental.map(|e| (e.element, u32::from(e.base))),
             scaling_permille: [
                 pm(w.scaling.might),
                 pm(w.scaling.finesse),
@@ -79,6 +85,7 @@ impl WeaponStats {
                 w.requirements.insight,
                 w.requirements.devotion,
             ],
+            unique: w.unique,
         }
     }
 }
@@ -144,9 +151,12 @@ impl DamageTable {
 pub struct AttackRating {
     /// The physical AR in thousandths, dealt as whatever physical subtype the hitbox has.
     pub phys_milli: u64,
-    /// The elemental AR in thousandths, indexed Aether, Fire, Storm, Radiance. Weapons
-    /// have no elemental damage yet (their schema has one base damage), so these are 0.
+    /// The elemental AR in thousandths, indexed Aether, Fire, Storm, Radiance. A weapon's
+    /// elemental part fills its slot; the rest are 0.
     pub elem_milli: [u64; 4],
+    /// The weapon's element, when it has one. A hit with no element of its own takes this
+    /// one, so the weapon's elemental part is dealt (resolve.rs).
+    pub element: Option<Element>,
     /// A requirement isn't met: scaling is 0, base damage is cut, and the move system
     /// lengthens recovery by `unwieldy_recovery_percent`.
     pub unwieldy: bool,
@@ -194,12 +204,18 @@ pub fn attack_rating(
     two_handing: bool,
 ) -> AttackRating {
     let u = u128::from(upgrade.min(rules.max_upgrade));
-    // base(U) in thousandths: base_damage * (1000 + 60 U).
-    let base = u128::from(w.base_damage) * (1000 + u * u128::from(rules.base_per_upgrade_permille));
+    // base(U) in thousandths: base_damage * (1000 + 60 U). The elemental base scales the
+    // same way, so a weapon's element rises with its upgrades like its physical part.
+    let level = 1000 + u * u128::from(rules.base_per_upgrade_permille);
+    let base = u128::from(w.base_damage) * level;
+    let elem_base = w.elem.map(|(_, b)| u128::from(b) * level);
     let unwieldy = !meets_requirements(rules, attr_max, w, attrs, two_handing);
-    let phys = if unwieldy {
-        // Requirements: scaling is zero and base damage is multiplied by 0.6.
-        base * u128::from(rules.unwieldy_base_percent) / 100
+    // Requirements: scaling is zero and base damage is multiplied by 0.6. Otherwise each
+    // base gains base * (sum of k_a(U) * curve(attr_a)), in 1e-11: k is permille times
+    // (100 + 3 U) percent (1e-5), and the curve is in 1e-6.
+    let (phys, elem) = if unwieldy {
+        let cut = u128::from(rules.unwieldy_base_percent);
+        (base * cut / 100, elem_base.map(|e| e * cut / 100))
     } else {
         let halves = [
             might_halves(rules, attr_max, attrs.might, two_handing),
@@ -207,20 +223,36 @@ pub fn attack_rating(
             u32::from(attrs.insight) * 2,
             u32::from(attrs.devotion) * 2,
         ];
-        // The sum of k_a(U) * curve(attr_a), in 1e-11: k is permille times
-        // (100 + 3 U) percent (1e-5), and the curve is in 1e-6.
         let mut sum = 0u128;
         for (h, s) in halves.iter().zip(&w.scaling_permille) {
             let h = (*h).min(u32::from(attr_max) * 2);
             let k = u128::from(*s) * (100 + u * u128::from(rules.scaling_per_upgrade_percent));
             sum += k * u128::from(rules.scaling_curve_ppm(h));
         }
-        base + base * sum / 100_000_000_000
+        (
+            base + base * sum / 100_000_000_000,
+            elem_base.map(|e| e + e * sum / 100_000_000_000),
+        )
     };
+    let mut elem_milli = [0u64; 4];
+    if let (Some((element, _)), Some(e)) = (w.elem, elem) {
+        elem_milli[element_slot(element)] = u64::try_from(e).unwrap_or(u64::MAX);
+    }
     AttackRating {
         phys_milli: u64::try_from(phys).unwrap_or(u64::MAX),
-        elem_milli: [0; 4],
+        elem_milli,
+        element: w.elem.map(|(e, _)| e),
         unwieldy,
+    }
+}
+
+/// The index of `e` in the Aether, Fire, Storm, Radiance arrays of `AttackRating`.
+fn element_slot(e: Element) -> usize {
+    match e {
+        Element::Aether => 0,
+        Element::Fire => 1,
+        Element::Storm => 2,
+        Element::Radiance => 3,
     }
 }
 
@@ -325,8 +357,10 @@ mod tests {
     fn blade() -> WeaponStats {
         WeaponStats {
             base_damage: 105,
+            elem: None,
             scaling_permille: [600, 600, 0, 0],
             requirements: [10, 10, 0, 0],
+            unique: false,
         }
     }
 
@@ -439,8 +473,10 @@ mod tests {
                 "insight scaling",
                 WeaponStats {
                     base_damage: 80,
+                    elem: None,
                     scaling_permille: [0, 0, 1000, 0],
                     requirements: [0, 0, 15, 0],
+                    unique: false,
                 },
                 attrs(0, 0, 25),
                 3,

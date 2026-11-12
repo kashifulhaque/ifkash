@@ -386,16 +386,17 @@ pub fn power(world: &World, a: &Actor, move_num: MoveNum) -> Option<AttackRating
         .into_iter()
         .flatten()
         .find(|&w| world.spells_table.catalyst(w).is_some())?;
-    let ar = world.damage.attack_rating(
+    let ar = crate::items::upgrade::weapon_rating(
+        world,
         catalyst,
         &a.stats.attrs,
-        a.stats.weapon_upgrade,
         // A catalyst is held in one hand (two-handing raises Might only).
         false,
     )?;
     Some(AttackRating {
         phys_milli: 0,
         elem_milli: [ar.phys_milli; 4],
+        element: None,
         unwieldy: ar.unwieldy,
     })
 }

@@ -48,6 +48,13 @@ pub fn run(world: &mut World, input: &TickInput) {
             Command::Travel { lantern } => {
                 travel(world, usize::from(lantern));
             }
+            // The Smith (WP-053). Refusals change nothing, so their result is dropped.
+            Command::Upgrade { slot } => {
+                let _ = crate::items::upgrade::upgrade_weapon(world, slot);
+            }
+            Command::Temper { slot, temper } => {
+                let _ = crate::items::upgrade::temper_weapon(world, slot, temper);
+            }
             _ => {}
         }
     }

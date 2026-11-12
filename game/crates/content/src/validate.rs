@@ -313,6 +313,10 @@ fn check_weapon(w: &Weapon, file: &str, content: &Content, out: &mut Vec<Issue>)
     }
     if w.stub {
         s.warn("stub", "weapon is a stub placeholder");
+        // A stub borrows moves from another class until its own land (the stub bow, the
+        // stand-in parry dagger), so the class cross-check waits for it to be done.
+    } else {
+        check_moveset_class(w, content, &mut s);
     }
     let catalyst = w.class == crate::weapons::WeaponClass::Catalyst;
     if catalyst != w.catalyst_school.is_some() {
@@ -320,6 +324,176 @@ fn check_weapon(w: &Weapon, file: &str, content: &Content, out: &mut Vec<Issue>)
             "catalyst_school",
             "a Catalyst has a school, and no other weapon does",
         );
+    }
+    check_weapon_art(w, content, &mut s);
+    if let Some(e) = &w.elemental
+        && (e.base == 0 || e.base > 1000)
+    {
+        s.error("elemental.base", format!("{} is outside 1..=1000", e.base));
+    }
+}
+
+/// The moves file each weapon class's moveset comes from (docs/game/04-arsenal-and-builds.md,
+/// "Weapon classes"). Dodges come from `moves/common.ron`, which every class shares.
+fn class_moveset_file(class: crate::weapons::WeaponClass) -> &'static str {
+    use crate::weapons::WeaponClass as C;
+    match class {
+        C::Dagger => "moves/dagger.ron",
+        C::StraightSword => "moves/straight_sword.ron",
+        C::Greatsword => "moves/greatsword.ron",
+        C::CurvedSword => "moves/curved_sword.ron",
+        C::ThrustingSword => "moves/thrusting_sword.ron",
+        C::Axe => "moves/axe.ron",
+        C::Hammer => "moves/hammer.ron",
+        C::Colossal => "moves/colossal.ron",
+        C::Spear => "moves/spear.ron",
+        C::Halberd => "moves/halberd.ron",
+        C::Fist => "moves/fist.ron",
+        C::Bow => "moves/bow.ron",
+        C::Shield => "moves/shield.ron",
+        C::Catalyst => "moves/catalyst.ron",
+    }
+}
+
+/// Every move a weapon names must come from its class's moveset file, or from the shared
+/// dodges in `moves/common.ron`.
+fn check_moveset_class(w: &Weapon, content: &Content, s: &mut Sink<'_>) {
+    let want = class_moveset_file(w.class);
+    for (field, id) in w.moveset.references() {
+        let Some((file, _)) = content.all_moves().find(|(_, m)| m.id == id) else {
+            continue; // Unknown moves are reported above.
+        };
+        if file != want && file != "moves/common.ron" {
+            s.error(
+                field,
+                format!(
+                    "move \"{id}\" is in {file}, but a {:?} uses {want}",
+                    w.class
+                ),
+            );
+        }
+    }
+}
+
+/// A weapon's Art must exist and list the weapon's class. A catalyst names no Art.
+fn check_weapon_art(w: &Weapon, content: &Content, s: &mut Sink<'_>) {
+    let catalyst = w.class == crate::weapons::WeaponClass::Catalyst;
+    match (&w.default_art, catalyst) {
+        (Some(_), true) => s.error("default_art", "a Catalyst casts spells and has no Art"),
+        (None, false) => s.error("default_art", "a weapon that isn't a Catalyst needs an Art"),
+        (None, true) => {}
+        (Some(id), false) => {
+            let Some(art) = content.arts.iter().find(|a| &a.id == id) else {
+                s.error("default_art", format!("unknown Art \"{id}\""));
+                return;
+            };
+            if !art.classes.contains(&w.class) {
+                s.error(
+                    "default_art",
+                    format!("Art \"{id}\" can't be used by a {:?}", w.class),
+                );
+            }
+        }
+    }
+}
+
+/// Checks the Arts file: unique IDs, a usable FP cost, and at least one class each.
+fn check_arts(content: &Content, out: &mut Vec<Issue>) {
+    let mut seen = BTreeSet::new();
+    for a in &content.arts {
+        let mut s = Sink {
+            out,
+            file: "arts.ron",
+            item: &a.id,
+        };
+        if !seen.insert(a.id.as_str()) {
+            s.error("id", "duplicate Art ID");
+        }
+        if a.classes.is_empty() {
+            s.error("classes", "an Art lists no weapon class");
+        }
+        if a.fp > 200 {
+            s.error("fp", format!("{} is above 200", a.fp));
+        }
+        if a.stub {
+            s.warn("stub", "Art is a stub placeholder");
+        }
+    }
+}
+
+/// Checks the upgrade rules: the Forgeglass bands cover every common level with items
+/// that exist, the Starglass numbers are sane, and each temper is well formed.
+fn check_upgrades(u: &crate::upgrades::UpgradeRules, content: &Content, out: &mut Vec<Issue>) {
+    let mut s = Sink {
+        out,
+        file: "upgrades.ron",
+        item: "upgrades",
+    };
+    let max = content.attributes.damage.max_upgrade;
+    let mut prev = 0u8;
+    for (i, c) in u.common_costs.iter().enumerate() {
+        if c.through <= prev {
+            s.error(
+                format!("common_costs[{i}].through"),
+                format!("{} must be above {prev}", c.through),
+            );
+        }
+        prev = c.through;
+        if c.count == 0 {
+            s.error(format!("common_costs[{i}].count"), "must be at least 1");
+        }
+    }
+    if prev != max {
+        s.error(
+            "common_costs",
+            format!("the bands end at level {prev}, but the common maximum is {max}"),
+        );
+    }
+    let items: BTreeSet<&str> = content
+        .consumables
+        .as_ref()
+        .map(|c| c.items.iter().map(|i| i.id.as_str()).collect())
+        .unwrap_or_default();
+    let mut referenced: Vec<(String, &str)> = u
+        .common_costs
+        .iter()
+        .enumerate()
+        .map(|(i, c)| (format!("common_costs[{i}].item"), c.item.as_str()))
+        .collect();
+    referenced.push(("starglass_item".to_owned(), u.starglass_item.as_str()));
+    referenced.push(("ember_item".to_owned(), u.ember_item.as_str()));
+    referenced.push(("whetstone_item".to_owned(), u.whetstone_item.as_str()));
+    for (field, id) in referenced {
+        if !items.contains(id) {
+            s.error(field, format!("item \"{id}\" is not in consumables.ron"));
+        }
+    }
+    if u.starglass_max == 0 || u.starglass_common_levels == 0 {
+        s.error(
+            "starglass_max",
+            "Starglass levels and their common-level worth must be at least 1",
+        );
+    }
+    let mut ids = BTreeSet::new();
+    for t in &u.tempers {
+        if !ids.insert(t.id.as_str()) {
+            s.error("tempers", format!("duplicate temper \"{}\"", t.id));
+        }
+        if t.element.is_some() != (t.element_percent > 0) {
+            s.error(
+                format!("tempers.{}", t.id),
+                "a temper converts base damage into an element only with a percent above 0",
+            );
+        }
+        if t.element_percent > 100 {
+            s.error(format!("tempers.{}", t.id), "element_percent is above 100");
+        }
+        if t.scaling_percent.iter().any(|&p| p > 300) {
+            s.error(
+                format!("tempers.{}.scaling_percent", t.id),
+                "a percent is above 300",
+            );
+        }
     }
 }
 
@@ -448,6 +622,10 @@ impl Validate for Content {
                 .error("id", "duplicate weapon ID");
             }
             check_weapon(w, file, self, &mut out);
+        }
+        check_arts(self, &mut out);
+        if let Some(u) = &self.upgrades {
+            check_upgrades(u, self, &mut out);
         }
         if let Some(c) = &self.consumables {
             for (field, message) in c.problems() {

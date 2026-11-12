@@ -142,9 +142,9 @@ fn m5_spell_aether_dart_hits_the_dummy_ahead_once() {
     let r = run("m5_spell_aether_dart", "spell_range");
     assert_eq!(r.projectiles(ProjectileEventKind::Spawned), 1);
     assert_eq!(r.targets(), vec![r.at(0.0, 7.0)]);
-    // Spell power (the stylus at Insight 10) times the dart's 0.7 motion value, against 100
-    // flat defense.
-    assert_eq!(r.damage(), vec![33]);
+    // Spell power (the stylus at Insight 10, 0.9 scaling since WP-053) times the dart's
+    // 0.7 motion value, against 100 flat defense.
+    assert_eq!(r.damage(), vec![32]);
     assert!(r.all_hits_are_move("spm_aether_dart"));
 }
 
@@ -152,7 +152,7 @@ fn m5_spell_aether_dart_hits_the_dummy_ahead_once() {
 fn m5_spell_aether_bolt_hits_harder_and_slower_than_the_dart() {
     let r = run("m5_spell_aether_bolt", "spell_range");
     assert_eq!(r.targets(), vec![r.at(0.0, 7.0)]);
-    assert_eq!(r.damage(), vec![119]);
+    assert_eq!(r.damage(), vec![116]);
     let dart = run("m5_spell_aether_dart", "spell_range");
     assert!(r.damage()[0] > dart.damage()[0] * 3);
     // 18 m/s against 30, and a later release frame (14 against 7): it arrives later.
@@ -163,7 +163,7 @@ fn m5_spell_aether_bolt_hits_harder_and_slower_than_the_dart() {
 fn m5_spell_homing_motes_launch_five_and_all_find_the_target() {
     let r = run("m5_spell_homing_motes", "spell_range");
     assert_eq!(r.projectiles(ProjectileEventKind::Spawned), 5);
-    assert_eq!(r.damage(), vec![26; 5]);
+    assert_eq!(r.damage(), vec![25; 5]);
     assert_eq!(r.targets().len(), 1, "they home onto one target");
     // They leave on different frames, so they arrive on different ticks.
     let ticks: Vec<u64> = r.player_hits().iter().map(|(t, _)| *t).collect();
@@ -179,7 +179,7 @@ fn m5_spell_aether_wave_hits_what_stands_close_in_front() {
         "a hitbox, not a projectile"
     );
     assert_eq!(r.targets(), vec![r.at(1.3, 2.3)]);
-    assert_eq!(r.damage(), vec![108]);
+    assert_eq!(r.damage(), vec![104]);
     assert!(r.all_hits_are_move("spm_aether_wave"));
 }
 
@@ -240,7 +240,7 @@ fn m5_spell_gradient_descent_arcs_onto_the_dummy_with_heavy_stance_damage() {
     let r = run("m5_spell_gradient_descent", "spell_range");
     assert_eq!(r.projectiles(ProjectileEventKind::Spawned), 1);
     assert_eq!(r.targets(), vec![r.at(0.0, 7.0)]);
-    assert_eq!(r.damage(), vec![210]);
+    assert_eq!(r.damage(), vec![202]);
     // It goes up first, so it lands later than a flat bolt aimed at the same dummy.
     let bolt = run("m5_spell_aether_bolt", "spell_range");
     assert!(r.player_hits()[0].0 > bolt.player_hits()[0].0);
@@ -254,7 +254,7 @@ fn m5_spell_glasswing_swarm_fans_five_shards_across_the_group() {
     let r = run("m5_spell_glasswing_swarm", "spell_range");
     assert_eq!(r.projectiles(ProjectileEventKind::Spawned), 5);
     assert_eq!(r.targets().len(), 3, "a spread hits a group");
-    assert_eq!(r.damage(), vec![23; 3]);
+    assert_eq!(r.damage(), vec![22; 3]);
 }
 
 #[test]

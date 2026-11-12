@@ -30,12 +30,15 @@
       roll_heavy: "dodge_roll_heavy",
       dodge_backstep: "dodge_backstep",
     ),
+    default_art: "art_rising_cleave",
   ),
   (
     // A stand-in parry tool (docs/game/03-combat.md, "Parry and critical hits": "a 6-tick
     // window for bucklers and parry daggers", "daggers 1.4"). It lives in this file so the
     // Wayfarer's Blade stays the default weapon (the first in file order), and borrows the
-    // straight-sword moveset until the dagger arsenal lands. The duel scenarios equip it.
+    // straight-sword moveset. WP-053 made the real Parrying Dirk (wpn_parrying_dirk), which
+    // the duel scenarios could switch to; this stand-in stays until they do, so it stays a
+    // stub: the class cross-check waits for it. The duel scenarios equip it.
     id: "wpn_parry_dagger",
     name: "Parrying Dagger",
     class: Dagger,
@@ -63,5 +66,7 @@
       roll_heavy: "dodge_roll_heavy",
       dodge_backstep: "dodge_backstep",
     ),
+    default_art: "art_windward_parry",
+    stub: true,
   ),
 ]

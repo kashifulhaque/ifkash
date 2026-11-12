@@ -1,0 +1,28 @@
+// Arts: weapon skills that cost FP. Every Art is a stub until WP-054 implements it; the
+// validator warns on stubs. A weapon names its Art (`default_art` in weapons/), and the
+// validator checks that the Art lists the weapon's class.
+// Source: docs/game/04-arsenal-and-builds.md, "Arts". Schema: crates/content/src/arts.rs.
+// Registry numbers: 19500-19513.
+//
+// The spec's "Any melee except fist" is spelled out here as the melee classes. "Toll" is one
+// Art with two variants (Bell Toll for the Bellwright's Mallet, Choir Toll for the Choir
+// Glaive); the variant follows from the weapon's element, so it stays one entry.
+#![enable(implicit_some)]
+(
+  arts: [
+    (id: "art_feint_step", name: "Feint Step", classes: [Dagger, StraightSword, CurvedSword, ThrustingSword, Fist], fp: 6, stub: true),
+    (id: "art_rending_sweep", name: "Rending Sweep", classes: [CurvedSword, Axe], fp: 10, stub: true),
+    (id: "art_bastion", name: "Bastion", classes: [Shield], fp: 0, stub: true),
+    (id: "art_windward_parry", name: "Windward Parry", classes: [Dagger, StraightSword, Shield], fp: 0, stub: true),
+    (id: "art_rising_cleave", name: "Rising Cleave", classes: [StraightSword, Greatsword, Halberd], fp: 10, stub: true),
+    (id: "art_rallying_roar", name: "Rallying Roar", classes: [Axe, Hammer, Colossal, Fist], fp: 12, stub: true),
+    (id: "art_lunging_thrust", name: "Lunging Thrust", classes: [Spear, ThrustingSword], fp: 9, stub: true),
+    (id: "art_earthsplit", name: "Earthsplit", classes: [Hammer, Colossal], fp: 14, stub: true),
+    (id: "art_rime_edge", name: "Rime Edge", classes: [Dagger, StraightSword, Greatsword, CurvedSword, ThrustingSword, Axe, Hammer, Colossal, Spear, Halberd], fp: 15, stub: true),
+    (id: "art_radiant_blade", name: "Radiant Blade", classes: [Dagger, StraightSword, Greatsword, CurvedSword, ThrustingSword, Axe, Hammer, Colossal, Spear, Halberd], fp: 15, stub: true),
+    (id: "art_spark_volley", name: "Spark Volley", classes: [Bow], fp: 10, stub: true),
+    (id: "art_lantern_flare", name: "Lantern Flare", classes: [StraightSword], fp: 12, stub: true),
+    (id: "art_glass_barrage", name: "Glass Barrage", classes: [ThrustingSword, Spear], fp: 14, stub: true),
+    (id: "art_toll", name: "Toll", classes: [Hammer, Halberd], fp: 18, stub: true),
+  ],
+)

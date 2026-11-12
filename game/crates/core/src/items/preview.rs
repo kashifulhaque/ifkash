@@ -39,10 +39,7 @@ pub fn loadout_stats(world: &World, inv: &Inventory) -> Option<LoadoutStats> {
     let eq = &inv.equipment;
     let (ar, unwieldy) = match eq.right_weapon() {
         Some(w) => {
-            let ar =
-                world
-                    .damage
-                    .attack_rating(w, &p.stats.attrs, p.stats.weapon_upgrade, false)?;
+            let ar = crate::items::upgrade::weapon_rating(world, w, &p.stats.attrs, false)?;
             (ar.phys_milli, ar.unwieldy)
         }
         None => (0, false),

@@ -68,6 +68,11 @@ impl ActionFrame {
 ///   attributes, Vitality to Devotion) and consumes a Rewrite Quill. It applies only while
 ///   resting at a Lantern, and only if the spread keeps the total and the starting values
 ///   as the floor (`actor::level::respec_allowed`).
+/// - `Upgrade` raises the weapon in hand slot `slot` (0 to 3, `items::slot`) by one level
+///   at the Smith, paying its Glimmer and material. `Temper` tempers the common weapon in
+///   hand slot `slot` with temper `temper`, an index into `upgrades.ron`. Both apply only
+///   while resting at a Lantern, since the Smith has no place of its own yet
+///   (`items::upgrade`).
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Command {
     Rest,
@@ -79,6 +84,8 @@ pub enum Command {
     SplitFlasks { vigil: u8 },
     Travel { lantern: u8 },
     Respec { attributes: [u16; 7] },
+    Upgrade { slot: u8 },
+    Temper { slot: u8, temper: u8 },
 }
 
 /// Everything the simulation consumes in one tick.

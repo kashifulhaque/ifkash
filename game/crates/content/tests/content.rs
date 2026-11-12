@@ -76,9 +76,7 @@ fn hash_ignores_comments_and_whitespace() {
     let moves = std::fs::read_to_string(data_dir().join("moves/straight_sword.ron")).unwrap();
     let common = std::fs::read_to_string(data_dir().join("moves/common.ron")).unwrap();
     let crits = std::fs::read_to_string(data_dir().join("moves/crits.ron")).unwrap();
-    let weapons = std::fs::read_to_string(data_dir().join("weapons/straight_sword.ron")).unwrap();
     let bow_moves = std::fs::read_to_string(data_dir().join("moves/stub_bow.ron")).unwrap();
-    let bow = std::fs::read_to_string(data_dir().join("weapons/stub_bow.ron")).unwrap();
     // Every .ron file in a data subdirectory, as (relative path, text), sorted.
     let ron_files = |sub: &str| -> Vec<(String, String)> {
         let mut names: Vec<String> = std::fs::read_dir(data_dir().join(sub))
@@ -97,8 +95,6 @@ fn hash_ignores_comments_and_whitespace() {
             .collect()
     };
     let test_enemy = std::fs::read_to_string(data_dir().join("moves/test_enemy.ron")).unwrap();
-    let test_classes =
-        std::fs::read_to_string(data_dir().join("weapons/test_classes.ron")).unwrap();
     let mut all_moves = vec![
         ("moves/common.ron".to_owned(), common),
         ("moves/crits.ron".to_owned(), crits),
@@ -131,15 +127,11 @@ fn hash_ignores_comments_and_whitespace() {
         &noisy,
         &attrs,
         all_moves,
-        vec![
-            ("weapons/straight_sword.ron".into(), weapons),
-            ("weapons/stub_bow.ron".into(), bow),
-            ("weapons/test_classes.ron".into(), test_classes),
-            (
-                "weapons/stylus_reliquary.ron".into(),
-                std::fs::read_to_string(data_dir().join("weapons/stylus_reliquary.ron")).unwrap(),
-            ),
-        ],
+        // Every weapon file (WP-053 added the wpn_* files), each with a noise comment.
+        ron_files("weapons")
+            .into_iter()
+            .map(|(p, t)| (p, format!("// noise\n{t}")))
+            .collect(),
     )
     .and_then(|c| {
         let read = |p: &str| std::fs::read_to_string(data_dir().join(p)).unwrap();
@@ -153,6 +145,8 @@ fn hash_ignores_comments_and_whitespace() {
             .with_status(Some(&format!("// noise\n{}", read("status.ron"))))?
             .with_charms(Some(&format!("// noise\n{}", read("charms.ron"))))?
             .with_armor(Some(&format!("// noise\n{}", read("armor.ron"))))?
+            .with_arts(Some(&format!("// noise\n{}", read("arts.ron"))))?
+            .with_upgrades(Some(&format!("// noise\n{}", read("upgrades.ron"))))?
             .with_spells(
                 ron_files("spells")
                     .into_iter()
@@ -389,4 +383,100 @@ fn enemy_attacks_must_telegraph_for_12_frames() {
             .iter()
             .any(|e| e.contains("ga_shoot") && e.contains("5"))
     );
+}
+
+/// Every issue the validator reports for `item`, with its message.
+fn issues_for(content: &Content, item: &str) -> Vec<String> {
+    content
+        .validate()
+        .into_iter()
+        .filter(|i| i.severity == Severity::Error && i.item == item)
+        .map(|i| format!("{}: {}", i.field, i.message))
+        .collect()
+}
+
+fn weapon_mut<'a>(content: &'a mut Content, id: &str) -> &'a mut lf_content::Weapon {
+    content
+        .weapons
+        .values_mut()
+        .flatten()
+        .find(|w| w.id == id)
+        .expect("weapon exists")
+}
+
+#[test]
+fn a_weapon_must_take_its_moves_from_its_class() {
+    let mut c = Content::load_embedded().expect("loads");
+    // A dagger that swings the straight sword's light attack.
+    weapon_mut(&mut c, "wpn_fungal_knife").moveset.light_chain = vec!["ss_light_1".to_owned()];
+    let issues = issues_for(&c, "wpn_fungal_knife");
+    assert!(
+        issues
+            .iter()
+            .any(|m| m.contains("moves/straight_sword.ron") && m.contains("Dagger")),
+        "{issues:#?}"
+    );
+}
+
+#[test]
+fn a_weapon_must_name_an_art_its_class_can_use() {
+    let mut c = Content::load_embedded().expect("loads");
+    // Bastion is a shield's Art, so a dagger can't use it.
+    weapon_mut(&mut c, "wpn_fungal_knife").default_art = Some("art_bastion".to_owned());
+    let issues = issues_for(&c, "wpn_fungal_knife");
+    assert!(
+        issues
+            .iter()
+            .any(|m| m.contains("default_art") && m.contains("can't be used by a Dagger")),
+        "{issues:#?}"
+    );
+}
+
+#[test]
+fn a_weapon_must_name_an_art_unless_it_is_a_catalyst() {
+    let mut c = Content::load_embedded().expect("loads");
+    weapon_mut(&mut c, "wpn_fungal_knife").default_art = None;
+    assert!(
+        issues_for(&c, "wpn_fungal_knife")
+            .iter()
+            .any(|m| m.contains("needs an Art")),
+    );
+    // A catalyst casts spells, so it can't name an Art.
+    weapon_mut(&mut c, "wpn_scholars_stylus").default_art = Some("art_feint_step".to_owned());
+    assert!(
+        issues_for(&c, "wpn_scholars_stylus")
+            .iter()
+            .any(|m| m.contains("has no Art")),
+    );
+}
+
+#[test]
+fn an_art_must_be_known_and_list_the_class() {
+    let mut c = Content::load_embedded().expect("loads");
+    weapon_mut(&mut c, "wpn_fungal_knife").default_art = Some("art_not_yet".to_owned());
+    assert!(
+        issues_for(&c, "wpn_fungal_knife")
+            .iter()
+            .any(|m| m.contains("unknown Art \"art_not_yet\"")),
+    );
+}
+
+#[test]
+fn every_real_weapon_passes_the_class_moveset_and_art_checks() {
+    let c = Content::load_embedded().expect("loads");
+    let errors: Vec<_> = c
+        .validate()
+        .into_iter()
+        .filter(|i| i.severity == Severity::Error)
+        .collect();
+    assert!(errors.is_empty(), "{errors:#?}");
+    // Every weapon that isn't a test weapon names an Art, unless it is a catalyst.
+    for w in c
+        .all_weapons()
+        .map(|(_, w)| w)
+        .filter(|w| !w.id.starts_with("wpn_test_"))
+    {
+        let catalyst = w.class == lf_content::weapons::WeaponClass::Catalyst;
+        assert_eq!(catalyst, w.default_art.is_none(), "{}", w.id);
+    }
 }

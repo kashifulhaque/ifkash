@@ -38,7 +38,8 @@ pub mod flags {
 pub struct ActorSnap {
     /// Arena handle: generation in the top 12 bits, index in the low 20 (see `pack_id`).
     pub id: u32,
-    /// Content ID of the actor type, for model lookup. 0 until actor kinds exist.
+    /// Registry number of the enemy definition (7000 is the Husk), for model lookup. 0 for the
+    /// player and any actor with no AI brain.
     pub kind: u16,
     /// See [`flags`]. Only dead, guarding, invulnerable (i-frames), and locked target are set so far.
     pub flags: u16,
@@ -135,6 +136,13 @@ pub fn write_snapshot(world: &World, out: &mut Vec<ActorSnap>) {
         let current = actor.moves.current;
         out.push(ActorSnap {
             id: pack_id(id),
+            // The enemy definition's registry number (7000 is the Husk); 0 for the player and
+            // any actor without an AI brain. Registry numbers below 65536 fit in a u16.
+            kind: actor
+                .ai
+                .as_ref()
+                .and_then(|b| world.ai.defs.get(usize::from(b.def)))
+                .map_or(0, |d| u16::try_from(d.num).unwrap_or(0)),
             flags: bits,
             pos: actor.pos,
             yaw: actor.yaw,

@@ -172,7 +172,7 @@ export class SceneView {
     const modelsReady = this.actors.ready;
     for (const a of actors) {
       live.add(a.id);
-      if (modelsReady && this.actors.update(a, frameMs)) continue;
+      if (this.actors.update(a, frameMs)) continue;
       let mesh = this.meshes.get(a.id);
       if (!mesh) {
         mesh = new Mesh(this.capsuleGeometry, this.bodyMaterial);
@@ -186,7 +186,8 @@ export class SceneView {
       mesh.position.set(a.x, a.y + CAPSULE_HEIGHT / 2, a.z);
       mesh.rotation.y = a.yaw;
     }
-    if (modelsReady) this.actors.prune(live);
+    this.actors.prune(live);
+    this.actors.tickPreview(frameMs);
     for (const [id, mesh] of this.meshes) {
       if (!live.has(id) || modelsReady) {
         this.scene.remove(mesh);

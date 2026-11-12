@@ -22,11 +22,21 @@ import { KTX2Loader } from 'three/examples/jsm/loaders/KTX2Loader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import type { DrawActor } from '../../engine/snapshot';
+import type { ModelDef } from '../procedural';
 import { AirTracker, LAND_SECONDS } from './airState';
 import { parsePreview, type PreviewRequest } from './devPreview';
 import { locomotionBlend, type LocoBands } from './locomotion';
 import { clipForAnim, movePhase, moveClipTime, type MoveResolver } from './moveClips';
 import { BONE_MAP, type BakedClip, retargetClips, sampleClip } from './retarget';
+import {
+  ProceduralActor,
+  findChoreo,
+  modelForId,
+  modelForKind,
+  parsePropPreview,
+  type PropPreview
+} from '../procedural';
+import { FLAG_DEAD } from '../../engine/snapshot';
 
 /** Where the optimized assets live (`lf-tools assets` writes them). */
 export const ACTOR_ASSET_BASE = '/latticefall/actors/';
@@ -143,12 +153,20 @@ export class ActorRenderer {
   private warned = new Set<string>();
   private loading: Promise<void> | null = null;
   private sample: Pose | null = null;
+  /** Enemies drawn by procedural models, by actor id. They need no assets, so they draw at once. */
+  private enemies = new Map<number, ProceduralActor>();
+  private propPreview: PropPreview | null = null;
+  private propActors: ProceduralActor[] = [];
+  private propT = 0;
 
   constructor(scene: Scene, renderer: WebGLRenderer, opts: { resolveMove?: MoveResolver } = {}) {
     this.scene = scene;
     this.renderer = renderer;
     this.resolveMove = opts.resolveMove ?? (() => undefined);
-    if (typeof location !== 'undefined') this.preview = parsePreview(location.search);
+    if (typeof location !== 'undefined') {
+      this.preview = parsePreview(location.search);
+      this.propPreview = parsePropPreview(location.search);
+    }
     if (this.preview || import.meta.env.DEV) (globalThis as Record<string, unknown>).__lfActors = this;
   }
 
@@ -204,6 +222,11 @@ export class ActorRenderer {
 
   /** Draws one actor. Returns false (and draws nothing) until the assets are loaded. */
   update(a: DrawActor, frameMs: number): boolean {
+    const def = a.kind ? modelForKind(a.kind) : undefined;
+    if (def) {
+      this.updateEnemy(a, def, frameMs);
+      return true;
+    }
     const tpl = this.tpl;
     if (!tpl) return false;
     const dt = Math.max(frameMs, 0) / 1000;
@@ -257,12 +280,12 @@ export class ActorRenderer {
 
   /** Hitstop: freezes the actor's drawn animation for `seconds` (never longer than a quarter second). */
   holdPose(id: number, seconds: number): void {
-    const inst = this.instances.get(id);
+    const inst = this.instances.get(id) ?? this.enemies.get(id);
     if (inst) inst.hold = Math.min(0.25, Math.max(inst.hold, seconds));
   }
 
   isHeld(id: number): boolean {
-    return (this.instances.get(id)?.hold ?? 0) > 0;
+    return (this.instances.get(id)?.hold ?? this.enemies.get(id)?.hold ?? 0) > 0;
   }
 
   /**
@@ -301,6 +324,13 @@ export class ActorRenderer {
 
   /** Removes instances for actors no longer in the snapshot. */
   prune(live: Set<number>): void {
+    for (const [id, e] of this.enemies) {
+      if (!live.has(id)) {
+        this.scene.remove(e.holder);
+        e.dispose();
+        this.enemies.delete(id);
+      }
+    }
     for (const [id, inst] of this.instances) {
       if (!live.has(id)) {
         this.scene.remove(inst.holder);
@@ -312,6 +342,12 @@ export class ActorRenderer {
   dispose(): void {
     for (const inst of this.instances.values()) this.scene.remove(inst.holder);
     this.instances.clear();
+    for (const e of [...this.enemies.values(), ...this.propActors]) {
+      this.scene.remove(e.holder);
+      e.dispose();
+    }
+    this.enemies.clear();
+    this.propActors = [];
     this.tpl?.gltf.scene.traverse((o) => {
       const m = o as { geometry?: { dispose(): void }; material?: { dispose(): void } | Array<{ dispose(): void }> };
       m.geometry?.dispose();
@@ -333,6 +369,68 @@ export class ActorRenderer {
       return [p.x, p.y, p.z];
     };
     return { l: get('Foot.L'), r: get('Foot.R'), speed: inst.speed };
+  }
+
+  /** Draws one enemy as its procedural model, posed from the snapshot's move and flags. */
+  private updateEnemy(a: DrawActor, def: ModelDef, frameMs: number): void {
+    let e = this.enemies.get(a.id);
+    if (!e) {
+      e = new ProceduralActor(def, a.id);
+      this.enemies.set(a.id, e);
+      this.scene.add(e.holder);
+    }
+    const info = a.moveId !== 0 ? this.resolveMove(a.moveId) : undefined;
+    const frac = Math.min((performance.now() - this.enemyFrameAt(a)) / 1000 / TICK_SECONDS, 1);
+    const move = info ? { anim: info.anim, total: info.totalFrames, frame: a.moveFrame + frac } : undefined;
+    e.update({ x: a.x, y: a.y, z: a.z, yaw: a.yaw, dead: (a.flags & FLAG_DEAD) !== 0 }, move, Math.max(frameMs, 0) / 1000);
+  }
+
+  private enemyFrames = new Map<number, { frame: number; at: number }>();
+  /** When the actor's `move_frame` last changed, to blend the frame between 30 Hz ticks. */
+  private enemyFrameAt(a: DrawActor): number {
+    const now = performance.now();
+    const seen = this.enemyFrames.get(a.id);
+    if (!seen || seen.frame !== a.moveFrame) {
+      this.enemyFrames.set(a.id, { frame: a.moveFrame, at: now });
+      return now;
+    }
+    return seen.at;
+  }
+
+  /** Draws the `?preview=` models (see `procedural/preview.ts`). Call once per rendered frame. */
+  tickPreview(frameMs: number): void {
+    const pv = this.propPreview;
+    if (!pv) return;
+    if (this.propActors.length === 0) {
+      const defs = pv.ids.map((id) => modelForId(id)).filter((d): d is ModelDef => !!d);
+      defs.forEach((d, i) => {
+        const pa = new ProceduralActor(d, i);
+        this.scene.add(pa.holder);
+        this.propActors.push(pa);
+      });
+    }
+    const dt = Math.max(frameMs, 0) / 1000;
+    this.propT += dt;
+    const n = this.propActors.length;
+    this.propActors.forEach((pa, i) => {
+      const def = pa.def;
+      let move: { anim: string; total: number; frame: number } | undefined;
+      if (pv.move !== null) {
+        const keys = [...new Set(Object.values(def.moves))].map((c) => Object.keys(def.moves).find((k) => def.moves[k] === c)!);
+        const idx = Number(pv.move);
+        const anim = Number.isInteger(idx) ? keys[idx % keys.length] : pv.move;
+        const c = findChoreo(def, anim);
+        const frame = pv.t !== undefined ? pv.t * c.total : (this.propT * 30) % (c.total + 30);
+        move = { anim, total: c.total, frame };
+      }
+      pa.update(
+        { x: (i - (n - 1) / 2) * 3, y: 0, z: pv.z, yaw: Math.PI, dead: pv.dead },
+        move,
+        // A frozen preview still plays out the fall in one step.
+        pv.dead ? 1 : pv.t !== undefined ? 0 : dt,
+        pv.speed ?? 0
+      );
+    });
   }
 
   // -- internals ------------------------------------------------------------------------

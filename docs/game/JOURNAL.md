@@ -28,6 +28,18 @@ Copy this block to the top of the entries and fill it in as you go:
 
 ## Entries
 
+### 2026-11-12: latticefall-m2 (M2)
+
+- **Orchestrator:** Opus 5.5, low effort
+- **Branch:** `game/m2-combat`
+- **Started from:** `origin/main` at `1e61e40`
+- **WPs:**
+  - WP-020: in progress (opus)
+- **Context:** orchestrator 112K at start-up
+- **Not verified:**
+- **Waiting on the owner:**
+- **Next steps:**
+
 ### 2026-11-12: latticefall-m1c (M1: WP-014, gate G1)
 
 - **Orchestrator:** Sonnet 5.5; side session of the M1 series

@@ -57,6 +57,7 @@ Copy this block to the top of the entries and fill it in as you go:
 - **WPs:**
   - WP-068: sonnet, worktree; `f64edc9`; 470K. Clean cherry-pick. Orchestrator checked tests, lint, validate, `bun run check`, and the hub loads.
   - WP-060: sonnet, worktree; `fbf71cf`; 331K. Orchestrator merged it onto WP-068 (keep-both in `level.rs`, content test, spawns, props index), ran `gen-ts` and `cargo fmt`, rehashed goldens (86 lines, all A -> A). Screenshots: L09 causeway and Cathedral; L06 landmark with a fixed camera (the follow camera pitches down and hides the tower).
+  - WP-061: sonnet, worktree; `fdd72b8`; 330K. Clean cherry-pick. Its `MechanicEvent` sub-kinds 30-39 aren't WASM kinds; the orchestrator gave running workers sub-kind ranges (WP-062 40-49, WP-064 50-59, WP-067 60-69).
 - **Context:**
 - **Not verified:**
 - **Waiting on the owner:**

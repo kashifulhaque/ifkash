@@ -1,0 +1,46 @@
+// Attributes and derived-stat curves.
+// Source: docs/game/03-combat.md, "Attributes" and "Derived stats".
+//
+// Curve values are fixed-point tenths (for example 508 means 50.8) so evaluation is
+// exact integer math. A curve is the stat at attribute `min`, plus `per_point_tenths`
+// for each point above it, with the rate changing at each segment's `until` breakpoint.
+#![enable(implicit_some)]
+(
+  min: 1,
+  max: 60,
+  start_min: 4,
+  start_max: 16,
+  level_offset: 60, // character level = sum of attributes - level_offset
+  attributes: [
+    (id: "attr_vitality", name: "Vitality"),
+    (id: "attr_focus", name: "Focus"),
+    (id: "attr_endurance", name: "Endurance"),
+    (id: "attr_might", name: "Might"),
+    (id: "attr_finesse", name: "Finesse"),
+    (id: "attr_insight", name: "Insight"),
+    (id: "attr_devotion", name: "Devotion"),
+  ],
+  max_hp: (
+    base_tenths: 3000,
+    segments: [(until: 20, per_point_tenths: 300), (until: 40, per_point_tenths: 250), (until: 60, per_point_tenths: 80)],
+  ),
+  max_fp: (
+    base_tenths: 400,
+    segments: [(until: 20, per_point_tenths: 50), (until: 40, per_point_tenths: 30), (until: 60, per_point_tenths: 10)],
+  ),
+  max_stamina: (
+    base_tenths: 800,
+    segments: [(until: 20, per_point_tenths: 20), (until: 40, per_point_tenths: 10), (until: 60, per_point_tenths: 5)],
+  ),
+  max_equip_load: (
+    base_tenths: 400,
+    segments: [(until: 20, per_point_tenths: 12), (until: 40, per_point_tenths: 12), (until: 60, per_point_tenths: 6)],
+  ),
+  // 2 slots at attribute 10, +1 every 8 points above that.
+  spell_slots: (base: 2, from: 10, every: 8),
+  // Applies to the attribute that raises each resistance (see the spec's attribute table).
+  resistance: (
+    base_tenths: 830,
+    segments: [(until: 60, per_point_tenths: 30)],
+  ),
+)

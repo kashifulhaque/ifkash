@@ -224,6 +224,7 @@ dependencies = [
  "clap",
  "lf-content",
  "serde_json",
+ "ts-rs",
 ]
 
 [[package]]

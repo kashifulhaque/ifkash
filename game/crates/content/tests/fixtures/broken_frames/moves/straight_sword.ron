@@ -1,0 +1,35 @@
+// Deliberately broken: the hitbox starts at frame 40 in a 27-frame move.
+#![enable(implicit_some)]
+[
+  (
+    id: "ss_broken",
+    anim: "sword_slash_r",
+    total_frames: 27,
+    stamina: 12,
+    fp: 0,
+    root_motion: [(0, 0.0), (27, 0.9)],
+    track_deg_per_tick: 12.0,
+    hyperarmor: None,
+    iframes: None,
+    cancel_attack_from: 21,
+    cancel_dodge_from: 17,
+    cancel_any_from: 24,
+    next_chain: None,
+    hitboxes: [
+      (
+        frames: (40, 42),
+        shape: Capsule(a: (0.2, 1.2, 0.3), b: (0.2, 1.0, 1.6), radius: 0.25),
+        motion_value: 1.0,
+        phys: Neutral,
+        element: None,
+        poise_damage: 12,
+        status: [],
+        knockback: 0.3,
+        hitstop: 3,
+        tags: [],
+      ),
+    ],
+    sfx: [],
+    vfx: [],
+  ),
+]

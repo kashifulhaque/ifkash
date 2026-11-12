@@ -1,0 +1,10 @@
+(entries: [
+  (id: "attr_vitality", num: 100),
+  (id: "attr_focus", num: 101),
+  (id: "attr_endurance", num: 102),
+  (id: "attr_might", num: 103),
+  (id: "attr_finesse", num: 104),
+  (id: "attr_insight", num: 105),
+  (id: "attr_devotion", num: 106),
+  (id: "ss_broken", num: 2000),
+])

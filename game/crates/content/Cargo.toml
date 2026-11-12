@@ -8,3 +8,15 @@ publish.workspace = true
 
 [lints]
 workspace = true
+
+[features]
+# TypeScript type generation. Only lf-tools enables this, so the WASM and Python
+# builds don't carry ts-rs.
+ts = ["dep:ts-rs"]
+
+[dependencies]
+serde.workspace = true
+postcard.workspace = true
+xxhash-rust.workspace = true
+ron = "0.12"
+ts-rs = { version = "12", optional = true }

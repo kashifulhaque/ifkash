@@ -38,6 +38,9 @@ export const WAYFARER_HEIGHT_M = 1.75;
 /** Added to the sim yaw. Both the sim (yaw 0 faces +Z) and the model face +Z. */
 const MODEL_YAW_OFFSET = 0;
 
+/** Reach of the weapon past the hand, for trails, in meters. Matches the light hitbox (about 1.6 m from the body). */
+const WEAPON_LENGTH_M = 0.95;
+
 /** Crossfade between pose sources, in seconds. */
 const FADE_SECONDS = 0.12;
 /** Jump_Start is played this much faster than authored: the jump has already begun in the sim. */
@@ -95,6 +98,11 @@ interface Instance {
   lastMoveFrame: number;
   moveFrameAt: number;
   previewT: number;
+  /** Hitstop: seconds left in which the drawn pose is frozen. */
+  hold: number;
+  /** Frames the drawn move trails the sim by, from hitstop already served in this move. */
+  lagFrames: number;
+  lagMove: number;
 }
 
 const newPose = (n: number): Pose => ({ q: new Float32Array(n * 4), hips: new Float32Array(3) });
@@ -212,6 +220,19 @@ export class ActorRenderer {
       inst.speed += (raw - inst.speed) * k;
     }
     inst.lastPos = [a.x, a.y, a.z];
+
+    // Hitstop: hold the last drawn pose. The sim keeps ticking, so what was held is owed to
+    // the move: it plays that many frames behind until the move ends.
+    if (a.moveId !== inst.lagMove) {
+      inst.lagMove = a.moveId;
+      inst.lagFrames = 0;
+    }
+    if (inst.hold > 0) {
+      const step = Math.min(dt, inst.hold);
+      inst.hold -= step;
+      inst.lagFrames += step / TICK_SECONDS;
+      return true;
+    }
     if (dt > 0) inst.air.update(a.y, dt);
 
     const pv = this.preview;
@@ -231,6 +252,34 @@ export class ActorRenderer {
     if (pv && (pv.state === 'jump' || pv.state === 'fall' || pv.state === 'land')) {
       inst.holder.position.y += pv.state === 'land' ? 0 : PREVIEW_AIR_LIFT_M;
     }
+    return true;
+  }
+
+  /** Hitstop: freezes the actor's drawn animation for `seconds` (never longer than a quarter second). */
+  holdPose(id: number, seconds: number): void {
+    const inst = this.instances.get(id);
+    if (inst) inst.hold = Math.min(0.25, Math.max(inst.hold, seconds));
+  }
+
+  isHeld(id: number): boolean {
+    return (this.instances.get(id)?.hold ?? 0) > 0;
+  }
+
+  /**
+   * World positions of the weapon's base (the right hand) and tip: the forearm's direction
+   * carried on by `WEAPON_LENGTH_M`. The model has no weapon mesh yet, so this stands in for
+   * the blade. Returns false until the actor is drawn.
+   */
+  weaponTip(id: number, tip: Vector3, base: Vector3): boolean {
+    const inst = this.instances.get(id);
+    const tpl = this.tpl;
+    if (!inst || !tpl) return false;
+    inst.holder.updateMatrixWorld(true);
+    const hand = inst.bones[tpl.boneIndex.get('Hand.R')!];
+    const fore = inst.bones[tpl.boneIndex.get('LowerArm.R')!];
+    hand.getWorldPosition(base);
+    fore.getWorldPosition(tip);
+    tip.sub(base).negate().normalize().multiplyScalar(WEAPON_LENGTH_M).add(base);
     return true;
   }
 
@@ -318,7 +367,10 @@ export class ActorRenderer {
       idleT: 0,
       lastMoveFrame: -1,
       moveFrameAt: 0,
-      previewT: 0
+      previewT: 0,
+      hold: 0,
+      lagFrames: 0,
+      lagMove: 0
     };
     this.instances.set(id, inst);
     return inst;
@@ -351,7 +403,7 @@ export class ActorRenderer {
 
     // 1. A move, from move_id and move_frame.
     let info = a.moveId !== 0 ? this.resolveMove(a.moveId) : undefined;
-    let frame = a.moveFrame + moveFrac;
+    let frame = Math.max(0, a.moveFrame + moveFrac - inst.lagFrames);
     if (pv && typeof pv.state === 'object') {
       const total = 30;
       info = { anim: pv.state.move, totalFrames: total };

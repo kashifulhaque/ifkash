@@ -19,6 +19,8 @@ import {
   WebGLRenderer
 } from 'three';
 import { ActorRenderer } from '../render/actors';
+import { digestMoveResolver } from '../render/actors/moveTable';
+import { CombatVfx } from '../render/vfx';
 import {
   CameraRig,
   TEST_FIELD_BOUNDS,
@@ -71,6 +73,8 @@ export class SceneView {
   private resizeObserver: ResizeObserver;
   /** The Wayfarer model. Capsules draw until it loads (or if it fails to). */
   private actors: ActorRenderer;
+  /** Trails, sparks, hitstop, camera shake and auras. The engine feeds it the core's events. */
+  readonly vfx: CombatVfx;
 
   constructor(canvas: HTMLCanvasElement, raycast: RaycastFn, dev: DevCameraOptions | null = null) {
     this.canvas = canvas;
@@ -130,7 +134,9 @@ export class SceneView {
     this.noseMaterial = new MeshStandardMaterial({ color: token('--clay', '#a4502f'), roughness: 0.6 });
     this.disposables.push(this.capsuleGeometry, this.noseGeometry, this.bodyMaterial, this.noseMaterial);
 
-    this.actors = new ActorRenderer(this.scene, this.renderer);
+    const resolveMove = digestMoveResolver();
+    this.actors = new ActorRenderer(this.scene, this.renderer, { resolveMove });
+    this.vfx = new CombatVfx(this.scene, this.actors, { resolveMove });
     this.actors.load().catch((err) => console.error('Latticefall actor assets failed to load; keeping capsules', err));
 
     this.resizeObserver = new ResizeObserver(() => this.resize());
@@ -157,8 +163,11 @@ export class SceneView {
     this.camPitch = pitch;
   }
 
-  /** Draws the given actors; the first one is the player, whom the camera follows. */
-  render(actors: DrawActor[], frameMs: number): void {
+  /**
+   * Draws the given actors; the first one is the player, whom the camera follows. While
+   * `simPaused` the VFX hold their clock (sparks stay where they are) but still redraw.
+   */
+  render(actors: DrawActor[], frameMs: number, simPaused = false): void {
     const live = new Set<number>();
     const modelsReady = this.actors.ready;
     for (const a of actors) {
@@ -222,6 +231,8 @@ export class SceneView {
         this.yawDriven = pose.locked;
       }
     }
+    this.vfx.update(actors, simPaused ? 0 : Math.min(frameMs, 100) / 1000, this.camera, this.canvas.clientHeight || 1);
+    this.vfx.applyCamera(this.camera);
     this.renderer.render(this.scene, this.camera);
   }
 
@@ -229,6 +240,7 @@ export class SceneView {
     this.resizeObserver.disconnect();
     for (const mesh of this.meshes.values()) this.scene.remove(mesh);
     this.meshes.clear();
+    this.vfx.dispose();
     this.actors.dispose();
     for (const d of this.disposables) d.dispose();
     this.disposables = [];

@@ -7,6 +7,8 @@
 //   &spawn=ID               puts the player at a named spawn point (see `spawns.ts`)
 //   &seed=N                 world seed, a decimal u64 (default 1)
 //   &freeze=1               starts with the simulation paused
+//   &freezeonhit=MS         pauses the simulation MS milliseconds after the first Hit event (1 means
+//                           120), so the effects of that hit stay on screen for a screenshot
 //   &overlay=a,b            debug draw: colliders, hitboxes, hurtboxes, nav, ai, or `all`
 //   &cam=MODE               orbit | orbit-script | fixed:X,Y,Z,YAW,PITCH
 //                           (YAW and PITCH in degrees; yaw 0 looks toward +Z and turns toward +X,
@@ -39,6 +41,8 @@ export interface DevParams {
   spawn: string | null;
   seed: bigint | null;
   freeze: boolean;
+  /** Milliseconds after the first hit at which to pause, or null. */
+  freezeOnHit: number | null;
   overlays: ReadonlySet<OverlayName>;
   /** Null when no `&cam=` was given. */
   cam: CamMode | null;
@@ -90,6 +94,9 @@ export function parseDevParams(search: string): DevParams {
     else warnings.push(`seed=${rawSeed}: expected an unsigned 64-bit integer`);
   }
 
+  const rawHit = p.get('freezeonhit');
+  const hitMs = rawHit !== null && /^\d+$/.test(rawHit) ? Number(rawHit) : null;
+
   const overlays = new Set<OverlayName>();
   for (const raw of (p.get('overlay') ?? '').split(',')) {
     const name = raw.trim().toLowerCase();
@@ -105,6 +112,7 @@ export function parseDevParams(search: string): DevParams {
     spawn: dev ? p.get('spawn') || null : null,
     seed: dev ? seed : null,
     freeze: dev && ['1', 'true'].includes(p.get('freeze') ?? ''),
+    freezeOnHit: dev && hitMs !== null ? (hitMs === 1 ? 120 : hitMs) : null,
     overlays: dev ? overlays : new Set(),
     cam,
     camT,

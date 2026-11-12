@@ -5,6 +5,8 @@
 import type { Scene, WebGLRenderer } from 'three';
 import type { RaycastFn } from '../render/camera';
 import type { DrawActor } from '../engine/snapshot';
+import type { GameEvent } from '../engine/events';
+import type { CombatVfx } from '../render/vfx';
 import { DevCommands, type DevWorld } from './commands';
 import { DebugDraw } from './debugDraw';
 import { DevPanel } from './panel';
@@ -25,6 +27,7 @@ export interface DevToolsDeps {
   start: { x: number; y: number; z: number; yaw: number } | null;
   refresh(): void;
   setPaused(paused: boolean): void;
+  vfx: CombatVfx;
 }
 
 declare global {
@@ -34,6 +37,8 @@ declare global {
       commands: DevCommands;
       draw: DebugDraw;
       params: DevParams;
+      /** Combat VFX: `debug()`, `previewHit()`, `previewAura()`, `shake.setReducedMotion()`. */
+      vfx: CombatVfx;
     };
   }
 }
@@ -51,6 +56,7 @@ export class DevTools {
   private actors: DrawActor[] = [];
   private tickCount = 0;
   private frameMs = 0;
+  private hitTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(private deps: DevToolsDeps) {
     const { params } = deps;
@@ -81,7 +87,7 @@ export class DevTools {
       warnings,
       onOverlayChange: () => this.draw.update(this.actors)
     });
-    window.__lfDev = { commands: this.commands, draw: this.draw, params };
+    window.__lfDev = { commands: this.commands, draw: this.draw, params, vfx: deps.vfx };
   }
 
   /** Records how long one core tick took. */
@@ -89,6 +95,13 @@ export class DevTools {
     this.tickSum += ms;
     this.tickMax = Math.max(this.tickMax, ms);
     this.tickN++;
+  }
+
+  /** Called with each tick's decoded events. `&freezeonhit` pauses shortly after the first hit. */
+  onEvents(events: GameEvent[]): void {
+    const ms = this.deps.params.freezeOnHit;
+    if (ms === null || this.hitTimer !== null || !events.some((e) => e.kind === 'hit')) return;
+    this.hitTimer = setTimeout(() => this.commands.setFrozen(true), ms);
   }
 
   /** Call just before the scene renders. */
@@ -119,6 +132,7 @@ export class DevTools {
   }
 
   dispose(): void {
+    if (this.hitTimer !== null) clearTimeout(this.hitTimer);
     this.panel.dispose();
     this.draw.dispose();
     delete window.__lfDev;

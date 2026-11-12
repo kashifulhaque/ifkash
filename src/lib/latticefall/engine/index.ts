@@ -5,6 +5,7 @@ import { InputController, ReplayRecorder, downloadBytes, encodeReplay } from '..
 import { parseDevParams } from '../dev/params';
 import { cameraOptions } from '../render/camera';
 import type { DevTools } from '../dev';
+import { decodeEvents } from './events';
 import { loadWasm } from './loader';
 import { FixedStepLoop } from './loop';
 import { SceneView } from './scene';
@@ -75,14 +76,19 @@ export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions
         tools.recordTick(performance.now() - t0);
       } else world.tick(frame);
       snapshots.push();
-      world.drain_events(); // Nothing consumes events yet; drain so the queue stays empty.
+      // Events go to presentation only; the renderer reads them and never answers.
+      const events = decodeEvents(world.drain_events());
+      if (events.length) {
+        view.vfx.handleEvents(events);
+        tools?.onEvents(events);
+      }
     },
     render(alpha, frameMs) {
       input.updateLook(frameMs);
       view.setCamera(input.cameraYaw, input.cameraPitch);
       const drawn = snapshots.interpolate(alpha);
       tools?.beforeRender(drawn);
-      view.render(drawn, frameMs);
+      view.render(drawn, frameMs, loop.isPaused);
       tools?.afterRender(frameMs, world.tick_count(), () => world.state_hash());
       // Movement is camera-relative, so when lock-on turns the camera, input follows it.
       if (view.yawDriven) input.cameraYaw = view.cameraYaw;
@@ -118,7 +124,8 @@ export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions
         snapshots.push();
         snapshots.push();
       },
-      setPaused: (p) => loop.setPaused(p)
+      setPaused: (p) => loop.setPaused(p),
+      vfx: view.vfx
     });
   }
 

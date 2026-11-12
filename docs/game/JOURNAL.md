@@ -31,45 +31,54 @@ Copy this block to the top of the entries and fill it in as you go:
 ### 2026-11-12: latticefall-m2 (M2)
 
 - **Orchestrator:** Opus 5.5, low effort
-- **Branch:** `game/m2-combat`
+- **Branch:** `game/m2-combat`; first commit on `main` `ddf64a7`, last WP commit `da1fba4`
 - **Started from:** `origin/main` at `1e61e40`
-- **WPs:**
-  - WP-020: done by opus (no escalation); commit `9858e66`; 181K worker tokens.
-    The orchestrator regenerated `gen/Moveset.ts` (the worker's Touch list excluded `src/`).
-  - WP-022: done by sonnet (no escalation); commit `398952c`; 160K worker tokens
-  - WP-021: done by opus (no escalation) in a worktree; commit `5e4f88b`; 181K worker
-    tokens. The orchestrator rebased it onto WP-022, fixed one test for the renamed roll
-    field, and rehashed the goldens. Guard wiring into the resolver moves to WP-023.
-  - WP-026: done by sonnet (no escalation); commit `2964b82`; 180K worker tokens. The
-    orchestrator rebased it onto WP-021 (kept both sides in `actor/mod.rs` and
-    `world.rs`) and rehashed the goldens.
-  - WP-023: done by sonnet (no escalation); commit `0e40d33`; 190K worker tokens. Also
-    wired `guard::apply_incoming_hit` into the resolver.
-  - WP-024: done by sonnet (no escalation); commit `8bfb854`; 230K worker tokens. The
-    orchestrator merged it onto WP-029 (13 conflicts; renumbered its WASM event kinds to
-    3-6, moved dummy poise and script into `dummy_actor`, fixed nesting the keep-both
-    merge got wrong) and added kinds 3-6 to the frontend decoder table.
-  - WP-027: done by sonnet (no escalation) in a worktree; commit `25526c3`; 303K worker
-    tokens, plus 115K for a second sonnet worker that merged it onto WP-024 and WP-029
-    (registry clash 1001 -> 1002 for the stub bow, duplicate `player_weapon` field, the
-    shared apply step now also applies poise). The orchestrator re-ran every gate.
-  - WP-025: in progress (sonnet), main checkout (orchestrator at 291K when started)
-  - WP-028: done by sonnet (no escalation) in a worktree; commits `9316e4b` (rebased) and
-    the orchestrator's decoder fix; 226K worker tokens. The worker's decoder guessed the
-    Hit length from the buffer size; the orchestrator replaced it with a per-kind table
-    and took the browser check itself.
-  - WP-029: done by sonnet (no escalation) in a worktree; commit `f1922f8`; 211K worker
-    tokens. The orchestrator rebased it onto WP-023 (kept both sides in `world.rs` and
-    the WASM encoder; moved dummy defense into `dummy_actor`) and rehashed.
-- **Context:** orchestrator 126K + workers 181K = 307K after WP-020 (budget 500K).
-  Started WP-022 rather than WP-021: an opus L worker would likely pass the hard stop.
-  The owner then clarified the budget: 500K applies to each session and each agent
-  separately, not combined. The playbook's budget section now says so, which settles
-  the question earlier entries left open. This session continues with more of M2.
-  Orchestrator 187K after WP-026.
+- **WPs:** all ten M2 cards are done. No worker failed verification, so nothing was escalated.
+  - WP-020: opus; `9858e66`; 181K worker tokens. The orchestrator regenerated
+    `gen/Moveset.ts`.
+  - WP-022: sonnet; `398952c`; 160K.
+  - WP-021: opus, worktree; `5e4f88b`; 181K. Rebased onto WP-022 by the orchestrator.
+  - WP-026: sonnet; `2964b82`; 180K. Rebased onto WP-021 by the orchestrator.
+  - WP-023: sonnet; `0e40d33`; 190K. Also wired WP-022's guard into WP-021's resolver.
+  - WP-029: sonnet, worktree; `f1922f8`; 211K. Rebased onto WP-023 by the orchestrator.
+  - WP-028: sonnet, worktree; `29d6863` and `9c3b04f`; 226K. The orchestrator replaced
+    its guessed event-length decoder with a per-kind table and took the browser check.
+  - WP-024: sonnet; `8bfb854`; 230K. The orchestrator merged it onto WP-029 (13
+    conflicts; WASM event kinds renumbered to 3-6).
+  - WP-027: sonnet, worktree; `25526c3`; 303K, plus 115K for a sonnet merge worker.
+  - WP-025: sonnet; `da1fba4`; 225K, plus 111K for a sonnet merge worker.
+- **Context:** orchestrator about 320K at the end (budget 500K per context window, per
+  the owner's clarification this session). Largest worker: WP-027 at 303K.
+- **Lessons:** parallel workers on the combat lane all edit `resolve.rs`, `actor/mod.rs`,
+  `world.rs`, the WASM encoder, `registry.ron`, and the content crate. Merges cost
+  15-30K each and twice hit registry-number clashes and WASM event-kind clashes. A
+  keep-both merge also nested new fields inside the wrong struct several times. Next
+  time, reserve registry blocks and event kinds per WP in the brief.
+- **Event kinds (WASM `drain_events`, mirrored in `engine/events.ts` `EVENT_WORDS`):**
+  1 Hit 17 words, 2 Life 6, 3 Stagger 4, 4 StanceBreak 3, 5 Parry 4, 6 Critical 5,
+  7 StatusProc 4, 8 Projectile 10. The stream has no length prefix, so a new kind must
+  be added to `EVENT_WORDS` in the same change.
 - **Not verified:**
-- **Waiting on the owner:**
+  - The M2 exit gate, "every formula in the combat spec has a passing test", wasn't
+    audited formula by formula. Each card's acceptance tests pass.
+  - Combat feel in the browser beyond one VFX hit check. Projectiles aren't drawn
+    (no WASM export or TS reader for `ProjectileSnap`).
+  - Real `prefers-reduced-motion` emulation (the setter it calls was tested).
+- **Waiting on the owner (spec readings the workers chose):**
+  - Guard break: stamina pays its share of the hit and the rest lands unblocked
+    (WP-022). Blocks work from any side.
+  - Parry costs no stamina and a missed parry has no extra recovery; only the test
+    parrying dagger can parry (WP-024).
+  - Status buildup: backstab +20%, riposte +30% (the spec gives both numbers); blocked
+    hits add none; projectile hits get weapon-buff buildup but no hitbox buildup (WP-025).
+  - Dummies use flat defense 500 so a light does 29 (WP-023 tuning).
 - **Next steps:**
+  1. Optional: audit the M2 exit gate against `03-combat.md` and add any missing formula
+     tests (one sonnet worker).
+  2. Start M3 with WP-030 (opus, AI framework), then WP-031 (navigation grid) in
+     parallel. WP-030 replaces the scripted dummy hook (`combat/dummy.rs`,
+     `Actor.script`) and `world_state::lantern::respawn_enemies`.
+  3. Give every parallel worker its own registry-number block and WASM event kind.
 
 ### 2026-11-12: latticefall-m1c (M1: WP-014, gate G1)
 

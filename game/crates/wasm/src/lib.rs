@@ -157,6 +157,8 @@ impl LfWorld {
     ///   4 reset), and the phase (the new one for 2, 1 for 1, otherwise 0).
     /// - Kind 13, `Revive` (WP-032), 3 words: kind, the enemy that got back up
     ///   (`pack_id`), and the HP it has.
+    /// - Kind 17, `Pickup` (WP-049), 3 words: kind, the pickup's index in the scenario's
+    ///   pickup list, and the item's registry number.
     pub fn drain_events(&mut self) -> Vec<u32> {
         let mut out = Vec::new();
         for event in self.world.events.drain() {
@@ -230,6 +232,9 @@ impl LfWorld {
                 }
                 Event::Revive(e) => {
                     out.extend([13, pack_id(e.actor), e.hp]);
+                }
+                Event::Pickup(e) => {
+                    out.extend([17, u32::from(e.index), e.item]);
                 }
                 Event::Boss(e) => {
                     out.extend([11, u32::from(e.boss), u32::from(e.kind), u32::from(e.phase)]);

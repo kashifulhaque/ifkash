@@ -30,6 +30,16 @@ pub enum Event {
     Revive(ReviveEvent),
     /// A boss fight began, changed phase, ended, or reset (`ai::boss`).
     Boss(BossEvent),
+    /// The player took a pickup (`pickups`, WP-049).
+    Pickup(PickupEvent),
+}
+
+/// The player took the pickup at `index` of `Layout::pickups` (WASM event kind 17).
+/// `item` is the item's registry number.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct PickupEvent {
+    pub index: u16,
+    pub item: u32,
 }
 
 /// A reviver got back up with `hp` HP (WASM event kind 13).

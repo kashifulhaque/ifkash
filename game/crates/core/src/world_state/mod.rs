@@ -48,6 +48,8 @@ pub struct Layout {
     /// Water volumes and reed patches (WP-036; see `ai::special`).
     pub water: Vec<Zone>,
     pub reeds: Vec<Zone>,
+    /// Pickups with their items resolved (WP-049; see `pickups`).
+    pub pickups: Vec<crate::pickups::PickupSpot>,
 }
 
 impl Layout {
@@ -61,6 +63,7 @@ impl Layout {
             bosses: Vec::new(),
             water: level.water.clone(),
             reeds: level.reeds.clone(),
+            pickups: Vec::new(),
         }
     }
 

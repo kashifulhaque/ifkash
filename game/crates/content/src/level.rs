@@ -52,7 +52,9 @@ use std::collections::BTreeMap;
 use serde::{Deserialize, Serialize};
 
 use crate::Scenario;
-use crate::scenario::{BossSpawn, BoxCollider, Dummy, EnemySpawn, Heightfield, Lantern, Zone};
+use crate::scenario::{
+    BossSpawn, BoxCollider, Dummy, EnemySpawn, Heightfield, Lantern, Pickup, Zone,
+};
 
 /// The files an area directory can hold, in load order.
 pub const LEVEL_FILES: [&str; 5] = [
@@ -789,6 +791,8 @@ pub enum Entity {
     Water(Zone),
     /// A reed patch (where reed-hiding enemies are hidden).
     Reeds(Zone),
+    /// An item lying in the level that unlocks a codex entry (WP-049).
+    Pickup(Pickup),
 }
 
 impl Entity {
@@ -801,6 +805,7 @@ impl Entity {
             Self::Boss(_) => "Boss",
             Self::Water(_) => "Water",
             Self::Reeds(_) => "Reeds",
+            Self::Pickup(_) => "Pickup",
         }
     }
 
@@ -812,6 +817,7 @@ impl Entity {
             Self::Enemy(e) => &e.name,
             Self::Boss(b) => &b.name,
             Self::Water(z) | Self::Reeds(z) => &z.name,
+            Self::Pickup(p) => &p.id,
         }
     }
 
@@ -824,6 +830,7 @@ impl Entity {
             Self::Dummy(d) => Some(d.pos),
             Self::Enemy(e) => Some(e.pos),
             Self::Boss(b) => Some(b.pos),
+            Self::Pickup(p) => Some(p.pos),
             Self::Water(_) | Self::Reeds(_) => None,
         }
     }
@@ -1414,6 +1421,7 @@ impl Level {
             lanterns: Vec::new(),
             water: Vec::new(),
             reeds: Vec::new(),
+            pickups: Vec::new(),
             start_glimmer: self.area.start_glimmer,
             player_weapon: self.area.player_weapon.clone(),
         };
@@ -1425,6 +1433,7 @@ impl Level {
                 Entity::Boss(b) => sc.bosses.push(b.clone()),
                 Entity::Water(z) => sc.water.push(z.clone()),
                 Entity::Reeds(z) => sc.reeds.push(z.clone()),
+                Entity::Pickup(p) => sc.pickups.push(p.clone()),
             }
         }
         sc.check().map_err(|e| format!("entities.ron: {e}"))?;

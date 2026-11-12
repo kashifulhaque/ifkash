@@ -40,7 +40,7 @@ pub use nav::NavConfig;
 pub use portfolio::{Portfolio, PortfolioContent};
 pub use projectiles::{Homing, ProjectileDef};
 pub use registry::{NumId, Registry};
-pub use scenario::{Lantern, Scenario};
+pub use scenario::{Lantern, Pickup, Scenario};
 pub use status::StatusRules;
 pub use validate::{Issue, Severity, Validate};
 pub use weapons::{GuardStats, Weapon};

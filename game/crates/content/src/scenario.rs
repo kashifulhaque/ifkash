@@ -41,6 +41,10 @@ pub struct Scenario {
     /// the level format (WP-040).
     #[serde(default)]
     pub reeds: Vec<Zone>,
+    /// Pickups (WP-049): items lying in the level that the player takes by walking up to
+    /// them. Real levels place them in the level format (WP-040).
+    #[serde(default)]
+    pub pickups: Vec<Pickup>,
     /// Glimmer the player starts with. Zero in real levels; test scenarios set it so a
     /// death has something to drop before enemies drop Glimmer (WP-023, WP-030).
     #[serde(default)]
@@ -49,6 +53,30 @@ pub struct Scenario {
     /// weapon. The player owns it. Used by the duel scenarios (WP-024).
     #[serde(default)]
     pub player_weapon: Option<String>,
+}
+
+/// A pickup: an item lying in the level. Walking within `radius_m` of it takes it, once:
+/// the world raises the flag `pickup.<id>.taken`, and `codex`, if set, raises
+/// `codex.<codex>` (docs/game/08-portfolio-integration.md, "Codex").
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Pickup {
+    /// Unique ID within the scenario, lowercase with `_` or `-`; the world flag names it.
+    pub id: String,
+    /// Registry ID of the item (for example a relic or a Chronicle Page).
+    pub item: String,
+    /// Where it lies (feet level), in meters.
+    pub pos: [f32; 3],
+    /// How close the player's feet must be horizontally, in meters. Defaults to 1.2.
+    #[serde(default = "default_pickup_radius")]
+    pub radius_m: f32,
+    /// The codex entry taking it unlocks, as a flag suffix such as `projects.banana-cpp`.
+    #[serde(default)]
+    pub codex: Option<String>,
+}
+
+fn default_pickup_radius() -> f32 {
+    1.2
 }
 
 /// A boss fight: where the boss stands and the fog gate that starts it.
@@ -319,6 +347,14 @@ impl Scenario {
                     "boss {:?}: the gate's half_width_m and depth_m must be positive",
                     b.name
                 ));
+            }
+        }
+        for (i, p) in self.pickups.iter().enumerate() {
+            if p.id.is_empty() || p.radius_m <= 0.0 {
+                return Err("a pickup needs an id and a positive radius_m".to_owned());
+            }
+            if self.pickups[..i].iter().any(|o| o.id == p.id) {
+                return Err(format!("pickup {:?} is listed twice", p.id));
             }
         }
         for (i, l) in self.lanterns.iter().enumerate() {

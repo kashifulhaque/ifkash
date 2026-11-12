@@ -7,6 +7,10 @@
   import { createHudController } from '$lib/latticefall/ui/hud/hudStore';
   import { createHudSettings } from '$lib/latticefall/ui/hud/hudSettings';
   import { DEMO_NOTICES, demoHud } from '$lib/latticefall/ui/hud/hudDemo';
+  import { codex } from '$lib/latticefall/codex/store';
+  import { unlockFromEvents } from '$lib/latticefall/codex/pickups';
+  import Ledger from '$lib/latticefall/ui/portfolio/Ledger.svelte';
+  import UnlockToast from '$lib/latticefall/ui/portfolio/UnlockToast.svelte';
 
   /** Show the dev readout (tick, fps, state hash). Set with `&dev=1`. */
   export let showDev = false;
@@ -25,13 +29,25 @@
   let demoTimer: ReturnType<typeof setInterval> | undefined;
   const hudDemo = browser && new URLSearchParams(window.location.search).get('hud-demo') === '1';
 
+  // WP-049: pickups unlock codex entries (the core decides; the store records), and the
+  // Wayfarer's Ledger (`L`) shows the résumé, contact and what has been found.
+  let ledgerOpen = false;
+  let toast: UnlockToast;
+  const hudSink = {
+    ...hud.sink,
+    events(words: ArrayLike<number>) {
+      hud.sink.events(words);
+      for (const entry of unlockFromEvents(words, codex)) toast?.show(entry);
+    }
+  };
+
   onMount(async () => {
     if (!browser) return;
     try {
       // Dynamic import keeps Three.js and the WASM glue out of every other route.
       const { startEngine } = await import('$lib/latticefall/engine');
       if (destroyed) return;
-      const started = await startEngine(canvas, { onStats: (s) => (stats = s), hud: hudDemo ? undefined : hud.sink });
+      const started = await startEngine(canvas, { onStats: (s) => (stats = s), hud: hudDemo ? undefined : hudSink });
       if (destroyed) {
         started.dispose();
         return;
@@ -75,6 +91,7 @@
 
   function onKey(e: KeyboardEvent): void {
     if (e.code === 'KeyP' && !e.repeat && !e.ctrlKey && !e.metaKey && !e.altKey) togglePause();
+    if (e.code === 'KeyL' && !e.repeat && !e.ctrlKey && !e.metaKey && !e.altKey) ledgerOpen = !ledgerOpen;
   }
 </script>
 
@@ -92,11 +109,13 @@
   {:else if status === 'failed'}
     <p class="lf-note" role="alert">Latticefall could not start: {failure}</p>
   {:else}
-    <p class="lf-hint"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> move · click to capture the mouse · <kbd>P</kbd> pause</p>
+    <p class="lf-hint"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> move · click to capture the mouse · <kbd>P</kbd> pause · <kbd>L</kbd> Ledger</p>
   {/if}
 
   {#if status === 'ready'}
     <Hud {hud} settings={hudSettings} />
+    <UnlockToast bind:this={toast} />
+    {#if ledgerOpen}<Ledger on:close={() => (ledgerOpen = false)} />{/if}
   {/if}
 
   {#if showDev && status === 'ready'}

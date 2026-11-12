@@ -211,5 +211,8 @@
     (id: "grass_tuft_b", num: 10151),
     (id: "stone_small", num: 10152),
     (id: "dead_tree", num: 10153),
+
+    // 12000-12099: portfolio pickups (WP-049). 12000 is the stub relic on the test field.
+    (id: "relic_test_stub", num: 12000),
   ],
 )

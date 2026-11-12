@@ -10,6 +10,9 @@
     // the fourth light.
     Dummy(name: "dummy_ahead", pos: (0.0, 0.0, 6.0), yaw: 3.1415927, hp: 100, defense: (flat: 500)),
     Dummy(name: "dummy_left", pos: (4.0, 0.0, 8.0), yaw: 3.1415927, hp: 100, defense: (flat: 500)),
+    // WP-049: a stub relic 3 m to the player's right of and 2 m ahead of the spawn. Walking up
+    // to it unlocks the codex entry `projects.test-relic`.
+    Pickup(id: "relic_test_stub", item: "relic_test_stub", pos: (-3.0, 0.0, 2.0), codex: Some("projects.test-relic")),
     Dummy(name: "dummy_right", pos: (-4.0, 0.0, 8.0), yaw: 3.1415927, hp: 100, defense: (flat: 500)),
   ],
 )

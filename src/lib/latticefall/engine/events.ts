@@ -21,7 +21,8 @@ export const EVENT_WORDS: Readonly<Record<number, number>> = {
   9: 4, // Awareness: AI actor, state left, state entered (WP-030)
   // Kinds 10 and 12 are reserved for other work packages.
   11: 4, // Boss: boss index, what happened, phase (WP-033)
-  13: 3 // Revive: enemy, HP it got back up with (WP-032)
+  13: 3, // Revive: enemy, HP it got back up with (WP-032)
+  17: 3 // Pickup: index in the scenario's pickup list, item registry number (WP-049)
   // Kinds 2-9, 11, and 13 aren't decoded into events yet; the decoder skips them by length.
 };
 
@@ -57,7 +58,18 @@ export const HIT_CONNECTED = 0;
 export const HIT_GUARDED = 1;
 export const HIT_GUARD_BROKEN = 2;
 
-export type GameEvent = HitEvent;
+export const EVENT_PICKUP = 17;
+
+/** The player took a pickup (WP-049). The core decided it; the codex store records it. */
+export interface PickupEvent {
+  kind: 'pickup';
+  /** Index in the scenario's pickup list. */
+  index: number;
+  /** The item's registry number. */
+  item: number;
+}
+
+export type GameEvent = HitEvent | PickupEvent;
 
 const scratch = new DataView(new ArrayBuffer(4));
 function f32(bits: number): number {
@@ -89,6 +101,8 @@ export function decodeEvents(words: ArrayLike<number>): GameEvent[] {
         flags: words[i + 15] >>> 0,
         hpAfter: words[i + 16] >>> 0
       });
+    } else if (kind === EVENT_PICKUP) {
+      out.push({ kind: 'pickup', index: words[i + 1] >>> 0, item: words[i + 2] >>> 0 });
     }
     i += len;
   }

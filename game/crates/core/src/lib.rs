@@ -10,6 +10,7 @@ pub mod items;
 pub mod math;
 pub mod nav;
 pub mod physics;
+pub mod pickups;
 pub mod replay;
 pub mod rng;
 pub mod save;

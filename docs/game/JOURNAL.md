@@ -28,6 +28,22 @@ Copy this block to the top of the entries and fill it in as you go:
 
 ## Entries
 
+### 2026-11-12: latticefall-m3 (M3)
+
+- **Orchestrator:** Opus 5.5, low effort
+- **Branch:** `game/m3-enemies`
+- **Started from:** `origin/main` at `4a41d3e`
+- **Reservations (to avoid M2's merge clashes):** registry numbers: enemies 7000-7099,
+  WP-030 test enemies 7100-7199, enemy moves WP-030 8900-8999, WP-032 8000-8299,
+  WP-036 8300-8599, WP-037 8600-8899; bosses 9000-9099, WP-033 dummy boss moves
+  9200-9299, B01 moves 9100-9199. WASM event kinds: WP-030 9-10, WP-033 11-12, WP-032
+  13, WP-036 14-15, WP-037 16.
+- **WPs:**
+- **Context:**
+- **Not verified:**
+- **Waiting on the owner:**
+- **Next steps:**
+
 ### 2026-11-12: latticefall-m2 (M2)
 
 - **Orchestrator:** Opus 5.5, low effort

@@ -137,23 +137,28 @@ tier.
 
 ## Context budget and handoff
 
-A session's budget is **500K tokens**, counting the orchestrator's own context plus
-the tokens every worker it started reported. Long sessions get slower, cost more, and
-lose track of early details, so the orchestrator hands off instead of pushing on.
+The budget is **per context window, not combined**: each session and each subagent
+gets its own **500K tokens**. An orchestrator doesn't add its workers' tokens to its
+own, and a worker doesn't add the tokens of subagents it starts. The owner set this
+rule on 2026-11-12. Long sessions get slower, cost more, and lose track of early
+details, so a session or agent hands off instead of pushing on.
 
 - **Measure.** After each WP, read the orchestrator's own context size (in the Claude
   desktop app, the `get_usage` session tool reports it; otherwise estimate from the
-  conversation length). Add the token counts that worker completion notices report.
-  Keep the running total in the journal entry.
-- **350K: wind down.** Start no new WPs. Let running workers finish and verify them.
+  conversation length). Record it in the journal entry, with each worker's reported
+  token count next to its WP.
+- **350K: wind down.** At 350K of its own context, the orchestrator starts no new WPs.
+  It lets running workers finish and verifies them.
 - **400K: hand off.** Finish the [stop](#stop) steps now. Tell the owner the session
   is at its context budget and give the prompt for the next session, which is the
   standard orchestrator prompt with `TARGET` set to what's left.
-- **500K: hard stop.** If a single large WP pushes the total past 500K, stop, release
-  the WP, and hand off, even mid-WP. A half-finished WP is released, not committed.
-- **Size the batch.** As a rule of thumb, an orchestrator session fits about 6-10 WPs:
-  each verified WP costs the orchestrator roughly 20-40K of its own context, and an L
-  worker reports 100-250K.
+- **500K: hard stop.** The same limit applies to each worker. A worker that nears 500K
+  stops and reports what's done and what's left; the orchestrator releases or
+  [splits](#split-a-work-package) the WP. A half-finished WP is released, not
+  committed.
+- **Size the batch.** Each verified WP costs the orchestrator roughly 15-40K of its own
+  context, so an orchestrator session fits about 10-15 WPs. An L worker typically
+  reports 100-250K.
 
 ## Run a single work package
 

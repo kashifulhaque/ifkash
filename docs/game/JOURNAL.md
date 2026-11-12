@@ -20,7 +20,7 @@ Copy this block to the top of the entries and fill it in as you go:
 - **WPs:**
   - WP-NNN: done by WORKER (escalated from ...?); commit SHA; worker tokens
   - WP-NNN: blocked: reason
-- **Context:** orchestrator NNK + workers NNK = NNK total (budget 500K)
+- **Context:** orchestrator NNK; each worker NNK (budget 500K per context window)
 - **Not verified:** anything the session couldn't check
 - **Waiting on the owner:** decisions, credentials, playtests, merges
 - **Next steps:** what the next session does first, in order
@@ -39,6 +39,9 @@ Copy this block to the top of the entries and fill it in as you go:
   - WP-022: in progress (sonnet)
 - **Context:** orchestrator 126K + workers 181K = 307K after WP-020 (budget 500K).
   Started WP-022 rather than WP-021: an opus L worker would likely pass the hard stop.
+  The owner then clarified the budget: 500K applies to each session and each agent
+  separately, not combined. The playbook's budget section now says so, which settles
+  the question earlier entries left open. This session continues with more of M2.
 - **Not verified:**
 - **Waiting on the owner:**
 - **Next steps:**

@@ -1,0 +1,31 @@
+// The elite Glasswing Stalker (registry 24010): one of the two guardians of Glasswing Grotto (D5,
+// WP-063). Source: docs/game/02-world.md, "Mini-dungeons" (D5: "two Glasswing Stalkers with
+// elite stats"). It is the Glasswing Stalker (registry 7057) with more of everything: more than
+// twice the health (600 against 260), real poise and stance, a harder hit, and a longer sight,
+// and it keeps the moves and the shimmer. The stats are tuning; the scripted bot of the Grotto's
+// golden beats the pair, so don't raise them without re-recording it.
+#![enable(implicit_some)]
+(
+  id: "glasswing_stalker_elite",
+  model: "glasswing_stalker",
+  hp: 600,
+  poise: 55,
+  stance: 70,
+  defense: (flat: 55),
+  resist: (immunity: 160, robustness: 160, composure: 160),
+  can_go_mad: false,
+  glimmer: 450,
+  attack: 125,
+  speed_percent: 110,
+  shimmers: true,
+  perception: (sight_deg: 140.0, sight_m: 20.0, hearing_mult: 1.5),
+  moveset: "enemies/glasswing_stalker.ron",
+  options: [
+    (move: "gw_lunge", when: [DistBetween(2.5, 5.5), FacingWithin(25.0)], weight: 10, cooldown: 100),
+    (move: "gw_slash", when: [DistBelow(2.0), FacingWithin(40.0)], weight: 6, cooldown: 50),
+    (behavior: Approach(dur: 20), when: [DistAbove(5.5)], weight: 6),
+    (behavior: Approach(dur: 10), when: [DistBetween(2.0, 2.5)], weight: 4),
+    (behavior: Strafe(dur: 30), when: [DistBetween(2.0, 6.0)], weight: 2),
+  ],
+  drops: [(item: "itm_glimmer_vial_large", chance: 0.5)],
+)

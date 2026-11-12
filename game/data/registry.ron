@@ -658,5 +658,11 @@
     (id: "itm_great_sigil_castellan", num: 28021),
     (id: "itm_great_sigil_matriarch", num: 28022),
     (id: "itm_great_sigil_bellwright", num: 28023),
+
+    // WP-063: Mossgut Cave and Glasswing Grotto take 24000-24999. The areas 24000 and 24001, and
+    // the elite Glasswing Stalker (the grotto's guardian) 24010.
+    (id: "mossgut_cave", num: 24000),
+    (id: "glasswing_grotto", num: 24001),
+    (id: "glasswing_stalker_elite", num: 24010),
   ],
 )

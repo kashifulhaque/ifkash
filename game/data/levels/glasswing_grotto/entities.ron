@@ -1,0 +1,109 @@
+// The Glasswing Grotto entities (WP-063, D5). Yaw is in radians from +Z toward +X: 0 faces +Z
+// (north, deeper in), 3.1415927 faces -Z, 1.5707964 faces +X, -1.5707964 faces -X.
+//
+// The route follows the dungeon template (docs/game/02-world.md): the crystal mouth (entrance;
+// L12 stands outside, in Hollowdeep), the Mirror Hall (teaching: one emitter, one mirror, one
+// socket, no enemies), the Prism Hall (test: two sockets, each lit by its own turn of the mirrors,
+// with Cave Moths and Lamp Mites about), the Shard Nook (the branch: sealed until a beam lights
+// its socket), the Gallery of Facets (twist: turning the first mirror wakes the nests), and the
+// Guardian Hall (two Glasswing Stalkers with elite stats, then the Shardglass Spear on its
+// plinth). The shortcut is the return corridor: from the Guardian Hall's east wall, round to a
+// one-way door in the mouth.
+//
+// LIGHT BEAMS. A `BeamSource` shines along a compass direction (0 north, 1 east, 2 south,
+// 3 west) at its own height (1.2 m). A `Mirror` has four facings (0 north-east, 1 south-east,
+// 2 south-west, 3 north-west: the way its face points); `INTERACT` beside it turns it a quarter
+// turn. A beam that strikes the face bounces to another compass direction, and one that strikes
+// the back stops. A `Receptor` that a beam reaches stays lit and opens its door for good. See
+// the core's `mechanics/light_beam.rs`. Beams stop at walls and shut doors; nothing in the
+// layout stands on a beam's line.
+//
+// The solutions, for the tests and for anyone stuck:
+//   Mirror Hall    turn mirror_m1 to 3 (two turns): the beam goes east, then north to recv_m1.
+//   Prism Hall     turn mirror_m2a to 3 (three turns) and mirror_m2b to 1 (once): recv_m2.
+//                  Turn mirror_m2a to 2 (two turns) and mirror_m2c to 3 (three turns): recv_branch.
+//   Facets         turn mirror_m5a to 3 (twice) and mirror_m5b to 1 (twice): recv_m5.
+//
+// Registry numbers used here (24000 block): glasswing_grotto 24001, glasswing_stalker_elite 24010.
+(
+  // The crystal mouth, facing north into the hall.
+  spawn: (pos: (0.0, 0.0, -92.0), yaw: 0.0),
+  entities: [
+    // --- Doors: each opens when its socket is lit ------------------------------------------------
+    // The shortcut's door faces +X, the corridor.
+    Door(id: "door_m1", pos: (0.0, 0.0, -44.0), yaw: 0.0, half_width_m: 3.2, height_m: 4.0, kind: Locked),
+    Door(id: "door_m2", pos: (0.0, 0.0, -10.0), yaw: 0.0, half_width_m: 3.2, height_m: 4.0, kind: Locked),
+    Door(id: "door_branch", pos: (-20.0, 0.0, -23.0), yaw: 1.5707964, half_width_m: 3.2, height_m: 4.0, kind: Locked),
+    Door(id: "door_m5", pos: (0.0, 0.0, 24.0), yaw: 0.0, half_width_m: 3.2, height_m: 4.0, kind: Locked),
+    Door(id: "door_return", pos: (14.0, 0.0, -87.0), yaw: 1.5707964, half_width_m: 3.2, height_m: 4.0, kind: OneWay),
+
+    // --- The Mirror Hall (teaching): one beam, one mirror, one socket ----------------------------
+    BeamSource(id: "beam_m1", pos: (-13.0, 1.2, -60.0), dir: 1),
+    Mirror(id: "mirror_m1", pos: (0.0, 0.0, -60.0), facing: 1),
+    Receptor(id: "recv_m1", pos: (0.0, 1.2, -50.0), opens: Some("door_m1")),
+
+    // --- The Prism Hall (test): two sockets, one emitter -----------------------------------------
+    BeamSource(id: "beam_m2", pos: (-14.0, 1.2, -30.0), dir: 1),
+    Mirror(id: "mirror_m2a", pos: (-4.0, 0.0, -30.0), facing: 0),
+    Mirror(id: "mirror_m2b", pos: (-4.0, 0.0, -20.0), facing: 0),
+    Mirror(id: "mirror_m2c", pos: (-4.0, 0.0, -38.0), facing: 0),
+    Receptor(id: "recv_m2", pos: (12.0, 1.2, -20.0), opens: Some("door_m2")),
+    Receptor(id: "recv_branch", pos: (-13.5, 1.2, -38.0), opens: Some("door_branch")),
+
+    // --- The Gallery of Facets (twist): the first mirror wakes the nests -------------------------
+    BeamSource(id: "beam_m5", pos: (-15.0, 1.2, 14.0), dir: 1),
+    Mirror(id: "mirror_m5a", pos: (-4.0, 0.0, 14.0), facing: 1),
+    Mirror(id: "mirror_m5b", pos: (-4.0, 0.0, 20.0), facing: 3),
+    Receptor(id: "recv_m5", pos: (12.0, 1.2, 20.0), opens: Some("door_m5")),
+
+    // --- Authored messages ---------------------------------------------------------------------
+    Message(id: "msg_glass_mouth", pos: (0.0, 0.0, -88.0),
+      text: "Glasswing Grotto. The crystal hums, and the light inside it has nowhere to go but along the walls. The way goes north."),
+    Message(id: "msg_glass_mirror", pos: (-3.0, 0.0, -58.0),
+      text: "A beam of light runs from the wall to a crystal mirror, and stops. Turn the mirror with the interact key until it throws the light north, to the socket by the door."),
+    Message(id: "msg_glass_socket", pos: (3.0, 0.0, -52.0),
+      text: "A socket in the floor. When a beam reaches it, it stays lit, and the door beside it opens for good."),
+    Message(id: "msg_glass_prism", pos: (0.0, 0.0, -38.0),
+      text: "The Prism Hall. Three mirrors and two sockets. Each socket opens a different door; one beam is enough for both, one at a time."),
+    Message(id: "msg_glass_branch", pos: (-14.0, 0.0, -23.0),
+      text: "A sealed tunnel in the west wall. Its socket is on the far side of the hall, behind the beam's other turn."),
+    Message(id: "msg_glass_nook", pos: (-34.0, 0.0, -22.0),
+      text: "The Shard Nook. Someone left a spear-shaped thing on a slab, and a chest beside it. Nothing here was meant to be found."),
+    Message(id: "msg_glass_facets", pos: (0.0, 0.0, -4.0),
+      text: "The Gallery of Facets. The first mirror throws the light to the second, and the second to the socket. Things sleep in the crystal; the light will wake them."),
+    Message(id: "msg_glass_guardian", pos: (0.0, 0.0, 30.0),
+      text: "The Guardian Hall. Two Glasswing Stalkers hold it, nearly invisible when still. A spear stands on a plinth at the far end."),
+    Message(id: "msg_glass_return", pos: (22.0, 0.0, 38.0),
+      text: "A long dry corridor. It runs back to the grotto's mouth, to a door that opens from this side only."),
+
+    // --- Enemies: Cave Moths, Lamp Mites, a Shard Golem, and the Glasswing Stalkers ------------
+    // The Prism Hall: moths and mites in the east half, a Golem in the corner.
+    Enemy(name: "moth_prism_a", enemy: "cave_moth", pos: (10.0, 0.0, -30.0), yaw: 3.1415927),
+    Enemy(name: "moth_prism_b", enemy: "cave_moth", pos: (6.0, 0.0, -16.0), yaw: 3.1415927),
+    Enemy(name: "mite_prism_a", enemy: "lamp_mite", pos: (12.0, 0.0, -36.0), yaw: 3.1415927),
+    Enemy(name: "mite_prism_b", enemy: "lamp_mite", pos: (13.0, 0.0, -32.0), yaw: 3.1415927),
+    // The nook: one Lamp Mite.
+    Enemy(name: "mite_nook", enemy: "lamp_mite", pos: (-34.0, 0.0, -16.0), yaw: 3.1415927),
+    // The Gallery of Facets, asleep until the first mirror is turned.
+    Enemy(name: "moth_facet_a", enemy: "cave_moth", pos: (-11.0, 0.0, -2.0), yaw: 0.0, wakes_on: Some("mirror.mirror_m5a.turned")),
+    Enemy(name: "moth_facet_b", enemy: "cave_moth", pos: (11.0, 0.0, -2.0), yaw: 0.0, wakes_on: Some("mirror.mirror_m5a.turned")),
+    Enemy(name: "mite_facet_a", enemy: "lamp_mite", pos: (-11.0, 0.0, 6.0), yaw: 0.0, wakes_on: Some("mirror.mirror_m5a.turned")),
+    Enemy(name: "mite_facet_b", enemy: "lamp_mite", pos: (11.0, 0.0, 8.0), yaw: 0.0, wakes_on: Some("mirror.mirror_m5a.turned")),
+    // The Guardian Hall: two Glasswing Stalkers with elite stats.
+    Enemy(name: "stalker_guard_a", enemy: "glasswing_stalker_elite", pos: (-7.0, 0.0, 50.0), yaw: 3.1415927),
+    Enemy(name: "stalker_guard_b", enemy: "glasswing_stalker_elite", pos: (7.0, 0.0, 54.0), yaw: 3.1415927),
+
+    // --- Items, materials, and the reward -------------------------------------------------------
+    // The Shard Nook (the branch, a dead end): the Glassneedle Estoc on the slab, Glasswing Swarm,
+    // and a chest with the Starglass (one of the fourteen).
+    Pickup(id: "estoc_nook", item: "wpn_glassneedle_estoc", pos: (-38.0, 0.8, -24.0), interact: true),
+    Pickup(id: "spell_glasswing_swarm", item: "spl_glasswing_swarm", pos: (-32.0, 0.0, -28.0), interact: true),
+    Chest(id: "chest_starglass", pos: (-30.0, 0.0, -16.0), yaw: 3.1415927, loot: (item: "itm_starglass", count: 1, glimmer: 300)),
+    // The halls: a vial and oil; the guardian's hall: a Forgeglass Chunk.
+    Pickup(id: "vial_glass_prism", item: "itm_glimmer_vial", pos: (-12.0, 0.0, -16.0), interact: true),
+    Pickup(id: "oil_glass_mouth", item: "itm_spark_oil", pos: (-8.0, 0.0, -88.0), count: 2, interact: true),
+    Chest(id: "chest_guardian", pos: (15.0, 0.0, 34.0), yaw: -1.5707964, loot: (item: "itm_forgeglass_chunk", count: 1, glimmer: 250)),
+    // After the guardians: the Shardglass Spear on its plinth (the D5 reward).
+    Pickup(id: "spear_shardglass", item: "wpn_shardglass_spear", pos: (0.0, 1.0, 64.0), interact: true),
+  ],
+)

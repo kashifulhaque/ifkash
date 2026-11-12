@@ -27,7 +27,8 @@
     9: 'Look closer',
     30: 'Ride the cart',
     31: 'Push the cart',
-    32: 'Push the hatch open'
+    32: 'Push the hatch open',
+    40: 'Turn the mirror'
   };
 
   let innerWidth = 1280;

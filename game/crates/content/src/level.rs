@@ -48,7 +48,8 @@
 //! [`Level::compile`] has to hand the core (a list on [`Scenario`]). WP-042 added the world
 //! mechanics this way: ladders, lifts, doors, levers, hollow walls, pickups, chests,
 //! messages, pools, and snow. A new sculpt operation is a new [`Sculpt`] variant and a match arm in
-//! [`Sculpt::apply`]. WP-062 added `Darkness`, `Glow`, `Cart`, and `Trapdoor` the same way.
+//! [`Sculpt::apply`]. WP-062 added `Darkness`, `Glow`, `Cart`, and `Trapdoor` the same way, and
+//! WP-063 added `LowCeiling`, `BeamSource`, `Mirror`, and `Receptor`.
 //! WP-060 added `EchoStone(id:, pos:, yaw:)` the same way: a level places
 //! the summoning spot of a boss arena in `entities.ron` instead of in a scenario file, and
 //! compile hands it to the core's Echo rules (`Scenario::echo_stones`).
@@ -59,9 +60,9 @@ use serde::{Deserialize, Serialize};
 
 use crate::Scenario;
 use crate::scenario::{
-    BossSpawn, BoxCollider, Cart, Chest, Darkness, Door, Dummy, EchoStone, EnemySpawn, Heightfield,
-    HollowWall, Ladder, Lantern, Lever, LeverTarget, Lift, Message, NpcSpawn, Pickup, Pool,
-    StationSpawn, Trapdoor, Zone,
+    BeamSource, BossSpawn, BoxCollider, Cart, Chest, Darkness, Door, Dummy, EchoStone, EnemySpawn,
+    Heightfield, HollowWall, Ladder, Lantern, Lever, LeverTarget, Lift, LowCeiling, Message,
+    Mirror, NpcSpawn, Pickup, Pool, Receptor, StationSpawn, Trapdoor, Zone,
 };
 
 /// The files an area directory can hold, in load order.
@@ -849,6 +850,14 @@ pub enum Entity {
     Cart(Cart),
     /// A trapdoor the player pushes open from below (WP-062).
     Trapdoor(Trapdoor),
+    /// A low-ceiling zone (WP-063): swings that rise above `height_m` strike the rock.
+    LowCeiling(LowCeiling),
+    /// A light-beam emitter (WP-063).
+    BeamSource(BeamSource),
+    /// A crystal mirror the player turns (WP-063).
+    Mirror(Mirror),
+    /// A beam receptor that opens a door (WP-063).
+    Receptor(Receptor),
 }
 
 impl Entity {
@@ -878,6 +887,10 @@ impl Entity {
             Self::Glow(_) => "Glow",
             Self::Cart(_) => "Cart",
             Self::Trapdoor(_) => "Trapdoor",
+            Self::LowCeiling(_) => "LowCeiling",
+            Self::BeamSource(_) => "BeamSource",
+            Self::Mirror(_) => "Mirror",
+            Self::Receptor(_) => "Receptor",
         }
     }
 
@@ -905,6 +918,10 @@ impl Entity {
             Self::Glow(z) => &z.name,
             Self::Cart(c) => &c.id,
             Self::Trapdoor(t) => &t.id,
+            Self::LowCeiling(z) => &z.name,
+            Self::BeamSource(s) => &s.id,
+            Self::Mirror(m) => &m.id,
+            Self::Receptor(r) => &r.id,
         }
     }
 
@@ -928,7 +945,14 @@ impl Entity {
             Self::EchoStone(s) => Some(s.pos),
             Self::Cart(c) => c.rail.first().copied(),
             Self::Trapdoor(t) => Some(t.stand),
-            Self::Darkness(_) | Self::Glow(_) => None,
+            // A mirror is turned from beside it, so the bake checks the ground at its foot. The
+            // emitters and sockets stand at beam height, on the walls: not walk targets.
+            Self::Mirror(m) => Some(m.pos),
+            Self::BeamSource(_)
+            | Self::Receptor(_)
+            | Self::Darkness(_)
+            | Self::Glow(_)
+            | Self::LowCeiling(_) => None,
             Self::Water(_)
             | Self::Reeds(_)
             | Self::Snow(_)
@@ -1564,6 +1588,10 @@ impl Level {
             glows: Vec::new(),
             carts: Vec::new(),
             trapdoors: Vec::new(),
+            low_ceilings: Vec::new(),
+            beam_sources: Vec::new(),
+            mirrors: Vec::new(),
+            receptors: Vec::new(),
         };
         for e in &self.entities.entities {
             match e {
@@ -1594,6 +1622,10 @@ impl Level {
                 Entity::Glow(z) => sc.glows.push(z.clone()),
                 Entity::Cart(c) => sc.carts.push(c.clone()),
                 Entity::Trapdoor(t) => sc.trapdoors.push(t.clone()),
+                Entity::LowCeiling(z) => sc.low_ceilings.push(z.clone()),
+                Entity::BeamSource(s) => sc.beam_sources.push(s.clone()),
+                Entity::Mirror(m) => sc.mirrors.push(m.clone()),
+                Entity::Receptor(r) => sc.receptors.push(r.clone()),
             }
         }
         sc.check().map_err(|e| format!("entities.ron: {e}"))?;

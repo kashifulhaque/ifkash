@@ -208,6 +208,42 @@ const SPIRE: Record<string, SpawnPoint> = {
   arena: { x: 0, z: 4, yaw: Math.PI, y: 22, note: "B12's roof, past the gate" }
 };
 
+// Mossgut Cave (WP-063): the rooms of D1, north (+Z). Every room but the mouth hall and the Knife's
+// alcove is under a 2.0 m roof slab, so the heights are listed: a ray cast down from above would land
+// on a slab. `y` is the floor.
+const MOSSGUT_CAVE: Record<string, SpawnPoint> = {
+  mouth: { x: 0, z: -92, y: 0, yaw: 0, note: 'the cave mouth, the area start (L05 is outside, in the Verge)' },
+  gallery: { x: 0, z: -66, y: 0, yaw: 0, note: 'the Low Gallery, the teaching room: the ceiling at 2.0 m, one Crawler ahead' },
+  spore: { x: 0, z: -40, y: 0, yaw: 0, note: "the Spore Hall's south end, facing the pillars" },
+  branch: { x: -20, z: -27, y: 0, yaw: -HALF_PI, note: 'the side tunnel to the Nursery' },
+  nursery: { x: -32, z: -20, y: 0, yaw: Math.PI, note: 'the Nursery, facing the slab with the Wick Bead' },
+  wall: { x: -35, z: -30, y: 0, yaw: Math.PI, note: 'facing the hollow wall in the Nursery south wall' },
+  closet: { x: -35, z: -41, y: 0, yaw: 0, note: 'in the closet behind the hollow wall' },
+  warren: { x: 0, z: -8, y: 0, yaw: 0, note: "the Brood Warren's south door, the nests along the walls" },
+  lever: { x: -3.5, z: 15.8, y: 0, yaw: 0, note: "beside the Warren's lever, the gate to the north shut" },
+  gate_hall: { x: 0, z: 30, y: 0, yaw: 0, note: 'the Gate Hall, before the fog gate' },
+  gate: { x: 0, z: 43, y: 0, yaw: 0, note: "B04's fog gate (placeholder: its frame is two posts)" },
+  chamber: { x: 0, z: 52, y: 0, yaw: 0, note: "inside B04's chamber, facing the Brood's wall" },
+  alcove: { x: 20.9, z: 75, y: 0, yaw: HALF_PI, note: "the Fungal Knife's alcove, open to the chimney" },
+  lift: { x: 32, z: 59, y: 0, yaw: HALF_PI, note: "the lift's doorway: the platform at the bottom of an 18 m shaft" },
+  pit: { x: 47, z: 59, y: -18, yaw: -HALF_PI, note: "the shaft's floor, east of the platform, facing the lift" },
+  corridor: { x: 30, z: 34, y: 0, yaw: HALF_PI, note: 'the return corridor, running east from the Gate Hall' }
+};
+
+// Glasswing Grotto (WP-063): the rooms of D5, north (+Z).
+const GLASSWING_GROTTO: Record<string, SpawnPoint> = {
+  mouth: { x: 0, z: -92, yaw: 0, note: 'the crystal mouth, the area start (L12 is outside, in Hollowdeep)' },
+  mirror: { x: -6, z: -62, yaw: HALF_PI, note: 'the Mirror Hall: the beam runs from the wall to the mirror and stops' },
+  socket: { x: 6, z: -54, yaw: -HALF_PI, note: "beside the Mirror Hall's socket and its sealed door" },
+  prism: { x: -8, z: -26, yaw: HALF_PI, note: 'the Prism Hall: three mirrors, two sockets' },
+  nook_door: { x: -14, z: -23, yaw: -HALF_PI, note: "the Shard Nook's sealed tunnel in the west wall" },
+  nook: { x: -34, z: -20, yaw: Math.PI, note: 'the Shard Nook, with the Estoc on its slab' },
+  facets: { x: -8, z: 4, yaw: HALF_PI, note: 'the Gallery of Facets: the first mirror wakes the nests' },
+  guardian: { x: 0, z: 32, yaw: 0, note: 'the Guardian Hall, from the door: two Stalkers and the Spear beyond' },
+  plinth: { x: 0, z: 60, yaw: 0, note: "the Shardglass Spear's plinth" },
+  corridor: { x: 30, z: 38, yaw: HALF_PI, note: 'the return corridor, running east from the Guardian Hall' }
+};
+
 const TABLES: Record<string, Record<string, SpawnPoint>> = {
   sunken_ossuary: SUNKEN_OSSUARY,
   drowned_belfry: DROWNED_BELFRY,
@@ -220,6 +256,8 @@ const TABLES: Record<string, Record<string, SpawnPoint>> = {
   cinderdeep_mine: CINDERDEEP_MINE,
   hollowdeep: HOLLOWDEEP,
   spire: SPIRE,
+  mossgut_cave: MOSSGUT_CAVE,
+  glasswing_grotto: GLASSWING_GROTTO,
   m0_flat: {
     far: { x: 40, z: 40, yaw: Math.PI, note: 'far corner of the flat floor' }
   }

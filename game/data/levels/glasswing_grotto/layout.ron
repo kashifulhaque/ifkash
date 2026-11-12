@@ -1,0 +1,22 @@
+// Glasswing Grotto layout (WP-063): greybox blocks (scaled `block_unit`, centered on `pos`). The
+// grotto's walls are the terrain (terrain.ron); the blocks here are furniture: crystal columns
+// and plinths. Nothing stands on a beam's line at the beam's height (1.2 m): mirrors, sockets,
+// and crystals are the renderer's props, drawn from entities.ron, with no colliders, and the
+// beams stop at walls and shut doors (a ray against these colliders). Y is up. Walks between
+// the rooms are checked by world_state/cave_tests.rs.
+(
+  landmarks: [
+    (name: "m1_column_w", kit: "block_unit", pos: (-9.00, 1.50, -48.00), scale: (1.60, 3.00, 1.60)),
+    (name: "m1_column_e", kit: "block_unit", pos: (9.00, 1.50, -48.00), scale: (1.60, 3.00, 1.60)),
+    (name: "m2_pillar_0", kit: "block_unit", pos: (8.00, 1.50, -34.00), scale: (1.60, 3.00, 1.60)),
+    (name: "m2_pillar_1", kit: "block_unit", pos: (8.00, 1.50, -26.00), scale: (1.60, 3.00, 1.60)),
+    (name: "m5_outcrop_w", kit: "block_unit", pos: (-11.00, 0.50, 2.00), scale: (2.00, 1.00, 3.00)),
+    (name: "m5_outcrop_e", kit: "block_unit", pos: (11.00, 0.50, 2.00), scale: (2.00, 1.00, 3.00)),
+    (name: "g_column_0", kit: "block_unit", pos: (-11.00, 2.00, 38.00), scale: (1.60, 4.00, 1.60)),
+    (name: "g_column_1", kit: "block_unit", pos: (11.00, 2.00, 38.00), scale: (1.60, 4.00, 1.60)),
+    (name: "g_column_2", kit: "block_unit", pos: (-11.00, 2.00, 56.00), scale: (1.60, 4.00, 1.60)),
+    (name: "g_column_3", kit: "block_unit", pos: (11.00, 2.00, 56.00), scale: (1.60, 4.00, 1.60)),
+    (name: "g_plinth", kit: "block_unit", pos: (0.00, 0.50, 64.00), scale: (1.20, 1.00, 1.20)),
+    (name: "b_slab", kit: "block_unit", pos: (-38.00, 0.40, -24.00), scale: (3.00, 0.80, 1.20)),
+  ],
+)

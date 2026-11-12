@@ -1,0 +1,65 @@
+// The Mossgut Cave terrain (WP-063). Vertices are 2 m apart (65 x 101). The whole area is rock
+// (a 20 m plateau) and the cave is carved out of it: the carved rooms' sheer sides (20 m over
+// one 2 m cell) are the cave walls, so the nav grid and the character controller treat them as
+// walls. Every room is flat at 0 m except the lift's pit, 18 m deep. Generated from the room
+// list at the top of layout.ron. Rooms, in order (x, z ranges):
+//   A    Mouth hall       x -10..10   z -96..-76   open to the Verge mouth (z -100..-96)
+//   T1   Low Gallery      x -12..12   z -72..-48   the teaching room: the ceiling's 2.0 m
+//   T2   Spore Hall       x -15..15   z -42..-14   the test room
+//   B    Nursery          x -42..-26  z -34..-14   the branch; a hollow wall hides the closet below it
+//   TW   Brood Warren     x -16..16   z -10..18    the twist: a lever opens the gate and wakes the nests
+//   GH   Gate Hall        x -10..10   z  26..42    the quiet room before B04's fog gate (z 44)
+//   BC   Brood Chamber    x -15..15   z  46..88    B04's arena; the Fungal Knife's alcove east of it
+//   K    Lift pit         x  36..52   z  50..68    18 m down to the floor that leads on to Hollowdeep
+//   R    Return corridor  from GH's east wall, east to x 40..44, south to z -90..-84, west to A
+#![enable(implicit_some)]
+(
+  spacing_m: 2.0,
+  base_y: 20.00,
+  ops: [
+    // mouth
+    SetRect(min: (-4.00, -100.00), max: (4.00, -96.00), height: 0.00),
+    // a
+    SetRect(min: (-10.00, -96.00), max: (10.00, -76.00), height: 0.00),
+    // pa
+    SetRect(min: (-3.00, -77.00), max: (3.00, -71.00), height: 0.00),
+    // t1
+    SetRect(min: (-12.00, -72.00), max: (12.00, -48.00), height: 0.00),
+    // pt1
+    SetRect(min: (-3.00, -49.00), max: (3.00, -43.00), height: 0.00),
+    // t2
+    SetRect(min: (-15.00, -42.00), max: (15.00, -14.00), height: 0.00),
+    // pb
+    SetRect(min: (-27.00, -30.00), max: (-14.00, -24.00), height: 0.00),
+    // b
+    SetRect(min: (-42.00, -34.00), max: (-26.00, -14.00), height: 0.00),
+    // cl
+    SetRect(min: (-40.00, -46.00), max: (-30.00, -37.00), height: 0.00),
+    // ptw
+    SetRect(min: (-3.00, -15.00), max: (3.00, -9.00), height: 0.00),
+    // tw
+    SetRect(min: (-16.00, -10.00), max: (16.00, 18.00), height: 0.00),
+    // pg
+    SetRect(min: (-3.00, 17.00), max: (3.00, 25.00), height: 0.00),
+    // gh
+    SetRect(min: (-10.00, 26.00), max: (10.00, 42.00), height: 0.00),
+    // pgb
+    SetRect(min: (-6.00, 41.00), max: (6.00, 47.00), height: 0.00),
+    // bc
+    SetRect(min: (-15.00, 46.00), max: (15.00, 88.00), height: 0.00),
+    // pk
+    SetRect(min: (15.00, 55.00), max: (34.00, 63.00), height: 0.00),
+    // c1
+    SetRect(min: (10.00, 32.00), max: (44.00, 36.00), height: 0.00),
+    // c2
+    SetRect(min: (40.00, -90.00), max: (44.00, 36.00), height: 0.00),
+    // c3
+    SetRect(min: (10.00, -90.00), max: (44.00, -84.00), height: 0.00),
+    // al
+    SetRect(min: (15.00, 70.00), max: (26.00, 80.00), height: 0.00),
+    // hollow_wall_gap
+    SetRect(min: (-38.00, -37.00), max: (-32.00, -33.00), height: 0.00),
+    // lift_pit
+    SetRect(min: (36.00, 50.00), max: (52.00, 68.00), height: -18.00),
+  ],
+)

@@ -25,6 +25,9 @@ pub mod flags;
 mod hollow_tests;
 #[cfg(test)]
 mod hollowdeep_tests;
+// WP-063: Mossgut Cave and Glasswing Grotto.
+#[cfg(test)]
+mod cave_tests;
 pub mod lantern;
 pub mod lantern_menu;
 pub mod mechanics;
@@ -90,6 +93,12 @@ pub struct Layout {
     pub glows: Vec<Zone>,
     pub carts: Vec<lf_content::scenario::Cart>,
     pub trapdoors: Vec<lf_content::scenario::Trapdoor>,
+    /// Low ceilings, and light beams with their mirrors and receptors (WP-063; see
+    /// `mechanics`).
+    pub low_ceilings: Vec<lf_content::scenario::LowCeiling>,
+    pub beam_sources: Vec<lf_content::scenario::BeamSource>,
+    pub mirrors: Vec<lf_content::scenario::Mirror>,
+    pub receptors: Vec<lf_content::scenario::Receptor>,
 }
 
 impl Layout {
@@ -120,6 +129,10 @@ impl Layout {
             glows: level.glows.clone(),
             carts: level.carts.clone(),
             trapdoors: level.trapdoors.clone(),
+            low_ceilings: level.low_ceilings.clone(),
+            beam_sources: level.beam_sources.clone(),
+            mirrors: level.mirrors.clone(),
+            receptors: level.receptors.clone(),
         }
     }
 

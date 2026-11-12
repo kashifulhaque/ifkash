@@ -1,0 +1,137 @@
+// The Mossgut Cave entities (WP-063, D1). Yaw is in radians from +Z toward +X: 0 faces +Z
+// (north, deeper in), 3.1415927 faces -Z, 1.5707964 faces +X, -1.5707964 faces -X.
+//
+// The route follows the dungeon template (docs/game/02-world.md): the mouth hall (entrance; L05
+// stands outside, in the Verge), the Low Gallery (teaching: no fight but one Marsh Crawler; the
+// ceiling's message), the Spore Hall (test: crawlers and a Husk under the 2.0 m roof), the
+// Nursery (the branch: a Wick Bead, a chest, and a hollow-wall closet with Veil and a charm), the
+// Brood Warren (twist: the lever that opens the way north wakes the nests), the Gate Hall, and
+// B04's chamber behind a fog gate, with the Fungal Knife in an alcove after it and the lift down
+// to Hollowdeep. The shortcut is the return corridor: from the Gate Hall's east wall, round to a
+// one-way door in the mouth hall.
+//
+// LOW CEILINGS. Every `LowCeiling` zone is 2.0 m high, the same height as the roof slabs in
+// layout.ron. A swing whose hitbox reaches higher strikes the rock instead (the core's
+// `mechanics/low_ceiling.rs`): a sword's heavy, an axe, a plunge, or a jump heavy does nothing
+// here; light chains, thrusts, and rolls work. The mouth hall and the lift's pit are open.
+//
+// Registry numbers used here (24000 block): mossgut_cave 24000.
+(
+  // The cave mouth, facing north into the hall.
+  spawn: (pos: (0.0, 0.0, -92.0), yaw: 0.0),
+  entities: [
+    // --- Low ceilings: one zone per roofed room (see layout.ron) ---------------------------------
+    LowCeiling(name: "low_pa", center: (0.00, -74.00), half_extents: (3.00, 3.00), height_m: 2.00),
+    LowCeiling(name: "low_t1", center: (0.00, -60.00), half_extents: (12.00, 12.00), height_m: 2.00),
+    LowCeiling(name: "low_pt1", center: (0.00, -46.00), half_extents: (3.00, 3.00), height_m: 2.00),
+    LowCeiling(name: "low_t2", center: (0.00, -28.00), half_extents: (15.00, 14.00), height_m: 2.00),
+    LowCeiling(name: "low_pb", center: (-20.50, -27.00), half_extents: (6.50, 3.00), height_m: 2.00),
+    LowCeiling(name: "low_b", center: (-34.00, -24.00), half_extents: (8.00, 10.00), height_m: 2.00),
+    LowCeiling(name: "low_cl", center: (-35.00, -41.50), half_extents: (5.00, 4.50), height_m: 2.00),
+    LowCeiling(name: "low_ptw", center: (0.00, -12.00), half_extents: (3.00, 3.00), height_m: 2.00),
+    LowCeiling(name: "low_tw", center: (0.00, 4.00), half_extents: (16.00, 14.00), height_m: 2.00),
+    LowCeiling(name: "low_pg", center: (0.00, 21.00), half_extents: (3.00, 4.00), height_m: 2.00),
+    LowCeiling(name: "low_gh", center: (0.00, 34.00), half_extents: (10.00, 8.00), height_m: 2.00),
+    LowCeiling(name: "low_pgb", center: (0.00, 44.00), half_extents: (6.00, 3.00), height_m: 2.00),
+    LowCeiling(name: "low_bc", center: (0.00, 67.00), half_extents: (15.00, 21.00), height_m: 2.00),
+    LowCeiling(name: "low_pk", center: (24.50, 59.00), half_extents: (9.50, 4.00), height_m: 2.00),
+    LowCeiling(name: "low_c1", center: (27.00, 34.00), half_extents: (17.00, 2.00), height_m: 2.00),
+    LowCeiling(name: "low_c2", center: (42.00, -27.00), half_extents: (2.00, 63.00), height_m: 2.00),
+    LowCeiling(name: "low_c3", center: (27.00, -87.00), half_extents: (17.00, 3.00), height_m: 2.00),
+    // --- Doors ------------------------------------------------------------------------------------
+    // The Warren's gate, opened by the lever in the room. The shortcut's door faces +X, the corridor.
+    Door(id: "door_warren", pos: (0.0, 0.0, 21.0), yaw: 0.0, half_width_m: 3.0, height_m: 2.0, kind: Locked),
+    Door(id: "door_return", pos: (14.0, 0.0, -87.0), yaw: 1.5707964, half_width_m: 3.2, height_m: 2.0, kind: OneWay),
+
+    // --- The Brood Warren's lever -----------------------------------------------------------------
+    // It opens the gate, and the sleeping Crawlers in the nests wake while it is pulled (their
+    // `wakes_on` is the lever's own flag). Pull it once.
+    Lever(id: "lever_warren", pos: (-3.5, 0.0, 16.4), yaw: 0.0, target: Door("door_warren")),
+
+    // --- The lift: down 18 m to the pit's floor, and back ---------------------------------------
+    // The platform lies at the top stop (y 0) flush with the doorway, and starts at the bottom.
+    Lift(id: "mossgut_lift", pos: (38.0, 59.0), bottom_y: -18.0, top_y: 0.0, half_extents: (2.0, 3.0)),
+    // Top: in the doorway. Bottom: on the pit's floor.
+    Lever(id: "lever_lift_top", pos: (35.0, 0.0, 60.6), yaw: 1.5707964, target: Lift(id: "mossgut_lift", stop: 1)),
+    Lever(id: "lever_lift_bottom", pos: (41.0, -18.0, 59.0), yaw: -1.5707964, target: Lift(id: "mossgut_lift", stop: 0)),
+
+    // --- The branch's secret: a hollow wall fills the gap in the Nursery's south wall ------------
+    HollowWall(id: "wall_nursery_closet", center: (-35.0, 2.0, -35.0), half_extents: (3.0, 2.0, 1.0)),
+
+    // --- Authored messages ---------------------------------------------------------------------
+    Message(id: "msg_moss_mouth", pos: (0.0, 0.0, -88.0),
+      text: "Mossgut Cave. Spores drift in the light of the fungus, and the roof comes down to meet the floor. The way goes north."),
+    Message(id: "msg_moss_gallery", pos: (0.0, 0.0, -66.0),
+      text: "The roof is low here: a swing that rises over your head will strike the rock. Stab, or cut level, and keep the heavy blows for the open."),
+    Message(id: "msg_moss_spore_hall", pos: (0.0, 0.0, -40.0),
+      text: "The Spore Hall. Crawlers nest in the moss, and a Husk stands among the pillars. Nothing here can be fought from above."),
+    Message(id: "msg_moss_branch", pos: (-20.0, 0.0, -27.0),
+      text: "A side tunnel with a sweet, rotten smell. Whatever lives at its end has left a light burning."),
+    Message(id: "msg_moss_closet", pos: (-35.0, 0.0, -31.0),
+      text: "One wall of the nursery is thinner than the rest. A draught comes through it."),
+    Message(id: "msg_moss_warren", pos: (0.0, 0.0, -8.0),
+      text: "The Brood Warren. The gate to the north is shut, and a lever stands beside it across the room. The nests along the walls are very quiet."),
+    Message(id: "msg_moss_lever", pos: (1.0, 0.0, 12.0),
+      text: "Pull the lever and the gate opens. Pull it once. The hollows in the walls open with it."),
+    Message(id: "msg_moss_gate", pos: (0.0, 0.0, 38.0),
+      text: "The Gate Hall. Beyond the pillars, a mist hangs in the passage. The Mossgut Brood is at the heart of the cave, in a chamber too low to swing a heavy blade."),
+    Message(id: "msg_moss_chamber", pos: (0.0, 0.0, 50.0),
+      text: "The Brood's chamber. A mother, grown into the wall, and sacs of eggs. East of the room, an alcove; past it, the lift."),
+    Message(id: "msg_moss_shaft", pos: (33.0, 0.0, 59.0),
+      text: "The lift shaft. The doorway's lever sends the platform down eighteen meters, to the roots of Hollowdeep. Do not step off the edge."),
+    Message(id: "msg_moss_shaft_bottom", pos: (45.0, -18.0, 59.0),
+      text: "The shaft's floor. The lever by the platform calls it down, and sends it up. A cold light comes from the east."),
+    Message(id: "msg_moss_return", pos: (14.0, 0.0, 34.0),
+      text: "A long dry corridor. It runs back to the cave's mouth, to a door that opens from this side only."),
+
+    // --- Enemies: Marsh Crawlers (the Brood's children) and Husks -------------------------------
+    // T1, the teaching room: one Crawler, to try the low swing on.
+    Enemy(name: "crawler_gallery", enemy: "marsh_crawler", pos: (6.0, 0.0, -56.0), yaw: 3.1415927),
+    // T2: three Crawlers in the moss and a Husk among the pillars.
+    Enemy(name: "husk_spore", enemy: "husk", pos: (0.0, 0.0, -28.0), yaw: 3.1415927),
+    Enemy(name: "crawler_spore_a", enemy: "marsh_crawler", pos: (-11.0, 0.0, -36.0), yaw: 3.1415927),
+    Enemy(name: "crawler_spore_b", enemy: "marsh_crawler", pos: (11.0, 0.0, -36.0), yaw: 3.1415927),
+    Enemy(name: "crawler_spore_c", enemy: "marsh_crawler", pos: (11.0, 0.0, -18.0), yaw: 3.1415927),
+    // B: the Nursery's Crawler.
+    Enemy(name: "crawler_nursery", enemy: "marsh_crawler", pos: (-36.0, 0.0, -20.0), yaw: 3.1415927),
+    // TW, the twist: two Husks awake, and four Crawlers asleep in the nests until the lever is pulled.
+    Enemy(name: "husk_warren_w", enemy: "husk", pos: (-10.0, 0.0, 8.0), yaw: 0.0),
+    Enemy(name: "husk_warren_e", enemy: "husk", pos: (10.0, 0.0, 8.0), yaw: 0.0),
+    Enemy(name: "crawler_nest_a", enemy: "marsh_crawler", pos: (-13.0, 0.0, 2.0), yaw: 1.5707964, wakes_on: Some("lever.lever_warren.pulled")),
+    Enemy(name: "crawler_nest_b", enemy: "marsh_crawler", pos: (-13.0, 0.0, 6.0), yaw: 1.5707964, wakes_on: Some("lever.lever_warren.pulled")),
+    Enemy(name: "crawler_nest_c", enemy: "marsh_crawler", pos: (13.0, 0.0, 2.0), yaw: -1.5707964, wakes_on: Some("lever.lever_warren.pulled")),
+    Enemy(name: "crawler_nest_d", enemy: "marsh_crawler", pos: (13.0, 0.0, 6.0), yaw: -1.5707964, wakes_on: Some("lever.lever_warren.pulled")),
+    // GH: one Husk guards the fog gate.
+    Enemy(name: "husk_gate", enemy: "husk", pos: (0.0, 0.0, 34.0), yaw: 3.1415927),
+
+    // --- Items, materials, and a secret ---------------------------------------------------------
+    // The Nursery (the branch, a dead end): a Wick Bead before the slab, and a chest of Forgeglass Shards.
+    Pickup(id: "wick_nursery", item: "itm_wick_bead", pos: (-32.0, 0.0, -26.4), interact: true),
+    Chest(id: "chest_nursery", pos: (-38.0, 0.0, -18.0), yaw: 3.1415927, loot: (item: "itm_forgeglass_shard", count: 3, glimmer: 200)),
+    // The closet behind the hollow wall: Veil, and the Quickening Charm.
+    Pickup(id: "spell_veil", item: "spl_veil", pos: (-37.0, 0.0, -42.0), interact: true),
+    Pickup(id: "charm_quickening", item: "chm_quickening", pos: (-33.0, 0.0, -42.0), interact: true),
+    // The Spore Hall and the Gallery: a vial and oil.
+    Pickup(id: "vial_moss_spore", item: "itm_glimmer_vial", pos: (-13.0, 0.0, -26.0), interact: true),
+    Pickup(id: "oil_moss_gallery", item: "itm_spark_oil", pos: (-9.0, 0.0, -68.0), count: 2, interact: true),
+    // The alcove after B04: the Fungal Knife on its plinth (the D1 reward); the alcove is open to a high chimney, so a heavy swing works there.
+    Pickup(id: "knife_fungal", item: "wpn_fungal_knife", pos: (22.0, 1.0, 75.0), interact: true),
+
+    // --- B04's arena: the Brood Chamber (x -15..15, z 46..88) ------------------------------------
+    // The boss: PLACEHOLDER. B04 (the Mossgut Brood, an M7 work package) has no boss definition
+    // yet, so no Boss entity is placed. When it exists, add:
+    //   Boss(name: "b04", boss: "<b04 id>", pos: (0.0, 0.0, 84.0), yaw: 3.1415927,
+    //     gate: (pos: (0.0, 0.0, 44.0), yaw: 0.0, half_width_m: 6.0, depth_m: 3.0)),
+    // The fog gate is the plane z = 44 across the passage (x -6..6), opening north into the
+    // chamber (its frame is `gate_post_w` and `gate_post_e` in layout.ron). The Brood is embedded
+    // in the north wall at (0, 0, 86), and the four egg sacs stand at (-10, 0, 62), (10, 0, 62),
+    // (-10, 0, 76), and (10, 0, 76). The ceiling is low here, the same as in the rest of the cave:
+    // the zone `low_bc` covers the chamber. The reward is the Fungal Knife (`knife_fungal`, in the
+    // alcove at x 15..26, z 70..80), and the way on is the lift (x 36..40, z 56..62). B04 is not a
+    // required boss, so the rule that puts a Lantern within 20 s of every required fog gate
+    // doesn't apply: the nearest rest is L05, outside the mouth, and the return corridor is the
+    // way back to it.
+    // The Echo Stone stands just inside the gate, west of the entrance.
+    EchoStone(id: "stone_b04", pos: (-9.0, 0.0, 50.0), yaw: 0.7854),
+  ],
+)

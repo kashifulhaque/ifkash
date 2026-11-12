@@ -770,6 +770,11 @@ const EMBEDDED_ENEMIES: &[(&str, &str)] = &[
         "enemies/bell_warden.ron",
         include_str!("../../../data/enemies/bell_warden.ron"),
     ),
+    // WP-063: the elite Glasswing Stalker.
+    (
+        "enemies/glasswing_stalker_elite.ron",
+        include_str!("../../../data/enemies/glasswing_stalker_elite.ron"),
+    ),
 ];
 
 const EMBEDDED_KITS: &[(&str, &str)] = &[
@@ -988,6 +993,39 @@ const EMBEDDED_LEVELS: &[(&str, &str)] = &[
     (
         "levels/spire/entities.ron",
         include_str!("../../../data/levels/spire/entities.ron"),
+    ),
+    // WP-063: the two caves.
+    (
+        "levels/mossgut_cave/area.ron",
+        include_str!("../../../data/levels/mossgut_cave/area.ron"),
+    ),
+    (
+        "levels/mossgut_cave/terrain.ron",
+        include_str!("../../../data/levels/mossgut_cave/terrain.ron"),
+    ),
+    (
+        "levels/mossgut_cave/layout.ron",
+        include_str!("../../../data/levels/mossgut_cave/layout.ron"),
+    ),
+    (
+        "levels/mossgut_cave/entities.ron",
+        include_str!("../../../data/levels/mossgut_cave/entities.ron"),
+    ),
+    (
+        "levels/glasswing_grotto/area.ron",
+        include_str!("../../../data/levels/glasswing_grotto/area.ron"),
+    ),
+    (
+        "levels/glasswing_grotto/terrain.ron",
+        include_str!("../../../data/levels/glasswing_grotto/terrain.ron"),
+    ),
+    (
+        "levels/glasswing_grotto/layout.ron",
+        include_str!("../../../data/levels/glasswing_grotto/layout.ron"),
+    ),
+    (
+        "levels/glasswing_grotto/entities.ron",
+        include_str!("../../../data/levels/glasswing_grotto/entities.ron"),
     ),
 ];
 

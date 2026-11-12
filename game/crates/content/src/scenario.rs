@@ -122,6 +122,17 @@ pub struct Scenario {
     /// Trapdoors (WP-062): a hatch the player pushes open from below.
     #[serde(default)]
     pub trapdoors: Vec<Trapdoor>,
+    /// Low-ceiling zones (WP-063, Mossgut Cave): a swing that rises above the ceiling hits
+    /// rock instead of the target.
+    #[serde(default)]
+    pub low_ceilings: Vec<LowCeiling>,
+    /// Light-beam emitters, mirrors, and receptors (WP-063, Glasswing Grotto).
+    #[serde(default)]
+    pub beam_sources: Vec<BeamSource>,
+    #[serde(default)]
+    pub mirrors: Vec<Mirror>,
+    #[serde(default)]
+    pub receptors: Vec<Receptor>,
 }
 
 /// Where an NPC stands. The NPC's lines and quest are in `npcs/<name>.ron`.
@@ -674,6 +685,69 @@ pub struct Trapdoor {
     pub ladder: Option<String>,
 }
 
+// ---------------------------------------------------------------------------------------
+// Low ceilings and light beams (WP-063; docs/game/02-world.md, "Mini-dungeons", D1 and D5)
+
+/// A low-ceiling zone (D1, Mossgut Cave). While an actor stands inside the rectangle, a hitbox
+/// of theirs that reaches higher than `height_m` above their feet strikes the rock instead of
+/// what is in front of them, so the heavy, jumping, and plunging swings (all of which rise
+/// over 2 m) fail and the thrusts and the horizontal swings (all of which stay under 1.6 m)
+/// work. The cave's roof slabs in `layout.ron` sit at the same height.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct LowCeiling {
+    /// Label for tools and error messages.
+    pub name: String,
+    /// Center, as (x, z) in meters.
+    pub center: [f32; 2],
+    /// Half the size along x and z, in meters.
+    pub half_extents: [f32; 2],
+    /// The ceiling's height above the floor, in meters.
+    pub height_m: f32,
+}
+
+/// A beam emitter (D5, Glasswing Grotto): a crystal that sends a light beam along one of the
+/// four compass directions, always on. The beam runs level at `pos`'s height until it meets a
+/// mirror, a receptor, or a wall.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct BeamSource {
+    /// Unique among the scenario's emitters.
+    pub id: String,
+    /// The crystal's center, in meters. The beam's height is `pos.y`.
+    pub pos: [f32; 3],
+    /// The way it shines: 0 toward +Z, 1 toward +X, 2 toward -Z, 3 toward -X.
+    pub dir: u8,
+}
+
+/// A crystal mirror (D5): the player turns it a quarter turn with `INTERACT`. It reflects a
+/// beam that strikes its face and swallows one that strikes its back.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Mirror {
+    /// Unique among the scenario's mirrors.
+    pub id: String,
+    /// The crystal's center, in meters. The player turns it from beside it.
+    pub pos: [f32; 3],
+    /// Which way its face points at the start: 0 north-east (+X +Z), 1 south-east (+X -Z),
+    /// 2 south-west, 3 north-west. A beam traveling against the face's direction bounces off.
+    pub facing: u8,
+}
+
+/// A beam receptor (D5): a crystal socket. When a beam reaches it, the flag
+/// `receptor.<id>.lit` is raised for good and the door it names opens.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Receptor {
+    /// Unique among the scenario's receptors.
+    pub id: String,
+    /// The socket's center, in meters.
+    pub pos: [f32; 3],
+    /// The door that opens when it is lit, if any.
+    #[serde(default)]
+    pub opens: Option<String>,
+}
+
 impl Scenario {
     /// Checks shape invariants the physics builder relies on.
     pub fn check(&self) -> Result<(), String> {
@@ -960,6 +1034,55 @@ impl Scenario {
                 return Err(format!(
                     "trapdoor {:?}: its ladder {l:?} must be a kick_down ladder",
                     t.id
+                ));
+            }
+        }
+        for (i, z) in self.low_ceilings.iter().enumerate() {
+            unique(
+                self.low_ceilings[..i].iter().any(|o| o.name == z.name),
+                "low ceiling",
+                &z.name,
+            )?;
+            positive(
+                "low ceiling",
+                &z.name,
+                "half_extents",
+                z.half_extents[0].min(z.half_extents[1]),
+            )?;
+            positive("low ceiling", &z.name, "height_m", z.height_m)?;
+        }
+        for (i, s) in self.beam_sources.iter().enumerate() {
+            unique(
+                self.beam_sources[..i].iter().any(|o| o.id == s.id),
+                "beam source",
+                &s.id,
+            )?;
+            if s.dir > 3 {
+                return Err(format!("beam source {:?}: dir must be 0 to 3", s.id));
+            }
+        }
+        for (i, m) in self.mirrors.iter().enumerate() {
+            unique(
+                self.mirrors[..i].iter().any(|o| o.id == m.id),
+                "mirror",
+                &m.id,
+            )?;
+            if m.facing > 3 {
+                return Err(format!("mirror {:?}: facing must be 0 to 3", m.id));
+            }
+        }
+        for (i, r) in self.receptors.iter().enumerate() {
+            unique(
+                self.receptors[..i].iter().any(|o| o.id == r.id),
+                "receptor",
+                &r.id,
+            )?;
+            if let Some(d) = &r.opens
+                && !self.doors.iter().any(|o| &o.id == d)
+            {
+                return Err(format!(
+                    "receptor {:?}: it opens door {d:?}, which doesn't exist",
+                    r.id
                 ));
             }
         }

@@ -1,0 +1,43 @@
+// Mossgut Cave layout (WP-063): greybox blocks (scaled `block_unit`, centered on `pos`). The
+// cave's walls are the terrain (terrain.ron); the blocks here are the roof slabs and the
+// furniture. Y is up. Every room but the mouth hall, the Fungal Knife's alcove, and the lift pit has a roof slab whose
+// underside is 2.0 m above the floor: the low ceiling (a `LowCeiling` zone in entities.ron
+// carries the same height, and the core's rule is that a swing reaching above it strikes the
+// rock). Each slab runs 1 m past its room's rectangle, to the middle of the sheer wall's cell.
+// Walks between the rooms are checked by world_state/cave_tests.rs.
+(
+  landmarks: [
+    (name: "roof_pa", kit: "block_unit", pos: (0.00, 2.50, -74.00), scale: (8.00, 1.00, 8.00)),
+    (name: "roof_t1", kit: "block_unit", pos: (0.00, 2.50, -60.00), scale: (26.00, 1.00, 26.00)),
+    (name: "roof_pt1", kit: "block_unit", pos: (0.00, 2.50, -46.00), scale: (8.00, 1.00, 8.00)),
+    (name: "roof_t2", kit: "block_unit", pos: (0.00, 2.50, -28.00), scale: (32.00, 1.00, 30.00)),
+    (name: "roof_pb", kit: "block_unit", pos: (-20.50, 2.50, -27.00), scale: (15.00, 1.00, 8.00)),
+    (name: "roof_b", kit: "block_unit", pos: (-34.00, 2.50, -24.00), scale: (18.00, 1.00, 22.00)),
+    (name: "roof_cl", kit: "block_unit", pos: (-35.00, 2.50, -41.50), scale: (12.00, 1.00, 11.00)),
+    (name: "roof_ptw", kit: "block_unit", pos: (0.00, 2.50, -12.00), scale: (8.00, 1.00, 8.00)),
+    (name: "roof_tw", kit: "block_unit", pos: (0.00, 2.50, 4.00), scale: (34.00, 1.00, 30.00)),
+    (name: "roof_pg", kit: "block_unit", pos: (0.00, 2.50, 21.00), scale: (8.00, 1.00, 10.00)),
+    (name: "roof_gh", kit: "block_unit", pos: (0.00, 2.50, 34.00), scale: (22.00, 1.00, 18.00)),
+    (name: "roof_pgb", kit: "block_unit", pos: (0.00, 2.50, 44.00), scale: (14.00, 1.00, 8.00)),
+    (name: "roof_bc", kit: "block_unit", pos: (0.00, 2.50, 67.00), scale: (32.00, 1.00, 44.00)),
+    (name: "roof_pk", kit: "block_unit", pos: (24.50, 2.50, 59.00), scale: (21.00, 1.00, 10.00)),
+    (name: "roof_c1", kit: "block_unit", pos: (27.00, 2.50, 34.00), scale: (36.00, 1.00, 6.00)),
+    (name: "roof_c2", kit: "block_unit", pos: (42.00, 2.50, -27.00), scale: (6.00, 1.00, 128.00)),
+    (name: "roof_c3", kit: "block_unit", pos: (27.00, 2.50, -87.00), scale: (36.00, 1.00, 8.00)),
+    (name: "t2_pillar_0", kit: "block_unit", pos: (-8.00, 1.00, -34.00), scale: (1.60, 2.00, 1.60)),
+    (name: "t2_pillar_1", kit: "block_unit", pos: (8.00, 1.00, -34.00), scale: (1.60, 2.00, 1.60)),
+    (name: "t2_pillar_2", kit: "block_unit", pos: (-8.00, 1.00, -20.00), scale: (1.60, 2.00, 1.60)),
+    (name: "t2_pillar_3", kit: "block_unit", pos: (8.00, 1.00, -20.00), scale: (1.60, 2.00, 1.60)),
+    (name: "tw_pillar_0", kit: "block_unit", pos: (-7.00, 1.00, 2.00), scale: (1.60, 2.00, 1.60)),
+    (name: "tw_pillar_1", kit: "block_unit", pos: (7.00, 1.00, 2.00), scale: (1.60, 2.00, 1.60)),
+    (name: "tw_nest_w", kit: "block_unit", pos: (-14.60, 0.30, 4.00), scale: (2.00, 0.60, 6.00)),
+    (name: "tw_nest_e", kit: "block_unit", pos: (14.60, 0.30, 4.00), scale: (2.00, 0.60, 6.00)),
+    (name: "bc_pillar_0", kit: "block_unit", pos: (-9.00, 1.00, 54.00), scale: (1.60, 2.00, 1.60)),
+    (name: "bc_pillar_1", kit: "block_unit", pos: (9.00, 1.00, 54.00), scale: (1.60, 2.00, 1.60)),
+    (name: "gate_post_w", kit: "block_unit", pos: (-5.60, 1.00, 44.00), scale: (1.20, 2.00, 1.20)),
+    (name: "gate_post_e", kit: "block_unit", pos: (5.60, 1.00, 44.00), scale: (1.20, 2.00, 1.20)),
+    (name: "al_plinth", kit: "block_unit", pos: (22.00, 0.50, 75.00), scale: (1.20, 1.00, 1.20)),
+    (name: "b_slab", kit: "block_unit", pos: (-32.00, 0.40, -28.00), scale: (3.00, 0.80, 1.20)),
+    (name: "k_doorway_floor", kit: "block_unit", pos: (35.00, -0.25, 59.00), scale: (2.00, 0.50, 6.00)),
+  ],
+)

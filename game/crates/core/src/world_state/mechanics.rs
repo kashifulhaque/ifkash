@@ -126,6 +126,7 @@ enum Target {
     LadderKick(usize),
     Cart(usize),
     Trapdoor(usize),
+    Mirror(usize),
 }
 
 impl Target {
@@ -142,6 +143,7 @@ impl Target {
             Self::LadderKick(_) => 7,
             Self::Cart(_) => 8,
             Self::Trapdoor(_) => 9,
+            Self::Mirror(_) => 10,
         }
     }
 
@@ -156,7 +158,8 @@ impl Target {
             | Self::LadderTop(i)
             | Self::LadderKick(i)
             | Self::Cart(i)
-            | Self::Trapdoor(i) => i,
+            | Self::Trapdoor(i)
+            | Self::Mirror(i) => i,
         }
     }
 }
@@ -224,6 +227,9 @@ fn has_any(layout: &Layout) -> bool {
         && layout.snow.is_empty()
         && layout.carts.is_empty()
         && layout.trapdoors.is_empty()
+        && layout.mirrors.is_empty()
+        && layout.beam_sources.is_empty()
+        && layout.receptors.is_empty()
         && layout.pickups.iter().all(|p| !p.interact))
 }
 
@@ -340,6 +346,8 @@ pub fn run(world: &mut World, input: &TickInput) {
     }
     lifts_step(world);
     mine_cart::step(world);
+    // WP-063: light beams light the receptors they reach, after this tick's turns and doors.
+    light_beam::step(world);
     sync_colliders(world);
 }
 
@@ -457,6 +465,10 @@ fn nearest(world: &World) -> Option<Target> {
             offer(reach(feet, at, r, h), Target::Trapdoor(i));
         }
     }
+    // WP-063: a crystal mirror, turned from beside it.
+    for (i, m) in world.layout.mirrors.iter().enumerate() {
+        offer(reach(feet, m.pos, r, h), Target::Mirror(i));
+    }
     best.map(|(_, t)| t)
 }
 
@@ -477,6 +489,8 @@ pub fn prompt(world: &World) -> u32 {
         // 30 ride a mine cart, 31 push one, 32 push a trapdoor open (WP-062).
         Some(Target::Cart(i)) => mine_cart::prompt(world, i),
         Some(Target::Trapdoor(_)) => trapdoor::PROMPT_OPEN,
+        // 40 turn a crystal mirror (WP-063).
+        Some(Target::Mirror(_)) => light_beam::PROMPT_TURN,
     }
 }
 
@@ -507,6 +521,7 @@ fn interact(world: &mut World) {
         }
         Target::Cart(i) => mine_cart::interact(world, i),
         Target::Trapdoor(i) => trapdoor::interact(world, i),
+        Target::Mirror(i) => light_beam::turn(world, i),
     }
 }
 
@@ -985,7 +1000,9 @@ pub fn after_hits(world: &mut World) {
 /// one word for the ladder the player is on plus one (0 for none); then, per list in the
 /// scenario's order: ladders (1 if climbable now), lifts (the platform's rise in meters),
 /// doors (1 if open), levers (1 if pulled), hollow walls (1 if revealed), pickups (1 if
-/// taken), chests (1 if opened), messages (1 if read), and pools (the water's depth).
+/// taken), chests (1 if opened), messages (1 if read), and pools (the water's depth). Then
+/// WP-062's words (carts, trapdoors, and, in a dark area, the visibility), then WP-063's
+/// (`light_beam::render_words`: the mirrors' facings, the receptors, and each beam's legs).
 pub fn render_state(world: &World) -> Vec<f32> {
     let flag = |k: String| f32::from(u8::from(world.state.flags.is_set(&k)));
     let l = &world.layout;
@@ -1010,6 +1027,8 @@ pub fn render_state(world: &World) -> Vec<f32> {
     if l.darkness.is_some() {
         out.push(darkness::render_word(world));
     }
+    // WP-063: each mirror's facing, each receptor (1 once lit), then each beam's legs.
+    out.extend(light_beam::render_words(world));
     out
 }
 
@@ -1021,6 +1040,9 @@ pub mod water_level;
 // WP-061: bells, flag levers, and sleeping enemies.
 pub mod bell;
 pub mod slumber;
+// WP-063: light beams with mirrors and receptors, and low ceilings.
+pub mod light_beam;
+pub mod low_ceiling;
 
 #[cfg(test)]
 mod tests;

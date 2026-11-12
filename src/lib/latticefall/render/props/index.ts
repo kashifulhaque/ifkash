@@ -24,6 +24,7 @@ import {
 } from 'three';
 import { manifestUrl } from '../kits/manifest';
 import { DeepProps } from './deep';
+import { GlassProps } from './glass';
 import { HearthProps } from './hearth';
 import { createPoolWater, type PoolData } from '../water';
 
@@ -64,6 +65,11 @@ export class PropsRenderer {
   private deep = new DeepProps(this.root);
   private cartAt = -1;
   private hatchAt = -1;
+  /** Glasswing Grotto's emitters, mirrors, and sockets (WP-063), after the visibility word. */
+  private glass = new GlassProps(this.root);
+  private mirrorAt = -1;
+  private receptorAt = -1;
+  private beamAt = -1;
   /** The state word holding the player's visibility in meters, or -1 in an area with no darkness. */
   private visAt = -1;
   private geometries: BufferGeometry[] = [];
@@ -112,6 +118,14 @@ export class PropsRenderer {
     this.hatchAt = at;
     at += kindCount('Trapdoor');
     this.visAt = kindCount('Darkness') > 0 ? at : -1;
+    // WP-063: after the visibility word (present only in a dark area) come each mirror's facing, each
+    // receptor (1 when lit), and each beam source's legs (a count, then 8 legs of x0, z0, x1, z1).
+    if (this.visAt >= 0) at += 1;
+    this.mirrorAt = at;
+    at += kindCount('Mirror');
+    this.receptorAt = at;
+    at += kindCount('Receptor');
+    this.beamAt = at;
     const seen = new Map<StateKind, number>();
     let any = false;
     for (const e of entities) {
@@ -128,6 +142,11 @@ export class PropsRenderer {
         continue;
       }
       if (kind === 'Darkness') {
+        any = true;
+        continue;
+      }
+      if (kind === 'BeamSource' || kind === 'Mirror' || kind === 'Receptor') {
+        this.glass.add(kind, d);
         any = true;
         continue;
       }
@@ -173,6 +192,7 @@ export class PropsRenderer {
     this.clock += frameMs;
     this.hearth.update(frameMs);
     this.deep.update(frameMs, this.state, this.cartAt, this.hatchAt);
+    this.glass.update(frameMs, this.state, this.mirrorAt, this.receptorAt, this.beamAt);
     for (const u of this.updaters) {
       const word = this.state[(this.offsets.get(u.kind) ?? 0) + u.index];
       if (word === undefined) continue;
@@ -184,6 +204,7 @@ export class PropsRenderer {
     this.disposed = true;
     this.hearth.dispose();
     this.deep.dispose();
+    this.glass.dispose();
     this.scene.remove(this.root);
     for (const g of this.geometries) g.dispose();
     for (const m of this.materials) m.dispose();

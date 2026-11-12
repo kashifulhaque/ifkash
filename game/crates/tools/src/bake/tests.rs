@@ -177,3 +177,25 @@ fn the_underground_areas_bake_cleanly() {
         );
     }
 }
+
+/// WP-063: Mossgut Cave and Glasswing Grotto bake with no warnings (their pickups stand clear of
+/// the roof slabs, and every mirror has ground at its foot), and the committed manifests are
+/// current.
+#[test]
+fn the_caves_bake_cleanly() {
+    let content = Content::load_dir(data()).unwrap();
+    let kits = Kits::new(content.kits.iter().map(|(f, c)| (f.as_str(), c))).unwrap();
+    let nav = NavConfig::load_dir(data()).unwrap();
+    for area in ["mossgut_cave", "glasswing_grotto"] {
+        let level = content.level(area).expect("the area exists");
+        let baked = bake_level(area, level, &kits, &nav).unwrap();
+        assert!(baked.warnings.is_empty(), "{area}: {:?}", baked.warnings);
+        let committed =
+            std::fs::read_to_string(super::default_manifest_dir().join(format!("{area}.json")))
+                .unwrap_or_else(|_| panic!("static/latticefall/levels/{area}.json exists"));
+        assert!(
+            committed == baked.manifest,
+            "the committed manifest is stale: run `cargo run -p lf-tools -- bake {area}`"
+        );
+    }
+}

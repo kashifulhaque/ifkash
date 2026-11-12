@@ -1,0 +1,48 @@
+// The Glasswing Grotto terrain (WP-063). Vertices are 2 m apart (65 x 101). The whole area is
+// rock (a 20 m plateau) and the grotto is carved out of it, flat at 0 m: the carved rooms' sheer
+// sides are its walls, so the nav grid and the controller treat them as walls. Generated from
+// the room list. Rooms (x, z ranges):
+//   E    Crystal mouth     x -10..10   z -96..-76   open to Hollowdeep's arch (z -100..-96)
+//   M1   Mirror Hall       x -14..14   z -72..-46   the teaching room: one mirror, one socket, no enemies
+//   M2   Prism Hall        x -15..15   z -40..-12   the test room: two sockets, a beam to aim for each
+//   B    Shard Nook        x -42..-26  z -34..-12   the branch: sealed until a beam lights its socket
+//   M5   Gallery of Facets x -16..16   z  -6..22    the twist: turning the first mirror wakes the nests
+//   G    Guardian Hall     x -18..18   z  28..70    two Glasswing Stalkers with elite stats; the spear
+//   R    Return corridor   from G's east wall, east to x 40..44, south to z -90..-84, west to E
+#![enable(implicit_some)]
+(
+  spacing_m: 2.0,
+  base_y: 20.00,
+  ops: [
+    // mouth
+    SetRect(min: (-4.00, -100.00), max: (4.00, -96.00), height: 0.00),
+    // e
+    SetRect(min: (-10.00, -96.00), max: (10.00, -76.00), height: 0.00),
+    // pe
+    SetRect(min: (-4.00, -77.00), max: (4.00, -71.00), height: 0.00),
+    // m1
+    SetRect(min: (-14.00, -72.00), max: (14.00, -46.00), height: 0.00),
+    // pm1
+    SetRect(min: (-3.00, -47.00), max: (3.00, -41.00), height: 0.00),
+    // m2
+    SetRect(min: (-15.00, -40.00), max: (15.00, -12.00), height: 0.00),
+    // pb
+    SetRect(min: (-27.00, -26.00), max: (-14.00, -20.00), height: 0.00),
+    // b
+    SetRect(min: (-42.00, -34.00), max: (-26.00, -12.00), height: 0.00),
+    // pm2
+    SetRect(min: (-3.00, -13.00), max: (3.00, -7.00), height: 0.00),
+    // m5
+    SetRect(min: (-16.00, -6.00), max: (16.00, 22.00), height: 0.00),
+    // pm5
+    SetRect(min: (-3.00, 21.00), max: (3.00, 27.00), height: 0.00),
+    // g
+    SetRect(min: (-18.00, 28.00), max: (18.00, 70.00), height: 0.00),
+    // c1
+    SetRect(min: (18.00, 36.00), max: (44.00, 40.00), height: 0.00),
+    // c2
+    SetRect(min: (40.00, -90.00), max: (44.00, 40.00), height: 0.00),
+    // c3
+    SetRect(min: (10.00, -90.00), max: (44.00, -84.00), height: 0.00),
+  ],
+)

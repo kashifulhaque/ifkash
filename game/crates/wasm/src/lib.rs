@@ -185,8 +185,9 @@ impl LfWorld {
     ///   tried without its key, 5 lever pulled, 6 lift set off, 7 lift arrived, 8 ladder
     ///   grabbed, 9 ladder released, 10 ladder kicked down, 11 hollow wall revealed; WP-062:
     ///   40 mine cart set off, 41 cart arrived, 42 pushed cart broke its wall, 43 trapdoor
-    ///   pushed open), and the index of the door, lever, lift, ladder, wall, cart, or
-    ///   trapdoor in its scenario list.
+    ///   pushed open; WP-063: 70 mirror turned, 71 receptor lit by a beam, 72 a swing struck a
+    ///   low ceiling), and the index of the door, lever, lift, ladder, wall, cart, trapdoor,
+    ///   mirror, receptor, or low-ceiling zone in its scenario list.
     /// - Kind 15, `Loot` (WP-042), 6 words: kind, source (1 chest), the chest's index, the
     ///   item's registry number (0 for none), how many, and Glimmer.
     /// - Kind 16, `Message` (WP-042), 2 words: kind, the message's index (see
@@ -510,7 +511,7 @@ impl LfWorld {
     /// What `INTERACT` would do now, for the prompt: 0 nothing, 1 rest at a Lantern,
     /// 2 take or open, 3 pull a lever, 4 open a door, 5 read a message, 6 climb a ladder,
     /// 7 kick a ladder down (WP-042). WP-062: 30 ride a mine cart, 31 push one, 32 push a
-    /// trapdoor open.
+    /// trapdoor open. WP-063: 40 turn a crystal mirror.
     pub fn interact_prompt(&self) -> u32 {
         if lf_core::world_state::lantern::in_reach(&self.world).is_some() {
             1

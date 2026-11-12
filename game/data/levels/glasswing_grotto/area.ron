@@ -1,0 +1,37 @@
+// Glasswing Grotto (WP-063, D5): the crystal cave north of Hollowdeep's L12 (Glasswing Mouth),
+// 128 x 200 m. Y is up and the grotto runs north (+Z). Its signature mechanic is the light beam:
+// crystal emitters shine along the compass, mirrors turn them, and a beam that reaches a socket
+// opens a sealed door. Two Glasswing Stalkers with elite stats guard the Shardglass Spear at the
+// end. See docs/game/02-world.md, "Mini-dungeons" (D5), and the notes at the top of terrain.ron,
+// layout.ron, and entities.ron. L12 stands outside, in Hollowdeep. The grotto is lit by its own
+// crystals, so it has no Darkness rule: Hollowdeep's dark stops at the arch.
+(
+  id: "glasswing_grotto",
+  name: "Glasswing Grotto",
+  seed: 20261305,
+  bounds: (min: (-64.0, -100.0), max: (64.0, 100.0)),
+  kill_y: -60.0,
+  start_glimmer: 0,
+  // A cold, clear cave: pale cyan fog, light from the crystals themselves.
+  ambient: (
+    sky: "night",
+    fog_color: (0.04, 0.09, 0.13),
+    fog_near_m: 30.0,
+    fog_far_m: 120.0,
+    sun_dir: (-0.25, -1.0, -0.15),
+    sun_color: (0.55, 0.8, 0.95),
+    sun_intensity: 0.5,
+    ambient_color: (0.45, 0.65, 0.8),
+    ambient_intensity: 0.8,
+  ),
+  regions: [
+    // The Mirror Hall and the Prism Hall.
+    (name: "halls", points: [(-15.0, -72.0), (15.0, -72.0), (15.0, -12.0), (-15.0, -12.0)]),
+    // The Gallery of Facets and the Guardian Hall.
+    (name: "deep", points: [(-18.0, -6.0), (18.0, -6.0), (18.0, 70.0), (-18.0, 70.0)]),
+  ],
+  connections: [
+    // Back out to Hollowdeep: the arch north of L12 (Glasswing Mouth).
+    (to: "hollowdeep", pos: (0.0, 0.0, -98.0), radius_m: 2.5),
+  ],
+)

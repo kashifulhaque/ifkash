@@ -52,6 +52,7 @@ use crate::arena::Id;
 use crate::events::{Event, Hit, HitResult};
 use crate::math::dmath::{lerp, sqrt};
 use crate::world::World;
+use crate::world_state::mechanics::low_ceiling;
 
 /// Per-actor hit-resolution state. Simulation state: part of the state hash.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
@@ -315,6 +316,7 @@ pub fn run(world: &mut World) {
         })
         .collect();
     let mut candidates = Vec::new();
+    let mut rock_struck: Vec<usize> = Vec::new();
     for (aid, a) in world.actors.iter() {
         let Some(c) = a.moves.current.filter(|_| !a.dead) else {
             continue;
@@ -330,6 +332,13 @@ pub fn run(world: &mut World) {
             }
             let hit0 = Capsule::from_shape(&hb.shape, &before);
             let hit1 = Capsule::from_shape(&hb.shape, &now);
+            // Under a low ceiling (WP-063) a swing that rises over it strikes the rock.
+            if let Some(zone) = low_ceiling::struck_by(world, a.pos, &hit1) {
+                if aid == world.player && c.frame == hb.frames.0 {
+                    rock_struck.push(zone);
+                }
+                continue;
+            }
             for body in &bodies {
                 if body.id == aid || a.hit.struck.binary_search(&body.id).is_ok() {
                     continue;
@@ -354,6 +363,10 @@ pub fn run(world: &mut World) {
                 }
             }
         }
+    }
+
+    for zone in rock_struck {
+        low_ceiling::note(world, zone);
     }
 
     // 3. Outcomes, in attacker, hitbox, target order.

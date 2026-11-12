@@ -43,7 +43,9 @@ Copy this block to the top of the entries and fill it in as you go:
   - WP-031: sonnet, worktree; 139K. Cherry-picked onto WP-030 by the orchestrator, no conflicts.
   - WP-032: sonnet; `93f07b7`; 313K.
   - WP-033: sonnet, worktree; `cc074cd`; 295K. Merged onto WP-032 by the orchestrator (18 conflicts, keep-both, then a rehash; only the boss golden's final hash moved).
-- **Context:** orchestrator 173K after WP-033.
+  - WP-034: sonnet (moved up from haiku: first real boss on a new framework, plus a scripted bot), worktree; `35c7083`; 169K.
+  - WP-035: sonnet; `81fd4c0`, plus the orchestrator's fix `fb4d1e4` (B01 keyed to its body's number 9011); 194K.
+- **Context:** orchestrator 173K after WP-033, about 215K after WP-035.
 - **Not verified:**
 - **Waiting on the owner:**
 - **Next steps:**

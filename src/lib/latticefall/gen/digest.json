@@ -143,8 +143,8 @@
     "start_max": 16,
     "start_min": 4
   },
-  "contentHash": "14972545954937566000",
-  "contentHashHex": "cfc92b37d343f330",
+  "contentHash": "10242018522310171967",
+  "contentHashHex": "8e22f594dd44dd3f",
   "moves": [
     {
       "anim": "roll_quick",
@@ -195,6 +195,56 @@
       "stamina": 0,
       "stub": false,
       "totalFrames": 30
+    },
+    {
+      "anim": "dummy_slash",
+      "file": "moves/common.ron",
+      "fp": 0,
+      "id": "dummy_slash",
+      "num": 3020,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 40
+    },
+    {
+      "anim": "sword_riposte",
+      "file": "moves/crits.ron",
+      "fp": 0,
+      "id": "crit_riposte",
+      "num": 3030,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 40
+    },
+    {
+      "anim": "sword_backstab",
+      "file": "moves/crits.ron",
+      "fp": 0,
+      "id": "crit_backstab",
+      "num": 3031,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 44
+    },
+    {
+      "anim": "receive_riposte",
+      "file": "moves/crits.ron",
+      "fp": 0,
+      "id": "crit_receive_riposte",
+      "num": 3032,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 40
+    },
+    {
+      "anim": "receive_backstab",
+      "file": "moves/crits.ron",
+      "fp": 0,
+      "id": "crit_receive_backstab",
+      "num": 3033,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 44
     },
     {
       "anim": "sword_slash_r",
@@ -328,6 +378,17 @@
       "stub": false,
       "unique": false,
       "weightTenths": 40
+    },
+    {
+      "baseDamage": 90,
+      "class": "Dagger",
+      "file": "weapons/straight_sword.ron",
+      "id": "wpn_parry_dagger",
+      "name": "Parrying Dagger",
+      "num": 1001,
+      "stub": false,
+      "unique": false,
+      "weightTenths": 20
     }
   ]
 }

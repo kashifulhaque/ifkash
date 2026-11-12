@@ -88,6 +88,8 @@ pub struct Locomotion {
     pub guard: Guard,
     /// Death, Remnant, and Lantern numbers.
     pub death: Death,
+    /// Poise, stance, parry, and critical hit numbers.
+    pub poise: Poise,
 }
 
 /// Death, Remnants, and Lanterns (docs/game/06-progression-and-systems.md, "Glimmer and
@@ -105,6 +107,41 @@ pub struct Death {
     pub lantern_rest_radius_m: f32,
     /// ...and within this vertical distance of it, in meters.
     pub lantern_rest_height_m: f32,
+}
+
+/// Poise, stance, parry, and critical hit tuning (docs/game/03-combat.md, "Poise and
+/// stance" and "Parry and critical hits").
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Poise {
+    /// The player's poise until armor exists (stub).
+    pub stub_poise: u16,
+    /// Ticks of a light stagger.
+    pub light_stagger_ticks: u8,
+    /// Ticks of a heavy stagger.
+    pub heavy_stagger_ticks: u8,
+    /// A stagger whose margin over the poise is above this percent of it is heavy.
+    pub heavy_margin_percent: u16,
+    /// Ticks without poise damage before the accumulator resets.
+    pub reset_ticks: u16,
+    /// The poise counts as this many times larger during hyperarmor frames.
+    pub hyperarmor_mult: u16,
+    /// Ticks a stance-broken actor kneels.
+    pub stance_break_ticks: u8,
+    /// Ticks without a hit before stance damage starts to decay.
+    pub stance_decay_after_ticks: u16,
+    /// Percent of the stance meter that decays each tick.
+    pub stance_decay_percent: u16,
+    /// Ticks from raising the guard until a parry window opens.
+    pub parry_startup_ticks: u8,
+    /// Ticks an attacker stays in the parried state.
+    pub parried_ticks: u8,
+    /// Distance for a riposte, in meters.
+    pub riposte_range_m: f32,
+    /// Distance for a backstab, in meters.
+    pub backstab_range_m: f32,
+    /// Full angle of the rear arc for a backstab, in degrees.
+    pub backstab_arc_deg: f32,
 }
 
 /// Equip load tiers (docs/game/03-combat.md, "Equip load and roll tiers"). Percentages

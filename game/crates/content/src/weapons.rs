@@ -111,6 +111,15 @@ pub struct GuardStats {
     pub absorb_elem_percent: u8,
     /// Divides the stamina a block costs: `poise_damage * 100 / guard_boost`.
     pub guard_boost: u16,
+    /// Ticks of the parry window once the parry startup has passed (docs/game/03-combat.md,
+    /// "Parry and critical hits"): 6 for bucklers and parry daggers, 4 for medium shields.
+    /// 0 means the weapon can't parry.
+    #[serde(default)]
+    pub parry_window_ticks: u8,
+}
+
+fn default_crit_mult_percent() -> u16 {
+    100
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -129,6 +138,10 @@ pub struct Weapon {
     #[serde(default)]
     pub unique: bool,
     pub guard: GuardStats,
+    /// Critical hit damage multiplier in percent: 140 for daggers, 100 for most weapons
+    /// (docs/game/03-combat.md, "Parry and critical hits").
+    #[serde(default = "default_crit_mult_percent")]
+    pub crit_mult_percent: u16,
     pub moveset: Moveset,
     /// A placeholder for an item a later WP implements; the validator warns on it.
     #[serde(default)]

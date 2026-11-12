@@ -15,4 +15,10 @@ absorb_elem_percent: number,
 /**
  * Divides the stamina a block costs: `poise_damage * 100 / guard_boost`.
  */
-guard_boost: number, };
+guard_boost: number, 
+/**
+ * Ticks of the parry window once the parry startup has passed (docs/game/03-combat.md,
+ * "Parry and critical hits"): 6 for bucklers and parry daggers, 4 for medium shields.
+ * 0 means the weapon can't parry.
+ */
+parry_window_ticks: number, };

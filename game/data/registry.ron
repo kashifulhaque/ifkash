@@ -18,6 +18,7 @@
     (id: "attr_devotion", num: 106),
 
     (id: "wpn_wayfarer_blade", num: 1000),
+    (id: "wpn_parry_dagger", num: 1001),
 
     (id: "ss_light_1", num: 2000),
     (id: "ss_light_2", num: 2001),
@@ -39,6 +40,11 @@
     (id: "dodge_roll_heavy", num: 3002),
     (id: "dodge_backstep", num: 3003),
     (id: "flask_drink", num: 3010),
+    (id: "dummy_slash", num: 3020),
+    (id: "crit_riposte", num: 3030),
+    (id: "crit_backstab", num: 3031),
+    (id: "crit_receive_riposte", num: 3032),
+    (id: "crit_receive_backstab", num: 3033),
 
     (id: "itm_vigil_flask", num: 4000),
     (id: "itm_lucid_flask", num: 4001),

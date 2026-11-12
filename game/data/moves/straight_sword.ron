@@ -144,6 +144,7 @@
     cancel_any_from: 42,
     next_chain: None,
     charge: (charge_from: 12, max_frames: 24, motion_value_max: 1.8),
+    stance_mult: 2.0, // Poise and stance: 2.0 for guard counters, charged heavies, and jump heavies
     hitboxes: [
       (
         frames: (18, 21),
@@ -299,6 +300,7 @@
     cancel_dodge_from: 25,
     cancel_any_from: 29,
     next_chain: None,
+    stance_mult: 2.0, // Poise and stance: 2.0 for guard counters, charged heavies, and jump heavies
     hitboxes: [
       (
         frames: (10, 13),
@@ -361,6 +363,7 @@
     cancel_dodge_from: 24,
     cancel_any_from: 28,
     next_chain: None,
+    stance_mult: 2.0, // Poise and stance: 2.0 for guard counters, charged heavies, and jump heavies
     hitboxes: [
       (
         frames: (8, 11),

@@ -27,6 +27,10 @@ pub struct Scenario {
     /// death has something to drop before enemies drop Glimmer (WP-023, WP-030).
     #[serde(default)]
     pub start_glimmer: u32,
+    /// The weapon ID the player starts the scenario wielding, instead of the default
+    /// weapon. The player owns it. Used by the duel scenarios (WP-024).
+    #[serde(default)]
+    pub player_weapon: Option<String>,
 }
 
 /// A Lantern: where the player rests and respawns.
@@ -56,6 +60,38 @@ pub struct Dummy {
     /// What the dummy shrugs off. Defaults to none.
     #[serde(default)]
     pub defense: DefenseData,
+    /// Poise (docs/game/03-combat.md, "Poise and stance"). 0 means the dummy never
+    /// staggers. Defaults to 100, so a padded dummy shrugs off a light chain.
+    #[serde(default = "default_dummy_poise")]
+    pub poise: u16,
+    /// Stance meter. 0 (the default) means no stance meter, as for regular enemies.
+    #[serde(default)]
+    pub stance: u16,
+    /// Unaware of the player until hit: it can be backstabbed. Defaults to true.
+    #[serde(default = "default_true")]
+    pub unaware: bool,
+    /// A scripted attack loop. The hook WP-030's AI replaces.
+    #[serde(default)]
+    pub attack: Option<DummyAttack>,
+}
+
+fn default_dummy_poise() -> u16 {
+    100
+}
+
+fn default_true() -> bool {
+    true
+}
+
+/// A dummy that swings on a timer: it starts `move_id` on tick `first_tick`, and again
+/// every `every_ticks` ticks after, whenever it is free to act. It doesn't aim or react:
+/// its facing is the scenario yaw.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct DummyAttack {
+    pub move_id: String,
+    pub first_tick: u32,
+    pub every_ticks: u32,
 }
 
 /// One of the eight damage types (docs/game/03-combat.md, "Damage types").
@@ -142,6 +178,9 @@ impl Scenario {
         for d in &self.dummies {
             if d.hp == 0 {
                 return Err(format!("dummy {:?}: hp must be positive", d.name));
+            }
+            if d.attack.as_ref().is_some_and(|a| a.every_ticks == 0) {
+                return Err(format!("dummy {:?}: every_ticks must be positive", d.name));
             }
         }
         for (i, l) in self.lanterns.iter().enumerate() {

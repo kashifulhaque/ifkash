@@ -31,4 +31,37 @@
       dodge_backstep: "dodge_backstep",
     ),
   ),
+  (
+    // A stand-in parry tool (docs/game/03-combat.md, "Parry and critical hits": "a 6-tick
+    // window for bucklers and parry daggers", "daggers 1.4"). It lives in this file so the
+    // Wayfarer's Blade stays the default weapon (the first in file order), and borrows the
+    // straight-sword moveset until the dagger arsenal lands. The duel scenarios equip it.
+    id: "wpn_parry_dagger",
+    name: "Parrying Dagger",
+    class: Dagger,
+    base_damage: 90, // tuning
+    phys: Pierce,
+    scaling: (might: 0.2, finesse: 0.9, insight: 0.0, devotion: 0.0), // tuning
+    requirements: (might: 8, finesse: 12, insight: 0, devotion: 0), // tuning
+    weight_tenths: 20, // tuning
+    unique: false,
+    guard: (absorb_phys_percent: 40, absorb_elem_percent: 0, guard_boost: 30, parry_window_ticks: 6), // Parry: 6-tick window; absorb and boost: tuning
+    crit_mult_percent: 140, // Critical hits: daggers 1.4
+    moveset: (
+      light_chain: ["ss_light_1", "ss_light_2", "ss_light_3"],
+      heavy: "ss_heavy",
+      charged_heavy: "ss_heavy_charged",
+      running: "ss_running",
+      rolling: "ss_rolling",
+      backstep: "ss_backstep",
+      jump_light: "ss_jump_light",
+      jump_heavy: "ss_jump_heavy",
+      plunge: "ss_plunge",
+      guard_counter: "ss_guard_counter",
+      roll_light: "dodge_roll_light",
+      roll_medium: "dodge_roll_medium",
+      roll_heavy: "dodge_roll_heavy",
+      dodge_backstep: "dodge_backstep",
+    ),
+  ),
 ]

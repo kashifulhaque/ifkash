@@ -198,6 +198,8 @@ pub struct Moveset {
     pub load_tier: LoadTier,
     /// How the weapon blocks.
     pub guard: GuardStats,
+    /// The weapon's critical hit multiplier in percent. See `combat::crit`.
+    pub crit_mult_percent: u16,
 }
 
 /// Every move in the content, by numeric ID, plus the player's moveset. Built from
@@ -215,6 +217,8 @@ pub struct MoveTable {
     movesets: Vec<(NumId, Moveset)>,
     /// Flask numbers, copied from `consumables.ron` (`None` if the content has none).
     pub flask: Option<FlaskRules>,
+    /// The critical hit moves, if the content has them. See `combat::crit`.
+    pub crits: Option<super::crit::CritMoves>,
 }
 
 impl MoveTable {
@@ -285,6 +289,7 @@ impl MoveTable {
                 dodge_backstep: defined(&s.dodge_backstep)?,
                 load_tier,
                 guard: w.guard,
+                crit_mult_percent: w.crit_mult_percent,
             };
             movesets.push((num(&w.id)?, set));
         }
@@ -302,6 +307,7 @@ impl MoveTable {
         movesets.sort_by_key(|(n, _)| *n);
         table.movesets = movesets;
         table.flask = FlaskRules::from_content(content)?;
+        table.crits = super::crit::CritMoves::resolve(&table);
         table.player_moveset = player_moveset;
         Ok(table)
     }

@@ -127,6 +127,11 @@ impl LfWorld {
     ///   2 respawned, 3 rested (value is the Lantern's index in the scenario), 4 Remnant
     ///   dropped, 5 Remnant recovered, 6 Remnant lost (value is its Glimmer for 4 to 6,
     ///   and its position is the Remnant's). Otherwise the position is the player's feet.
+    /// - Kind 3, `Stagger` (WP-024), 4 words: kind, target, heavy (0 light, 1 heavy), ticks.
+    /// - Kind 4, `StanceBreak` (WP-024), 3 words: kind, target, kneel ticks.
+    /// - Kind 5, `Parry` (WP-024), 4 words: kind, attacker, target, the parried move number.
+    /// - Kind 6, `Critical` (WP-024), 5 words: kind, attacker, target, crit kind (0 riposte,
+    ///   1 backstab), the attacker's crit move number. The damage follows as a `Hit`.
     pub fn drain_events(&mut self) -> Vec<u32> {
         let mut out = Vec::new();
         for event in self.world.events.drain() {
@@ -161,6 +166,24 @@ impl LfWorld {
                     };
                     out.extend([2, code, value]);
                     out.extend(pos.map(f32::to_bits));
+                }
+                Event::Stagger(s) => {
+                    out.extend([3, pack_id(s.target), u32::from(s.heavy), u32::from(s.ticks)]);
+                }
+                Event::StanceBreak(s) => {
+                    out.extend([4, pack_id(s.target), u32::from(s.ticks)]);
+                }
+                Event::Parry(p) => {
+                    out.extend([5, pack_id(p.attacker), pack_id(p.target), p.move_num]);
+                }
+                Event::Critical(c) => {
+                    out.extend([
+                        6,
+                        pack_id(c.attacker),
+                        pack_id(c.target),
+                        c.kind.code(),
+                        c.move_num,
+                    ]);
                 }
             }
         }

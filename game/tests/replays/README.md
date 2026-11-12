@@ -57,6 +57,16 @@ lf-tools replay record-script tests/replays/m1_movement.script --out tests/repla
   `m2_death_lose_remnant.script`. The same first death, then a second death elsewhere
   before the Remnant is touched, which destroys it. The
   `m2_death_lose_remnant_loses_the_glimmer` test checks it.
+- `m2_parry_riposte.lfr`: the WP-024 golden on `duel_parry`, from `m2_parry_riposte.script`.
+  The player holds guard with the parrying dagger as the scripted duelist swings, parries
+  it, then ripostes. `m2_parry_riposte_parries_then_ripostes` checks the `Parry`,
+  `Critical`, and `Hit` events, and that the parry cost nothing.
+- `m2_stance_break.lfr`: the WP-024 golden on `duel_stance`, from `m2_stance_break.script`.
+  Two charged heavies break the elite dummy's stance. `m2_stance_break_breaks_with_charged_heavies`
+  checks the `StanceBreak` event arrives with the second hit.
+- `m2_backstab.lfr`: the WP-024 golden on `duel_backstab`, from `m2_backstab.script`. The
+  player presses `LIGHT` behind an unaware dummy that faces away, and a backstab lands.
+  `m2_backstab_stabs_the_unaware` checks it.
 
 Rehash only when a change to the simulation or the content data is intended. Review the
 old and new final hash it prints, and commit the updated file with that change.

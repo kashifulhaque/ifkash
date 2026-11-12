@@ -10,7 +10,12 @@ export type Weapon = { id: string, name: string, class: WeaponClass, base_damage
 /**
  * Weight in tenths of a unit (4.0 is `40`), to avoid float drift.
  */
-weight_tenths: number, unique: boolean, guard: GuardStats, moveset: Moveset, 
+weight_tenths: number, unique: boolean, guard: GuardStats, 
+/**
+ * Critical hit damage multiplier in percent: 140 for daggers, 100 for most weapons
+ * (docs/game/03-combat.md, "Parry and critical hits").
+ */
+crit_mult_percent: number, moveset: Moveset, 
 /**
  * A placeholder for an item a later WP implements; the validator warns on it.
  */

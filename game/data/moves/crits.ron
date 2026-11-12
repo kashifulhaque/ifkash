@@ -1,0 +1,107 @@
+// Critical hit moves (WP-024; docs/game/03-combat.md, "Parry and critical hits"). A crit is
+// a pair: the attacker plays `crit_*` and the victim plays the matching `crit_receive_*`, both
+// locked until they end. The attacker's hitbox goes through normal hit resolution, so the
+// damage is the weapon's attack rating times the motion value 3.0 times the weapon's
+// `crit_mult_percent`. The simulation starts the pair in `combat::crit`, which finds the
+// moves by these IDs. Schema: crates/content/src/moves.rs.
+#![enable(implicit_some)]
+[
+  (
+    id: "crit_riposte",
+    anim: "sword_riposte",
+    total_frames: 40,
+    stamina: 0, // started by LIGHT near a parried, stance-broken, or unaware actor
+    fp: 0,
+    root_motion: [], // the pair stays where it stood
+    track_deg_per_tick: 0.0,
+    hyperarmor: None,
+    iframes: (from: 0, to: 39), // tuning: the attacker can't be interrupted mid-crit
+    cancel_attack_from: None,
+    cancel_dodge_from: None,
+    cancel_any_from: None, // no cancels: it ends on its last frame
+    next_chain: None,
+    hitboxes: [
+      (
+        frames: (14, 14),
+        shape: Capsule(a: (0.0, 1.2, 0.3), b: (0.0, 1.2, 2.0), radius: 0.4),
+        motion_value: 3.0, // Critical hits: damage is AR * 3.0 * crit_mult (the weapon's)
+        phys: Neutral,
+        element: None,
+        poise_damage: 0, // the victim is already locked
+        status: [],
+        knockback: 0.0,
+        hitstop: 8,
+        tags: [Unblockable, Unparryable],
+      ),
+    ],
+    sfx: [(12, "swing_heavy")],
+    vfx: [(14, "trail_steel_heavy")],
+  ),
+  (
+    id: "crit_backstab",
+    anim: "sword_backstab",
+    total_frames: 44,
+    stamina: 0, // started by LIGHT near a parried, stance-broken, or unaware actor
+    fp: 0,
+    root_motion: [], // the pair stays where it stood
+    track_deg_per_tick: 0.0,
+    hyperarmor: None,
+    iframes: (from: 0, to: 43), // tuning: the attacker can't be interrupted mid-crit
+    cancel_attack_from: None,
+    cancel_dodge_from: None,
+    cancel_any_from: None, // no cancels: it ends on its last frame
+    next_chain: None,
+    hitboxes: [
+      (
+        frames: (16, 16),
+        shape: Capsule(a: (0.0, 1.2, 0.3), b: (0.0, 1.2, 2.0), radius: 0.4),
+        motion_value: 3.0, // Critical hits: damage is AR * 3.0 * crit_mult (the weapon's)
+        phys: Neutral,
+        element: None,
+        poise_damage: 0, // the victim is already locked
+        status: [],
+        knockback: 0.0,
+        hitstop: 8,
+        tags: [Unblockable, Unparryable],
+      ),
+    ],
+    sfx: [(14, "swing_heavy")],
+    vfx: [(16, "trail_steel_heavy")],
+  ),
+  (
+    id: "crit_receive_riposte",
+    anim: "receive_riposte",
+    total_frames: 40, // matches the attacker's move: both end together
+    stamina: 0,
+    fp: 0,
+    root_motion: [],
+    track_deg_per_tick: 0.0,
+    hyperarmor: None,
+    iframes: None,
+    cancel_attack_from: None,
+    cancel_dodge_from: None,
+    cancel_any_from: None,
+    next_chain: None,
+    hitboxes: [],
+    sfx: [],
+    vfx: [],
+  ),
+  (
+    id: "crit_receive_backstab",
+    anim: "receive_backstab",
+    total_frames: 44, // matches the attacker's move: both end together
+    stamina: 0,
+    fp: 0,
+    root_motion: [],
+    track_deg_per_tick: 0.0,
+    hyperarmor: None,
+    iframes: None,
+    cancel_attack_from: None,
+    cancel_dodge_from: None,
+    cancel_any_from: None,
+    next_chain: None,
+    hitboxes: [],
+    sfx: [],
+    vfx: [],
+  ),
+]

@@ -1,0 +1,19 @@
+// WP-024 stance golden: a flat floor and a still dummy with a stance meter of 120, 3 m
+// ahead of the player (who has the parrying dagger). Two charged heavies (poise damage
+// 34-ish times stance_mult 2.0) break it. Padded like the test field's dummies.
+(
+  spawn: (0.0, 0.0, 0.0),
+  spawn_yaw: 0.0,
+  kill_y: -50.0,
+  heightfield: None,
+  boxes: [
+    (name: "floor", center: (0.0, -0.5, 0.0), half_extents: (1000.0, 0.5, 1000.0)),
+  ],
+  player_weapon: Some("wpn_parry_dagger"),
+  dummies: [
+    (
+      name: "elite", pos: (0.0, 0.0, 3.0), yaw: 3.1415927, hp: 900, defense: (flat: 500),
+      poise: 100, stance: 120, unaware: false,
+    ),
+  ],
+)

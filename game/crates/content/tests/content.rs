@@ -63,21 +63,29 @@ fn hash_ignores_comments_and_whitespace() {
     let attrs = std::fs::read_to_string(data_dir().join("attributes.ron")).unwrap();
     let moves = std::fs::read_to_string(data_dir().join("moves/straight_sword.ron")).unwrap();
     let common = std::fs::read_to_string(data_dir().join("moves/common.ron")).unwrap();
+    let crits = std::fs::read_to_string(data_dir().join("moves/crits.ron")).unwrap();
     let weapons = std::fs::read_to_string(data_dir().join("weapons/straight_sword.ron")).unwrap();
     let other = Content::from_sources(
         &noisy,
         &attrs,
         vec![
             ("moves/common.ron".into(), common),
+            ("moves/crits.ron".into(), crits),
             ("moves/straight_sword.ron".into(), moves),
         ],
         vec![("weapons/straight_sword.ron".into(), weapons)],
     )
     .and_then(|c| {
         let read = |p: &str| std::fs::read_to_string(data_dir().join(p)).unwrap();
-        let scenarios = ["scenarios/m0_flat.ron", "scenarios/test_field.ron"]
-            .map(|p| (p.to_owned(), format!("// noise\n{}", read(p))))
-            .to_vec();
+        let scenarios = [
+            "scenarios/duel_backstab.ron",
+            "scenarios/duel_parry.ron",
+            "scenarios/duel_stance.ron",
+            "scenarios/m0_flat.ron",
+            "scenarios/test_field.ron",
+        ]
+        .map(|p| (p.to_owned(), format!("// noise\n{}", read(p))))
+        .to_vec();
         c.with_world(Some(&read("locomotion.ron")), scenarios)?
             .with_consumables(Some(&format!("// noise\n{}", read("consumables.ron"))))
     })

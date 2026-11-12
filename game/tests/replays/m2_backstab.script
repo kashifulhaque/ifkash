@@ -1,0 +1,7 @@
+# WP-024 golden: backstab a dummy that faces away. Scenario duel_backstab: the sentry
+# stands 1 m ahead facing +Z, the way the player faces, and hasn't noticed the player.
+seed 26
+scenario duel_backstab
+5  0 0             # stand
+1  0 0  LIGHT      # backstab
+60 0 0             # the paired crit plays out

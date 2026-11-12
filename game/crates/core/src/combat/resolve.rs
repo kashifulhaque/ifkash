@@ -44,6 +44,7 @@ use super::dodge;
 use super::guard::{self, IncomingHit};
 use super::hitbox::{self, Capsule, Pose};
 use super::moves::{MoveNum, MoveTable};
+use super::{crit, poise};
 use crate::actor::Actor;
 use crate::arena::Id;
 use crate::events::{Event, Hit, HitResult};
@@ -230,10 +231,14 @@ pub fn run(world: &mut World) {
     // 3. Outcomes, in attacker, hitbox, target order.
     candidates.sort_by_key(|c| (c.attacker, c.hitbox, c.target));
     let mut landings: Vec<Landing> = Vec::new();
+    let mut parries: Vec<poise::Parry> = Vec::new();
     for cand in candidates {
         if landings
             .iter()
             .any(|l| (l.attacker, l.target) == (cand.attacker, cand.target))
+            || parries
+                .iter()
+                .any(|p| (p.attacker, p.target) == (cand.attacker, cand.target))
         {
             continue;
         }
@@ -256,6 +261,21 @@ pub fn run(world: &mut World) {
             HitOutcome::Ignored => continue,
             HitOutcome::Connect => {}
         }
+        // A parry turns the hit aside before it lands (see `poise`).
+        if poise::is_parry(
+            a,
+            t,
+            poise::parry_window_of(world, cand.target),
+            hb.tags.contains(&HitTag::Unparryable),
+            &world.locomotion.poise,
+        ) {
+            parries.push(poise::Parry {
+                attacker: cand.attacker,
+                target: cand.target,
+                move_num: c.num,
+            });
+            continue;
+        }
         let charge_frac = world.moves.charge_frac(&c);
         let motion_value = match def.data.charge {
             // docs/game/03-combat.md, "Move data schema": the motion value rises from
@@ -263,6 +283,7 @@ pub fn run(world: &mut World) {
             Some(ch) => lerp(hb.motion_value, ch.motion_value_max, charge_frac),
             None => hb.motion_value,
         };
+        let motion_value = crit::scale_motion(motion_value, a, c.num, &world.moves);
         // Damage, from the attacker's equipped weapon and stats. An actor with no
         // weapon has no attack rating and deals the minimum of 1.
         let ar = a
@@ -304,7 +325,8 @@ pub fn run(world: &mut World) {
         });
     }
 
-    // 4. Apply the landings in the same order. See the module docs.
+    // 4. Apply the parries, then the landings in the same order. See the module docs.
+    poise::apply_parries(world, &parries);
     for l in &landings {
         // Only the player has a moveset until AI lands; anyone else can't be guarding.
         let guard_stats = if l.target == world.player {
@@ -316,6 +338,7 @@ pub fn run(world: &mut World) {
             absorb_phys_percent: 0,
             absorb_elem_percent: 0,
             guard_boost: 1,
+            parry_window_ticks: 0,
         });
         let Some(t) = world.actors.get_mut(l.target) else {
             continue;
@@ -352,6 +375,10 @@ pub fn run(world: &mut World) {
             killed: hp_before > 0 && t.hp == 0,
             hp: t.hp,
         }));
+        // A hit that wasn't blocked adds poise and stance damage (see `poise`).
+        if result == HitResult::Connected {
+            poise::apply_landing(world, l.target, l.move_num, l.poise_damage);
+        }
         if let Some(a) = world.actors.get_mut(l.attacker)
             && let Err(at) = a.hit.struck.binary_search(&l.target)
         {

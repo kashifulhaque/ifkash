@@ -12,6 +12,14 @@ pub enum Event {
     Hit(Hit),
     /// The player's death, respawn, resting, or Remnant (`world_state`).
     Life(LifeEvent),
+    /// A hit staggered its target (`combat::poise`).
+    Stagger(Stagger),
+    /// A hit broke its target's stance (`combat::poise`).
+    StanceBreak(StanceBreak),
+    /// A parry turned an attack aside (`combat::resolve`).
+    Parry(Parry),
+    /// A critical hit started (`combat::crit`).
+    Critical(Critical),
 }
 
 /// What happened to the player's life cycle (docs/game/06-progression-and-systems.md,
@@ -31,6 +39,61 @@ pub enum LifeEvent {
     RemnantRecovered { glimmer: u32, pos: [f32; 3] },
     /// A death destroyed the unrecovered Remnant.
     RemnantLost { glimmer: u32, pos: [f32; 3] },
+}
+
+/// `target` staggered: its move ended and it can't act for `ticks`.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct Stagger {
+    pub target: Id,
+    /// A heavy stagger (24 ticks) rather than a light one (12).
+    pub heavy: bool,
+    pub ticks: u8,
+}
+
+/// `target`'s stance broke: it kneels for `ticks`, and a riposte can start.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct StanceBreak {
+    pub target: Id,
+    pub ticks: u8,
+}
+
+/// `target` parried `attacker`'s hit: no damage, and the attacker is in the parried state.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct Parry {
+    pub attacker: Id,
+    pub target: Id,
+    /// The attacker's parried move.
+    pub move_num: MoveNum,
+}
+
+/// Which critical hit.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub enum CritKind {
+    /// Against a parried or stance-broken actor, from the front.
+    Riposte,
+    /// Against an unaware actor, from behind.
+    Backstab,
+}
+
+impl CritKind {
+    /// The code the WASM event stream uses.
+    pub fn code(self) -> u32 {
+        match self {
+            Self::Riposte => 0,
+            Self::Backstab => 1,
+        }
+    }
+}
+
+/// `attacker` started a paired critical move on `target`. The damage arrives later, as a
+/// `Hit` from `move_num`.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct Critical {
+    pub attacker: Id,
+    pub target: Id,
+    pub kind: CritKind,
+    /// The attacker's crit move.
+    pub move_num: MoveNum,
 }
 
 /// One hitbox connecting with one target: the raw inputs to damage, poise, status, and

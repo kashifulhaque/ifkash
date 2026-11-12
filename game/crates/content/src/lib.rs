@@ -25,7 +25,7 @@ pub mod weapons;
 
 pub use attributes::Attributes;
 pub use consumables::{Consumables, Flask, Item, ItemKind};
-pub use locomotion::{Death, EquipLoad, Guard, LockOn, Locomotion};
+pub use locomotion::{Death, EquipLoad, Guard, LockOn, Locomotion, Poise};
 pub use moves::Move;
 pub use portfolio::{Portfolio, PortfolioContent};
 pub use registry::{NumId, Registry};
@@ -58,6 +58,10 @@ const EMBEDDED_MOVES: &[(&str, &str)] = &[
         "moves/straight_sword.ron",
         include_str!("../../../data/moves/straight_sword.ron"),
     ),
+    (
+        "moves/crits.ron",
+        include_str!("../../../data/moves/crits.ron"),
+    ),
 ];
 const EMBEDDED_WEAPONS: &[(&str, &str)] = &[(
     "weapons/straight_sword.ron",
@@ -75,6 +79,18 @@ const EMBEDDED_SCENARIOS: &[(&str, &str)] = &[
     (
         "scenarios/test_field.ron",
         include_str!("../../../data/scenarios/test_field.ron"),
+    ),
+    (
+        "scenarios/duel_parry.ron",
+        include_str!("../../../data/scenarios/duel_parry.ron"),
+    ),
+    (
+        "scenarios/duel_stance.ron",
+        include_str!("../../../data/scenarios/duel_stance.ron"),
+    ),
+    (
+        "scenarios/duel_backstab.ron",
+        include_str!("../../../data/scenarios/duel_backstab.ron"),
     ),
 ];
 

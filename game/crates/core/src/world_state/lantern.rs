@@ -14,7 +14,10 @@ use lf_content::scenario::Dummy;
 
 use crate::actor::stats::{Defense, Stats};
 use crate::actor::{Actor, Motor};
+use crate::combat::dummy::DummyScript;
 use crate::combat::hurtbox::Hurtbox;
+use crate::combat::moves::MoveTable;
+use crate::combat::poise::PoiseState;
 use crate::events::{Event, LifeEvent};
 use crate::input::{Command, TickInput, buttons};
 use crate::world::World;
@@ -99,9 +102,24 @@ pub fn rest(world: &mut World, lantern: usize) {
     }));
 }
 
-/// A fresh dummy at its scenario position, at full HP.
-pub fn dummy_actor(d: &Dummy, hurtbox: Hurtbox) -> Actor {
+/// A fresh dummy at its scenario position, at full HP, with its poise, stance, and
+/// scripted attack (WP-024). `World::new` rejects a dummy whose attack move is unknown.
+pub fn dummy_actor(d: &Dummy, hurtbox: Hurtbox, moves: &MoveTable) -> Actor {
+    let script = d.attack.as_ref().and_then(|at| {
+        Some(DummyScript {
+            move_num: moves.num_of(&at.move_id)?,
+            first_tick: u64::from(at.first_tick),
+            every_ticks: u64::from(at.every_ticks),
+        })
+    });
     Actor {
+        poise: PoiseState {
+            poise: d.poise,
+            stance: d.stance,
+            unaware: d.unaware,
+            ..PoiseState::default()
+        },
+        script,
         pos: d.pos,
         yaw: d.yaw,
         hp: d.hp,
@@ -130,7 +148,7 @@ pub fn dummy_actor(d: &Dummy, hurtbox: Hurtbox) -> Actor {
 pub fn respawn_enemies(world: &mut World) {
     let hurtbox = Hurtbox::from_locomotion(&world.locomotion);
     for (i, d) in world.layout.dummies.iter().enumerate() {
-        let fresh = dummy_actor(d, hurtbox);
+        let fresh = dummy_actor(d, hurtbox, &world.moves);
         let slot = world
             .state
             .enemies

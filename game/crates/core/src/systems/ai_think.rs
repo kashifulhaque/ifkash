@@ -1,6 +1,9 @@
-//! AI think. Empty until a later work package fills it in.
+//! AI think. Only the scripted dummies act until WP-030 fills it in.
 
 use crate::input::TickInput;
 use crate::world::World;
 
-pub fn run(_world: &mut World, _input: &TickInput) {}
+pub fn run(world: &mut World, _input: &TickInput) {
+    // The scenario dummies' scripted attacks stand in for AI until WP-030.
+    crate::combat::dummy::run(world);
+}

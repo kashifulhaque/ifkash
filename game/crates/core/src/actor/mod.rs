@@ -8,8 +8,10 @@ pub mod targeting;
 mod tests;
 
 use crate::arena::Id;
+use crate::combat::dummy::DummyScript;
 use crate::combat::hurtbox::Hurtbox;
 use crate::combat::moves::MoveState;
+use crate::combat::poise::PoiseState;
 use crate::combat::resolve::HitState;
 use crate::items::Inventory;
 use serde::{Deserialize, Serialize};
@@ -41,6 +43,10 @@ pub struct Actor {
     pub hurtbox: Hurtbox,
     /// The sweep start and the targets the current move has hit. See `combat::resolve`.
     pub hit: HitState,
+    /// Poise, stance, and the parried state. See `combat::poise`.
+    pub poise: PoiseState,
+    /// A scripted attack loop (scenario dummies only). See `combat::dummy`.
+    pub script: Option<DummyScript>,
     /// Equipment, items, and flasks. Only the player has any (see `items`).
     pub inventory: Inventory,
     /// Attributes, defenses, and the other inputs to damage. See `stats`.

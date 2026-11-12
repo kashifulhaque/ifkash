@@ -128,4 +128,12 @@ pub struct Move {
     /// A placeholder for a move a later WP implements; the validator warns on it.
     #[serde(default)]
     pub stub: bool,
+    /// Multiplies the hitboxes' `poise_damage` into stance damage (docs/game/03-combat.md,
+    /// "Poise and stance"): 2.0 for guard counters, charged heavies, and jump heavies.
+    #[serde(default = "default_stance_mult")]
+    pub stance_mult: f32,
+}
+
+fn default_stance_mult() -> f32 {
+    1.0
 }

@@ -204,9 +204,8 @@ fn m2_three_hit_chain_lands_exactly_three_hits() {
             },
         );
         for event in w.events.drain() {
-            match event {
-                Event::Hit(h) => hits.push(h),
-                Event::Life(_) => {}
+            if let Event::Hit(h) = event {
+                hits.push(h);
             }
         }
     }
@@ -317,4 +316,153 @@ fn m2_death_lose_remnant_loses_the_glimmer() {
     assert!(!p.dead);
     assert_eq!(p.inventory.glimmer, 0, "the Glimmer is gone for good");
     assert!(w.state.death.remnant.is_none() && w.state.death.deaths == 2);
+}
+
+/// Runs a golden replay and returns the world at the end, with every event it emitted
+/// and the player and the one other actor (the dummy) it ran against.
+fn run_duel(name: &str, scenario: &str) -> (lf_core::World, Vec<lf_core::events::Event>) {
+    use lf_core::input::TickInput;
+    use lf_core::{World, tick};
+
+    let content = content();
+    let replay =
+        Replay::decode(&std::fs::read(replays_dir().join(format!("{name}.lfr"))).unwrap()).unwrap();
+    assert_eq!(replay.header.scenario, scenario);
+    let mut w = World::new(replay.header.seed, &content, scenario).unwrap();
+    let mut events = Vec::new();
+    for frame in expand(&replay.frames) {
+        tick(
+            &mut w,
+            &TickInput {
+                frame,
+                commands: Vec::new(),
+            },
+        );
+        events.extend(w.events.drain());
+    }
+    (w, events)
+}
+
+/// The id of the scenario's only dummy.
+fn only_dummy(w: &lf_core::World) -> lf_core::arena::Id {
+    w.actors
+        .iter()
+        .find(|(id, _)| *id != w.player)
+        .map(|(id, _)| id)
+        .expect("a dummy")
+}
+
+/// The WP-024 parry golden: the duelist swings, the player parries it (no damage, the
+/// duelist is parried), then a riposte lands for three times the attack rating.
+#[test]
+fn m2_parry_riposte_parries_then_ripostes() {
+    use lf_core::events::{CritKind, Event};
+
+    let (w, events) = run_duel("m2_parry_riposte", "duel_parry");
+    let duelist = only_dummy(&w);
+    let dagger_moves = |id: &str| w.moves.num_of(id).unwrap();
+    // Order of events: the parry, then the critical, then the hit it deals.
+    let kinds: Vec<&str> = events
+        .iter()
+        .map(|e| match e {
+            Event::Parry(_) => "parry",
+            Event::Critical(_) => "critical",
+            Event::Hit(_) => "hit",
+            Event::Stagger(_) => "stagger",
+            Event::StanceBreak(_) => "stance_break",
+            Event::Life(_) => "life",
+        })
+        .collect();
+    assert_eq!(kinds, ["parry", "critical", "hit"], "{events:?}");
+    let Event::Parry(p) = &events[0] else {
+        unreachable!()
+    };
+    assert_eq!((p.attacker, p.target), (duelist, w.player));
+    assert_eq!(p.move_num, dagger_moves("dummy_slash"));
+    let Event::Critical(c) = &events[1] else {
+        unreachable!()
+    };
+    assert_eq!(
+        (c.attacker, c.target, c.kind),
+        (w.player, duelist, CritKind::Riposte)
+    );
+    let Event::Hit(h) = &events[2] else {
+        unreachable!()
+    };
+    assert_eq!((h.attacker, h.target), (w.player, duelist));
+    assert_eq!(h.move_num, dagger_moves("crit_riposte"));
+    // The parry cost the player nothing, and the riposte dwarfs a light's ~29 damage.
+    let player = w.actors.get(w.player).unwrap();
+    assert_eq!(player.hp, player.max_hp);
+    assert!(h.damage > 150, "{}", h.damage);
+}
+
+/// The WP-024 stance golden: two charged heavies break the elite's stance, and nothing
+/// else (no stagger) happens to it first.
+#[test]
+fn m2_stance_break_breaks_with_charged_heavies() {
+    use lf_core::events::Event;
+
+    let (w, events) = run_duel("m2_stance_break", "duel_stance");
+    let elite = only_dummy(&w);
+    let charged = w.moves.num_of("ss_heavy_charged").unwrap();
+    let hits: Vec<_> = events
+        .iter()
+        .filter_map(|e| match e {
+            Event::Hit(h) => Some(h),
+            _ => None,
+        })
+        .collect();
+    assert_eq!(hits.len(), 2, "{events:?}");
+    assert!(
+        hits.iter()
+            .all(|h| h.target == elite && h.move_num == charged)
+    );
+    let breaks: Vec<_> = events
+        .iter()
+        .filter_map(|e| match e {
+            Event::StanceBreak(b) => Some(b),
+            _ => None,
+        })
+        .collect();
+    assert_eq!(breaks.len(), 1, "{events:?}");
+    assert_eq!(breaks[0].target, elite);
+    assert!(events.iter().all(|e| !matches!(e, Event::Stagger(_))));
+    // The break came with the second hit, and the elite is still kneeling at the end.
+    let at = |e: &Event| events.iter().position(|x| x == e).unwrap();
+    assert!(at(&Event::StanceBreak(breaks[0].clone())) > at(&Event::Hit(hits[0].clone())));
+    assert!(w.actors.get(elite).unwrap().poise.kneel > 0);
+}
+
+/// The WP-024 backstab golden: the sentry faces away, so LIGHT is a backstab, not a
+/// light attack.
+#[test]
+fn m2_backstab_stabs_the_unaware() {
+    use lf_core::events::{CritKind, Event};
+
+    let (w, events) = run_duel("m2_backstab", "duel_backstab");
+    let sentry = only_dummy(&w);
+    let kinds: Vec<_> = events
+        .iter()
+        .map(|e| match e {
+            Event::Critical(c) => {
+                assert_eq!(
+                    (c.attacker, c.target, c.kind),
+                    (w.player, sentry, CritKind::Backstab)
+                );
+                "critical"
+            }
+            Event::Hit(h) => {
+                assert_eq!(h.move_num, w.moves.num_of("crit_backstab").unwrap());
+                assert!(h.damage > 150, "{}", h.damage);
+                "hit"
+            }
+            other => panic!("unexpected {other:?}"),
+        })
+        .collect();
+    assert_eq!(kinds, ["critical", "hit"]);
+    assert!(
+        !w.actors.get(sentry).unwrap().poise.unaware,
+        "the stab alerts it"
+    );
 }

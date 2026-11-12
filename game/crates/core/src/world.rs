@@ -10,6 +10,7 @@ use crate::arena::{Arena, Id};
 use crate::combat::damage::DamageTable;
 use crate::combat::hurtbox::Hurtbox;
 use crate::combat::moves::MoveTable;
+use crate::combat::poise::PoiseState;
 use crate::events::EventQueue;
 use crate::items::{Inventory, ItemTable};
 use crate::physics::PhysicsState;
@@ -103,6 +104,19 @@ impl World {
         let hurtbox = Hurtbox::from_locomotion(&locomotion);
         let items = ItemTable::from_content(content).map_err(WorldError::Items)?;
         let mut actors = Arena::new();
+        let mut inventory = Inventory::starting(&items);
+        // A scenario can start the player with another weapon in the right hand.
+        if let Some(id) = &level.player_weapon {
+            let w = content
+                .registry
+                .num(id)
+                .filter(|&n| items.is_weapon(n))
+                .ok_or_else(|| {
+                    WorldError::Items(format!("player_weapon \"{id}\" is not a weapon"))
+                })?;
+            inventory.give_gear(w);
+            inventory.equipment.slots[usize::from(crate::items::slot::RIGHT_1)] = Some(w);
+        }
         let player = actors.insert(Actor {
             pos: level.spawn,
             yaw: level.spawn_yaw,
@@ -115,7 +129,11 @@ impl World {
             max_fp,
             inventory: Inventory {
                 glimmer: level.start_glimmer,
-                ..Inventory::starting(&items)
+                ..inventory
+            },
+            poise: PoiseState {
+                poise: locomotion.poise.stub_poise,
+                ..PoiseState::default()
             },
             stats,
             motor: Motor {
@@ -127,11 +145,21 @@ impl World {
             hurtbox,
             ..Actor::default()
         });
+        for d in &level.dummies {
+            if let Some(at) = &d.attack
+                && moves.num_of(&at.move_id).is_none()
+            {
+                return Err(WorldError::Moves(format!(
+                    "dummy {:?}: unknown move \"{}\"",
+                    d.name, at.move_id
+                )));
+            }
+        }
         let layout = Layout::from_scenario(level);
         let enemies = layout
             .dummies
             .iter()
-            .map(|d| actors.insert(dummy_actor(d, hurtbox)))
+            .map(|d| actors.insert(dummy_actor(d, hurtbox, &moves)))
             .collect();
         let state = WorldState::new(&layout, enemies);
         let mut world = Self {

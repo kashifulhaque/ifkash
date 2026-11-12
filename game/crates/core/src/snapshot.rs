@@ -77,6 +77,10 @@ pub fn write_snapshot(world: &World, out: &mut Vec<ActorSnap>) {
         if locked == Some(id) {
             bits |= flags::LOCKED_TARGET;
         }
+        // Staggered: any lockout from a stagger, guard break, stance break, or parry.
+        if actor.moves.guard.stagger > 0 {
+            bits |= flags::STAGGERED;
+        }
         if actor.moves.guard.active {
             bits |= flags::GUARDING;
         }

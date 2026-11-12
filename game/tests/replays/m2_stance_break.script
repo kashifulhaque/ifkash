@@ -1,0 +1,9 @@
+# WP-024 golden: break a stance meter with charged heavies. Scenario duel_stance: the elite
+# stands 3 m ahead with a stance meter of 120. Each charged heavy deals 34 poise damage
+# times a stance_mult of 2.0, so the second one breaks it.
+seed 25
+scenario duel_stance
+30 0 0  HEAVY      # hold: the heavy becomes the charged heavy at frame 12 and charges
+36 0 0             # the charged heavy lands and recovers
+30 0 0  HEAVY      # a second charged heavy
+40 0 0             # stance breaks; the elite kneels

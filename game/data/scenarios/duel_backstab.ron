@@ -1,0 +1,18 @@
+// WP-024 backstab golden: a flat floor and an unaware dummy 1.0 m ahead of the player,
+// facing away (yaw 0, the same way the player faces). The player stands in its rear arc.
+(
+  spawn: (0.0, 0.0, 0.0),
+  spawn_yaw: 0.0,
+  kill_y: -50.0,
+  heightfield: None,
+  boxes: [
+    (name: "floor", center: (0.0, -0.5, 0.0), half_extents: (1000.0, 0.5, 1000.0)),
+  ],
+  player_weapon: Some("wpn_parry_dagger"),
+  dummies: [
+    (
+      name: "sentry", pos: (0.0, 0.0, 1.0), yaw: 0.0, hp: 600, defense: (flat: 500),
+      unaware: true,
+    ),
+  ],
+)

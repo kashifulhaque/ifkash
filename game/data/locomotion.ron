@@ -77,4 +77,22 @@
     lantern_rest_radius_m: 2.0, // tuning: how close to the Lantern to rest
     lantern_rest_height_m: 1.0, // tuning
   ),
+  // Poise, stance, parry, and critical hits (docs/game/03-combat.md, "Poise and stance"
+  // and "Parry and critical hits")
+  poise: (
+    stub_poise: 40, // stub until armor exists (tuning)
+    light_stagger_ticks: 12, // Poise: a margin under 50 percent is a light stagger of 12 ticks
+    heavy_stagger_ticks: 24, // Poise: over 50 percent is a heavy stagger of 24 ticks
+    heavy_margin_percent: 50, // Poise: the 50 percent split
+    reset_ticks: 90, // Poise: the accumulator resets after 90 ticks without poise damage
+    hyperarmor_mult: 2, // Poise: during hyperarmor frames the poise counts as doubled
+    stance_break_ticks: 60, // Stance: a broken actor kneels for 60 ticks
+    stance_decay_after_ticks: 120, // Stance: decays after 120 ticks without a hit
+    stance_decay_percent: 2, // Stance: 2 percent of the meter per tick
+    parry_startup_ticks: 2, // Combat verbs, Parry: startup 2
+    parried_ticks: 60, // Parry: the attacker is parried for 60 ticks
+    riposte_range_m: 1.5, // Critical hits: LIGHT within 1.5 m of the front
+    backstab_range_m: 1.2, // Critical hits: within 1.2 m of an unaware actor's back
+    backstab_arc_deg: 90.0, // Critical hits: inside a 90-degree rear arc
+  ),
 )

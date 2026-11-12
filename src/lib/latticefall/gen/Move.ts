@@ -19,4 +19,9 @@ track_deg_per_tick: number, hyperarmor: FrameWindow | null, iframes: FrameWindow
 /**
  * A placeholder for a move a later WP implements; the validator warns on it.
  */
-stub: boolean, };
+stub: boolean, 
+/**
+ * Multiplies the hitboxes' `poise_damage` into stance damage (docs/game/03-combat.md,
+ * "Poise and stance"): 2.0 for guard counters, charged heavies, and jump heavies.
+ */
+stance_mult: number, };

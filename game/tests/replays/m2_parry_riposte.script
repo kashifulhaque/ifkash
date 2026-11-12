@@ -1,0 +1,12 @@
+# WP-024 golden: parry the dummy, then riposte (record with `lf-tools replay record-script`).
+# Scenario duel_parry: the duelist swings dummy_slash on tick 40, its hitbox is active on
+# ticks 51-53. GUARD pressed on tick 46 holds the parrying dagger's window (guard held for
+# 3 to 8 ticks) over all three. After the parry the duelist is parried for 60 ticks; LIGHT
+# once the guard has lowered is a riposte.
+seed 24
+scenario duel_parry
+46 0 0             # stand: ticks 0-45
+9  0 0  GUARD      # ticks 46-54: the parry window covers the swing
+8  0 0             # the guard lowers (4 ticks)
+1  0 0  LIGHT      # riposte starts
+56 0 0             # the paired crit plays out

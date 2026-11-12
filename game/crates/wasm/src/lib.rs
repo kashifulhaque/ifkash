@@ -60,6 +60,8 @@ pub struct LfWorld {
     /// The seed the world started from, kept for `save`.
     seed: u64,
     snapshot: Vec<ActorSnap>,
+    /// Display names by registry number (weapons and consumables), for the HUD.
+    names: std::collections::HashMap<u32, String>,
     /// Dev-tool state (god mode, set level). Present only in `dev` builds.
     #[cfg(feature = "dev")]
     dev: debug::DevState,
@@ -77,10 +79,12 @@ impl LfWorld {
             World::new(seed, &content, scenario).map_err(|e| JsError::new(&e.to_string()))?;
         let mut snapshot = Vec::new();
         write_snapshot(&world, &mut snapshot);
+        let names = display_names(&content);
         Ok(LfWorld {
             world,
             seed,
             snapshot,
+            names,
             #[cfg(feature = "dev")]
             dev: debug::DevState::default(),
         })
@@ -276,6 +280,7 @@ impl LfWorld {
             world,
             seed: data.seed,
             snapshot,
+            names: display_names(&content),
             #[cfg(feature = "dev")]
             dev: debug::DevState::default(),
         })
@@ -290,4 +295,152 @@ impl LfWorld {
             lf_core::save::persistent_hash(&self.world, self.seed, &content)
         ))
     }
+
+    /// The player's HUD values as `hud_words()` floats (WP-045). Read-only. Layout:
+    ///
+    /// - 0 to 5: HP, max HP, FP, max FP, stamina, max stamina.
+    /// - 6: Glimmer held.
+    /// - 7 to 10: Vigil charges, Vigil max, Lucid charges, Lucid max.
+    /// - 11 to 14: registry numbers of the selected right-hand weapon, left-hand weapon,
+    ///   spell (always 0 until spells exist), and quick item (0 for none).
+    /// - 15: count of the quick item (flask charges, or the stack).
+    /// - 16: 1 if any enemy is in Combat awareness of the player.
+    /// - 17: interaction prompt: 0 none, 1 a Lantern is in reach.
+    /// - 18: the boss on the bar plus one (0 for none): a boss whose fight is running.
+    /// - 19, 20: that boss's HP fraction (body and required parts) and phase.
+    /// - 21 to 26: the player's buildup meters, 0 to 1, in the order of the `StatusProc`
+    ///   event's status codes (Poison, Blight, Drowse, Delirium, Rupture, Rime).
+    /// - 27: 1 if the player is dead.
+    /// - 28: 1 if the quick item is a flask (so word 15 is charges, not a stack).
+    pub fn hud_state(&self) -> Vec<f32> {
+        use lf_core::ai::{Awareness, boss::Stage};
+        use lf_core::combat::status::KINDS;
+        let w = &self.world;
+        let mut out = vec![0.0f32; HUD_WORDS];
+        let Some(p) = w.actors.get(w.player) else {
+            return out;
+        };
+        let inv = &p.inventory;
+        let eq = &inv.equipment;
+        out[..7].copy_from_slice(&[
+            p.hp as f32,
+            p.max_hp as f32,
+            p.fp,
+            p.max_fp,
+            p.stamina,
+            p.max_stamina,
+            inv.glimmer as f32,
+        ]);
+        let f = &inv.flasks;
+        out[7..11].copy_from_slice(&[
+            f32::from(f.vigil),
+            f32::from(f.vigil_max),
+            f32::from(f.lucid),
+            f32::from(f.lucid_max()),
+        ]);
+        let quick = eq.selected_quick();
+        out[11] = eq.right_weapon().unwrap_or(0) as f32;
+        out[12] = eq.left_weapon().unwrap_or(0) as f32;
+        if let Some(q) = quick {
+            out[14] = q as f32;
+            out[15] = match w.items.flask.as_ref() {
+                Some(r) if q == r.vigil => f32::from(f.vigil),
+                Some(r) if q == r.lucid => f32::from(f.lucid),
+                _ => f32::from(inv.count(q)),
+            };
+            out[28] = f32::from(u8::from(
+                w.items
+                    .flask
+                    .as_ref()
+                    .is_some_and(|r| q == r.vigil || q == r.lucid),
+            ));
+        }
+        let in_combat = w.actors.iter().any(|(_, a)| {
+            a.ai.as_ref()
+                .is_some_and(|b| b.awareness == Awareness::Combat)
+        });
+        out[16] = f32::from(u8::from(in_combat && !p.dead));
+        out[17] = f32::from(u8::from(
+            lf_core::world_state::lantern::in_reach(w).is_some(),
+        ));
+        if let Some(b) = w
+            .bosses
+            .iter()
+            .position(|r| matches!(r.stage, Stage::Intro { .. } | Stage::Fight))
+        {
+            let layout = &w.layout.bosses[b];
+            let (mut hp, mut max) = (0u64, 0u64);
+            for (i, spawn) in layout.members.iter().enumerate() {
+                let required = i == 0 || layout.def.parts.get(i - 1).is_some_and(|q| q.required);
+                let actor = w
+                    .state
+                    .ai_enemies
+                    .get(usize::from(*spawn))
+                    .and_then(|id| w.actors.get(*id));
+                if let (true, Some(a)) = (required, actor) {
+                    max += u64::from(a.max_hp);
+                    if !(a.dead || a.hp == 0) {
+                        hp += u64::from(a.hp);
+                    }
+                }
+            }
+            out[18] = (b + 1) as f32;
+            out[19] = if max == 0 {
+                0.0
+            } else {
+                hp as f32 / max as f32
+            };
+            out[20] = f32::from(w.bosses[b].phase);
+        }
+        for (i, k) in KINDS.iter().enumerate() {
+            let threshold = p.status.threshold_milli(*k, &w.status.rules);
+            if threshold > 0 {
+                out[21 + i] = (p.status.meter_milli[i] as f32 / threshold as f32).clamp(0.0, 1.0);
+            }
+        }
+        out[27] = f32::from(u8::from(p.dead));
+        out
+    }
+
+    /// Display name of a weapon or consumable by registry number; empty if unknown.
+    pub fn item_name(&self, num: u32) -> String {
+        self.names.get(&num).cloned().unwrap_or_default()
+    }
+
+    /// Name on the boss bar for the boss at `index` in the scenario; empty if none.
+    pub fn boss_name(&self, index: u32) -> String {
+        self.world
+            .layout
+            .bosses
+            .get(index as usize)
+            .map(|b| b.def.name.clone())
+            .unwrap_or_default()
+    }
+}
+
+/// Floats in `LfWorld::hud_state`.
+const HUD_WORDS: usize = 29;
+
+/// Length of `LfWorld::hud_state`, so the host can check it matches its reader.
+#[wasm_bindgen]
+pub fn hud_words() -> u32 {
+    HUD_WORDS as u32
+}
+
+/// Display names by registry number (weapons and consumables), for the HUD (WP-045).
+fn display_names(content: &Content) -> std::collections::HashMap<u32, String> {
+    let mut names = std::collections::HashMap::new();
+    for (_, w) in content.all_weapons() {
+        if let Some(n) = content.registry.num(&w.id) {
+            names.insert(n, w.name.clone());
+        }
+    }
+    if let Some(c) = &content.consumables {
+        for i in &c.items {
+            if let Some(n) = content.registry.num(&i.id) {
+                names.insert(n, i.name.clone());
+            }
+        }
+    }
+    names
 }

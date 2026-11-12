@@ -11,7 +11,9 @@ import { loadWasm } from './loader';
 import { SaveManager, SaveStore } from './save';
 import { FixedStepLoop } from './loop';
 import { SceneView } from './scene';
-import { SnapshotBuffer } from './snapshot';
+import { FLAG_LOCKED, SnapshotBuffer } from './snapshot';
+import { parseHud, type NameLookup } from '../ui/hud/hudState';
+import type { HudSink } from '../ui/hud/hudStore';
 
 export interface EngineStats {
   tick: number;
@@ -32,6 +34,8 @@ export interface EngineOptions {
   autosave?: boolean;
   /** Called about four times a second with the dev readout values. */
   onStats?: (stats: EngineStats) => void;
+  /** Receives the HUD's read-only view of the world each tick (WP-045). */
+  hud?: HudSink;
 }
 
 export interface Engine {
@@ -87,6 +91,22 @@ export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions
   let tools: DevTools | null = null;
   let fps = 60;
   let sinceStats = 0;
+  // The HUD reads the core through `hud_state` and looks names up lazily, once per number.
+  const nameCache = new Map<string, string>();
+  const names: NameLookup = {
+    item: (n) => cached(`i${n}`, () => world.item_name(n)),
+    boss: (i) => cached(`b${i}`, () => world.boss_name(i))
+  };
+  function cached(key: string, read: () => string): string {
+    let v = nameCache.get(key);
+    if (v === undefined) {
+      v = read();
+      nameCache.set(key, v);
+    }
+    return v;
+  }
+  const pushHud = () => opts.hud?.state(parseHud(world.hud_state(), names));
+  pushHud();
   const loop = new FixedStepLoop({
     tick() {
       input.poll();
@@ -98,9 +118,11 @@ export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions
         tools.recordTick(performance.now() - t0);
       } else world.tick(frame);
       snapshots.push();
+      pushHud();
       // Events go to presentation only; the renderer reads them and never answers.
       const words = world.drain_events();
       if (opts.autosave !== false) saves.onEventWords(words);
+      if (words.length) opts.hud?.events(words);
       const events = decodeEvents(words);
       if (events.length) {
         audio?.handleEvents(events);
@@ -117,6 +139,10 @@ export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions
       // The first drawn actor is the player; the listener follows it and the camera's yaw.
       if (audio && drawn[0] && !loop.isPaused) {
         audio.updatePlayer({ x: drawn[0].x, y: drawn[0].y, z: drawn[0].z, yaw: view.cameraYaw });
+      }
+      if (opts.hud) {
+        const locked = drawn.find((a) => a.flags & FLAG_LOCKED);
+        opts.hud.lock(locked ? view.project(locked.x, locked.y + 1.0, locked.z) : null);
       }
       tools?.afterRender(frameMs, world.tick_count(), () => world.state_hash());
       // Movement is camera-relative, so when lock-on turns the camera, input follows it.

@@ -157,6 +157,17 @@ export class SceneView {
     this.rig.applyFov();
   }
 
+  /** Where a world point lands on the canvas in CSS pixels, or null behind the camera (for the HUD). */
+  project(x: number, y: number, z: number): { x: number; y: number } | null {
+    this.projected.set(x, y, z).project(this.camera);
+    if (this.projected.z > 1) return null;
+    const w = this.canvas.clientWidth || 1;
+    const h = this.canvas.clientHeight || 1;
+    return { x: (this.projected.x * 0.5 + 0.5) * w, y: (-this.projected.y * 0.5 + 0.5) * h };
+  }
+
+  private projected = new Vector3();
+
   /** Sets the look input: yaw 0 puts the camera on the +Z side; pitch is elevation above the horizon. */
   setCamera(yaw: number, pitch: number): void {
     this.camYaw = yaw;

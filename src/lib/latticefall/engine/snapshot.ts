@@ -7,6 +7,15 @@ import type { LfWasm } from './loader';
 /** Bytes per record. Matches `snapshot_stride()` from the module. */
 export const SNAP_STRIDE = 40;
 
+/** Bits of `ActorSnap.flags` (u16 at record offset 6). */
+export const FLAG_DEAD = 1 << 0;
+export const FLAG_STAGGERED = 1 << 1;
+export const FLAG_GUARDING = 1 << 2;
+export const FLAG_INVULNERABLE = 1 << 3;
+/** Set on the actor the player is locked on to. */
+export const FLAG_LOCKED = 1 << 4;
+export const FLAG_TWO_HANDING = 1 << 5;
+
 export interface ActorSnap {
   id: number;
   kind: number;

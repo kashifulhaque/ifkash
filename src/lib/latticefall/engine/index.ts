@@ -2,6 +2,7 @@
 // and the Three.js scene together. Import dynamically from the game route only.
 
 import { InputController, ReplayRecorder, downloadBytes, encodeReplay } from '../input';
+import { parseDevCamera } from '../render/camera';
 import { loadWasm } from './loader';
 import { FixedStepLoop } from './loop';
 import { SceneView } from './scene';
@@ -33,13 +34,31 @@ export interface Engine {
 export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions = {}): Promise<Engine> {
   const wasm = await loadWasm();
   const seed = opts.seed ?? 1n;
-  const scenario = opts.scenario ?? 'm0_flat';
+  // Minimal dev-URL read for the camera; WP-014 owns the full parser.
+  const dev = parseDevCamera(window.location.search);
+  const scenario = opts.scenario ?? dev.scenario ?? 'm0_flat';
+  dev.scenario = scenario;
   const world = new wasm.glue.LfWorld(seed, scenario);
   const snapshots = new SnapshotBuffer(wasm, world);
   const input = new InputController();
   input.attach(canvas);
   const recorder = new ReplayRecorder();
-  const view = new SceneView(canvas);
+  // The camera's collision queries go through the core's read-only `raycast` export.
+  const rayOrigin = new Float32Array(3);
+  const rayDir = new Float32Array(3);
+  const view = new SceneView(
+    canvas,
+    (o, d, max) => {
+      rayOrigin[0] = o.x;
+      rayOrigin[1] = o.y;
+      rayOrigin[2] = o.z;
+      rayDir[0] = d.x;
+      rayDir[1] = d.y;
+      rayDir[2] = d.z;
+      return world.raycast(rayOrigin, rayDir, max);
+    },
+    dev.active ? dev : null
+  );
 
   let fps = 60;
   let sinceStats = 0;
@@ -56,6 +75,8 @@ export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions
       input.updateLook(frameMs);
       view.setCamera(input.cameraYaw, input.cameraPitch);
       view.render(snapshots.interpolate(alpha), frameMs);
+      // Movement is camera-relative, so when lock-on turns the camera, input follows it.
+      if (view.yawDriven) input.cameraYaw = view.cameraYaw;
       if (frameMs > 0) fps += (1000 / frameMs - fps) * 0.1;
       sinceStats += frameMs;
       if (sinceStats >= 250 && opts.onStats) {

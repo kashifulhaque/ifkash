@@ -12,20 +12,19 @@ import {
   type UiAction
 } from './bindings';
 import { FrameComposer } from './composer';
+import { PITCH_DEFAULT, PITCH_MAX, PITCH_MIN } from '../render/camera/limits';
 import { radialDeadzone } from './frame';
 
 const STICK_CAMERA_RAD_PER_S = 2.6;
 const FLICK_ON = 0.85;
 const FLICK_OFF = 0.5;
-const PITCH_MIN = -0.5;
-const PITCH_MAX = 0.7;
 
 export class InputController {
   readonly settings: InputSettings;
   /** Camera yaw in radians. See `cameraRelative` for the convention. */
   cameraYaw = 0;
-  /** Camera pitch offset in radians; positive looks down from higher up. */
-  cameraPitch = 0;
+  /** Camera elevation in radians above the pivot's horizon; positive looks down from higher up. */
+  cameraPitch = PITCH_DEFAULT;
   /**
    * Decides what gamepad X does: true means Interact, false means Use item. Set this once an
    * interactable-aware prompt exists; until then X always interacts.

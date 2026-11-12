@@ -1,10 +1,11 @@
-// The Three.js scene: renderer, follow camera, a gridded ground plane, one capsule per actor.
+// The Three.js scene: renderer, the third-person camera (see render/camera), a gridded ground plane, one capsule per actor.
 
 import {
   AmbientLight,
   BufferGeometry,
   CapsuleGeometry,
   Color,
+  CylinderGeometry,
   DirectionalLight,
   GridHelper,
   Material,
@@ -18,6 +19,16 @@ import {
   WebGLRenderer
 } from 'three';
 import { ActorRenderer } from '../render/actors';
+import {
+  CameraRig,
+  TEST_FIELD_BOUNDS,
+  buildLevelProxy,
+  exposeDebug,
+  loadCameraSettings,
+  scriptPose,
+  type DevCameraOptions,
+  type RaycastFn
+} from '../render/camera';
 import type { DrawActor } from './snapshot';
 
 /** Reads a CSS custom property from `<html>` and falls back if it is missing or unparsable. */
@@ -35,28 +46,36 @@ const CAPSULE_RADIUS = 0.35;
 const CAPSULE_LENGTH = 1.0;
 const CAPSULE_HEIGHT = CAPSULE_LENGTH + CAPSULE_RADIUS * 2;
 
-/** Camera distance from the followed actor, and its resting elevation angle (6 up, 8 back). */
-const CAM_DISTANCE = 10;
-const CAM_BASE_PITCH = Math.atan2(6, 8);
-
 export class SceneView {
   readonly renderer: WebGLRenderer;
   private scene = new Scene();
-  private camera = new PerspectiveCamera(55, 1, 0.1, 400);
+  private camera = new PerspectiveCamera(60, 1, 0.1, 400);
+  private rig: CameraRig;
+  private dev: DevCameraOptions | null;
+  private scriptT = 0;
+  private scriptStage = -1;
+  private lastActors: DrawActor[] = [];
   private meshes = new Map<number, Mesh>();
   private disposables: Array<BufferGeometry | Material> = [];
   private camTarget = new Vector3();
   private camInit = false;
   private camYaw = 0;
   private camPitch = 0;
+  /** The yaw the camera actually used last frame. Differs from the input yaw while locked on. */
+  cameraYaw = 0;
+  /** True while the camera is driving yaw (lock-on), so input should follow `cameraYaw`. */
+  yawDriven = false;
   private previewOffset = new Vector3();
   private canvas: HTMLCanvasElement;
   private resizeObserver: ResizeObserver;
   /** The Wayfarer model. Capsules draw until it loads (or if it fails to). */
   private actors: ActorRenderer;
 
-  constructor(canvas: HTMLCanvasElement) {
+  constructor(canvas: HTMLCanvasElement, raycast: RaycastFn, dev: DevCameraOptions | null = null) {
     this.canvas = canvas;
+    this.dev = dev;
+    this.rig = new CameraRig(this.camera, raycast, loadCameraSettings());
+    if (dev?.fakeLock) this.rig.fakeTarget = dev.fakeLock;
     this.renderer = new WebGLRenderer({ canvas, antialias: true });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
@@ -76,6 +95,28 @@ export class SceneView {
     grid.position.y = 0.01;
     this.scene.add(grid);
     this.disposables.push(grid.geometry, grid.material as Material);
+
+    // Dev camera runs on the test field draw a raycast-built copy of it instead of the flat plane.
+    if (dev?.active && dev.scenario === 'test_field') {
+      const proxy = buildLevelProxy(
+        raycast,
+        TEST_FIELD_BOUNDS,
+        token('--moss', '#6b7f5e').lerp(surface, 0.55),
+        token('--clay', '#a4502f')
+      );
+      this.scene.add(proxy);
+      this.disposables.push(proxy.geometry, proxy.material as Material);
+      ground.visible = false;
+      grid.visible = false;
+    }
+    if (dev?.fakeLock) {
+      // A stand-in for the locked actor: a post the size the camera assumes for a target.
+      const post = new Mesh(new CylinderGeometry(0.8, 0.8, 2.2, 20), new MeshStandardMaterial({ color: token('--falu', '#8b2e1f') }));
+      post.position.set(dev.fakeLock.x, dev.fakeLock.y + 1.1, dev.fakeLock.z);
+      this.scene.add(post);
+      this.disposables.push(post.geometry, post.material as Material);
+    }
+    if (dev?.active) exposeDebug(this.rig, () => this.lastActors);
 
     this.scene.add(new AmbientLight(0xffffff, 1.4));
     const sun = new DirectionalLight(0xffffff, 2.2);
@@ -106,16 +147,16 @@ export class SceneView {
     const h = this.canvas.clientHeight || 1;
     this.renderer.setSize(w, h, false);
     this.camera.aspect = w / h;
-    this.camera.updateProjectionMatrix();
+    this.rig.applyFov();
   }
 
-  /** Orbits the camera around the followed actor. Yaw 0 puts it on the +Z side. */
+  /** Sets the look input: yaw 0 puts the camera on the +Z side; pitch is elevation above the horizon. */
   setCamera(yaw: number, pitch: number): void {
     this.camYaw = yaw;
     this.camPitch = pitch;
   }
 
-  /** Draws the given actors; the first one is followed by the camera. */
+  /** Draws the given actors; the first one is the player, whom the camera follows. */
   render(actors: DrawActor[], frameMs: number): void {
     const live = new Set<number>();
     const modelsReady = this.actors.ready;
@@ -143,26 +184,35 @@ export class SceneView {
       }
     }
 
+    this.lastActors = actors;
     const focus = actors[0];
     if (focus) {
-      const goal = new Vector3(focus.x, focus.y, focus.z);
-      // Frame-rate independent smoothing of the followed point.
-      const k = this.camInit ? 1 - Math.exp(-frameMs / 120) : 1;
-      this.camTarget.lerp(goal, k);
-      this.camInit = true;
-      // The dev animation preview (?animcam=) pins the camera; otherwise orbit by input yaw and pitch.
+      // The dev animation preview (?animcam=) pins the camera to the actor.
       const off = this.actors.previewCameraOffset();
       if (off) {
-        this.camera.position.copy(this.camTarget).add(this.previewOffset.set(...off));
+        const goal = this.previewOffset.set(focus.x, focus.y, focus.z);
+        // Frame-rate independent smoothing of the followed point.
+        const k = this.camInit ? 1 - Math.exp(-frameMs / 120) : 1;
+        this.camTarget.lerp(goal, k);
+        this.camInit = true;
+        this.camera.position.set(this.camTarget.x + off[0], this.camTarget.y + off[1], this.camTarget.z + off[2]);
+        this.camera.lookAt(this.camTarget.x, this.camTarget.y + 0.8, this.camTarget.z);
+        this.yawDriven = false;
+      } else if (this.dev?.script) {
+        // The dev orbit script ignores input and the player; it sweeps pivots around the ledge.
+        this.scriptT = this.dev.scriptAt ?? this.scriptT + frameMs / 1000;
+        const s = scriptPose(this.scriptT);
+        if (s.stage !== this.scriptStage) {
+          this.scriptStage = s.stage;
+          this.rig.reset(); // The pivots are far apart; don't glide between them.
+        }
+        this.rig.update(actors, s.yaw, s.pitch, frameMs, s.pivot);
+        this.yawDriven = false;
       } else {
-        const p = CAM_BASE_PITCH + this.camPitch;
-        this.camera.position.copy(this.camTarget).add(
-          new Vector3(Math.sin(this.camYaw) * Math.cos(p), Math.sin(p), Math.cos(this.camYaw) * Math.cos(p)).multiplyScalar(
-            CAM_DISTANCE
-          )
-        );
+        const pose = this.rig.update(actors, this.camYaw, this.camPitch, frameMs);
+        this.cameraYaw = pose.yaw;
+        this.yawDriven = pose.locked;
       }
-      this.camera.lookAt(this.camTarget.x, this.camTarget.y + 0.8, this.camTarget.z);
     }
     this.renderer.render(this.scene, this.camera);
   }

@@ -41,7 +41,7 @@ Copy this block to the top of the entries and fill it in as you go:
 ### 2026-11-12: latticefall-m5 (M5)
 
 - **Orchestrator:** Opus 5.5, low effort
-- **Branch:** `game/m5-builds`
+- **Branch:** `game/m5-builds`; first commit on `main` `a33ad3c`, last `e7769a9` plus this close-out
 - **Started from:** `origin/main` at `d1c264a`
 - **Gate G2:** still open. The owner asked for M5 anyway; M5 adds build content, which
   G2's tuning answers don't block.
@@ -51,11 +51,26 @@ Copy this block to the top of the entries and fill it in as you go:
   WP-050 and WP-051 add none.
 - **WPs:**
   - WP-050: haiku, worktree; `cbccd54`; 189K. Touched `wasm/src/menu.rs` (signature change). Goldens rehashed (content hash only).
-- **Context:**
+  - M5 exit gate: sonnet, main checkout; `e7769a9`; 153K. `tools/tests/m5_builds.rs`: all nine builds equip, temper, and attune through commands (10 pass, 1 ignored: Scholar's nine Formulae need 11 slots, the most is 9).
+- **Context:** orchestrator about 290K at the end (budget 500K per context window). Largest worker: WP-059 at 406K.
+- **Lessons:**
+  - Workers in worktrees can't run `mise run` (untrusted config) or `bun run check` cleanly (no WASM glue); verify both in the main checkout after each merge.
+  - Workers skipped `cargo fmt` (WP-054) and `gen-ts` (WP-050); run both after every merge.
+  - Two content rules bit merges: a Catalyst needs `catalyst_school` (WP-055), and the first weapon file in load order is the player's default.
+  - In zsh, `R="mise exec -- ..."; $R cargo ...` doesn't word-split; a failed rehash then looks like "0 changed". Count the `final hash` lines.
 - **Not verified:**
+  - Any build in play: feel, balance, and equip load (equipping doesn't enforce load). That's WP-089.
+  - The browser can't send `Respec`, `Upgrade`, or `Temper` yet (menu encoding), and menu equipping of the new gear; WP-058's armory was checked by screenshots only.
+  - Weapons during attack animations; mobile; spell VFX from real casts (combat events carry no spell element).
 - **Owner decision:** the game is named *Cinderheart* (ADR 0007); public-facing name only; internal code keeps `latticefall` by the owner's choice. Docs prose and the game page's title and messages renamed.
 - **Waiting on the owner:**
+  - **Gate G2** is still open (from M4).
+  - Two deliberate golden behavior changes to accept: seven `m5_spell_*` goldens (stylus at spec scaling, WP-053) and `m0_random_3000` (random inputs press the new `ART` button, WP-054).
+  - Builds table readings: does Scholar's "All Formulae" mean all attuned at once (impossible: 11 slots, max 9) or swapped at Lanterns? Colossus lists Rallying Roar, which none of its weapons carry by default.
 - **Next steps:**
+  1. Owner: gate G2 and the decisions above.
+  2. Small follow-ups found in M5 (fold into M6 or M8): a menu encoding for `Respec`, `Upgrade`, and `Temper`; spell loadout and weapon upgrades in `SaveData`; renderer spell events; weapon and temper status buildup on hits; per-class crit moves; the Archivist free respec; Echo Stones in the level format (WP-060); a class picker (respec floor uses the stub loadout).
+  3. Then M6 (WP-060 onward). Reserved this session: registry 13000-20499 blocks; WASM kinds 18-26 (used: 21). Free WASM kinds: 10, 12, 18-20, 22-26 unless a WP claimed them, and 27 and up.
 
 ### 2026-11-12: latticefall-m4 (M4)
 

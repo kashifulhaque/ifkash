@@ -1,0 +1,27 @@
+[workspace]
+resolver = "3"
+members = [
+  "crates/core",
+  "crates/content",
+  "crates/wasm",
+  "crates/py",
+  "crates/tools",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+license = "UNLICENSED"
+publish = false
+
+[workspace.dependencies]
+clap = { version = "4", features = ["derive"] }
+lf-core = { path = "crates/core" }
+lf-content = { path = "crates/content" }
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+
+[profile.release]
+# Determinism contract: no fast-math style surprises; keep defaults explicit.
+opt-level = 3

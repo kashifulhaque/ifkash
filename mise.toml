@@ -64,3 +64,42 @@ for file in ./static/assets/*.typ; do
   typst compile "$file" --font-path .fonts
 done
 """
+
+# Game workspace (game/). The root [tools] block sets RUSTUP_TOOLCHAIN=stable, which
+# overrides game/rust-toolchain.toml. Every game:* task therefore sets RUSTUP_TOOLCHAIN
+# to the pinned version explicitly. Keep it in sync with game/rust-toolchain.toml.
+
+[tasks."game:test"]
+dir = "game"
+env = { RUSTUP_TOOLCHAIN = "1.99.1" }
+description = "Run the game workspace tests"
+run = "cargo test --workspace"
+
+[tasks."game:lint"]
+dir = "game"
+env = { RUSTUP_TOOLCHAIN = "1.99.1" }
+description = "Run clippy and rustfmt checks on the game workspace"
+run = """
+cargo clippy --workspace --all-targets -- -D warnings
+cargo fmt --all --check
+"""
+
+[tasks."game:validate"]
+dir = "game"
+env = { RUSTUP_TOOLCHAIN = "1.99.1" }
+description = "Validate game content data"
+run = "cargo run -q -p lf-tools -- validate"
+
+[tasks."game:bench"]
+dir = "game"
+env = { RUSTUP_TOOLCHAIN = "1.99.1" }
+description = "Run game simulation benchmarks"
+run = "cargo run -q --release -p lf-tools -- bench"
+
+[tasks."game:wasm"]
+description = "Build lf-wasm into src/lib/latticefall/wasm/ (stub until WP-006)"
+run = "echo 'game:wasm: not yet implemented'"
+
+[tasks."game:py"]
+description = "Build and test the Python bindings (stub until WP-007)"
+run = "echo 'game:py: not yet implemented'"

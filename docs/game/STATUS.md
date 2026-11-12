@@ -18,7 +18,7 @@ Status values are `todo`, `in progress`, `blocked`, `split`, `review`, and `done
 
 | WP | Title | Lane | Status | Branch | Date | Notes |
 |---|---|---|---|---|---|---|
-| 001 | Scaffold the game workspace | infra | todo | | | |
+| 001 | Scaffold the game workspace | infra | done | claude/game-m0-1730d5 | 2026-11-12 | Rust pinned to 1.99.1; game:* mise tasks set RUSTUP_TOOLCHAIN because mise's root rust=stable overrides rust-toolchain.toml. Installed toolchain 1.99.1 into ~/.rustup. |
 | 002 | Deterministic math, RNG, tick skeleton | core | todo | | | |
 | 003 | Content crate | core | todo | | | |
 | 004 | Inputs, replays, golden tests | core | todo | | | |
@@ -112,3 +112,9 @@ Status values are `todo`, `in progress`, `blocked`, `split`, `review`, and `done
 | 098 | Human demonstration pipeline | rl | todo | | | |
 | 099 | Policy in the browser | render | todo | | | |
 | 100 | OpenEnv and verifiers adapters | rl | todo | | | |
+
+## Notes
+
+- **M0 branching (2026-11-12):** M0 (WP-001 to WP-008) was built on one branch,
+  `claude/game-m0-1730d5`, with one commit series per WP, instead of the playbook's
+  branch per WP. The owner reviews the branch as a whole.

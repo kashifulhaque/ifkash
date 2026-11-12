@@ -19,3 +19,14 @@ api.old/
 .claude/
 .commandcode/
 
+
+# Latticefall game
+game/target/
+src/lib/latticefall/wasm/
+game/python/.venv/
+game/python/target/
+game/python/**/*.so
+game/python/**/*.pyd
+__pycache__/
+*.egg-info/
+.pytest_cache/

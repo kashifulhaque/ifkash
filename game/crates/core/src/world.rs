@@ -5,7 +5,9 @@ use serde::{Deserialize, Serialize};
 
 pub use crate::actor::Actor;
 use crate::actor::Motor;
+use crate::actor::stats::{Defense, Stats};
 use crate::arena::{Arena, Id};
+use crate::combat::damage::DamageTable;
 use crate::combat::hurtbox::Hurtbox;
 use crate::combat::moves::MoveTable;
 use crate::events::EventQueue;
@@ -29,6 +31,9 @@ pub struct World {
     pub moves: MoveTable,
     /// Item definitions from content. Not hashed: the content hash covers them.
     pub items: ItemTable,
+    /// The damage rules and every weapon's attack rating inputs, from content. Not
+    /// hashed: the content hash covers them.
+    pub damage: DamageTable,
     pub actors: Arena<Actor>,
     /// The player actor, spawned by `World::new`.
     pub player: Id,
@@ -82,10 +87,10 @@ impl World {
             .scenario(scenario)
             .ok_or_else(|| WorldError::UnknownScenario(scenario.to_owned()))?;
         let locomotion = content.locomotion.ok_or(WorldError::MissingLocomotion)?;
-        let attrs = &content.attributes;
-        let max_hp = (attrs.max_hp_tenths(locomotion.stub_vitality) / 10).max(1) as u32;
-        let max_stamina = attrs.max_stamina_tenths(locomotion.stub_endurance) as f32 / 10.0;
-        let max_fp = attrs.max_fp_tenths(locomotion.stub_focus) as f32 / 10.0;
+        let stats = Stats::player_stub(&locomotion);
+        let derived = stats.attrs.derived(&content.attributes);
+        let (max_hp, max_stamina, max_fp) = (derived.max_hp, derived.max_stamina, derived.max_fp);
+        let damage = DamageTable::from_content(content).map_err(WorldError::Items)?;
         let moves = MoveTable::from_content(content).map_err(WorldError::Moves)?;
         let hurtbox = Hurtbox::from_locomotion(&locomotion);
         let items = ItemTable::from_content(content).map_err(WorldError::Items)?;
@@ -101,6 +106,7 @@ impl World {
             fp: max_fp,
             max_fp,
             inventory: Inventory::starting(&items),
+            stats,
             motor: Motor {
                 grounded: true,
                 ground_y: level.spawn[1],
@@ -116,6 +122,10 @@ impl World {
                 yaw: d.yaw,
                 hp: d.hp,
                 max_hp: d.hp,
+                stats: Stats {
+                    defense: Defense::from_data(&d.defense),
+                    ..Stats::default()
+                },
                 motor: Motor {
                     grounded: true,
                     ground_y: d.pos[1],
@@ -133,6 +143,7 @@ impl World {
             locomotion,
             moves,
             items,
+            damage,
             actors,
             player,
             events: EventQueue::default(),

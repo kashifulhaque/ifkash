@@ -119,8 +119,10 @@ impl LfWorld {
     /// Drains queued events as a `Uint32Array`: `[kind, payload...]` per event, with
     /// `f32` values as their bit patterns.
     ///
-    /// - Kind 1, `Hit`, 13 words: kind, attacker and target (`pack_id`), move number,
-    ///   hitbox index, motion value, charge fraction, contact point (3), and direction (3).
+    /// - Kind 1, `Hit`, 17 words: kind, attacker and target (`pack_id`), move number,
+    ///   hitbox index, motion value, charge fraction, contact point (3), direction (3),
+    ///   then (WP-023) damage taken, result (0 connected, 1 guarded, 2 guard broken),
+    ///   flags (bit 0 counter hit, bit 1 killed the target), and the target's HP after.
     pub fn drain_events(&mut self) -> Vec<u32> {
         let mut out = Vec::new();
         for event in self.world.events.drain() {
@@ -137,6 +139,12 @@ impl LfWorld {
                     ]);
                     out.extend(h.point.map(f32::to_bits));
                     out.extend(h.dir.map(f32::to_bits));
+                    out.extend([
+                        h.damage,
+                        h.result.code(),
+                        u32::from(h.counter) | u32::from(h.killed) << 1,
+                        h.hp,
+                    ]);
                 }
             }
         }

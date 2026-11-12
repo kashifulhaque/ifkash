@@ -30,6 +30,31 @@
         "name": "Devotion"
       }
     ],
+    "damage": {
+      "absorption_cap_percent": 70,
+      "base_per_upgrade_permille": 60,
+      "buff_cap_percent": 150,
+      "counter_percent": 115,
+      "max_upgrade": 10,
+      "scaling_curve": [
+        {
+          "per_point_ppm": 20000,
+          "until": 20
+        },
+        {
+          "per_point_ppm": 17500,
+          "until": 40
+        },
+        {
+          "per_point_ppm": 12500,
+          "until": 60
+        }
+      ],
+      "scaling_per_upgrade_percent": 3,
+      "two_hand_might_percent": 150,
+      "unwieldy_base_percent": 60,
+      "unwieldy_recovery_percent": 20
+    },
     "level_offset": 60,
     "max": 60,
     "max_equip_load": {
@@ -118,8 +143,8 @@
     "start_max": 16,
     "start_min": 4
   },
-  "contentHash": "2631511537094725617",
-  "contentHashHex": "248501ccf6df8ff1",
+  "contentHash": "10151597163831382610",
+  "contentHashHex": "8ce1b7d5c5085252",
   "moves": [
     {
       "anim": "roll_quick",

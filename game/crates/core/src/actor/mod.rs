@@ -2,6 +2,7 @@
 //! See docs/game/01-architecture.md, "World and actors".
 
 pub mod controller;
+pub mod stats;
 pub mod targeting;
 #[cfg(test)]
 mod tests;
@@ -42,6 +43,8 @@ pub struct Actor {
     pub hit: HitState,
     /// Equipment, items, and flasks. Only the player has any (see `items`).
     pub inventory: Inventory,
+    /// Attributes, defenses, and the other inputs to damage. See `stats`.
+    pub stats: stats::Stats,
 }
 
 /// Character controller state between ticks.

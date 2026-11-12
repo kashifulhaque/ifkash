@@ -43,4 +43,22 @@
     base_tenths: 830,
     segments: [(until: 60, per_point_tenths: 30)],
   ),
+  // Attack rating and damage (docs/game/03-combat.md, "Attack rating", "Damage dealt").
+  damage: (
+    max_upgrade: 10, // Attack rating: upgrade level 0-10
+    base_per_upgrade_permille: 60, // base(U) = base_damage * (1 + 0.06 * U)
+    scaling_per_upgrade_percent: 3, // k_a(U) = scaling_a * (1 + 0.03 * U)
+    // curve(x): 0.40 at 20 (0.02 a point), 0.75 at 40 (0.0175 a point), 1.0 at 60 (0.0125).
+    scaling_curve: [
+      (until: 20, per_point_ppm: 20000),
+      (until: 40, per_point_ppm: 17500),
+      (until: 60, per_point_ppm: 12500),
+    ],
+    unwieldy_base_percent: 60, // Requirements: base damage x 0.6
+    unwieldy_recovery_percent: 20, // Requirements: recovery frames +20 percent
+    two_hand_might_percent: 150, // Two-handing: Might counts as 1.5x
+    counter_percent: 115, // Damage dealt, counter_mult: 1.15
+    buff_cap_percent: 150, // Damage dealt, buff_mult: capped at 1.5
+    absorption_cap_percent: 70, // Damage dealt, absorption_type: capped at 0.7
+  ),
 )

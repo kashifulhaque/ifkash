@@ -34,6 +34,34 @@ pub struct Dummy {
     pub yaw: f32,
     /// Max HP; the dummy starts at full HP.
     pub hp: u32,
+    /// What the dummy shrugs off. Defaults to none.
+    #[serde(default)]
+    pub defense: DefenseData,
+}
+
+/// One of the eight damage types (docs/game/03-combat.md, "Damage types").
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+pub enum DamageType {
+    Neutral,
+    Slash,
+    Blunt,
+    Pierce,
+    Aether,
+    Fire,
+    Storm,
+    Radiance,
+}
+
+/// An actor's defenses in data (docs/game/03-combat.md, "Damage dealt").
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields, default)]
+pub struct DefenseData {
+    /// Flat defense against every damage type.
+    pub flat: u32,
+    /// Percent of a type's damage absorbed (capped by `damage.absorption_cap_percent`).
+    pub absorption: Vec<(DamageType, u8)>,
+    /// Damage multiplier in percent for a type; 125 is the spec's 1.25. Unlisted is 100.
+    pub weakness: Vec<(DamageType, u16)>,
 }
 
 /// A terrain heightfield centered on `center`. Vertex `(row, col)` sits at

@@ -217,4 +217,9 @@ fn m2_three_hit_chain_lands_exactly_three_hits() {
     for (h, &num) in hits.iter().zip(&chain) {
         assert_eq!((h.attacker, h.target, h.move_num), (w.player, dummy, num));
     }
+    // WP-023: the padded dummy takes damage on every light and survives all three.
+    assert!(hits.iter().all(|h| h.damage > 0 && !h.killed), "{hits:?}");
+    let taken: u32 = hits.iter().map(|h| h.damage).sum();
+    let d = w.actors.get(dummy).unwrap();
+    assert_eq!((d.hp, d.dead), (100 - taken, false));
 }

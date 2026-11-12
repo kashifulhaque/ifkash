@@ -44,6 +44,15 @@ pub struct Locomotion {
     pub stub_endurance: u16,
     /// Focus used for the player's max FP until characters have attributes (stub).
     pub stub_focus: u16,
+    /// Might, Finesse, Insight, and Devotion for the player until leveling (stub; WP-050).
+    pub stub_might: u16,
+    pub stub_finesse: u16,
+    pub stub_insight: u16,
+    pub stub_devotion: u16,
+    /// Upgrade level of the equipped weapon until upgrades exist (stub).
+    pub stub_weapon_upgrade: u8,
+    /// Flat defense of the player against every damage type until armor exists (stub).
+    pub stub_defense: u32,
     /// Ticks a pressed action stays buffered while the current move can't be canceled
     /// (docs/game/03-combat.md, "Input buffer").
     pub input_buffer_ticks: u16,

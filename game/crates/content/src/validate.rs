@@ -288,6 +288,37 @@ fn check_attributes(a: &Attributes, out: &mut Vec<Issue>) {
         if a.spell_slots.every == 0 {
             s.error("spell_slots.every", "must be at least 1");
         }
+        let d = &a.damage;
+        let mut prev = 0;
+        for (i, seg) in d.scaling_curve.iter().enumerate() {
+            if seg.until <= prev || seg.until > a.max {
+                s.error(
+                    format!("damage.scaling_curve[{i}].until"),
+                    format!("{} must be above {prev} and at most {}", seg.until, a.max),
+                );
+            }
+            prev = seg.until;
+        }
+        if d.scaling_curve.last().is_none_or(|l| l.until != a.max) {
+            s.error("damage.scaling_curve", "must end at the attribute cap");
+        }
+        for (name, v, lo) in [
+            ("unwieldy_base_percent", d.unwieldy_base_percent, 0),
+            ("two_hand_might_percent", d.two_hand_might_percent, 100),
+            ("counter_percent", d.counter_percent, 100),
+            ("buff_cap_percent", d.buff_cap_percent, 100),
+            ("absorption_cap_percent", d.absorption_cap_percent, 0),
+        ] {
+            if v < lo || v > 1000 {
+                s.error(
+                    format!("damage.{name}"),
+                    format!("{v} is outside {lo}..=1000"),
+                );
+            }
+        }
+        if d.absorption_cap_percent > 100 {
+            s.error("damage.absorption_cap_percent", "must be at most 100");
+        }
     }
     for (name, c) in [
         ("max_hp", &a.max_hp),

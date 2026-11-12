@@ -91,6 +91,69 @@ pub struct Attributes {
     pub max_equip_load: Curve,
     pub spell_slots: Steps,
     pub resistance: Curve,
+    /// Attack rating and damage numbers (docs/game/03-combat.md, "Attack rating" and
+    /// "Damage dealt").
+    pub damage: DamageRules,
+}
+
+/// A run of attribute points that add the same scaling-curve increment.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "ts", derive(ts_rs::TS))]
+#[serde(deny_unknown_fields)]
+pub struct ScalingSegment {
+    /// The last attribute value this rate applies to (inclusive).
+    pub until: u16,
+    /// Millionths of the curve gained per attribute point.
+    pub per_point_ppm: u32,
+}
+
+/// The damage formulas' constants. Percent and permille values are integers so the
+/// simulation's damage math is exact (see `lf_core::combat::damage`).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "ts", derive(ts_rs::TS))]
+#[serde(deny_unknown_fields)]
+pub struct DamageRules {
+    /// The highest weapon upgrade level.
+    pub max_upgrade: u8,
+    /// `base(U) = base_damage * (1 + 0.06 * U)`, in permille per level.
+    pub base_per_upgrade_permille: u16,
+    /// `k_a(U) = scaling_a * (1 + 0.03 * U)`, in percent per level.
+    pub scaling_per_upgrade_percent: u16,
+    /// The `curve(x)` of the attack-rating formula, a piecewise-linear curve from 0 at
+    /// attribute 0. The last segment's `until` is where it reaches 1.0.
+    pub scaling_curve: Vec<ScalingSegment>,
+    /// Base damage multiplier while a requirement isn't met (scaling is zero too).
+    pub unwieldy_base_percent: u16,
+    /// Extra recovery frames while a requirement isn't met, in percent. Consumed by the
+    /// move system (not applied by the damage pipeline).
+    pub unwieldy_recovery_percent: u16,
+    /// Might counts as this percent of its value while two-handing, capped at `max`.
+    pub two_hand_might_percent: u16,
+    /// `counter_mult` when the target is in the startup or active frames of its attack.
+    pub counter_percent: u16,
+    /// The most the product of damage buffs can multiply raw damage, in percent.
+    pub buff_cap_percent: u16,
+    /// The most a target's armor absorbs of a damage type, in percent.
+    pub absorption_cap_percent: u16,
+}
+
+impl DamageRules {
+    /// `curve(x)` in millionths, for an attribute value given in half points (twice the
+    /// value) so that 1.5x Might from two-handing stays exact. `attr_halves` is clamped
+    /// by the caller.
+    pub fn scaling_curve_ppm(&self, attr_halves: u32) -> u64 {
+        let mut value = 0u64;
+        let mut prev = 0u32;
+        for seg in &self.scaling_curve {
+            let top = attr_halves.min(u32::from(seg.until) * 2);
+            if top > prev {
+                // Every per-point rate is even in practice; half a point is half a rate.
+                value += u64::from(top - prev) * u64::from(seg.per_point_ppm) / 2;
+                prev = top;
+            }
+        }
+        value
+    }
 }
 
 impl Attributes {

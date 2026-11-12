@@ -14,20 +14,39 @@
 //!    target's hurtbox (see [`hitbox::swept_overlap`]).
 //! 3. Sort the candidates by attacker, hitbox index, and target, then decide each one
 //!    with [`hit_outcome`]. A move hits each target at most once: the first hitbox in
-//!    that order wins, and later ticks skip the target.
-//! 4. Record every actor's pose as the next tick's sweep start.
+//!    that order wins, and later ticks skip the target. A landing hit also gets its
+//!    damage here (`combat::damage`), its counter-hit flag, and its guard inputs.
+//! 4. Apply the landings in that same order: each goes through
+//!    [`guard::apply_incoming_hit`], takes the HP it reports, emits its `Hit` event, and
+//!    marks the target struck. Targets left at 0 HP are marked `dead` after the last
+//!    landing.
+//! 5. Record every actor's pose as the next tick's sweep start.
 //!
-//! Because every outcome is decided from the state at the start of the system, the
-//! order hits are applied in can't change which hits land.
+//! # Determinism of the apply step
+//!
+//! Which hits land, and how much each deals before the guard, is decided in step 3 from
+//! the state at the start of the system. Step 4 changes only the stamina, guard state,
+//! and move of the targets (through the guard) and their HP, none of which step 3 reads
+//! again, and `dead` is set only after the last landing, so an earlier hit never turns
+//! a later one into [`guard::HitOutcome::Ignored`]. The one thing the apply order does
+//! decide is how the stamina of a guarding target is shared out when several hits reach
+//! it in one tick (the first blocks, a later one can break the guard). The order is the
+//! sorted one, so it is the same on every run.
 
 use lf_content::moves::Hitbox;
 use serde::{Deserialize, Serialize};
 
+use lf_content::GuardStats;
+use lf_content::moves::HitTag;
+
+use super::damage::{self, Damage};
+use super::dodge;
+use super::guard::{self, IncomingHit};
 use super::hitbox::{self, Capsule, Pose};
-use super::moves::{MoveNum, flags};
+use super::moves::{MoveNum, MoveTable};
 use crate::actor::Actor;
 use crate::arena::Id;
-use crate::events::{Event, Hit};
+use crate::events::{Event, Hit, HitResult};
 use crate::math::dmath::{lerp, sqrt};
 use crate::world::World;
 
@@ -60,26 +79,59 @@ impl HitState {
     }
 }
 
-/// What an incoming hit does to its target.
+/// Whether an incoming hit lands on its target. The decision half of the hit rule:
+/// [`guard::apply_incoming_hit`] then says what a landed hit does (block, break, or
+/// connect) and returns a [`guard::HitOutcome`].
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum HitOutcome {
-    /// The hit passes through (i-frames). The target isn't marked struck, so a later
-    /// active frame of the same move can still land.
+    /// The hit passes through (i-frames, or a dead target). The target isn't marked
+    /// struck, so a later active frame of the same move can still land.
     Ignored,
-    /// The hit lands.
+    /// The hit lands: the target is marked struck, whatever the guard then does.
     Connect,
 }
 
-/// Decides what a hit from `attacker`'s hitbox `hb` does to `target`. The single place
-/// that rule lives: guarding, guard breaks, and parries (WP-022, WP-027) add outcomes
-/// here, and every outcome except `Ignored` marks the target struck for the move.
+/// Decides whether a hit from `attacker`'s hitbox `hb` lands on `target`. The single
+/// place that rule lives: every outcome except `Ignored` marks the target struck for
+/// the move. It reads the same state `guard::apply_incoming_hit` does to ignore a hit,
+/// so a landing hit is never ignored at apply time (unless the world changed in between).
 pub fn hit_outcome(attacker: &Actor, target: &Actor, hb: &Hitbox) -> HitOutcome {
     let _ = (attacker, hb);
-    if target.moves.has(flags::IFRAMES) {
+    if target.dead || dodge::is_invulnerable(&target.moves) {
         HitOutcome::Ignored
     } else {
         HitOutcome::Connect
     }
+}
+
+/// True when `target` is in the startup or active frames of one of its own attacks: it
+/// has a move with hitboxes and hasn't passed the last active frame of the last one
+/// (docs/game/03-combat.md, "Damage dealt", `counter_mult`).
+fn is_counter(target: &Actor, moves: &MoveTable) -> bool {
+    let Some(c) = target.moves.current else {
+        return false;
+    };
+    moves
+        .get(c.num)
+        .and_then(|d| d.data.hitboxes.iter().map(|h| h.frames.1).max())
+        .is_some_and(|last_active| c.frame <= last_active)
+}
+
+/// A hit that landed, decided from the world at the start of the system.
+struct Landing {
+    attacker: Id,
+    target: Id,
+    move_num: MoveNum,
+    hitbox: u8,
+    motion_value: f32,
+    charge_frac: f32,
+    point: [f32; 3],
+    dir: [f32; 3],
+    /// Damage before the guard.
+    damage: Damage,
+    counter: bool,
+    poise_damage: u32,
+    unblockable: bool,
 }
 
 /// A hitbox touching a hurtbox this tick, before its outcome is decided.
@@ -177,9 +229,12 @@ pub fn run(world: &mut World) {
 
     // 3. Outcomes, in attacker, hitbox, target order.
     candidates.sort_by_key(|c| (c.attacker, c.hitbox, c.target));
-    let mut landed: Vec<(Id, Id)> = Vec::new();
+    let mut landings: Vec<Landing> = Vec::new();
     for cand in candidates {
-        if landed.contains(&(cand.attacker, cand.target)) {
+        if landings
+            .iter()
+            .any(|l| (l.attacker, l.target) == (cand.attacker, cand.target))
+        {
             continue;
         }
         let (Some(a), Some(t)) = (
@@ -208,7 +263,32 @@ pub fn run(world: &mut World) {
             Some(ch) => lerp(hb.motion_value, ch.motion_value_max, charge_frac),
             None => hb.motion_value,
         };
-        let event = Hit {
+        // Damage, from the attacker's equipped weapon and stats. An actor with no
+        // weapon has no attack rating and deals the minimum of 1.
+        let ar = a
+            .inventory
+            .equipment
+            .right_weapon()
+            .and_then(|w| {
+                world.damage.attack_rating(
+                    w,
+                    &a.stats.attrs,
+                    a.stats.weapon_upgrade,
+                    a.stats.two_handing,
+                )
+            })
+            .unwrap_or_default();
+        let counter = is_counter(t, &world.moves);
+        let hit = damage::Hit {
+            ar,
+            phys: damage::phys_type(hb.phys),
+            element: hb.element.map(damage::element_type),
+            // Thousandths. Rounding the f32 is exact for the listed values (1.3 -> 1300).
+            motion_milli: (motion_value * 1000.0).round().max(0.0) as u32,
+            counter,
+            buff_percent: a.stats.buff_percent,
+        };
+        landings.push(Landing {
             attacker: cand.attacker,
             target: cand.target,
             move_num: c.num,
@@ -217,20 +297,78 @@ pub fn run(world: &mut World) {
             charge_frac,
             point: cand.point,
             dir: dir_xz(a.pos, t.pos, pose(a).forward()),
-        };
-        landed.push((cand.attacker, cand.target));
-        world.events.push(Event::Hit(event));
+            damage: damage::damage(&world.damage.rules, &hit, &t.stats.defense),
+            counter,
+            poise_damage: u32::from(hb.poise_damage),
+            unblockable: hb.tags.contains(&HitTag::Unblockable),
+        });
     }
-    // Damage is WP-023: a landed hit only marks its target struck for now.
-    for (attacker, target) in landed {
-        if let Some(a) = world.actors.get_mut(attacker)
-            && let Err(at) = a.hit.struck.binary_search(&target)
+
+    // 4. Apply the landings in the same order. See the module docs.
+    for l in &landings {
+        // Only the player has a moveset until AI lands; anyone else can't be guarding.
+        let guard_stats = if l.target == world.player {
+            world.moves.player_moveset.as_ref().map(|m| m.guard)
+        } else {
+            None
+        }
+        .unwrap_or(GuardStats {
+            absorb_phys_percent: 0,
+            absorb_elem_percent: 0,
+            guard_boost: 1,
+        });
+        let Some(t) = world.actors.get_mut(l.target) else {
+            continue;
+        };
+        let incoming = IncomingHit {
+            damage: l.damage.total,
+            poise_damage: l.poise_damage,
+            elemental: l.damage.mostly_elemental(),
+            unblockable: l.unblockable,
+        };
+        let (taken, result) =
+            match guard::apply_incoming_hit(t, incoming, &guard_stats, &world.locomotion.guard) {
+                // Decided as a landing from the same state, so this can't happen; if it
+                // ever does, the hit passes through like an i-frame hit.
+                guard::HitOutcome::Ignored => continue,
+                guard::HitOutcome::Connected { damage } => (damage, HitResult::Connected),
+                guard::HitOutcome::Guarded { damage, .. } => (damage, HitResult::Guarded),
+                guard::HitOutcome::GuardBroken { damage } => (damage, HitResult::GuardBroken),
+            };
+        let hp_before = t.hp;
+        t.hp = hp_before.saturating_sub(taken);
+        world.events.push(Event::Hit(Hit {
+            attacker: l.attacker,
+            target: l.target,
+            move_num: l.move_num,
+            hitbox: l.hitbox,
+            motion_value: l.motion_value,
+            charge_frac: l.charge_frac,
+            point: l.point,
+            dir: l.dir,
+            damage: hp_before - t.hp,
+            result,
+            counter: l.counter,
+            killed: hp_before > 0 && t.hp == 0,
+            hp: t.hp,
+        }));
+        if let Some(a) = world.actors.get_mut(l.attacker)
+            && let Err(at) = a.hit.struck.binary_search(&l.target)
         {
-            a.hit.struck.insert(at, target);
+            a.hit.struck.insert(at, l.target);
+        }
+    }
+    // An actor at 0 HP is dead. Set after the last landing so that two hits in one tick
+    // both land (see the module docs). Respawn and drops are WP-029's.
+    for l in &landings {
+        if let Some(t) = world.actors.get_mut(l.target)
+            && t.hp == 0
+        {
+            t.dead = true;
         }
     }
 
-    // 4. This tick's pose is the next tick's sweep start.
+    // 5. This tick's pose is the next tick's sweep start.
     for id in ids {
         if let Some(a) = world.actors.get_mut(id) {
             a.hit.prev = Some(pose(a));
@@ -312,8 +450,11 @@ mod tests {
         assert_eq!(h.move_num, w.moves.num_of("ss_light_1").unwrap());
         assert_eq!((h.hitbox, h.motion_value, h.charge_frac), (0, 1.0, 0.0));
         assert!((h.dir[2] - 1.0).abs() < 1e-6, "{:?}", h.dir);
-        // The dummy takes no damage until WP-023.
-        assert_eq!(w.actors.get(dummy).unwrap().hp, 100);
+        // The Wayfarer's Blade in the stub loadout: AR 135.24; raw 135.24 against the
+        // dummy's flat 500 is 135.24^2 / 635.24 = 28.79, so 29 damage.
+        assert_eq!((h.damage, h.hp, h.result), (29, 71, HitResult::Connected));
+        assert!(!h.counter && !h.killed);
+        assert_eq!(w.actors.get(dummy).unwrap().hp, 71);
     }
 
     #[test]
@@ -435,5 +576,172 @@ mod tests {
         }
         let targets: Vec<Id> = hits.iter().map(|h| h.target).collect();
         assert_eq!(targets, vec![dummy_ahead(&w), twin]);
+    }
+
+    // --- WP-023: damage, the guard, and counter hits ---
+
+    /// An actor with the player's loadout and stats standing 1.2 m in front of the
+    /// player, facing it, `frame` frames into a light attack.
+    fn attacker_at_player(w: &mut World, frame: u16) -> Id {
+        let p = w.actors.get(w.player).unwrap();
+        let (inventory, stats) = (p.inventory.clone(), p.stats.clone());
+        let light = w.moves.num_of("ss_light_1").unwrap();
+        w.actors.insert(Actor {
+            pos: [0.0, 0.0, 1.2],
+            yaw: core::f32::consts::PI,
+            hp: 100,
+            max_hp: 100,
+            hurtbox: Hurtbox::from_locomotion(&w.locomotion),
+            inventory,
+            stats,
+            moves: crate::combat::moves::MoveState {
+                current: Some(ActiveMove {
+                    num: light,
+                    frame,
+                    charge_ticks: 0,
+                    hold_button: 0,
+                    free_from: u16::MAX,
+                }),
+                ..Default::default()
+            },
+            ..Actor::default()
+        })
+    }
+
+    /// Steps until the first hit on `target`, with the player's input `buttons` held
+    /// the whole time, and returns it.
+    fn first_hit_on(w: &mut World, target: Id, buttons: u16) -> Hit {
+        for _ in 0..40 {
+            if let Some(h) = step(w, buttons).into_iter().find(|h| h.target == target) {
+                return h;
+            }
+        }
+        panic!("no hit on the target");
+    }
+
+    fn player_hp(w: &World) -> u32 {
+        w.actors.get(w.player).unwrap().hp
+    }
+
+    /// The stamina a block of the light costs: `poise_damage * 100 / guard_boost`.
+    fn light_block_cost(w: &World) -> f32 {
+        let light = w.moves.num_of("ss_light_1").unwrap();
+        let poise = w.moves.get(light).unwrap().data.hitboxes[0].poise_damage;
+        let boost = w.moves.player_moveset.as_ref().unwrap().guard.guard_boost;
+        f32::from(poise) * 100.0 / f32::from(boost)
+    }
+
+    #[test]
+    fn an_unguarded_hit_takes_full_damage_from_the_player() {
+        let mut w = field();
+        let player = w.player;
+        attacker_at_player(&mut w, 0);
+        let hp = player_hp(&w);
+        let h = first_hit_on(&mut w, player, 0);
+        // AR 135.24 against the player's flat 40: 135.24^2 / 175.24 = 104.4.
+        assert_eq!((h.damage, h.result), (104, HitResult::Connected));
+        assert_eq!(player_hp(&w), hp - 104);
+        assert_eq!(h.hp, hp - 104);
+    }
+
+    #[test]
+    fn a_guarded_hit_costs_stamina_and_takes_half_the_damage() {
+        let mut w = field();
+        let player = w.player;
+        for _ in 0..3 {
+            step(&mut w, buttons::GUARD);
+        }
+        assert!(w.actors.get(w.player).unwrap().moves.guard.active);
+        attacker_at_player(&mut w, 0);
+        let (hp, max_stamina) = {
+            let p = w.actors.get(w.player).unwrap();
+            (p.hp, p.max_stamina)
+        };
+        let h = first_hit_on(&mut w, player, buttons::GUARD);
+        // The blade absorbs 50 percent of the 104: 52.
+        assert_eq!((h.damage, h.result), (52, HitResult::Guarded));
+        assert_eq!(player_hp(&w), hp - 52);
+        let cost = light_block_cost(&w);
+        assert_eq!(cost, 30.0);
+        assert_eq!(w.actors.get(w.player).unwrap().stamina, max_stamina - cost);
+    }
+
+    #[test]
+    fn a_hit_that_overruns_the_stamina_breaks_the_guard() {
+        let mut w = field();
+        let player = w.player;
+        for _ in 0..3 {
+            step(&mut w, buttons::GUARD);
+        }
+        w.actors.get_mut(w.player).unwrap().stamina = 10.0;
+        attacker_at_player(&mut w, 0);
+        let hp = player_hp(&w);
+        let h = first_hit_on(&mut w, player, buttons::GUARD);
+        // Stamina covers 10 / 30 of the block: 35 of the 104 is blocked at 50 percent
+        // (18, halves up) and the other 69 lands in full.
+        assert_eq!((h.damage, h.result), (87, HitResult::GuardBroken));
+        assert_eq!(player_hp(&w), hp - 87);
+        let p = w.actors.get(w.player).unwrap();
+        assert_eq!(p.stamina, 0.0);
+        assert!(p.moves.guard.stagger > 0 && !p.moves.guard.active);
+    }
+
+    #[test]
+    fn the_dummy_loses_hp_and_dies_at_zero() {
+        let mut w = field();
+        let dummy = dummy_ahead(&w);
+        place_player(&mut w, 4.0);
+        w.actors.get_mut(dummy).unwrap().hp = 20;
+        let hit = {
+            step(&mut w, buttons::LIGHT);
+            first_hit_on(&mut w, dummy, 0)
+        };
+        // The 29 damage is cut to the 20 HP it had.
+        assert_eq!((hit.damage, hit.hp, hit.killed), (20, 0, true));
+        let d = w.actors.get(dummy).unwrap();
+        assert_eq!((d.hp, d.dead), (0, true));
+        // A dead actor takes no more hits.
+        for _ in 0..60 {
+            assert!(step(&mut w, 0).iter().all(|h| h.target != dummy));
+        }
+    }
+
+    #[test]
+    fn two_hits_in_one_tick_both_land_on_a_target_the_first_kills() {
+        let mut w = field();
+        let a = attacker_at_player(&mut w, 0);
+        let b = attacker_at_player(&mut w, 0);
+        w.actors.get_mut(w.player).unwrap().hp = 1;
+        let mut hits = Vec::new();
+        for _ in 0..40 {
+            hits.extend(step(&mut w, 0).into_iter().filter(|h| h.target == w.player));
+        }
+        assert_eq!(hits.len(), 2, "{hits:?}");
+        assert_eq!((hits[0].attacker, hits[1].attacker), (a, b));
+        assert_eq!((hits[0].killed, hits[0].damage), (true, 1));
+        assert_eq!((hits[1].killed, hits[1].damage, hits[1].hp), (false, 0, 0));
+        assert!(w.actors.get(w.player).unwrap().dead);
+    }
+
+    #[test]
+    fn a_target_in_its_own_attack_takes_the_counter_multiplier() {
+        let mut w = field();
+        let dummy = dummy_ahead(&w);
+        place_player(&mut w, 4.0);
+        let light = w.moves.num_of("ss_light_1").unwrap();
+        // The dummy starts its own light on the same tick: startup when the player's
+        // blade arrives.
+        w.actors.get_mut(dummy).unwrap().moves.current = Some(ActiveMove {
+            num: light,
+            frame: 0,
+            charge_ticks: 0,
+            hold_button: 0,
+            free_from: u16::MAX,
+        });
+        step(&mut w, buttons::LIGHT);
+        let h = first_hit_on(&mut w, dummy, 0);
+        assert!(h.counter, "{h:?}");
+        // Raw 135.24 * 1.15 = 155.526; 155.526^2 / 655.526 = 36.9.
+        assert_eq!((h.damage, h.hp), (37, 63));
     }
 }

@@ -1,6 +1,7 @@
-//! Combat: moves, stamina, dodging, guarding, hitboxes, and hit resolution; damage and
-//! poise land in later work packages. See docs/game/03-combat.md.
+//! Combat: moves, stamina, dodging, guarding, hitboxes, and hit resolution, and damage; poise
+//! lands in a later work package. See docs/game/03-combat.md.
 
+pub mod damage;
 pub mod dodge;
 pub mod guard;
 pub mod hitbox;

@@ -26,6 +26,12 @@
   stub_vitality: 10, // stub until characters have attributes
   stub_endurance: 10, // stub until characters have attributes
   stub_focus: 10, // stub until characters have attributes
+  stub_might: 12, // stub until leveling (WP-050); meets the Wayfarer's Blade requirements
+  stub_finesse: 12, // stub
+  stub_insight: 8, // stub
+  stub_devotion: 8, // stub
+  stub_weapon_upgrade: 0, // stub until upgrades exist
+  stub_defense: 40, // stub until armor exists (tuning)
   // Armor weight until equipment exists: with the 4.0 weapon this is 24.0 of 50.8 max load
   // (47 percent, the Medium roll tier).
   stub_armor_weight_tenths: 200, // stub

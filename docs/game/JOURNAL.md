@@ -36,6 +36,8 @@ Copy this block to the top of the entries and fill it in as you go:
 - **WPs:**
   - WP-010: in progress (opus)
   - WP-011: in progress (sonnet, in its own worktree)
+  - WP-013: in progress (sonnet, in its own worktree). The owner approved downloading
+    the Quaternius Universal Animation Library, `@gltf-transform/cli`, and toktx.
 - **Context:** recorded as WPs finish (budget 500K)
 - **Not verified:** to be filled in
 - **Waiting on the owner:** to be filled in

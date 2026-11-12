@@ -40,7 +40,7 @@ The orchestrator owns this file. It follows these rules, from
 | 010 | Physics and character controller | core | opus | in progress |  | latticefall-m1 | game/m1-movement | 2026-11-12 | |
 | 011 | Input mapping | render | sonnet | in progress |  | latticefall-m1 | game/m1-movement | 2026-11-12 | |
 | 012 | Third-person camera | render | sonnet | todo |  |  | | | |
-| 013 | Character rendering and animation | render | sonnet | todo |  |  | | | |
+| 013 | Character rendering and animation | render | sonnet | in progress |  | latticefall-m1 | game/m1-movement | 2026-11-12 | |
 | 014 | Developer tools and dev URLs | render | sonnet | todo |  |  | | | |
 | 015 | Lock-on in the core | core | haiku | todo |  |  | | | |
 | 020 | Move system | combat | opus | todo |  |  | | | |

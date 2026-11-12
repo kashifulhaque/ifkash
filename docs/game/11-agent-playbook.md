@@ -1,24 +1,135 @@
 # Agent playbook
 
-This document tells an AI coding agent (Claude Code, Cursor, Codex, or similar) how to
-pick up one work package (WP) from [the roadmap](10-roadmap.md), finish it in one
-session, and hand it back in a state the next session can build on.
+This document tells AI coding agents (Claude Code, Cursor, Codex, or similar) how to
+build *Latticefall* from [the roadmap](10-roadmap.md). The default way to work is an
+**orchestrator** session that picks ready work packages (WPs), hands each one to a
+**worker** subagent, verifies the result, and records it, until it reaches its context
+budget and hands off to the next session.
 
 Humans can follow it too. It's written for agents because agents start every session
 with no memory of the last one.
 
 ## The one rule
 
-**One session, one work package.** A session reads the WP card, reads only the spec
-sections the card lists, does the work, verifies it, updates [`STATUS.md`](STATUS.md),
-and stops. If a WP turns out bigger than one session, the agent splits it (see
-[Split a work package](#split-a-work-package)) instead of leaving half-finished code
+**One worker, one work package.** A worker reads the WP card, reads only the spec
+sections the card lists, does the work, and reports. The orchestrator verifies it and
+updates [`STATUS.md`](STATUS.md) and [`JOURNAL.md`](JOURNAL.md). If a WP turns out
+too big for one worker, the orchestrator splits it (see
+[split a work package](#split-a-work-package)) instead of leaving half-finished code
 behind.
 
-## Start a session
+## Start an orchestrator session
 
-Paste the following prompt into a fresh session, replacing `WP_ID` with the card's ID,
-for example `WP-020`:
+This is the normal way to start work. Paste the following prompt into a new Claude Code
+session, using Opus as the model. Replace `TARGET` with a milestone (for example `M1`),
+a list of WPs, or `next` to let the orchestrator choose.
+
+```text
+You are the orchestrator for Latticefall, the game in this repo. Work on: TARGET.
+Follow docs/game/11-agent-playbook.md, section "Run a milestone as an orchestrator",
+exactly, including the context budget.
+
+Start by reading, in this order: docs/game/README.md, docs/game/11-agent-playbook.md,
+docs/game/JOURNAL.md (the latest entry first), and docs/game/STATUS.md. Then read the
+roadmap cards for the WPs you'll run, and nothing else until a WP needs it.
+
+Shell rule (pass it to every worker): call /bin/ls instead of ls, and never run eza.
+```
+
+## Run a milestone as an orchestrator
+
+The orchestrator is an Opus session. It plans, delegates, verifies, and records; it
+writes code itself only for small fixes found during verification.
+
+### Start up
+
+1. Read the latest [`JOURNAL.md`](JOURNAL.md) entry. Do its **Next steps** first, and
+   respect anything it says is waiting on the owner.
+2. Check the git state. If the previous milestone's pull request is merged, branch from
+   `main`. If it isn't merged, branch from the previous session's branch (the journal
+   names it) and say so in your journal entry.
+3. Pick the WPs to run: every WP in the target whose **Depends on** WPs are all `done`
+   in `STATUS.md` (or merged on your branch) and that isn't `in progress` for another
+   session. Order them by the waves in [the roadmap](10-roadmap.md#critical-path-and-parallelism).
+4. Add a journal entry with the session's name and start time, and claim the first WPs
+   in `STATUS.md` (see the rules at the top of that file).
+
+### Loop
+
+For each ready WP:
+
+1. **Delegate.** Start a worker subagent with the card's **Worker** model (see
+   [choose a worker](#choose-a-worker)). Its brief contains: the card text, the spec
+   sections the card lists, the Touch paths, the [definition of done](#definition-of-done),
+   the [ground rules](#ground-rules-for-the-simulation-core) that apply, and the shell
+   rule. Tell it to touch nothing outside its Touch list and to report what it changed,
+   what it ran, and anything it couldn't do.
+2. **Run in parallel** only when Touch lists don't overlap. Use worktree isolation for a
+   worker whose Touch list overlaps a running one, or wait.
+3. **Verify yourself.** Run every **Verify** command and check every **Acceptance**
+   bullet. Don't trust the worker's report. Read the diff for determinism-rule
+   violations.
+4. **Escalate on failure.** If a worker's result fails verification, send it the
+   failure once. If it fails again, start a fresh worker one tier up (haiku to sonnet to
+   opus) with both failures in its brief. If an opus worker fails, mark the WP `blocked`
+   and move on.
+5. **Record.** Commit with the WP ID prefix, update the WP's row in `STATUS.md` (status,
+   **Done by**, date, notes), and add a line to your journal entry with the worker
+   model and its reported token use.
+6. **Check the budget** (see [context budget and handoff](#context-budget-and-handoff))
+   before starting the next WP.
+
+### Stop
+
+Stop when the target is done, everything left is blocked, a gate needs the owner (G1,
+G2, G3, Launch), or the context budget says so. Then:
+
+1. Finish or release every WP you claimed.
+2. Push the branch and open (or update) one pull request for the session's work, as
+   [branches, commits, and pull requests](#branches-commits-and-pull-requests) describes.
+3. Complete your journal entry, including **Next steps** for the next session.
+4. Tell the owner: what's done, what's blocked, what needs their decision, and the
+   exact prompt to start the next session.
+
+## Choose a worker
+
+Every roadmap card has a **Worker** field. The orchestrator uses it as the starting
+model and escalates as described in the loop. The tiers mean the following:
+
+| Worker | Use for | Examples |
+|---|---|---|
+| `haiku` | Small or data-heavy WPs that follow an existing pattern: content files, movesets modeled on an existing one, simple UI, adapters | WP-015, WP-050, WP-053, WP-071 |
+| `sonnet` | Most feature work: systems with clear specs, rendering, UI, levels, most bosses | WP-011, WP-022, WP-060, WP-074 |
+| `opus` | Foundations that later WPs build on, or work where a subtle mistake corrupts determinism or the RL interface | WP-010, WP-020, WP-030, WP-040, WP-091 |
+
+The orchestrator may move a WP up a tier before starting it if the card looks harder
+than its size suggests, and records why in the journal. It never moves a WP down a
+tier.
+
+## Context budget and handoff
+
+A session's budget is **500K tokens**, counting the orchestrator's own context plus
+the tokens every worker it started reported. Long sessions get slower, cost more, and
+lose track of early details, so the orchestrator hands off instead of pushing on.
+
+- **Measure.** After each WP, read the orchestrator's own context size (in the Claude
+  desktop app, the `get_usage` session tool reports it; otherwise estimate from the
+  conversation length). Add the token counts that worker completion notices report.
+  Keep the running total in the journal entry.
+- **350K: wind down.** Start no new WPs. Let running workers finish and verify them.
+- **400K: hand off.** Finish the [stop](#stop) steps now. Tell the owner the session
+  is at its context budget and give the prompt for the next session, which is the
+  standard orchestrator prompt with `TARGET` set to what's left.
+- **500K: hard stop.** If a single large WP pushes the total past 500K, stop, release
+  the WP, and hand off, even mid-WP. A half-finished WP is released, not committed.
+- **Size the batch.** As a rule of thumb, an orchestrator session fits about 6-10 WPs:
+  each verified WP costs the orchestrator roughly 20-40K of its own context, and an L
+  worker reports 100-250K.
+
+## Run a single work package
+
+To run one WP without an orchestrator, paste the following prompt into a fresh session,
+replacing `WP_ID` with the card's ID, for example `WP-020`:
 
 ```text
 You are implementing one work package of Latticefall, the souls-like game in this
@@ -32,8 +143,9 @@ repo. Follow docs/game/11-agent-playbook.md exactly.
 4. Plan the change, then implement it. Touch only the paths the card lists under
    "Touch". If you must touch anything else, say why in your report.
 5. Run every command under "Verify" and meet every "Acceptance" bullet.
-6. Update STATUS.md (status, date, branch, notes) and, if you changed a spec
-   decision, add an ADR under docs/game/decisions/.
+6. Update STATUS.md (status, worker, session, date, branch, notes), add an entry to
+   docs/game/JOURNAL.md, and, if you changed a spec decision, add an ADR under
+   docs/game/decisions/.
 7. Report: what was asked, what changed, what you verified, what's left.
 
 Shell rule: call /bin/ls instead of ls, and never run eza.
@@ -48,12 +160,13 @@ enemy or one per data file. Give each subagent the exact file paths it owns.
 
 ## Branches, commits, and pull requests
 
-- Branch from `main` as `game/WP_ID-SHORT_SLUG`, for example
-  `game/wp-020-move-system`.
-- Commit in small, buildable steps. Prefix each subject with the WP ID:
-  `WP-020: Add hitbox sweep queries`.
-- Open one pull request per WP. Its description holds the three-part report from the
-  session prompt plus the output of the verify commands.
+- An orchestrator session works on one branch, named for its target, for example
+  `game/m1-movement`. A single-WP session uses `game/wp-020-move-system`.
+- Commit once per verified WP, in small buildable steps. Prefix each subject with the
+  WP ID: `WP-020: Add hitbox sweep queries`.
+- Open one pull request per session. Its description lists each WP with what changed
+  and how it was verified, everything not verified, and decisions for the owner.
+- Never merge your own pull request. The owner reviews and merges.
 - Merge only when CI is green. The game lives behind the `?engine=lf` flag
   until [WP-086](10-roadmap.md#wp-086), so partial worlds can merge
   without breaking the site.
@@ -72,7 +185,7 @@ A WP is done when all of the following are true:
 - Content data passes `cargo run -p lf-tools -- validate`.
 - If the WP is visible in the browser, the agent took screenshots by using the
   [visual verification protocol](#verify-visually) and attached or described them.
-- `STATUS.md` is updated.
+- `STATUS.md` and `JOURNAL.md` are updated.
 
 ## Ground rules for the simulation core
 

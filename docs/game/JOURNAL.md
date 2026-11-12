@@ -30,20 +30,44 @@ Copy this block to the top of the entries and fill it in as you go:
 
 ### 2026-11-12: latticefall-m1b (M1: WP-015, WP-012, WP-014, gate G1)
 
-- **Orchestrator:** Opus 5.5, low effort; session started from `latticefall-m1`
+- **Orchestrator:** Opus 5.5, low effort; side session started from `latticefall-m1`
   (`local_e9f21284-d98a-499d-989a-a9b9aee9498c`)
-- **Branch:** `game/m1-camera`
+- **Branch:** `game/m1-camera`; first commit on `main` `7db8780`, last is this entry's
 - **Started from:** `origin/main` at `a5d0e60`
 - **WPs:**
-  - WP-015: in progress. Moved up from haiku to sonnet: the card names one file, but the
-    work also changes the shared actor module, the tick systems, the snapshot flags, the
-    test field, and the golden replay hashes.
-  - WP-012: in progress (sonnet, own worktree, in parallel with WP-015)
-- **Snapshot contract for lock-on:** `ActorSnap.flags` bits follow the order in the
-  architecture doc: dead `1<<0`, staggered `1<<1`, guarding `1<<2`, invulnerable
-  `1<<3`, locked target `1<<4`, two-handing `1<<5`. The core sets `1<<4` on the actor
-  the player is locked on to; the camera reads it.
-- **Context:** running total kept here.
+  - WP-015: done by sonnet (moved up from haiku: the card names one file, but the work
+    also changes the shared actor module, the tick systems, the snapshot flags, the test
+    field, and the golden hashes); commit `fa12966`; 128K worker tokens
+  - WP-012: done by sonnet in its own worktree, in parallel with WP-015; commit
+    `c01d30b`, merged in `db16733`; 212K worker tokens
+  - WP-014: not started (budget)
+- **Snapshot contract for lock-on:** `ActorSnap.flags` bits follow the architecture
+  doc's order: dead `1<<0`, staggered `1<<1`, guarding `1<<2`, invulnerable `1<<3`,
+  locked target `1<<4`, two-handing `1<<5`. Constants are in `snapshot.rs` and
+  `engine/snapshot.ts`.
+- **Context:** orchestrator 136K (at the check after WP-012) + workers 340K = 476K
+  (budget 500K). Past the 400K handoff line, so WP-014 and G1 go to the next session.
+  As in the previous session, two workers used most of the budget.
+- **G1 numbers so far:** WASM 366,194 bytes gzipped (936,707 raw; budget 1.5 MB).
+  Native `game:bench`: 50,403 ticks/s on `test_field`, 502,040 on `m0_flat`. Golden
+  replays green on native, WASM, and Python after the WP-015 rehash. WASM ticks per
+  second not measured yet.
+- **Not verified:** target switching with the mouse wheel in the browser (core unit
+  tests cover it); pointer lock and gamepad; dark theme (no DOM UI changed).
+- **Toolchain notes:** `mise` refuses this worktree's `mise.toml` as untrusted, so the
+  session ran cargo from `~/.cargo/bin` with `RUSTUP_TOOLCHAIN=1.99.1` and the mise tasks'
+  commands by hand. The untracked `.claude/launch.json` in the main checkout points at
+  the old `game-m0-1730d5` worktree on port 5193; this session used its own local entry
+  on port 5181.
+- **Waiting on the owner:** the context-budget rule (still open; see the previous
+  entry). Lock-on reads: is the 60-degree cone the full apex angle (as built) or 60
+  degrees each side? Acquisition uses the player's facing because the browser doesn't
+  send the camera direction to the core; the spec asks for the camera's.
+- **Next steps:**
+  1. Run WP-014 (sonnet; `dev/` and `game/crates/wasm/src/debug.rs`). It should fold
+     WP-012's ad hoc `cam`, `scenario`, and `fakelock` parsing in `engine/index.ts` and
+     `render/camera/devCamera.ts` into the dev URL parser, and add `cam=fixed:`.
+  2. Measure WASM ticks per second, then stop at gate G1 with the numbers above.
 
 ### 2026-11-12: latticefall-m1 (M1)
 

@@ -165,6 +165,13 @@ impl MechanicEvent {
     pub const LADDER_KICKED: u8 = 10;
     /// A hit revealed a hollow wall's passage.
     pub const WALL_REVEALED: u8 = 11;
+    /// The player travelled to another area (WP-069); `index` is the place they went to
+    /// (`world_state::map::places`). The world was replaced, so the host rebuilds its view.
+    pub const AREA_CHANGED: u8 = 90;
+    /// The player placed a map marker (WP-069).
+    pub const MARKER_PLACED: u8 = 91;
+    /// The player removed a map marker (WP-069).
+    pub const MARKER_REMOVED: u8 = 92;
 }
 
 /// The player opened a chest (`source` is always 1; pickups send `PickupEvent`), and

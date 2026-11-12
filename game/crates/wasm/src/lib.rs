@@ -9,9 +9,8 @@
 use lf_content::Content;
 use lf_core::events::{Event, LifeEvent};
 use lf_core::snapshot::{ACTOR_SNAP_BYTES, ActorSnap, pack_id, write_snapshot};
-use lf_core::{
-    ActionFrame, Command, Replay, TickInput, World, run_replay as core_run_replay, tick,
-};
+use lf_core::world_state::map;
+use lf_core::{ActionFrame, Command, Replay, TickInput, World, run_replay as core_run_replay};
 use wasm_bindgen::prelude::*;
 
 #[cfg(feature = "dev")]
@@ -67,6 +66,10 @@ pub struct LfWorld {
     names: std::collections::HashMap<u32, String>,
     /// Commands from `queue_command`, applied by the first tick of the next `tick` call.
     pending: Vec<Command>,
+    /// The content the world was built from, kept to build the destination of a trip to
+    /// another area (WP-069), and every Lantern of the realm for the map.
+    content: Content,
+    places: Vec<map::Place>,
     /// Dev-tool state (god mode, set level). Present only in `dev` builds.
     #[cfg(feature = "dev")]
     dev: debug::DevState,
@@ -85,12 +88,15 @@ impl LfWorld {
         let mut snapshot = Vec::new();
         write_snapshot(&world, &mut snapshot);
         let names = display_names(&content);
+        let places = map::places(&content);
         Ok(LfWorld {
             world,
             seed,
             snapshot,
             names,
             pending: Vec::new(),
+            content,
+            places,
             #[cfg(feature = "dev")]
             dev: debug::DevState::default(),
         })
@@ -102,7 +108,9 @@ impl LfWorld {
     /// 5 Gesture (`a`), 6 SplitFlasks (`a` is the Vigil Flask's charges), 7 Travel (`a` is
     /// the Lantern's index), and the dialogue commands (WP-068): 40 Ask (`a` is a topic of the
     /// open NPC's menu, 254 for its quest, 255 to go back), 41 EndTalk, 42 Appearance (`a`
-    /// is the Mirror's preset, `b` its dye). Returns false, queuing nothing, for an unknown kind or an
+    /// is the Mirror's preset, `b` its dye), and the map commands (WP-069): 60 TravelFar (`a` is
+    /// a place of `map_json`'s `places`), 61 MapMarker (`a` and `b` are the point in decimeters,
+    /// each plus 32768). Returns false, queuing nothing, for an unknown kind or an
     /// operand that doesn't fit its type. The core decides whether the command does
     /// anything; the host records `(tick_count(), kind, a, b)` for replays.
     pub fn queue_command(&mut self, kind: u32, a: u32, b: u32) -> bool {
@@ -121,12 +129,14 @@ impl LfWorld {
         let (chunks, _) = frames.as_chunks::<4>();
         for &bytes in chunks {
             let frame = ActionFrame::from_bytes(bytes);
-            tick(
+            // A trip to another area replaces the world after the tick (WP-069).
+            map::tick_world(
                 &mut self.world,
                 &TickInput {
                     frame,
                     commands: std::mem::take(&mut self.pending),
                 },
+                &self.content,
             );
             #[cfg(feature = "dev")]
             self.dev_after_tick();
@@ -373,6 +383,8 @@ impl LfWorld {
             snapshot,
             names: display_names(&content),
             pending: Vec::new(),
+            places: map::places(&content),
+            content,
             #[cfg(feature = "dev")]
             dev: debug::DevState::default(),
         })

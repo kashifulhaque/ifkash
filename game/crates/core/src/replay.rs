@@ -9,7 +9,6 @@ use lf_content::Content;
 use serde::{Deserialize, Serialize};
 
 use crate::input::{ActionFrame, Command, TickInput};
-use crate::tick::tick;
 use crate::world::{World, WorldError};
 
 /// Bumped on any incompatible change to the layout below.
@@ -192,7 +191,8 @@ fn simulate(
                 }
                 cmd_i += 1;
             }
-            tick(&mut world, &input);
+            // A trip to another area replaces the world after the tick (WP-069).
+            crate::world_state::map::tick_world(&mut world, &input, content);
             ran += 1;
             if ran.is_multiple_of(CHECKPOINT_INTERVAL) || ran == total {
                 final_hash = world.state_hash();

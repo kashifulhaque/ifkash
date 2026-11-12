@@ -5,9 +5,14 @@
   // command is allowed all come from the core.
   import { tick } from 'svelte';
   import type { MenuHost } from './menuHost';
+  import type { MapHost, MapPlace } from '../map/mapState';
+  import { travelBlock } from '../map/mapState';
+  import { areaName, placeName } from '../map/places';
   import { ATTRIBUTES, lanternLabel, type LevelPreview, type MenuState } from './menuState';
 
   export let host: MenuHost;
+  /** The realm-wide places (WP-069): travel can cross areas. Without it, only this area's Lanterns. */
+  export let mapHost: MapHost | undefined = undefined;
   export let state: MenuState;
   export let announce: (text: string) => void;
   export let refresh: () => void;
@@ -24,6 +29,9 @@
   $: destinations = state.lanterns
     .filter((l) => l.lit && l.index !== state.lantern)
     .map((l) => ({ index: l.index, name: lanternLabel(host.lanternName(l.index)) }));
+  // With the map (WP-069): every lit Lantern of the realm, grouped by the area it is in.
+  $: realm = tab === 'Travel' && mapHost && state ? mapHost.read() : null;
+  $: far = realm ? realm.places.filter((p) => p.lit && p.id !== realm.resting) : [];
   $: lucidMax = state.flasks.maxCharges - state.flasks.vigilMax;
 
   function raise(attribute: number): void {
@@ -62,6 +70,18 @@
     announce(`Travelled to the ${name} Lantern`);
     await tick();
     root?.querySelector<HTMLElement>('[data-nav="body"]')?.focus();
+  }
+
+  function travelTo(p: MapPlace): void {
+    if (!realm || !mapHost) return;
+    const name = placeName(p.id);
+    if (travelBlock(realm, p)) {
+      announce(`${name}: ${travelBlock(realm, p)}.`);
+      return;
+    }
+    announce(p.here ? `Travelled to ${name}.` : `Travelling to ${name}.`);
+    mapHost.travel(p);
+    refresh();
   }
 
   /** From the body, back to the tab list. */
@@ -178,7 +198,22 @@
       <div class="group">
         <h3>Travel</h3>
         <p class="note first">Travel to a Lantern you have lit. You rest there too.</p>
-        {#if destinations.length}
+        {#if realm}
+          {#if far.length}
+            <ul class="list" aria-label="Lit Lanterns">
+              {#each far as p (p.id)}
+                <li>
+                  <button type="button" data-nav="body" on:click={() => travelTo(p)}>
+                    <span>{placeName(p.id)}</span>
+                    <span class="sub">{areaName(p.area)}</span>
+                  </button>
+                </li>
+              {/each}
+            </ul>
+          {:else}
+            <p class="note">No other Lantern is lit yet.</p>
+          {/if}
+        {:else if destinations.length}
           <ul class="list" aria-label="Lit Lanterns">
             {#each destinations as d (d.index)}
               <li>

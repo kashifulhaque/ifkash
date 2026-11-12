@@ -120,6 +120,18 @@ pub enum Command {
         preset: u8,
         dye: u8,
     },
+    /// While resting at a Lantern (WP-069): travel to place `place`, an index into
+    /// `world_state::map::places`, in another area. The host finishes the trip after the
+    /// tick (`world_state::map::tick_world`). Travel inside the area is `Travel`.
+    TravelFar {
+        place: u16,
+    },
+    /// Places a map marker at `(x, z)` in decimeters, or removes the one within 3 m of it
+    /// (WP-069).
+    MapMarker {
+        x: i16,
+        z: i16,
+    },
 }
 
 /// Everything the simulation consumes in one tick.

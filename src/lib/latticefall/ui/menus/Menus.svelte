@@ -20,8 +20,12 @@
   import Inventory from './Inventory.svelte';
   import LanternMenu from './LanternMenu.svelte';
   import Settings from './Settings.svelte';
+  import MapScreen from '../map/MapScreen.svelte';
+  import type { MapHost } from '../map/mapState';
 
   export let host: MenuHost;
+  /** What the map reads and the commands it sends (WP-069). The Map entry is off without it. */
+  export let mapHost: MapHost | undefined = undefined;
   export let engine: { setPaused(paused: boolean): void; input: InputController };
   export let hudSettings: HudSettingsStore;
   export let menuSettings: MenuSettingsStore;
@@ -32,20 +36,22 @@
   /** True while a menu is open. Bind to it to pause your own input. */
   export let open = false;
 
-  type Screen = 'pause' | 'equipment' | 'inventory' | 'lantern' | 'settings';
+  type Screen = 'pause' | 'equipment' | 'inventory' | 'lantern' | 'settings' | 'map';
   const COLS: Record<Screen, string> = {
     pause: 'main',
     equipment: 'slots,cands',
     inventory: 'items,detail',
     lantern: 'tabs,body',
-    settings: 'tabs,body'
+    settings: 'tabs,body',
+    map: 'tabs,body'
   };
   const TITLES: Record<Screen, string> = {
     pause: 'Paused',
     equipment: 'Equipment',
     inventory: 'Inventory',
     lantern: 'Lantern',
-    settings: 'Settings'
+    settings: 'Settings',
+    map: 'Map'
   };
 
   let screen: Screen | null = null;
@@ -62,6 +68,7 @@
   /** The engine calls this for a press of the menu or map action. */
   export function handleUi(action: 'menu' | 'map'): void {
     if (action === 'menu' && screen === null) show('pause');
+    else if (action === 'map' && screen === null && mapHost) show('map');
   }
 
   /** The engine calls this when the player rests at a Lantern. */
@@ -108,7 +115,7 @@
   /** Back one step: out of a sub-step, then to the pause menu, then out of the menus. */
   function back(): void {
     if (child?.back?.()) return;
-    if (screen === 'equipment' || screen === 'inventory' || screen === 'settings') void show('pause');
+    if (screen === 'equipment' || screen === 'inventory' || screen === 'settings' || screen === 'map') void show('pause');
     else close();
   }
 
@@ -158,7 +165,7 @@
     { id: 'resume', label: 'Resume', note: '', off: false },
     { id: 'equipment', label: 'Equipment', note: '', off: false },
     { id: 'inventory', label: 'Inventory', note: '', off: false },
-    { id: 'map', label: 'Map', note: 'Not built yet', off: true },
+    { id: 'map', label: 'Map', note: mapHost ? '' : 'Not built yet', off: !mapHost },
     { id: 'codex', label: 'Codex', note: 'Not built yet', off: true },
     { id: 'settings', label: 'Settings', note: '', off: false },
     { id: 'plain', label: 'Read the plain site', note: '', off: false },
@@ -178,6 +185,7 @@
       case 'equipment':
       case 'inventory':
       case 'settings':
+      case 'map':
         void show(id);
         break;
       case 'plain':
@@ -241,7 +249,9 @@
             useAndClose={() => close()}
           />
         {:else if screen === 'lantern'}
-          <LanternMenu bind:this={child} {host} {state} {announce} {refresh} leave={close} />
+          <LanternMenu bind:this={child} {host} {mapHost} {state} {announce} {refresh} leave={close} />
+        {:else if screen === 'map' && mapHost}
+          <MapScreen bind:this={child} host={mapHost} {announce} />
         {:else if screen === 'settings'}
           <Settings bind:this={child} {engine} {hudSettings} {menuSettings} {announce} />
         {/if}

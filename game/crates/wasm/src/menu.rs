@@ -35,6 +35,15 @@ pub(crate) fn command_from_words(kind: u32, a: u32, b: u32) -> Option<Command> {
             preset: byte(a)?,
             dye: byte(b)?,
         },
+        // The map commands (WP-069): 60 TravelFar (`a` is the place), 61 MapMarker (`a` and `b`
+        // are the position in decimeters, plus 32768).
+        60 => Command::TravelFar {
+            place: u16::try_from(a).ok()?,
+        },
+        61 => Command::MapMarker {
+            x: i16::try_from(i64::from(a) - 32_768).ok()?,
+            z: i16::try_from(i64::from(b) - 32_768).ok()?,
+        },
         _ => return None,
     })
 }
@@ -259,5 +268,34 @@ impl LfWorld {
             a.max_equip_load_tenths as f32,
             b.max_equip_load_tenths as f32,
         ]
+    }
+}
+
+#[wasm_bindgen]
+impl LfWorld {
+    /// The scenario (area) the world is in now. It changes when the player travels to
+    /// another area (WP-069), which replaces the world's level.
+    pub fn scenario_name(&self) -> String {
+        self.world.physics.scenario.clone()
+    }
+
+    /// The map as JSON (WP-069): the area, the cells the player has visited, the Lanterns of
+    /// the whole realm and whether each is lit, the defeated bosses, the Remnant, the
+    /// markers, and where the player is. See `lf_core::world_state::map::view_json`.
+    /// Read-only.
+    pub fn map_json(&self) -> String {
+        let bounds = self
+            .content
+            .scenario(&self.world.physics.scenario)
+            .and_then(|s| s.heightfield.as_ref())
+            .map(|h| {
+                [
+                    h.center[0] - h.size_x / 2.0,
+                    h.center[2] - h.size_z / 2.0,
+                    h.center[0] + h.size_x / 2.0,
+                    h.center[2] + h.size_z / 2.0,
+                ]
+            });
+        lf_core::world_state::map::view_json(&self.world, &self.places, bounds)
     }
 }

@@ -17,4 +17,6 @@ pub fn run(world: &mut World, input: &TickInput) {
     // Conversations and quests (WP-068).
     crate::world_state::quests::run(world, fed);
     crate::world_state::mechanics::run(world, input);
+    // The map: markers, a trip to another area, and the cell the player is in (WP-069).
+    crate::world_state::map::run(world, fed);
 }

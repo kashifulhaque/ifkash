@@ -148,6 +148,17 @@ The following list states what is decided:
 - After the Cartographer's quest starts, Chronicle Page locations show as faint marks.
 - The map has a **list view** that lists every discovered place as text, for
   screen-reader users and for players who don't read maps well.
+- **Built (WP-069):** the core keeps the visited cells as bit rows in flags
+  (`map.<area>.row.<z>.<chunk>`), the markers as flags (`map.<area>.marker.<slot>`), and a
+  pending trip as `map.travel` (`world_state/map.rs`). The DOM map (`ui/map/`) draws the
+  visited cells plus a one-cell halo, and the list view says each place with its distance and
+  compass direction from the player. Only lit Lanterns, defeated bosses, the Remnant, and
+  markers show; dungeon entrances and Chronicle Page marks wait for their systems.
+- **Fast travel crosses areas.** `Command::Travel` moves within the area. `Command::TravelFar`
+  starts a trip to a lit Lantern in another area: the host replaces the world with the
+  destination area's (`map::tick_world`), keeping the character, flags, and tick, and rests
+  at the Lantern. A trip is refused while a Remnant lies behind, because the Remnant has no
+  area of its own.
 
 ## Codex
 

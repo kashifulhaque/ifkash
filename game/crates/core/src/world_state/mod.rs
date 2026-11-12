@@ -32,6 +32,9 @@ mod hollowdeep_tests;
 mod cave_tests;
 pub mod lantern;
 pub mod lantern_menu;
+pub mod map;
+#[cfg(test)]
+mod map_tests;
 pub mod mechanics;
 #[cfg(test)]
 mod mirrormere_tests;

@@ -19,6 +19,7 @@ import { messageIndexesFromWords, type HudSink } from '../ui/hud/hudStore';
 import { COMMAND, createMenuHost, type MenuHost, type MenuSink } from '../ui/menus/menuHost';
 import { createDialogueHost, type DialogueHost, type DialogueSink } from '../ui/dialogue/dialogueHost';
 import { dialogueEventsFromWords } from '../ui/dialogue/dialogueState';
+import { createMapHost, type MapHost } from '../ui/map/mapState';
 
 export interface EngineStats {
   tick: number;
@@ -45,6 +46,11 @@ export interface EngineOptions {
   menu?: MenuSink;
   /** Receives the conversation events of the hub's NPCs and stations (WP-068). */
   dialogue?: DialogueSink;
+  /**
+   * Travel to a Lantern in another area (WP-069) replaces the world's level, so the engine stops
+   * and hands over a save of the new world: start a fresh engine from it (`save`, `scenario`).
+   */
+  onTravel?: (save: Uint8Array, scenario: string) => void;
 }
 
 export interface Engine {
@@ -57,6 +63,10 @@ export interface Engine {
   menus: MenuHost;
   /** What the dialogue reads and the commands it sends (WP-068). */
   dialogue: DialogueHost;
+  /** What the map reads and the commands it sends (WP-069). */
+  map: MapHost;
+  /** Rests at the Lantern in reach, as the Interact button does (the Lantern menu opens). */
+  rest(): void;
   /** The input controller, for the controls menu (bindings and options). */
   input: InputController;
   /** Downloads everything recorded since the world started as a `.lfr` replay file. */
@@ -162,6 +172,7 @@ export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions
   let lastPrompt = 0;
   let prevInteract = false;
   let paused = false;
+  let travelled = false;
   const commandLog: number[] = [];
   function sendCommand(kind: number, a = 0, b = 0): boolean {
     if (!world.queue_command(kind, a, b)) return false;
@@ -195,6 +206,13 @@ export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions
       // Conversations with the hub's NPCs and stations (WP-068).
       if (opts.dialogue) for (const e of dialogueEventsFromWords(words)) opts.dialogue.event(e);
     }
+    // A trip to another area replaced the world: the level this view drew is gone (WP-069).
+    if (!travelled && world.scenario_name() !== scenario) {
+      travelled = true;
+      loop.stop();
+      opts.onTravel?.(world.save(), world.scenario_name());
+      return;
+    }
     const events = decodeEvents(words);
     if (events.length) {
       audio?.handleEvents(events);
@@ -210,6 +228,12 @@ export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions
     }
   });
   const dialogue = createDialogueHost(world, {
+    command(kind, a, b) {
+      if (!sendCommand(kind, a, b)) return;
+      if (paused) runTick(new Uint8Array(4));
+    }
+  });
+  const map = createMapHost(world, {
     command(kind, a, b) {
       if (!sendCommand(kind, a, b)) return;
       if (paused) runTick(new Uint8Array(4));
@@ -291,6 +315,10 @@ export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions
     saves,
     menus,
     dialogue,
+    map,
+    rest() {
+      if (sendCommand(COMMAND.Rest) && paused) runTick(new Uint8Array(4));
+    },
     input,
     replayTicks: () => recorder.ticks,
     downloadReplay() {

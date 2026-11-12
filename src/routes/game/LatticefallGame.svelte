@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onDestroy, onMount } from 'svelte';
+  import { onDestroy, onMount, tick as tickDom } from 'svelte';
   import { browser } from '$app/environment';
   import { goto } from '$app/navigation';
   import { name } from '$lib/content';
@@ -53,17 +53,37 @@
     }
   };
 
-  onMount(async () => {
+  // Travelling to a Lantern in another area (WP-069) swaps the world's level. The engine hands
+  // over a save of the new world, and the page starts a fresh engine from it on a new canvas,
+  // then rests there so the Lantern menu is open on arrival.
+  let generation = 0;
+
+  function arrive(save: Uint8Array, scenario: string): void {
+    // The engine reports from inside its tick; let it finish before tearing it down.
+    setTimeout(() => {
+      if (destroyed) return;
+      engine?.dispose();
+      engine = null;
+      menuOpen = false;
+      status = 'loading';
+      generation += 1;
+      void tickDom().then(() => boot({ save, scenario }, true));
+    }, 0);
+  }
+
+  async function boot(extra: { save?: Uint8Array; scenario?: string } = {}, resting = false): Promise<void> {
     if (!browser) return;
     try {
       // Dynamic import keeps Three.js and the WASM glue out of every other route.
       const { startEngine } = await import('$lib/latticefall/engine');
       if (destroyed) return;
       const started = await startEngine(canvas, {
+        ...extra,
         onStats: (s) => (stats = s),
         hud: hudDemo ? undefined : hudSink,
         menu: { ui: (a) => menus?.handleUi(a), rested: () => menus?.handleRested() },
-        dialogue: { event: (e) => dialogue?.handleEvent(e) }
+        dialogue: { event: (e) => dialogue?.handleEvent(e) },
+        onTravel: arrive
       });
       if (destroyed) {
         started.dispose();
@@ -71,6 +91,10 @@
       }
       engine = started;
       status = 'ready';
+      if (resting) {
+        await tickDom();
+        engine?.rest();
+      }
       if (hudDemo) {
         hud.sink.state(demoHud());
         const show = () => DEMO_NOTICES.forEach((text) => hud.notify(text));
@@ -83,7 +107,9 @@
       failure = err instanceof Error ? err.message : String(err);
       status = 'failed';
     }
-  });
+  }
+
+  onMount(() => boot());
 
   onDestroy(() => {
     destroyed = true;
@@ -120,7 +146,9 @@
 <svelte:window on:keydown={onKey} />
 
 <div class="lf-root">
-  <canvas bind:this={canvas} class="lf-canvas"></canvas>
+  {#key generation}
+    <canvas bind:this={canvas} class="lf-canvas"></canvas>
+  {/key}
 
   {#if status === 'loading'}
     <p class="lf-note" aria-live="polite">Loading Cinderheart…</p>
@@ -141,6 +169,7 @@
       bind:this={menus}
       bind:open={menuOpen}
       host={engine.menus}
+      mapHost={engine.map}
       {engine}
       {hudSettings}
       {menuSettings}

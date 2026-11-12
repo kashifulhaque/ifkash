@@ -153,6 +153,7 @@ pub fn kcc(t: &Locomotion) -> KinematicCharacterController {
 /// Locomotion (tick system 5): jump takeoff, gravity, the controller move against the
 /// level, landing, fall damage, and the kill plane.
 pub fn step(a: &mut Actor, physics: &PhysicsState, t: &Locomotion) {
+    a.motor.landed = false;
     if a.dead {
         return;
     }
@@ -200,6 +201,7 @@ pub fn step(a: &mut Actor, physics: &PhysicsState, t: &Locomotion) {
     }
     let grounded = moved.grounded && a.vel[1] <= 0.0;
     m.grounded = grounded;
+    m.landed = grounded && !was_grounded;
     if grounded {
         // Remember the height of solid footing: ground right under the capsule's center.
         // Snap to ground lets the capsule roll down over an edge before it leaves the

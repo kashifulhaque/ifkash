@@ -53,6 +53,12 @@ fn embedded_matches_data_dir() {
     assert!(embedded.consumables.is_some());
     assert!(embedded.scenario("m0_flat").is_some());
     assert!(embedded.scenario("test_field").is_some());
+    assert_eq!(
+        dir.enemies.keys().collect::<Vec<_>>(),
+        embedded.enemies.keys().collect::<Vec<_>>()
+    );
+    assert_eq!(dir.ai, embedded.ai);
+    assert!(embedded.ai.is_some());
 }
 
 #[test]
@@ -67,6 +73,7 @@ fn hash_ignores_comments_and_whitespace() {
     let weapons = std::fs::read_to_string(data_dir().join("weapons/straight_sword.ron")).unwrap();
     let bow_moves = std::fs::read_to_string(data_dir().join("moves/stub_bow.ron")).unwrap();
     let bow = std::fs::read_to_string(data_dir().join("weapons/stub_bow.ron")).unwrap();
+    let test_enemy = std::fs::read_to_string(data_dir().join("moves/test_enemy.ron")).unwrap();
     let other = Content::from_sources(
         &noisy,
         &attrs,
@@ -75,6 +82,7 @@ fn hash_ignores_comments_and_whitespace() {
             ("moves/crits.ron".into(), crits),
             ("moves/straight_sword.ron".into(), moves),
             ("moves/stub_bow.ron".into(), bow_moves),
+            ("moves/test_enemy.ron".into(), test_enemy),
         ],
         vec![
             ("weapons/straight_sword.ron".into(), weapons),
@@ -84,6 +92,7 @@ fn hash_ignores_comments_and_whitespace() {
     .and_then(|c| {
         let read = |p: &str| std::fs::read_to_string(data_dir().join(p)).unwrap();
         let scenarios = [
+            "scenarios/ai_yard.ron",
             "scenarios/duel_backstab.ron",
             "scenarios/duel_parry.ron",
             "scenarios/duel_stance.ron",
@@ -97,7 +106,14 @@ fn hash_ignores_comments_and_whitespace() {
         c.with_world(Some(&read("locomotion.ron")), scenarios)?
             .with_consumables(Some(&format!("// noise\n{}", read("consumables.ron"))))?
             .with_projectiles(Some(&format!("// noise\n{}", read("projectiles.ron"))))?
-            .with_status(Some(&format!("// noise\n{}", read("status.ron"))))
+            .with_status(Some(&format!("// noise\n{}", read("status.ron"))))?
+            .with_enemies(
+                Some(&format!("// noise\n{}", read("ai.ron"))),
+                vec![(
+                    "enemies/test_grunt.ron".to_owned(),
+                    format!("// noise\n{}", read("enemies/test_grunt.ron")),
+                )],
+            )
     })
     .expect("loads");
     assert_eq!(base.content_hash(), other.content_hash());

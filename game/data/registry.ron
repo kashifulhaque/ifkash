@@ -81,5 +81,10 @@
     (id: "buf_bloodbloom_oil", num: 6000),
     (id: "buf_rime_edge", num: 6001),
     (id: "buf_rallying_roar", num: 6002),
+
+    (id: "test_grunt", num: 7100),
+
+    (id: "te_slash", num: 8900),
+    (id: "te_lunge", num: 8901),
   ],
 )

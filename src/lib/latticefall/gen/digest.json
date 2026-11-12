@@ -143,8 +143,8 @@
     "start_max": 16,
     "start_min": 4
   },
-  "contentHash": "14933967014266848892",
-  "contentHashHex": "cf401be03cc6c67c",
+  "contentHash": "5115948726482639963",
+  "contentHashHex": "46ff8042e31c1c5b",
   "moves": [
     {
       "anim": "roll_quick",
@@ -395,6 +395,26 @@
       "stamina": 6,
       "stub": true,
       "totalFrames": 30
+    },
+    {
+      "anim": "grunt_slash",
+      "file": "moves/test_enemy.ron",
+      "fp": 0,
+      "id": "te_slash",
+      "num": 8900,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 44
+    },
+    {
+      "anim": "grunt_lunge",
+      "file": "moves/test_enemy.ron",
+      "fp": 0,
+      "id": "te_lunge",
+      "num": 8901,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 52
     }
   ],
   "weapons": [

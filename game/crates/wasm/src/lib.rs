@@ -141,6 +141,9 @@ impl LfWorld {
     ///   (`proj_arrow` is 5000), shooter and target (`pack_id`; target is `0xFFFFFFFF`
     ///   unless it struck an actor), position (3), and 1 if the projectile is gone after
     ///   this event.
+    /// - Kind 9, `Awareness` (WP-030), 4 words: kind, the AI actor (`pack_id`), and the
+    ///   awareness state it left and entered (0 Idle, 1 Suspicious, 2 Aware, 3 Combat,
+    ///   4 Return).
     pub fn drain_events(&mut self) -> Vec<u32> {
         let mut out = Vec::new();
         for event in self.world.events.drain() {
@@ -208,6 +211,9 @@ impl LfWorld {
                     ]);
                     out.extend(e.pos.map(f32::to_bits));
                     out.push(u32::from(e.ended));
+                }
+                Event::Awareness(e) => {
+                    out.extend([9, pack_id(e.actor), u32::from(e.from), u32::from(e.to)]);
                 }
             }
         }

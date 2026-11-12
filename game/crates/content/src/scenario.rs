@@ -22,6 +22,10 @@ pub struct Scenario {
     /// Standing dummy actors: they have HP, never move or act, and can be locked on to.
     #[serde(default)]
     pub dummies: Vec<Dummy>,
+    /// AI enemies (WP-030), from `enemies/<enemy>.ron`. Real levels place them in the
+    /// level format (WP-040).
+    #[serde(default)]
+    pub enemies: Vec<EnemySpawn>,
     /// Lanterns (WP-029). Real levels place them in the level format (WP-040).
     #[serde(default)]
     pub lanterns: Vec<Lantern>,
@@ -88,6 +92,23 @@ pub struct Dummy {
     /// Delirium staggers it (enemies that can go mad). Defaults to false.
     #[serde(default)]
     pub can_go_mad: bool,
+}
+
+/// Where an AI enemy spawns, and returns to when it leashes.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct EnemySpawn {
+    /// Label for tools and error messages.
+    pub name: String,
+    /// The enemy definition's ID.
+    pub enemy: String,
+    /// Feet position, in meters.
+    pub pos: [f32; 3],
+    /// Facing, in radians from +Z toward +X.
+    pub yaw: f32,
+    /// Waypoints it walks in a loop while Idle. Empty: it stands at its spawn.
+    #[serde(default)]
+    pub patrol: Vec<[f32; 3]>,
 }
 
 /// An enemy's status resistances (docs/game/05-enemies-and-bosses.md, `resist`). In the
@@ -225,6 +246,11 @@ impl Scenario {
             }
             if d.attack.as_ref().is_some_and(|a| a.every_ticks == 0) {
                 return Err(format!("dummy {:?}: every_ticks must be positive", d.name));
+            }
+        }
+        for (i, e) in self.enemies.iter().enumerate() {
+            if self.enemies[..i].iter().any(|o| o.name == e.name) {
+                return Err(format!("enemy spawn {:?} is listed twice", e.name));
             }
         }
         for (i, l) in self.lanterns.iter().enumerate() {

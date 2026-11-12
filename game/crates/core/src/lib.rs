@@ -1,6 +1,7 @@
 //! `lf-core`: the deterministic Latticefall simulation core. Later work packages add modules.
 
 pub mod actor;
+pub mod ai;
 pub mod arena;
 pub mod combat;
 pub mod events;

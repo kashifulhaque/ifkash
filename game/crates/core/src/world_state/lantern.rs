@@ -144,11 +144,11 @@ pub fn dummy_actor(d: &Dummy, hurtbox: Hurtbox, moves: &MoveTable) -> Actor {
 }
 
 /// Puts every non-boss enemy back at its spawn at full HP, inserting any that were
-/// removed. Called when the player rests and when they respawn.
+/// removed: the scenario dummies, then the AI enemies (WP-030), fresh and Idle. Called
+/// when the player rests and when they respawn.
 ///
-/// This is the hook WP-030 replaces: once enemies come from the level format it should
-/// walk the level's spawn table instead of `Layout::dummies`, skip bosses, and respect
-/// flags such as "boss defeated". Keep the signature.
+/// Once enemies come from the level format (WP-040) it should walk the level's spawn
+/// table, skip bosses, and respect flags such as "boss defeated". Keep the signature.
 pub fn respawn_enemies(world: &mut World) {
     let hurtbox = Hurtbox::from_locomotion(&world.locomotion);
     for (i, d) in world.layout.dummies.iter().enumerate() {
@@ -165,6 +165,26 @@ pub fn respawn_enemies(world: &mut World) {
                 match world.state.enemies.get_mut(i) {
                     Some(h) => *h = id,
                     None => world.state.enemies.push(id),
+                }
+            }
+        }
+    }
+    for (i, s) in world.layout.enemies.iter().enumerate() {
+        let Some(fresh) = crate::ai::enemy_actor(s, i as u16, &world.ai, hurtbox) else {
+            continue;
+        };
+        let slot = world
+            .state
+            .ai_enemies
+            .get(i)
+            .and_then(|&id| world.actors.get_mut(id));
+        match slot {
+            Some(a) => *a = fresh,
+            None => {
+                let id = world.actors.insert(fresh);
+                match world.state.ai_enemies.get_mut(i) {
+                    Some(h) => *h = id,
+                    None => world.state.ai_enemies.push(id),
                 }
             }
         }

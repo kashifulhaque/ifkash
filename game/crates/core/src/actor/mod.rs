@@ -1,4 +1,4 @@
-//! Actors: the player now; enemies, bosses, and Echoes later share the same struct.
+//! Actors: the player and AI enemies; bosses and Echoes later share the same struct.
 //! See docs/game/01-architecture.md, "World and actors".
 
 pub mod controller;
@@ -54,6 +54,8 @@ pub struct Actor {
     pub stats: stats::Stats,
     /// Status meters, effects, and buffs. See `combat::status`.
     pub status: StatusState,
+    /// Awareness, the current option, cooldowns, and tokens (AI enemies only). See `ai`.
+    pub ai: Option<crate::ai::AiState>,
 }
 
 /// Character controller state between ticks.
@@ -83,4 +85,6 @@ pub struct Motor {
     pub last_fall_m: f32,
     /// Ticks since stamina was last spent.
     pub stamina_idle: u16,
+    /// Landed this tick, after a jump or a fall (a noise; see `ai::perception`).
+    pub landed: bool,
 }

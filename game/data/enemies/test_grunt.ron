@@ -1,0 +1,25 @@
+// A test enemy for the WP-030 AI framework (registry 7100-7199): a plain melee grunt
+// that uses every part of the option table. Not part of the roster in
+// docs/game/05-enemies-and-bosses.md; WP-032 adds the real enemies.
+#![enable(implicit_some)]
+(
+  id: "test_grunt",
+  model: "grunt_test",
+  hp: 200,
+  poise: 30,
+  defense: (flat: 20),
+  resist: (immunity: 120, robustness: 120, composure: 100),
+  glimmer: 40,
+  perception: (sight_deg: 110.0, sight_m: 18.0, hearing_mult: 1.0),
+  moveset: "test_enemy.ron",
+  options: [
+    (move: "te_slash", when: [DistBelow(2.2), FacingWithin(60.0)], weight: 5, cooldown: 30),
+    (move: "te_lunge", when: [DistBetween(2.4, 4.2), FacingWithin(30.0)], weight: 3, cooldown: 90),
+    (behavior: Approach(dur: 30), when: [DistAbove(2.0)], weight: 4),
+    (behavior: Strafe(dur: 45), when: [DistBetween(1.5, 6.0)], weight: 2, cooldown: 60),
+    (behavior: Retreat(dur: 20), when: [DistBelow(1.4)], weight: 2, cooldown: 60),
+    (behavior: Guard(dur: 30), when: [TargetAttacking, DistBelow(4.0)], weight: 3),
+    (behavior: Wait(dur: 15), when: [HpBelow(0.3), TargetHealing], weight: 1),
+  ],
+  drops: [(item: "itm_glimmer_vial", chance: 0.05)],
+)

@@ -1,0 +1,12 @@
+# WP-030 golden: three test grunts notice the player and attack it under the token limit
+# (record with `lf-tools replay record-script`). Each line: <ticks> <move_x> <move_z>
+# [BUTTONS]. The player spawns at the origin facing +Z in ai_yard; grunt_left, grunt_mid,
+# and grunt_right stand 8-9 m ahead facing it, so they see it on their first think, play
+# the notice, and close in. The player stands, then backs off and sprints away past the
+# leash, and the grunts walk home and heal.
+seed 30
+scenario ai_yard
+240 0  0             # stand: the grunts notice, approach, and attack two at a time
+60  0  -127          # run back toward the Lantern
+220 0  -127  DODGE   # sprint away; the grunts leash at 30 m from their spawns
+300 0  0             # stand out of sight, short of the floor's edge: they walk home

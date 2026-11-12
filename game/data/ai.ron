@@ -1,0 +1,35 @@
+// Shared AI tuning (WP-030). Source: docs/game/05-enemies-and-bosses.md, "AI framework",
+// and docs/game/01-architecture.md, "Tick schedule" (AI think at 10 Hz). Values marked
+// "tuning" are not fixed by the spec.
+(
+  think_every_ticks: 3, // Tick schedule: 10 Hz at 30 ticks per second
+  perception: (
+    sight_deg: 110.0, // Perception, Sight: default 110 degree cone
+    sight_m: 18.0, // Perception, Sight: default 18 m
+    hearing_mult: 1.0,
+  ),
+  dark_sight_m: 6.0, // Perception, Sight: 6 m in darkness (darkness isn't built yet)
+  eye_height_m: 1.6, // tuning: about the player capsule's eye line
+  chest_height_m: 1.3, // Perception, Sight: the ray ends at the target's chest
+  noise: (
+    walk_m: 2.0, // Perception, Hearing: walk 2 m
+    run_m: 6.0, // run 6 m
+    sprint_m: 10.0, // sprint 10 m
+    roll_m: 8.0, // roll 8 m
+    attack_m: 10.0, // attack 10 m
+    landing_m: 12.0, // landing from a fall 12 m
+  ),
+  suspicious_ticks: 180, // Awareness states, Suspicious: up to 6 seconds
+  notice_ticks: (15, 30), // Awareness states, Aware: a 15-30 tick notice
+  leash_m: 30.0, // Perception, Leash: 30 m from its spawn
+  lost_sight_ticks: 240, // Perception, Leash: 240 ticks without seeing the player
+  melee_tokens: 2, // Attack tokens: at most two enemies attack at once
+  ranged_tokens: 1, // Attack tokens: one ranged token
+  walk_speed: 1.6, // tuning: the player's walk speed
+  run_speed: 4.0, // tuning: a little under the player's run (4.5)
+  turn_deg_per_tick: 12.0, // tuning
+  arrive_m: 0.6, // tuning
+  approach_stop_m: 1.6, // tuning: just inside te_slash's reach
+  fallback_ticks: 30, // tuning
+  probe_m: 0.8, // tuning: one step and a bit
+)

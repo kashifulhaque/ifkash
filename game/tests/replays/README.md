@@ -74,5 +74,11 @@ lf-tools replay record-script tests/replays/m1_movement.script --out tests/repla
   `m2_projectiles_arrow_and_seeker_do_what_the_script_says` test checks the projectile
   and `Hit` events.
 
+- `m3_ai_notice.lfr`: the WP-030 golden on `ai_yard`, recorded from
+  `m3_ai_notice.script`. Three test grunts notice the player, close in, and attack it at
+  most two at a time (the attack tokens). The player then sprints away, and the grunts
+  leash, walk home, and heal. `m3_ai_notice_grunts_notice_attack_and_leash` checks the
+  awareness events and the hits; `game/crates/core/src/ai/tests.rs` tests the rules.
+
 Rehash only when a change to the simulation or the content data is intended. Review the
 old and new final hash it prints, and commit the updated file with that change.

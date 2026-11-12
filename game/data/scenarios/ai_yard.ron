@@ -1,0 +1,30 @@
+// The WP-030 AI test yard: a flat floor, one wall, and four test grunts. The player
+// spawns at the origin facing +Z. +X is to the player's left while facing +Z.
+//   - grunt_left, grunt_mid, and grunt_right stand 8-9 m ahead, facing the player (-Z).
+//     They see it on the first think and engage, so the yard shows the attack tokens.
+//   - grunt_hidden stands at (10, 0, 14) facing -Z, with the wall (x 7..13, z 9.5..10.5,
+//     4 m tall) between it and the spawn: the player is inside its cone and range but
+//     out of sight.
+//   - grunt_patrol walks between (-20, 0, 20) and (-20, 0, 26), out of sight range.
+//   - lantern_yard is 3 m behind the spawn.
+(
+  spawn: (0.0, 0.0, 0.0),
+  spawn_yaw: 0.0,
+  kill_y: -50.0,
+  heightfield: None,
+  boxes: [
+    (name: "floor", center: (0.0, -0.5, 0.0), half_extents: (60.0, 0.5, 60.0)),
+    (name: "wall", center: (10.0, 2.0, 10.0), half_extents: (3.0, 2.0, 0.5)),
+  ],
+  lanterns: [
+    (id: "lantern_yard", pos: (0.0, 0.0, -3.0), yaw: 0.0),
+  ],
+  enemies: [
+    (name: "grunt_left", enemy: "test_grunt", pos: (2.0, 0.0, 8.0), yaw: 3.1415927),
+    (name: "grunt_mid", enemy: "test_grunt", pos: (0.0, 0.0, 9.0), yaw: 3.1415927),
+    (name: "grunt_right", enemy: "test_grunt", pos: (-2.0, 0.0, 8.0), yaw: 3.1415927),
+    (name: "grunt_hidden", enemy: "test_grunt", pos: (10.0, 0.0, 14.0), yaw: 3.1415927),
+    (name: "grunt_patrol", enemy: "test_grunt", pos: (-20.0, 0.0, 20.0), yaw: 0.0,
+      patrol: [(-20.0, 0.0, 26.0), (-20.0, 0.0, 20.0)]),
+  ],
+)

@@ -25,6 +25,16 @@ pub enum Event {
     Projectile(ProjectileEvent),
     /// A status meter filled and the effect took hold (`combat::status`).
     StatusProc(StatusProc),
+    Awareness(AwarenessEvent),
+}
+
+/// An AI actor changed awareness state (WP-030). `from` and `to` are
+/// `ai::Awareness::code` values: 0 Idle, 1 Suspicious, 2 Aware, 3 Combat, 4 Return.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct AwarenessEvent {
+    pub actor: Id,
+    pub from: u8,
+    pub to: u8,
 }
 
 /// What happened to the player's life cycle (docs/game/06-progression-and-systems.md,

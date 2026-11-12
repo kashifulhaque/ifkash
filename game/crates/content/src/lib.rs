@@ -15,6 +15,7 @@ use serde::{Deserialize, Serialize};
 
 pub mod attributes;
 pub mod consumables;
+pub mod enemy;
 pub mod locomotion;
 pub mod moves;
 pub mod portfolio;
@@ -27,6 +28,7 @@ pub mod weapons;
 
 pub use attributes::Attributes;
 pub use consumables::{Consumables, Flask, Item, ItemKind};
+pub use enemy::{AiTuning, EnemyDef};
 pub use locomotion::{Death, EquipLoad, Guard, LockOn, Locomotion, Poise};
 pub use moves::Move;
 pub use portfolio::{Portfolio, PortfolioContent};
@@ -53,6 +55,10 @@ const CONSUMABLES_FILE: &str = "consumables.ron";
 const PROJECTILES_FILE: &str = "projectiles.ron";
 /// The status and buff rules file (relative to the data root).
 const STATUS_FILE: &str = "status.ron";
+/// Directory (relative to the data root) holding enemy definitions, one per file.
+const ENEMIES_DIR: &str = "enemies";
+/// The shared AI tuning file (relative to the data root).
+const AI_FILE: &str = "ai.ron";
 
 /// Embedded copies of every data file, as `(path relative to the data root, text)`.
 /// A new data file needs a line here; the `embedded_matches_data_dir` test fails if one
@@ -73,6 +79,10 @@ const EMBEDDED_MOVES: &[(&str, &str)] = &[
     (
         "moves/stub_bow.ron",
         include_str!("../../../data/moves/stub_bow.ron"),
+    ),
+    (
+        "moves/test_enemy.ron",
+        include_str!("../../../data/moves/test_enemy.ron"),
     ),
 ];
 const EMBEDDED_WEAPONS: &[(&str, &str)] = &[
@@ -120,7 +130,16 @@ const EMBEDDED_SCENARIOS: &[(&str, &str)] = &[
         "scenarios/duel_status.ron",
         include_str!("../../../data/scenarios/duel_status.ron"),
     ),
+    (
+        "scenarios/ai_yard.ron",
+        include_str!("../../../data/scenarios/ai_yard.ron"),
+    ),
 ];
+const EMBEDDED_AI: &str = include_str!("../../../data/ai.ron");
+const EMBEDDED_ENEMIES: &[(&str, &str)] = &[(
+    "enemies/test_grunt.ron",
+    include_str!("../../../data/enemies/test_grunt.ron"),
+)];
 
 /// All parsed content.
 ///
@@ -152,6 +171,14 @@ pub struct Content {
     /// directories (test fixtures); the simulation needs it.
     #[cfg_attr(feature = "ts", ts(skip))]
     pub status: Option<StatusRules>,
+    /// The shared AI tuning from `ai.ron`. `None` only for partial data directories;
+    /// a scenario with enemies needs it.
+    #[cfg_attr(feature = "ts", ts(skip))]
+    pub ai: Option<AiTuning>,
+    /// Enemy definitions keyed by file path relative to the data root, for example
+    /// `enemies/test_grunt.ron`. Look one up by ID with [`Content::enemy_by_id`].
+    #[cfg_attr(feature = "ts", ts(skip))]
+    pub enemies: BTreeMap<String, EnemyDef>,
 }
 
 /// A failure to load content. Validation problems are [`Issue`]s instead.
@@ -209,7 +236,7 @@ impl Content {
         };
         let list = |sub: &str| -> Result<Vec<(String, String)>, ContentError> {
             let sub_dir = dir.join(sub);
-            if sub == SCENARIOS_DIR && !sub_dir.is_dir() {
+            if (sub == SCENARIOS_DIR || sub == ENEMIES_DIR) && !sub_dir.is_dir() {
                 return Ok(Vec::new());
             }
             let mut names = Vec::new();
@@ -257,6 +284,12 @@ impl Content {
         } else {
             None
         };
+        let ai_path = dir.join(AI_FILE);
+        let ai = if ai_path.is_file() {
+            Some(read(&ai_path)?)
+        } else {
+            None
+        };
         Self::from_sources(
             &read(&dir.join("registry.ron"))?,
             &read(&dir.join("attributes.ron"))?,
@@ -266,7 +299,8 @@ impl Content {
         .with_world(locomotion.as_deref(), list(SCENARIOS_DIR)?)?
         .with_consumables(consumables.as_deref())?
         .with_projectiles(projectiles.as_deref())?
-        .with_status(status.as_deref())
+        .with_status(status.as_deref())?
+        .with_enemies(ai.as_deref(), list(ENEMIES_DIR)?)
     }
 
     /// Loads the content baked into this crate with `include_str!`.
@@ -286,7 +320,8 @@ impl Content {
         .with_world(Some(EMBEDDED_LOCOMOTION), own(EMBEDDED_SCENARIOS))?
         .with_consumables(Some(EMBEDDED_CONSUMABLES))?
         .with_projectiles(Some(EMBEDDED_PROJECTILES))?
-        .with_status(Some(EMBEDDED_STATUS))
+        .with_status(Some(EMBEDDED_STATUS))?
+        .with_enemies(Some(EMBEDDED_AI), own(EMBEDDED_ENEMIES))
     }
 
     /// Builds content from RON text. `moves` and `weapons` are `(relative path, text)`.
@@ -319,6 +354,8 @@ impl Content {
             consumables: None,
             projectiles: Vec::new(),
             status: None,
+            ai: None,
+            enemies: BTreeMap::new(),
         };
         content.check_registered()?;
         Ok(content)
@@ -389,6 +426,29 @@ impl Content {
             }
         }
         Ok(self)
+    }
+
+    /// Adds the AI tuning (RON text, if any) and the enemy definitions as
+    /// `(relative path, text)`. Fails on an ID that has no registry entry.
+    pub fn with_enemies(
+        mut self,
+        ai: Option<&str>,
+        enemies: Vec<(String, String)>,
+    ) -> Result<Self, ContentError> {
+        self.ai = ai.map(|t| parse::<AiTuning>(AI_FILE, t)).transpose()?;
+        for (path, text) in enemies {
+            let def: EnemyDef = parse(&path, &text)?;
+            for (field, id) in def.references() {
+                self.check_id(&path, field, id)?;
+            }
+            self.enemies.insert(path, def);
+        }
+        Ok(self)
+    }
+
+    /// Finds an enemy definition by string ID.
+    pub fn enemy_by_id(&self, id: &str) -> Option<&EnemyDef> {
+        self.enemies.values().find(|e| e.id == id)
     }
 
     fn check_id(&self, file: &str, field: String, id: &str) -> Result<(), ContentError> {

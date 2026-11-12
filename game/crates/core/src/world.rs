@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 pub use crate::actor::Actor;
 use crate::actor::Motor;
 use crate::actor::stats::Stats;
+use crate::ai::{AiTable, enemy_actor};
 use crate::arena::{Arena, Id};
 use crate::combat::damage::DamageTable;
 use crate::combat::hurtbox::Hurtbox;
@@ -48,6 +49,9 @@ pub struct World {
     pub projectiles: Arena<Projectile>,
     /// The player actor, spawned by `World::new`.
     pub player: Id,
+    /// Every enemy definition and the AI tuning, from content. Not hashed: the content
+    /// hash covers it.
+    pub ai: AiTable,
     /// Lanterns and enemy spawns from the scenario, for the world state to refer to. Not
     /// hashed: the scenario name is, and the content hash covers the scenario.
     pub layout: Layout,
@@ -69,6 +73,8 @@ pub enum WorldError {
     Items(String),
     /// The content has no `status.ron`, or a buff isn't in the registry.
     Status(String),
+    /// An enemy spawn or definition can't be built (WP-030).
+    Ai(String),
 }
 
 impl core::fmt::Display for WorldError {
@@ -82,6 +88,7 @@ impl core::fmt::Display for WorldError {
             Self::Moves(message) => write!(f, "{message}"),
             Self::Items(message) => write!(f, "{message}"),
             Self::Status(message) => write!(f, "{message}"),
+            Self::Ai(message) => write!(f, "{message}"),
         }
     }
 }
@@ -169,7 +176,23 @@ impl World {
             .iter()
             .map(|d| actors.insert(dummy_actor(d, hurtbox, &moves)))
             .collect();
-        let state = WorldState::new(&layout, enemies);
+        let ai = AiTable::from_content(content, &moves).map_err(WorldError::Ai)?;
+        if !layout.enemies.is_empty() && ai.tuning.is_none() {
+            return Err(WorldError::Ai(format!(
+                "scenario {scenario:?} has enemies but the content has no ai.ron"
+            )));
+        }
+        let mut ai_enemies = Vec::new();
+        for (i, s) in layout.enemies.iter().enumerate() {
+            let actor = enemy_actor(s, i as u16, &ai, hurtbox).ok_or_else(|| {
+                WorldError::Ai(format!(
+                    "enemy spawn {:?}: unknown enemy \"{}\"",
+                    s.name, s.enemy
+                ))
+            })?;
+            ai_enemies.push(actors.insert(actor));
+        }
+        let state = WorldState::new(&layout, enemies, ai_enemies);
         let mut world = Self {
             tick: 0,
             rng: RngStreams::from_seed(seed),
@@ -180,6 +203,7 @@ impl World {
             damage,
             projectile_defs,
             status: status_table,
+            ai,
             actors,
             projectiles: Arena::new(),
             player,

@@ -373,6 +373,7 @@ fn m2_parry_riposte_parries_then_ripostes() {
             Event::Life(_) => "life",
             Event::Projectile(_) => "projectile",
             Event::StatusProc(_) => "status_proc",
+            Event::Awareness(_) => "awareness",
         })
         .collect();
     assert_eq!(kinds, ["parry", "critical", "hit"], "{events:?}");
@@ -560,4 +561,34 @@ fn m2_projectiles_arrow_and_seeker_do_what_the_script_says() {
     let v = first_bolt_vel.expect("the bolt flew");
     assert!(v[0] > 10.0 && v[2] < 4.0, "{v:?}");
     assert!(w.projectiles.iter().next().is_none());
+}
+
+/// The WP-030 AI golden: three grunts notice the player (Idle to Aware to Combat), land
+/// hits on it, then leash (Return) and end up Idle at home after the player sprints away.
+#[test]
+fn m3_ai_notice_grunts_notice_attack_and_leash() {
+    use lf_core::events::Event;
+
+    let (w, events) = run_duel("m3_ai_notice", "ai_yard");
+    let trio: Vec<_> = w.state.ai_enemies[..3].to_vec();
+    for &g in &trio {
+        let path: Vec<u8> = events
+            .iter()
+            .filter_map(|e| match e {
+                Event::Awareness(a) if a.actor == g => Some(a.to),
+                _ => None,
+            })
+            .collect();
+        // Aware, Combat, Return, Idle (codes 2, 3, 4, 0).
+        assert_eq!(path, [2, 3, 4, 0], "{g:?}");
+        let a = w.actors.get(g).unwrap();
+        assert_eq!(a.hp, a.max_hp);
+    }
+    let hits = events
+        .iter()
+        .filter(
+            |e| matches!(e, Event::Hit(h) if h.target == w.player && trio.contains(&h.attacker)),
+        )
+        .count();
+    assert!(hits > 0, "{events:?}");
 }

@@ -1,0 +1,71 @@
+// Test enemy moves for the WP-030 AI framework (registry 8900-8999). Not part of the
+// enemy roster: WP-032 adds real enemy movesets under moves/enemies/. Schema:
+// crates/content/src/moves.rs. Each swing telegraphs for at least 12 frames before its
+// hitbox (docs/game/05-enemies-and-bosses.md, "Enemy roster", WP-032's check).
+#![enable(implicit_some)]
+[
+  (
+    // A forward chop with a short step.
+    id: "te_slash",
+    anim: "grunt_slash",
+    total_frames: 44,
+    stamina: 0,
+    fp: 0,
+    root_motion: [(0, 0.0), (12, 0.0), (15, 0.5), (44, 0.5)],
+    track_deg_per_tick: 6.0, // turns toward its target during the 14-frame startup
+    hyperarmor: None,
+    iframes: None,
+    cancel_attack_from: None,
+    cancel_dodge_from: None,
+    cancel_any_from: None,
+    next_chain: None,
+    hitboxes: [
+      (
+        frames: (14, 16),
+        shape: Capsule(a: (0.0, 1.2, 0.3), b: (0.0, 1.2, 1.8), radius: 0.3),
+        motion_value: 1.0,
+        phys: Slash,
+        element: None,
+        poise_damage: 15,
+        status: [],
+        knockback: 0.4,
+        hitstop: 4,
+        tags: [],
+      ),
+    ],
+    sfx: [(12, "swing_light")],
+    vfx: [(14, "trail_steel")],
+  ),
+  (
+    // A lunging thrust that closes 2 m.
+    id: "te_lunge",
+    anim: "grunt_lunge",
+    total_frames: 52,
+    stamina: 0,
+    fp: 0,
+    root_motion: [(0, 0.0), (14, 0.0), (20, 2.0), (52, 2.0)],
+    track_deg_per_tick: 4.0,
+    hyperarmor: None,
+    iframes: None,
+    cancel_attack_from: None,
+    cancel_dodge_from: None,
+    cancel_any_from: None,
+    next_chain: None,
+    hitboxes: [
+      (
+        frames: (17, 20),
+        shape: Capsule(a: (0.0, 1.1, 0.3), b: (0.0, 1.1, 1.6), radius: 0.25),
+        motion_value: 1.2,
+        phys: Pierce,
+        element: None,
+        poise_damage: 20,
+        status: [],
+        knockback: 0.6,
+        hitstop: 4,
+        tags: [],
+      ),
+    ],
+    sfx: [(14, "swing_heavy")],
+    vfx: [(17, "trail_steel")],
+  ),
+]

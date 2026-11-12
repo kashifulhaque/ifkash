@@ -470,7 +470,63 @@ impl Validate for Content {
                 .error(field, message);
             }
         }
+        check_ai(self, &mut out);
         out
+    }
+}
+
+/// The AI tuning, every enemy definition, and the scenarios' enemy spawns (WP-030).
+fn check_ai(content: &Content, out: &mut Vec<Issue>) {
+    if let Some(ai) = &content.ai {
+        let mut sink = Sink {
+            out,
+            file: "ai.ron",
+            item: "ai",
+        };
+        for (field, message) in ai.problems() {
+            sink.error(field, message);
+        }
+    }
+    let mut seen = BTreeSet::new();
+    for (file, e) in &content.enemies {
+        let mut sink = Sink {
+            out,
+            file,
+            item: &e.id,
+        };
+        if !seen.insert(e.id.as_str()) {
+            sink.error("id", "duplicate enemy ID");
+        }
+        for (field, message) in e.problems() {
+            sink.error(field, message);
+        }
+        for (i, o) in e.options.iter().enumerate() {
+            if let Some(m) = &o.move_id {
+                match content.move_by_id(m) {
+                    None => sink.error(format!("options[{i}].move"), "the move is not defined"),
+                    Some(d) if d.hitboxes.is_empty() && d.projectiles.is_empty() => sink.warn(
+                        format!("options[{i}].move"),
+                        "the move has no hitbox or projectile, so it can never hit",
+                    ),
+                    Some(_) => {}
+                }
+            }
+        }
+    }
+    for (file, sc) in &content.scenarios {
+        for (i, spawn) in sc.enemies.iter().enumerate() {
+            let mut sink = Sink {
+                out,
+                file,
+                item: &spawn.name,
+            };
+            if content.enemy_by_id(&spawn.enemy).is_none() {
+                sink.error(format!("enemies[{i}].enemy"), "the enemy is not defined");
+            }
+            if content.ai.is_none() {
+                sink.error(format!("enemies[{i}]"), "enemies need ai.ron");
+            }
+        }
     }
 }
 

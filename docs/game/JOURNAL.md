@@ -32,14 +32,14 @@ Copy this block to the top of the entries and fill it in as you go:
 
 - **Orchestrator:** Opus 5.5, low effort; side session started from `latticefall-m1`
   (`local_e9f21284-d98a-499d-989a-a9b9aee9498c`)
-- **Branch:** `game/m1-camera`; first commit on `main` `7db8780`, last is this entry's
+- **Branch:** `game/m1-camera`; first commit on `main` `7db8780`, last `c6a0228` plus this SHA fix
 - **Started from:** `origin/main` at `a5d0e60`
 - **WPs:**
   - WP-015: done by sonnet (moved up from haiku: the card names one file, but the work
     also changes the shared actor module, the tick systems, the snapshot flags, the test
     field, and the golden hashes); commit `fa12966`; 128K worker tokens
   - WP-012: done by sonnet in its own worktree, in parallel with WP-015; commit
-    `c01d30b`, merged in `db16733`; 212K worker tokens
+    `e04b675` on `main`; 212K worker tokens
   - WP-014: not started (budget)
 - **Snapshot contract for lock-on:** `ActorSnap.flags` bits follow the architecture
   doc's order: dead `1<<0`, staggered `1<<1`, guarding `1<<2`, invulnerable `1<<3`,

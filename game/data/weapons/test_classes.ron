@@ -349,6 +349,8 @@
     id: "wpn_test_catalyst",
     name: "Test Catalyst",
     class: Catalyst,
+    // A Catalyst needs a school (WP-055). The test catalyst only swings; Formula is arbitrary.
+    catalyst_school: Formula,
     base_damage: 40,
     phys: Blunt,
     scaling: (might: 0.1, finesse: 0.1, insight: 0.0, devotion: 0.0),

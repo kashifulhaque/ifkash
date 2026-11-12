@@ -323,11 +323,10 @@ impl World {
         if let Some(set) = weapon.and_then(|w| self.moves.moveset_of(w)) {
             // A different weapon is held in one hand again (`combat::two_hand`). The spell
             // overlay below changes only cast moves, so compare the weapon's own chain.
-            let same_weapon = self
-                .moves
-                .player_moveset
-                .as_ref()
-                .is_some_and(|cur| cur.light_chain == set.light_chain && cur.heavy == set.heavy);
+            let same_weapon =
+                self.moves.player_moveset.as_ref().is_some_and(|cur| {
+                    cur.light_chain == set.light_chain && cur.heavy == set.heavy
+                });
             if !same_weapon && let Some(p) = self.actors.get_mut(self.player) {
                 p.stats.two_handing = false;
             }

@@ -148,8 +148,8 @@
     "start_max": 16,
     "start_min": 4
   },
-  "contentHash": "17341199964852283559",
-  "contentHashHex": "f0a8517d8c0968a7",
+  "contentHash": "1184244451297460829",
+  "contentHashHex": "106f480dd6d0025d",
   "moves": [
     {
       "anim": "ep_sentinel_thrust",
@@ -470,6 +470,346 @@
       "stamina": 0,
       "stub": false,
       "totalFrames": 64
+    },
+    {
+      "anim": "bow_shoot",
+      "file": "moves/bow.ron",
+      "fp": 0,
+      "id": "bow_shot",
+      "num": 18400,
+      "stamina": 6,
+      "stub": false,
+      "totalFrames": 26
+    },
+    {
+      "anim": "bow_draw",
+      "file": "moves/bow.ron",
+      "fp": 0,
+      "id": "bow_heavy",
+      "num": 18401,
+      "stamina": 12,
+      "stub": false,
+      "totalFrames": 38
+    },
+    {
+      "anim": "bow_draw_charged",
+      "file": "moves/bow.ron",
+      "fp": 0,
+      "id": "bow_heavy_charged",
+      "num": 18402,
+      "stamina": 18,
+      "stub": false,
+      "totalFrames": 42
+    },
+    {
+      "anim": "bow_run_shot",
+      "file": "moves/bow.ron",
+      "fp": 0,
+      "id": "bow_running",
+      "num": 18403,
+      "stamina": 8,
+      "stub": false,
+      "totalFrames": 28
+    },
+    {
+      "anim": "bow_roll_shot",
+      "file": "moves/bow.ron",
+      "fp": 0,
+      "id": "bow_rolling",
+      "num": 18404,
+      "stamina": 6,
+      "stub": false,
+      "totalFrames": 24
+    },
+    {
+      "anim": "bow_backstep_shot",
+      "file": "moves/bow.ron",
+      "fp": 0,
+      "id": "bow_backstep",
+      "num": 18405,
+      "stamina": 6,
+      "stub": false,
+      "totalFrames": 22
+    },
+    {
+      "anim": "bow_jump_shot",
+      "file": "moves/bow.ron",
+      "fp": 0,
+      "id": "bow_jump_light",
+      "num": 18406,
+      "stamina": 8,
+      "stub": false,
+      "totalFrames": 28
+    },
+    {
+      "anim": "bow_jump_draw",
+      "file": "moves/bow.ron",
+      "fp": 0,
+      "id": "bow_jump_heavy",
+      "num": 18407,
+      "stamina": 14,
+      "stub": false,
+      "totalFrames": 36
+    },
+    {
+      "anim": "bow_plunge",
+      "file": "moves/bow.ron",
+      "fp": 0,
+      "id": "bow_plunge",
+      "num": 18408,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 36
+    },
+    {
+      "anim": "bow_counter",
+      "file": "moves/bow.ron",
+      "fp": 0,
+      "id": "bow_guard_counter",
+      "num": 18409,
+      "stamina": 12,
+      "stub": false,
+      "totalFrames": 30
+    },
+    {
+      "anim": "catalyst_swing_r",
+      "file": "moves/catalyst.ron",
+      "fp": 0,
+      "id": "ct_light_1",
+      "num": 18600,
+      "stamina": 9,
+      "stub": false,
+      "totalFrames": 32
+    },
+    {
+      "anim": "catalyst_swing_l",
+      "file": "moves/catalyst.ron",
+      "fp": 0,
+      "id": "ct_light_2",
+      "num": 18601,
+      "stamina": 9,
+      "stub": false,
+      "totalFrames": 32
+    },
+    {
+      "anim": "catalyst_bash",
+      "file": "moves/catalyst.ron",
+      "fp": 0,
+      "id": "ct_light_3",
+      "num": 18602,
+      "stamina": 12,
+      "stub": false,
+      "totalFrames": 37
+    },
+    {
+      "anim": "catalyst_overhead",
+      "file": "moves/catalyst.ron",
+      "fp": 0,
+      "id": "ct_heavy",
+      "num": 18603,
+      "stamina": 16,
+      "stub": false,
+      "totalFrames": 42
+    },
+    {
+      "anim": "catalyst_overhead_charged",
+      "file": "moves/catalyst.ron",
+      "fp": 0,
+      "id": "ct_heavy_charged",
+      "num": 18604,
+      "stamina": 20,
+      "stub": false,
+      "totalFrames": 46
+    },
+    {
+      "anim": "catalyst_run_swing",
+      "file": "moves/catalyst.ron",
+      "fp": 0,
+      "id": "ct_running",
+      "num": 18605,
+      "stamina": 12,
+      "stub": false,
+      "totalFrames": 34
+    },
+    {
+      "anim": "catalyst_roll_swing",
+      "file": "moves/catalyst.ron",
+      "fp": 0,
+      "id": "ct_rolling",
+      "num": 18606,
+      "stamina": 9,
+      "stub": false,
+      "totalFrames": 29
+    },
+    {
+      "anim": "catalyst_backstep_swing",
+      "file": "moves/catalyst.ron",
+      "fp": 0,
+      "id": "ct_backstep",
+      "num": 18607,
+      "stamina": 9,
+      "stub": false,
+      "totalFrames": 28
+    },
+    {
+      "anim": "catalyst_jump_swing",
+      "file": "moves/catalyst.ron",
+      "fp": 0,
+      "id": "ct_jump_light",
+      "num": 18608,
+      "stamina": 12,
+      "stub": false,
+      "totalFrames": 34
+    },
+    {
+      "anim": "catalyst_jump_smash",
+      "file": "moves/catalyst.ron",
+      "fp": 0,
+      "id": "ct_jump_heavy",
+      "num": 18609,
+      "stamina": 18,
+      "stub": false,
+      "totalFrames": 39
+    },
+    {
+      "anim": "catalyst_plunge",
+      "file": "moves/catalyst.ron",
+      "fp": 0,
+      "id": "ct_plunge",
+      "num": 18610,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 36
+    },
+    {
+      "anim": "catalyst_counter",
+      "file": "moves/catalyst.ron",
+      "fp": 0,
+      "id": "ct_guard_counter",
+      "num": 18611,
+      "stamina": 14,
+      "stub": false,
+      "totalFrames": 30
+    },
+    {
+      "anim": "colossal_swing_r",
+      "file": "moves/colossal.ron",
+      "fp": 0,
+      "id": "col_light_1",
+      "num": 18000,
+      "stamina": 22,
+      "stub": false,
+      "totalFrames": 50
+    },
+    {
+      "anim": "colossal_swing_l",
+      "file": "moves/colossal.ron",
+      "fp": 0,
+      "id": "col_light_2",
+      "num": 18001,
+      "stamina": 22,
+      "stub": false,
+      "totalFrames": 50
+    },
+    {
+      "anim": "colossal_slam",
+      "file": "moves/colossal.ron",
+      "fp": 0,
+      "id": "col_light_3",
+      "num": 18002,
+      "stamina": 28,
+      "stub": false,
+      "totalFrames": 60
+    },
+    {
+      "anim": "colossal_smash",
+      "file": "moves/colossal.ron",
+      "fp": 0,
+      "id": "col_heavy",
+      "num": 18003,
+      "stamina": 36,
+      "stub": false,
+      "totalFrames": 68
+    },
+    {
+      "anim": "colossal_smash_charged",
+      "file": "moves/colossal.ron",
+      "fp": 0,
+      "id": "col_heavy_charged",
+      "num": 18004,
+      "stamina": 44,
+      "stub": false,
+      "totalFrames": 74
+    },
+    {
+      "anim": "colossal_run_swing",
+      "file": "moves/colossal.ron",
+      "fp": 0,
+      "id": "col_running",
+      "num": 18005,
+      "stamina": 26,
+      "stub": false,
+      "totalFrames": 55
+    },
+    {
+      "anim": "colossal_roll_swing",
+      "file": "moves/colossal.ron",
+      "fp": 0,
+      "id": "col_rolling",
+      "num": 18006,
+      "stamina": 20,
+      "stub": false,
+      "totalFrames": 46
+    },
+    {
+      "anim": "colossal_backstep_swing",
+      "file": "moves/colossal.ron",
+      "fp": 0,
+      "id": "col_backstep",
+      "num": 18007,
+      "stamina": 18,
+      "stub": false,
+      "totalFrames": 42
+    },
+    {
+      "anim": "colossal_jump_swing",
+      "file": "moves/colossal.ron",
+      "fp": 0,
+      "id": "col_jump_light",
+      "num": 18008,
+      "stamina": 26,
+      "stub": false,
+      "totalFrames": 44
+    },
+    {
+      "anim": "colossal_jump_smash",
+      "file": "moves/colossal.ron",
+      "fp": 0,
+      "id": "col_jump_heavy",
+      "num": 18009,
+      "stamina": 34,
+      "stub": false,
+      "totalFrames": 48
+    },
+    {
+      "anim": "colossal_plunge",
+      "file": "moves/colossal.ron",
+      "fp": 0,
+      "id": "col_plunge",
+      "num": 18010,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 38
+    },
+    {
+      "anim": "colossal_counter",
+      "file": "moves/colossal.ron",
+      "fp": 0,
+      "id": "col_guard_counter",
+      "num": 18011,
+      "stamina": 24,
+      "stub": false,
+      "totalFrames": 38
     },
     {
       "anim": "roll_quick",
@@ -1372,6 +1712,136 @@
       "totalFrames": 60
     },
     {
+      "anim": "fist_jab_r",
+      "file": "moves/fist.ron",
+      "fp": 0,
+      "id": "fi_light_1",
+      "num": 18300,
+      "stamina": 6,
+      "stub": false,
+      "totalFrames": 18
+    },
+    {
+      "anim": "fist_jab_l",
+      "file": "moves/fist.ron",
+      "fp": 0,
+      "id": "fi_light_2",
+      "num": 18301,
+      "stamina": 6,
+      "stub": false,
+      "totalFrames": 18
+    },
+    {
+      "anim": "fist_hook",
+      "file": "moves/fist.ron",
+      "fp": 0,
+      "id": "fi_light_3",
+      "num": 18302,
+      "stamina": 7,
+      "stub": false,
+      "totalFrames": 20
+    },
+    {
+      "anim": "fist_uppercut",
+      "file": "moves/fist.ron",
+      "fp": 0,
+      "id": "fi_light_4",
+      "num": 18303,
+      "stamina": 10,
+      "stub": false,
+      "totalFrames": 27
+    },
+    {
+      "anim": "fist_haymaker",
+      "file": "moves/fist.ron",
+      "fp": 0,
+      "id": "fi_heavy",
+      "num": 18304,
+      "stamina": 14,
+      "stub": false,
+      "totalFrames": 35
+    },
+    {
+      "anim": "fist_haymaker_charged",
+      "file": "moves/fist.ron",
+      "fp": 0,
+      "id": "fi_heavy_charged",
+      "num": 18305,
+      "stamina": 18,
+      "stub": false,
+      "totalFrames": 39
+    },
+    {
+      "anim": "fist_run_swing",
+      "file": "moves/fist.ron",
+      "fp": 0,
+      "id": "fi_running",
+      "num": 18306,
+      "stamina": 10,
+      "stub": false,
+      "totalFrames": 26
+    },
+    {
+      "anim": "fist_roll_swing",
+      "file": "moves/fist.ron",
+      "fp": 0,
+      "id": "fi_rolling",
+      "num": 18307,
+      "stamina": 8,
+      "stub": false,
+      "totalFrames": 23
+    },
+    {
+      "anim": "fist_backstep_swing",
+      "file": "moves/fist.ron",
+      "fp": 0,
+      "id": "fi_backstep",
+      "num": 18308,
+      "stamina": 8,
+      "stub": false,
+      "totalFrames": 22
+    },
+    {
+      "anim": "fist_jump_swing",
+      "file": "moves/fist.ron",
+      "fp": 0,
+      "id": "fi_jump_light",
+      "num": 18309,
+      "stamina": 12,
+      "stub": false,
+      "totalFrames": 27
+    },
+    {
+      "anim": "fist_jump_smash",
+      "file": "moves/fist.ron",
+      "fp": 0,
+      "id": "fi_jump_heavy",
+      "num": 18310,
+      "stamina": 16,
+      "stub": false,
+      "totalFrames": 31
+    },
+    {
+      "anim": "fist_plunge",
+      "file": "moves/fist.ron",
+      "fp": 0,
+      "id": "fi_plunge",
+      "num": 18311,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 28
+    },
+    {
+      "anim": "fist_counter",
+      "file": "moves/fist.ron",
+      "fp": 0,
+      "id": "fi_guard_counter",
+      "num": 18312,
+      "stamina": 12,
+      "stub": false,
+      "totalFrames": 27
+    },
+    {
       "anim": "greatsword_sweep_r",
       "file": "moves/greatsword.ron",
       "fp": 0,
@@ -1492,6 +1962,126 @@
       "totalFrames": 38
     },
     {
+      "anim": "halberd_sweep_r",
+      "file": "moves/halberd.ron",
+      "fp": 0,
+      "id": "hb_light_1",
+      "num": 18200,
+      "stamina": 14,
+      "stub": false,
+      "totalFrames": 40
+    },
+    {
+      "anim": "halberd_sweep_l",
+      "file": "moves/halberd.ron",
+      "fp": 0,
+      "id": "hb_light_2",
+      "num": 18201,
+      "stamina": 14,
+      "stub": false,
+      "totalFrames": 40
+    },
+    {
+      "anim": "halberd_chop",
+      "file": "moves/halberd.ron",
+      "fp": 0,
+      "id": "hb_light_3",
+      "num": 18202,
+      "stamina": 18,
+      "stub": false,
+      "totalFrames": 46
+    },
+    {
+      "anim": "halberd_cleave",
+      "file": "moves/halberd.ron",
+      "fp": 0,
+      "id": "hb_heavy",
+      "num": 18203,
+      "stamina": 24,
+      "stub": false,
+      "totalFrames": 52
+    },
+    {
+      "anim": "halberd_cleave_charged",
+      "file": "moves/halberd.ron",
+      "fp": 0,
+      "id": "hb_heavy_charged",
+      "num": 18204,
+      "stamina": 30,
+      "stub": false,
+      "totalFrames": 56
+    },
+    {
+      "anim": "halberd_run_swing",
+      "file": "moves/halberd.ron",
+      "fp": 0,
+      "id": "hb_running",
+      "num": 18205,
+      "stamina": 18,
+      "stub": false,
+      "totalFrames": 39
+    },
+    {
+      "anim": "halberd_roll_swing",
+      "file": "moves/halberd.ron",
+      "fp": 0,
+      "id": "hb_rolling",
+      "num": 18206,
+      "stamina": 14,
+      "stub": false,
+      "totalFrames": 35
+    },
+    {
+      "anim": "halberd_backstep_swing",
+      "file": "moves/halberd.ron",
+      "fp": 0,
+      "id": "hb_backstep",
+      "num": 18207,
+      "stamina": 14,
+      "stub": false,
+      "totalFrames": 34
+    },
+    {
+      "anim": "halberd_jump_swing",
+      "file": "moves/halberd.ron",
+      "fp": 0,
+      "id": "hb_jump_light",
+      "num": 18208,
+      "stamina": 20,
+      "stub": false,
+      "totalFrames": 40
+    },
+    {
+      "anim": "halberd_jump_smash",
+      "file": "moves/halberd.ron",
+      "fp": 0,
+      "id": "hb_jump_heavy",
+      "num": 18209,
+      "stamina": 26,
+      "stub": false,
+      "totalFrames": 44
+    },
+    {
+      "anim": "halberd_plunge",
+      "file": "moves/halberd.ron",
+      "fp": 0,
+      "id": "hb_plunge",
+      "num": 18210,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 36
+    },
+    {
+      "anim": "halberd_counter",
+      "file": "moves/halberd.ron",
+      "fp": 0,
+      "id": "hb_guard_counter",
+      "num": 18211,
+      "stamina": 20,
+      "stub": false,
+      "totalFrames": 34
+    },
+    {
       "anim": "hammer_swing_r",
       "file": "moves/hammer.ron",
       "fp": 0,
@@ -1608,6 +2198,266 @@
       "id": "hm_guard_counter",
       "num": 13511,
       "stamina": 20,
+      "stub": false,
+      "totalFrames": 32
+    },
+    {
+      "anim": "shield_bash_r",
+      "file": "moves/shield.ron",
+      "fp": 0,
+      "id": "sh_bash_1",
+      "num": 18500,
+      "stamina": 12,
+      "stub": false,
+      "totalFrames": 32
+    },
+    {
+      "anim": "shield_bash_l",
+      "file": "moves/shield.ron",
+      "fp": 0,
+      "id": "sh_bash_2",
+      "num": 18501,
+      "stamina": 12,
+      "stub": false,
+      "totalFrames": 32
+    },
+    {
+      "anim": "shield_slam",
+      "file": "moves/shield.ron",
+      "fp": 0,
+      "id": "sh_bash_3",
+      "num": 18502,
+      "stamina": 16,
+      "stub": false,
+      "totalFrames": 38
+    },
+    {
+      "anim": "shield_rush",
+      "file": "moves/shield.ron",
+      "fp": 0,
+      "id": "sh_heavy",
+      "num": 18503,
+      "stamina": 20,
+      "stub": false,
+      "totalFrames": 44
+    },
+    {
+      "anim": "shield_rush_charged",
+      "file": "moves/shield.ron",
+      "fp": 0,
+      "id": "sh_heavy_charged",
+      "num": 18504,
+      "stamina": 26,
+      "stub": false,
+      "totalFrames": 48
+    },
+    {
+      "anim": "shield_guard_bash",
+      "file": "moves/shield.ron",
+      "fp": 0,
+      "id": "sh_guard_bash",
+      "num": 18505,
+      "stamina": 10,
+      "stub": false,
+      "totalFrames": 27
+    },
+    {
+      "anim": "shield_run_swing",
+      "file": "moves/shield.ron",
+      "fp": 0,
+      "id": "sh_running",
+      "num": 18506,
+      "stamina": 14,
+      "stub": false,
+      "totalFrames": 34
+    },
+    {
+      "anim": "shield_roll_swing",
+      "file": "moves/shield.ron",
+      "fp": 0,
+      "id": "sh_rolling",
+      "num": 18507,
+      "stamina": 10,
+      "stub": false,
+      "totalFrames": 29
+    },
+    {
+      "anim": "shield_backstep_swing",
+      "file": "moves/shield.ron",
+      "fp": 0,
+      "id": "sh_backstep",
+      "num": 18508,
+      "stamina": 10,
+      "stub": false,
+      "totalFrames": 29
+    },
+    {
+      "anim": "shield_jump_swing",
+      "file": "moves/shield.ron",
+      "fp": 0,
+      "id": "sh_jump_light",
+      "num": 18509,
+      "stamina": 14,
+      "stub": false,
+      "totalFrames": 34
+    },
+    {
+      "anim": "shield_jump_smash",
+      "file": "moves/shield.ron",
+      "fp": 0,
+      "id": "sh_jump_heavy",
+      "num": 18510,
+      "stamina": 20,
+      "stub": false,
+      "totalFrames": 39
+    },
+    {
+      "anim": "shield_plunge",
+      "file": "moves/shield.ron",
+      "fp": 0,
+      "id": "sh_plunge",
+      "num": 18511,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 36
+    },
+    {
+      "anim": "shield_counter",
+      "file": "moves/shield.ron",
+      "fp": 0,
+      "id": "sh_guard_counter",
+      "num": 18512,
+      "stamina": 14,
+      "stub": false,
+      "totalFrames": 28
+    },
+    {
+      "anim": "spear_thrust_r",
+      "file": "moves/spear.ron",
+      "fp": 0,
+      "id": "sp_light_1",
+      "num": 18100,
+      "stamina": 12,
+      "stub": false,
+      "totalFrames": 32
+    },
+    {
+      "anim": "spear_thrust_l",
+      "file": "moves/spear.ron",
+      "fp": 0,
+      "id": "sp_light_2",
+      "num": 18101,
+      "stamina": 12,
+      "stub": false,
+      "totalFrames": 32
+    },
+    {
+      "anim": "spear_lunge",
+      "file": "moves/spear.ron",
+      "fp": 0,
+      "id": "sp_light_3",
+      "num": 18102,
+      "stamina": 16,
+      "stub": false,
+      "totalFrames": 37
+    },
+    {
+      "anim": "spear_impale",
+      "file": "moves/spear.ron",
+      "fp": 0,
+      "id": "sp_heavy",
+      "num": 18103,
+      "stamina": 22,
+      "stub": false,
+      "totalFrames": 48
+    },
+    {
+      "anim": "spear_impale_charged",
+      "file": "moves/spear.ron",
+      "fp": 0,
+      "id": "sp_heavy_charged",
+      "num": 18104,
+      "stamina": 28,
+      "stub": false,
+      "totalFrames": 52
+    },
+    {
+      "anim": "spear_guard_thrust",
+      "file": "moves/spear.ron",
+      "fp": 0,
+      "id": "sp_guard_thrust",
+      "num": 18105,
+      "stamina": 10,
+      "stub": false,
+      "totalFrames": 31
+    },
+    {
+      "anim": "spear_run_swing",
+      "file": "moves/spear.ron",
+      "fp": 0,
+      "id": "sp_running",
+      "num": 18106,
+      "stamina": 16,
+      "stub": false,
+      "totalFrames": 34
+    },
+    {
+      "anim": "spear_roll_swing",
+      "file": "moves/spear.ron",
+      "fp": 0,
+      "id": "sp_rolling",
+      "num": 18107,
+      "stamina": 12,
+      "stub": false,
+      "totalFrames": 30
+    },
+    {
+      "anim": "spear_backstep_swing",
+      "file": "moves/spear.ron",
+      "fp": 0,
+      "id": "sp_backstep",
+      "num": 18108,
+      "stamina": 12,
+      "stub": false,
+      "totalFrames": 29
+    },
+    {
+      "anim": "spear_jump_swing",
+      "file": "moves/spear.ron",
+      "fp": 0,
+      "id": "sp_jump_light",
+      "num": 18109,
+      "stamina": 18,
+      "stub": false,
+      "totalFrames": 36
+    },
+    {
+      "anim": "spear_jump_smash",
+      "file": "moves/spear.ron",
+      "fp": 0,
+      "id": "sp_jump_heavy",
+      "num": 18110,
+      "stamina": 24,
+      "stub": false,
+      "totalFrames": 40
+    },
+    {
+      "anim": "spear_plunge",
+      "file": "moves/spear.ron",
+      "fp": 0,
+      "id": "sp_plunge",
+      "num": 18111,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 36
+    },
+    {
+      "anim": "spear_counter",
+      "file": "moves/spear.ron",
+      "fp": 0,
+      "id": "sp_guard_counter",
+      "num": 18112,
+      "stamina": 18,
       "stub": false,
       "totalFrames": 32
     },
@@ -2113,6 +2963,83 @@
       "stub": false,
       "unique": false,
       "weightTenths": 60
+    },
+    {
+      "baseDamage": 210,
+      "class": "Colossal",
+      "file": "weapons/test_classes.ron",
+      "id": "wpn_test_colossal",
+      "name": "Test Colossal",
+      "num": 18900,
+      "stub": false,
+      "unique": false,
+      "weightTenths": 160
+    },
+    {
+      "baseDamage": 100,
+      "class": "Spear",
+      "file": "weapons/test_classes.ron",
+      "id": "wpn_test_spear",
+      "name": "Test Spear",
+      "num": 18901,
+      "stub": false,
+      "unique": false,
+      "weightTenths": 40
+    },
+    {
+      "baseDamage": 125,
+      "class": "Halberd",
+      "file": "weapons/test_classes.ron",
+      "id": "wpn_test_halberd",
+      "name": "Test Halberd",
+      "num": 18902,
+      "stub": false,
+      "unique": false,
+      "weightTenths": 80
+    },
+    {
+      "baseDamage": 60,
+      "class": "Fist",
+      "file": "weapons/test_classes.ron",
+      "id": "wpn_test_fist",
+      "name": "Test Fist",
+      "num": 18903,
+      "stub": false,
+      "unique": false,
+      "weightTenths": 20
+    },
+    {
+      "baseDamage": 85,
+      "class": "Bow",
+      "file": "weapons/test_classes.ron",
+      "id": "wpn_test_bow",
+      "name": "Test Bow",
+      "num": 18904,
+      "stub": false,
+      "unique": false,
+      "weightTenths": 20
+    },
+    {
+      "baseDamage": 60,
+      "class": "Shield",
+      "file": "weapons/test_classes.ron",
+      "id": "wpn_test_shield",
+      "name": "Test Shield",
+      "num": 18905,
+      "stub": false,
+      "unique": false,
+      "weightTenths": 60
+    },
+    {
+      "baseDamage": 40,
+      "class": "Catalyst",
+      "file": "weapons/test_classes.ron",
+      "id": "wpn_test_catalyst",
+      "name": "Test Catalyst",
+      "num": 18906,
+      "stub": false,
+      "unique": false,
+      "weightTenths": 30
     }
   ]
 }

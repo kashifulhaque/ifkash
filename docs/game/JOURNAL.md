@@ -28,6 +28,7 @@ Copy this block to the top of the entries and fill it in as you go:
   - WP-052: sonnet, worktree; `abc2479`; 261K. Orchestrator merged it onto WP-055 and WP-059 (4 code conflicts) and fixed the test catalyst's missing `catalyst_school`.
   - WP-056: haiku, worktree; `12fb40d`; 395K. Clean cherry-pick; 71 goldens A -> A.
   - WP-053: haiku, worktree; `3903440`; 377K. Behavior change: seven `m5_spell_*` goldens re-recorded (stylus now at spec scaling and catalyst moveset).
+  - WP-058: sonnet, worktree; `472c995`; 278K. Orchestrator opened the armory (armor, catalysts) on port 5180; it renders. Only console errors: the pre-existing `m0_flat.json` 404.
 - **Context:** orchestrator NNK; each worker NNK (budget 500K per context window)
 - **Not verified:** anything the session couldn't check
 - **Waiting on the owner:** decisions, credentials, playtests, merges

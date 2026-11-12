@@ -22,7 +22,7 @@ Status values are `todo`, `in progress`, `blocked`, `split`, `review`, and `done
 | 002 | Deterministic math, RNG, tick skeleton | core | todo | | | |
 | 003 | Content crate | core | todo | | | |
 | 004 | Inputs, replays, golden tests | core | todo | | | |
-| 005 | CI and frontend deploy proposal | infra | todo | | | Needs owner sign-off on ADR 0003 |
+| 005 | CI and frontend deploy proposal | infra | done | claude/game-m0-1730d5 | 2026-11-12 | game.yml passes actionlint and its steps run locally; not yet run on GitHub (branch not pushed). ADR 0003 is Proposed with a concrete web-deploy.yml; needs owner sign-off and the Pages project name. Installed actionlint to ~/go/bin. |
 | 006 | Browser bridge | render | todo | | | |
 | 007 | Python binding stub | rl | todo | | | |
 | 008 | Portfolio slugs | ui | todo | | | |

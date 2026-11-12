@@ -1,0 +1,163 @@
+name: Game CI
+
+# Checks for the Latticefall game workspace (game/). This workflow only tests and
+# builds; it never deploys. The frontend deploy is covered by
+# docs/game/decisions/0003-frontend-deploy.md.
+
+on:
+  pull_request:
+    paths:
+      - 'game/**'
+      - 'mise.toml'
+      - '.github/workflows/game.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'game/**'
+      - 'mise.toml'
+      - '.github/workflows/game.yml'
+  workflow_dispatch:
+
+# Cancel a superseded run for the same branch or pull request.
+concurrency:
+  group: game-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  # Keep in sync with game/rust-toolchain.toml and the RUSTUP_TOOLCHAIN value in the
+  # game:* tasks in mise.toml.
+  GAME_RUST_VERSION: '1.99.1'
+
+# TODO(WP-006, WP-007): The WASM and Python golden-replay hash checks arrive with those
+# WPs. The game:wasm and game:py tasks compare the replay hash against the committed
+# expected hash, so each job fails on a mismatch and no extra cross-host job is needed.
+
+jobs:
+  rust:
+    name: Rust (test, lint, validate, bench)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      # mise reads mise.toml. Install only Rust, so CI doesn't download Typst or Wrangler.
+      - name: Install mise tools
+        uses: jdx/mise-action@v5
+        with:
+          install_args: rust
+
+      # Cargo tasks set RUSTUP_TOOLCHAIN to the pinned version, which overrides
+      # game/rust-toolchain.toml. Rustup doesn't install the components or targets for a
+      # toolchain selected through that variable, so install them explicitly.
+      - name: Install pinned Rust toolchain
+        run: >
+          rustup toolchain install "$GAME_RUST_VERSION" --profile minimal
+          -c clippy -c rustfmt -t wasm32-unknown-unknown
+
+      - name: Cache Cargo registry and build output
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: game -> target
+          cache-on-failure: true
+
+      - name: Test
+        run: mise run game:test
+
+      - name: Lint
+        run: mise run game:lint
+
+      - name: Validate content
+        run: mise run game:validate
+
+      # Smoke test only. The bench is a stub until it becomes real; this step keeps the
+      # command from rotting. It doesn't compare against a performance budget.
+      - name: Bench smoke test
+        run: mise run game:bench
+        timeout-minutes: 10
+
+  wasm:
+    name: WASM (build and determinism)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install mise tools
+        uses: jdx/mise-action@v5
+        with:
+          install_args: rust node bun
+
+      - name: Install pinned Rust toolchain
+        run: >
+          rustup toolchain install "$GAME_RUST_VERSION" --profile minimal
+          -c clippy -c rustfmt -t wasm32-unknown-unknown
+
+      - name: Cache Cargo registry and build output
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: game -> target
+          cache-on-failure: true
+
+      # The wasm-bindgen CLI version must match the wasm-bindgen crate in Cargo.lock.
+      # The crate is absent until WP-006, so the step outputs an empty version and the
+      # install step is skipped.
+      - name: Read wasm-bindgen version from Cargo.lock
+        id: wbg
+        run: |
+          version="$(grep -A1 -x 'name = "wasm-bindgen"' game/Cargo.lock | sed -n 's/^version = "\(.*\)"$/\1/p' | head -n1)"
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "wasm-bindgen version: ${version:-not in Cargo.lock yet}"
+
+      - name: Install wasm-bindgen-cli
+        if: steps.wbg.outputs.version != ''
+        uses: taiki-e/install-action@v2
+        with:
+          tool: wasm-bindgen-cli@${{ steps.wbg.outputs.version }}
+
+      # wasm-opt comes from binaryen.
+      - name: Install binaryen
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends binaryen
+          wasm-opt --version
+
+      - name: Build WASM and run determinism test
+        run: mise run game:wasm
+
+  python:
+    name: Python bindings
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install mise tools
+        uses: jdx/mise-action@v5
+        with:
+          install_args: rust
+
+      - name: Install pinned Rust toolchain
+        run: >
+          rustup toolchain install "$GAME_RUST_VERSION" --profile minimal
+          -c clippy -c rustfmt -t wasm32-unknown-unknown
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+
+      - name: Cache Cargo registry and build output
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: game -> target
+          cache-on-failure: true
+
+      # WP-007 makes game:py run `maturin develop --release` and `pytest` in
+      # game/python/. Install maturin and pytest here at that point.
+      - name: Build and test Python bindings
+        run: mise run game:py

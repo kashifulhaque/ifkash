@@ -196,6 +196,9 @@ pub struct Inventory {
     /// Owned consumable stacks `(item, count)`, sorted by item.
     pub stacks: Vec<(NumId, u16)>,
     pub flasks: Flasks,
+    /// Glimmer held: the currency that levels up the character. Dropped as a Remnant on
+    /// death (`world_state::death`).
+    pub glimmer: u32,
     /// Cycle buttons held on the previous tick, for press edges.
     pub prev_cycle: u16,
 }

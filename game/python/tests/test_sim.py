@@ -18,6 +18,11 @@ from latticefall import (
 
 REPLAY_DIR = Path(__file__).resolve().parents[2] / "tests" / "replays"
 REPLAYS = sorted(REPLAY_DIR.glob("*.lfr"))
+# These replays send `Command::Rest` at a Lantern, which changes the run. `Sim.step` takes
+# action frames only, so the Python host can't reproduce them by stepping (it still runs
+# them whole with `run_replay`). Drop this when lf-py can send commands.
+NEEDS_COMMANDS = {"m2_death_recover.lfr", "m2_death_lose_remnant.lfr"}
+STEPPABLE = [p for p in REPLAYS if p.name not in NEEDS_COMMANDS]
 
 
 def test_replays_exist():
@@ -40,7 +45,7 @@ def test_readme_hash_if_listed(path):
     assert int(match.group(1), 16) == replay_final_expected(path.read_bytes())
 
 
-@pytest.mark.parametrize("path", REPLAYS, ids=lambda p: p.name)
+@pytest.mark.parametrize("path", STEPPABLE, ids=lambda p: p.name)
 def test_stepping_matches_recorded_hash(path):
     data = path.read_bytes()
     frames = replay_frames(data)
@@ -52,7 +57,7 @@ def test_stepping_matches_recorded_hash(path):
     assert sim.state_hash() == replay_final_expected(data)
 
 
-@pytest.mark.parametrize("path", REPLAYS, ids=lambda p: p.name)
+@pytest.mark.parametrize("path", STEPPABLE, ids=lambda p: p.name)
 def test_step_many_matches_step(path):
     data = path.read_bytes()
     sim = Sim()

@@ -20,6 +20,25 @@ pub struct Scenario {
     /// Standing dummy actors: they have HP, never move or act, and can be locked on to.
     #[serde(default)]
     pub dummies: Vec<Dummy>,
+    /// Lanterns (WP-029). Real levels place them in the level format (WP-040).
+    #[serde(default)]
+    pub lanterns: Vec<Lantern>,
+    /// Glimmer the player starts with. Zero in real levels; test scenarios set it so a
+    /// death has something to drop before enemies drop Glimmer (WP-023, WP-030).
+    #[serde(default)]
+    pub start_glimmer: u32,
+}
+
+/// A Lantern: where the player rests and respawns.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Lantern {
+    /// Unique ID within the scenario; saves and world flags refer to the Lantern by it.
+    pub id: String,
+    /// Where the player stands to rest, and where they respawn, in meters (feet).
+    pub pos: [f32; 3],
+    /// The player's facing on respawn, in radians from +Z toward +X.
+    pub yaw: f32,
 }
 
 /// A training dummy.
@@ -123,6 +142,14 @@ impl Scenario {
         for d in &self.dummies {
             if d.hp == 0 {
                 return Err(format!("dummy {:?}: hp must be positive", d.name));
+            }
+        }
+        for (i, l) in self.lanterns.iter().enumerate() {
+            if l.id.is_empty() {
+                return Err("a lantern has an empty id".to_owned());
+            }
+            if self.lanterns[..i].iter().any(|o| o.id == l.id) {
+                return Err(format!("lantern {:?} is listed twice", l.id));
             }
         }
         Ok(())

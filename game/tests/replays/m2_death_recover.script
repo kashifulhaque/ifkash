@@ -1,0 +1,14 @@
+# WP-029 golden: die, respawn at the Lantern, recover the Remnant (record with
+# `lf-tools replay record-script`). Each line: <ticks> <move_x> <move_z> [BUTTONS], plus
+# `cmd` lines. test_field starts the player with 500 Glimmer and has `lantern_field` at
+# z = -3. The heightfield ends at z = -32; past it is the void.
+seed 29
+scenario test_field
+40  0   -30          # walk back 2.1 m: within 2 m of the Lantern
+5   0   0
+cmd Rest             # rest: sets the respawn point
+10  0   0
+215 0   -127         # run off the edge of the world at z = -32
+170 0   0            # fall, die (the Remnant drops at the edge), wait out the death screen, respawn
+190 0   -127         # run back and stop just inside the Remnant's reach, short of the edge
+30  0   0

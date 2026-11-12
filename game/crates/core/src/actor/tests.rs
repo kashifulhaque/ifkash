@@ -229,9 +229,14 @@ fn fall_damage_thresholds() {
 fn falling_out_of_the_world_kills() {
     let mut w = field();
     place(&mut w, [31.5, 0.0, -31.5]);
-    run(&mut w, &frame(127, -127, 0), 30 * 6);
+    // The player respawns after a delay (`world_state::death`), so catch the death itself.
+    let f = frame(127, -127, 0);
+    let died = (0..30 * 6).any(|_| {
+        tick(&mut w, &f);
+        player(&w).dead
+    });
     let p = player(&w);
-    assert!(p.dead && p.hp == 0, "{:?}", p.pos);
+    assert!(died && p.hp == 0, "{:?}", p.pos);
 }
 
 #[test]

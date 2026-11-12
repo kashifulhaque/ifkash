@@ -25,11 +25,11 @@ pub mod weapons;
 
 pub use attributes::Attributes;
 pub use consumables::{Consumables, Flask, Item, ItemKind};
-pub use locomotion::{EquipLoad, Guard, LockOn, Locomotion};
+pub use locomotion::{Death, EquipLoad, Guard, LockOn, Locomotion};
 pub use moves::Move;
 pub use portfolio::{Portfolio, PortfolioContent};
 pub use registry::{NumId, Registry};
-pub use scenario::Scenario;
+pub use scenario::{Lantern, Scenario};
 pub use validate::{Issue, Severity, Validate};
 pub use weapons::{GuardStats, Weapon};
 

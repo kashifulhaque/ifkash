@@ -70,4 +70,11 @@
     counter_window_ticks: 12, // Guard: HEAVY within 12 ticks after a block
     regen_percent: 40, // Regeneration: while guarding, 40 percent of the rate
   ),
+  // Death, Remnants, and Lanterns (docs/game/06-progression-and-systems.md)
+  death: (
+    respawn_delay_ticks: 90, // tuning: 3 s on the death screen before the respawn
+    remnant_pickup_radius_m: 1.2, // tuning: "touching the Remnant recovers it"
+    lantern_rest_radius_m: 2.0, // tuning: how close to the Lantern to rest
+    lantern_rest_height_m: 1.0, // tuning
+  ),
 )

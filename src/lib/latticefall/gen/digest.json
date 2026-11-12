@@ -143,8 +143,8 @@
     "start_max": 16,
     "start_min": 4
   },
-  "contentHash": "10151597163831382610",
-  "contentHashHex": "8ce1b7d5c5085252",
+  "contentHash": "14972545954937566000",
+  "contentHashHex": "cfc92b37d343f330",
   "moves": [
     {
       "anim": "roll_quick",

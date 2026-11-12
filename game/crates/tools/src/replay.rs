@@ -125,8 +125,9 @@ fn go(action: Action, data: &Path) -> Result<ExitCode, String> {
             let text =
                 fs::read_to_string(&script).map_err(|e| format!("{}: {e}", script.display()))?;
             let s = parse_script(&text).map_err(|e| format!("{}: {e}", script.display()))?;
-            let replay = Replay::record(s.seed, &s.scenario, &content(data)?, &s.frames, vec![])
-                .map_err(|e| e.to_string())?;
+            let replay =
+                Replay::record(s.seed, &s.scenario, &content(data)?, &s.frames, s.commands)
+                    .map_err(|e| e.to_string())?;
             write_replay(&out, &replay)
         }
     }
@@ -150,16 +151,21 @@ pub struct Script {
     pub seed: u64,
     pub scenario: String,
     pub frames: Vec<ActionFrame>,
+    /// `(tick, command)` pairs from `cmd` lines.
+    pub commands: Vec<(u64, Command)>,
 }
 
 /// Parses an input script. Blank lines and text after `#` are ignored. The header lines
 /// `seed <u64>` and `scenario <name>` are required; every other line is
 /// `<ticks> <move_x> <move_z> [BUTTON+BUTTON...]`, holding that frame for `ticks` ticks.
 /// Button names are the `ActionFrame` button names, for example `DODGE+JUMP`.
+/// `cmd Rest` and `cmd SplitFlasks <vigil>` queue a command on the tick of the next frame
+/// line (or on the tick after the last frame, if none follows).
 pub fn parse_script(text: &str) -> Result<Script, String> {
     let mut seed = None;
     let mut scenario = None;
     let mut frames = Vec::new();
+    let mut commands = Vec::new();
     for (n, raw) in text.lines().enumerate() {
         let line = raw.split('#').next().unwrap_or("").trim();
         if line.is_empty() {
@@ -172,6 +178,16 @@ pub fn parse_script(text: &str) -> Result<Script, String> {
                 seed = Some(words[1].parse::<u64>().map_err(|_| err("bad seed"))?);
             }
             "scenario" if words.len() == 2 => scenario = Some(words[1].to_owned()),
+            "cmd" if words.len() >= 2 => {
+                let command = match (words[1], words.get(2)) {
+                    ("Rest", None) => Command::Rest,
+                    ("SplitFlasks", Some(v)) => Command::SplitFlasks {
+                        vigil: v.parse().map_err(|_| err("bad vigil count"))?,
+                    },
+                    _ => return Err(err("unknown command (Rest, SplitFlasks <vigil>)")),
+                };
+                commands.push((frames.len() as u64, command));
+            }
             _ if words.len() == 3 || words.len() == 4 => {
                 let ticks: u32 = words[0].parse().map_err(|_| err("bad tick count"))?;
                 let move_x: i8 = words[1].parse().map_err(|_| err("bad move_x"))?;
@@ -196,6 +212,7 @@ pub fn parse_script(text: &str) -> Result<Script, String> {
         seed: seed.ok_or("missing `seed` line")?,
         scenario: scenario.ok_or("missing `scenario` line")?,
         frames,
+        commands,
     })
 }
 
@@ -250,4 +267,23 @@ pub fn random_inputs(seed: u64, ticks: u64) -> (Vec<ActionFrame>, Vec<(u64, Comm
     .filter(|&(t, _)| t < ticks)
     .collect();
     (frames, commands)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn cmd_lines_queue_commands_on_the_next_frame() {
+        let s = parse_script(
+            "seed 1\nscenario test_field\n3 0 0\ncmd Rest # at tick 3\ncmd SplitFlasks 2\n2 0 0\n",
+        )
+        .unwrap();
+        assert_eq!(s.frames.len(), 5);
+        assert_eq!(
+            s.commands,
+            [(3, Command::Rest), (3, Command::SplitFlasks { vigil: 2 })]
+        );
+        assert!(parse_script("seed 1\nscenario x\ncmd Dance\n").is_err());
+    }
 }

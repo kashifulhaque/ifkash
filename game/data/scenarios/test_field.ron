@@ -16,6 +16,11 @@
   spawn: (0.0, 0.0, 0.0),
   spawn_yaw: 0.0,
   kill_y: -50.0,
+  // WP-029: a Lantern 3 m behind the spawn, and Glimmer to lose.
+  start_glimmer: 500,
+  lanterns: [
+    (id: "lantern_field", pos: (0.0, 0.0, -3.0), yaw: 0.0),
+  ],
   heightfield: Some((
     center: (0.0, 0.0, 16.0),
     rows: 49,

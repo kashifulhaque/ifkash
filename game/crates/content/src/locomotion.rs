@@ -86,6 +86,25 @@ pub struct Locomotion {
     pub equip_load: EquipLoad,
     /// Guard timings and numbers.
     pub guard: Guard,
+    /// Death, Remnant, and Lantern numbers.
+    pub death: Death,
+}
+
+/// Death, Remnants, and Lanterns (docs/game/06-progression-and-systems.md, "Glimmer and
+/// death" and "Lanterns").
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Death {
+    /// Ticks between the player dying and respawning at the last rested Lantern.
+    pub respawn_delay_ticks: u16,
+    /// A Remnant is recovered when the player's feet are within this distance of it, in
+    /// meters.
+    pub remnant_pickup_radius_m: f32,
+    /// The player can rest at a Lantern when their feet are within this horizontal
+    /// distance of it, in meters.
+    pub lantern_rest_radius_m: f32,
+    /// ...and within this vertical distance of it, in meters.
+    pub lantern_rest_height_m: f32,
 }
 
 /// Equip load tiers (docs/game/03-combat.md, "Equip load and roll tiers"). Percentages

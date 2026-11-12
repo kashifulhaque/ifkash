@@ -206,6 +206,7 @@ fn m2_three_hit_chain_lands_exactly_three_hits() {
         for event in w.events.drain() {
             match event {
                 Event::Hit(h) => hits.push(h),
+                Event::Life(_) => {}
             }
         }
     }
@@ -222,4 +223,98 @@ fn m2_three_hit_chain_lands_exactly_three_hits() {
     let taken: u32 = hits.iter().map(|h| h.damage).sum();
     let d = w.actors.get(dummy).unwrap();
     assert_eq!((d.hp, d.dead), (100 - taken, false));
+}
+
+/// Replays a golden on `test_field` and returns the life-cycle events with their ticks,
+/// and the final world.
+fn life_events(name: &str) -> (Vec<(usize, lf_core::events::LifeEvent)>, lf_core::World) {
+    use lf_core::events::Event;
+    use lf_core::input::TickInput;
+    use lf_core::{World, tick};
+
+    let content = content();
+    let replay = Replay::decode(&std::fs::read(replays_dir().join(name)).unwrap()).unwrap();
+    assert_eq!(replay.header.scenario, "test_field");
+    let mut w = World::new(replay.header.seed, &content, "test_field").unwrap();
+    let mut out = Vec::new();
+    for (t, frame) in expand(&replay.frames).into_iter().enumerate() {
+        let commands = replay
+            .commands
+            .iter()
+            .filter(|(ct, _)| *ct == t as u64)
+            .map(|(_, c)| c.clone())
+            .collect();
+        tick(&mut w, &TickInput { frame, commands });
+        for event in w.events.drain() {
+            if let Event::Life(e) = event {
+                out.push((t, e));
+            }
+        }
+    }
+    (out, w)
+}
+
+/// The WP-029 golden: rest at the Lantern, die by falling off the world, respawn at the
+/// Lantern, and walk back to recover the Remnant with all 500 Glimmer.
+#[test]
+fn m2_death_recover_gets_the_remnant_back() {
+    use lf_core::events::LifeEvent::*;
+
+    let (events, w) = life_events("m2_death_recover.lfr");
+    let kinds: Vec<_> = events.iter().map(|(_, e)| e).collect();
+    assert!(
+        matches!(
+            kinds[..],
+            [
+                Rested { lantern: 0, .. },
+                Died { .. },
+                RemnantDropped { glimmer: 500, .. },
+                Respawned { .. },
+                RemnantRecovered { glimmer: 500, .. }
+            ]
+        ),
+        "{events:?}"
+    );
+    let Respawned { pos } = events[3].1 else {
+        unreachable!()
+    };
+    assert_eq!(pos, [0.0, 0.0, -3.0], "respawned at lantern_field");
+    let (RemnantDropped { pos: at, .. }, RemnantRecovered { pos: back, .. }) =
+        (&events[2].1, &events[4].1)
+    else {
+        unreachable!()
+    };
+    assert_eq!(at, back);
+    let p = w.actors.get(w.player).unwrap();
+    assert!(!p.dead && p.inventory.glimmer == 500);
+    assert!(w.state.death.remnant.is_none() && w.state.death.deaths == 1);
+    assert_eq!(w.state.respawn_lantern.as_deref(), Some("lantern_field"));
+}
+
+/// The WP-029 golden: die, respawn, die again without recovering, and the Remnant is lost.
+#[test]
+fn m2_death_lose_remnant_loses_the_glimmer() {
+    use lf_core::events::LifeEvent::*;
+
+    let (events, w) = life_events("m2_death_lose_remnant.lfr");
+    let kinds: Vec<_> = events.iter().map(|(_, e)| e).collect();
+    assert!(
+        matches!(
+            kinds[..],
+            [
+                Rested { .. },
+                Died { .. },
+                RemnantDropped { glimmer: 500, .. },
+                Respawned { .. },
+                Died { .. },
+                RemnantLost { glimmer: 500, .. },
+                Respawned { .. }
+            ]
+        ),
+        "{events:?}"
+    );
+    let p = w.actors.get(w.player).unwrap();
+    assert!(!p.dead);
+    assert_eq!(p.inventory.glimmer, 0, "the Glimmer is gone for good");
+    assert!(w.state.death.remnant.is_none() && w.state.death.deaths == 2);
 }

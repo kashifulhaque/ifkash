@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 
 pub use crate::actor::Actor;
 use crate::actor::Motor;
-use crate::actor::stats::{Defense, Stats};
+use crate::actor::stats::Stats;
 use crate::arena::{Arena, Id};
 use crate::combat::damage::DamageTable;
 use crate::combat::hurtbox::Hurtbox;
@@ -14,6 +14,8 @@ use crate::events::EventQueue;
 use crate::items::{Inventory, ItemTable};
 use crate::physics::PhysicsState;
 use crate::rng::RngStreams;
+use crate::world_state::lantern::dummy_actor;
+use crate::world_state::{Layout, WorldState};
 
 /// Seconds per tick (30 Hz).
 pub const DT: f32 = 1.0 / 30.0;
@@ -37,6 +39,11 @@ pub struct World {
     pub actors: Arena<Actor>,
     /// The player actor, spawned by `World::new`.
     pub player: Id,
+    /// Lanterns and enemy spawns from the scenario, for the world state to refer to. Not
+    /// hashed: the scenario name is, and the content hash covers the scenario.
+    pub layout: Layout,
+    /// Lanterns, the respawn point, the Remnant, and world flags (WP-029).
+    pub state: WorldState,
     /// Drained by the host every tick; excluded from the state hash.
     pub events: EventQueue,
 }
@@ -77,6 +84,7 @@ struct HashView<'a> {
     rng: &'a RngStreams,
     scenario: &'a str,
     actors: &'a Arena<Actor>,
+    state: &'a WorldState,
 }
 
 impl World {
@@ -105,7 +113,10 @@ impl World {
             max_stamina,
             fp: max_fp,
             max_fp,
-            inventory: Inventory::starting(&items),
+            inventory: Inventory {
+                glimmer: level.start_glimmer,
+                ..Inventory::starting(&items)
+            },
             stats,
             motor: Motor {
                 grounded: true,
@@ -116,26 +127,13 @@ impl World {
             hurtbox,
             ..Actor::default()
         });
-        for d in &level.dummies {
-            actors.insert(Actor {
-                pos: d.pos,
-                yaw: d.yaw,
-                hp: d.hp,
-                max_hp: d.hp,
-                stats: Stats {
-                    defense: Defense::from_data(&d.defense),
-                    ..Stats::default()
-                },
-                motor: Motor {
-                    grounded: true,
-                    ground_y: d.pos[1],
-                    fall_peak_y: d.pos[1],
-                    ..Motor::default()
-                },
-                hurtbox,
-                ..Actor::default()
-            });
-        }
+        let layout = Layout::from_scenario(level);
+        let enemies = layout
+            .dummies
+            .iter()
+            .map(|d| actors.insert(dummy_actor(d, hurtbox)))
+            .collect();
+        let state = WorldState::new(&layout, enemies);
         let mut world = Self {
             tick: 0,
             rng: RngStreams::from_seed(seed),
@@ -146,6 +144,8 @@ impl World {
             damage,
             actors,
             player,
+            layout,
+            state,
             events: EventQueue::default(),
         };
         world.sync_player_moveset();
@@ -172,6 +172,7 @@ impl World {
             rng: &self.rng,
             scenario: &self.physics.scenario,
             actors: &self.actors,
+            state: &self.state,
         };
         let bytes = postcard::to_allocvec(&view).expect("world serialization cannot fail");
         xxhash_rust::xxh3::xxh3_64(&bytes)

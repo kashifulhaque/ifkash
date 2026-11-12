@@ -10,6 +10,27 @@ use crate::combat::moves::MoveNum;
 pub enum Event {
     /// A hitbox connected with a hurtbox (`combat::resolve`).
     Hit(Hit),
+    /// The player's death, respawn, resting, or Remnant (`world_state`).
+    Life(LifeEvent),
+}
+
+/// What happened to the player's life cycle (docs/game/06-progression-and-systems.md,
+/// "Glimmer and death" and "Lanterns"). `pos` is the player's feet, except for the
+/// Remnant events, where it is the Remnant's position.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub enum LifeEvent {
+    /// The player died.
+    Died { pos: [f32; 3] },
+    /// The player respawned at the last rested Lantern (or the spawn).
+    Respawned { pos: [f32; 3] },
+    /// The player rested at the Lantern at this index of the scenario's Lantern list.
+    Rested { lantern: u16, pos: [f32; 3] },
+    /// A death dropped a Remnant holding this much Glimmer.
+    RemnantDropped { glimmer: u32, pos: [f32; 3] },
+    /// The player touched the Remnant and got its Glimmer back.
+    RemnantRecovered { glimmer: u32, pos: [f32; 3] },
+    /// A death destroyed the unrecovered Remnant.
+    RemnantLost { glimmer: u32, pos: [f32; 3] },
 }
 
 /// One hitbox connecting with one target: the raw inputs to damage, poise, status, and

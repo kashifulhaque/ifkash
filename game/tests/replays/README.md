@@ -32,7 +32,8 @@ lf-tools replay rehash [FILE]
 # Record a new random replay (on m0_flat).
 lf-tools replay record-random --seed 20260101 --ticks 3000 --out tests/replays/m0_random_3000.lfr
 
-# Record a replay from an input script.
+# Record a replay from an input script (`cmd Rest` and `cmd SplitFlasks <vigil>` lines
+# queue commands).
 lf-tools replay record-script tests/replays/m1_movement.script --out tests/replays/m1_movement.lfr
 ```
 
@@ -47,6 +48,15 @@ lf-tools replay record-script tests/replays/m1_movement.script --out tests/repla
   `m2_three_hit_chain.script`. The player walks up to `dummy_ahead` and attacks with
   the three-hit light chain. The `m2_three_hit_chain_lands_exactly_three_hits` test
   checks it produces exactly three `Hit` events, one per light.
+- `m2_death_recover.lfr`: the WP-029 golden on `test_field`, recorded from
+  `m2_death_recover.script`. The player rests at `lantern_field`, runs off the edge of the
+  world, dies (500 Glimmer drops as a Remnant at the edge), respawns at the Lantern, and
+  runs back to recover it. The `m2_death_recover_gets_the_remnant_back` test checks the
+  sequence of life events.
+- `m2_death_lose_remnant.lfr`: the WP-029 golden recorded from
+  `m2_death_lose_remnant.script`. The same first death, then a second death elsewhere
+  before the Remnant is touched, which destroys it. The
+  `m2_death_lose_remnant_loses_the_glimmer` test checks it.
 
 Rehash only when a change to the simulation or the content data is intended. Review the
 old and new final hash it prints, and commit the updated file with that change.

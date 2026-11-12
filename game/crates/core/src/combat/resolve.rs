@@ -405,8 +405,9 @@ mod tests {
         w.events
             .drain()
             .into_iter()
-            .map(|e| match e {
-                Event::Hit(h) => h,
+            .filter_map(|e| match e {
+                Event::Hit(h) => Some(h),
+                _ => None,
             })
             .collect()
     }

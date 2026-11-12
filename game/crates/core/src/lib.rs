@@ -14,6 +14,7 @@ pub mod snapshot;
 pub mod systems;
 pub mod tick;
 pub mod world;
+pub mod world_state;
 
 pub use input::{ActionFrame, Command, TickInput};
 pub use replay::{Replay, ReplayError, ReplayReport, run_replay};

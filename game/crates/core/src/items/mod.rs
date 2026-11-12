@@ -5,7 +5,7 @@
 //! # Where things happen
 //!
 //! - [`run`] is the body of tick system 1 (`systems::apply_commands`): it applies the
-//!   tick's `Command`s (`Equip`, `Unequip`, `UseItem`, `SplitFlasks`) and the cycle
+//!   tick's `Command`s (`Equip`, `Unequip`, `UseItem`, `SplitFlasks`, only while resting at a Lantern) and the cycle
 //!   buttons (`CYCLE_ITEM`, `CYCLE_RIGHT`, `CYCLE_LEFT`), then points the player's active
 //!   moveset at the equipped right-hand weapon.
 //! - Drinking a flask is a move (`flask_drink` in `moves/common.ron`) started by
@@ -31,6 +31,8 @@ const CYCLE_BUTTONS: u16 = buttons::CYCLE_ITEM | buttons::CYCLE_RIGHT | buttons:
 /// Applies the tick's item commands and cycle buttons to the player.
 pub fn run(world: &mut World, input: &TickInput) {
     let id = world.player;
+    // The Lantern menu (Split flasks) is open only while resting at a Lantern.
+    let resting = world.state.resting.is_some();
     let Some(actor) = world.actors.get_mut(id) else {
         return;
     };
@@ -55,7 +57,7 @@ pub fn run(world: &mut World, input: &TickInput) {
                     actor.moves.press(Action::UseItem, [0, 0]);
                 }
             }
-            Command::SplitFlasks { vigil } => {
+            Command::SplitFlasks { vigil } if resting => {
                 actor.inventory.split_flasks(vigil);
             }
             _ => {}

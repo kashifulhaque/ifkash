@@ -7,7 +7,7 @@
 //! Memory growth detaches `memory.buffer`, so re-create views after any call that can grow it.
 
 use lf_content::Content;
-use lf_core::events::Event;
+use lf_core::events::{Event, LifeEvent};
 use lf_core::snapshot::{ACTOR_SNAP_BYTES, ActorSnap, pack_id, write_snapshot};
 use lf_core::{ActionFrame, Replay, TickInput, World, run_replay as core_run_replay, tick};
 use wasm_bindgen::prelude::*;
@@ -123,6 +123,10 @@ impl LfWorld {
     ///   hitbox index, motion value, charge fraction, contact point (3), direction (3),
     ///   then (WP-023) damage taken, result (0 connected, 1 guarded, 2 guard broken),
     ///   flags (bit 0 counter hit, bit 1 killed the target), and the target's HP after.
+    /// - Kind 2, `Life`, 6 words: kind, code, value, and a position (3). Codes: 1 died,
+    ///   2 respawned, 3 rested (value is the Lantern's index in the scenario), 4 Remnant
+    ///   dropped, 5 Remnant recovered, 6 Remnant lost (value is its Glimmer for 4 to 6,
+    ///   and its position is the Remnant's). Otherwise the position is the player's feet.
     pub fn drain_events(&mut self) -> Vec<u32> {
         let mut out = Vec::new();
         for event in self.world.events.drain() {
@@ -145,6 +149,18 @@ impl LfWorld {
                         u32::from(h.counter) | u32::from(h.killed) << 1,
                         h.hp,
                     ]);
+                }
+                Event::Life(e) => {
+                    let (code, value, pos) = match e {
+                        LifeEvent::Died { pos } => (1, 0, pos),
+                        LifeEvent::Respawned { pos } => (2, 0, pos),
+                        LifeEvent::Rested { lantern, pos } => (3, u32::from(lantern), pos),
+                        LifeEvent::RemnantDropped { glimmer, pos } => (4, glimmer, pos),
+                        LifeEvent::RemnantRecovered { glimmer, pos } => (5, glimmer, pos),
+                        LifeEvent::RemnantLost { glimmer, pos } => (6, glimmer, pos),
+                    };
+                    out.extend([2, code, value]);
+                    out.extend(pos.map(f32::to_bits));
                 }
             }
         }

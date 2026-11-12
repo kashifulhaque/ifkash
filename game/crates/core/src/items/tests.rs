@@ -414,7 +414,9 @@ fn equip_commands_replay_to_the_same_state_hash() {
         );
     }
     let inv = &player(&w).inventory;
-    assert_eq!(inv.flasks.vigil_max, 2);
+    // `m0_flat` has no Lantern, so the split is refused (see `world_state` tests for the
+    // split while resting).
+    assert_eq!(inv.flasks.vigil_max, rules(&w).start_vigil);
     assert_eq!(
         inv.equipment.slots[usize::from(slot::RIGHT_2)],
         Some(weapon)

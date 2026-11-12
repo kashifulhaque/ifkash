@@ -1,0 +1,16 @@
+# WP-029 golden: die twice without recovering the Remnant, which destroys it (record with
+# `lf-tools replay record-script`). Each line: <ticks> <move_x> <move_z> [BUTTONS], plus
+# `cmd` lines. test_field starts the player with 500 Glimmer and has `lantern_field` at
+# z = -3. The heightfield ends at z = -32; past it is the void.
+seed 30
+scenario test_field
+40  0   -30          # walk back 2.1 m: within 2 m of the Lantern
+5   0   0
+cmd Rest             # rest: sets the respawn point
+10  0   0
+215 0   -127         # run off the edge of the world at z = -32
+170 0   0            # first death: the Remnant (500) drops at the edge; respawn
+230 -127 0         # run off the west edge instead (x = -32) without picking it up
+170 0   0            # second death: the Remnant is destroyed; respawn
+190 0   -127         # run back to where it lay
+30  0   0            # nothing to recover

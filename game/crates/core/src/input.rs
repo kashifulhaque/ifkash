@@ -51,13 +51,15 @@ impl ActionFrame {
     }
 }
 
-/// A discrete, menu-level action. `Rest`, `LevelUp`, and `Gesture` are no-ops in the
-/// simulation until the systems that consume them land. Variants are serialized by
+/// A discrete, menu-level action. `LevelUp` and `Gesture` are no-ops in the simulation
+/// until the systems that consume them land. `Rest` rests at the Lantern in reach
+/// (`world_state::lantern`); it does nothing with none in reach. Variants are serialized by
 /// position in replays, so only ever append.
 ///
 /// - `Equip` and `Unequip` take an equipment slot number from `items::slot`.
 /// - `UseItem` takes a quick slot index, 0 to 4: it selects that slot and uses its item.
-/// - `SplitFlasks` sets the Vigil Flask's share of the charges (the Lantern menu).
+/// - `SplitFlasks` sets the Vigil Flask's share of the charges (the Lantern menu). It
+///   applies only while resting at a Lantern.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Command {
     Rest,

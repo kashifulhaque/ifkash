@@ -1,6 +1,8 @@
 //! `lf-tools`: command-line tools for Latticefall content and replays.
 
+mod bench;
 mod gen_ts;
+mod replay;
 mod validate;
 
 use std::path::PathBuf;
@@ -34,9 +36,16 @@ enum Command {
         data: Option<PathBuf>,
     },
     /// Run the simulation benchmarks.
-    Bench,
+    Bench {
+        /// Number of ticks to simulate.
+        #[arg(long, default_value_t = 100_000)]
+        ticks: u64,
+    },
     /// Record, replay, or rehash golden replays.
-    Replay,
+    Replay {
+        #[command(subcommand)]
+        action: replay::Action,
+    },
     /// Generate TypeScript types and a UI digest from the content data.
     GenTs {
         /// The data directory. Defaults to `game/data/`.
@@ -56,12 +65,7 @@ fn main() -> ExitCode {
             &data.unwrap_or_else(default_data),
             &out.unwrap_or_else(default_gen_out),
         ),
-        Command::Bench => stub("bench"),
-        Command::Replay => stub("replay"),
+        Command::Bench { ticks } => bench::run(ticks),
+        Command::Replay { action } => replay::run(action, &default_data()),
     }
-}
-
-fn stub(name: &str) -> ExitCode {
-    println!("lf-tools {name}: not yet implemented");
-    ExitCode::SUCCESS
 }

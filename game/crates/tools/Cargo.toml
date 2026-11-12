@@ -15,6 +15,7 @@ path = "src/main.rs"
 
 [dependencies]
 clap.workspace = true
+lf-core.workspace = true
 lf-content = { workspace = true, features = ["ts"] }
 serde_json = "1"
 ts-rs = "12"

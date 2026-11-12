@@ -552,6 +552,8 @@ fn return_home(world: &mut World, id: Id) {
 }
 
 #[cfg(test)]
+mod b01_tests;
+#[cfg(test)]
 mod enemy_tests;
 #[cfg(test)]
 mod tests;

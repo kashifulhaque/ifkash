@@ -114,6 +114,10 @@ const EMBEDDED_MOVES: &[(&str, &str)] = &[
         "moves/bosses/test_boss.ron",
         include_str!("../../../data/moves/bosses/test_boss.ron"),
     ),
+    (
+        "moves/bosses/b01.ron",
+        include_str!("../../../data/moves/bosses/b01.ron"),
+    ),
 ];
 const EMBEDDED_WEAPONS: &[(&str, &str)] = &[
     (
@@ -196,11 +200,21 @@ const EMBEDDED_SCENARIOS: &[(&str, &str)] = &[
         "scenarios/boss_gate.ron",
         include_str!("../../../data/scenarios/boss_gate.ron"),
     ),
+    (
+        "scenarios/boss_b01.ron",
+        include_str!("../../../data/scenarios/boss_b01.ron"),
+    ),
 ];
-const EMBEDDED_BOSSES: &[(&str, &str)] = &[(
-    "bosses/test_boss.ron",
-    include_str!("../../../data/bosses/test_boss.ron"),
-)];
+const EMBEDDED_BOSSES: &[(&str, &str)] = &[
+    (
+        "bosses/test_boss.ron",
+        include_str!("../../../data/bosses/test_boss.ron"),
+    ),
+    (
+        "bosses/b01_hollow_sentry.ron",
+        include_str!("../../../data/bosses/b01_hollow_sentry.ron"),
+    ),
+];
 const EMBEDDED_AI: &str = include_str!("../../../data/ai.ron");
 const EMBEDDED_ENEMIES: &[(&str, &str)] = &[
     (

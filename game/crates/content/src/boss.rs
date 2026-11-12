@@ -526,7 +526,7 @@ mod tests {
     #[test]
     fn a_phase_must_add_a_move_and_every_phase_needs_an_attack() {
         let mut c = content();
-        let boss = c.bosses.values_mut().next().unwrap();
+        let boss = c.bosses.get_mut("bosses/test_boss.ron").unwrap();
         // Drop the slam: phase 2 now has only what phase 1 has.
         boss.body
             .options
@@ -537,7 +537,7 @@ mod tests {
                 .any(|e| e.contains("phase 2 adds no new move"))
         );
         // Gate the swipe on phase 2: phase 1 then has no attack.
-        let boss = c.bosses.values_mut().next().unwrap();
+        let boss = c.bosses.get_mut("bosses/test_boss.ron").unwrap();
         boss.body.options[0]
             .when
             .push(crate::enemy::Condition::Phase(2));
@@ -547,7 +547,7 @@ mod tests {
                 .any(|e| e.contains("phase 1 has no attack"))
         );
         // A phase that doesn't exist.
-        let boss = c.bosses.values_mut().next().unwrap();
+        let boss = c.bosses.get_mut("bosses/test_boss.ron").unwrap();
         boss.body.options[0].when = vec![crate::enemy::Condition::Phase(3)];
         assert!(errors(&c).iter().any(|e| e.contains("from 1 to 2")));
     }
@@ -555,7 +555,7 @@ mod tests {
     #[test]
     fn bosses_skip_tokens_never_leash_and_thresholds_fall() {
         let mut c = content();
-        let boss = c.bosses.values_mut().next().unwrap();
+        let boss = c.bosses.get_mut("bosses/test_boss.ron").unwrap();
         boss.body.ignores_tokens = false;
         boss.body.leash_m = Some(30.0);
         boss.phases.push(BossPhase {

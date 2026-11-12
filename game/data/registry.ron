@@ -118,6 +118,16 @@
     (id: "test_boss_body", num: 9001),
     (id: "test_boss_pillar", num: 9002),
 
+    (id: "b01_hollow_sentry", num: 9010),
+    (id: "b01_hollow_sentry_body", num: 9011),
+
+    (id: "b01_overhead", num: 9100),
+    (id: "b01_sweep", num: 9101),
+    (id: "b01_bash", num: 9102),
+    (id: "b01_combo_1", num: 9103),
+    (id: "b01_combo_2", num: 9104),
+    (id: "b01_combo_3", num: 9105),
+
     (id: "tb_swipe", num: 9200),
     (id: "tb_slam", num: 9201),
     (id: "tb_roar", num: 9202),

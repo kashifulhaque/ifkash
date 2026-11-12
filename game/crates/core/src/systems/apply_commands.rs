@@ -12,5 +12,7 @@ pub fn run(world: &mut World, input: &TickInput) {
     let fed = masked.as_ref().unwrap_or(input);
     crate::world_state::lantern::run(world, fed);
     crate::items::run(world, fed);
+    // The Echo Bell and the bow gesture (WP-059).
+    crate::ai::echo::apply_commands(world, fed);
     crate::world_state::mechanics::run(world, input);
 }

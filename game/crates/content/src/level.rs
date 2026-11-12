@@ -1503,6 +1503,8 @@ impl Level {
             start_glimmer: self.area.start_glimmer,
             player_weapon: self.area.player_weapon.clone(),
             player_spells: self.area.player_spells.clone(),
+            echo_stones: Vec::new(),
+            echoes_unlocked: Vec::new(),
         };
         for e in &self.entities.entities {
             match e {

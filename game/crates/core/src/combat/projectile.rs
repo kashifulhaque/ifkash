@@ -546,7 +546,7 @@ pub fn spawn(
             })
         })
         // An enemy has no weapon: its definition's attack rating (WP-032).
-        .or_else(|| crate::ai::attack::rating(world, a))
+        .or_else(|| crate::ai::attack::rating(world, shooter, a))
         .unwrap_or_default();
     // Special ammunition adds its element at a share of the physical attack rating.
     let mut ar = ar;

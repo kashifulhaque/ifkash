@@ -1,0 +1,101 @@
+// The Bone Sentinel Echo (WP-059; registry 17011, body 17021, moves 17110-17111). Source:
+// docs/game/05-enemies-and-bosses.md, "Echo summons": shield and spear, holds aggro, 50 FP,
+// the reward for B05. "Holds aggro" is `aggro_m`: enemies in Combat within 12 m of it turn on
+// it, which is the widest draw of the four. The shield is a raised guard (the `Guard`
+// behavior), like the Gray Knight's. HP, defense, guard numbers, and the rest are tuning.
+#![enable(implicit_some)]
+(
+  id: "echo_bone_sentinel",
+  name: "Bone Sentinel",
+  fp_cost: 50, // Echo summons: 50 FP
+  unlock_flag: "echo.bone_sentinel.unlocked", // raised by the B05 reward
+  count: 1,
+  aggro_m: 12.0, // tuning: "holds aggro"
+  body: (
+    id: "echo_bone_sentinel_body",
+    model: "echo_bone_sentinel",
+    hp: 900,
+    poise: 90,
+    defense: (flat: 80),
+    resist: (immunity: 200, robustness: 200, composure: 200),
+    attack: 85,
+    stamina: 150,
+    guard: (absorb_phys_percent: 85, absorb_elem_percent: 60, guard_boost: 100),
+    speed_percent: 100,
+    options: [
+      (move: "ep_sentinel_thrust", when: [DistBetween(1.4, 3.4), FacingWithin(40.0)], weight: 5, cooldown: 45),
+      (move: "ep_sentinel_bash", when: [DistBelow(1.8), FacingWithin(50.0)], weight: 4, cooldown: 70),
+      // The cooldown outlasts the guard, so a raised guard is never the only choice left when it
+      // comes down (a guard can't start a move while it lowers).
+      (behavior: Guard(dur: 40), when: [TargetAttacking, DistBelow(5.0)], weight: 5, cooldown: 90),
+      (behavior: Approach(dur: 30), when: [DistAbove(2.6)], weight: 4),
+      (behavior: Strafe(dur: 40), when: [DistBetween(1.5, 5.0)], weight: 1, cooldown: 60),
+    ],
+  ),
+  moves: [
+    (
+      id: "ep_sentinel_thrust",
+      anim: "ep_sentinel_thrust",
+      total_frames: 50,
+      stamina: 0,
+      fp: 0,
+      root_motion: [(0, 0.0), (16, 0.0), (20, 0.8), (50, 0.8)],
+      track_deg_per_tick: 6.0,
+      hyperarmor: None,
+      iframes: None,
+      cancel_attack_from: None,
+      cancel_dodge_from: None,
+      cancel_any_from: None,
+      next_chain: None,
+      hitboxes: [
+        (
+          frames: (18, 21),
+          shape: Capsule(a: (0.0, 1.2, 0.5), b: (0.0, 1.2, 2.3), radius: 0.3),
+          motion_value: 1.1,
+          phys: Pierce,
+          element: None,
+          poise_damage: 18,
+          status: [],
+          knockback: 0.4,
+          hitstop: 4,
+          tags: [],
+        ),
+      ],
+      projectiles: [],
+      sfx: [(16, "spear_thrust")],
+      vfx: [(18, "trail_dull")],
+    ),
+    (
+      id: "ep_sentinel_bash",
+      anim: "ep_sentinel_bash",
+      total_frames: 46,
+      stamina: 0,
+      fp: 0,
+      root_motion: [(0, 0.0), (14, 0.0), (17, 0.4), (46, 0.4)],
+      track_deg_per_tick: 6.0,
+      hyperarmor: None,
+      iframes: None,
+      cancel_attack_from: None,
+      cancel_dodge_from: None,
+      cancel_any_from: None,
+      next_chain: None,
+      hitboxes: [
+        (
+          frames: (15, 18),
+          shape: Capsule(a: (0.0, 1.1, 0.3), b: (0.0, 1.1, 1.2), radius: 0.55),
+          motion_value: 0.7,
+          phys: Blunt,
+          element: None,
+          poise_damage: 34,
+          status: [],
+          knockback: 0.9,
+          hitstop: 5,
+          tags: [],
+        ),
+      ],
+      projectiles: [],
+      sfx: [(14, "shield_bash")],
+      vfx: [],
+    ),
+  ],
+)

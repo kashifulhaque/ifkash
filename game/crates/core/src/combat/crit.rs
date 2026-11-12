@@ -148,7 +148,8 @@ pub fn plan(world: &mut World, id: Id, input: Option<ActionFrame>) -> Option<Cri
     }
     let mut best: Option<(CritPlan, f32)> = None;
     for (vid, v) in world.actors.iter() {
-        if vid == id {
+        // An Echo is never a victim of the player's riposte or backstab (WP-059).
+        if vid == id || v.is_ally() {
             continue;
         }
         if let Some((kind, dist)) = kind_against(a, v, &t)

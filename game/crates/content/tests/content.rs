@@ -165,6 +165,12 @@ fn hash_ignores_comments_and_whitespace() {
                     .map(|(p, t)| (p, format!("// noise\n{t}")))
                     .collect(),
             )?
+            .with_echoes(
+                ron_files("echoes")
+                    .into_iter()
+                    .map(|(p, t)| (p, format!("// noise\n{t}")))
+                    .collect(),
+            )?
             .with_levels(
                 ron_files("kits")
                     .into_iter()

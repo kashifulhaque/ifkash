@@ -1,0 +1,99 @@
+// The Briar Hounds Echo (WP-059; registry 17013, body 17023, moves 17130-17131). Source:
+// docs/game/05-enemies-and-bosses.md, "Echo summons": three fast hounds that build Rupture,
+// 45 FP, from the Briar Thicket after B02. Three bodies of one definition appear (`count`).
+// They fight like the Thorn Hounds: lunge from range, snap up close, and back off. The attack
+// tokens (in reverse) keep them to two on one enemy at a time. Numbers are tuning.
+#![enable(implicit_some)]
+(
+  id: "echo_briar_hounds",
+  name: "Briar Hounds",
+  fp_cost: 45, // Echo summons: 45 FP
+  unlock_flag: "echo.briar_hounds.unlocked", // raised in the Briar Thicket after B02
+  count: 3, // Echo summons: three hounds
+  spacing_m: 1.2,
+  body: (
+    id: "echo_briar_hounds_body",
+    model: "echo_briar_hound",
+    hp: 150,
+    poise: 12,
+    defense: (flat: 20),
+    resist: (immunity: 100, robustness: 120, composure: 100),
+    attack: 60,
+    speed_percent: 150,
+    options: [
+      (move: "ep_hound_lunge", when: [DistBetween(2.5, 6.0), FacingWithin(25.0)], weight: 5, cooldown: 75),
+      (move: "ep_hound_snap", when: [DistBelow(1.7), FacingWithin(40.0)], weight: 3, cooldown: 45),
+      (behavior: Retreat(dur: 25), when: [DistBelow(2.0)], weight: 3, cooldown: 40),
+      (behavior: Strafe(dur: 40), when: [DistBetween(2.0, 7.0)], weight: 3),
+      (behavior: Approach(dur: 25), when: [DistAbove(4.0)], weight: 4),
+    ],
+  ),
+  moves: [
+    (
+      // A leaping bite that closes about 2.8 m. 30 Rupture buildup.
+      id: "ep_hound_lunge",
+      anim: "ep_hound_lunge",
+      total_frames: 46,
+      stamina: 0,
+      fp: 0,
+      root_motion: [(0, 0.0), (12, 0.0), (16, 2.6), (46, 2.8)],
+      track_deg_per_tick: 8.0,
+      hyperarmor: None,
+      iframes: None,
+      cancel_attack_from: None,
+      cancel_dodge_from: None,
+      cancel_any_from: None,
+      next_chain: None,
+      hitboxes: [
+        (
+          frames: (14, 18),
+          shape: Capsule(a: (0.0, 0.8, 0.2), b: (0.0, 0.8, 1.2), radius: 0.35),
+          motion_value: 0.9,
+          phys: Pierce,
+          element: None,
+          poise_damage: 14,
+          status: [(kind: Rupture, amount: 30)],
+          knockback: 0.5,
+          hitstop: 4,
+          tags: [],
+        ),
+      ],
+      projectiles: [],
+      sfx: [(12, "hound_snarl")],
+      vfx: [(14, "trail_dull")],
+    ),
+    (
+      // A close snap. 15 Rupture buildup.
+      id: "ep_hound_snap",
+      anim: "ep_hound_snap",
+      total_frames: 40,
+      stamina: 0,
+      fp: 0,
+      root_motion: [(0, 0.0), (12, 0.0), (15, 0.4), (40, 0.4)],
+      track_deg_per_tick: 8.0,
+      hyperarmor: None,
+      iframes: None,
+      cancel_attack_from: None,
+      cancel_dodge_from: None,
+      cancel_any_from: None,
+      next_chain: None,
+      hitboxes: [
+        (
+          frames: (13, 15),
+          shape: Capsule(a: (0.0, 0.8, 0.2), b: (0.0, 0.8, 1.0), radius: 0.35),
+          motion_value: 0.7,
+          phys: Pierce,
+          element: None,
+          poise_damage: 10,
+          status: [(kind: Rupture, amount: 15)],
+          knockback: 0.3,
+          hitstop: 4,
+          tags: [],
+        ),
+      ],
+      projectiles: [],
+      sfx: [(12, "hound_snarl")],
+      vfx: [],
+    ),
+  ],
+)

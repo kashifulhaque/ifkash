@@ -189,6 +189,10 @@ impl LfWorld {
     ///   `message_text`).
     /// - Kind 17, `Pickup` (WP-049), 3 words: kind, the pickup's index in the scenario's
     ///   pickup list, and the item's registry number.
+    /// - Kind 21, `Echo` (WP-059), 5 words: kind, what happened (0 summoned, 1 a body fell,
+    ///   2 dismissed, 3 bowed to, 4 the Bell was rung and nothing came), the Echo's registry
+    ///   number, the body it concerns (`pack_id`; `0xFFFFFFFF` for none), and for 4 why (1 no
+    ///   Echo Stone in reach, 2 no Echo owned, 3 not enough FP, 4 an Echo is already out).
     pub fn drain_events(&mut self) -> Vec<u32> {
         let mut out = Vec::new();
         for event in self.world.events.drain() {
@@ -284,6 +288,15 @@ impl LfWorld {
                 }
                 Event::Boss(e) => {
                     out.extend([11, u32::from(e.boss), u32::from(e.kind), u32::from(e.phase)]);
+                }
+                Event::Echo(e) => {
+                    out.extend([
+                        21,
+                        u32::from(e.kind),
+                        e.echo,
+                        e.actor.map_or(u32::MAX, pack_id),
+                        u32::from(e.reason),
+                    ]);
                 }
             }
         }

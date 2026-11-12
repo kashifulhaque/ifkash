@@ -106,7 +106,7 @@ pub fn target_id(world: &World) -> Option<Id> {
     }
     let mut best: Option<(f32, Id)> = None;
     for (id, a) in world.actors.iter() {
-        if a.is_player || !alive(a) {
+        if a.is_player || a.is_ally() || !alive(a) {
             continue;
         }
         let (dx, dz) = (a.pos[0] - p.pos[0], a.pos[2] - p.pos[2]);

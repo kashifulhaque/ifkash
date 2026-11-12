@@ -48,5 +48,6 @@
     (id: "itm_flask_dew", name: "Flask Dew", kind: FlaskDew, stack: 0),
     (id: "itm_yard_key", name: "Yard Key", kind: Key, stack: 1), // WP-042: opens a keyed door
     (id: "itm_rewrite_quill", name: "Rewrite Quill", kind: Key, stack: 3), // WP-050: one respec each, at a Lantern
+    (id: "itm_echo_bell", name: "Echo Bell", kind: EchoBell, stack: 1), // WP-059: summons an Echo at an Echo Stone
   ],
 )

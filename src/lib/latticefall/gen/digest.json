@@ -148,9 +148,109 @@
     "start_max": 16,
     "start_min": 4
   },
-  "contentHash": "15947994701888307770",
-  "contentHashHex": "dd52a8af6ddd423a",
+  "contentHash": "17341199964852283559",
+  "contentHashHex": "f0a8517d8c0968a7",
   "moves": [
+    {
+      "anim": "ep_sentinel_thrust",
+      "file": "echoes/echo_bone_sentinel.ron",
+      "fp": 0,
+      "id": "ep_sentinel_thrust",
+      "num": 17110,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 50
+    },
+    {
+      "anim": "ep_sentinel_bash",
+      "file": "echoes/echo_bone_sentinel.ron",
+      "fp": 0,
+      "id": "ep_sentinel_bash",
+      "num": 17111,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 46
+    },
+    {
+      "anim": "ep_hound_lunge",
+      "file": "echoes/echo_briar_hounds.ron",
+      "fp": 0,
+      "id": "ep_hound_lunge",
+      "num": 17130,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 46
+    },
+    {
+      "anim": "ep_hound_snap",
+      "file": "echoes/echo_briar_hounds.ron",
+      "fp": 0,
+      "id": "ep_hound_snap",
+      "num": 17131,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 40
+    },
+    {
+      "anim": "ep_wisp_bolt",
+      "file": "echoes/echo_choir_wisp.ron",
+      "fp": 0,
+      "id": "ep_wisp_bolt",
+      "num": 17120,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 70
+    },
+    {
+      "anim": "ep_wisp_pulse",
+      "file": "echoes/echo_choir_wisp.ron",
+      "fp": 0,
+      "id": "ep_wisp_pulse",
+      "num": 17121,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 48
+    },
+    {
+      "anim": "ep_llama_bow",
+      "file": "echoes/echo_politellama.ron",
+      "fp": 0,
+      "id": "ep_llama_bow_a",
+      "num": 17100,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 20
+    },
+    {
+      "anim": "ep_llama_bow",
+      "file": "echoes/echo_politellama.ron",
+      "fp": 0,
+      "id": "ep_llama_bow_b",
+      "num": 17101,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 20
+    },
+    {
+      "anim": "ep_llama_headbutt",
+      "file": "echoes/echo_politellama.ron",
+      "fp": 0,
+      "id": "ep_llama_headbutt",
+      "num": 17102,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 44
+    },
+    {
+      "anim": "ep_llama_stomp",
+      "file": "echoes/echo_politellama.ron",
+      "fp": 0,
+      "id": "ep_llama_stomp",
+      "num": 17103,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 58
+    },
     {
       "anim": "axe_chop_r",
       "file": "moves/axe.ron",

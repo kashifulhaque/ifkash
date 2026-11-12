@@ -66,7 +66,7 @@ fn dist_sq(a: [f32; 3], b: [f32; 3]) -> f32 {
 
 /// A living actor other than the player.
 fn is_valid(a: &Actor) -> bool {
-    !a.is_player && !a.dead && a.hp > 0
+    !a.is_player && !a.is_ally() && !a.dead && a.hp > 0
 }
 
 /// Whether the level leaves a clear line between the two actors' eyes. Actors don't

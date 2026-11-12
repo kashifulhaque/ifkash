@@ -39,6 +39,44 @@ pub enum Event {
     Loot(LootEvent),
     /// The player read an authored message (WP-042; WASM event kind 16).
     Message(MessageEvent),
+    /// An Echo was summoned, fell, was dismissed, was bowed to, or a summoning was refused
+    /// (`ai::echo`, WP-059; WASM event kind 21).
+    Echo(EchoEvent),
+}
+
+/// What happened to an Echo (WASM event kind 21). `kind` is one of the consts. `echo` is the
+/// Echo's registry number (0 when none applies, for a refusal before one was picked).
+/// `actor` is the body that summoned, fell, or was bowed to (the first body for a summoning).
+/// `reason` is why a summoning was refused, one of the `REASON_*` consts, and 0 otherwise.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct EchoEvent {
+    pub kind: u8,
+    pub echo: u32,
+    pub actor: Option<Id>,
+    pub reason: u8,
+}
+
+impl EchoEvent {
+    /// The Echo's bodies appeared at an Echo Stone.
+    pub const SUMMONED: u8 = 0;
+    /// One body fell.
+    pub const FELL: u8 = 1;
+    /// The Echo's bodies were removed: all of them had fallen, the player died, or the
+    /// player rested.
+    pub const DISMISSED: u8 = 2;
+    /// The player bowed to it in time: it fights harder.
+    pub const BOWED: u8 = 3;
+    /// The Bell was rung and nothing came; `reason` says why.
+    pub const REFUSED: u8 = 4;
+
+    /// Refused: no Echo Stone within reach.
+    pub const REASON_NO_STONE: u8 = 1;
+    /// Refused: the player owns no Echo.
+    pub const REASON_NO_ECHO: u8 = 2;
+    /// Refused: not enough FP.
+    pub const REASON_NO_FP: u8 = 3;
+    /// Refused: an Echo is already summoned.
+    pub const REASON_ALREADY: u8 = 4;
 }
 
 /// The player took the pickup at `index` of `Layout::pickups` (WASM event kind 17).

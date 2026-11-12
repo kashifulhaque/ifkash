@@ -545,6 +545,7 @@ impl Validate for Content {
         check_spells(self, &mut out);
         check_ai(self, &mut out);
         out.extend(crate::boss::check(self));
+        check_echoes(self, &mut out);
         out
     }
 }
@@ -627,10 +628,17 @@ fn check_ai(content: &Content, out: &mut Vec<Issue>) {
             if let Some(m) = &o.move_id {
                 match content.move_by_id(m) {
                     None => sink.error(format!("options[{i}].move"), "the move is not defined"),
-                    Some(d) if d.hitboxes.is_empty() && d.projectiles.is_empty() => sink.warn(
-                        format!("options[{i}].move"),
-                        "the move has no hitbox or projectile, so it can never hit",
-                    ),
+                    // A move that chains into another (the PoliteLlama's bow) hits through it.
+                    Some(d)
+                        if d.hitboxes.is_empty()
+                            && d.projectiles.is_empty()
+                            && d.next_chain.is_none() =>
+                    {
+                        sink.warn(
+                            format!("options[{i}].move"),
+                            "the move has no hitbox or projectile, so it can never hit",
+                        );
+                    }
                     Some(_) => {}
                 }
             }
@@ -649,6 +657,74 @@ fn check_ai(content: &Content, out: &mut Vec<Issue>) {
             if content.ai.is_none() {
                 sink.error(format!("enemies[{i}]"), "enemies need ai.ron");
             }
+        }
+    }
+}
+
+/// The Echo rules, every Echo definition, and the scenarios' Echo Stones and unlocked
+/// Echoes (WP-059). An Echo's body and moves are also checked as an enemy's and as moves.
+fn check_echoes(content: &Content, out: &mut Vec<Issue>) {
+    if let Some(r) = &content.echo_rules {
+        let mut sink = Sink {
+            out,
+            file: "echoes/rules.ron",
+            item: "rules",
+        };
+        for (field, message) in r.problems() {
+            sink.error(field, message);
+        }
+        let bell_ok = content
+            .consumables
+            .as_ref()
+            .and_then(|c| c.item(&r.bell))
+            .is_some_and(|i| i.kind == crate::ItemKind::EchoBell && i.stack == 1);
+        if !bell_ok {
+            sink.error("bell", "must name an EchoBell item with a stack of 1");
+        }
+    } else if !content.echoes.is_empty() {
+        out.push(Issue {
+            severity: Severity::Error,
+            file: "echoes/rules.ron".to_owned(),
+            item: "rules".to_owned(),
+            field: "file".to_owned(),
+            message: "Echoes need echoes/rules.ron".to_owned(),
+        });
+    }
+    let mut seen = BTreeSet::new();
+    for (file, e) in &content.echoes {
+        let mut sink = Sink {
+            out,
+            file,
+            item: &e.id,
+        };
+        if !seen.insert(e.id.as_str()) {
+            sink.error("id", "duplicate Echo ID");
+        }
+        for (field, message) in e.problems() {
+            sink.error(field, message);
+        }
+        if e.moves.is_empty() {
+            sink.error("moves", "an Echo defines its own moves");
+        }
+    }
+    for (file, sc) in &content.scenarios {
+        for (i, id) in sc.echoes_unlocked.iter().enumerate() {
+            if content.echo_by_id(id).is_none() {
+                Sink {
+                    out,
+                    file,
+                    item: "echoes_unlocked",
+                }
+                .error(format!("echoes_unlocked[{i}]"), "the Echo is not defined");
+            }
+        }
+        if !sc.echo_stones.is_empty() && content.echo_rules.is_none() {
+            Sink {
+                out,
+                file,
+                item: "echo_stones",
+            }
+            .error("echo_stones", "Echo Stones need echoes/rules.ron");
         }
     }
 }

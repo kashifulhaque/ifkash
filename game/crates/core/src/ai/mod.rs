@@ -29,6 +29,7 @@
 pub mod attack;
 pub mod behaviors;
 pub mod boss;
+pub mod echo;
 pub mod options;
 pub mod pathing;
 pub mod perception;
@@ -358,13 +359,15 @@ pub fn run(world: &mut World) {
         return;
     };
     boss::run(world);
+    // Echoes (WP-059) have an AI brain but think on the player's side: `echo::run` drives them.
     let ids: Vec<Id> = world
         .actors
         .iter()
-        .filter(|(_, a)| a.ai.is_some())
+        .filter(|(_, a)| a.ai.is_some() && !a.is_ally())
         .map(|(id, _)| id)
         .collect();
-    if ids.is_empty() {
+    let echoes = world.echo.active.is_some();
+    if ids.is_empty() && !echoes {
         return;
     }
     let noise = perception::player_noise(world, &tuning);
@@ -397,6 +400,7 @@ pub fn run(world: &mut World) {
         behaviors::execute(world, id, &tuning);
         special::batch2::tick(world, id);
     }
+    echo::run(world, &tuning);
 }
 
 /// Moves an actor to a new awareness state and reports it.
@@ -502,19 +506,28 @@ fn think(world: &mut World, id: Id, t: &AiTuning) {
             }
         }
         Awareness::Combat => {
-            if sees
-                && let Some(tp) = target_pos
-                && let Some(b) = world.actors.get_mut(id).and_then(|a| a.ai.as_mut())
-            {
-                b.unseen_ticks = 0;
-                b.last_seen = tp;
+            // An Echo that draws attention (a taunt, a held aggro) takes the enemy's eyes
+            // off the player while it stands close (WP-059, see `echo::aggro_target`). The
+            // enemy then fights it and can't lose sight of it.
+            let aggro = echo::aggro_target(world, id);
+            if let Some(e) = aggro {
+                echo::turn_on(world, id, e);
+            } else {
+                echo::turn_back(world, id, player);
+                if sees
+                    && let Some(tp) = target_pos
+                    && let Some(b) = world.actors.get_mut(id).and_then(|a| a.ai.as_mut())
+                {
+                    b.unseen_ticks = 0;
+                    b.last_seen = tp;
+                }
             }
             // Docs "Perception", Leash: too far from home or out of sight too long.
-            let lost = !sees && unseen >= t.lost_sight_ticks;
+            let lost = aggro.is_none() && !sees && unseen >= t.lost_sight_ticks;
             if !target_alive || from_home > leash || lost {
                 go_home(world, id);
             } else {
-                options::decide(world, id, player, t);
+                options::decide(world, id, aggro.unwrap_or(player), t);
             }
         }
         Awareness::Return => {

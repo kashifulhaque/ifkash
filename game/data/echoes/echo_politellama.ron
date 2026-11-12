@@ -1,0 +1,142 @@
+// The PoliteLlama Echo (WP-059; registry 17010, body 17020, moves 17100-17103). Source:
+// docs/game/05-enemies-and-bosses.md, "Echo summons": a tank that bows before each attack
+// and taunts, 40 FP, from the Courier's quest; if the player bows to it after summoning, it
+// fights at +20% damage. The bow is a move with no hitbox that chains into the attack, so it
+// takes the attack token for the whole bow-and-strike. The taunt is `aggro_m`: enemies in
+// Combat within 6 m of it turn on it. HP, defense, and the rest are tuning.
+#![enable(implicit_some)]
+(
+  id: "echo_politellama",
+  name: "PoliteLlama",
+  fp_cost: 40, // Echo summons: 40 FP
+  // Raised by the Courier's quest (docs/game/06-progression-and-systems.md); a test
+  // scenario lists the Echo in `echoes_unlocked` instead.
+  unlock_flag: "echo.politellama.unlocked",
+  count: 1,
+  aggro_m: 6.0, // tuning: "taunts"
+  body: (
+    id: "echo_politellama_body",
+    model: "echo_politellama",
+    hp: 700,
+    poise: 60,
+    defense: (flat: 40),
+    resist: (immunity: 150, robustness: 150, composure: 150),
+    attack: 90,
+    speed_percent: 120,
+    ignores_tokens: false,
+    options: [
+      (move: "ep_llama_bow_a", when: [DistBelow(2.4), FacingWithin(60.0)], weight: 5, cooldown: 45),
+      (move: "ep_llama_bow_b", when: [DistBelow(2.8), FacingWithin(50.0)], weight: 3, cooldown: 90),
+      (behavior: Approach(dur: 30), when: [DistAbove(2.2)], weight: 4),
+      (behavior: Strafe(dur: 40), when: [DistBetween(1.2, 5.0)], weight: 1, cooldown: 60),
+    ],
+  ),
+  moves: [
+    (
+      // The bow: a 20-frame dip, then the headbutt. No hitbox of its own.
+      id: "ep_llama_bow_a",
+      anim: "ep_llama_bow",
+      total_frames: 20,
+      stamina: 0,
+      fp: 0,
+      root_motion: [(0, 0.0), (20, 0.0)],
+      track_deg_per_tick: 8.0,
+      hyperarmor: None,
+      iframes: None,
+      cancel_attack_from: None,
+      cancel_dodge_from: None,
+      cancel_any_from: None,
+      next_chain: "ep_llama_headbutt",
+      hitboxes: [],
+      projectiles: [],
+      sfx: [(4, "llama_hum")],
+      vfx: [],
+    ),
+    (
+      // The same bow, into the stomp.
+      id: "ep_llama_bow_b",
+      anim: "ep_llama_bow",
+      total_frames: 20,
+      stamina: 0,
+      fp: 0,
+      root_motion: [(0, 0.0), (20, 0.0)],
+      track_deg_per_tick: 8.0,
+      hyperarmor: None,
+      iframes: None,
+      cancel_attack_from: None,
+      cancel_dodge_from: None,
+      cancel_any_from: None,
+      next_chain: "ep_llama_stomp",
+      hitboxes: [],
+      projectiles: [],
+      sfx: [(4, "llama_hum")],
+      vfx: [],
+    ),
+    (
+      id: "ep_llama_headbutt",
+      anim: "ep_llama_headbutt",
+      total_frames: 44,
+      stamina: 0,
+      fp: 0,
+      root_motion: [(0, 0.0), (14, 0.0), (18, 0.6), (44, 0.6)],
+      track_deg_per_tick: 6.0,
+      hyperarmor: None,
+      iframes: None,
+      cancel_attack_from: None,
+      cancel_dodge_from: None,
+      cancel_any_from: None,
+      next_chain: None,
+      hitboxes: [
+        (
+          frames: (16, 19),
+          shape: Capsule(a: (0.0, 1.3, 0.3), b: (0.0, 1.3, 1.3), radius: 0.5),
+          motion_value: 1.0,
+          phys: Blunt,
+          element: None,
+          poise_damage: 24,
+          status: [],
+          knockback: 0.6,
+          hitstop: 4,
+          tags: [],
+        ),
+      ],
+      projectiles: [],
+      sfx: [(14, "llama_snort")],
+      vfx: [(16, "trail_dull")],
+    ),
+    (
+      id: "ep_llama_stomp",
+      anim: "ep_llama_stomp",
+      total_frames: 58,
+      stamina: 0,
+      fp: 0,
+      root_motion: [(0, 0.0), (18, 0.0), (22, 0.4), (58, 0.4)],
+      track_deg_per_tick: 4.0,
+      hyperarmor: None,
+      iframes: None,
+      cancel_attack_from: None,
+      cancel_dodge_from: None,
+      cancel_any_from: None,
+      next_chain: None,
+      hitboxes: [
+        (
+          frames: (20, 24),
+          shape: Sphere(center: (0.0, 0.3, 0.9), radius: 1.5),
+          motion_value: 0.9,
+          phys: Blunt,
+          element: None,
+          poise_damage: 30,
+          status: [],
+          knockback: 0.8,
+          hitstop: 5,
+          tags: [],
+        ),
+      ],
+      projectiles: [],
+      sfx: [(18, "llama_stomp")],
+      vfx: [(20, "dust_slam")],
+    ),
+  ],
+  // Echo summons: "fights at +20% damage (you asked nicely)".
+  courtesy: (damage_percent: 120),
+)

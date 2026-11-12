@@ -1,0 +1,36 @@
+// The WP-059 Echo test arena: the WP-033 boss arena (`boss_gate`) with an Echo Stone and the
+// Echo Bell. The test boss has an Echo Stone (its `echo_stone` is true); B01 has none, so this
+// is the arena the Echo golden runs in.
+//   - The player spawns at (0, 0, -10) facing +Z, outside the gate. The Echo Bell lies at
+//     (0, 0, -8): walking up to it takes it.
+//   - The fog gate is the plane z = 0, 8 m wide, opening into the arena (+Z).
+//   - The Echo Stone stands just inside the gate at (-4, 0, 3).
+//   - The test boss stands at (0, 0, 12) facing the gate (-Z), with its pillar 7 m to +X.
+//   - The player owns the PoliteLlama Echo from the start (`echoes_unlocked`); the real
+//     unlock is the Courier's quest flag.
+(
+  spawn: (0.0, 0.0, -10.0),
+  spawn_yaw: 0.0,
+  kill_y: -12.0,
+  heightfield: None,
+  boxes: [
+    (name: "floor", center: (0.0, -0.5, 4.0), half_extents: (10.0, 0.5, 18.0)),
+  ],
+  start_glimmer: 0,
+  pickups: [
+    (id: "echo_bell", item: "itm_echo_bell", pos: (0.0, 0.0, -8.0)),
+  ],
+  echo_stones: [
+    (id: "stone_gate", pos: (-4.0, 0.0, 3.0), yaw: 0.0),
+  ],
+  echoes_unlocked: ["echo_politellama", "echo_bone_sentinel", "echo_choir_wisp", "echo_briar_hounds"],
+  bosses: [
+    (
+      name: "test_boss",
+      boss: "test_boss",
+      pos: (0.0, 0.0, 12.0),
+      yaw: 3.1415927,
+      gate: (pos: (0.0, 0.0, 0.0), yaw: 0.0, half_width_m: 4.0, depth_m: 2.0),
+    ),
+  ],
+)

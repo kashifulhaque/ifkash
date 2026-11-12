@@ -26,6 +26,9 @@ pub enum ItemKind {
     FlaskDew,
     /// A key item: it sits in the inventory until a keyed door takes it (WP-042).
     Key,
+    /// The Echo Bell (WP-059): in a quick slot, using it at an Echo Stone summons an Echo.
+    /// Keeps a stack of one.
+    EchoBell,
 }
 
 /// What using an item does (WP-057). `phys` and `elem` are attack rating in whole

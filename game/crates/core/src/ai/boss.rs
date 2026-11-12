@@ -384,7 +384,9 @@ fn fight(world: &mut World, b: usize) {
     let n = world.layout.bosses[b].members.len();
     for i in 0..n {
         if let Some(id) = member(world, b, i) {
-            hold_in_combat(world, id, player, at, phase);
+            // An Echo that holds aggro draws a member's attacks off the player (WP-059).
+            let (target, target_at) = super::echo::redirect(world, id, player, at);
+            hold_in_combat(world, id, target, target_at, phase);
         }
     }
     let defeated = (0..n)

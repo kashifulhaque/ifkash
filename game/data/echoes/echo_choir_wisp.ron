@@ -1,0 +1,90 @@
+// The Choir Wisp Echo (WP-059; registry 17012, body 17022, moves 17120-17121). Source:
+// docs/game/05-enemies-and-bosses.md, "Echo summons": a caster that heals the player slowly,
+// 60 FP, found at the Drowned Belfry. It keeps its distance and casts the Acolyte's slow
+// Radiance bolt (the `proj_radiance_bolt` projectile, damage from `element_attack`); the
+// heal is 10 HP every two seconds while the player is within 12 m. Numbers are tuning.
+#![enable(implicit_some)]
+(
+  id: "echo_choir_wisp",
+  name: "Choir Wisp",
+  fp_cost: 60, // Echo summons: 60 FP
+  unlock_flag: "echo.choir_wisp.unlocked", // raised at the Drowned Belfry
+  count: 1,
+  body: (
+    id: "echo_choir_wisp_body",
+    model: "echo_choir_wisp",
+    hp: 220,
+    poise: 10,
+    defense: (flat: 20),
+    resist: (immunity: 150, robustness: 100, composure: 200),
+    attack: 30,
+    element_attack: (Radiance, 100),
+    speed_percent: 100,
+    options: [
+      (move: "ep_wisp_bolt", when: [DistBetween(3.0, 18.0), FacingWithin(40.0)], weight: 8, cooldown: 90),
+      (move: "ep_wisp_pulse", when: [DistBelow(2.4)], weight: 5, cooldown: 80),
+      (behavior: Retreat(dur: 30), when: [DistBelow(4.0)], weight: 5, cooldown: 60),
+      (behavior: Wait(dur: 20), when: [DistAbove(3.0)], weight: 2),
+      (behavior: Strafe(dur: 40), when: [DistAbove(3.0)], weight: 1, cooldown: 120),
+    ],
+  ),
+  moves: [
+    (
+      // A 26-frame glow, then the bolt.
+      id: "ep_wisp_bolt",
+      anim: "ep_wisp_bolt",
+      total_frames: 70,
+      stamina: 0,
+      fp: 0,
+      root_motion: [(0, 0.0), (70, 0.0)],
+      track_deg_per_tick: 4.0,
+      hyperarmor: None,
+      iframes: None,
+      cancel_attack_from: None,
+      cancel_dodge_from: None,
+      cancel_any_from: None,
+      next_chain: None,
+      hitboxes: [],
+      projectiles: [
+        (frame: 26, projectile: "proj_radiance_bolt", offset: (0.0, 1.3, 0.6), yaw_deg: 0.0, pitch_deg: 0.0),
+      ],
+      sfx: [(8, "chant")],
+      vfx: [(0, "glow_radiance")],
+    ),
+    (
+      // A burst around itself for whatever closes in.
+      id: "ep_wisp_pulse",
+      anim: "ep_wisp_pulse",
+      total_frames: 48,
+      stamina: 0,
+      fp: 0,
+      root_motion: [(0, 0.0), (48, 0.0)],
+      track_deg_per_tick: 0.0,
+      hyperarmor: None,
+      iframes: None,
+      cancel_attack_from: None,
+      cancel_dodge_from: None,
+      cancel_any_from: None,
+      next_chain: None,
+      hitboxes: [
+        (
+          frames: (14, 17),
+          shape: Sphere(center: (0.0, 1.0, 0.0), radius: 1.6),
+          motion_value: 0.6,
+          phys: Neutral,
+          element: None,
+          poise_damage: 14,
+          status: [],
+          knockback: 0.6,
+          hitstop: 3,
+          tags: [],
+        ),
+      ],
+      projectiles: [],
+      sfx: [(12, "chant")],
+      vfx: [(14, "ring_pulse")],
+    ),
+  ],
+  // "Heals the player slowly."
+  heal: (hp: 10, every_ticks: 60, range_m: 12),
+)

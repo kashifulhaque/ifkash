@@ -7,6 +7,7 @@ pub use crate::actor::Actor;
 use crate::actor::Motor;
 use crate::actor::stats::Stats;
 use crate::ai::boss::BossRun;
+use crate::ai::echo::{EchoRun, EchoTable};
 use crate::ai::{AiTable, enemy_actor};
 use crate::arena::{Arena, Id};
 use crate::combat::damage::DamageTable;
@@ -80,6 +81,12 @@ pub struct World {
     pub spells_table: SpellTable,
     /// Lifts and the ladder the player is on (WP-042). Hashed only while it isn't at rest.
     pub mech: MechState,
+    /// The Echo rules and definitions from content, and the scenario's Echo Stones (WP-059).
+    /// Not hashed: the content hash covers them.
+    pub echo_table: EchoTable,
+    /// Which Echo the Bell will call and the Echo that is out now (WP-059). Hashed only
+    /// while it isn't at rest.
+    pub echo: EchoRun,
     /// Drained by the host every tick; excluded from the state hash.
     pub events: EventQueue,
 }
@@ -141,6 +148,13 @@ struct HashView<'a> {
     /// Left out until a spell is attuned, for the same reason.
     #[serde(skip_serializing_if = "SpellState::is_inert")]
     spells: &'a SpellState,
+    /// Left out while no Echo is out and the Bell hasn't been cycled, for the same reason.
+    #[serde(skip_serializing_if = "echo_inert")]
+    echo: &'a EchoRun,
+}
+
+fn echo_inert(echo: &&EchoRun) -> bool {
+    echo.is_inert()
 }
 
 fn no_bosses(bosses: &&Vec<BossRun>) -> bool {
@@ -234,6 +248,7 @@ impl World {
         let bosses = layout.bosses.iter().map(|_| BossRun::default()).collect();
         let state = WorldState::new(&layout, enemies, ai_enemies);
         let mech = MechState::new(&layout);
+        let echo_table = EchoTable::from_content(content, level).map_err(WorldError::Ai)?;
         let physics = PhysicsState::new(scenario, level);
         // Enemies steer along nav paths, so a scenario with any gets its grid baked here
         // (in process: the bake is deterministic and quick for the small scenarios).
@@ -262,6 +277,8 @@ impl World {
             spells: SpellState::default(),
             spells_table: SpellTable::from_content(content).map_err(WorldError::Items)?,
             mech,
+            echo_table,
+            echo: EchoRun::default(),
             events: EventQueue::default(),
         };
         crate::world_state::mechanics::install(&mut world);
@@ -323,6 +340,7 @@ impl World {
             bosses: &self.bosses,
             mech: &self.mech,
             spells: &self.spells,
+            echo: &self.echo,
         };
         let bytes = postcard::to_allocvec(&view).expect("world serialization cannot fail");
         xxhash_rust::xxh3::xxh3_64(&bytes)

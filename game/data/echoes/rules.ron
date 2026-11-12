@@ -1,0 +1,20 @@
+// The numbers every Echo shares (WP-059). Schema: crates/content/src/echo.rs. Source:
+// docs/game/05-enemies-and-bosses.md, "Echo summons" (summoned at an Echo Stone with the Echo
+// Bell; a bow after the summoning makes the PoliteLlama fight at +20% damage) and
+// docs/game/06-progression-and-systems.md, "Gestures and photo mode" (a gesture is a
+// `Command::Gesture`). The spec fixes no distance or timing below: all of it is tuning.
+(
+  bell: "itm_echo_bell",
+  // The gesture menu (WP-088) lists wave, bow, point forward, sit, shrug, beckon in that
+  // order; the bow is the second, so number 1.
+  bow_gesture: 1,
+  stone_ring_m: 2.5, // tuning: arm's reach plus a step
+  follow_m: 3.0, // tuning: an Echo trails the player at about this distance
+  catch_up_m: 24.0, // tuning: farther than this and it is put beside the player
+  engage_m: 16.0, // tuning: it fights enemies this close to the player
+  leash_m: 22.0, // tuning: it gives up a chase this far from the player
+  bow_window_ticks: 150, // tuning: five seconds to bow after the summoning
+  bow_range_m: 6.0, // tuning: close enough that the Echo sees the bow
+  run_beyond_m: 3.0, // tuning: it runs once it is 3 m past its following distance
+  fallen_ticks: 90, // tuning: three seconds before a fallen Echo is cleared away
+)

@@ -59,6 +59,17 @@ pub struct Actor {
     pub ai: Option<crate::ai::AiState>,
 }
 
+impl Actor {
+    /// True for a summoned Echo: an AI actor on the player's side (WP-059, see `ai::echo`).
+    /// An Echo's brain has no scenario spawn (`ai::echo::NO_SPAWN`), which is what marks it,
+    /// so no field is added to the hashed actor.
+    pub fn is_ally(&self) -> bool {
+        self.ai
+            .as_ref()
+            .is_some_and(|b| b.spawn == crate::ai::echo::NO_SPAWN)
+    }
+}
+
 /// Character controller state between ticks.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct Motor {

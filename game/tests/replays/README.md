@@ -139,5 +139,15 @@ lf-tools replay record-script tests/replays/m1_movement.script --out tests/repla
   assertion tests are in `game/crates/tools/tests/golden_spells.rs`; the rules have unit tests
   in `game/crates/core/src/combat/spells/tests.rs`.
 
+- `m5_echo_helps_beat_test_boss.lfr`: the WP-059 golden on `echo_boss_gate`, recorded by the
+  ignored test `record_the_echo_golden` (`game/crates/core/src/ai/echo/tests.rs`) because the
+  script format has no `cmd` lines for `Equip`, `UseItem`, and `Gesture`. The scripted bot
+  picks up the Echo Bell, equips it in a quick slot, walks through the test boss's fog gate to
+  its Echo Stone, rings the Bell (summoning the PoliteLlama), bows, locks on, and fights. The
+  Llama lands hits on the boss and the boss falls with the player alive.
+  `the_golden_replay_has_an_echo_help_beat_the_test_boss` checks it, and
+  `the_bot_beats_the_test_boss_faster_with_an_echo` checks the same bot is slower without the
+  Echo.
+
 Rehash only when a change to the simulation or the content data is intended. Review the
 old and new final hash it prints, and commit the updated file with that change.

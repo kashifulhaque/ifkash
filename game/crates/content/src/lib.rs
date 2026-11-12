@@ -16,6 +16,7 @@ use serde::{Deserialize, Serialize};
 pub mod attributes;
 pub mod boss;
 pub mod consumables;
+pub mod echo;
 pub mod enemy;
 pub mod gear;
 pub mod level;
@@ -34,6 +35,7 @@ pub mod weapons;
 pub use attributes::Attributes;
 pub use boss::BossDef;
 pub use consumables::{Consumables, Flask, Item, ItemEffect, ItemKind};
+pub use echo::{EchoDef, EchoRules};
 pub use enemy::{AiTuning, EnemyDef};
 pub use gear::{ArmorFile, ArmorPiece, Charm, GearEffect};
 pub use level::{KitCatalog, Kits, Level};
@@ -75,6 +77,11 @@ const SPELLS_DIR: &str = "spells";
 const ENEMIES_DIR: &str = "enemies";
 /// Directory (relative to the data root) holding boss definitions, one per file.
 const BOSSES_DIR: &str = "bosses";
+/// Directory (relative to the data root) holding Echo definitions, one per file, and
+/// `rules.ron`.
+const ECHOES_DIR: &str = "echoes";
+/// The Echo rules file (relative to the data root).
+const ECHO_RULES_FILE: &str = "echoes/rules.ron";
 /// The shared AI tuning file (relative to the data root).
 const AI_FILE: &str = "ai.ron";
 /// Directory (relative to the data root) holding kit catalogs, one per file.
@@ -426,6 +433,10 @@ const EMBEDDED_SCENARIOS: &[(&str, &str)] = &[
         "scenarios/wp051_hammer.ron",
         include_str!("../../../data/scenarios/wp051_hammer.ron"),
     ),
+    (
+        "scenarios/echo_boss_gate.ron",
+        include_str!("../../../data/scenarios/echo_boss_gate.ron"),
+    ),
 ];
 const EMBEDDED_BOSSES: &[(&str, &str)] = &[
     (
@@ -435,6 +446,28 @@ const EMBEDDED_BOSSES: &[(&str, &str)] = &[
     (
         "bosses/b01_hollow_sentry.ron",
         include_str!("../../../data/bosses/b01_hollow_sentry.ron"),
+    ),
+];
+const EMBEDDED_ECHOES: &[(&str, &str)] = &[
+    (
+        "echoes/rules.ron",
+        include_str!("../../../data/echoes/rules.ron"),
+    ),
+    (
+        "echoes/echo_politellama.ron",
+        include_str!("../../../data/echoes/echo_politellama.ron"),
+    ),
+    (
+        "echoes/echo_bone_sentinel.ron",
+        include_str!("../../../data/echoes/echo_bone_sentinel.ron"),
+    ),
+    (
+        "echoes/echo_choir_wisp.ron",
+        include_str!("../../../data/echoes/echo_choir_wisp.ron"),
+    ),
+    (
+        "echoes/echo_briar_hounds.ron",
+        include_str!("../../../data/echoes/echo_briar_hounds.ron"),
     ),
 ];
 const EMBEDDED_AI: &str = include_str!("../../../data/ai.ron");
@@ -683,6 +716,15 @@ pub struct Content {
     /// body and parts are also in `enemies`, so the AI table builds them like any enemy.
     #[cfg_attr(feature = "ts", ts(skip))]
     pub bosses: BTreeMap<String, BossDef>,
+    /// The Echo rules from `echoes/rules.ron` (WP-059).
+    #[cfg_attr(feature = "ts", ts(skip))]
+    pub echo_rules: Option<EchoRules>,
+    /// Echo definitions keyed by file path relative to the data root, for example
+    /// `echoes/echo_politellama.ron`. Look one up by ID with [`Content::echo_by_id`]. An
+    /// Echo's body is also in `enemies` (so the AI table builds it like any enemy) and its
+    /// moves are in `moves`, both under keys that name the Echo's file.
+    #[cfg_attr(feature = "ts", ts(skip))]
+    pub echoes: BTreeMap<String, EchoDef>,
     /// Kit catalogs keyed by file path relative to the data root, for example
     /// `kits/greybox.ron` (WP-040).
     #[cfg_attr(feature = "ts", ts(skip))]
@@ -874,6 +916,7 @@ impl Content {
         .with_spells(list(SPELLS_DIR)?)?
         .with_enemies(ai.as_deref(), list(ENEMIES_DIR)?)?
         .with_bosses(list(BOSSES_DIR)?)?
+        .with_echoes(list(ECHOES_DIR)?)?
         .with_levels(list(KITS_DIR)?, list_levels(dir)?)
     }
 
@@ -900,6 +943,7 @@ impl Content {
         .with_spells(own(EMBEDDED_SPELLS))?
         .with_enemies(Some(EMBEDDED_AI), own(EMBEDDED_ENEMIES))?
         .with_bosses(own(EMBEDDED_BOSSES))?
+        .with_echoes(own(EMBEDDED_ECHOES))?
         .with_levels(own(EMBEDDED_KITS), own(EMBEDDED_LEVELS))
     }
 
@@ -940,6 +984,8 @@ impl Content {
             ai: None,
             enemies: BTreeMap::new(),
             bosses: BTreeMap::new(),
+            echo_rules: None,
+            echoes: BTreeMap::new(),
             kits: BTreeMap::new(),
             levels: BTreeMap::new(),
         };
@@ -1121,6 +1167,35 @@ impl Content {
             self.bosses.insert(path, def);
         }
         Ok(self)
+    }
+
+    /// Adds the Echo rules (`echoes/rules.ron`) and the Echo definitions, as
+    /// `(relative path, text)`. An Echo's body joins `enemies` under `<path>#body` and its
+    /// moves join `moves` under `<path>`. Fails on an ID that has no registry entry.
+    pub fn with_echoes(mut self, echoes: Vec<(String, String)>) -> Result<Self, ContentError> {
+        for (path, text) in echoes {
+            if path == ECHO_RULES_FILE {
+                self.echo_rules = Some(parse(&path, &text)?);
+                continue;
+            }
+            let def: EchoDef = parse(&path, &text)?;
+            for (field, id) in def.references() {
+                self.check_id(&path, field, id)?;
+            }
+            for (field, id) in def.body.references() {
+                self.check_id(&path, format!("body.{field}"), id)?;
+            }
+            self.enemies
+                .insert(format!("{path}#body"), def.body.clone());
+            self.moves.insert(path.clone(), def.moves.clone());
+            self.echoes.insert(path, def);
+        }
+        Ok(self)
+    }
+
+    /// Finds an Echo definition by string ID.
+    pub fn echo_by_id(&self, id: &str) -> Option<&EchoDef> {
+        self.echoes.values().find(|e| e.id == id)
     }
 
     /// Adds kit catalogs as `(kits/<name>.ron, text)` and level files as

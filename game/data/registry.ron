@@ -383,5 +383,27 @@
     (id: "spp_unbinding_lance_charged", num: 15306),
     (id: "spb_mirror_ward", num: 15400),
     (id: "spb_veil", num: 15401),
+
+    // WP-059 (Echo summons): 17000-17499. 17000 the Echo Bell, 17010s the Echoes, 17020s
+    // their bodies, 17100s and up their moves.
+    (id: "itm_echo_bell", num: 17000),
+    (id: "echo_politellama", num: 17010),
+    (id: "echo_bone_sentinel", num: 17011),
+    (id: "echo_choir_wisp", num: 17012),
+    (id: "echo_briar_hounds", num: 17013),
+    (id: "echo_politellama_body", num: 17020),
+    (id: "echo_bone_sentinel_body", num: 17021),
+    (id: "echo_choir_wisp_body", num: 17022),
+    (id: "echo_briar_hounds_body", num: 17023),
+    (id: "ep_llama_bow_a", num: 17100),
+    (id: "ep_llama_bow_b", num: 17101),
+    (id: "ep_llama_headbutt", num: 17102),
+    (id: "ep_llama_stomp", num: 17103),
+    (id: "ep_sentinel_thrust", num: 17110),
+    (id: "ep_sentinel_bash", num: 17111),
+    (id: "ep_wisp_bolt", num: 17120),
+    (id: "ep_wisp_pulse", num: 17121),
+    (id: "ep_hound_lunge", num: 17130),
+    (id: "ep_hound_snap", num: 17131),
   ],
 )

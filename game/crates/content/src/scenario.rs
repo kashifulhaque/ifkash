@@ -84,6 +84,27 @@ pub struct Scenario {
     /// `Command::Equip` (WP-055). Real levels teach spells with pickups.
     #[serde(default)]
     pub player_spells: Vec<String>,
+    /// Echo Stones (WP-059): where the Echo Bell summons an Echo. A boss arena has one
+    /// unless its definition says otherwise. Real levels place them in the level format.
+    #[serde(default)]
+    pub echo_stones: Vec<EchoStone>,
+    /// Echoes (registry IDs) the player owns from the start of the scenario, on top of the
+    /// ones their world flags unlock. Used by test scenarios (WP-059).
+    #[serde(default)]
+    pub echoes_unlocked: Vec<String>,
+}
+
+/// An Echo Stone: stand within the Echo rules' `stone_ring_m` of it and ring the Echo Bell
+/// to summon the selected Echo beside it.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct EchoStone {
+    /// Unique among the scenario's Echo Stones.
+    pub id: String,
+    /// Where it stands (feet level), in meters. The Echo appears around this point.
+    pub pos: [f32; 3],
+    /// The direction the Echo faces when it appears, in radians from +Z toward +X.
+    pub yaw: f32,
 }
 
 /// A pickup: an item lying in the level. Walking within `radius_m` of it takes it, once:
@@ -537,6 +558,13 @@ impl Scenario {
             if d.attack.as_ref().is_some_and(|a| a.every_ticks == 0) {
                 return Err(format!("dummy {:?}: every_ticks must be positive", d.name));
             }
+        }
+        for (i, s) in self.echo_stones.iter().enumerate() {
+            unique(
+                self.echo_stones[..i].iter().any(|o| o.id == s.id),
+                "echo stone",
+                &s.id,
+            )?;
         }
         for (i, e) in self.enemies.iter().enumerate() {
             if self.enemies[..i].iter().any(|o| o.name == e.name) {

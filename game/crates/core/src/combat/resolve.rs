@@ -426,7 +426,7 @@ pub fn run(world: &mut World) {
                 })
             })
             // An enemy has no weapon: its definition's attack rating (WP-032).
-            .or_else(|| crate::ai::attack::rating(world, a))
+            .or_else(|| crate::ai::attack::rating(world, cand.attacker, a))
             .unwrap_or_default();
         let counter = is_counter(t, &world.moves);
         let hit = damage::Hit {

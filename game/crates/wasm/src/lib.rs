@@ -11,6 +11,9 @@ use lf_core::snapshot::{ACTOR_SNAP_BYTES, ActorSnap, write_snapshot};
 use lf_core::{ActionFrame, Replay, TickInput, World, run_replay as core_run_replay, tick};
 use wasm_bindgen::prelude::*;
 
+#[cfg(feature = "dev")]
+mod debug;
+
 /// Bytes between consecutive snapshot records (`size_of::<ActorSnap>()`).
 #[wasm_bindgen]
 pub fn snapshot_stride() -> u32 {
@@ -54,6 +57,9 @@ pub fn encode_replay(seed: u64, scenario: &str, frames: &[u8]) -> Result<Vec<u8>
 pub struct LfWorld {
     world: World,
     snapshot: Vec<ActorSnap>,
+    /// Dev-tool state (god mode, set level). Present only in `dev` builds.
+    #[cfg(feature = "dev")]
+    dev: debug::DevState,
 }
 
 #[wasm_bindgen]
@@ -68,7 +74,12 @@ impl LfWorld {
             World::new(seed, &content, scenario).map_err(|e| JsError::new(&e.to_string()))?;
         let mut snapshot = Vec::new();
         write_snapshot(&world, &mut snapshot);
-        Ok(LfWorld { world, snapshot })
+        Ok(LfWorld {
+            world,
+            snapshot,
+            #[cfg(feature = "dev")]
+            dev: debug::DevState::default(),
+        })
     }
 
     /// Advances one tick per 4-byte `ActionFrame` in `frames` (`[move_x, move_z, buttons_lo,
@@ -86,6 +97,8 @@ impl LfWorld {
                     commands: Vec::new(),
                 },
             );
+            #[cfg(feature = "dev")]
+            self.dev_after_tick();
             ran += 1;
         }
         write_snapshot(&self.world, &mut self.snapshot);

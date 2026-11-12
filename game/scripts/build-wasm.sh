@@ -43,7 +43,9 @@ export CARGO_PROFILE_RELEASE_PANIC=abort
 export CARGO_PROFILE_RELEASE_STRIP=debuginfo
 
 cd "$ROOT/game"
-cargo build --release --target wasm32-unknown-unknown -p lf-wasm
+# LF_WASM_FEATURES=dev adds the developer commands (see crates/wasm/src/debug.rs). Leave it
+# unset for the committed or deployed build.
+cargo build --release --target wasm32-unknown-unknown -p lf-wasm ${LF_WASM_FEATURES:+--features "lf-wasm/$LF_WASM_FEATURES"}
 
 rm -rf "$OUT"
 mkdir -p "$OUT"

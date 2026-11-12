@@ -48,7 +48,8 @@ const CAPSULE_HEIGHT = CAPSULE_LENGTH + CAPSULE_RADIUS * 2;
 
 export class SceneView {
   readonly renderer: WebGLRenderer;
-  private scene = new Scene();
+  /** Exposed for the dev tools' debug draw; nothing else adds to it from outside. */
+  readonly scene = new Scene();
   private camera = new PerspectiveCamera(60, 1, 0.1, 400);
   private rig: CameraRig;
   private dev: DevCameraOptions | null;
@@ -186,7 +187,14 @@ export class SceneView {
 
     this.lastActors = actors;
     const focus = actors[0];
-    if (focus) {
+    if (this.dev?.fixed) {
+      // `&cam=fixed:...`: the camera stays put and ignores the player and the look input.
+      const { pos, yaw, pitch } = this.dev.fixed;
+      const cp = Math.cos(pitch);
+      this.camera.position.set(pos[0], pos[1], pos[2]);
+      this.camera.lookAt(pos[0] + Math.sin(yaw) * cp, pos[1] - Math.sin(pitch), pos[2] + Math.cos(yaw) * cp);
+      this.yawDriven = false;
+    } else if (focus) {
       // The dev animation preview (?animcam=) pins the camera to the actor.
       const off = this.actors.previewCameraOffset();
       if (off) {

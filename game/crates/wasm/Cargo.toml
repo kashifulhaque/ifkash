@@ -12,6 +12,11 @@ workspace = true
 [lib]
 crate-type = ["cdylib", "rlib"]
 
+[features]
+# Developer commands (teleport, god mode, set-level) for the browser dev tools. Off by
+# default, so release builds of the module don't contain them. See `src/debug.rs`.
+dev = []
+
 [dependencies]
 lf-core.workspace = true
 lf-content.workspace = true

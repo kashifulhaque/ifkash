@@ -1,13 +1,12 @@
-// Dev-only camera helpers, switched on by URL parameters. WP-014 replaces the parameter
-// parsing with the shared dev-URL parser; until then this reads what it needs itself.
+// Dev-only camera helpers, switched on by URL parameters (parsed in `dev/params.ts`).
 //
 //   &cam=orbit          free orbit camera (the normal third-person behavior)
 //   &cam=orbit-script   ignores input and sweeps the camera around the test field's ledge:
 //                       two full circles at each of three spots (the ledge wall, the
 //                       steep ridge, the top edge of the 10 m drop), pitch cycling its full range
+//   &cam=fixed:X,Y,Z,YAW,PITCH   a camera that stays where you put it (degrees; see dev/params.ts)
 //   &camt=SECONDS      with orbit-script, holds the script at that time (0 to 72)
 //   &fakelock=X,Y,Z     frames a fixed point as if it were the locked-on actor's feet
-//   &scenario=NAME      starts that scenario (default m0_flat); test_field has the ledge
 //
 // `window.__lfCamera` exposes `debug()` (camera clearance and on-screen flags) and
 // `sweep()`, which runs the orbit script offline and returns the least clearance seen.
@@ -16,26 +15,31 @@ import { Vector3 } from 'three';
 import type { CameraDebug, CameraRig } from './CameraRig';
 import { PITCH_MAX, PITCH_MIN } from './limits';
 import type { DrawActor } from '../../engine/snapshot';
+import type { DevParams, FixedCam } from '../../dev/params';
 
 export interface DevCameraOptions {
   /** True for any `&cam=` value: draw the level proxy so walls are visible. */
   active: boolean;
   /** `&cam=orbit-script` is on. */
   script: boolean;
+  /** `&cam=fixed:...`: the camera stays at this pose and ignores the player and input. */
+  fixed: FixedCam | null;
   fakeLock: Vector3 | null;
   /** `&camt=SECONDS` freezes the orbit script at that time, for screenshots. */
   scriptAt: number | null;
   scenario: string | null;
 }
 
-export function parseDevCamera(search: string): DevCameraOptions {
-  const p = new URLSearchParams(search);
-  const cam = p.get('cam');
-  const lock = p.get('fakelock')?.split(',').map(Number);
-  const fakeLock = lock && lock.length === 3 && lock.every(Number.isFinite) ? new Vector3(lock[0], lock[1], lock[2]) : null;
-  const at = p.get('camt');
-  const scriptAt = at !== null && Number.isFinite(Number(at)) ? Number(at) : null;
-  return { active: cam !== null, script: cam === 'orbit-script', fakeLock, scriptAt, scenario: p.get('scenario') };
+/** The camera options for the parsed dev URL, in the shape `SceneView` takes. */
+export function cameraOptions(p: DevParams, scenario: string): DevCameraOptions {
+  return {
+    active: p.cam !== null,
+    script: p.cam?.kind === 'orbit-script',
+    fixed: p.cam?.kind === 'fixed' ? p.cam : null,
+    fakeLock: p.fakeLock ? new Vector3(...p.fakeLock) : null,
+    scriptAt: p.camT,
+    scenario
+  };
 }
 
 /** Seconds for one full circle of the script. */

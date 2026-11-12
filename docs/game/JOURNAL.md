@@ -30,12 +30,26 @@ Copy this block to the top of the entries and fill it in as you go:
 
 ### 2026-11-12: latticefall-m1c (M1: WP-014, gate G1)
 
-- **Orchestrator:** Sonnet 5.5; started from `origin/main` at `9263599`
-- **Branch:** `game/m1-devtools`
-- **Started from:** `origin/main` at `9263599` (the local `main` was behind it; fast-forwarded)
+- **Orchestrator:** Sonnet 5.5; side session of the M1 series
+- **Branch:** `game/m1-devtools`; claim commit `5e6c1b5` on `main`, WP-014 commit pushed after it
+- **Started from:** `origin/main` at `9263599` (local `main` was behind; fast-forwarded)
 - **WPs:**
-  - WP-014: claimed; worker sonnet
-- **Next steps:** finish WP-014, measure WASM ticks per second, stop at gate G1.
+  - WP-014: done by sonnet (no escalation); 154K worker tokens
+- **Context:** orchestrator about 60K + worker 154K = about 215K (budget 500K).
+- **G1 numbers:** WASM 366,194 B gzipped (936,707 raw). Native `game:bench`: test_field
+  49,019 ticks/s, m0_flat 482,910. WASM under Node 25 (30,000 ticks, scripted walk input):
+  test_field 30,131 ticks/s, m0_flat 563,253. Goldens match native and WASM
+  (`golden.mjs`); Python wasn't re-run this session, last green after WP-015.
+  Toolchain time: not measured; M1 sessions lost time to `mise` refusing the worktree's
+  `mise.toml` and to a hung WP-013 script (see the m1 entry).
+- **Not verified:** the orchestrator did not re-run the browser screenshots (the worker did);
+  `overlay=hitboxes|hurtboxes|nav|ai` draw nothing until those systems exist; pointer lock,
+  gamepad, mouse-wheel target switching; the `game` CI workflow on GitHub.
+- **Waiting on the owner:** gate G1 (confirm or supersede ADR 0001); the open context-budget
+  rule; the lock-on cone reading and camera-direction acquisition (see the m1b entry).
+- **Next steps:**
+  1. The owner decides G1.
+  2. Then start M2 with WP-020 (opus).
 
 ### 2026-11-12: latticefall-m1b (M1: WP-015, WP-012, WP-014, gate G1)
 

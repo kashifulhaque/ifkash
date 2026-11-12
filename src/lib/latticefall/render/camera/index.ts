@@ -1,6 +1,6 @@
 export { CameraRig } from './CameraRig';
 export type { CameraDebug, CameraPose, RaycastFn } from './CameraRig';
-export { exposeDebug, parseDevCamera, scriptPose } from './devCamera';
+export { exposeDebug, cameraOptions, scriptPose } from './devCamera';
 export type { DevCameraOptions } from './devCamera';
 export { buildLevelProxy, TEST_FIELD_BOUNDS } from './levelProxy';
 export {

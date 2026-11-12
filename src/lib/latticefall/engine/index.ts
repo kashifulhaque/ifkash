@@ -2,7 +2,9 @@
 // and the Three.js scene together. Import dynamically from the game route only.
 
 import { InputController, ReplayRecorder, downloadBytes, encodeReplay } from '../input';
-import { parseDevCamera } from '../render/camera';
+import { parseDevParams } from '../dev/params';
+import { cameraOptions } from '../render/camera';
+import type { DevTools } from '../dev';
 import { loadWasm } from './loader';
 import { FixedStepLoop } from './loop';
 import { SceneView } from './scene';
@@ -33,11 +35,10 @@ export interface Engine {
 
 export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions = {}): Promise<Engine> {
   const wasm = await loadWasm();
-  const seed = opts.seed ?? 1n;
-  // Minimal dev-URL read for the camera; WP-014 owns the full parser.
-  const dev = parseDevCamera(window.location.search);
-  const scenario = opts.scenario ?? dev.scenario ?? 'm0_flat';
-  dev.scenario = scenario;
+  const params = parseDevParams(window.location.search);
+  const seed = opts.seed ?? params.seed ?? 1n;
+  const scenario = opts.scenario ?? params.scenario ?? 'm0_flat';
+  const dev = cameraOptions(params, scenario);
   const world = new wasm.glue.LfWorld(seed, scenario);
   const snapshots = new SnapshotBuffer(wasm, world);
   const input = new InputController();
@@ -60,6 +61,7 @@ export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions
     dev.active ? dev : null
   );
 
+  let tools: DevTools | null = null;
   let fps = 60;
   let sinceStats = 0;
   const loop = new FixedStepLoop({
@@ -67,14 +69,21 @@ export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions
       input.poll();
       const frame = input.frame();
       recorder.record(frame); // Every tick's input goes into the replay.
-      world.tick(frame);
+      if (tools) {
+        const t0 = performance.now();
+        world.tick(frame);
+        tools.recordTick(performance.now() - t0);
+      } else world.tick(frame);
       snapshots.push();
       world.drain_events(); // Nothing consumes events yet; drain so the queue stays empty.
     },
     render(alpha, frameMs) {
       input.updateLook(frameMs);
       view.setCamera(input.cameraYaw, input.cameraPitch);
-      view.render(snapshots.interpolate(alpha), frameMs);
+      const drawn = snapshots.interpolate(alpha);
+      tools?.beforeRender(drawn);
+      view.render(drawn, frameMs);
+      tools?.afterRender(frameMs, world.tick_count(), () => world.state_hash());
       // Movement is camera-relative, so when lock-on turns the camera, input follows it.
       if (view.yawDriven) input.cameraYaw = view.cameraYaw;
       if (frameMs > 0) fps += (1000 / frameMs - fps) * 0.1;
@@ -90,10 +99,33 @@ export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions
       }
     }
   });
+
+  // The dev tools load only with `&dev=1`; otherwise none of their code is fetched or run.
+  if (params.dev) {
+    const { DevTools: Tools } = await import('../dev');
+    const first = snapshots.curr[0];
+    tools = new Tools({
+      params,
+      scenario,
+      scene: view.scene,
+      renderer: view.renderer,
+      raycast: (o, d, max) => world.raycast(new Float32Array([o.x, o.y, o.z]), new Float32Array([d.x, d.y, d.z]), max),
+      canvas,
+      world,
+      start: first ? { x: first.x, y: first.y, z: first.z, yaw: first.yaw } : null,
+      // A teleport jumps the snapshot, so push twice: no interpolation across the jump.
+      refresh: () => {
+        snapshots.push();
+        snapshots.push();
+      },
+      setPaused: (p) => loop.setPaused(p)
+    });
+  }
+
   loop.start();
 
   return {
-    setPaused: (paused) => loop.setPaused(paused),
+    setPaused: (paused) => (tools ? tools.commands.setFrozen(paused) : loop.setPaused(paused)),
     replayTicks: () => recorder.ticks,
     downloadReplay() {
       const bytes = encodeReplay(wasm.glue, recorder, seed, scenario);
@@ -101,6 +133,7 @@ export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions
     },
     dispose() {
       loop.stop();
+      tools?.dispose();
       input.detach();
       view.dispose();
       world.free();

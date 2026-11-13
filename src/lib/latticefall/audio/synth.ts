@@ -136,3 +136,56 @@ export function swing(ctx: BaseAudioContext, dest: AudioNode, noise: AudioBuffer
 export function midiHz(note: number): number {
   return 440 * 2 ** ((note - 69) / 12);
 }
+
+/** A struck bell: a sine fundamental with the inharmonic partials of a bronze bell. */
+export function bell(ctx: BaseAudioContext, dest: AudioNode, t: number, freq: number, gain: number, dur: number): void {
+  tone(ctx, dest, t, { type: 'sine', freq, dur, gain, attack: 0.002 });
+  tone(ctx, dest, t, { type: 'sine', freq: freq * 2.76, dur: dur * 0.5, gain: gain * 0.35, attack: 0.002 });
+  tone(ctx, dest, t, { type: 'sine', freq: freq * 5.4, dur: dur * 0.25, gain: gain * 0.15, attack: 0.002 });
+}
+
+/** The Bellwright's beat. The bar's first beat (`accent`) rings deeper than the rest. */
+export function bellBeat(ctx: BaseAudioContext, dest: AudioNode, t: number, accent: boolean): void {
+  if (accent) bell(ctx, dest, t, 220, 0.16, 1.4);
+  else bell(ctx, dest, t, 330, 0.08, 0.6);
+}
+
+/** The bell tolls: a deep ring with a low thud under it. */
+export function bellToll(ctx: BaseAudioContext, dest: AudioNode, noise: AudioBuffer, t: number): void {
+  bell(ctx, dest, t, 110, 0.3, 2.6);
+  noiseBurst(ctx, dest, noise, t, { dur: 0.35, gain: 0.45, type: 'lowpass', freq: 500, sweepTo: 120 });
+}
+
+/** The bell winds up before a toll: a rising tone that swells toward it. */
+export function bellWindup(ctx: BaseAudioContext, dest: AudioNode, t: number): void {
+  tone(ctx, dest, t, { type: 'sine', freq: 180, to: 420, dur: 0.6, gain: 0.08, attack: 0.3 });
+}
+
+/** The toll's shockwave reaches the player. */
+export function tollHit(ctx: BaseAudioContext, dest: AudioNode, noise: AudioBuffer, t: number): void {
+  tone(ctx, dest, t, { freq: 90, to: 40, dur: 0.45, gain: 0.6 });
+  noiseBurst(ctx, dest, noise, t, { dur: 0.3, gain: 0.4, type: 'lowpass', freq: 900, sweepTo: 150 });
+}
+
+/** An ice patch cracks: a short, bright crackle. */
+export function iceCrack(ctx: BaseAudioContext, dest: AudioNode, noise: AudioBuffer, t: number): void {
+  noiseBurst(ctx, dest, noise, t, { dur: 0.22, gain: 0.5, type: 'highpass', freq: 3500, sweepTo: 1200 });
+}
+
+/** An ice patch breaks into water: a long splash that sinks. */
+export function iceBreak(ctx: BaseAudioContext, dest: AudioNode, noise: AudioBuffer, t: number): void {
+  noiseBurst(ctx, dest, noise, t, { dur: 0.7, gain: 0.5, type: 'bandpass', freq: 1400, q: 0.6, sweepTo: 250 });
+  tone(ctx, dest, t, { type: 'sine', freq: 260, to: 110, dur: 0.6, gain: 0.25 });
+}
+
+/** The chain snaps and the bell becomes a flail. */
+export function chainSnap(ctx: BaseAudioContext, dest: AudioNode, noise: AudioBuffer, t: number): void {
+  noiseBurst(ctx, dest, noise, t, { dur: 0.3, gain: 0.6, type: 'bandpass', freq: 2200, q: 0.8, sweepTo: 300 });
+  tone(ctx, dest, t, { type: 'sawtooth', freq: 900, to: 180, dur: 0.35, gain: 0.2 });
+}
+
+/** The boss's defeat: a rising chord that rings out. */
+export function bossSting(ctx: BaseAudioContext, dest: AudioNode, t: number): void {
+  const notes = [50, 57, 62, 65, 69];
+  notes.forEach((note, i) => tone(ctx, dest, t + i * 0.09, { type: 'triangle', freq: midiHz(note), dur: 2.6, gain: 0.12, attack: 0.05 }));
+}

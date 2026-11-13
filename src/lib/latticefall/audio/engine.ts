@@ -1,17 +1,20 @@
 // The audio engine: five buses (master, music, effects, ambience, UI) on one AudioContext,
 // positional effects through `PannerNode`s, footsteps by surface, a procedural ambient bed
-// per region, and boss music stems. Sounds are driven from the core's decoded events, so
-// the engine only listens: it never writes simulation state.
+// and exploration music per region, and boss music stems. Sounds are driven from the core's
+// decoded events and the HUD's boss-bar state, so the engine only listens: it never writes
+// simulation state.
 //
 // Browsers keep an AudioContext suspended until a user gesture, so the context is created
 // on construction but `resume()` runs from the first pointer or key event (`unlockOn`).
 
 import type { GameEvent } from '../engine/events';
 import { HIT_GUARDED, HIT_GUARD_BROKEN } from '../engine/events';
-import { AmbienceBed, BossMusic, type BossMusicState } from './beds';
+import { AmbienceBed } from './beds';
+import { BossMusic, type BossMusicState } from './bosses';
 import { BUSES, audioSettings, type AudioSettings, type Bus } from './settings';
 import * as synth from './synth';
 import type { Surface } from './synth';
+import { bossKeyForName } from './voices';
 
 /** Where the listener is: the player's position and the camera's yaw. */
 export interface ListenerPose {
@@ -21,7 +24,26 @@ export interface ListenerPose {
   yaw: number;
 }
 
-export type EffectName = 'uiClick' | 'pickup' | 'lanternIgnite' | 'swingLight' | 'swingHeavy';
+/** The HUD's boss bar: the boss's name, its HP fraction, and its phase (from 1). */
+export interface BossBarState {
+  name: string;
+  frac: number;
+  phase: number;
+}
+
+export type EffectName =
+  | 'uiClick'
+  | 'pickup'
+  | 'lanternIgnite'
+  | 'swingLight'
+  | 'swingHeavy'
+  | 'bellWindup'
+  | 'bellToll'
+  | 'tollHit'
+  | 'iceCrack'
+  | 'iceBreak'
+  | 'chainSnap'
+  | 'bossSting';
 
 /** Looks up the surface under a world position. Defaults to stone until the world has materials. */
 export type SurfaceResolver = (x: number, y: number, z: number) => Surface;
@@ -29,6 +51,17 @@ export type SurfaceResolver = (x: number, y: number, z: number) => Surface;
 const MAX_VOICES = 24;
 /** Meters between footsteps while walking. */
 const STRIDE = 1.7;
+/** A boss bar that clears at or below this HP fraction counts as a defeat. */
+const DEFEAT_FRAC = 0.02;
+
+// The Bellwright's mechanic sub-kinds (WASM event kind 14, see `game/crates/core/src/events.rs`).
+const MECH_BELL_BEAT = 190;
+const MECH_BELL_TOLL_WARNED = 191;
+const MECH_BELL_TOLLED = 192;
+const MECH_BELL_TOLL_HIT = 193;
+const MECH_ICE_CRACKED = 194;
+const MECH_ICE_BROKE = 195;
+const MECH_BELL_CHAIN_SNAPPED = 197;
 
 export class AudioEngine {
   readonly ctx: AudioContext;
@@ -42,6 +75,8 @@ export class AudioEngine {
   private unlockCleanup: (() => void) | null = null;
   private lastPos: { x: number; y: number; z: number } | null = null;
   private stride = 0;
+  /** The boss fight the HUD shows now, with its last HP fraction, or null. */
+  private fight: { name: string; frac: number } | null = null;
   surfaceAt: SurfaceResolver = () => 'stone';
 
   constructor() {
@@ -145,6 +180,7 @@ export class AudioEngine {
   /** Plays sounds for the events the core produced this tick. */
   handleEvents(events: readonly GameEvent[]): void {
     for (const e of events) {
+      if (e.kind === 'mechanic') this.mechanicEvent(e.what, e.index);
       if (e.kind !== 'hit') continue;
       const killed = (e.flags & 2) !== 0;
       const kind: synth.HitKind =
@@ -152,6 +188,36 @@ export class AudioEngine {
       // Motion value is around 0.3 to 2.5; map it to a 0-1 weight.
       const weight = Math.min(1, e.motionValue / 2.5);
       this.positional(e.point, (dest, t) => synth.hit(this.ctx, dest, this.noise, t, kind, weight));
+    }
+  }
+
+  /**
+   * The Bellwright's events drive his beat and his bell. The beat follows the core's events,
+   * never the audio clock, so the music can't drift from the fight.
+   */
+  private mechanicEvent(what: number, index: number): void {
+    switch (what) {
+      case MECH_BELL_BEAT:
+        this.boss.onBellBeat(index);
+        break;
+      case MECH_BELL_TOLL_WARNED:
+        this.play('bellWindup');
+        break;
+      case MECH_BELL_TOLLED:
+        this.play('bellToll');
+        break;
+      case MECH_BELL_TOLL_HIT:
+        this.play('tollHit');
+        break;
+      case MECH_ICE_CRACKED:
+        this.play('iceCrack');
+        break;
+      case MECH_ICE_BROKE:
+        this.play('iceBreak');
+        break;
+      case MECH_BELL_CHAIN_SNAPPED:
+        this.play('chainSnap');
+        break;
     }
   }
 
@@ -184,29 +250,75 @@ export class AudioEngine {
   play(name: EffectName): void {
     if (this.disposed || this.ctx.state !== 'running') return;
     const t = this.ctx.currentTime;
+    const fx = this.buses.effects;
     switch (name) {
       case 'uiClick':
         synth.uiClick(this.ctx, this.buses.ui, t);
         break;
       case 'pickup':
-        synth.pickup(this.ctx, this.buses.effects, t);
+        synth.pickup(this.ctx, fx, t);
         break;
       case 'lanternIgnite':
-        synth.lanternIgnite(this.ctx, this.buses.effects, this.noise, t);
+        synth.lanternIgnite(this.ctx, fx, this.noise, t);
         break;
       case 'swingLight':
       case 'swingHeavy':
-        synth.swing(this.ctx, this.buses.effects, this.noise, t, name === 'swingHeavy');
+        synth.swing(this.ctx, fx, this.noise, t, name === 'swingHeavy');
+        break;
+      case 'bellWindup':
+        synth.bellWindup(this.ctx, fx, t);
+        break;
+      case 'bellToll':
+        synth.bellToll(this.ctx, fx, this.noise, t);
+        break;
+      case 'tollHit':
+        synth.tollHit(this.ctx, fx, this.noise, t);
+        break;
+      case 'iceCrack':
+        synth.iceCrack(this.ctx, fx, this.noise, t);
+        break;
+      case 'iceBreak':
+        synth.iceBreak(this.ctx, fx, this.noise, t);
+        break;
+      case 'chainSnap':
+        synth.chainSnap(this.ctx, fx, this.noise, t);
+        break;
+      case 'bossSting':
+        synth.bossSting(this.ctx, fx, t);
         break;
     }
   }
 
-  /** Crossfades the ambient bed and exploration pad to a region (`waking-hollow`, `verge`, ...). */
+  /** Crossfades the ambient bed and exploration music to an area (`waking_hollow`, `verge`, ...). */
   setRegion(id: string): void {
     this.ambience.setRegion(id);
   }
 
-  /** Switches the boss music: 'intro' swells in, 'loop' pulses, 'phase2' layers the second stem. */
+  /**
+   * Follows the HUD's boss bar, once per tick: a new name starts that boss's intro, a phase
+   * of 2 or more layers in the phase-2 stem, and a bar that clears ends the fight. A bar that
+   * clears at no HP plays the defeat sting; anything else (a reset or a death) just goes quiet.
+   */
+  setBossBar(bar: BossBarState | null): void {
+    if (this.disposed) return;
+    if (!bar) {
+      if (this.fight) {
+        if (this.fight.frac <= DEFEAT_FRAC) this.play('bossSting');
+        this.boss.set('off');
+        this.fight = null;
+      }
+      return;
+    }
+    if (!this.fight || this.fight.name !== bar.name) {
+      this.boss.set('off');
+      this.boss.setVoice(bossKeyForName(bar.name));
+      this.boss.set('intro');
+    }
+    this.fight = { name: bar.name, frac: bar.frac };
+    this.boss.set(bar.phase >= 2 ? 'phase2' : 'loop');
+  }
+
+  /** Sets the boss music directly: 'intro' swells in, 'loop' pulses, 'phase2' layers the second stem. */
   setBossMusic(state: BossMusicState): void {
     this.boss.set(state);
   }

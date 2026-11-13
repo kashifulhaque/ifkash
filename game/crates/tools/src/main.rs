@@ -3,6 +3,7 @@
 mod assets;
 mod bake;
 mod bench;
+mod credits;
 mod gen_ts;
 mod replay;
 mod validate;
@@ -57,6 +58,15 @@ enum Command {
         #[arg(long)]
         out: Option<PathBuf>,
     },
+    /// Collect every asset pack's title, author, source, and license into one JSON file.
+    Credits {
+        /// The source directory. Defaults to `game/assets-src/`.
+        #[arg(long)]
+        src: Option<PathBuf>,
+        /// The output file. Defaults to `src/lib/latticefall/audio/credits.json`.
+        #[arg(long)]
+        out: Option<PathBuf>,
+    },
     /// Bake an area's collision set, navigation grid, and render manifest.
     Bake(bake::BakeArgs),
     /// Generate TypeScript types and a UI digest from the content data.
@@ -81,6 +91,10 @@ fn main() -> ExitCode {
         Command::Assets { src, out } => assets::run(
             &src.unwrap_or_else(assets::default_src),
             &out.unwrap_or_else(assets::default_out),
+        ),
+        Command::Credits { src, out } => credits::run(
+            &src.unwrap_or_else(assets::default_src),
+            &out.unwrap_or_else(credits::default_out),
         ),
         Command::Bench { ticks } => bench::run(ticks),
         Command::Bake(args) => bake::run(args, &default_data()),

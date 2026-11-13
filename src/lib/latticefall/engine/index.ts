@@ -101,12 +101,8 @@ export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions
   try {
     audio = new AudioEngine();
     audio.unlockOn(canvas);
-    // Waking Hollow has its own sound bed (WP-043); other areas keep the default voice.
-    if (scenario === 'waking_hollow') audio.setRegion('waking-hollow');
-    // The Verge (WP-044) is open and windy.
-    if (scenario === 'verge') audio.setRegion('verge');
-    // Hollowhearth (WP-068) crackles by its hearth.
-    if (scenario === 'hollowhearth') audio.setRegion('hollowhearth');
+    // Each area has its own ambience and exploration music (WP-087); unknown areas get the default.
+    audio.setRegion(scenario);
   } catch (err) {
     console.warn('Latticefall audio unavailable', err);
   }
@@ -199,6 +195,7 @@ export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions
     if (world.tick_count() % 6 === 0) syncEquipment();
     if (view.props.active) view.props.setState(world.mechanics_state());
     const hudState = parseHud(world.hud_state(), names);
+    audio?.setBossBar(hudState.boss);
     // The core's interact prompt also names doors, levers, messages, and pickups (code 1 is the
     // Lantern, the same as the HUD's own word 17).
     hudState.prompt = world.interact_prompt();

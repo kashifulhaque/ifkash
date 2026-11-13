@@ -1,0 +1,28 @@
+{
+  "packs": [
+    {
+      "author": "The Cinderheart project",
+      "folder": "audio",
+      "license": "Original work of this repository. See `LICENSE.md` in this folder. It contains no third-party audio.",
+      "licenseFile": "LICENSE.md",
+      "source": "Synthesized in code with the Web Audio API, in `src/lib/latticefall/audio/` (`synth.ts`, `beds.ts`, `bosses.ts`, and `voices.ts`). There are no sample files.",
+      "title": "Latticefall audio (generated in code)"
+    },
+    {
+      "author": null,
+      "folder": "quaternius-modular-characters",
+      "license": "CC0 1.0 Universal (https://creativecommons.org/publicdomain/zero/1.0/). The pack ships no license file in this repo; the license is as stated on the author's pack pages and in `static/models/CREDITS.md`. No attribution is required.",
+      "licenseFile": null,
+      "source": "The Modular Men pack and Modular Women pack by Quaternius, https://quaternius.com. These files were already in the repo at `static/models/npc/` (see `static/models/CREDITS.md`); `Adventurer.glb` was copied here as the Wayfarer source. It was not downloaded again.",
+      "title": "Quaternius modular characters"
+    },
+    {
+      "author": "Quaternius",
+      "folder": "universal-animation-library",
+      "license": "CC0 1.0 Universal. The author's `License.txt` is `LICENSE.txt` here, and the upstream readme is `README.upstream.txt`. No attribution is required.",
+      "licenseFile": "LICENSE.txt",
+      "source": "https://quaternius.itch.io/universal-animation-library (the Standard zip, 15,904,933 bytes, downloaded 2026-11-12). Pack page: https://quaternius.com/packs/universalanimationlibrary.html",
+      "title": "Quaternius Universal Animation Library"
+    }
+  ]
+}

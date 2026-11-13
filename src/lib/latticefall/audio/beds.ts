@@ -1,35 +1,9 @@
-// Procedural ambient beds (one per region, on the ambience bus) and the music stems (on the
-// music bus): a calm exploration pad per region, and boss music with an intro, a loop, and
-// a phase-2 stem layered in. All placeholders, synthesized with no assets.
+// Procedural region beds: the ambience layers (wind, water, drips, fire) on the ambience bus,
+// and the calm exploration music on the music bus: a pad under a plucked loop. The numbers for
+// each region live in `voices.ts`. All of it is synthesized, with no assets.
 
 import { midiHz, noiseBurst, tone } from './synth';
-
-/** The ambience layers the spec names. Each region mixes them at its own levels (0 to 1). */
-export interface BedMix {
-  wind: number;
-  water: number;
-  drips: number;
-  fire: number;
-}
-
-/** Pad root (MIDI) and darkness for the region's exploration loop. */
-export interface RegionVoice {
-  mix: BedMix;
-  root: number;
-  chord: number[];
-  tone: number;
-}
-
-export const REGION_VOICES: Record<string, RegionVoice> = {
-  // Waking Hollow: a sheltered start, light wind and a trickle of water.
-  'waking-hollow': { mix: { wind: 0.35, water: 0.3, drips: 0.15, fire: 0 }, root: 50, chord: [0, 7, 12, 16], tone: 900 },
-  // The Verge: open and windy.
-  verge: { mix: { wind: 0.7, water: 0.1, drips: 0, fire: 0 }, root: 53, chord: [0, 7, 12, 15], tone: 700 },
-  // Hollowhearth (WP-068): the safe hub, a crackling hearth and almost no wind.
-  hollowhearth: { mix: { wind: 0.05, water: 0, drips: 0.05, fire: 0.6 }, root: 48, chord: [0, 7, 12, 16], tone: 1100 },
-  // Used when a region has no voice of its own, and on the test field.
-  default: { mix: { wind: 0.3, water: 0, drips: 0, fire: 0 }, root: 50, chord: [0, 7, 12], tone: 800 }
-};
+import { regionVoice, type BedMix, type RegionVoice } from './voices';
 
 const LOOKAHEAD = 0.25;
 
@@ -79,17 +53,20 @@ class NoiseLayer {
   }
 }
 
-/** Region ambience: wind, water, cave drips, and fire, plus the calm exploration pad. */
+/** Region ambience: wind, water, cave drips, and fire, plus the calm exploration music. */
 export class AmbienceBed {
   private wind: NoiseLayer;
   private water: NoiseLayer;
   private fire: NoiseLayer;
   private padOut: GainNode | null = null;
   private padOscs: OscillatorNode[] = [];
+  private voice: RegionVoice | null = null;
   private mix: BedMix = { wind: 0, water: 0, drips: 0, fire: 0 };
   private timer: ReturnType<typeof setInterval> | null = null;
   private nextDrip = 0;
   private nextCrackle = 0;
+  private nextPluck = 0;
+  private pluckStep = 0;
   region = '';
 
   constructor(
@@ -108,9 +85,12 @@ export class AmbienceBed {
   setRegion(id: string): void {
     if (id === this.region) return;
     this.region = id;
-    const v = REGION_VOICES[id] ?? REGION_VOICES.default;
+    const v = regionVoice(id);
     const t = this.ctx.currentTime;
+    this.voice = v;
     this.mix = v.mix;
+    this.nextPluck = t;
+    this.pluckStep = 0;
     this.wind.fadeTo(this.ctx, v.mix.wind * 0.5, 3);
     this.water.fadeTo(this.ctx, v.mix.water * 0.25, 3);
     this.fire.fadeTo(this.ctx, v.mix.fire * 0.5, 3);
@@ -162,6 +142,29 @@ export class AmbienceBed {
       noiseBurst(this.ctx, this.ambience, this.noise, t, { dur: 0.03, gain: 0.25 * this.mix.fire, type: 'highpass', freq: 2500 });
       this.nextCrackle = t + 0.05 + Math.random() * 0.35;
     }
+    this.schedulePluck(now);
+  }
+
+  /** The exploration loop: one step per eighth note, looping its bar. Rests and empty bars are silent. */
+  private schedulePluck(now: number): void {
+    const v = this.voice;
+    if (!v || v.pluck.length === 0) return;
+    const step = 60 / v.bpm / 2;
+    if (this.nextPluck < now) this.nextPluck = now;
+    while (this.nextPluck < now + LOOKAHEAD) {
+      const note = v.pluck[this.pluckStep % v.pluck.length];
+      if (note >= 0) {
+        tone(this.ctx, this.music, this.nextPluck, {
+          type: 'triangle',
+          freq: midiHz(v.root + 12 + note),
+          dur: 0.9,
+          gain: 0.05,
+          attack: 0.01
+        });
+      }
+      this.pluckStep++;
+      this.nextPluck += step;
+    }
   }
 
   dispose(): void {
@@ -177,112 +180,5 @@ export class AmbienceBed {
         // Already stopped.
       }
     }
-  }
-}
-
-export type BossMusicState = 'off' | 'intro' | 'loop' | 'phase2';
-
-const BOSS_BPM = 84;
-
-/**
- * Boss music: an intro swell, a looping pulse, and a phase-2 stem that fades in over the
- * loop. The pulse is scheduled on the audio clock so the fight's beat stays steady.
- */
-export class BossMusic {
-  private out: GainNode;
-  private loopStem: GainNode;
-  private phase2Stem: GainNode;
-  private state: BossMusicState = 'off';
-  private timer: ReturnType<typeof setInterval> | null = null;
-  private nextBeat = 0;
-  private beatIndex = 0;
-
-  constructor(
-    private ctx: AudioContext,
-    music: AudioNode,
-    private noise: AudioBuffer
-  ) {
-    this.out = ctx.createGain();
-    this.out.gain.value = 0;
-    this.out.connect(music);
-    this.loopStem = ctx.createGain();
-    this.loopStem.gain.value = 0;
-    this.loopStem.connect(this.out);
-    this.phase2Stem = ctx.createGain();
-    this.phase2Stem.gain.value = 0;
-    this.phase2Stem.connect(this.out);
-  }
-
-  get current(): BossMusicState {
-    return this.state;
-  }
-
-  set(state: BossMusicState): void {
-    if (state === this.state) return;
-    const t = this.ctx.currentTime;
-    const ramp = (p: AudioParam, v: number, secs: number) => {
-      p.cancelScheduledValues(t);
-      p.setValueAtTime(p.value, t);
-      p.linearRampToValueAtTime(v, t + secs);
-    };
-    const prev = this.state;
-    this.state = state;
-    if (state === 'off') {
-      ramp(this.out.gain, 0, 2);
-      ramp(this.loopStem.gain, 0, 2);
-      ramp(this.phase2Stem.gain, 0, 2);
-      setTimeout(() => {
-        if (this.state === 'off') this.stopTimer();
-      }, 2200);
-      return;
-    }
-    ramp(this.out.gain, 0.9, 0.3);
-    if (state === 'intro') {
-      // Intro stem: a rising swell with a low drone, then the loop takes over.
-      tone(this.ctx, this.out, t, { type: 'sawtooth', freq: midiHz(31), to: midiHz(43), dur: 3.5, gain: 0.15, attack: 2.5 });
-      tone(this.ctx, this.out, t, { type: 'sine', freq: midiHz(38), dur: 3.5, gain: 0.25, attack: 1.5 });
-      ramp(this.loopStem.gain, 0, 0.1);
-      ramp(this.phase2Stem.gain, 0, 0.1);
-      this.startTimer(t + 3);
-      return;
-    }
-    if (prev === 'off') this.startTimer(t);
-    ramp(this.loopStem.gain, 1, state === 'loop' && prev === 'intro' ? 0.5 : 1);
-    ramp(this.phase2Stem.gain, state === 'phase2' ? 1 : 0, 2);
-  }
-
-  private startTimer(firstBeat: number): void {
-    this.nextBeat = firstBeat;
-    this.beatIndex = 0;
-    if (!this.timer) this.timer = setInterval(() => this.schedule(), 50);
-  }
-
-  private stopTimer(): void {
-    if (this.timer) clearInterval(this.timer);
-    this.timer = null;
-  }
-
-  private schedule(): void {
-    const spb = 60 / BOSS_BPM;
-    const now = this.ctx.currentTime;
-    while (this.nextBeat < now + 0.2) {
-      const t = Math.max(now, this.nextBeat);
-      const beat = this.beatIndex % 4;
-      // Loop stem: a drum on every beat (accented on the bar) and a low bass note.
-      tone(this.ctx, this.loopStem, t, { freq: beat === 0 ? 70 : 55, to: 38, dur: 0.3, gain: beat === 0 ? 0.7 : 0.45 });
-      if (beat === 2) noiseBurst(this.ctx, this.loopStem, this.noise, t, { dur: 0.12, gain: 0.25, type: 'bandpass', freq: 1800, q: 1 });
-      if (beat === 0) tone(this.ctx, this.loopStem, t, { type: 'triangle', freq: midiHz(38), dur: spb * 3.6, gain: 0.2, attack: 0.1 });
-      // Phase-2 stem: an eighth-note arpeggio over the loop.
-      const arp = [62, 65, 69, 72];
-      tone(this.ctx, this.phase2Stem, t, { type: 'square', freq: midiHz(arp[beat]), dur: spb * 0.45, gain: 0.07 });
-      tone(this.ctx, this.phase2Stem, t + spb / 2, { type: 'square', freq: midiHz(arp[(beat + 2) % 4] + 12), dur: spb * 0.4, gain: 0.05 });
-      this.nextBeat += spb;
-      this.beatIndex++;
-    }
-  }
-
-  dispose(): void {
-    this.stopTimer();
-    this.out.disconnect();
   }
 }

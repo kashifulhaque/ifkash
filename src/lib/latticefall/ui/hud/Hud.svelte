@@ -7,6 +7,8 @@
   import type { HudSettings } from './hudSettings';
   import type { HudController } from './hudStore';
   import CouriersLetter from '../ending/CouriersLetter.svelte';
+  import { loadSettings } from '../../input/bindings';
+  import { actionGlyph, lastDevice } from '../../input/device';
 
   export let hud: HudController;
   export let settings: Readable<HudSettings>;
@@ -38,6 +40,10 @@
   };
 
   let innerWidth = 1280;
+
+  // The Interact glyph for the device used last: X on a pad, E on the keyboard by default.
+  // Read from the saved bindings when the prompt or the device changes, so a remap shows.
+  $: interactKey = s.prompt > 0 ? actionGlyph(loadSettings().bindings, 'interact', $lastDevice) || 'E' : 'E';
 
   $: s = $state as HudState;
   $: scale = $settings.scale / 100;
@@ -182,9 +188,9 @@
           {/each}
         </div>
         {#if s.prompt === 1}
-          <p class="prompt"><kbd>E</kbd> Rest at the Lantern</p>
+          <p class="prompt"><kbd class:pad={$lastDevice === 'pad'}>{interactKey}</kbd> Rest at the Lantern</p>
         {:else if s.prompt > 1 && PROMPTS[s.prompt]}
-          <p class="prompt"><kbd>E</kbd> {PROMPTS[s.prompt]}</p>
+          <p class="prompt"><kbd class:pad={$lastDevice === 'pad'}>{interactKey}</kbd> {PROMPTS[s.prompt]}</p>
         {/if}
       </div>
     </section>
@@ -565,6 +571,15 @@
     margin-right: 6px;
     border: 1px solid var(--ink-3);
     border-radius: 2px;
+  }
+
+  /* A pad face button is round, so the prompt reads as a controller glyph, not a key. */
+  kbd.pad {
+    display: inline-block;
+    min-width: 1.5em;
+    padding: 0 4px;
+    text-align: center;
+    border-radius: 999px;
   }
 
   @keyframes rise {

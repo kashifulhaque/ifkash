@@ -402,7 +402,10 @@
 
   .lf-menu :global(button:focus-visible),
   .lf-menu :global(input:focus-visible),
-  .lf-menu :global(select:focus-visible) {
+  .lf-menu :global(select:focus-visible),
+  :global(html[data-lf-pad-nav]) .lf-menu :global(button:focus),
+  :global(html[data-lf-pad-nav]) .lf-menu :global(input:focus),
+  :global(html[data-lf-pad-nav]) .lf-menu :global(select:focus) {
     outline: 2px solid var(--fjord);
     outline-offset: 2px;
     border-color: var(--fjord);

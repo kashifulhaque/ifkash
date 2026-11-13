@@ -489,7 +489,9 @@
   }
 
   .btn:focus-visible,
-  button:focus-visible {
+  button:focus-visible,
+  :global(html[data-lf-pad-nav]) .btn:focus,
+  :global(html[data-lf-pad-nav]) button:focus {
     outline: 2px solid var(--fjord);
     outline-offset: 2px;
     border-color: var(--fjord);

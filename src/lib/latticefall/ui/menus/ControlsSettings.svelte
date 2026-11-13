@@ -12,6 +12,7 @@
     type ButtonAction
   } from '../../input/bindings';
   import type { InputController } from '../../input';
+  import { createPadReader } from '../../input/gamepad';
   import { navState } from './nav';
 
   export let input: InputController;
@@ -129,15 +130,17 @@
       // The click that started capture has already been delivered; ignore its mouseup.
     } else {
       let raf = 0;
-      const start = (navigator.getGamepads?.() ?? []).find((p) => p?.connected && p.mapping === 'standard');
+      // Any pad layout, read as standard (`input/gamepad.ts`), so a binding means the same
+      // button over USB and Bluetooth.
+      const readPad = createPadReader();
       const held = new Set<number>();
-      start?.buttons.forEach((b, i) => b.pressed && held.add(i));
+      readPad()?.pressed.forEach((down, i) => down && held.add(i));
       const poll = () => {
         raf = requestAnimationFrame(poll);
-        const p = (navigator.getGamepads?.() ?? []).find((g) => g?.connected && g.mapping === 'standard');
+        const p = readPad();
         if (!p) return;
-        p.buttons.forEach((b, i) => {
-          if (!b.pressed) held.delete(i);
+        p.pressed.forEach((down, i) => {
+          if (!down) held.delete(i);
           else if (!held.has(i)) {
             bind(action, 'pad', `Pad${i}`);
             endCapture();

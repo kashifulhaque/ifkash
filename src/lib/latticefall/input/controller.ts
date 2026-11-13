@@ -14,6 +14,8 @@ import {
 import { FrameComposer } from './composer';
 import { PITCH_DEFAULT, PITCH_MAX, PITCH_MIN } from '../render/camera/limits';
 import { radialDeadzone } from './frame';
+import { createPadReader, padActive, STICK_DEADZONE } from './gamepad';
+import { lastDevice } from './device';
 import type { TouchSink } from './touch/sink';
 
 const STICK_CAMERA_RAD_PER_S = 2.6;
@@ -27,8 +29,8 @@ export class InputController {
   /** Camera elevation in radians above the pivot's horizon; positive looks down from higher up. */
   cameraPitch = PITCH_DEFAULT;
   /**
-   * Decides what gamepad X does: true means Interact, false means Use item. Set this once an
-   * interactable-aware prompt exists; until then X always interacts.
+   * Decides what gamepad X does: true means Interact, false means Use item. The engine sets
+   * it to "the core shows an interact prompt"; the default always interacts.
    */
   nearInteractable: () => boolean = () => true;
 
@@ -44,6 +46,8 @@ export class InputController {
   private lookDx = 0;
   private lookDy = 0;
   private padLook: [number, number] = [0, 0];
+  /** Reads the most recently used pad in standard layout (see `gamepad.ts`). */
+  private readPad = createPadReader();
 
   constructor(settings: InputSettings = loadSettings()) {
     this.settings = settings;
@@ -60,6 +64,7 @@ export class InputController {
     window.addEventListener('wheel', this.onWheel, { passive: false });
     canvas.addEventListener('contextmenu', this.onContextMenu);
     document.addEventListener('pointerlockchange', this.onLockChange);
+    window.addEventListener('gamepaddisconnected', this.onPadDisconnected);
   }
 
   detach(): void {
@@ -72,6 +77,7 @@ export class InputController {
     window.removeEventListener('wheel', this.onWheel);
     this.canvas?.removeEventListener('contextmenu', this.onContextMenu);
     document.removeEventListener('pointerlockchange', this.onLockChange);
+    window.removeEventListener('gamepaddisconnected', this.onPadDisconnected);
     if (this.locked) document.exitPointerLock();
     this.canvas = null;
     this.composer.releaseAll();
@@ -103,29 +109,33 @@ export class InputController {
     this.padPressed.clear();
     this.skipNextClick = false;
     if (!on) {
-      const pad = this.pickPad();
-      this.padLast = pad ? pad.buttons.map((b) => !!b.pressed) : [];
+      const pad = this.readPad();
+      this.padLast = pad ? [...pad.pressed] : [];
     }
   }
 
-  /** Polls the gamepad. Call once per rendered frame, before the ticks it feeds. */
+  /**
+   * Polls the gamepad. Call once per rendered frame, before the ticks it feeds. Any pad works:
+   * `gamepad.ts` turns wired, Bluetooth, and unknown layouts into the standard one.
+   */
   poll(): void {
-    const pad = this.pickPad();
+    const pad = this.readPad();
     if (!pad) {
       if (this.padLast.length > 0) this.releasePad();
       this.composer.setPadStick(0, 0);
       this.padLook = [0, 0];
       return;
     }
+    if (padActive(pad)) lastDevice.set('pad');
     // Left stick: x right, y up. The Gamepad API reports y positive downward.
-    const [lx, ly] = radialDeadzone(pad.axes[0] ?? 0, pad.axes[1] ?? 0);
+    const [lx, ly] = radialDeadzone(pad.axes[0], pad.axes[1], STICK_DEADZONE);
     this.composer.setPadStick(lx, -ly);
-    const [rx, ry] = radialDeadzone(pad.axes[2] ?? 0, pad.axes[3] ?? 0);
+    const [rx, ry] = radialDeadzone(pad.axes[2], pad.axes[3], STICK_DEADZONE);
     this.padLook = [rx, ry];
 
-    const n = Math.max(pad.buttons.length, this.padLast.length);
+    const n = Math.max(pad.pressed.length, this.padLast.length);
     for (let i = 0; i < n; i++) {
-      const down = !!pad.buttons[i]?.pressed;
+      const down = !!pad.pressed[i];
       if (down === !!this.padLast[i]) continue;
       this.padLast[i] = down;
       if (down) this.padDown(i);
@@ -133,10 +143,10 @@ export class InputController {
     }
 
     // Right stick flick switches target. A flick is a fast move to the edge of the range.
-    const f = Math.abs(pad.axes[2] ?? 0) > FLICK_ON && Math.abs(pad.axes[3] ?? 0) < 0.5 ? Math.sign(pad.axes[2]) : 0;
-    if (f !== 0 && this.flick === 0) this.composer.pulse(f < 0 ? 'switchL' : 'switchR');
+    const f = Math.abs(pad.axes[2]) > FLICK_ON && Math.abs(pad.axes[3]) < 0.5 ? Math.sign(pad.axes[2]) : 0;
+    if (f !== 0 && this.flick === 0 && !this.suspended) this.composer.pulse(f < 0 ? 'switchL' : 'switchR');
     if (f !== 0) this.flick = f;
-    else if (Math.abs(pad.axes[2] ?? 0) < FLICK_OFF) this.flick = 0;
+    else if (Math.abs(pad.axes[2]) < FLICK_OFF) this.flick = 0;
   }
 
   /** Applies mouse and right-stick look to the camera. Call once per rendered frame. */
@@ -163,7 +173,11 @@ export class InputController {
    */
   touchSink(): TouchSink {
     return {
-      press: (a, src) => !this.suspended && this.composer.press(a, src),
+      press: (a, src) => {
+        if (this.suspended) return;
+        lastDevice.set('touch');
+        this.composer.press(a, src);
+      },
       release: (a, src) => this.composer.release(a, src),
       pulse: (a) => !this.suspended && this.composer.pulse(a),
       setStick: (x, y) => this.composer.setTouchStick(x, y),
@@ -178,12 +192,6 @@ export class InputController {
   /** Map and menu presses since the last call. */
   drainUi(): UiAction[] {
     return this.composer.drainUi();
-  }
-
-  private pickPad(): Gamepad | null {
-    if (typeof navigator === 'undefined' || !navigator.getGamepads) return null;
-    for (const p of navigator.getGamepads()) if (p?.connected && p.mapping === 'standard') return p;
-    return null;
   }
 
   private padDown(i: number): void {
@@ -215,6 +223,7 @@ export class InputController {
 
   private down(token: string, shift: boolean): void {
     if (this.pressed.has(token)) return;
+    lastDevice.set('keyboard');
     const actions = resolveActions(this.settings.bindings, token, shift);
     this.pressed.set(token, actions);
     for (const a of actions) this.composer.press(a, token);
@@ -247,6 +256,13 @@ export class InputController {
 
   private onKeyUp = (e: KeyboardEvent): void => {
     this.up(e.code);
+  };
+
+  /** A pad that drops (cable out, Bluetooth asleep) lets go of everything it held. */
+  private onPadDisconnected = (): void => {
+    this.releasePad();
+    this.composer.setPadStick(0, 0);
+    this.padLook = [0, 0];
   };
 
   private onBlur = (): void => {

@@ -205,6 +205,8 @@ export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions
   // The Lantern prompt (HUD word 17) and the interact edge turn a press of Interact into a
   // `Rest` command; the menus' commands are recorded with their tick for replays.
   let lastPrompt = 0;
+  // The pad's X is Interact while the core shows an interact prompt and Use item otherwise.
+  input.nearInteractable = () => lastPrompt > 0;
   let prevInteract = false;
   let paused = false;
   let travelled = false;

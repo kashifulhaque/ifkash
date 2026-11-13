@@ -3,6 +3,8 @@
 // Up and Down move within a column, Left and Right move between columns (or adjust a slider
 // that has focus), and a gamepad's D-pad, A, B, and Start map to the same moves.
 
+import { createPadReader, STD } from '../../input/gamepad';
+
 /** True while a control is waiting for the next key or button to bind; navigation stands down. */
 export const navState = { capturing: false };
 
@@ -88,38 +90,50 @@ export function moveForKey(e: KeyboardEvent): NavMove | null {
 }
 
 /** Standard-layout gamepad buttons the menus read. */
-const PAD = { A: 0, B: 1, START: 9, UP: 12, DOWN: 13, LEFT: 14, RIGHT: 15 } as const;
+const PAD = { A: STD.A, B: STD.B, START: STD.MENU, UP: STD.UP, DOWN: STD.DOWN, LEFT: STD.LEFT, RIGHT: STD.RIGHT } as const;
 const STICK_ON = 0.6;
 const REPEAT_MS = 180;
 const FIRST_REPEAT_MS = 380;
 
 /**
- * Polls the first standard gamepad every frame and calls `onMove` on button edges, with
+ * Polls the gamepad (any layout, through `input/gamepad.ts`) every frame and calls `onMove` on button edges, with
  * repeat for the D-pad and the left stick. Returns a stop function. Buttons already held
  * when it starts are ignored until released, so the press that opened a menu doesn't also
  * confirm something in it.
  */
 export function startGamepadNav(onMove: (m: NavMove) => void): () => void {
+  // Browsers draw :focus-visible only after keyboard use, so focus moved by the pad after a
+  // mouse click would be invisible. While the pad drives the menu, `<html data-lf-pad-nav>`
+  // lets the menus' styles show the focus ring on plain :focus; mouse or keys turn it off.
+  const root = typeof document !== 'undefined' ? document.documentElement : null;
+  const padNav = (on: boolean) => {
+    if (!root) return;
+    if (on) root.dataset.lfPadNav = '';
+    else delete root.dataset.lfPadNav;
+  };
+  const offPad = () => padNav(false);
+  window.addEventListener('pointerdown', offPad, true);
+  window.addEventListener('keydown', offPad, true);
+  const move_ = (m: NavMove) => {
+    padNav(true);
+    onMove(m);
+  };
   let raf = 0;
   let stopped = false;
   const held = new Map<string, number>(); // move -> time of its next repeat
   let first = true;
   let primed: boolean[] = [];
 
-  const pad = (): Gamepad | null => {
-    if (typeof navigator === 'undefined' || !navigator.getGamepads) return null;
-    for (const p of navigator.getGamepads()) if (p?.connected && p.mapping === 'standard') return p;
-    return null;
-  };
+  const pad = createPadReader();
 
   const frame = (now: number) => {
     if (stopped) return;
     raf = requestAnimationFrame(frame);
     const p = pad();
     if (!p) return;
-    const down = (i: number) => !!p.buttons[i]?.pressed;
+    const down = (i: number) => !!p.pressed[i];
     if (first) {
-      primed = p.buttons.map((b) => !!b.pressed);
+      primed = [...p.pressed];
       first = false;
     }
     const wasPrimed = (i: number) => {
@@ -127,8 +141,7 @@ export function startGamepadNav(onMove: (m: NavMove) => void): () => void {
       primed[i] = false;
       return false;
     };
-    const ax = p.axes[0] ?? 0;
-    const ay = p.axes[1] ?? 0;
+    const [ax, ay] = p.axes;
     const active: Record<string, boolean> = {
       up: (down(PAD.UP) && !wasPrimed(PAD.UP)) || ay < -STICK_ON,
       down: (down(PAD.DOWN) && !wasPrimed(PAD.DOWN)) || ay > STICK_ON,
@@ -146,10 +159,10 @@ export function startGamepadNav(onMove: (m: NavMove) => void): () => void {
       const due = held.get(move);
       if (due === undefined) {
         held.set(move, now + FIRST_REPEAT_MS);
-        onMove(move);
+        move_(move);
       } else if (now >= due && move !== 'confirm' && move !== 'back' && move !== 'menu') {
         held.set(move, now + REPEAT_MS);
-        onMove(move);
+        move_(move);
       }
     }
   };
@@ -157,5 +170,8 @@ export function startGamepadNav(onMove: (m: NavMove) => void): () => void {
   return () => {
     stopped = true;
     cancelAnimationFrame(raf);
+    window.removeEventListener('pointerdown', offPad, true);
+    window.removeEventListener('keydown', offPad, true);
+    padNav(false);
   };
 }

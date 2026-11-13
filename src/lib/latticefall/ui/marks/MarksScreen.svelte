@@ -71,7 +71,8 @@
     color: var(--ink-3);
   }
 
-  .mark:focus-visible {
+  .mark:focus-visible,
+  :global(html[data-lf-pad-nav]) .mark:focus {
     outline: 2px solid var(--fjord);
     outline-offset: 1px;
   }

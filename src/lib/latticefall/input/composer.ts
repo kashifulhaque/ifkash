@@ -27,6 +27,7 @@ export class FrameComposer {
   private attackActive = false;
   private attackTicks = 0;
   private padStick: [number, number] = [0, 0];
+  private touchStick: [number, number] = [0, 0];
   private uiQueue: UiAction[] = [];
 
   /** Marks `source` as holding `action`. Repeated presses from the same source are ignored. */
@@ -51,6 +52,12 @@ export class FrameComposer {
   releaseAll(): void {
     this.held.clear();
     this.padStick = [0, 0];
+    this.touchStick = [0, 0];
+  }
+
+  /** Touch virtual stick (WP-083): x is right, y is forward, each in [-1, 1]. */
+  setTouchStick(x: number, y: number): void {
+    this.touchStick = [x, y];
   }
 
   /** Gamepad left stick after the deadzone: x is right, y is forward, each in [-1, 1]. */
@@ -94,6 +101,10 @@ export class FrameComposer {
     if (Math.hypot(this.padStick[0], this.padStick[1]) > Math.hypot(right, forward)) {
       right = this.padStick[0];
       forward = this.padStick[1];
+    }
+    if (Math.hypot(this.touchStick[0], this.touchStick[1]) > Math.hypot(right, forward)) {
+      right = this.touchStick[0];
+      forward = this.touchStick[1];
     }
     const [mx, mz] = cameraRelative(right, forward, cameraYaw);
 

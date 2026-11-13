@@ -14,6 +14,7 @@ import {
 import { FrameComposer } from './composer';
 import { PITCH_DEFAULT, PITCH_MAX, PITCH_MIN } from '../render/camera/limits';
 import { radialDeadzone } from './frame';
+import type { TouchSink } from './touch/sink';
 
 const STICK_CAMERA_RAD_PER_S = 2.6;
 const FLICK_ON = 0.85;
@@ -154,6 +155,24 @@ export class InputController {
   /** The ActionFrame for the next tick, in world space. */
   frame(): Uint8Array {
     return this.composer.compose(this.cameraYaw, this.settings.options);
+  }
+
+  /**
+   * The touch surface's way in (WP-083). It feeds the same composer as the keyboard and the
+   * gamepad, so touch makes the same ActionFrame. Ignored while the menus are open.
+   */
+  touchSink(): TouchSink {
+    return {
+      press: (a, src) => !this.suspended && this.composer.press(a, src),
+      release: (a, src) => this.composer.release(a, src),
+      pulse: (a) => !this.suspended && this.composer.pulse(a),
+      setStick: (x, y) => this.composer.setTouchStick(x, y),
+      look: (dx, dy) => {
+        if (this.suspended) return;
+        this.lookDx += dx;
+        this.lookDy += dy;
+      }
+    };
   }
 
   /** Map and menu presses since the last call. */

@@ -16,9 +16,15 @@
   import Menus from '$lib/latticefall/ui/menus/Menus.svelte';
   import Dialogue from '$lib/latticefall/ui/dialogue/Dialogue.svelte';
   import { createMenuSettings } from '$lib/latticefall/ui/menus/menuSettings';
+  import TouchControls from '$lib/latticefall/input/touch/TouchControls.svelte';
+  import { enterTouchQuality, type TouchSink } from '$lib/latticefall/input/touch';
 
   /** Show the dev readout (tick, fps, state hash). Set with `&dev=1`. */
   export let showDev = false;
+  /** Touch mode (WP-083): the touch overlay, the low preset, and no keyboard hint. */
+  export let touch = false;
+  // Set before the engine starts so the first frame already draws at the low preset.
+  const restoreQuality = touch ? enterTouchQuality() : null;
 
   let canvas: HTMLCanvasElement;
   let engine: Engine | null = null;
@@ -32,6 +38,8 @@
   const hud = createHudController();
   const hudSettings = createHudSettings(browser ? window.location.search : '');
   // The menus open on Escape or Start, and when the player rests at a Lantern (WP-046).
+  // Touch mode shrinks the HUD to its smallest size for this visit (not saved).
+  if (touch) hudSettings.update((h) => ({ ...h, scale: 75 }));
   const menuSettings = createMenuSettings();
   let menus: Menus | undefined;
   let menuOpen = false;
@@ -114,10 +122,19 @@
   onDestroy(() => {
     destroyed = true;
     hud.dispose();
+    restoreQuality?.();
     clearInterval(demoTimer);
     engine?.dispose();
     engine = null;
   });
+
+  // One sink per engine: a Lantern trip starts a new engine, and the overlay follows it.
+  const sinks = new WeakMap<Engine, TouchSink>();
+  function touchSink(e: Engine): TouchSink {
+    let s = sinks.get(e);
+    if (!s) sinks.set(e, (s = e.input.touchSink()));
+    return s;
+  }
 
   function togglePause(): void {
     paused = !paused;
@@ -154,7 +171,7 @@
     <p class="lf-note" aria-live="polite">Loading Cinderheart…</p>
   {:else if status === 'failed'}
     <p class="lf-note" role="alert">Cinderheart could not start: {failure}</p>
-  {:else}
+  {:else if !touch}
     <p class="lf-hint"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> move · click to capture the mouse · <kbd>P</kbd> pause · <kbd>L</kbd> Ledger</p>
   {/if}
 
@@ -162,6 +179,10 @@
     <Hud {hud} settings={hudSettings} />
     <UnlockToast bind:this={toast} />
     {#if ledgerOpen}<Ledger on:close={() => (ledgerOpen = false)} />{/if}
+  {/if}
+
+  {#if touch && status === 'ready' && engine}
+    <TouchControls sink={touchSink(engine)} hidden={menuOpen || dialogueOpen || ledgerOpen} />
   {/if}
 
   {#if status === 'ready' && engine}

@@ -1209,6 +1209,42 @@ possible. The owner plays it end to end before M8 starts.
 
 **Stretch:** Reweave (new game plus). Write its card when M8 starts if there's time.
 
+### M8 follow-ups
+
+The following cards collect follow-ups that M7 found. They aren't launch blockers, but
+gate G3's playthrough goes better with them.
+
+<a id="wp-100"></a>
+### WP-100: Draw the boss hazards
+
+- **Lane:** render · **Depends on:** 080, 081 · **Size:** M · **Worker:** sonnet
+- **Read:** [VFX](07-presentation.md#vfx), the hazard sections of
+  [the boss specs](05-enemies-and-bosses.md#bosses) for B02, B04, B08, B09, B10, and B12.
+- **Touch:** `src/lib/latticefall/render/`, `src/lib/latticefall/ui/` (B12's ending
+  screen only).
+- **Do:** Draw every boss hazard the simulation already emits but the renderer doesn't
+  show: B08's lava, B10's toll shockwave and ice, B09's lit lamp flames, B04's weak
+  point state (lit only while it's open), and B12's loom lines. Add B02's intro camera
+  move and B12's ending screen for the Courier's Letter. Read snapshots and events only;
+  change no simulation code.
+- **Acceptance:** A screenshot of each hazard in its arena; no golden hash changes.
+- **Verify:** `bun run check`, screenshots.
+
+<a id="wp-101"></a>
+### WP-101: Fix the boss fight follow-ups
+
+- **Lane:** ai · **Depends on:** 080 · **Size:** M · **Worker:** sonnet
+- **Read:** [Bosses](05-enemies-and-bosses.md#bosses) for B02, B03, B08, and B11;
+  [the castle](02-world.md#regions) for the bridge.
+- **Touch:** `game/crates/core/src/ai/bosses/`, `game/crates/core/src/world_state/mechanics/`,
+  `game/data/{bosses,levels/castle,levels/verge,levels/cinderdeep_mine,levels/bound_ring}/`,
+  `game/tests/replays/`.
+- **Do:** Reset B02's thorns and B08's ember veins when a fight resets; add the B03
+  bridge's broken section; make B11's blink stones match the spec, or change the spec to
+  match the level and say so.
+- **Acceptance:** A test per fix; the affected goldens re-recorded deliberately.
+- **Verify:** `mise run game:test`, `cargo run -p lf-tools -- validate`.
+
 ## M9: RL environment
 
 <a id="wp-090"></a>

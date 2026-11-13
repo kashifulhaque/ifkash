@@ -38,6 +38,27 @@ Copy this block to the top of the entries and fill it in as you go:
 
 ## Entries
 
+### 2026-11-13: latticefall-m8 (M8)
+
+- **Orchestrator:** Opus 5.5, low effort
+- **Branch:** `game/m8-launch`
+- **Started from:** `origin/main` at `3e64199`
+- **Gates:** G2 and G3 are still open. The owner asked for M8 anyway, as in M5-M7.
+  WP-086 (Launch) waits for the owner's go-ahead before it's pushed, because it
+  replaces the live `/game`.
+- **Reservations:** registry numbers: WP-081 42000-42999, WP-082 43000-43999,
+  WP-083 44000-44999, WP-084 45000-45999, WP-085 46000-46999, WP-086 47000-47999,
+  WP-087 48000-48999, WP-088 49000-49999, WP-089 50000-50999, WP-100 51000-51999,
+  WP-101 52000-52999. WASM event kinds: WP-081 52, WP-082 53, WP-083 54, WP-084 55,
+  WP-087 56, WP-088 57-58, WP-100 59, WP-101 60. `MechanicEvent` sub-kinds: WP-101
+  220-229, WP-088 230-239. HUD prompt codes: WP-082 82-83, WP-083 84-85, WP-084 86-87,
+  WP-088 88-89, WP-100 90-91.
+- **Plan:** the M7 journal's boss follow-ups become WP-100 (render) and WP-101 (sim).
+  Wave 1: WP-081, 084, 085, 101. Wave 2: WP-082, 083, 087, 089 (after WP-101, which
+  re-records boss goldens). Wave 3: WP-088 (after WP-082; both edit `ui/`), WP-100
+  (after WP-081; both edit `render/`). Wave 4: WP-086. At most four workers at once.
+- **WPs:**
+
 ### 2026-11-13: latticefall-m7 (M7)
 
 - **Orchestrator:** Opus 5.5, low effort

@@ -23,6 +23,8 @@ export class FixedStepLoop {
   private acc = 0;
   private running = false;
   private paused = false;
+  /** Game speed, 0.5 to 1 (WP-082): how fast real time feeds ticks. The core never sees it. */
+  private speed = 1;
 
   constructor(handlers: LoopHandlers) {
     this.handlers = handlers;
@@ -44,6 +46,10 @@ export class FixedStepLoop {
     cancelAnimationFrame(this.raf);
   }
 
+  setSpeed(speed: number): void {
+    this.speed = Number.isFinite(speed) ? Math.min(1, Math.max(0.5, speed)) : 1;
+  }
+
   /** Pausing stops ticking; rendering continues so the scene stays responsive to resizes. */
   setPaused(paused: boolean): void {
     this.paused = paused;
@@ -57,7 +63,7 @@ export class FixedStepLoop {
     this.last = now;
 
     if (!this.paused) {
-      this.acc += frameMs;
+      this.acc += frameMs * this.speed;
       let ticks = 0;
       while (this.acc >= TICK_MS && ticks < MAX_TICKS_PER_FRAME) {
         this.handlers.tick();

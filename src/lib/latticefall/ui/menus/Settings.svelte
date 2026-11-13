@@ -207,8 +207,9 @@
         </p>
         {#if !APPLIED.difficulty}
           <p class="note">
-            Nothing is locked behind difficulty. These are saved, but the simulation doesn't read them yet; they
-            become part of the world configuration when the core does.
+            Nothing is locked behind difficulty. Game speed works now (it only changes how fast time runs in the
+            browser). The other options are saved, but the simulation doesn't read them yet; they become part of
+            the world configuration when the core does.
           </p>
         {/if}
       </div>
@@ -232,8 +233,16 @@
               {/each}
             </select>
           </li>
+          <li class="slider">
+            <label for="lf-fov">Field of view <output>{s.accessibility.fov}&deg;</output></label>
+            <input id="lf-fov" type="range" data-nav="body" {...RANGES.fov} value={s.accessibility.fov} aria-valuetext={`${s.accessibility.fov} degrees`} on:input={(e) => set((m) => (m.accessibility.fov = Number(e.currentTarget.value)))} />
+          </li>
+          <li class="slider">
+            <label for="lf-camdist">Camera distance <output>{s.accessibility.cameraDistance} m</output></label>
+            <input id="lf-camdist" type="range" data-nav="body" {...RANGES.cameraDistance} value={s.accessibility.cameraDistance} aria-valuetext={`${s.accessibility.cameraDistance} meters`} on:input={(e) => set((m) => (m.accessibility.cameraDistance = Number(e.currentTarget.value)))} />
+          </li>
           <li>
-            <label><input type="checkbox" data-nav="body" checked={s.accessibility.reducedMotion} on:change={(e) => set((m) => (m.accessibility.reducedMotion = e.currentTarget.checked))} /> Reduced motion (menus; camera shake and flashes later)</label>
+            <label><input type="checkbox" data-nav="body" checked={s.accessibility.reducedMotion} on:change={(e) => set((m) => (m.accessibility.reducedMotion = e.currentTarget.checked))} /> Reduced motion (no camera shake or hit flashes, steady warnings, still menus)</label>
           </li>
           <li>
             <label><input type="checkbox" data-nav="body" checked={$hudSettings.showTimer} on:change={(e) => setHud({ showTimer: e.currentTarget.checked })} /> Show the in-game timer on the HUD</label>
@@ -248,11 +257,16 @@
           </li>
           <li>
             <label><input type="checkbox" data-nav="body" checked={s.accessibility.subtitles} on:change={(e) => set((m) => (m.accessibility.subtitles = e.currentTarget.checked))} /> Subtitles for speech and important sounds</label>
+            {#if s.accessibility.subtitles}
+              <p class="sample" aria-hidden="true"><span>&#9834;</span>[The bell tolls]</p>
+            {/if}
           </li>
         </ul>
         <p class="note">
-          Text size, HUD scale, and HUD visibility take effect now. Reduced motion changes the menus' own motion
-          today. Color-blind modes and subtitles are saved for the systems that will use them.
+          Everything here takes effect now and is remembered between visits. Reduced motion starts on when your
+          system asks for it. Color-blind modes recolor the HUD and the warnings; every status and warning also
+          has its own shape or pattern, in every mode. Subtitles caption the bell, ice, chains, and boss sounds
+          (conversations are always text).
         </p>
       </div>
     {/if}
@@ -321,5 +335,22 @@
 
   select {
     margin-left: 0.5em;
+  }
+
+  /* How a subtitle looks, at the current text size. */
+  .sample {
+    display: block;
+    width: max-content;
+    margin: 0.4em 0 0;
+    padding: 0.15em 0.75em;
+    border: 1px solid var(--line-strong);
+    border-radius: 3px;
+    background: var(--surface);
+    color: var(--ink);
+  }
+
+  .sample span {
+    margin-right: 0.5em;
+    color: var(--ink-3);
   }
 </style>

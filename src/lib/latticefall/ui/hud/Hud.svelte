@@ -15,6 +15,9 @@
 
   // One token per status, so the meters can be told apart without a new color.
   const STATUS_TINT = ['--moss', '--clay', '--fjord', '--danger', '--falu', '--fjord-strong'];
+  // And one shape per status (WP-082), so color is never the only cue: circle, diamond,
+  // triangle, square, cross, hexagon. The shapes are drawn with clip-path in the styles.
+  const STATUS_SHAPE = ['circle', 'diamond', 'triangle', 'square', 'cross', 'hexagon'];
 
   // What Interact would do, by the core's `interact_prompt` code (1, the Lantern, has its own line).
   const PROMPTS: Record<number, string> = {
@@ -40,7 +43,7 @@
   $: scale = $settings.scale / 100;
   $: hidden = $settings.visibility === 'hidden';
   $: faded = $settings.visibility === 'auto' && isQuiet(s) && $notices.length === 0;
-  $: building = STATUS_NAMES.map((name, i) => ({ name, value: s.status[i], tint: STATUS_TINT[i] })).filter(
+  $: building = STATUS_NAMES.map((name, i) => ({ name, value: s.status[i], tint: STATUS_TINT[i], shape: STATUS_SHAPE[i] })).filter(
     (m) => m.value > 0
   );
   $: bars = [
@@ -90,7 +93,7 @@
               aria-valuenow={Math.round(m.value * 100)}
               style="--tint: var({m.tint})"
             >
-              <span class="status-name">{m.name}</span>
+              <span class="status-name"><span class="glyph {m.shape}" aria-hidden="true"></span>{m.name}</span>
               <span class="status-track"><span class="status-fill" style="width: {m.value * 100}%"></span></span>
             </div>
           {/each}
@@ -98,7 +101,7 @@
       {/if}
       {#each bars as b (b.key)}
         <div
-          class="bar"
+          class="bar {b.key}"
           role="meter"
           aria-label={b.label}
           aria-valuemin="0"
@@ -282,7 +285,7 @@
     width: max-content;
     padding: 0 4px;
     margin-bottom: 2px;
-    font-size: 11px;
+    font-size: calc(11px * var(--lf-text, 1));
     line-height: 1.3;
     color: var(--ink);
     background: color-mix(in srgb, var(--surface) 84%, transparent);
@@ -303,6 +306,49 @@
     display: block;
     height: 100%;
     background: var(--tint);
+  }
+
+  /* The shape that goes with each status's color. */
+  .glyph {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    margin-right: 4px;
+    background: var(--tint);
+    vertical-align: -1px;
+  }
+
+  .glyph.circle {
+    border-radius: 50%;
+  }
+
+  .glyph.diamond {
+    clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+  }
+
+  .glyph.triangle {
+    clip-path: polygon(50% 0, 100% 100%, 0 100%);
+  }
+
+  .glyph.cross {
+    clip-path: polygon(35% 0, 65% 0, 65% 35%, 100% 35%, 100% 65%, 65% 65%, 65% 100%, 35% 100%, 35% 65%, 0 65%, 0 35%, 35% 35%);
+  }
+
+  .glyph.hexagon {
+    clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%);
+  }
+
+  /* The bars differ by fill pattern as well as color: health is solid, focus is hatched, stamina
+     is dotted (WP-082). */
+  .bar.fp .bar-fill {
+    background-image: repeating-linear-gradient(135deg, rgb(0 0 0 / 0.3) 0 2px, transparent 2px 5px);
+    background-color: var(--fill);
+  }
+
+  .bar.st .bar-fill {
+    background-image: radial-gradient(circle, rgb(0 0 0 / 0.38) 1px, transparent 1.5px);
+    background-size: 5px 5px;
+    background-color: var(--fill);
   }
 
   /* Quick slots in a cross: spell above, hands left and right, item below. */
@@ -491,7 +537,7 @@
   .prompt {
     margin: 0;
     padding: 4px var(--s-3);
-    font-size: var(--text-sm);
+    font-size: calc(var(--text-sm) * var(--lf-text, 1));
     color: var(--ink);
     background: color-mix(in srgb, var(--surface) 84%, transparent);
     border: 1px solid var(--line-strong);

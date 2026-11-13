@@ -327,8 +327,10 @@
 
   .panel {
     pointer-events: auto;
-    width: min(62em, 100%);
-    max-height: min(26em, 70dvh);
+    /* The text size setting (WP-082) zooms the panel; the limits shrink to match. */
+    zoom: var(--lf-text, 1);
+    width: min(62em, calc(100% / var(--lf-text, 1)));
+    max-height: calc(min(26em, 70dvh) / var(--lf-text, 1));
     display: flex;
     flex-direction: column;
     background: var(--surface);

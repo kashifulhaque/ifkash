@@ -32,6 +32,7 @@ import {
   buildLevelProxy,
   exposeDebug,
   loadCameraSettings,
+  type CameraSettings,
   scriptPose,
   type DevCameraOptions,
   type RaycastFn
@@ -235,6 +236,11 @@ export class SceneView {
   }
 
   /** Where the camera is and which way it looks, in the same terms as `setPhotoPose`. */
+  /** Field of view and orbit distance from the settings menu (WP-082). */
+  setCameraSettings(s: Partial<CameraSettings>): void {
+    this.rig.setSettings(s);
+  }
+
   cameraPose(): { x: number; y: number; z: number; yaw: number; pitch: number } {
     const d = this.camera.getWorldDirection(new Vector3());
     return {

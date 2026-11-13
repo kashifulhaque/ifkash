@@ -5,6 +5,7 @@ import { InputController, ReplayRecorder, downloadBytes, encodeReplay } from '..
 import { parseDevParams } from '../dev/params';
 import { AudioEngine } from '../audio/engine';
 import { cameraOptions } from '../render/camera';
+import { setRenderAccess, type ColorBlindMode } from '../render/access';
 import { BriarFx } from '../render/bosses/b02';
 import { LoomFx } from '../render/bosses/b12';
 import { BossHazardFx } from '../render/bosses/hazards';
@@ -60,7 +61,21 @@ export interface EngineOptions {
   onTravel?: (save: Uint8Array, scenario: string) => void;
 }
 
+/** What the settings menu pushes to the renderer and the loop (WP-082). Every field is optional. */
+export interface AccessOptions {
+  reducedMotion?: boolean;
+  colorBlind?: ColorBlindMode;
+  /** Percent, 50 to 100: how fast the loop feeds ticks to the core. Browser-side only. */
+  gameSpeed?: number;
+  /** Vertical field of view in degrees. */
+  fov?: number;
+  /** Orbit distance in meters. */
+  cameraDistance?: number;
+}
+
 export interface Engine {
+  /** Applies the accessibility settings: reduced motion, color-blind mode, game speed, camera. */
+  applyAccess(a: AccessOptions): void;
   setPaused(paused: boolean): void;
   /** Ticks recorded for the replay so far. */
   replayTicks(): number;
@@ -390,6 +405,20 @@ export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions
   loop.start();
 
   return {
+    applyAccess(a) {
+      if (a.reducedMotion !== undefined) {
+        view.vfx.shake.setReducedMotion(a.reducedMotion);
+        setRenderAccess({ reducedMotion: a.reducedMotion });
+      }
+      if (a.colorBlind !== undefined) setRenderAccess({ colorBlind: a.colorBlind });
+      if (a.gameSpeed !== undefined) loop.setSpeed(a.gameSpeed / 100);
+      if (a.fov !== undefined || a.cameraDistance !== undefined) {
+        const cam: { fov?: number; distance?: number } = {};
+        if (a.fov !== undefined) cam.fov = a.fov;
+        if (a.cameraDistance !== undefined) cam.distance = a.cameraDistance;
+        view.setCameraSettings(cam);
+      }
+    },
     setPaused: setPausedImpl,
     saves,
     menus,

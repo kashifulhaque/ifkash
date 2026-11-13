@@ -13,6 +13,7 @@
 // Nothing here is told when the fight ends: the beat arrives every 32 to 40 ticks, so a silence of
 // several beats (or a `Boss` defeated/reset event, handled by the caller) clears everything.
 
+import { renderAccess } from '../../access';
 import {
   AdditiveBlending,
   BufferAttribute,
@@ -261,7 +262,7 @@ export class TollFx {
       this.warn.visible = true;
       this.warn.position.set(ox, oy + 0.1, oz);
       this.warn.scale.setScalar(5 - 3.6 * u);
-      this.warnMat.opacity = 0.15 + 0.55 * u * (0.7 + 0.3 * Math.sin(now * 1.4));
+      this.warnMat.opacity = 0.15 + 0.55 * u * (renderAccess().reducedMotion ? 0.85 : 0.7 + 0.3 * Math.sin(now * 1.4));
     } else this.warn.visible = false;
 
     // The toll: the ring and the low wall run out at the core's speed.

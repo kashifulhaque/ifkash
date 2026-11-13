@@ -135,7 +135,9 @@ export class CombatVfx {
     const [dx, , dz] = e.dir;
 
     // Sparks fly back toward the attacker and up, scattered over a wide cone.
-    const count = Math.round((12 + 10 * e.motionValue + 8 * e.chargeFrac) * style.count * (guarded ? 0.6 : 1));
+    // Reduced motion: half the sparks and no flash (the flash is the brightest, briefest effect).
+    const calm = this.shake.reducedMotion;
+    const count = Math.round((12 + 10 * e.motionValue + 8 * e.chargeFrac) * style.count * (guarded ? 0.6 : 1) * (calm ? 0.5 : 1));
     for (let i = 0; i < count; i++) {
       let vx = -dx * 0.55 + (this.rand() - 0.5) * 1.8;
       let vy = 0.35 + this.rand() * 0.9;
@@ -159,8 +161,10 @@ export class CombatVfx {
         style
       });
     }
-    if (this.flashes.length >= FLASH_CAPACITY) this.flashes.shift();
-    this.flashes.push({ x: px, y: py, z: pz, age: 0, life: 0.14, size: (0.5 + 0.25 * e.motionValue) * style.size, color: style.core });
+    if (!calm) {
+      if (this.flashes.length >= FLASH_CAPACITY) this.flashes.shift();
+      this.flashes.push({ x: px, y: py, z: pz, age: 0, life: 0.14, size: (0.5 + 0.25 * e.motionValue) * style.size, color: style.core });
+    }
 
     // Hitstop freezes both actors' drawn animation; the core keeps ticking.
     const seconds = frames * TICK_SECONDS;

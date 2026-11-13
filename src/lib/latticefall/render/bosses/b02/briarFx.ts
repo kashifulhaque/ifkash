@@ -14,6 +14,7 @@
 // The numbers below mirror game/data/moves/bosses/b02.ron (the charge's run frames and
 // distances, the leap's root motion and hitbox); the core owns the real ones.
 
+import { STRIPE_METERS, renderAccess, stripeTexture, telegraphColors } from '../../access';
 import {
   CircleGeometry,
   ConeGeometry,
@@ -97,7 +98,9 @@ export class BriarFx {
   private patchMat = new MeshBasicMaterial({ color: 0x1c2a17, transparent: true, opacity: 0.78, depthWrite: false, side: DoubleSide });
   private patchEdgeMat = new MeshBasicMaterial({ color: 0x4f7a3a, transparent: true, opacity: 0.8, depthWrite: false, side: DoubleSide });
   private thornMat = new MeshBasicMaterial({ color: 0x8a3a22 });
-  private lineMat = new MeshBasicMaterial({ color: 0xb85a2e, transparent: true, opacity: 0.4, depthWrite: false, side: DoubleSide });
+  // The charge lane's stripes are a shape cue next to its color (WP-082).
+  private laneStripes = stripeTexture('v');
+  private lineMat = new MeshBasicMaterial({ color: 0xb85a2e, map: this.laneStripes, transparent: true, opacity: 0.4, depthWrite: false, side: DoubleSide });
   private markerMat = new MeshBasicMaterial({ color: 0x15100c, transparent: true, opacity: 0.5, depthWrite: false, side: DoubleSide });
   private markerEdgeMat = new MeshBasicMaterial({ color: 0xd9531e, transparent: true, opacity: 0.8, depthWrite: false, side: DoubleSide });
   private auraMat = new MeshBasicMaterial({ color: 0xe0562a, transparent: true, opacity: 0.4, depthWrite: false, side: DoubleSide });
@@ -231,8 +234,10 @@ export class BriarFx {
       this.line.position.set(a.x + Math.sin(a.yaw) * (len / 2 + 0.8), a.y + 0.06, a.z + Math.cos(a.yaw) * (len / 2 + 0.8));
       this.line.rotation.set(-Math.PI / 2, 0, a.yaw);
       this.line.scale.set(1.8, len, 1);
+      this.laneStripes?.repeat.set(1, len / STRIPE_METERS);
+      this.lineMat.color.setHex(renderAccess().colorBlind === 'off' ? 0xb85a2e : telegraphColors().warn);
       // Brightens through the scrapes, and is full by the time it runs.
-      this.lineMat.opacity = 0.18 + 0.4 * smooth(frame / c.runFrom);
+      this.lineMat.opacity = 0.3 + 0.5 * smooth(frame / c.runFrom);
       return;
     }
   }
@@ -282,6 +287,7 @@ export class BriarFx {
     this.group.removeFromParent();
     for (const g of [this.discGeom, this.ringGeom, this.thornGeom, this.lineGeom]) g.dispose();
     for (const m of [this.patchMat, this.patchEdgeMat, this.thornMat, this.lineMat, this.markerMat, this.markerEdgeMat, this.auraMat]) m.dispose();
+    this.laneStripes?.dispose();
     this.patches.clear();
   }
 }

@@ -30,6 +30,10 @@ export interface MenuSettings {
     reducedMotion: boolean;
     colorBlind: ColorBlind;
     subtitles: boolean;
+    /** Vertical field of view in degrees, 60 to 90 (WP-082). */
+    fov: number;
+    /** Orbit distance from the player in meters, 3 to 8 (WP-082). */
+    cameraDistance: number;
   };
 }
 
@@ -37,7 +41,9 @@ export const RANGES = {
   damageTaken: { min: 25, max: 200, step: 5 },
   enemyHp: { min: 50, max: 200, step: 5 },
   gameSpeed: { min: 50, max: 100, step: 5 },
-  textSize: { min: 75, max: 200, step: 5 }
+  textSize: { min: 75, max: 200, step: 5 },
+  fov: { min: 60, max: 90, step: 1 },
+  cameraDistance: { min: 3, max: 8, step: 0.5 }
 } as const;
 
 export const DEFAULT_MENU_SETTINGS: MenuSettings = {
@@ -50,7 +56,14 @@ export const DEFAULT_MENU_SETTINGS: MenuSettings = {
     keepGlimmer: false,
     bossSkip: false
   },
-  accessibility: { textSize: 100, reducedMotion: false, colorBlind: 'off', subtitles: true }
+  accessibility: {
+    textSize: 100,
+    reducedMotion: false,
+    colorBlind: 'off',
+    subtitles: true,
+    fov: 60,
+    cameraDistance: 4.5
+  }
 };
 
 /** The Wayfarer mode preset of the combat spec's difficulty table. */
@@ -63,20 +76,30 @@ export const WAYFARER_PRESET: MenuSettings['difficulty'] = {
   bossSkip: true
 };
 
-/** Settings the game reads today: only the text size (in the menus). */
+/**
+ * Settings the game reads today. Game speed is the one difficulty option that is browser-side
+ * (it scales how fast the loop feeds ticks to the core); the others are world configuration
+ * and wait for the core.
+ */
 export const APPLIED = {
   quality: false,
   difficulty: false,
+  gameSpeed: true,
   textSize: true,
-  reducedMotion: false,
-  colorBlind: false,
-  subtitles: false
+  reducedMotion: true,
+  colorBlind: true,
+  subtitles: true,
+  camera: true
 } as const;
 
 const KEY = 'latticefall-menu-settings';
 
 function clamp(n: unknown, min: number, max: number, fallback: number): number {
   return typeof n === 'number' && Number.isFinite(n) ? Math.round(Math.min(max, Math.max(min, n))) : fallback;
+}
+
+function clampFloat(n: unknown, min: number, max: number, fallback: number): number {
+  return typeof n === 'number' && Number.isFinite(n) ? Math.min(max, Math.max(min, n)) : fallback;
 }
 
 /** Merges saved values over the defaults, ignoring anything malformed. */
@@ -97,6 +120,8 @@ export function sanitize(raw: unknown): MenuSettings {
   d.accessibility.textSize = clamp(ac.textSize, 75, 200, d.accessibility.textSize);
   if (typeof ac.reducedMotion === 'boolean') d.accessibility.reducedMotion = ac.reducedMotion;
   if (typeof ac.subtitles === 'boolean') d.accessibility.subtitles = ac.subtitles;
+  d.accessibility.fov = clampFloat(ac.fov, 60, 90, d.accessibility.fov);
+  d.accessibility.cameraDistance = clampFloat(ac.cameraDistance, 3, 8, d.accessibility.cameraDistance);
   const cb = ac.colorBlind;
   if (cb === 'off' || cb === 'protanopia' || cb === 'deuteranopia' || cb === 'tritanopia') d.accessibility.colorBlind = cb;
   return d;

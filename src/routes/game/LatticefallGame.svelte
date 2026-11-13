@@ -20,6 +20,12 @@
   import GestureMenu from '$lib/latticefall/ui/gestures/GestureMenu.svelte';
   import PhotoMode from '$lib/latticefall/ui/photo/PhotoMode.svelte';
   import { createMenuSettings } from '$lib/latticefall/ui/menus/menuSettings';
+  import Captions from '$lib/latticefall/ui/access/Captions.svelte';
+  import AccessStyles from '$lib/latticefall/ui/access/AccessStyles.svelte';
+  import { createCaptions } from '$lib/latticefall/ui/access/captions';
+  import { accessOptions, rootAccess } from '$lib/latticefall/ui/access/accessApply';
+  import { decodeEvents } from '$lib/latticefall/engine/events';
+  import { get } from 'svelte/store';
   import TouchControls from '$lib/latticefall/input/touch/TouchControls.svelte';
   import { enterTouchQuality, type TouchSink } from '$lib/latticefall/input/touch';
 
@@ -45,6 +51,13 @@
   // Touch mode shrinks the HUD to its smallest size for this visit (not saved).
   if (touch) hudSettings.update((h) => ({ ...h, scale: 75 }));
   const menuSettings = createMenuSettings();
+  // Accessibility (WP-082): the settings reach the engine and the page root, and the captions
+  // come from the same events the audio plays from.
+  const captions = createCaptions();
+  $: access = rootAccess($menuSettings);
+  // A dev hook for screenshots: `__lfCaptions.add('The bell tolls')` shows a caption.
+  $: if (browser && showDev) (window as unknown as { __lfCaptions?: unknown }).__lfCaptions = captions;
+  $: engine?.applyAccess(accessOptions($menuSettings));
   let menus: Menus | undefined;
   let menuOpen = false;
   // Hollowhearth's NPCs and stations (WP-068): the core runs the conversation, the DOM shows it.
@@ -68,6 +81,7 @@
     ...hud.sink,
     events(words: ArrayLike<number>) {
       hud.sink.events(words);
+      captions.push(decodeEvents(words), get(hud.state).boss?.name);
       for (const entry of unlockFromEvents(words, codex)) toast?.show(entry);
     }
   };
@@ -133,6 +147,7 @@
   onDestroy(() => {
     destroyed = true;
     hud.dispose();
+    captions.dispose();
     restoreQuality?.();
     clearInterval(demoTimer);
     engine?.dispose();
@@ -177,7 +192,9 @@
 
 <svelte:window on:keydown={onKey} />
 
-<div class="lf-root">
+<AccessStyles />
+
+<div class="lf-root" data-cb={access.cb} data-calm={access.calm} style="--lf-text: {access.text}">
   {#key generation}
     <canvas bind:this={canvas} class="lf-canvas"></canvas>
   {/key}
@@ -198,6 +215,7 @@
         <MarkToast marks={engine.marks} />
       {/if}
     {/if}
+    <Captions {captions} enabled={$menuSettings.accessibility.subtitles} />
     <UnlockToast bind:this={toast} />
     {#if ledgerOpen}<Ledger on:close={() => (ledgerOpen = false)} />{/if}
   {/if}

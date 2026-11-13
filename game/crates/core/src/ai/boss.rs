@@ -614,6 +614,7 @@ fn reset(world: &mut World, b: usize) {
         world.projectiles.remove(id);
     }
     world.bosses[b] = BossRun::default();
+    super::bosses::reset(world, b);
     emit(world, b, BossEvent::RESET, 0);
 }
 

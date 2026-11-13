@@ -120,6 +120,14 @@ pub fn run(world: &mut World) {
     }
 }
 
+/// The fight of boss `b` just reset (`ai::boss::reset`): the bramble patches go now, not on the
+/// next tick, so a player who respawns can't step into one.
+pub fn reset(world: &mut World, b: usize) {
+    if world.layout.bosses[b].def.id == BOSS_ID {
+        clear(world, b);
+    }
+}
+
 /// One tick of the Stag's rules for boss `b`.
 fn tick(world: &mut World, b: usize) {
     if world.bosses[b].stage != Stage::Fight {
@@ -248,7 +256,8 @@ fn age(world: &mut World, b: usize) {
     }
 }
 
-/// Every patch goes at once: the fight is over or reset.
+/// Every patch goes at once: the fight is over or reset. [`reset`] calls it the moment a fight
+/// resets, so no patch outlives the reset by a tick.
 fn clear(world: &mut World, b: usize) {
     if world.briar_patches.is_empty() {
         return;

@@ -59,9 +59,17 @@
     (name: "shelf_lip_w", kit: "block_unit", pos: (-2.60, -12.15, 30.00), scale: (0.50, 9.70, 56.00)),
     (name: "shelf_lip_e", kit: "block_unit", pos: (2.60, -12.15, 30.00), scale: (0.50, 9.70, 56.00)),
     // --- Graymantle Bridge (B03's arena): deck x -6..6, z -2..62, top at 0; parapets; piers; pylons ---
-    (name: "bridge_deck", kit: "block_unit", pos: (0.00, -0.75, 30.00), scale: (12.00, 1.50, 64.00)),
+    // The broken section (WP-101; spec: "10 m wide with railings and a broken section"): the deck
+    // is gone over x 1..6, z 38..43, behind Corvane's mid-span post (z 32). The west half (x -6..1)
+    // still crosses, so the bridge stays the way between the Barbican and L14. A step off the
+    // east side falls to the sea (-30 m, death); off the west side of the gap, onto the cliff
+    // path's shelf (-8 m, a survivable fall). The east parapet breaks over the gap.
+    (name: "bridge_deck_s", kit: "block_unit", pos: (0.00, -0.75, 18.00), scale: (12.00, 1.50, 40.00)),
+    (name: "bridge_deck_gap_w", kit: "block_unit", pos: (-2.50, -0.75, 40.50), scale: (7.00, 1.50, 5.00)),
+    (name: "bridge_deck_n", kit: "block_unit", pos: (0.00, -0.75, 52.50), scale: (12.00, 1.50, 19.00)),
     (name: "bridge_parapet_w", kit: "block_unit", pos: (-6.00, 0.65, 31.00), scale: (0.80, 1.30, 54.00)),
-    (name: "bridge_parapet_e", kit: "block_unit", pos: (6.00, 0.65, 31.00), scale: (0.80, 1.30, 54.00)),
+    (name: "bridge_parapet_e_s", kit: "block_unit", pos: (6.00, 0.65, 21.00), scale: (0.80, 1.30, 34.00)),
+    (name: "bridge_parapet_e_n", kit: "block_unit", pos: (6.00, 0.65, 50.50), scale: (0.80, 1.30, 15.00)),
     (name: "bridge_pier_w0", kit: "block_unit", pos: (-5.00, -15.75, 14.00), scale: (1.20, 28.50, 2.00)),
     (name: "bridge_pier_e0", kit: "block_unit", pos: (5.00, -15.75, 14.00), scale: (1.20, 28.50, 2.00)),
     (name: "bridge_pier_w1", kit: "block_unit", pos: (-5.00, -15.75, 30.00), scale: (1.20, 28.50, 2.00)),

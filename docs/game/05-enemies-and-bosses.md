@@ -308,8 +308,8 @@ A giant smith who hauls a frozen bell on a chain, ringing it in rhythm.
 
 A sorcerer sealed in a ring of stones for a crime no one remembers.
 
-- **Arena:** A ring of eight standing stones, 30 m across.
-- **Moves:** Teleports between stones, summons orbiting orbs, fires an Aether beam with
+- **Arena:** A ring of twelve standing stones, about 42 m across.
+- **Moves:** Teleports between the stones (it appears on the ground in front of one), summons orbiting orbs, fires an Aether beam with
   a visible glyph ring (the cast bar). Hitting the Exile during the glyph ring
   interrupts and staggers.
 - **Phase 2 at 50%:** Splits into two images. Only the real one casts; its glyph ring

@@ -111,6 +111,14 @@ fn is_down(a: &Actor) -> bool {
     a.dead || a.hp == 0
 }
 
+/// The fight of boss `b` just reset (`ai::boss::reset`): the forge dries now, not on the next
+/// tick, so the lava never outlives the reset it belongs to.
+pub fn reset(world: &mut World, b: usize) {
+    if world.layout.bosses[b].def.id == BOSS_ID {
+        world.mech.b08_lava_from = 0;
+    }
+}
+
 /// One tick of B08's mechanic, for every placed B08 (the hook is [`super::run`]).
 pub fn run(world: &mut World) {
     for b in 0..world.bosses.len() {

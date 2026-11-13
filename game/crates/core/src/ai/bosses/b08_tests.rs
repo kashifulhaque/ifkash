@@ -692,6 +692,18 @@ fn the_players_death_dries_the_forge_and_resets_the_fight() {
 }
 
 #[test]
+fn the_fight_reset_dries_the_forge_on_the_same_tick() {
+    let mut w = fight_world();
+    phase_two(&mut w);
+    assert!(w.mech.b08_lava_from > 0);
+    w.actors.get_mut(w.player).unwrap().hp = 0;
+    w.actors.get_mut(w.player).unwrap().dead = true;
+    idle(&mut w, 1);
+    assert_eq!(w.bosses[0].stage, Stage::Dormant);
+    assert_eq!(w.mech.b08_lava_from, 0);
+}
+
+#[test]
 fn the_forge_in_the_level_has_the_boss_and_its_fog_gate() {
     let content = Content::load_embedded().unwrap();
     let mut w = World::new(62, &content, "cinderdeep_mine").unwrap();

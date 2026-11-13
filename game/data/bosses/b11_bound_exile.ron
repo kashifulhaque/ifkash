@@ -95,14 +95,15 @@
   music: (intro: "boss_b11_intro", loop_stem: "boss_b11_loop", phase2_stem: "boss_b11_split"),
   // Numbers `ai::bosses::b11` reads (see that file). Positions are in meters from the Exile's
   // spawn, in the world's axes. Everything here is tuning except the stone count and the ring's
-  // width (spec: eight stones, 30 m across: a radius of 15 m).
+  // width, which follow the level (spec and level: twelve standing stones about 42 m across, 21 m
+  // from the Ring's center; the blink points are the ground just inside each stone, 19 m out).
   params: {
     "ring_dx_m": 0.0, // the ring's center, from the Exile's spawn: the Ring's center is (0, 4)
     "ring_dz_m": -12.0, // and the Exile's plinth stands at (0, 16)
     "ring_dy_m": -0.5, // the floor is 0.5 m below the Exile's spawn: it stands on the plinth
-    "ring_radius_m": 15.0, // 30 m across
-    "stone_count": 8.0,
-    "stone_first_deg": 22.5, // bearing of stone 0 from +Z toward +X, then every 360/8 degrees
+    "ring_radius_m": 19.0, // the standing stones stand 21 m out; 19 m is the floor in front of them
+    "stone_count": 12.0,
+    "stone_first_deg": 15.0, // bearing of blink point 0 from +Z toward +X, then every 360/12 degrees (the stones' own bearings)
     "teleport_frame": 22.0, // the frame of every blink move on which the actor reappears
     "blink_min_player_m": 5.0, // it never appears closer than this to the player
     "blink_gap_m": 6.0, // nor closer than this to its image

@@ -941,3 +941,44 @@ fn record_the_b11_goldens() {
         &run_idle(SEED),
     );
 }
+
+/// WP-101: the blink points match the level (and the spec): one in front of each of the twelve
+/// standing stones, inside it.
+#[test]
+fn the_blink_points_stand_in_front_of_the_levels_standing_stones() {
+    let layout = include_str!("../../../../../data/levels/bound_ring/layout.ron");
+    let mut standing = Vec::new();
+    for line in layout.lines().filter(|l| l.contains("\"standing_stone_")) {
+        let pos = line.split("pos: (").nth(1).expect("a pos");
+        let n: Vec<f32> = pos
+            .split(')')
+            .next()
+            .unwrap()
+            .split(',')
+            .map(|v| v.trim().parse().unwrap())
+            .collect();
+        standing.push([n[0], n[2]]);
+    }
+    assert_eq!(standing.len(), 12);
+    let w = ring();
+    let blink = stones(&w);
+    assert_eq!(
+        blink.len(),
+        standing.len(),
+        "one blink point per standing stone"
+    );
+    for s in &standing {
+        let nearest = blink
+            .iter()
+            .map(|b| {
+                let (dx, dz) = (b[0] - s[0], b[1] - s[1]);
+                sqrt(dx * dx + dz * dz)
+            })
+            .fold(f32::MAX, f32::min);
+        // In front of the stone (it is 1.6 m wide) and not inside it.
+        assert!(
+            (1.0..3.0).contains(&nearest),
+            "stone at {s:?}: nearest blink point {nearest} m away"
+        );
+    }
+}

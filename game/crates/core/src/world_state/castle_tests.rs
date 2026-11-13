@@ -345,6 +345,30 @@ fn the_parapets_lips_and_trench_walls_hold() {
     assert!(p[2] < 1.0 && p[1] > -1.0, "over the cliff edge: {p:?}");
 }
 
+/// WP-101: the bridge's broken section (x 1..6, z 38..43). The east half of the deck is gone and
+/// a player who steps into the gap falls; the west half still crosses, so the bridge stays the way
+/// between the Barbican and L14.
+#[test]
+fn the_bridge_has_a_broken_section_the_west_half_still_crosses() {
+    let mut w = quiet_world();
+    // Standing on the south deck, just before the gap, then walking north into it on the east
+    // side: the player drops below the deck (onto the shelf at -8 or to the sea).
+    put_player(&mut w, [4.0, 0.0, 36.0]);
+    push_toward(&mut w, 4.0, 41.0, 120);
+    let p = player_pos(&w);
+    assert!(p[1] < -3.0, "walked over the gap: {p:?}");
+    // The west half of the deck crosses the gap and reaches the north deck (a fresh world: the
+    // fall above may have been fatal).
+    let mut w = quiet_world();
+    put_player(&mut w, [-3.0, 0.0, 34.0]);
+    push_toward(&mut w, -3.0, 50.0, 300);
+    let p = player_pos(&w);
+    assert!(
+        p[1] > -0.3 && p[2] > 46.0,
+        "the west half does not cross: {p:?}"
+    );
+}
+
 /// The cistern stair climbs from the cistern to the forecourt, and the well's parapets keep the
 /// player from walking off into the hole.
 #[test]

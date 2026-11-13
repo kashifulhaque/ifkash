@@ -81,6 +81,14 @@ pub fn tick(world: &mut World, b: usize) {
     b11::tick(world, b);
 }
 
+/// Clears the hazards of boss `b` (an index into `Layout::bosses`) the moment its fight resets,
+/// from `ai::boss::reset`: B02's bramble patches and B08's creeping lava. The per-tick `run`
+/// hooks clear them too, a tick later, so this only closes that one-tick gap.
+pub fn reset(world: &mut World, b: usize) {
+    b02::reset(world, b);
+    b08::reset(world, b);
+}
+
 /// The bosses' effects on the player's movement: tick system 5, before the controller moves
 /// the player.
 pub fn before_locomotion(world: &mut World) {

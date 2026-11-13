@@ -783,6 +783,21 @@ fn bramble_patches_wither_after_20_seconds_and_vanish_when_the_fight_resets() {
 }
 
 #[test]
+fn the_fight_reset_clears_the_patches_on_the_same_tick() {
+    let mut w = fight(6);
+    put_player(&mut w, [100.0, 0.0, -80.0]);
+    start_move(&mut w, [150.0, 0.0, -80.0], WEST, "b02_thorn_burst_2");
+    step(&mut w, 0, 0, 40);
+    assert_eq!(w.briar_patches.len(), 6);
+    w.actors.get_mut(w.player).unwrap().hp = 0;
+    // One tick: the reset happens in `boss::run`, after B02's own hook, and clears them itself.
+    let events = step(&mut w, 0, 0, 1);
+    assert_eq!(w.bosses[0].stage, Stage::Dormant);
+    assert!(w.briar_patches.is_empty());
+    assert_eq!(briar(&events, BriarEvent::CLEARED), 1);
+}
+
+#[test]
 fn phase_2_starts_below_half_hp_and_the_charge_then_chains_twice() {
     let mut w = fight(7);
     let body = boss_body(&w);

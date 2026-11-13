@@ -8,7 +8,7 @@
 //!    poise damage staggers it, which ends the move: "hitting the Exile during the glyph ring
 //!    interrupts and staggers". Outside the window it keeps its own poise.
 //! 2. **The blink.** On `teleport_frame` of `b11_blink` and `b11_image_blink` the actor
-//!    reappears at one of the ring's eight stones (`stone_count` of them, `ring_radius_m` from
+//!    reappears in front of one of the ring's twelve standing stones (`stone_count` of them, `ring_radius_m` from
 //!    the ring's center, which is `ring_dx_m`, `ring_dz_m` from the Exile's spawn): not the one
 //!    it stands nearest to, not within `blink_min_player_m` of the player, not within
 //!    `blink_gap_m` of the other Exile. It picks at random among those (the world's AI stream),

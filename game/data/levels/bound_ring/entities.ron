@@ -23,8 +23,9 @@
 //     door doesn't lock them out. B11's rewards, Exile's Stylus and the Unbinding Lance Formula,
 //     lie on the plinth in the reward alcove beyond the prisoner, so the boss pays Glimmer and
 //     the codex entry only.
-// The Exile's eight blink stones are not entities: they are a ring of radius 15 m about (0, 4)
-// (the boss's `params`), inside the twelve standing stones (radius 21 m).
+// The Exile's twelve blink points are not entities: they are a ring of radius 19 m about (0, 4)
+// (the boss's `params`), on the floor just inside the twelve standing stones (radius 21 m), one
+// in front of each stone, at the stones' own bearings.
 //
 // Registry numbers used here (27000 block): bound_ring 27002.
 (

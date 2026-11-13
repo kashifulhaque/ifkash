@@ -29,7 +29,7 @@ const SCENARIO: &str = "boss_b06";
 const BOSS_ID: &str = "b06_drowned_choir";
 /// The seed the goldens use.
 const SEED: u64 = 74;
-/// The longest fight the runners play, in ticks (the three members have 5,400 HP between
+/// The longest fight the runners play, in ticks (the three members have 11,100 HP between
 /// them; this only stops a stuck run).
 const MAX_TICKS: u64 = 30000;
 
@@ -82,7 +82,7 @@ fn reach(w: &World, num: MoveNum) -> f32 {
 }
 
 /// The scripted player.
-pub(crate) struct Bot {
+pub struct Bot {
     /// How many ticks before a hit's first frame the bot presses DODGE: the light roll's
     /// i-frames are its frames 2 to 14, so this centers them on a short hit window.
     lead: u16,
@@ -108,7 +108,7 @@ impl Default for Bot {
 
 impl Bot {
     /// The input for the next tick, from the world after the last one.
-    pub(crate) fn act(&mut self, w: &World) -> ActionFrame {
+    pub fn act(&mut self, w: &World) -> ActionFrame {
         let (mut stick, mut pressed) = self.decide(w);
         if self.last & buttons::DODGE != 0 {
             // The release tick of a dodge tap: keep the direction it was pressed with.

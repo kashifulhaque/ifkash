@@ -610,7 +610,12 @@ mod tests {
         let c = Content::load_embedded().expect("embedded content");
         let t = DamageTable::from_content(&c).unwrap();
         let num = c.registry.num("wpn_wayfarer_blade").unwrap();
-        assert_eq!(t.weapon(num), Some(&blade()));
+        // WP-089 lowered the content's requirements to Might 7 and Finesse 8.
+        let content_blade = WeaponStats {
+            requirements: [7, 8, 0, 0],
+            ..blade()
+        };
+        assert_eq!(t.weapon(num), Some(&content_blade));
         let ar = t.attack_rating(num, &attrs(12, 12, 0), 0, false).unwrap();
         assert_eq!(ar.phys_milli, 135_240);
     }

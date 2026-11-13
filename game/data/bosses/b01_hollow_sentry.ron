@@ -10,7 +10,7 @@
   body: (
     id: "b01_hollow_sentry_body",
     model: "boss_hollow_sentry",
-    hp: 1200,
+    hp: 1500, // WP-089 balance pass (spec: 1,200)
     poise: 200,
     defense: (flat: 20, weakness: [(Blunt, 120)]),
     resist: (immunity: 400, robustness: 400, composure: 400),

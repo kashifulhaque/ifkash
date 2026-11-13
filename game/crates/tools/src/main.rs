@@ -2,6 +2,7 @@
 
 mod assets;
 mod bake;
+mod balance;
 mod bench;
 mod credits;
 mod gen_ts;
@@ -78,6 +79,15 @@ enum Command {
         #[arg(long)]
         out: Option<PathBuf>,
     },
+    /// Play each build against each required boss; report time to kill, hits, and win rate.
+    Balance {
+        /// Only bosses whose code starts with this (for example `B06`).
+        #[arg(long)]
+        boss: Option<String>,
+        /// Only builds whose name starts with this (for example `Scholar`).
+        #[arg(long)]
+        build: Option<String>,
+    },
 }
 
 fn main() -> ExitCode {
@@ -99,5 +109,8 @@ fn main() -> ExitCode {
         Command::Bench { ticks } => bench::run(ticks),
         Command::Bake(args) => bake::run(args, &default_data()),
         Command::Replay { action } => replay::run(action, &default_data()),
+        Command::Balance { boss, build } => {
+            balance::run(&default_data(), boss.as_deref(), build.as_deref())
+        }
     }
 }

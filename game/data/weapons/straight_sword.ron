@@ -9,7 +9,7 @@
     base_damage: 105,
     phys: Neutral,
     scaling: (might: 0.6, finesse: 0.6, insight: 0.0, devotion: 0.0),
-    requirements: (might: 10, finesse: 10, insight: 0, devotion: 0),
+    requirements: (might: 7, finesse: 8, insight: 0, devotion: 0), // WP-089: every starting class that carries it can wield it
     weight_tenths: 40,
     unique: false,
     // Guard, Guard and guard counter: weapons guard at about 50 percent physical.

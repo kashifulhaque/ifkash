@@ -26,3 +26,8 @@ lf-content.workspace = true
 
 [dev-dependencies]
 proptest = "1"
+
+[features]
+# Exposes the M7 boss bots (the `*_tests.rs` modules' `Bot`) outside tests, for the balance
+# report (`lf-tools balance`, WP-089).
+bots = []

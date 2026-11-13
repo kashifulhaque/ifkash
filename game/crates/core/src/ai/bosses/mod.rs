@@ -39,26 +39,36 @@ pub mod b05;
 #[cfg(test)]
 mod b05_tests;
 pub mod b06;
-#[cfg(test)]
-mod b06_tests;
+// The balance report (`lf-tools balance`, WP-089) drives this boss's scripted bot.
+#[cfg(any(test, feature = "bots"))]
+#[allow(dead_code, unused_imports)]
+pub mod b06_tests;
 pub mod b07;
-#[cfg(test)]
-mod b07_tests;
+// The balance report (`lf-tools balance`, WP-089) drives this boss's scripted bot.
+#[cfg(any(test, feature = "bots"))]
+#[allow(dead_code, unused_imports)]
+pub mod b07_tests;
 pub mod b08;
 #[cfg(test)]
 mod b08_tests;
 pub mod b09;
-#[cfg(test)]
-mod b09_tests;
+// The balance report (`lf-tools balance`, WP-089) drives this boss's scripted bot.
+#[cfg(any(test, feature = "bots"))]
+#[allow(dead_code, unused_imports)]
+pub mod b09_tests;
 pub mod b10;
-#[cfg(test)]
-mod b10_tests;
+// The balance report (`lf-tools balance`, WP-089) drives this boss's scripted bot.
+#[cfg(any(test, feature = "bots"))]
+#[allow(dead_code, unused_imports)]
+pub mod b10_tests;
 pub mod b11;
 #[cfg(test)]
 mod b11_tests;
 pub mod b12;
-#[cfg(test)]
-mod b12_tests;
+// The balance report (`lf-tools balance`, WP-089) drives this boss's scripted bot.
+#[cfg(any(test, feature = "bots"))]
+#[allow(dead_code, unused_imports)]
+pub mod b12_tests;
 
 use crate::world::World;
 

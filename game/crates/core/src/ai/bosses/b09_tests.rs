@@ -67,7 +67,7 @@ fn toward(from: [f32; 3], to: [f32; 3], power: f32) -> (i8, i8) {
 }
 
 /// The scripted player.
-pub(crate) struct Bot {
+pub struct Bot {
     /// How many ticks before a hit's first frame the bot presses DODGE.
     lead: u16,
     seen: Option<(MoveNum, u16)>,
@@ -88,7 +88,7 @@ impl Default for Bot {
 }
 
 impl Bot {
-    pub(crate) fn act(&mut self, w: &World) -> ActionFrame {
+    pub fn act(&mut self, w: &World) -> ActionFrame {
         let (stick, mut pressed) = self.decide(w);
         pressed &= !self.last;
         self.last = pressed;

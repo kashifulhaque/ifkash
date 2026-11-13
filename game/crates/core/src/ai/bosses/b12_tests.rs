@@ -76,7 +76,7 @@ fn clear_of_lines(w: &World, p: [f32; 3], margin: f32) -> bool {
 }
 
 /// The scripted player.
-pub(crate) struct Bot {
+pub struct Bot {
     /// How many ticks before a hit's first frame the bot presses DODGE.
     lead: u16,
     /// The frame of the hit the bot already rolled through (in the move it is rolling in).
@@ -101,7 +101,7 @@ impl Default for Bot {
 }
 
 impl Bot {
-    pub(crate) fn act(&mut self, w: &World) -> ActionFrame {
+    pub fn act(&mut self, w: &World) -> ActionFrame {
         let (stick, mut pressed) = self.decide(w);
         pressed &= !self.last;
         self.last = pressed;
@@ -700,7 +700,7 @@ fn the_first_death_is_a_rebirth_with_full_hp_and_the_second_is_the_defeat() {
     assert!(!actor(&w, id).dead);
     let unravel = w.moves.num_of("b12_unravel").unwrap();
     assert_eq!(actor(&w, id).moves.current.map(|c| c.num), Some(unravel));
-    // The HP fills over the 45 invulnerable ticks, and phase 2 starts at the full 9,000.
+    // The HP fills over the 45 invulnerable ticks, and phase 2 starts at the full 8,100.
     let mut hp = Vec::new();
     let mut events = Vec::new();
     for _ in 0..46 {
@@ -709,8 +709,8 @@ fn the_first_death_is_a_rebirth_with_full_hp_and_the_second_is_the_defeat() {
     }
     assert!(hp.windows(2).all(|p| p[1] >= p[0]), "{hp:?}");
     assert_eq!(w.bosses[0].phase, 2);
-    assert_eq!(actor(&w, id).hp, 9000);
-    assert_eq!(actor(&w, id).max_hp, 9000);
+    assert_eq!(actor(&w, id).hp, 8100);
+    assert_eq!(actor(&w, id).max_hp, 8100);
     assert_eq!(mech(&events, MechanicEvent::UNSPOOLED_REBORN).len(), 1);
     assert!(w.b12.reborn);
     // The second death ends the fight and pays the ending's letter.
@@ -948,7 +948,7 @@ fn the_players_death_resets_the_rebirth_and_the_lines() {
     assert_eq!(w.b12, B12Run::default(), "the fight is over: rest");
     // The Weaver is back, at full HP and in its own size.
     let id = body_of(&w);
-    assert_eq!(actor(&w, id).hp, 9000);
+    assert_eq!(actor(&w, id).hp, 8100);
     assert_eq!(w.bosses[0].phase, 0);
 }
 

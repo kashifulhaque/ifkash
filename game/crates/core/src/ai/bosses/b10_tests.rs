@@ -103,7 +103,7 @@ fn toll_eta(w: &World, pp: [f32; 3], body_pos: [f32; 3]) -> Option<(u64, f32)> {
 }
 
 /// The scripted player.
-pub(crate) struct Bot {
+pub struct Bot {
     /// How many ticks before a hit's first frame the bot presses DODGE.
     lead: u16,
     /// The same for the bell's shockwave, in ticks before its edge reaches the bot.
@@ -138,7 +138,7 @@ impl Default for Bot {
 }
 
 impl Bot {
-    pub(crate) fn act(&mut self, w: &World) -> ActionFrame {
+    pub fn act(&mut self, w: &World) -> ActionFrame {
         let (stick, mut pressed) = self.decide(w);
         pressed &= !self.last;
         self.last = pressed;
@@ -559,7 +559,7 @@ fn the_bellwright_is_a_giant_with_his_hurtbox_to_match() {
     tick(&mut w, &TickInput::default());
     let body = actor(&w, body_of(&w));
     assert!(body.hurtbox.radius > 1.0 && body.hurtbox.half_height > 1.5);
-    assert_eq!(body.max_hp, 8000);
+    assert_eq!(body.max_hp, 12400);
 }
 
 #[test]

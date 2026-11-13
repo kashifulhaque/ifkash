@@ -28,7 +28,7 @@
   body: (
     id: "b10_the_bellwright_body",
     model: "boss_bellwright",
-    hp: 8000,
+    hp: 12400, // WP-089 balance pass (spec: 8,000)
     poise: 300,
     stance: 0,
     defense: (flat: 35, weakness: [(Fire, 130)]),

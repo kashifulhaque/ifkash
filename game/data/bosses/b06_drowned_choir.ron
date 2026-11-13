@@ -19,7 +19,7 @@
     // The Cantor: a caster who stays at range, mends the others, and fires Radiance beams.
     id: "b06_cantor",
     model: "boss_choir_cantor",
-    hp: 1800,
+    hp: 3700, // WP-089 balance pass (spec: 1,800)
     poise: 120,
     defense: (flat: 15, weakness: [(Slash, 110)]),
     resist: (immunity: 300, robustness: 300, composure: 500),
@@ -47,7 +47,7 @@
       def: (
         id: "b06_bellbearer",
         model: "boss_choir_bellbearer",
-        hp: 1800,
+        hp: 3700, // WP-089 balance pass (spec: 1,800)
         poise: 300,
         defense: (flat: 40, weakness: [(Blunt, 115)]),
         resist: (immunity: 500, robustness: 200, composure: 400),
@@ -76,7 +76,7 @@
       def: (
         id: "b06_lamenter",
         model: "boss_choir_lamenter",
-        hp: 1800,
+        hp: 3700, // WP-089 balance pass (spec: 1,800)
         poise: 80,
         defense: (flat: 5, weakness: [(Pierce, 110)]),
         resist: (immunity: 400, robustness: 300, composure: 200),

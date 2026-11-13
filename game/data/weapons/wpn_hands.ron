@@ -69,7 +69,7 @@
     id: "wpn_hunter_shortbow",
     name: "Hunter's Shortbow",
     class: Bow,
-    base_damage: 80,
+    base_damage: 90, // WP-089 balance pass (spec: 80)
     phys: Pierce,
     scaling: (might: 0.2, finesse: 0.8, insight: 0, devotion: 0),
     requirements: (might: 0, finesse: 10, insight: 0, devotion: 0),

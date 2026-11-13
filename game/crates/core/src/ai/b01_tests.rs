@@ -33,7 +33,7 @@ const BOSS_ID: &str = "b01_hollow_sentry";
 const SEED: u64 = 34;
 /// The longest fight the runners play, in ticks (about 33 s of game time per 2,000 ticks at
 /// 60 Hz is far more than the bot needs; this only stops a stuck run).
-const MAX_TICKS: u64 = 6000;
+const MAX_TICKS: u64 = 9000;
 
 /// Where the player stands relative to the boss.
 struct Geometry {
@@ -44,7 +44,7 @@ struct Geometry {
 }
 
 /// The scripted player: rolls through hits and punishes the recovery.
-pub(crate) struct Bot {
+pub struct Bot {
     /// How many ticks before a hit's first frame the bot presses DODGE. The light roll's
     /// i-frames are its frames 2 to 14, so this centers them on a short hit window.
     lead: u16,
@@ -84,7 +84,7 @@ fn geometry(p: &Actor, boss: &Actor) -> Geometry {
 
 impl Bot {
     /// The input for the next tick, from the world after the last one.
-    pub(crate) fn act(&mut self, w: &World) -> ActionFrame {
+    pub fn act(&mut self, w: &World) -> ActionFrame {
         let (stick, mut pressed) = self.decide(w);
         // A button only counts on its press edge: let go for a tick between presses.
         pressed &= !self.last;

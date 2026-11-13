@@ -54,7 +54,7 @@ fn toward(from: [f32; 3], to: [f32; 3]) -> (i8, i8) {
 }
 
 /// The scripted player.
-pub(crate) struct Bot {
+pub struct Bot {
     /// How many ticks before a hit's first frame the bot presses DODGE (the light roll's
     /// i-frames are its frames 2 to 14).
     lead: u16,
@@ -79,7 +79,7 @@ impl Default for Bot {
 
 impl Bot {
     /// The input for the next tick, from the world after the last one.
-    pub(crate) fn act(&mut self, w: &World) -> ActionFrame {
+    pub fn act(&mut self, w: &World) -> ActionFrame {
         let (stick, mut pressed) = self.decide(w);
         // A button only counts on its press edge: let go for a tick between presses.
         pressed &= !self.last;
@@ -431,7 +431,7 @@ fn the_b07_arena_is_a_boss_arena_with_voss_in_it() {
     let w = World::new(SEED, &content, SCENARIO).unwrap();
     let lay = &w.layout.bosses[0];
     assert_eq!(lay.def.id, BOSS_ID);
-    assert_eq!(lay.def.body.hp, 6000);
+    assert_eq!(lay.def.body.hp, 10800);
     assert_eq!(lay.def.phases.len(), 1);
     assert!((lay.def.phases[0].below - 0.6).abs() < 1e-6);
     assert!(

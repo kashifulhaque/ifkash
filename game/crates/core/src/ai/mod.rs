@@ -614,8 +614,10 @@ fn return_home(world: &mut World, id: Id) {
     set_awareness(world, id, Awareness::Idle);
 }
 
-#[cfg(test)]
-mod b01_tests;
+// The balance report (`lf-tools balance`, WP-089) drives this boss's scripted bot.
+#[cfg(any(test, feature = "bots"))]
+#[allow(dead_code, unused_imports)]
+pub mod b01_tests;
 #[cfg(test)]
 mod b03_tests;
 #[cfg(test)]

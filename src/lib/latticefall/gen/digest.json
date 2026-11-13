@@ -278,8 +278,8 @@
     "start_max": 16,
     "start_min": 4
   },
-  "contentHash": "12827707318717836302",
-  "contentHashHex": "b2052bd79edaec0e",
+  "contentHash": "5499439176005270637",
+  "contentHashHex": "4c51eecb15a93c6d",
   "moves": [
     {
       "anim": "ep_sentinel_thrust",
@@ -4863,7 +4863,7 @@
       "weightTenths": 30
     },
     {
-      "baseDamage": 80,
+      "baseDamage": 90,
       "catalystSchool": null,
       "class": "Bow",
       "element": null,

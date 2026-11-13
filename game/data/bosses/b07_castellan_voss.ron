@@ -20,7 +20,7 @@
   body: (
     id: "b07_castellan_voss_body",
     model: "boss_castellan_voss",
-    hp: 6000,
+    hp: 10800, // WP-089 balance pass (spec: 6,000)
     poise: 220,
     defense: (flat: 30, weakness: []),
     resist: (immunity: 300, robustness: 300, composure: 300),

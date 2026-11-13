@@ -3,9 +3,9 @@
 // 9,000, two phases, immune to Drowse and Delirium; reward: the ending, the Courier's Letter, the
 // credits). Defense, poise, resist, attack, option weights, and cooldowns are tuning.
 //
-// Two lives. The body has 9,000 HP. Phase 2 is set at a fraction no hit leaves standing (below
+// Two lives. The body has 8,100 HP (WP-089). Phase 2 is set at a fraction no hit leaves standing (below
 // 0.1%), so it starts at the Weaver's first death: `lf_core::ai::bosses::b12` stands the body back
-// up, the framework plays `b12_unravel` (45 ticks, invulnerable), and the module refills the 9,000
+// up, the framework plays `b12_unravel` (45 ticks, invulnerable), and the module refills the 8,100
 // HP over those ticks. The second death is the defeat.
 //
 // Phase 1, the Weaver: thread lashes, loom lines, the stitching grab, and the spinning cut. Phase 2,
@@ -32,7 +32,7 @@
   body: (
     id: "b12_the_unspooled_body",
     model: "boss_unspooled",
-    hp: 9000,
+    hp: 8100, // WP-089 balance pass (spec: 9,000), for each life
     poise: 260,
     stance: 0,
     defense: (flat: 35, weakness: []),

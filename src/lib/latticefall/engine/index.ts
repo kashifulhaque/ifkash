@@ -16,7 +16,7 @@ import { equippedFromMenuWords, type Equipped } from '../render/equipment/player
 import type { DevTools } from '../dev';
 import { decodeEvents } from './events';
 import { loadWasm } from './loader';
-import { SaveManager, SaveStore, restedIn } from './save';
+import { AUTOSAVE_SLOT, SaveManager, SaveStore, restedIn, type SaveRecord } from './save';
 import { FixedStepLoop } from './loop';
 import { SceneView } from './scene';
 import { FLAG_LOCKED, SnapshotBuffer } from './snapshot';
@@ -100,11 +100,31 @@ export interface Engine {
   dispose(): void;
 }
 
+/** The autosave slot's record, or null when there is none or the store can't be read. */
+async function readAutosave(): Promise<SaveRecord | null> {
+  const store = new SaveStore();
+  try {
+    return await store.read(AUTOSAVE_SLOT);
+  } catch (err) {
+    console.warn('latticefall: cannot read the autosave; starting a new game', err);
+    return null;
+  } finally {
+    store.close();
+  }
+}
+
 export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions = {}): Promise<Engine> {
   const wasm = await loadWasm();
   const params = parseDevParams(window.location.search);
-  const seed = opts.seed ?? params.seed ?? 1n;
-  const scenario = opts.scenario ?? params.scenario ?? 'm0_flat';
+  // A plain visit (no `?dev=1`, no `scenario=`) is a player: continue the autosave if there
+  // is one, or start a new game in Waking Hollow (L01, the spec's start point). Developer
+  // URLs keep the flat test field as their default.
+  const resume =
+    !opts.save && !opts.scenario && !params.scenario && !params.dev ? await readAutosave() : null;
+  if (resume) opts = { ...opts, save: resume.data };
+  const seed = opts.seed ?? (resume ? BigInt(resume.seed) : null) ?? params.seed ?? 1n;
+  const scenario =
+    opts.scenario ?? resume?.scenario ?? params.scenario ?? (params.dev ? 'm0_flat' : 'waking_hollow');
   // The dev armory (`&scene=armory`) starts its camera at a section unless `cam` says otherwise.
   if (params.scene === 'armory' && !params.cam) {
     const c = sectionCam(parseSection(params.armorySection));

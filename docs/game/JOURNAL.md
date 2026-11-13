@@ -41,7 +41,7 @@ Copy this block to the top of the entries and fill it in as you go:
 ### 2026-11-13: latticefall-m7 (M7)
 
 - **Orchestrator:** Opus 5.5, low effort
-- **Branch:** `game/m7-bosses`
+- **Branch:** `game/m7-bosses`; first commit on `main` `b21a925`, last `09e0922` plus this close-out
 - **Started from:** `origin/main` at `2fe6615`
 - **Gate G2:** still open. The owner asked for M7 anyway.
 - **Reservations:** registry numbers: WP-070 31000-31999, WP-071 32000-32999,
@@ -69,6 +69,30 @@ Copy this block to the top of the entries and fill it in as you go:
     - WP-078: sonnet, worktree; `11950b2`; 432K. Deliberate: `m6_rimeshelf`.
     - WP-079: sonnet, worktree; `5945b80`; 424K. Merge swapped the glyph rings to match the spec. Deliberate: `m6_bound_ring` (re-recorded).
   - Wave 1 ran six workers at once; machine load reached 37 and three workers ended at or over the 500K budget (WP-070 580K, WP-073 514K, WP-072 470K by the tool, 650K by its own count). Wave 2 runs four.
+  - WP-080: opus, worktree; `09e0922`; 393K. Clean cherry-pick. Deliberate: `m6_spire` (re-recorded), `m6_castle_part1`/`part2` (new 3 m fog-gate height limit in `boss.rs`). Merged tree: 120 goldens A -> A, 869 tests.
+  - Worktrees: all eleven worker worktrees removed after their WPs were pushed.
+- **Context:** orchestrator about 290K at the end (budget 500K per context window). Workers 295K-580K; three went over 500K in wave 1 (six at once).
+- **Lessons:**
+  - Six parallel boss workers pushed load to 37 and three over budget; four at once went cleanly.
+  - Parallel workers each invent the same shared scaffold (here `ai/bosses/mod.rs`, a per-boss number map, and hook call sites). Merge the first two into one shape early and put it in the brief before more workers start.
+  - A sonnet merge worker in the main checkout handled three and four cherry-picks for 174K and 262K, sparing the orchestrator's context; the orchestrator re-ran the full checks on the final tree.
+  - Per-boss state in `MechState` moves `m4_mechanics_yard` and `m6_cinderdeep_mine`; put it in a `World::bNN` field hashed only during its fight.
+  - Worker dev servers in worktrees 403 on symlinked `node_modules`; `bun install` in the worktree fixes it.
+- **Not verified:**
+  - Any boss in play by a human: every fairness check, tuning, and fight length. Bots roll through every telegraph.
+  - On screen: B08 and B09 have no boss screenshots; most bosses have no live-play shots of later phases or the defeat (the hidden Browser pane runs at about 4-5 ticks a second).
+  - Hazards with no visuals: B08's lava, B10's toll shockwave and ice, B09's lit lamps (fog lifts, no flame), B04's weak point (always glowing), B12's loom lines (code exists, unseen).
+  - A full playthrough (gate G3).
+- **Waiting on the owner:**
+  - **Gate G2** is still open (from M4). **Gate G3** (content complete, a full playthrough) is next.
+  - Placement deviations: B05 Keeper at z 41.5 (the placeholder point was inside the dais); B11 on the plinth at y 0.5, blink stones 8 points on 15 m (the level has 12 stones at 42 m); B02's arena lost two Husks.
+  - B11: the seal lifts when the player is 30 m away with no fight (not in the notes). B12: the Weaver's defeat flag is the ending trigger; Echoes summoned in phase 2 are felled, losing their FP.
+  - B10's state is `#[serde(skip)]`: a mid-fight save would restart the beat.
+  - Six validator warnings for B11's image moves (no hitbox, intended).
+- **Next steps:**
+  1. Owner: gate G2, then play every boss for gate G3 and the decisions above.
+  2. Follow-ups found in M7 (one sonnet WP each, or fold into M8): draw the boss hazards (B08 lava, B10 toll and ice, B09 lamp flames, B04 weak point state, B12 loom lines verified on screen); reset B02 thorns and B08 ember veins on a fight reset; the B03 bridge's broken section; B02's intro camera move; B11's stones to match the spec or the spec to the level; B12's ending UI for the Courier's Letter. The M6 follow-ups still stand.
+  3. Then M8 (WP-081 onward). Free after M7: registry 42000 and up; WASM kinds 10, 12, 18-20, 22-30, 34-39, 41-49, 51 and up; `MechanicEvent` sub-kinds 220 and up; HUD prompt codes 57-59 and 82 and up.
 
 ### 2026-11-12: latticefall-m6 (M6)
 

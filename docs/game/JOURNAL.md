@@ -60,6 +60,14 @@ Copy this block to the top of the entries and fill it in as you go:
   - WP-071: sonnet (moved up from haiku), worktree; `63961ab`; 295K. Clean cherry-pick; 100 goldens A -> A on the merged tree.
   - WP-076: sonnet, worktree; `2f57de8`; 463K. Merged onto WP-071 (keep-both). Deliberate: `m6_cinderdeep_mine` (boss placed), `m4_mechanics_yard` (new `MechState` field). No boss screenshots: the worker ran out of budget, and the orchestrator only confirmed the scenario loads.
   - WP-074: sonnet, worktree; `42a1ed2`; 426K. Merged onto WP-076 with one boss-mechanic shape: the `BossDef.params` map (B06's `mechanics` renamed) and both hooks in `ai/bosses/mod.rs` (`run` for the world, `tick` per fight). Deliberate: `m6_mirrormere` (boss and water), `m7_b06_bot_win` (WP-076's fix now pays the Choir Glaive as gear).
+  - WP-072: sonnet, worktree; `7babbde`; 470K (its own count 650K). Merged by a sonnet merge worker in the main checkout (174K for the three merges). Deliberate: `m6_mossgut_cave`.
+  - WP-070: sonnet, worktree; `b55759e`; 580K, over budget. Merged by the merge worker. Deliberate: `m4_verge` (boss placed, two Husks removed), `m7_b02_bot_win` (weapon rewards paid as gear). Keeps a `before_locomotion` hook for the patch slow.
+  - WP-073: sonnet, worktree; `ef355d8`; 514K, over budget. Merged by the merge worker, who added an `after` hook (B05 must run after `boss::run`). Deliberate: `m6_sunken_ossuary`, `m7_b05_idle_dies` (one-tick shift from the new hook). Orchestrator re-checked the merged tree: 110 goldens A -> A, 766 tests pass, clippy, fmt, validate, and `bun run check` clean.
+  - Wave 2, all merged by the same sonnet merge worker (262K for four merges) and re-checked by the orchestrator on the final tree (118 goldens A -> A, 853 tests, clippy, fmt, validate, `bun run check` clean):
+    - WP-075: sonnet, worktree; `912399b`; 443K. Deliberate: `m6_castle_part1`, `m6_castle_part2`.
+    - WP-077: sonnet, worktree; `a2fece1`; 393K. Merge moved its state to `World::b09`. Deliberate: `m6_hollowdeep`.
+    - WP-078: sonnet, worktree; `11950b2`; 432K. Deliberate: `m6_rimeshelf`.
+    - WP-079: sonnet, worktree; `5945b80`; 424K. Merge swapped the glyph rings to match the spec. Deliberate: `m6_bound_ring` (re-recorded).
   - Wave 1 ran six workers at once; machine load reached 37 and three workers ended at or over the 500K budget (WP-070 580K, WP-073 514K, WP-072 470K by the tool, 650K by its own count). Wave 2 runs four.
 
 ### 2026-11-12: latticefall-m6 (M6)

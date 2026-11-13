@@ -41,7 +41,7 @@ Copy this block to the top of the entries and fill it in as you go:
 ### 2026-11-13: latticefall-m8 (M8)
 
 - **Orchestrator:** Opus 5.5, low effort
-- **Branch:** `game/m8-launch`
+- **Branch:** `game/m8-launch`; first commit on `main` `e79a03c`, last `85ef1a42` plus this close-out
 - **Started from:** `origin/main` at `3e64199`
 - **Gates:** G2 and G3 are still open. The owner asked for M8 anyway, as in M5-M7.
   WP-086 (Launch) waits for the owner's go-ahead before it's pushed, because it
@@ -74,6 +74,32 @@ Copy this block to the top of the entries and fill it in as you go:
   - WP-082: sonnet, worktree; `a05335af`; 239K. Clean cherry-pick; no Rust changes. Orchestrator checked `bun run check` and the diff only; screenshots are the worker's.
   - WP-086: sonnet, worktree; `a38a9bff`; 105K. Verified in its worktree (`bun run check`, `bun run build`) and held off `main` for the owner. The ADR 0003 rollout looks done: the `CLOUDFLARE_PAGES_API_TOKEN` secret exists and `web-deploy.yml` (which builds the WASM) passed on every M8 push. The README's open-decision row is stale. WP-084's Worker deploy passed and `/api/latticefall/speedrun/leaderboard` returns 200 in production.
   - WP-089: opus, worktree; `c6a21aec`; 317K. Acceptance not met: 38 of 54 pairs within 30%; the rest need design calls or better bots, so the orchestrator split it into 089.a (this commit, done) and 089.b (blocked on the owner). Merge onto WP-088: every golden conflicted. Mistake caught by the bot-win tests: `checkout --theirs` didn't clear the conflict, and a later `--ours` pass overwrote the five re-recorded bot inputs; restored them from `c6a21aec`. Merged tree: 909 tests, clippy (all targets), fmt, validate, `bun run check`, second rehash 120 A -> A.
+  - Worktrees: removed after each WP was pushed, except WP-086's (`.claude/worktrees/agent-a5ac6431596876e71`, branch `worktree-agent-a5ac6431596876e71`, commit `a38a9bff`), kept because its work isn't on `main`. Orchestrator stopped two `workerd` processes its own build left there.
+- **Context:** orchestrator about 260K at the end (budget 500K per context window). Workers 105K-448K; none went over 500K. WP-088 used 448K across the outage.
+- **Lessons:**
+  - In a conflicted cherry-pick, `git checkout --theirs` doesn't clear the conflict, so a later bulk `--ours` over the conflicted list overwrites it. Take specific files from the commit (`git checkout SHA -- PATH`) after the bulk pass. The bot-win tests caught it.
+  - Golden output from `replay rehash` prints real hashes, not `A`; count moves by comparing the two hashes on each `final hash` line.
+  - A WP that adds world flags (WP-088's Marks and `stat.play_ticks`) moves every golden that rests at a Lantern.
+  - A WP that rewrites every golden's content hash (any data change) conflicts with every other WP that re-recorded goldens. Merge such WPs one at a time and rehash after each.
+  - Since WP-087 the game plays music. Leave `/game` after each browser check; the owner was in a meeting when a hidden tab played it.
+- **Not verified:**
+  - Any of this in human play: touch mode on a real phone at 30 fps, frame time on a 2021 integrated GPU, audible music, captions and hazards in live fights, the B02 intro camera's end blend, the ending on a real B12 defeat.
+  - WP-082 and WP-086 screenshots are the workers' only.
+  - WP-084 with real Google tokens and remote D1 writes (production reads return 200).
+- **Waiting on the owner:**
+  - **WP-086 (Launch):** verified and held. It replaces the live `/game` with Cinderheart and deletes the old game. Approve, and the next session cherry-picks `a38a9bff`, re-runs the checks, and pushes. Also decide whether to delete `static/models/`.
+  - **WP-089.b:** the Forgeheart Maul cut, the Scholar bot or FP rebalance, and the bot fixes (see the card). The spec tables for boss HP, the shortbow, and the Wayfarer's Blade no longer match the data.
+  - **WP-088 choices:** Chronicler needs pages 1, 2, 3, and 5 (page 4 isn't placed); Pacifist Path's area list and gate rule; the timer resets to the last rest after a load.
+  - **WP-082:** exclude runs below 100% game speed from the speedrun leaderboard once runs are posted.
+  - **WP-087:** add a license file for the Quaternius modular characters pack.
+  - **Gates G2 and G3** are still open. The ADR 0003 rollout looks done (the secret exists and `web-deploy.yml` deploys); confirm the Pages Git integration is disconnected, then drop that row from `README.md`.
+- **Next steps:**
+  1. Owner: the WP-086 go-ahead and the decisions above.
+  2. If approved: cherry-pick WP-086 (`a38a9bff`) onto `origin/main`, run `bun run check` and `bun run build`, take screenshots of `/` and `/game` (then leave `/game`), push, and remove its worktree.
+  3. Wire WP-084's online features into the game (in-world messages, Afterimages, Wanderers, autosave upload, telemetry toggle, posting a run after B12) and add a credits screen for `audio/credits.json`; one sonnet WP each.
+  4. WP-089.b after the owner's balance decisions. Then M9, or Reweave (the stretch card isn't written).
+  5. The M6 follow-ups (walking between areas through `area.ron` connections and the rest) still stand.
+  6. Free after M8: registry 53000 and up; WASM kinds 10, 12, 18-20, 22-30, 34-39, 41-49, 61 and up (52-56 and 59-60 were reserved but unused); `MechanicEvent` sub-kinds 240 and up; HUD prompt codes 92 and up.
 ### 2026-11-13: latticefall-m7 (M7)
 
 - **Orchestrator:** Opus 5.5, low effort

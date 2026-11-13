@@ -112,7 +112,7 @@ The orchestrator owns this file. It follows these rules, from
 | 085 | Codex pages | ui | haiku | done | haiku, Opus-verified | latticefall-m8 | game/m8-launch (worker worktree) | 2026-11-13 | `src/routes/codex/` (index, `work/[slug]`, `projects/[slug]`, shared `EntryPage.svelte`), entries from `latticefall/codex/entries.ts`. `bun run build` prerenders 15 pages (index, 4 Chronicle Pages, 10 relics); text is in the HTML with no JS; found state applied after mount. `svelte.config.js` (outside Touch): prerender ignores `/api/*` links. Not built: "Visit in the world" lantern link, boss and place pages, social card image, item icons and stats. |
 | 086 | Launch: replace the old game | ui | sonnet | todo |  |  | | | |
 | 087 | Music and audio | render | haiku | in progress |  | latticefall-m8 | game/m8-launch | 2026-11-13 | |
-| 088 | Marks, photo mode, gestures, timer | ui | haiku | todo |  |  | | | |
+| 088 | Marks, photo mode, gestures, timer | ui | haiku | in progress |  | latticefall-m8 | game/m8-launch | 2026-11-13 | |
 | 089 | Balance and fairness pass | combat | opus | todo |  |  | | | |
 | 100 | Draw the boss hazards | render | sonnet | todo |  |  | | | |
 | 101 | Boss fight follow-ups | ai | sonnet | in progress |  | latticefall-m8 | game/m8-launch | 2026-11-13 | |

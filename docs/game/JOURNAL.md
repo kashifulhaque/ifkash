@@ -58,7 +58,8 @@ Copy this block to the top of the entries and fill it in as you go:
   re-records boss goldens). Wave 3: WP-088 (after WP-082; both edit `ui/`), WP-100
   (after WP-081; both edit `render/`). Wave 4: WP-086. At most four workers at once.
 - **WPs:**
-
+  - WP-085: haiku, worktree; `e5eb911`; 158K. Clean cherry-pick. Orchestrator re-ran `bun run check` and `bun run build` (15 codex pages prerendered) and stopped two `workerd` processes left in the worker's worktree.
+  - WP-084: sonnet, worktree; `b604f05`; 163K. Clean cherry-pick. Orchestrator applied migration 0013 locally and smoke-tested the Worker on port 8799 (reads 200, writes 401 without a token). The worker ran `pkill -f workerd` late in its run, which may have hit another worker's Worker.
 ### 2026-11-13: latticefall-m7 (M7)
 
 - **Orchestrator:** Opus 5.5, low effort

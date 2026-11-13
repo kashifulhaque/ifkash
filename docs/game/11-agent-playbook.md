@@ -78,7 +78,8 @@ For each ready WP:
    and move on.
 5. **Record.** Commit with the WP ID prefix, update the WP's row in `STATUS.md` (status,
    **Done by**, date, notes), and add a line to your journal entry with the worker
-   model and its reported token use.
+   model and its reported token use. Then
+   [clean up the worker's worktree](#clean-up-worktrees).
 6. **Check the budget** (see [context budget and handoff](#context-budget-and-handoff))
    before starting the next WP.
 
@@ -91,10 +92,11 @@ G2, G3, Launch), or the context budget says so. Then:
 2. [Check for leftover processes](#check-for-leftover-processes), and stop every dev
    server you started unless the owner needs it for a review. If you leave one
    running, name it and its port in your message to the owner.
-3. Make sure every verified commit is on `main`, as
+3. [Clean up worktrees](#clean-up-worktrees) for every worker that has finished.
+4. Make sure every verified commit is on `main`, as
    [branches and commits](#branches-and-commits) describes.
-4. Complete your journal entry, including **Next steps** for the next session.
-5. Tell the owner: what's done, what's blocked, what needs their decision, and the
+5. Complete your journal entry, including **Next steps** for the next session.
+6. Tell the owner: what's done, what's blocked, what needs their decision, and the
    exact prompt to start the next session.
 
 ## Check for leftover processes
@@ -119,6 +121,32 @@ checks for them after each worker finishes, and again before it stops:
 
 Don't stop processes that this session didn't start, such as the owner's own dev
 servers or another session's workers.
+
+## Clean up worktrees
+
+Each worker worktree under `.claude/worktrees/` holds its own Cargo `target/` and
+`node_modules`, about 3-6 GB. Leftover worktrees fill the owner's disk quickly, so the
+orchestrator removes each one as soon as its work is done:
+
+1. Wait until the worker's WP is verified, committed, and pushed to `main`, or released.
+   Never remove the worktree of a worker that's still running.
+2. Confirm that the worktree has no uncommitted work. The following command must print
+   nothing:
+
+   ```bash
+   git -C WORKTREE_PATH status --porcelain
+   ```
+
+3. Remove the worktree, and keep its branch so the commits stay recoverable:
+
+   ```bash
+   git worktree remove -f -f WORKTREE_PATH
+   git worktree prune
+   ```
+
+Replace `WORKTREE_PATH` with the worktree's path, for example
+`.claude/worktrees/agent-a59bf26280e82dbe1`. If a worktree has uncommitted work, leave
+it and name it in your message to the owner.
 
 ## Choose a worker
 

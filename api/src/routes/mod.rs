@@ -11,6 +11,7 @@ pub mod workout;
 pub mod profile;
 pub mod auth;
 
+use crate::handlers;
 use worker::*;
 
 pub fn register_routes(router: Router<'_, ()>) -> Router<'_, ()> {
@@ -65,4 +66,22 @@ pub fn register_routes(router: Router<'_, ()>) -> Router<'_, ()> {
     // Same bearer as the workout routes; data is scoped to that user.
     .get_async("/api/profile", profile::get_profile)
     .put_async("/api/profile", profile::upsert_profile)
+    // Cinderheart (latticefall) online features. Reads are anonymous; writes need a
+    // bearer (Google ID token or minted session) and are rate limited per user.
+    // Telemetry is opt-in and anonymous.
+    .get_async("/api/latticefall/messages", handlers::latticefall::list_messages)
+    .post_async("/api/latticefall/messages", handlers::latticefall::post_message)
+    .post_async("/api/latticefall/messages/:id/rate", handlers::latticefall::rate_message)
+    .get_async("/api/latticefall/afterimages", handlers::latticefall::list_afterimages)
+    .post_async("/api/latticefall/afterimages", handlers::latticefall::post_afterimage)
+    .get_async("/api/latticefall/wanderers", handlers::latticefall::list_wanderers)
+    .post_async("/api/latticefall/wanderers", handlers::latticefall::post_wanderer)
+    .get_async("/api/latticefall/save", handlers::latticefall::get_save)
+    .put_async("/api/latticefall/save", handlers::latticefall::put_save)
+    .delete_async("/api/latticefall/save", handlers::latticefall::delete_save)
+    .get_async("/api/latticefall/marks", handlers::latticefall::get_marks)
+    .put_async("/api/latticefall/marks", handlers::latticefall::put_marks)
+    .get_async("/api/latticefall/speedrun/leaderboard", handlers::latticefall::speedrun_leaderboard)
+    .post_async("/api/latticefall/speedrun", handlers::latticefall::post_speedrun)
+    .post_async("/api/latticefall/telemetry", handlers::latticefall::post_telemetry)
 }

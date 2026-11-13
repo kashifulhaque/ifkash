@@ -160,6 +160,8 @@ pub fn restore(data: &SaveData, content: &Content) -> Result<World, SaveError> {
         p.inventory = data.inventory.clone();
     }
     world.state.flags = data.flags.clone();
+    // The in-game timer picks up at the last rest (WP-088; see `world_state::marks`).
+    world.tick = u64::from(world.state.flags.get(crate::world_state::marks::PLAY_TICKS));
     world.state.respawn_lantern = data.respawn_lantern.clone();
     world.state.keep_glimmer_on_death = data.keep_glimmer_on_death;
     world.state.death.deaths = data.deaths;

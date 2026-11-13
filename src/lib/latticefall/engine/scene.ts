@@ -85,6 +85,8 @@ export class SceneView {
   /** True while the camera is driving yaw (lock-on), so input should follow `cameraYaw`. */
   yawDriven = false;
   private previewOffset = new Vector3();
+  /** Photo mode's free camera (WP-088); null while the game camera drives. */
+  private photoPose: { x: number; y: number; z: number; yaw: number; pitch: number } | null = null;
   private canvas: HTMLCanvasElement;
   private resizeObserver: ResizeObserver;
   /** The Wayfarer model. Capsules draw until it loads (or if it fails to). */
@@ -218,6 +220,32 @@ export class SceneView {
     this.actors.setEquipment(eq);
   }
 
+  /** Draws the player's gesture (WP-088): the core's gesture number, or null for none. */
+  setGesture(gesture: number | null): void {
+    this.actors.setGesture(gesture);
+  }
+
+  /**
+   * Puts the camera at a fixed pose for photo mode (WP-088), or with null hands it back to the
+   * game camera. Yaw 0 looks along +Z; positive pitch looks down.
+   */
+  setPhotoPose(pose: { x: number; y: number; z: number; yaw: number; pitch: number } | null): void {
+    this.photoPose = pose;
+    if (!pose) this.rig.reset();
+  }
+
+  /** Where the camera is and which way it looks, in the same terms as `setPhotoPose`. */
+  cameraPose(): { x: number; y: number; z: number; yaw: number; pitch: number } {
+    const d = this.camera.getWorldDirection(new Vector3());
+    return {
+      x: this.camera.position.x,
+      y: this.camera.position.y,
+      z: this.camera.position.z,
+      yaw: Math.atan2(d.x, d.z),
+      pitch: -Math.asin(Math.max(-1, Math.min(1, d.y)))
+    };
+  }
+
   setCamera(yaw: number, pitch: number): void {
     this.camYaw = yaw;
     this.camPitch = pitch;
@@ -258,7 +286,14 @@ export class SceneView {
 
     this.lastActors = actors;
     const focus = actors[0];
-    if (this.dev?.fixed) {
+    if (this.photoPose) {
+      // Photo mode (WP-088): the free camera, wherever the player put it.
+      const { x, y, z, yaw, pitch } = this.photoPose;
+      const cp = Math.cos(pitch);
+      this.camera.position.set(x, y, z);
+      this.camera.lookAt(x + Math.sin(yaw) * cp, y - Math.sin(pitch), z + Math.cos(yaw) * cp);
+      this.yawDriven = false;
+    } else if (this.dev?.fixed) {
       // `&cam=fixed:...`: the camera stays put and ignores the player and the look input.
       const { pos, yaw, pitch } = this.dev.fixed;
       const cp = Math.cos(pitch);

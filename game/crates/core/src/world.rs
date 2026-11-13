@@ -184,6 +184,14 @@ struct HashView<'a> {
     /// Left out while no fight with B12 is on, for the same reason.
     #[serde(skip_serializing_if = "b12_inert")]
     b12: &'a crate::ai::bosses::b12::B12Run,
+    /// The gesture and the Great Sigil fight under watch (WP-088), left out while at rest, for
+    /// the same reason.
+    #[serde(skip_serializing_if = "marks_inert")]
+    marks: &'a crate::world_state::marks::Track,
+}
+
+fn marks_inert(marks: &&crate::world_state::marks::Track) -> bool {
+    marks.is_inert()
 }
 
 fn b12_inert(b12: &&crate::ai::bosses::b12::B12Run) -> bool {
@@ -428,6 +436,7 @@ impl World {
             b09: &self.b09,
             b10: &self.mech.b10,
             b12: &self.b12,
+            marks: &self.state.marks,
         };
         let bytes = postcard::to_allocvec(&view).expect("world serialization cannot fail");
         xxhash_rust::xxh3::xxh3_64(&bytes)

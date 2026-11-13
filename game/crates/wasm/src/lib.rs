@@ -389,6 +389,8 @@ impl LfWorld {
                         u32::from(e.ticks),
                     ]);
                 }
+                Event::Mark(e) => out.extend([57, u32::from(e.mark), e.tick as u32]),
+                Event::Gesture(e) => out.extend([58, u32::from(e.what), u32::from(e.gesture)]),
                 Event::Echo(e) => {
                     out.extend([
                         21,
@@ -567,6 +569,38 @@ impl LfWorld {
         }
         out[27] = f32::from(u8::from(p.dead));
         out
+    }
+
+    /// The Marks, the gesture, and the timer, as `[earned mask, gesture, ticks, kills]` (WP-088).
+    /// Read-only. The mask has bit `i` set when Mark `i` of `marks_json` is earned; `gesture` is
+    /// the gesture being performed plus one (0 for none); `ticks` is the in-game time in ticks (30
+    /// a second); `kills` is the ordinary enemies killed after the Verge (Pacifist Path breaks at
+    /// 1).
+    pub fn marks_state(&self) -> Vec<u32> {
+        use lf_core::world_state::marks;
+        let w = &self.world;
+        vec![
+            marks::earned_mask(&w.state.flags),
+            marks::gesture::current(w).map_or(0, |g| u32::from(g.gesture) + 1),
+            u32::try_from(marks::play_ticks(w)).unwrap_or(u32::MAX),
+            w.state.flags.get(marks::KILLS_AFTER_VERGE),
+        ]
+    }
+
+    /// Every Mark as a JSON array of `{slug, name, how}`, in the order of `marks_state`'s mask
+    /// (WP-088). The list never changes while the game runs. The texts hold no quotes or
+    /// backslashes, so they need no escaping.
+    pub fn marks_json(&self) -> String {
+        let items: Vec<String> = lf_core::world_state::marks::MARKS
+            .iter()
+            .map(|m| {
+                format!(
+                    "{{\"slug\":\"{}\",\"name\":\"{}\",\"how\":\"{}\"}}",
+                    m.slug, m.name, m.how
+                )
+            })
+            .collect();
+        format!("[{}]", items.join(","))
     }
 
     /// Display name of a weapon or consumable by registry number; empty if unknown.

@@ -22,6 +22,8 @@
   import Settings from './Settings.svelte';
   import MapScreen from '../map/MapScreen.svelte';
   import type { MapHost } from '../map/mapState';
+  import MarksScreen from '../marks/MarksScreen.svelte';
+  import type { MarksHost } from '../marks/marksHost';
 
   export let host: MenuHost;
   /** What the map reads and the commands it sends (WP-069). The Map entry is off without it. */
@@ -29,6 +31,11 @@
   export let engine: { setPaused(paused: boolean): void; input: InputController };
   export let hudSettings: HudSettingsStore;
   export let menuSettings: MenuSettingsStore;
+  /** The Marks list (WP-088). The Marks entry is off without it. */
+  export let marks: Pick<MarksHost, 'list' | 'earned'> | undefined = undefined;
+  /** Opens the gesture menu and photo mode (WP-088), after the menus close. */
+  export let onGestures: (() => void) | undefined = undefined;
+  export let onPhoto: (() => void) | undefined = undefined;
   /** Leave for the plain portfolio site. */
   export let onPlain: () => void;
   /** Leave the game for the title (the plain site until a title screen exists). */
@@ -36,14 +43,15 @@
   /** True while a menu is open. Bind to it to pause your own input. */
   export let open = false;
 
-  type Screen = 'pause' | 'equipment' | 'inventory' | 'lantern' | 'settings' | 'map';
+  type Screen = 'pause' | 'equipment' | 'inventory' | 'lantern' | 'settings' | 'map' | 'marks';
   const COLS: Record<Screen, string> = {
     pause: 'main',
     equipment: 'slots,cands',
     inventory: 'items,detail',
     lantern: 'tabs,body',
     settings: 'tabs,body',
-    map: 'tabs,body'
+    map: 'tabs,body',
+    marks: 'body'
   };
   const TITLES: Record<Screen, string> = {
     pause: 'Paused',
@@ -51,7 +59,8 @@
     inventory: 'Inventory',
     lantern: 'Lantern',
     settings: 'Settings',
-    map: 'Map'
+    map: 'Map',
+    marks: 'Marks'
   };
 
   let screen: Screen | null = null;
@@ -69,6 +78,11 @@
   export function handleUi(action: 'menu' | 'map'): void {
     if (action === 'menu' && screen === null) show('pause');
     else if (action === 'map' && screen === null && mapHost) show('map');
+  }
+
+  /** Opens the Marks list (WP-088), from a key. */
+  export function showMarks(): void {
+    if (screen === null && marks) void show('marks');
   }
 
   /** The engine calls this when the player rests at a Lantern. */
@@ -115,7 +129,7 @@
   /** Back one step: out of a sub-step, then to the pause menu, then out of the menus. */
   function back(): void {
     if (child?.back?.()) return;
-    if (screen === 'equipment' || screen === 'inventory' || screen === 'settings' || screen === 'map') void show('pause');
+    if (screen === 'equipment' || screen === 'inventory' || screen === 'settings' || screen === 'map' || screen === 'marks') void show('pause');
     else close();
   }
 
@@ -167,6 +181,9 @@
     { id: 'inventory', label: 'Inventory', note: '', off: false },
     { id: 'map', label: 'Map', note: mapHost ? '' : 'Not built yet', off: !mapHost },
     { id: 'codex', label: 'Codex', note: 'Not built yet', off: true },
+    { id: 'marks', label: 'Marks', note: marks ? '' : 'Not available', off: !marks },
+    { id: 'gestures', label: 'Gestures', note: onGestures ? '' : 'Not available', off: !onGestures },
+    { id: 'photo', label: 'Photo mode', note: onPhoto ? '' : 'Not available', off: !onPhoto },
     { id: 'settings', label: 'Settings', note: '', off: false },
     { id: 'plain', label: 'Read the plain site', note: '', off: false },
     {
@@ -186,7 +203,16 @@
       case 'inventory':
       case 'settings':
       case 'map':
+      case 'marks':
         void show(id);
+        break;
+      case 'gestures':
+        close();
+        onGestures?.();
+        break;
+      case 'photo':
+        close();
+        onPhoto?.();
         break;
       case 'plain':
         close();
@@ -252,6 +278,8 @@
           <LanternMenu bind:this={child} {host} {mapHost} {state} {announce} {refresh} leave={close} />
         {:else if screen === 'map' && mapHost}
           <MapScreen bind:this={child} host={mapHost} {announce} />
+        {:else if screen === 'marks' && marks}
+          <MarksScreen bind:this={child} {marks} {announce} />
         {:else if screen === 'settings'}
           <Settings bind:this={child} {engine} {hudSettings} {menuSettings} {announce} />
         {/if}

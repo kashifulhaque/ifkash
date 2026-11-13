@@ -47,6 +47,7 @@ import {
   type PropPreview
 } from '../procedural';
 import { FLAG_CLOAKED, FLAG_DEAD, FLAG_HIDDEN, FLAG_STAGGERED } from '../../engine/snapshot';
+import { gesturePose } from '../../ui/gestures/gesturePose';
 
 /** Where the optimized assets live (`lf-tools assets` writes them). */
 export const ACTOR_ASSET_BASE = '/latticefall/actors/';
@@ -133,6 +134,7 @@ function copyPose(dst: Pose, src: Pose): void {
 }
 
 const qa = new Quaternion();
+const gestureScale = new Vector3();
 const qb = new Quaternion();
 
 /** dst = slerp(dst, src, w). */
@@ -181,6 +183,9 @@ export class ActorRenderer {
   private equipped: Equipped | null = null;
   /** The actor id the equipment belongs to (the snapshot's first actor), or -1. */
   playerId = -1;
+  /** The gesture the player is performing, from the core's gesture events (WP-088). */
+  private gesture: number | null = null;
+  private gestureT = 0;
   readonly spellFx = new SpellFx();
 
   constructor(scene: Scene, renderer: WebGLRenderer, opts: { resolveMove?: MoveResolver } = {}) {
@@ -193,6 +198,12 @@ export class ActorRenderer {
     }
     this.scene.add(this.spellFx.points);
     if (this.preview || import.meta.env.DEV) (globalThis as Record<string, unknown>).__lfActors = this;
+  }
+
+  /** Starts (or, with null, stops) drawing the player's gesture. The core decides when. */
+  setGesture(gesture: number | null): void {
+    if (gesture !== this.gesture) this.gestureT = 0;
+    this.gesture = gesture;
   }
 
   /** True once the model and clips are loaded and `update` draws. */
@@ -607,6 +618,13 @@ export class ActorRenderer {
     const pv = this.preview;
     const frozen = pv?.t !== undefined;
 
+    // 0. A gesture (WP-088): the idle clip with bone offsets. A move always wins.
+    if (this.gesture !== null && a.id === this.playerId && a.moveId === 0 && !pv) {
+      this.gestureT += dt;
+      this.gestureFrame(inst, tpl, out, this.gesture, this.gestureT);
+      return `gesture:${this.gesture}`;
+    }
+
     // 1. A move, from move_id and move_frame.
     let info = a.moveId !== 0 ? this.resolveMove(a.moveId) : undefined;
     let frame = Math.max(0, a.moveFrame + moveFrac - inst.lagFrames);
@@ -655,6 +673,23 @@ export class ActorRenderer {
       }
     }
     return 'loco';
+  }
+
+  /** The idle pose with gesture `id`'s offsets laid over it (`ui/gestures/gesturePose.ts`). */
+  private gestureFrame(inst: Instance, tpl: Template, out: Pose, id: number, t: number): void {
+    const idle = tpl.clips.get(LOOP_CLIPS.idle)!;
+    sampleClip(idle, t % idle.duration, true, out.q, out.hips);
+    const g = gesturePose(id, t);
+    const e = new Euler();
+    for (const o of g.bones) {
+      const i = tpl.boneIndex.get(o.bone);
+      if (i === undefined) continue;
+      qa.fromArray(out.q, i * 4).multiply(qb.setFromEuler(e.set(o.x, o.y, o.z)));
+      qa.toArray(out.q, i * 4);
+    }
+    // The hips position is local to a scaled parent, so a drop in meters is divided by the
+    // parent's world scale to land in the pose's units.
+    if (g.hipsDrop > 0 && inst.hips.parent) out.hips[1] -= g.hipsDrop / inst.hips.parent.getWorldScale(gestureScale).y;
   }
 
   private locomotion(inst: Instance, tpl: Template, dt: number, frozen: boolean, out: Pose): void {

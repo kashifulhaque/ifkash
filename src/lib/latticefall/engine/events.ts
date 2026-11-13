@@ -34,7 +34,10 @@ export const EVENT_WORDS: Readonly<Record<number, number>> = {
   33: 3, // Appearance: the Mirror's preset and dye (WP-068)
   // Kinds 34-39 are reserved for other work packages.
   40: 9, // Briar: what happened, boss, patch slot, position, radius, ticks (WP-070)
-  50: 12 // Loom: what happened, boss, line slot, center, direction, half-length, half-width, ticks (WP-080)
+  50: 12, // Loom: what happened, boss, line slot, center, direction, half-length, half-width, ticks (WP-080)
+  // Kinds 51-56 are reserved for other work packages.
+  57: 3, // Mark: the Mark's index, the in-game tick it was earned on (WP-088)
+  58: 3 // Gesture: started (0) or ended (1), the gesture's number (WP-088)
   // Kinds 2-9, 11, and 13 aren't decoded into events yet; the decoder skips them by length.
 };
 
@@ -158,7 +161,24 @@ export const BOSS_PHASE_STARTED = 2;
 export const BOSS_DEFEATED = 3;
 export const BOSS_RESET = 4;
 
-export type GameEvent = HitEvent | PickupEvent | MechanicEvent | BriarEvent | LoomEvent | BossEvent;
+/** The player earned a Mark (WP-088). `mark` indexes `marks_json`; `tick` is the in-game tick. */
+export interface MarkEvent {
+  kind: 'mark';
+  mark: number;
+  tick: number;
+}
+
+/** A gesture started or ended (WP-088). `gesture` is 0 wave, 1 bow, 2 point, 3 sit, 4 shrug, 5 beckon. */
+export interface GestureEvent {
+  kind: 'gesture';
+  what: 'started' | 'ended';
+  gesture: number;
+}
+
+export const EVENT_MARK = 57;
+export const EVENT_GESTURE = 58;
+
+export type GameEvent = HitEvent | PickupEvent | MechanicEvent | BriarEvent | LoomEvent | BossEvent | MarkEvent | GestureEvent;
 
 const scratch = new DataView(new ArrayBuffer(4));
 function f32(bits: number): number {
@@ -218,6 +238,10 @@ export function decodeEvents(words: ArrayLike<number>): GameEvent[] {
         halfWidth: f32(words[i + 10]),
         ticks: words[i + 11] >>> 0
       });
+    } else if (kind === EVENT_MARK) {
+      out.push({ kind: 'mark', mark: words[i + 1] >>> 0, tick: words[i + 2] >>> 0 });
+    } else if (kind === EVENT_GESTURE) {
+      out.push({ kind: 'gesture', what: words[i + 1] === 0 ? 'started' : 'ended', gesture: words[i + 2] >>> 0 });
     }
     i += len;
   }

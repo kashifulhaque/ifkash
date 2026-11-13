@@ -386,6 +386,8 @@ fn m2_parry_riposte_parries_then_ripostes() {
             Event::Appearance(_) => "appearance",
             Event::Briar(_) => "briar",
             Event::Loom(_) => "loom",
+            Event::Mark(_) => "mark",
+            Event::Gesture(_) => "gesture",
         })
         .collect();
     assert_eq!(kinds, ["parry", "critical", "hit"], "{events:?}");

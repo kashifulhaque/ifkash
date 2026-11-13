@@ -15,6 +15,10 @@
   import UnlockToast from '$lib/latticefall/ui/portfolio/UnlockToast.svelte';
   import Menus from '$lib/latticefall/ui/menus/Menus.svelte';
   import Dialogue from '$lib/latticefall/ui/dialogue/Dialogue.svelte';
+  import MarkToast from '$lib/latticefall/ui/marks/MarkToast.svelte';
+  import Timer from '$lib/latticefall/ui/hud/Timer.svelte';
+  import GestureMenu from '$lib/latticefall/ui/gestures/GestureMenu.svelte';
+  import PhotoMode from '$lib/latticefall/ui/photo/PhotoMode.svelte';
   import { createMenuSettings } from '$lib/latticefall/ui/menus/menuSettings';
   import TouchControls from '$lib/latticefall/input/touch/TouchControls.svelte';
   import { enterTouchQuality, type TouchSink } from '$lib/latticefall/input/touch';
@@ -46,6 +50,13 @@
   // Hollowhearth's NPCs and stations (WP-068): the core runs the conversation, the DOM shows it.
   let dialogue: Dialogue | undefined;
   let dialogueOpen = false;
+  // Gestures, photo mode, and the Marks list (WP-088). Photo mode hides the HUD unless asked.
+  let gestures: GestureMenu | undefined;
+  let gesturesOpen = false;
+  let photoMode: PhotoMode | undefined;
+  let photoOpen = false;
+  let photoHud = false;
+  $: hudVisible = !photoOpen || photoHud;
   let demoTimer: ReturnType<typeof setInterval> | undefined;
   const hudDemo = browser && new URLSearchParams(window.location.search).get('hud-demo') === '1';
 
@@ -150,9 +161,13 @@
   }
 
   function onKey(e: KeyboardEvent): void {
-    if (menuOpen || dialogueOpen) return; // The menus and the dialogue handle their own keys.
+    if (menuOpen || dialogueOpen || gesturesOpen || photoOpen) return; // They handle their own keys.
     if (e.code === 'KeyP' && !e.repeat && !e.ctrlKey && !e.metaKey && !e.altKey) togglePause();
     if (e.code === 'KeyL' && !e.repeat && !e.ctrlKey && !e.metaKey && !e.altKey) ledgerOpen = !ledgerOpen;
+    if (e.ctrlKey || e.metaKey || e.altKey || e.repeat || ledgerOpen || status !== 'ready') return;
+    if (e.code === 'KeyG') gestures?.toggle();
+    else if (e.code === 'KeyO') photoMode?.toggle();
+    else if (e.code === 'KeyK') menus?.showMarks();
   }
 </script>
 
@@ -171,12 +186,18 @@
     <p class="lf-note" aria-live="polite">Loading Cinderheart…</p>
   {:else if status === 'failed'}
     <p class="lf-note" role="alert">Cinderheart could not start: {failure}</p>
-  {:else if !touch}
-    <p class="lf-hint"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> move · click to capture the mouse · <kbd>P</kbd> pause · <kbd>L</kbd> Ledger</p>
+  {:else if !touch && !photoOpen}
+    <p class="lf-hint"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> move · click to capture the mouse · <kbd>P</kbd> pause · <kbd>L</kbd> Ledger · <kbd>G</kbd> gestures · <kbd>K</kbd> Marks · <kbd>O</kbd> photo</p>
   {/if}
 
   {#if status === 'ready'}
-    <Hud {hud} settings={hudSettings} />
+    {#if hudVisible}
+      <Hud {hud} settings={hudSettings} />
+      {#if engine}
+        <Timer ticks={engine.marks.ticks} settings={hudSettings} />
+        <MarkToast marks={engine.marks} />
+      {/if}
+    {/if}
     <UnlockToast bind:this={toast} />
     {#if ledgerOpen}<Ledger on:close={() => (ledgerOpen = false)} />{/if}
   {/if}
@@ -194,9 +215,14 @@
       {engine}
       {hudSettings}
       {menuSettings}
+      marks={engine.marks}
+      onGestures={() => gestures?.toggle()}
+      onPhoto={() => photoMode?.toggle()}
       onPlain={() => goto('/')}
       onQuit={() => goto('/')}
     />
+    <GestureMenu bind:this={gestures} bind:open={gesturesOpen} marks={engine.marks} {engine} />
+    <PhotoMode bind:this={photoMode} bind:open={photoOpen} bind:showHud={photoHud} photo={engine.photo} {canvas} />
     <Dialogue
       bind:this={dialogue}
       bind:open={dialogueOpen}

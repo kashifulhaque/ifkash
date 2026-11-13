@@ -36,6 +36,8 @@ pub mod lantern_menu;
 pub mod map;
 #[cfg(test)]
 mod map_tests;
+// WP-088: Marks, gestures, and the in-game timer.
+pub mod marks;
 pub mod mechanics;
 #[cfg(test)]
 mod mirrormere_tests;
@@ -196,6 +198,12 @@ pub struct WorldState {
     pub ai_enemies: Vec<Id>,
     /// With Keep Glimmer on death on (Wayfarer mode, not built yet) nothing is dropped.
     pub keep_glimmer_on_death: bool,
+    /// The Marks' bookkeeping and the gesture in progress (WP-088; see [`marks`]). Not
+    /// serialized here: the state hash reads it as a field of its own (`HashView::marks`), left
+    /// out while at rest, so a world with no gesture and no Great Sigil fight on hashes as it
+    /// did before Marks existed. (`postcard` can't skip a field conditionally.)
+    #[serde(skip)]
+    pub marks: marks::Track,
 }
 
 impl WorldState {
@@ -213,6 +221,7 @@ impl WorldState {
             enemies,
             ai_enemies,
             keep_glimmer_on_death: false,
+            marks: marks::Track::default(),
         }
     }
 }

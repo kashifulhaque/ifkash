@@ -25,6 +25,8 @@ import { COMMAND, createMenuHost, type MenuHost, type MenuSink } from '../ui/men
 import { createDialogueHost, type DialogueHost, type DialogueSink } from '../ui/dialogue/dialogueHost';
 import { dialogueEventsFromWords } from '../ui/dialogue/dialogueState';
 import { createMapHost, type MapHost } from '../ui/map/mapState';
+import { createMarksHost, type MarksHost } from '../ui/marks/marksHost';
+import { clampPose, composeImage, gradeFilter, type PhotoHost } from '../ui/photo/photoMath';
 
 export interface EngineStats {
   tick: number;
@@ -70,6 +72,10 @@ export interface Engine {
   dialogue: DialogueHost;
   /** What the map reads and the commands it sends (WP-069). */
   map: MapHost;
+  /** The Marks, the in-game timer, the gesture under way, and the gesture command (WP-088). */
+  marks: MarksHost;
+  /** Photo mode's free camera and capture (WP-088). It pauses the game and sends no commands. */
+  photo: PhotoHost;
   /** Rests at the Lantern in reach, as the Interact button does (the Lantern menu opens). */
   rest(): void;
   /** The input controller, for the controls menu (bindings and options). */
@@ -201,6 +207,7 @@ export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions
       tools.recordTick(performance.now() - t0);
     } else world.tick(frame);
     snapshots.push();
+    marks.refresh();
     if (world.tick_count() % 6 === 0) syncEquipment();
     if (view.props.active) view.props.setState(world.mechanics_state());
     const hudState = parseHud(world.hud_state(), names);
@@ -237,6 +244,7 @@ export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions
       loom.handleEvents(events);
       hazards.handleEvents(events, world.tick_count());
       endingFromEvents(events);
+      marks.handleEvents(events);
       tools?.onEvents(events);
     }
   }
@@ -259,6 +267,55 @@ export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions
       if (paused) runTick(new Uint8Array(4));
     }
   });
+  // Marks, the timer, and gestures (WP-088): the core decides; this reads and queues the gesture.
+  const marks = createMarksHost(world, {
+    command(kind, a, b) {
+      if (!sendCommand(kind, a, b)) return;
+      if (paused) runTick(new Uint8Array(4));
+    }
+  });
+  marks.refresh();
+  const offGesture = marks.gesture.subscribe((g) => view.setGesture(g));
+  // Photo mode (WP-088): the game is paused (no ticks), the camera is the player's to move, and
+  // nothing is written to the simulation. A capture is taken in the render callback, right after
+  // the canvas is drawn, because a WebGL canvas can only be read in the task that drew it.
+  let photoActive = false;
+  let photoWasPaused = false;
+  let pendingCapture: { grade: string; watermark: boolean; resolve: (b: Blob | null) => void } | null = null;
+  const photo: PhotoHost = {
+    begin() {
+      const first = snapshots.curr[0];
+      if (!first || photoActive) return null;
+      photoActive = true;
+      photoWasPaused = paused;
+      if (!paused) setPausedImpl(true);
+      const anchor = { x: first.x, y: first.y, z: first.z };
+      const pose = clampPose(view.cameraPose(), anchor);
+      view.setPhotoPose(pose);
+      return { anchor, pose };
+    },
+    set(pose) {
+      view.setPhotoPose(pose);
+    },
+    end() {
+      if (!photoActive) return;
+      photoActive = false;
+      pendingCapture?.resolve(null);
+      pendingCapture = null;
+      view.setPhotoPose(null);
+      if (!photoWasPaused) setPausedImpl(false);
+    },
+    capture(grade, watermark) {
+      pendingCapture?.resolve(null);
+      return new Promise((resolve) => (pendingCapture = { grade, watermark, resolve }));
+    }
+  };
+  function setPausedImpl(p: boolean): void {
+    paused = p;
+    if (tools) tools.commands.setFrozen(p);
+    else loop.setPaused(p);
+    input.setSuspended(p && opts.menu !== undefined);
+  }
   const loop = new FixedStepLoop({
     tick() {
       input.poll();
@@ -277,6 +334,11 @@ export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions
       hazards.frame(world.tick_count() + alpha, drawn);
       tools?.beforeRender(drawn);
       view.render(drawn, frameMs, loop.isPaused);
+      if (pendingCapture) {
+        const req = pendingCapture;
+        pendingCapture = null;
+        void composeImage(canvas, gradeFilter(req.grade), req.watermark).then(req.resolve);
+      }
       // The first drawn actor is the player; the listener follows it and the camera's yaw.
       if (audio && drawn[0] && !loop.isPaused) {
         audio.updatePlayer({ x: drawn[0].x, y: drawn[0].y, z: drawn[0].z, yaw: view.cameraYaw });
@@ -328,16 +390,13 @@ export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions
   loop.start();
 
   return {
-    setPaused(p) {
-      paused = p;
-      if (tools) tools.commands.setFrozen(p);
-      else loop.setPaused(p);
-      input.setSuspended(p && opts.menu !== undefined);
-    },
+    setPaused: setPausedImpl,
     saves,
     menus,
     dialogue,
     map,
+    marks,
+    photo,
     rest() {
       if (sendCommand(COMMAND.Rest) && paused) runTick(new Uint8Array(4));
     },
@@ -350,6 +409,8 @@ export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions
     dispose() {
       disposed = true;
       armory?.dispose();
+      offGesture();
+      marks.dispose();
       loop.stop();
       audio?.dispose();
       tools?.dispose();

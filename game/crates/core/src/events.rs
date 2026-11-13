@@ -55,6 +55,32 @@ pub enum Event {
     /// B12's loom lines were laid, became beams, or went (`ai::bosses::b12`, WP-080; WASM event
     /// kind 50).
     Loom(LoomEvent),
+    /// A Mark was earned (`world_state::marks`, WP-088; WASM event kind 57).
+    Mark(MarkEvent),
+    /// A gesture started or ended (`world_state::marks`, WP-088; WASM event kind 58).
+    Gesture(GestureEvent),
+}
+
+/// The player earned the Mark at `mark` in `world_state::marks::MARKS` (WASM event kind 57).
+/// `tick` is the in-game tick it happened on, which a Mark toast can show as a time.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct MarkEvent {
+    pub mark: u8,
+    pub tick: u64,
+}
+
+/// A gesture began or ended (WASM event kind 58). `what` is `STARTED` or `ENDED`; `gesture` is
+/// the number `Command::Gesture` carries (0 wave, 1 bow, 2 point forward, 3 sit, 4 shrug,
+/// 5 beckon).
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct GestureEvent {
+    pub what: u8,
+    pub gesture: u8,
+}
+
+impl GestureEvent {
+    pub const STARTED: u8 = 0;
+    pub const ENDED: u8 = 1;
 }
 
 /// What happened to one of B12's loom lines (WASM event kind 50). `what` is one of the consts;
@@ -584,11 +610,31 @@ impl HitResult {
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct EventQueue {
     events: Vec<Event>,
+    /// Every event ever pushed (WP-088). `drain` doesn't reset it, so a system that reads the
+    /// queue once per tick can remember how far it got (`since`) whether or not the host
+    /// drained in between.
+    #[serde(default)]
+    pushed: u64,
 }
 
 impl EventQueue {
     pub fn push(&mut self, event: Event) {
         self.events.push(event);
+        self.pushed += 1;
+    }
+
+    /// How many events have ever been pushed.
+    pub fn pushed(&self) -> u64 {
+        self.pushed
+    }
+
+    /// The queued events pushed after the first `cursor` pushes (a value from an earlier
+    /// `pushed()`), in emission order. Events the host already drained are gone.
+    pub fn since(&self, cursor: u64) -> impl Iterator<Item = &Event> {
+        let first = self.pushed.saturating_sub(self.events.len() as u64);
+        self.events
+            .iter()
+            .skip(cursor.saturating_sub(first) as usize)
     }
 
     /// Removes and returns all queued events in emission order.

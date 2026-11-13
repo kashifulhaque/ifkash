@@ -10,13 +10,15 @@ export interface HudSettings {
   scale: number;
   /** `auto` hides the HUD out of combat when there is nothing to show. */
   visibility: HudVisibility;
+  /** Show the in-game timer (WP-088). Off by default; the timer is recorded either way. */
+  showTimer: boolean;
 }
 
 export const SCALE_MIN = 75;
 export const SCALE_MAX = 150;
 const KEY = 'latticefall-hud';
 
-export const DEFAULT_HUD_SETTINGS: HudSettings = { scale: 100, visibility: 'always' };
+export const DEFAULT_HUD_SETTINGS: HudSettings = { scale: 100, visibility: 'always', showTimer: false };
 
 export function clampScale(n: number): number {
   if (!Number.isFinite(n)) return DEFAULT_HUD_SETTINGS.scale;
@@ -35,6 +37,7 @@ export function loadHudSettings(search = ''): HudSettings {
     if (saved) {
       if (typeof saved.scale === 'number') out.scale = clampScale(saved.scale);
       if (isVisibility(saved.visibility)) out.visibility = saved.visibility;
+      if (typeof saved.showTimer === 'boolean') out.showTimer = saved.showTimer;
     }
   } catch {
     // Storage can be blocked or hold junk; fall back to the defaults.
@@ -44,6 +47,8 @@ export function loadHudSettings(search = ''): HudSettings {
   if (scale !== null) out.scale = clampScale(Number(scale));
   const vis = q.get('hud');
   if (isVisibility(vis)) out.visibility = vis;
+  const timer = q.get('timer');
+  if (timer === '1' || timer === '0') out.showTimer = timer === '1';
   return out;
 }
 

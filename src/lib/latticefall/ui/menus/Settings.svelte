@@ -60,7 +60,7 @@
     });
   }
 
-  function setHud(patch: Partial<{ scale: number; visibility: HudVisibility }>): void {
+  function setHud(patch: Partial<{ scale: number; visibility: HudVisibility; showTimer: boolean }>): void {
     hudSettings.update((h) => ({ ...h, ...patch }));
     hudSettings.persist();
   }
@@ -234,6 +234,9 @@
           </li>
           <li>
             <label><input type="checkbox" data-nav="body" checked={s.accessibility.reducedMotion} on:change={(e) => set((m) => (m.accessibility.reducedMotion = e.currentTarget.checked))} /> Reduced motion (menus; camera shake and flashes later)</label>
+          </li>
+          <li>
+            <label><input type="checkbox" data-nav="body" checked={$hudSettings.showTimer} on:change={(e) => setHud({ showTimer: e.currentTarget.checked })} /> Show the in-game timer on the HUD</label>
           </li>
           <li>
             <label for="lf-cb">Color-blind mode</label>

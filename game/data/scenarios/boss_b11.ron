@@ -8,7 +8,7 @@
 //   - The Ring's floor runs x -26..26, z -22..30, with twelve standing stones at a radius of 21 m
 //     about (0, 4), and the prisoner's plinth at (0, 16), 0.5 m high.
 //   - The Exile stands on the plinth at (0, 0.5, 16) facing -Z (south, toward the gate). Its
-//     eight blink stones are at a radius of 15 m about (0, 4), inside the ring of standing stones.
+//     twelve blink points are on a 19 m ring about (0, 4), one in front of each standing stone.
 (
   spawn: (0.0, 0.0, -30.0),
   spawn_yaw: 0.0,

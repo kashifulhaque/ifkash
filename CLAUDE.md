@@ -15,8 +15,26 @@ deployables in one repo:**
   `worker-build`) mounted at `ifkash.dev/api/*`.
 
 Beyond the résumé editor the README centers on, the app has several
-Google-authenticated mini-apps: `/fitness` (workout and cardio tracker), `/tools/splitter`
-(expense splitter), and `/game` (a cozy low-poly tiny-planet explorer whose seven "small wonders" open portfolio sections; built on Three.js in `src/lib/game`). Beyond the wonders the game has per-planet starlight shards (`shards.ts`), animal companions that follow after a second pat (`critters.ts`), fireworks for the big finds (`fireworks.ts`), and a cross-planet traveller's journal of biomes, species, milestones, and stats (`journal.ts`, persisted in `localStorage` with no Three.js import so other pages can read it).
+Google-authenticated mini-apps: `/fitness` (workout and cardio tracker) and
+`/tools/splitter` (expense splitter). `/game` is **Cinderheart** (code name
+`latticefall`), a souls-like action RPG that doubles as the portfolio: the player finds
+work and projects as codex entries (the codex also has static pages at `/codex`). It is
+made of three parts:
+
+- **Simulation core** (`game/`) — a Rust workspace (`crates/core`, `content`, `wasm`, `py`,
+  `tools`) with the game data in `game/data/`. It is deterministic and has no I/O.
+- **WASM build** — `lf-wasm` is built into `src/lib/latticefall/wasm/`, which is
+  **gitignored**. Run `mise run game:wasm` before `bun run dev` or `bun run build` works
+  for `/game`.
+- **Renderer and UI** (`src/lib/latticefall/`) — Three.js, audio, input, the HUD, and the
+  portfolio panels, loaded by `src/routes/game/`. `/game` shows a plain-DOM landing card
+  first and fetches neither Three.js nor the WASM until the visitor presses Play. The
+  codex store (`codex/store.ts`, persisted in `localStorage`) has no Three.js or WASM
+  import, so the home page reads relic progress from it. Keep it that way.
+
+The design docs, roadmap, and status are in `docs/game/` (start at `docs/game/README.md`).
+Useful dev URL parameters: `?dev=1` (developer tools), `&play=1` (skip the landing card),
+`&touch=1` (force touch mode).
 
 A third, smaller piece lives in `/vm`: the **VM agent**, a dependency-free Node server
 that runs on the owner's VM behind a Cloudflare Tunnel at `claude.ifkash.dev` and backs
@@ -37,6 +55,12 @@ mise run web:dev          # bun install && bun run dev --host
 mise run api:prep         # one time: wasm target + worker-build
 mise run api:dev
 mise run api:clean        # wipe local Miniflare state
+
+# Cinderheart (/game)
+mise run game:wasm        # build the WASM core into src/lib/latticefall/wasm/ (gitignored)
+mise run game:test        # cargo test --workspace in game/
+mise run game:lint        # clippy and rustfmt in game/
+mise run game:validate    # validate game content data
 
 # Checks / builds
 bun run check             # svelte-check — the frontend typecheck (run before finishing FE work)
@@ -76,7 +100,7 @@ cd api && npx wrangler d1 migrations apply ifkash --local
    The Worker trusts the edge-injected `Cf-Access-Authenticated-User-Email` header and
    checks it equals `OWNER_EMAIL` (`handlers/access.rs`). Bypassed locally via
    `LOCAL_DEV="1"` in `api/.dev.vars`.
-2. **Google ID token (per-user)** — used by `/game`, `/tools/splitter`, and `/fitness`
+2. **Google ID token (per-user)** — used by `/game` (online features), `/tools/splitter`, and `/fitness`
    (workout/profile). The browser sends `Authorization: Bearer <google_id_token>`;
    the Worker verifies it against `GOOGLE_CLIENT_ID` in `handlers/google_auth.rs` and scopes
    rows to that user (`game_users`). On the frontend the token is stored in `localStorage`

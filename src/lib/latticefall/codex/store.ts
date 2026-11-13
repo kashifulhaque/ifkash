@@ -1,5 +1,5 @@
 // The codex unlock store: which entries the visitor has found, saved in `localStorage`.
-// No Three.js or WASM import (the same pattern as `src/lib/game/journal.ts`), so the home
+// No Three.js or WASM import (it must stay that way), so the home
 // page can read it without pulling in the game bundle.
 
 import { writable, type Readable } from 'svelte/store';

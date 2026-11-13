@@ -7,21 +7,14 @@
   import { onMount } from 'svelte';
   import PhoneView from './PhoneView.svelte';
 
-  // `/game?engine=lf` shows the Latticefall engine; plain `/game` keeps the tiny-planet
-  // game until WP-086 makes Latticefall the default.
-  $: useLatticefall = $page.url.searchParams.get('engine') === 'lf';
   $: showDev = $page.url.searchParams.get('dev') === '1';
 
-  // `/game?engine=lf` first shows the landing card, as plain DOM. Neither game's code
-  // (Three.js, the WASM core) is fetched until the visitor presses Play; `&dev=1` and
-  // `&play=1` skip the card. Plain `/game` skips it too, so the live site keeps opening the
-  // tiny-planet game directly until WP-086.
+  // `/game` first shows the landing card, as plain DOM. Neither Three.js nor the WASM core
+  // is fetched until the visitor presses Play; `&dev=1` and `&play=1` skip the card.
   // `&touch=1` forces touch mode and skips the card; `&touch=0` keeps the desktop flow on a phone.
+  // The old `&engine=lf` flag does nothing now; it is ignored.
   const touchAsked = touchParam($page.url.searchParams);
-  let started =
-    $page.url.searchParams.get('engine') !== 'lf' ||
-    skipsLanding($page.url.searchParams) ||
-    touchAsked === true;
+  let started = skipsLanding($page.url.searchParams) || touchAsked === true;
 
   // WP-083: a phone-sized screen opens the codex view instead of the card, and touch mode is
   // the default for a phone that goes straight into the game.
@@ -29,7 +22,7 @@
   let touch = touchAsked === true;
   onMount(() => {
     phone = touchAsked === null && isPhoneWidth(window.innerWidth);
-    if (phone && started && useLatticefall) touch = true;
+    if (phone && started) touch = true;
   });
   const startTouch = () => {
     touch = true;
@@ -37,7 +30,6 @@
   };
 
   const loadLatticefall = () => import('./LatticefallGame.svelte');
-  const loadOld = () => import('./OldGame.svelte');
 </script>
 
 <svelte:head>
@@ -50,16 +42,12 @@
   {/if}
 </svelte:head>
 
-{#if !started && phone && useLatticefall}
+{#if !started && phone}
   <PhoneView on:touch={startTouch} />
 {:else if !started}
   <LandingCard on:play={() => (started = true)} />
-{:else if useLatticefall}
+{:else}
   {#await loadLatticefall() then mod}
     <svelte:component this={mod.default} {showDev} {touch} />
-  {/await}
-{:else}
-  {#await loadOld() then mod}
-    <svelte:component this={mod.default} />
   {/await}
 {/if}

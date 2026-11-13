@@ -2,8 +2,8 @@
   import { onMount } from "svelte";
   import { dev } from "$app/environment";
   import Horizon from "$lib/components/Horizon.svelte";
-  import { loadProgress, WONDER_COUNT } from "$lib/game/progress";
-  import { seedLink } from "$lib/game/seed";
+  import { findableEntries } from "$lib/latticefall/codex/entries";
+  import { readCodex } from "$lib/latticefall/codex/store";
   import { animate, createTimeline } from "animejs";
   import { countUp, magnetic, prefersReducedMotion, reveal, splitReveal, springOut } from "$lib/motion";
 
@@ -68,16 +68,20 @@
     };
   }
 
-  // Progress from the tiny-planet game lives in localStorage, so it is read
-  // after mount; the server render never shows the badge.
+  // Relic progress from the Cinderheart codex lives in localStorage, so it is read
+  // after mount; the server render never shows the badge. Neither module imports
+  // Three.js or the WASM core.
+  const relicKeys = new Set(
+    findableEntries().filter((e) => e.section === "projects").map((e) => e.key),
+  );
   /** @type {{ text: string, href: string } | null} */
   let badge = null;
   onMount(() => {
-    const progress = loadProgress();
-    if (!progress.complete) return;
+    const found = readCodex().entries.filter((k) => relicKeys.has(k)).length;
+    if (found === 0) return;
     badge = {
-      text: `${progress.found.length} of ${WONDER_COUNT} small wonders`,
-      href: progress.seed ? seedLink(progress.seed, "", progress.depth) : "/game",
+      text: `${found} of ${relicKeys.size} relics found`,
+      href: found === relicKeys.size ? "/codex" : "/game",
     };
   });
 
@@ -92,7 +96,7 @@
     { n: "04", name: "Tools", desc: "Useful in-browser utilities", href: "/tools" },
     { n: "05", name: "Education", desc: "Academic background", href: "/education" },
     { n: "06", name: "Blog", desc: "Notes on engineering and ML", href: "/blog" },
-    { n: "07", name: "Game", desc: "A tiny planet to wander", href: "/game" },
+    { n: "07", name: "Game", desc: "Cinderheart, a small action RPG", href: "/game" },
     { n: "08", name: "Roadmap", desc: "Interview course anchored to shipped work", href: "/roadmap" },
   ];
 
@@ -128,9 +132,9 @@
 
     <div class="hero-actions">
       <a href={resumeUrl} class="btn btn-primary" use:magnetic>Read résumé</a>
-      <a href="/game" class="btn" use:magnetic>Visit the tiny planet</a>
+      <a href="/game" class="btn" use:magnetic>Play Cinderheart</a>
       {#if badge}
-        <a href={badge.href} class="tag wonder" title="Every small wonder on the tiny planet has been found">
+        <a href={badge.href} class="tag relic" title="Relics from the portfolio you have found in Cinderheart">
           <span aria-hidden="true">✦</span>
           {badge.text}
         </a>
@@ -217,16 +221,16 @@
     gap: var(--s-2);
   }
 
-  .wonder {
+  .relic {
     height: 40px;
     padding: 0 var(--s-4);
     font-size: var(--text-xs);
     text-decoration: none;
   }
-  .wonder span {
+  .relic span {
     color: var(--clay);
   }
-  .wonder:hover {
+  .relic:hover {
     border-color: var(--line-strong);
     color: var(--ink);
   }

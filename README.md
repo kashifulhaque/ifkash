@@ -36,7 +36,7 @@ client‑side and stores versions in Cloudflare D1 + R2.
 
 ## What it is
 
-Two deployables in one repo:
+Two deployables in one repo (plus Cinderheart, described below):
 
 1. **Frontend** (`/src`) — a [SvelteKit](https://kit.svelte.dev) site (home, work,
    projects, blog, leetcode/HN dashboards, a résumé editor, etc.) built with
@@ -45,6 +45,12 @@ Two deployables in one repo:
    `worker-build`) mounted at `ifkash.dev/api/*`. It proxies a few third‑party APIs
    (Hacker News, LeetCode, WeatherUnion, OpenRouter) and powers the résumé
    feature with D1 + R2.
+
+**Cinderheart** is a small action RPG at `/game` that doubles as a portfolio: you find
+the work and projects as codex entries. It has its own Rust simulation core in `game/`,
+compiled to WASM and drawn by a Three.js renderer in `src/lib/latticefall/` (code name
+`latticefall`). It adds no deployable: the WASM and the game data ship with the frontend.
+The design docs are in `docs/game/`.
 
 The résumé pipeline is fully serverless:
 
@@ -111,13 +117,20 @@ ifkash/
 │
 ├── src/                          # SvelteKit frontend
 │   ├── routes/                   # pages (/, /work, /projects, /editor, ...)
-│   │   └── editor/               # the résumé editor (Monaco + typst.ts preview)
+│   │   ├── editor/               # the résumé editor (Monaco + typst.ts preview)
+│   │   ├── game/                 # Cinderheart at /game
+│   │   └── codex/                # the portfolio codex pages
 │   ├── lib/
 │   │   ├── typst.ts              # browser Typst → PDF (typst.ts WASM)
+│   │   ├── latticefall/          # Cinderheart renderer, UI, audio, codex store (gitignored wasm/)
 │   │   └── apiBase.ts            # dev vs prod API base URL
 │   └── app.html / app.css
 │
+├── game/                         # Cinderheart: Rust simulation core, content data, tools, WASM crate
+├── docs/game/                    # Cinderheart design docs, roadmap, and status
+│
 ├── static/
+│   ├── latticefall/              # Cinderheart models, levels, and manifest
 │   ├── assets/Kashiful_Haque.{typ,pdf}   # committed résumé (static fallback)
 │   └── fonts/                            # Crimson Pro + Cardo (used by typst.ts)
 │
@@ -261,6 +274,21 @@ mise run api:build        # production build of the Worker (worker-build --relea
 mise run api:clean        # wipe local Miniflare state (KV/D1/R2)
 mise run assets:fonts     # (re)download résumé fonts into ./.fonts
 ```
+
+### Run Cinderheart
+
+Cinderheart needs the WASM build of the simulation core, which is gitignored. Build it
+once, then open `/game` on the frontend:
+
+```sh
+mise run game:wasm        # build game/crates/wasm into src/lib/latticefall/wasm/
+mise run game:test        # cargo test for the game workspace
+mise run game:lint        # clippy and rustfmt
+mise run game:validate    # validate the game content data
+```
+
+Add `?dev=1` to `/game` to skip the landing card and open the developer tools. See
+`docs/game/README.md` for the design docs.
 
 ---
 

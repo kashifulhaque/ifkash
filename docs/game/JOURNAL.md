@@ -64,6 +64,8 @@ Copy this block to the top of the entries and fill it in as you go:
   - WP-083: sonnet, worktree; `3e20d7f`; 142K. Clean cherry-pick. Orchestrator re-ran `bun run check` and took screenshots at 375 x 812 on port 5180 (phone view, touch mode).
   - Started WP-088 early (it was wave 3), moved up from haiku to sonnet: it adds Marks to the simulation state, gestures to the input frame, and UI. WP-082 now waits for both WP-081 and WP-088. Orchestrator context 150K.
   - WP-081: sonnet, worktree; `32233fd`; 296K. Clean cherry-pick; no Rust changes. Orchestrator re-ran `bun run check` and the benchmark for the Verge and the castle (matches the report) and took a gameplay screenshot.
+  - WP-101: sonnet, worktree; `d5f15c0`; 171K. Clean cherry-pick. Deliberate: `m6_bound_ring`, `m7_b11_bot_win`, `m7_b11_idle_dies`. Orchestrator fixed a stale B11 comment in `scenarios/boss_b11.ron` (content hash unchanged).
+  - WP-087: haiku, worktree; `cf78346`; 242K. Clean cherry-pick. Merged tree with WP-101: 877 tests, clippy, fmt, validate, 120 goldens A -> A, `bun run check` clean, `lf-tools credits` writes 3 packs.
 ### 2026-11-13: latticefall-m7 (M7)
 
 - **Orchestrator:** Opus 5.5, low effort

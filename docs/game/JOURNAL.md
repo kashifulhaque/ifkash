@@ -41,7 +41,7 @@ Copy this block to the top of the entries and fill it in as you go:
 ### 2026-11-12: latticefall-m6 (M6)
 
 - **Orchestrator:** Opus 5.5, low effort
-- **Branch:** `game/m6-world`
+- **Branch:** `game/m6-world`; first commit on `main` `dba21d4`, last `b555f9e` plus this close-out
 - **Started from:** `origin/main` at `3680331`
 - **Gate G2:** still open. The owner asked for M6 anyway.
 - **Reservations:** registry numbers: WP-060 21000-21999, WP-061 22000-22999,
@@ -65,10 +65,32 @@ Copy this block to the top of the entries and fill it in as you go:
   - WP-063: sonnet, worktree; `1024fe4`; 514K, **over the 500K budget** (it finished and committed). Clean cherry-pick; orchestrator rehashed after the worker's late elite-stat change (94 lines, A -> A).
   - WP-065: sonnet, worktree; `9bd1f3e`; 391K. Worker said `m6_castle_part1` was unchanged; it wasn't (its part-1 geometry edits move the hash). The orchestrator proved it by patching the content hash in the worker's own recording and replaying it OK on the merged code. Deliberate.
   - WP-069: sonnet, worktree; `8bf7ac9`; 289K. Merged last so WP-063 and WP-065 could be checked A -> A first. Deliberate rehash of 55 goldens (visited-cell flags). Map checked in the browser (opens with M; labelled tablist).
-- **Context:**
+  - WP-066: sonnet, worktree; `b555f9e`; 432K. Clean cherry-pick; 98 goldens A -> A. Worker screenshots only.
+  - Owner request mid-session: removed 34 leftover worktrees from M0-M6 (none had uncommitted work; branches kept), freeing about 125 GB. The playbook now has [clean up worktrees](11-agent-playbook.md#clean-up-worktrees) (`7107f3a`).
+- **Context:** orchestrator about 300K at the end (budget 500K per context window). Largest worker: WP-063 at 514K, over budget; it finished and committed.
+- **Lessons:**
+  - Workers misreport golden changes (WP-065 called a moved hash unchanged). Always rehash after a merge and count the `A != B` lines yourself. To find which side moved a hash, patch the content hash in a worker's own `.lfr` (a LEB128 varint after the version byte) and `replay run` it on the merged code.
+  - Merge a WP that deliberately re-records many goldens (WP-069) last in its wave, so the others can be checked A -> A first.
+  - Merges that change shared level types leave baked manifests stale; rebake every area after such a merge (the bake test catches it).
+  - Two workers added the same optional field (`SpawnPoint.y`); a keep-both merge duplicated it. Read merged type declarations, not only the conflict markers.
+  - Give each worker its own ranges for `MechanicEvent` sub-kinds and HUD prompt codes, not only WASM event kinds.
+  - Each worker worktree is 3-6 GB; remove it once its WP is pushed.
 - **Not verified:**
+  - Any region in play: feel, pacing, combat in the new areas. Fights the bots avoid: the castle ward, the Spire halls, the foundry Smiths.
+  - On screen: drained water, moving carts and lifts, the trapdoor, mirrors on sockets, lit braziers, the sealed sigil.
+  - A cross-area trip in the browser (Rust tests only).
+  - Walking between areas: `area.ron` connections are never read, so Lanterns (WP-069) are the only way to change area.
 - **Waiting on the owner:**
+  - **Gate G2** is still open (from M4).
+  - Spire: the gauntlet halls are optional (behind one-way doors); force them? `levels/spire/area.ron` grants two Great Sigils until saves carry inventory.
+  - A cross-area trip is refused while a Remnant is unrecovered (WP-069).
+  - The castle's rampart lift loop from L16 to L15 (49.4 s) isn't faster than the main route.
+  - Chronicle Page 4 and 5 slots need a fifth work entry in the portfolio, or a different use.
 - **Next steps:**
+  1. Owner: gate G2 and the decisions above.
+  2. M7 (bosses WP-070 to WP-080). Every dependency is done except WP-080's other bosses. Each boss WP replaces its arena's commented `Boss` placeholder and fog gate: B03 `castle`, B04 `mossgut_cave`, B05 `sunken_ossuary`, B06 `mirrormere`, B07 `castle` (also raise `door.gate_castle_back.open` on defeat), B08 `cinderdeep_mine`, B09 `hollowdeep`, B10 `rimeshelf`, B11 `bound_ring` (also set the sigil `armed: true`), B12 `spire`. WP-071 and WP-075 both edit `levels/castle/entities.ron`; don't run them at the same time.
+  3. Follow-ups found in M6 (one sonnet WP each, or fold into M8): walking between areas (read `area.ron` connections, including the chimney drop and the Belfry and Mossgut lifts); open the Verge's `mossgut_plug` and connect it to Mossgut; a castle connection back into Rimeshelf; the follow camera clipping low ceilings; darkness affecting enemies; remove the Spire's Great Sigil grant; a "ring the bell" prompt; Mirrormere's sound bed; the Mirror's visual effect; a nav-grid link for jumps and ladders (the Spire's L23 bake warning).
+  4. Registry blocks used in M6: 21000-30499. WASM event kinds used: 31-33 (WP-068). Free WASM kinds: 10, 12, 18-20, 22-30, 34 and up. `MechanicEvent` sub-kinds used: 30-39, 40-43, 70-72, 90-92, 100-103. HUD prompt codes used: 8, 9, 30-32, 40, 55, 56.
 
 ### 2026-11-12: latticefall-m5 (M5)
 

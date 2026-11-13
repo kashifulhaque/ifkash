@@ -94,13 +94,13 @@ The orchestrator owns this file. It follows these rules, from
 | 067 | Lattice Spire | world | sonnet | done | sonnet, Opus-verified | latticefall-m6 | game/m6-world (worker worktree) | 2026-11-12 | `levels/spire/`, `DoorKind::Held` (`mechanics/held_door.rs`), stub Great Sigils, golden `m6_spire`. Temporary `player_items` grant of two Sigils in `area.ron`. Gauntlet halls optional (owner to decide). Nav can't cross the jump gaps (bake warning). |
 | 068 | Hollowhearth, NPCs, questlines | ui | sonnet | done | sonnet, Opus-verified | latticefall-m6 | game/m6-world (worker worktree) | 2026-11-12 | `levels/hollowhearth/`, `data/npcs/`, `world_state/quests.rs`, `content/src/npc.rs`, `ui/dialogue/`. WASM events 31-33, commands 40-42. Hub reachable by URL only (no area switch yet); Mirror stores flags only; Smith and shop are stubs. |
 | 069 | Map and fast travel | ui | sonnet | done | sonnet, Opus-verified | latticefall-m6 | game/m6-world (worker worktree) | 2026-11-13 | `world_state/map.rs`, `ui/map/`, `Command::{TravelFar,MapMarker}`, cross-area travel by Lantern via `map::tick_world`. 55 goldens re-recorded (visited-cell flags). Walking between areas (`area.ron` connections) not implemented. |
-| 070 | B02 the Briar Stag | ai | sonnet | todo |  |  | | | |
-| 071 | B03 Bridgewarden Corvane | ai | haiku | todo |  |  | | | |
-| 072 | B04 Mossgut Brood | ai | sonnet | todo |  |  | | | |
-| 073 | B05 Ossuary Keeper | ai | sonnet | todo |  |  | | | |
-| 074 | B06 the Drowned Choir | ai | sonnet | todo |  |  | | | |
+| 070 | B02 the Briar Stag | ai | sonnet | in progress |  | latticefall-m7 | game/m7-bosses (worker worktree) | 2026-11-13 | |
+| 071 | B03 Bridgewarden Corvane | ai | haiku | in progress |  | latticefall-m7 | game/m7-bosses (worker worktree) | 2026-11-13 | |
+| 072 | B04 Mossgut Brood | ai | sonnet | in progress |  | latticefall-m7 | game/m7-bosses (worker worktree) | 2026-11-13 | |
+| 073 | B05 Ossuary Keeper | ai | sonnet | in progress |  | latticefall-m7 | game/m7-bosses (worker worktree) | 2026-11-13 | |
+| 074 | B06 the Drowned Choir | ai | sonnet | in progress |  | latticefall-m7 | game/m7-bosses (worker worktree) | 2026-11-13 | |
 | 075 | B07 Castellan Voss | ai | sonnet | todo |  |  | | | |
-| 076 | B08 Forgeheart Colossus | ai | sonnet | todo |  |  | | | |
+| 076 | B08 Forgeheart Colossus | ai | sonnet | in progress |  | latticefall-m7 | game/m7-bosses (worker worktree) | 2026-11-13 | |
 | 077 | B09 the Lamplight Matriarch | ai | sonnet | todo |  |  | | | |
 | 078 | B10 the Bellwright | ai | sonnet | todo |  |  | | | |
 | 079 | B11 the Bound Exile | ai | sonnet | todo |  |  | | | |

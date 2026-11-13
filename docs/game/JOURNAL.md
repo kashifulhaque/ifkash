@@ -38,6 +38,26 @@ Copy this block to the top of the entries and fill it in as you go:
 
 ## Entries
 
+### 2026-11-13: latticefall-m7 (M7)
+
+- **Orchestrator:** Opus 5.5, low effort
+- **Branch:** `game/m7-bosses`
+- **Started from:** `origin/main` at `2fe6615`
+- **Gate G2:** still open. The owner asked for M7 anyway.
+- **Reservations:** registry numbers: WP-070 31000-31999, WP-071 32000-32999,
+  WP-072 33000-33999, WP-073 34000-34999, WP-074 35000-35999, WP-075 36000-36999,
+  WP-076 37000-37999, WP-077 38000-38999, WP-078 39000-39999, WP-079 40000-40999,
+  WP-080 41000-41999. WASM event kinds: WP-070 40, WP-071 41, WP-072 42, WP-073 43,
+  WP-074 44, WP-075 45, WP-076 46, WP-077 47, WP-078 48, WP-079 49, WP-080 50-51.
+  `MechanicEvent` sub-kinds: WP-070 110-119, then 10 per WP in card order up to
+  WP-080 210-219. HUD prompt codes: WP-070 60-61, then 2 per WP in card order up to
+  WP-080 80-81.
+- **Plan:** wave 1 is WP-070, 071, 072, 073, 074, and 076, each in its own worktree.
+  Wave 2 is WP-075 (after WP-071: both edit `levels/castle/entities.ron`), 077, 078,
+  and 079. Wave 3 is WP-080. WP-071 moved up from haiku to sonnet: B01 needed the same
+  move, and every boss WP needs a scripted bot that wins.
+- **WPs:**
+
 ### 2026-11-12: latticefall-m6 (M6)
 
 - **Orchestrator:** Opus 5.5, low effort

@@ -361,6 +361,7 @@ pub fn run(world: &mut World) {
     };
     bosses::run(world);
     boss::run(world);
+    bosses::after(world);
     // Echoes (WP-059) have an AI brain but think on the player's side: `echo::run` drives them.
     let ids: Vec<Id> = world
         .actors

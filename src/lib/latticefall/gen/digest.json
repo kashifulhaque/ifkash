@@ -278,8 +278,8 @@
     "start_max": 16,
     "start_min": 4
   },
-  "contentHash": "1821550242565817944",
-  "contentHashHex": "1947724b6ca98658",
+  "contentHash": "7549401716157915203",
+  "contentHashHex": "68c4dcdcc6512043",
   "moves": [
     {
       "anim": "ep_sentinel_thrust",
@@ -910,6 +910,126 @@
       "stamina": 0,
       "stub": false,
       "totalFrames": 45
+    },
+    {
+      "anim": "keeper_bell_1",
+      "file": "moves/bosses/b05.ron",
+      "fp": 0,
+      "id": "b05_bell_1",
+      "num": 34100,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 46
+    },
+    {
+      "anim": "keeper_bell_2",
+      "file": "moves/bosses/b05.ron",
+      "fp": 0,
+      "id": "b05_bell_2",
+      "num": 34101,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 40
+    },
+    {
+      "anim": "keeper_bell_3",
+      "file": "moves/bosses/b05.ron",
+      "fp": 0,
+      "id": "b05_bell_3",
+      "num": 34102,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 80
+    },
+    {
+      "anim": "keeper_beam",
+      "file": "moves/bosses/b05.ron",
+      "fp": 0,
+      "id": "b05_beam",
+      "num": 34103,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 110
+    },
+    {
+      "anim": "keeper_raise",
+      "file": "moves/bosses/b05.ron",
+      "fp": 0,
+      "id": "b05_raise",
+      "num": 34104,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 120
+    },
+    {
+      "anim": "keeper_surge",
+      "file": "moves/bosses/b05.ron",
+      "fp": 0,
+      "id": "b05_surge",
+      "num": 34105,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 45
+    },
+    {
+      "anim": "keeper_scavenge",
+      "file": "moves/bosses/b05.ron",
+      "fp": 0,
+      "id": "b05_scavenge",
+      "num": 34106,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 84
+    },
+    {
+      "anim": "keeper_spear_thrust",
+      "file": "moves/bosses/b05.ron",
+      "fp": 0,
+      "id": "b05_borrow_thrust",
+      "num": 34107,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 74
+    },
+    {
+      "anim": "keeper_shield_bash",
+      "file": "moves/bosses/b05.ron",
+      "fp": 0,
+      "id": "b05_borrow_bash",
+      "num": 34108,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 60
+    },
+    {
+      "anim": "thrall_slash",
+      "file": "moves/bosses/b05.ron",
+      "fp": 0,
+      "id": "b05_thrall_slash",
+      "num": 34110,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 60
+    },
+    {
+      "anim": "thrall_thrust",
+      "file": "moves/bosses/b05.ron",
+      "fp": 0,
+      "id": "b05_thrall_thrust",
+      "num": 34111,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 76
+    },
+    {
+      "anim": "drowned_swipe",
+      "file": "moves/bosses/b05.ron",
+      "fp": 0,
+      "id": "b05_drowned_swipe",
+      "num": 34120,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 76
     },
     {
       "anim": "cantor_beam",

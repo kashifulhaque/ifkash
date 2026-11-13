@@ -1,0 +1,42 @@
+// The B05 boss arena (WP-073): the Keeper's Vault of the Sunken Ossuary, cut out of the level
+// (data/levels/sunken_ossuary) so the fight can run without the dungeon.
+// docs/game/05-enemies-and-bosses.md, "B05 Ossuary Keeper".
+//   - The player spawns at (0, 0, 12) facing +Z, in the approach corridor outside the fog gate.
+//   - The fog gate is the plane z = 23, 6 m wide, opening north into the vault (+Z).
+//   - The vault is x in [-16, 16], z in [24, 56]; the Keeper waits at (0, 0, 41.5) facing -Z, in front of the dais.
+//   - Three raised platforms, 1 m high and 6 m square, stand at (-9, 36), (9, 36), and (0, 46).
+//   - The vault floods 0.4 m deep (`vault_wade`) and rises to 0.8 m in phase 2. The Drowned are
+//     water-only, so the water zone is the whole vault.
+//   - Walls close the sides and the far end (the vault has no edge to fall off).
+(
+  spawn: (0.0, 0.0, 12.0),
+  spawn_yaw: 0.0,
+  kill_y: -12.0,
+  heightfield: None,
+  boxes: [
+    (name: "floor", center: (0.0, -0.5, 32.0), half_extents: (16.0, 0.5, 24.0)),
+    (name: "wall_west", center: (-17.0, 3.0, 32.0), half_extents: (1.0, 3.0, 25.0)),
+    (name: "wall_east", center: (17.0, 3.0, 32.0), half_extents: (1.0, 3.0, 25.0)),
+    (name: "wall_back", center: (0.0, 3.0, 57.0), half_extents: (18.0, 3.0, 1.0)),
+    (name: "wall_front", center: (0.0, 3.0, 7.0), half_extents: (18.0, 3.0, 1.0)),
+    (name: "v_platform_0", center: (-9.0, 0.5, 36.0), half_extents: (3.0, 0.5, 3.0)),
+    (name: "v_platform_1", center: (9.0, 0.5, 36.0), half_extents: (3.0, 0.5, 3.0)),
+    (name: "v_platform_2", center: (0.0, 0.5, 46.0), half_extents: (3.0, 0.5, 3.0)),
+  ],
+  pools: [
+    (name: "vault_wade", center: (0.0, 40.0), half_extents: (16.0, 16.0), depth_m: 0.4, raised_depth_m: Some(0.8)),
+  ],
+  water: [
+    (name: "water_vault", center: (0.0, 40.0), half_extents: (16.0, 16.0)),
+  ],
+  start_glimmer: 0,
+  bosses: [
+    (
+      name: "b05",
+      boss: "b05_ossuary_keeper",
+      pos: (0.0, 0.0, 41.5),
+      yaw: 3.1415927,
+      gate: (pos: (0.0, 0.0, 23.0), yaw: 0.0, half_width_m: 3.0, depth_m: 3.0),
+    ),
+  ],
+)

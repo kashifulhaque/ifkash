@@ -917,6 +917,10 @@ pub fn before_locomotion(world: &mut World) {
         } else if inside(c, h, pos[0], pos[2]) {
             slow = slow * (100 - u32::from(t.water_slow_percent)) / 100;
             blight |= pool.blight;
+            // WP-073: a pool a boss fight has set dragging slows a second time (B05's tide).
+            if world.state.flags.is_set(&flags::pool_drag(&pool.name)) {
+                slow = slow * (100 - u32::from(t.water_slow_percent)) / 100;
+            }
         }
     }
     let in_snow = world

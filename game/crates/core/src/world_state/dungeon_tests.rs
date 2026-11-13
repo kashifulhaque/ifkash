@@ -265,11 +265,9 @@ mod ossuary {
             Goto(0.0, 4.0),
             Goto(0.0, 16.0),
             Goto(0.0, 21.5),
-            Goto(0.0, 26.0),
-            Goto(0.0, 30.0),
-            // The vault's fog gate is a placeholder until B05 exists. Back out and take the
-            // shortcut: F's east door, the long corridor, and the one-way door into E.
-            Goto(0.0, 24.0),
+            // The vault's fog gate (B05, WP-073) is the plane z = 23: stop short of it, back out,
+            // and take the shortcut: F's east door, the long corridor, and the one-way door
+            // into E.
             Goto(0.0, 20.0),
             Goto(8.0, 12.0),
             Goto(15.0, 10.0),

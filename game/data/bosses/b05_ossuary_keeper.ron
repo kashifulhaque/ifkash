@@ -1,0 +1,185 @@
+// B05, the Ossuary Keeper (registry 34000-34999). Source: docs/game/05-enemies-and-bosses.md,
+// "B05 Ossuary Keeper" (HP 3,000, two phases, weakness Blunt and Radiance, immune to Poison and
+// Rupture, the Bone Sentinel Echo as its reward, an Echo Stone in the arena). Defense, poise,
+// resist, attack, stamina, option weights, and cooldowns are tuning.
+//
+// The adds are parts that aren't required to win. All of them lie "dead" until the Keeper raises
+// them (`ai::bosses::b05`): three bone thralls on Raise, and two Drowned when the water rises in
+// phase 2. The core also locks three options by cooldown until their condition holds: Raise needs
+// a fallen thrall, the scavenge needs a fallen thrall and an unarmed Keeper, and the borrowed
+// moves need an armed one. The reward's Echo is unlocked by `ai::bosses::b05` on defeat (the boss file has no flag field).
+#![enable(implicit_some)]
+(
+  id: "b05_ossuary_keeper",
+  name: "The Ossuary Keeper",
+  body: (
+    id: "b05_ossuary_keeper_body",
+    model: "boss_ossuary_keeper",
+    hp: 3000,
+    poise: 300,
+    defense: (flat: 25, weakness: [(Blunt, 120), (Radiance, 120)]),
+    resist: (immunity: 400, robustness: 400, composure: 400),
+    immune: [Poison, Rupture],
+    glimmer: 0,
+    attack: 100,
+    element_attack: (Radiance, 90),
+    stamina: 200,
+    speed_percent: 80,
+    leash_m: 80.0,
+    ignores_tokens: true,
+    moveset: "bosses/b05.ron",
+    options: [
+      (move: "b05_bell_1", when: [DistBelow(3.2), FacingWithin(40.0)], weight: 5, cooldown: 150),
+      (move: "b05_beam", when: [DistAbove(2.5), FacingWithin(35.0)], weight: 3, cooldown: 480),
+      (move: "b05_raise", when: [], weight: 6, cooldown: 1200),
+      (move: "b05_scavenge", when: [Phase(2), DistAbove(1.0)], weight: 8, cooldown: 400),
+      (move: "b05_borrow_thrust", when: [Phase(2), DistBetween(2.4, 4.4), FacingWithin(30.0)], weight: 5, cooldown: 150),
+      (move: "b05_borrow_bash", when: [Phase(2), DistBelow(2.2), FacingWithin(40.0)], weight: 4, cooldown: 120),
+      (behavior: Approach(dur: 20), when: [DistAbove(2.8)], weight: 4),
+      (behavior: Wait(dur: 20), when: [DistBelow(4.0)], weight: 1),
+    ],
+  ),
+  parts: [
+    (
+      // Thrall A: a skeleton that lies in the water until Raise stands it up. It carries a
+      // spear and a shield; a fallen one is what the Keeper borrows from in phase 2.
+      def: (
+        id: "b05_bone_thrall_a",
+        model: "skeleton_whitewarden",
+        hp: 170,
+        poise: 25,
+        defense: (flat: 35),
+        resist: (immunity: 200, robustness: 200, composure: 200),
+        immune: [Poison, Blight, Drowse],
+        glimmer: 0,
+        attack: 40,
+        speed_percent: 70,
+        leash_m: 80.0,
+        ignores_tokens: true,
+        moveset: "bosses/b05.ron",
+        options: [
+          (move: "b05_thrall_slash", when: [DistBelow(2.3), FacingWithin(50.0)], weight: 5, cooldown: 180),
+          (move: "b05_thrall_thrust", when: [DistBetween(2.4, 3.6), FacingWithin(30.0)], weight: 3, cooldown: 220),
+          (behavior: Approach(dur: 30), when: [DistAbove(2.0)], weight: 4),
+          (behavior: Strafe(dur: 40), when: [DistBetween(1.5, 5.0)], weight: 1, cooldown: 90),
+        ],
+      ),
+      offset: (-4.0, 0.0, -4.0),
+      required: false,
+    ),
+    (
+      // Thrall B: a skeleton that lies in the water until Raise stands it up. It carries a
+      // spear and a shield; a fallen one is what the Keeper borrows from in phase 2.
+      def: (
+        id: "b05_bone_thrall_b",
+        model: "skeleton_whitewarden",
+        hp: 170,
+        poise: 25,
+        defense: (flat: 35),
+        resist: (immunity: 200, robustness: 200, composure: 200),
+        immune: [Poison, Blight, Drowse],
+        glimmer: 0,
+        attack: 40,
+        speed_percent: 70,
+        leash_m: 80.0,
+        ignores_tokens: true,
+        moveset: "bosses/b05.ron",
+        options: [
+          (move: "b05_thrall_slash", when: [DistBelow(2.3), FacingWithin(50.0)], weight: 5, cooldown: 180),
+          (move: "b05_thrall_thrust", when: [DistBetween(2.4, 3.6), FacingWithin(30.0)], weight: 3, cooldown: 220),
+          (behavior: Approach(dur: 30), when: [DistAbove(2.0)], weight: 4),
+          (behavior: Strafe(dur: 40), when: [DistBetween(1.5, 5.0)], weight: 1, cooldown: 90),
+        ],
+      ),
+      offset: (4.0, 0.0, -4.0),
+      required: false,
+    ),
+    (
+      // Thrall C: a skeleton that lies in the water until Raise stands it up. It carries a
+      // spear and a shield; a fallen one is what the Keeper borrows from in phase 2.
+      def: (
+        id: "b05_bone_thrall_c",
+        model: "skeleton_whitewarden",
+        hp: 170,
+        poise: 25,
+        defense: (flat: 35),
+        resist: (immunity: 200, robustness: 200, composure: 200),
+        immune: [Poison, Blight, Drowse],
+        glimmer: 0,
+        attack: 40,
+        speed_percent: 70,
+        leash_m: 80.0,
+        ignores_tokens: true,
+        moveset: "bosses/b05.ron",
+        options: [
+          (move: "b05_thrall_slash", when: [DistBelow(2.3), FacingWithin(50.0)], weight: 5, cooldown: 180),
+          (move: "b05_thrall_thrust", when: [DistBetween(2.4, 3.6), FacingWithin(30.0)], weight: 3, cooldown: 220),
+          (behavior: Approach(dur: 30), when: [DistAbove(2.0)], weight: 4),
+          (behavior: Strafe(dur: 40), when: [DistBetween(1.5, 5.0)], weight: 1, cooldown: 90),
+        ],
+      ),
+      offset: (0.0, 0.0, -8.0),
+      required: false,
+    ),
+    (
+      // Drowned A: one of the water's dead. It lies at the vault's edge and joins in phase 2.
+      def: (
+        id: "b05_vault_drowned_a",
+        model: "drowned",
+        hp: 200,
+        poise: 40,
+        defense: (flat: 35, weakness: [(Storm, 125)]),
+        resist: (immunity: 140, robustness: 100, composure: 100),
+        glimmer: 0,
+        attack: 55,
+        speed_percent: 55,
+        water_only: true,
+        leash_m: 80.0,
+        ignores_tokens: true,
+        moveset: "bosses/b05.ron",
+        options: [
+          (move: "b05_drowned_swipe", when: [DistBelow(2.2), FacingWithin(40.0)], weight: 5, cooldown: 120),
+          (behavior: Approach(dur: 30), when: [DistAbove(1.8)], weight: 6),
+          (behavior: Wait(dur: 20), when: [DistAbove(4.0)], weight: 1),
+        ],
+      ),
+      offset: (-14.0, 0.0, -3.0),
+      required: false,
+    ),
+    (
+      // Drowned B: one of the water's dead. It lies at the vault's edge and joins in phase 2.
+      def: (
+        id: "b05_vault_drowned_b",
+        model: "drowned",
+        hp: 200,
+        poise: 40,
+        defense: (flat: 35, weakness: [(Storm, 125)]),
+        resist: (immunity: 140, robustness: 100, composure: 100),
+        glimmer: 0,
+        attack: 55,
+        speed_percent: 55,
+        water_only: true,
+        leash_m: 80.0,
+        ignores_tokens: true,
+        moveset: "bosses/b05.ron",
+        options: [
+          (move: "b05_drowned_swipe", when: [DistBelow(2.2), FacingWithin(40.0)], weight: 5, cooldown: 120),
+          (behavior: Approach(dur: 30), when: [DistAbove(1.8)], weight: 6),
+          (behavior: Wait(dur: 20), when: [DistAbove(4.0)], weight: 1),
+        ],
+      ),
+      offset: (14.0, 0.0, -3.0),
+      required: false,
+    ),
+  ],
+  phases: [
+    (below: 0.5, transition: "b05_surge"),
+  ],
+  rewards: (
+    glimmer: 800,
+    items: [],
+    codex: "b05_ossuary_keeper",
+  ),
+  echo_stone: true,
+  music: (intro: "boss_b05_intro", loop_stem: "boss_b05_loop", phase2_stem: "boss_b05_tide"),
+)

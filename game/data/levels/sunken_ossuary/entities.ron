@@ -26,9 +26,12 @@
     // F: the Flooded Crypt, deep until lever 2 is pulled.
     Pool(name: "flood_f", center: (0.0, 9.0), half_extents: (16.0, 13.0), depth_m: 2.0, lowered_by: "ossuary.drain_f", lowered_depth_m: 0.5),
     // V: the Keeper's Vault, a flooded crypt with raised platforms (B05's arena).
-    Pool(name: "vault_wade", center: (0.0, 40.0), half_extents: (16.0, 16.0), depth_m: 0.4),
+    // Phase 2 of B05 raises it 0.4 m (`raised_depth_m`, flag `pool.vault_wade.raised`).
+    Pool(name: "vault_wade", center: (0.0, 40.0), half_extents: (16.0, 16.0), depth_m: 0.4, raised_depth_m: 0.8),
     Water(name: "water_hall", center: (0.0, -18.0), half_extents: (16.0, 12.0)),
     Water(name: "water_f", center: (0.0, 9.0), half_extents: (16.0, 13.0)),
+    // The Keeper's Vault: B05's Drowned stay in it (WP-073).
+    Water(name: "water_vault", center: (0.0, 40.0), half_extents: (16.0, 16.0)),
 
     // --- Doors and levers --------------------------------------------------------------------
     // The shortcut: opens only from the corridor side (it faces +X, the corridor).
@@ -81,14 +84,15 @@
     Pickup(id: "vial_ossuary_corridor", item: "itm_glimmer_vial", pos: (38.0, 0.0, -50.0), interact: true),
 
     // --- B05's arena: the Keeper's Vault (x -16..16, z 24..56) ----------------------------------
-    // The boss: PLACEHOLDER. B05 (the Ossuary Keeper, an M7 work package, WP-073) has no boss
-    // definition yet, so no Boss entity is placed. When it exists, add:
-    //   Boss(name: "b05", boss: "<b05 id>", pos: (0.0, 0.0, 44.0), yaw: 3.1415927,
-    //     gate: (pos: (0.0, 0.0, 23.0), yaw: 0.0, half_width_m: 3.0, depth_m: 3.0)),
-    // The fog gate is the plane z = 23 across the doorway (x -3..3), opening north into the vault;
-    // the Keeper waits at (0, 0, 44) facing it. The reward is the Bone Sentinel Echo
-    // (`echo_bone_sentinel`), given by the boss's rewards, so no pedestal is placed here.
+    // The boss: B05, the Ossuary Keeper (WP-073). The fog gate is the plane z = 23 across the
+    // doorway (x -3..3), opening north into the vault; the Keeper waits at (0, 0, 41.5) facing it,
+    // just in front of the dais (the raised platform at z 43..49; the notes' (0, 0, 44) is inside it).
+    // The reward is the Bone Sentinel Echo (`echo_bone_sentinel`), unlocked when the Keeper falls
+    // (`ai::bosses::b05`), so no pedestal is placed here. The boss's five adds lie in the water
+    // until it raises them, and the vault's pool `vault_wade` rises to 0.8 m in phase 2.
     // The Echo Stone stands just inside the door, west of the first pillar.
+    Boss(name: "b05", boss: "b05_ossuary_keeper", pos: (0.0, 0.0, 41.5), yaw: 3.1415927,
+      gate: (pos: (0.0, 0.0, 23.0), yaw: 0.0, half_width_m: 3.0, depth_m: 3.0)),
     EchoStone(id: "stone_b05", pos: (-9.0, 0.0, 27.0), yaw: 0.7854),
   ],
 )

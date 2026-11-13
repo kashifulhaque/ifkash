@@ -64,6 +64,11 @@ pub fn pool_raised(pool_name: &str) -> String {
     format!("pool.{pool_name}.raised")
 }
 
+/// Flag name for "this pool's water drags a wading player twice" (WP-073: B05's rising tide).
+pub fn pool_drag(pool_name: &str) -> String {
+    format!("pool.{pool_name}.drag")
+}
+
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Flags(BTreeMap<String, u32>);
 

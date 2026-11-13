@@ -221,6 +221,14 @@ impl MechanicEvent {
     /// A Briar Stag charge ran into a tree or a hedge and stunned the Stag (WP-070);
     /// `index` is the boss's index.
     pub const BRIAR_TREE_STRUCK: u8 = 111;
+    /// B05 (WP-073): the Keeper's Raise stood fallen thralls up; `index` is how many.
+    pub const B05_RAISED: u8 = 140;
+    /// B05: the water began to rise (phase 2).
+    pub const B05_TIDE_RISING: u8 = 141;
+    /// B05: the Drowned stood up at the vault's edges; `index` is how many.
+    pub const B05_DROWNED_JOIN: u8 = 142;
+    /// B05: the Keeper took a fallen thrall's weapon.
+    pub const B05_WEAPON_TAKEN: u8 = 143;
 }
 
 /// The player opened a chest (`source` is always 1; pickups send `PickupEvent`), and

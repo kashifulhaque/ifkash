@@ -6,6 +6,14 @@ import { colossusDef } from '../bosses/b08/colossus';
 import { colossusLegDef } from '../bosses/b08/legs';
 import { B02_KIND, briarStagDef } from '../bosses/b02/briarStag';
 import type { ModelDef } from './model';
+import {
+  B05_DROWNED_KINDS,
+  B05_KIND,
+  B05_THRALL_KINDS,
+  boneThrallDef,
+  ossuaryKeeperDef,
+  vaultDrownedDef
+} from '../bosses/b05';
 import { acolyteDef } from './models/acolyte';
 import { bellWardenDef } from './models/bellWarden';
 import { brambleBruteDef } from './models/brambleBrute';
@@ -84,7 +92,11 @@ const defs = new Map<number, ModelDef>([
   [33004, eggSacDef],
   [33005, eggSacDef],
   // WP-070: B02, the Briar Stag.
-  [B02_KIND, briarStagDef]
+  [B02_KIND, briarStagDef],
+  // WP-073: B05 and its adds.
+  [B05_KIND, ossuaryKeeperDef],
+  ...B05_THRALL_KINDS.map((k): [number, ModelDef] => [k, boneThrallDef]),
+  ...B05_DROWNED_KINDS.map((k): [number, ModelDef] => [k, vaultDrownedDef])
 ]);
 
 // WP-074: B06, the Drowned Choir (three bodies).

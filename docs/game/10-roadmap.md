@@ -1207,6 +1207,36 @@ possible. The owner plays it end to end before M8 starts.
   every required boss.
 - **Verify:** `cargo run -p lf-tools -- balance`.
 
+<a id="wp-089.a"></a>
+### WP-089.a: Add the balance report and the first tuning pass
+
+- **Lane:** combat · **Depends on:** 101 · **Size:** L · **Worker:** opus
+- **Touch:** `game/data/**` (numbers), `game/crates/tools/src/balance.rs`, the `bots` feature.
+- **Do:** `lf-tools balance` (nine builds against each required boss at the expected
+  level, eight seeds per pair, using the M7 bots), then tune numbers that don't distort
+  the data.
+- **Acceptance:** The report runs deterministically; tuned numbers are listed in the commit.
+- **Verify:** `cargo run -p lf-tools -- balance`.
+
+<a id="wp-089.b"></a>
+### WP-089.b: Close the remaining balance gaps
+
+- **Lane:** combat · **Depends on:** 089.a, owner decisions · **Size:** M · **Worker:** opus
+- **Touch:** `game/data/**` (numbers), `game/crates/tools/src/balance.rs`, the boss bots.
+- **Do:** Bring the 16 failing pairs from WP-089.a within 30% of the target:
+  - Colossus against every Great Sigil boss and B12 (57-66% too fast): the Forgeheart
+    Maul hits 2.3-2.5 times as hard as a longsword. Needs the owner's call: cut it about
+    40%, or accept the gap.
+  - Scholar against every Great Sigil boss and B12 (no wins): the bot casts from 2 m, and
+    a full FP pool deals about 9,500 damage. Improve the caster bot, or rebalance FP and
+    spells.
+  - B01 with Paladin, Frostbinder, Spellblade, and Tempest Lancer (78-86% too slow): the
+    same hits take twice as long with a medium roll. Confirm whether the B01 bot or the
+    roll is at fault.
+  - Ranger against B01 (42% too fast) and B12 (72% too slow): the bot fires point-blank.
+- **Acceptance:** The parent card's acceptance.
+- **Verify:** `cargo run -p lf-tools -- balance`.
+
 **Stretch:** Reweave (new game plus). Write its card when M8 starts if there's time.
 
 ### M8 follow-ups

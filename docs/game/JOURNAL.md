@@ -73,6 +73,7 @@ Copy this block to the top of the entries and fill it in as you go:
   - The owner asked mid-session to mute the game: a hidden Browser pane tab on `/game` was playing WP-087's music. The orchestrator moved the tab to `/codex`. Leave `/game` after every visual check.
   - WP-082: sonnet, worktree; `a05335af`; 239K. Clean cherry-pick; no Rust changes. Orchestrator checked `bun run check` and the diff only; screenshots are the worker's.
   - WP-086: sonnet, worktree; `a38a9bff`; 105K. Verified in its worktree (`bun run check`, `bun run build`) and held off `main` for the owner. The ADR 0003 rollout looks done: the `CLOUDFLARE_PAGES_API_TOKEN` secret exists and `web-deploy.yml` (which builds the WASM) passed on every M8 push. The README's open-decision row is stale. WP-084's Worker deploy passed and `/api/latticefall/speedrun/leaderboard` returns 200 in production.
+  - WP-089: opus, worktree; `c6a21aec`; 317K. Acceptance not met: 38 of 54 pairs within 30%; the rest need design calls or better bots, so the orchestrator split it into 089.a (this commit, done) and 089.b (blocked on the owner). Merge onto WP-088: every golden conflicted. Mistake caught by the bot-win tests: `checkout --theirs` didn't clear the conflict, and a later `--ours` pass overwrote the five re-recorded bot inputs; restored them from `c6a21aec`. Merged tree: 909 tests, clippy (all targets), fmt, validate, `bun run check`, second rehash 120 A -> A.
 ### 2026-11-13: latticefall-m7 (M7)
 
 - **Orchestrator:** Opus 5.5, low effort

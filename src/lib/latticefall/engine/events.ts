@@ -140,7 +140,25 @@ export const LOOM_CLEARED = 3;
 export const MECHANIC_UNSPOOLED_REBORN = 210;
 export const MECHANIC_LOOM_BEAM_HIT = 211;
 
-export type GameEvent = HitEvent | PickupEvent | MechanicEvent | BriarEvent | LoomEvent;
+export const EVENT_BOSS = 11;
+
+/** A boss fight's life cycle (WP-033; decoded for the hazard effects in WP-100). */
+export interface BossEvent {
+  kind: 'boss';
+  /** The boss's index in the scenario. */
+  boss: number;
+  /** 0 the gate sealed (the intro begins), 1 the fight started, 2 a phase started, 3 defeated, 4 reset. */
+  what: number;
+  phase: number;
+}
+
+export const BOSS_SEALED = 0;
+export const BOSS_FIGHT_STARTED = 1;
+export const BOSS_PHASE_STARTED = 2;
+export const BOSS_DEFEATED = 3;
+export const BOSS_RESET = 4;
+
+export type GameEvent = HitEvent | PickupEvent | MechanicEvent | BriarEvent | LoomEvent | BossEvent;
 
 const scratch = new DataView(new ArrayBuffer(4));
 function f32(bits: number): number {
@@ -176,6 +194,8 @@ export function decodeEvents(words: ArrayLike<number>): GameEvent[] {
       out.push({ kind: 'pickup', index: words[i + 1] >>> 0, item: words[i + 2] >>> 0 });
     } else if (kind === EVENT_MECHANIC) {
       out.push({ kind: 'mechanic', what: words[i + 1] >>> 0, index: words[i + 2] >>> 0 });
+    } else if (kind === EVENT_BOSS) {
+      out.push({ kind: 'boss', boss: words[i + 1] >>> 0, what: words[i + 2] >>> 0, phase: words[i + 3] >>> 0 });
     } else if (kind === EVENT_BRIAR) {
       out.push({
         kind: 'briar',

@@ -7,6 +7,8 @@ import { AudioEngine } from '../audio/engine';
 import { cameraOptions } from '../render/camera';
 import { BriarFx } from '../render/bosses/b02';
 import { LoomFx } from '../render/bosses/b12';
+import { BossHazardFx } from '../render/bosses/hazards';
+import { endingFromEvents } from '../ui/ending/endingStore';
 import { digestMoveResolver } from '../render/actors/moveTable';
 import { parseSection, sectionCam } from '../render/equipment/layout';
 import { equippedFromMenuWords, type Equipped } from '../render/equipment/playerGear';
@@ -128,6 +130,13 @@ export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions
   // B12's loom lines (WP-080); fed by the events.
   const loom = new LoomFx(view.scene);
   view.frameHooks.push((dt) => loom.update(dt));
+  // B08's lava, B10's toll and ice, B09's lamp flames, B04's weak point, and B02's intro camera (WP-100).
+  const hazards = new BossHazardFx(view.scene, {
+    scenario,
+    reducedMotion: () => view.vfx.shake.reducedMotion,
+    loomSink: (e) => loom.handleEvents(e)
+  });
+  view.frameHooks.push((_dt, camera) => hazards.applyCamera(camera));
   // Draws the area's baked level when it has a manifest; the flat scenarios keep the stand-in ground.
   void view.loadLevel(scenario);
   // The armory loads only for `&dev=1&scene=armory`; its code is a separate chunk.
@@ -226,6 +235,8 @@ export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions
       view.vfx.handleEvents(events);
       briar.handleEvents(events);
       loom.handleEvents(events);
+      hazards.handleEvents(events, world.tick_count());
+      endingFromEvents(events);
       tools?.onEvents(events);
     }
   }
@@ -263,6 +274,7 @@ export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions
       view.setCamera(input.cameraYaw, input.cameraPitch);
       const drawn = snapshots.interpolate(alpha);
       briar.setActors(drawn);
+      hazards.frame(world.tick_count() + alpha, drawn);
       tools?.beforeRender(drawn);
       view.render(drawn, frameMs, loop.isPaused);
       // The first drawn actor is the player; the listener follows it and the camera's yaw.
@@ -344,6 +356,7 @@ export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions
       input.detach();
       briar.dispose();
       loom.dispose();
+      hazards.dispose();
       view.dispose();
       world.free();
     }

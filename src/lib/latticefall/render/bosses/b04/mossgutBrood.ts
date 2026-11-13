@@ -7,7 +7,8 @@
 //
 // She is low and wide because the chamber's roof is 2.0 m: about 1.9 m to the top of her cap, 3 m
 // across her tendrils. Local +Z is forward (toward the player). The pale bulb on her back is her
-// weak point; it glows all the time (the renderer isn't told when the four sacs are down).
+// weak point. It sits shut and dark until all four egg sacs are down, then it opens and glows
+// (the hazard effects work that out from the drawn actors and tell this model, `setWeakPointOpen`).
 
 import type { ModelDef } from '../../procedural/model';
 import { attack, type Choreo } from '../../procedural/pose';
@@ -61,9 +62,15 @@ function build(): Rig {
   ] as const) {
     rig.sphere('cap', 0.14, [x, 0.4, z], CAP_SPOT, { squash: [1, 0.5, 1] });
   }
-  // The weak point: a pale bulb in a cleft on her back, under the cap's rim.
-  rig.sphere('cap', 0.28, [0, 0.15, -0.95], CORE, { glow: 1.6 });
-  rig.sphere('cap', 0.12, [0.0, 0.2, -1.15], CORE, { glow: 2.2 });
+  // The weak point: a bulb in a cleft on her back, under the cap's rim. Shut, it is a dull bud of
+  // scar tissue; open, it is a pale glowing bulb with a halo. `tick` shows one or the other.
+  rig.bone('bulbDark', 'cap', [0, 0.15, -0.95]);
+  rig.bone('bulbLit', 'cap', [0, 0.15, -0.95]);
+  rig.sphere('bulbDark', 0.24, [0, 0, 0], DARK, { squash: [1, 0.9, 0.8] });
+  rig.sphere('bulbDark', 0.1, [0, 0.04, -0.14], VEIN);
+  rig.sphere('bulbLit', 0.3, [0, 0, 0], CORE, { glow: 1.8 });
+  rig.sphere('bulbLit', 0.12, [0, 0.05, -0.2], CORE, { glow: 2.4 });
+  rig.sphere('bulbLit', 0.52, [0, 0, -0.04], CORE, { glow: 1.1, alpha: 0.28 });
   // The maw: a dark throat ringed by a wet lip, and spore-glow in it.
   rig.sphere('maw', 0.38, [0, 0.0, 0.0], DARK, { squash: [1.2, 0.9, 0.8] });
   rig.sphere('maw', 0.18, [0, 0.0, 0.1], SPORE, { glow: 1.2 });
@@ -220,6 +227,14 @@ const tearFree: Choreo = {
   glow: (f) => 1 + 2.4 * Math.max(0, Math.sin((f / 45) * Math.PI))
 };
 
+/** Whether the weak point is open. One mother at a time, so one flag serves every model. */
+let weakPointOpen = false;
+
+/** Opens or shuts the weak point's bulb. Called by the hazard effects, from the drawn actors. */
+export function setWeakPointOpen(open: boolean): void {
+  weakPointOpen = open;
+}
+
 export const mossgutBroodDef: ModelDef = {
   id: 'b04_mossgut_brood',
   height: 1.9,
@@ -238,6 +253,18 @@ export const mossgutBroodDef: ModelDef = {
   },
   fallback: tendrilSweep,
   fallAxis: 'x',
+  // The weak point's two bulbs are shown and hidden, so they stay separate meshes.
+  animatedBones: ['bulbDark', 'bulbLit'],
+  tick(rig) {
+    const dark = rig.bones.get('bulbDark');
+    const lit = rig.bones.get('bulbLit');
+    if (dark) dark.visible = !weakPointOpen;
+    if (lit) {
+      lit.visible = weakPointOpen;
+      // The open bulb throbs slowly.
+      lit.scale.setScalar(1 + 0.1 * Math.sin(performance.now() / 230));
+    }
+  },
   // She slumps and the cap sags; the tendrils go slack.
   death: (u) => ({
     body: [0.25 * u, 0, 0, 0, -0.35 * u, 0.2 * u],

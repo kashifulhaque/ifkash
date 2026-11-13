@@ -6,6 +6,7 @@
   import { barLength, isQuiet, STATUS_NAMES, type HudState, type QuickSlot } from './hudState';
   import type { HudSettings } from './hudSettings';
   import type { HudController } from './hudStore';
+  import CouriersLetter from '../ending/CouriersLetter.svelte';
 
   export let hud: HudController;
   export let settings: Readable<HudSettings>;
@@ -186,6 +187,9 @@
     </section>
   </div>
 {/if}
+
+<!-- The ending (WP-100): the Courier's Letter after B12 falls. -->
+<CouriersLetter />
 
 <style>
   .hud {

@@ -295,4 +295,26 @@
     tags: [],
     status: (kind: Rime, amount: 30), // tuning
   ),
+  (
+    // WP-072: B04's Poison glob (docs/game/05-enemies-and-bosses.md, "B04 Mossgut Brood": she
+    // spits Poison globs, arcing, with a ground marker). A slow lob that bursts where it lands:
+    // everyone within 1.5 m of the end point takes the hit. Damage comes from the Brood's
+    // `attack`. Speed, arc, and radius are tuning.
+    id: "proj_b04_glob",
+    speed: 14.0, // tuning: about 0.47 m a tick
+    gravity: 9.0, // tuning
+    radius: 0.3, // tuning
+    lifetime_ticks: 120, // tuning
+    pierce: 0,
+    homing: None,
+    motion_value: 1.0,
+    phys: Neutral,
+    element: None,
+    poise_damage: 14, // tuning
+    knockback: 0.3, // tuning
+    hitstop: 3, // tuning
+    tags: [],
+    status: (kind: Poison, amount: 70), // tuning
+    area_radius_m: 1.5, // tuning
+  ),
 ]

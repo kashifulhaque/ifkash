@@ -727,5 +727,21 @@
     (id: "b06_lam_veilstab", num: 35124),
     (id: "proj_b06_chorus_orb", num: 35200),
     (id: "proj_b06_rime_knife", num: 35201),
+    // WP-072: B04, the Mossgut Brood, takes 33000-33999. The boss 33000, its body 33001, its four
+    // egg sac parts 33002-33005 (NW, NE, SW, SE; each part needs an ID of its own), the moves
+    // 33100-33105, and the glob projectile 33200.
+    (id: "b04_mossgut_brood", num: 33000),
+    (id: "b04_mossgut_brood_body", num: 33001),
+    (id: "b04_egg_sac_nw", num: 33002),
+    (id: "b04_egg_sac_ne", num: 33003),
+    (id: "b04_egg_sac_sw", num: 33004),
+    (id: "b04_egg_sac_se", num: 33005),
+    (id: "b04_spit_near", num: 33100),
+    (id: "b04_spit_far", num: 33101),
+    (id: "b04_tendril", num: 33102),
+    (id: "b04_tendril_back", num: 33103),
+    (id: "b04_spray", num: 33104),
+    (id: "b04_tear_free", num: 33105),
+    (id: "proj_b04_glob", num: 33200),
   ],
 )

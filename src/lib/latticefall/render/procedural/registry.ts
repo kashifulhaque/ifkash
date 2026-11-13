@@ -29,6 +29,7 @@ import { skeletonDef } from './models/skeleton';
 import { thornHoundDef } from './models/thornHound';
 import { corvaneDef } from '../bosses/b03/corvane';
 import { B06_BELLBEARER_KIND, B06_CANTOR_KIND, B06_LAMENTER_KIND, bellbearerDef, cantorDef, lamenterDef } from '../bosses/b06';
+import { eggSacDef, mossgutBroodDef } from '../bosses/b04/mossgutBrood';
 
 /**
  * Registry number of B01's body: `b01_hollow_sentry_body`. The boss definition
@@ -74,7 +75,13 @@ const defs = new Map<number, ModelDef>([
   // WP-076: B08, the Forgeheart Colossus: its body, and its two legs (37010-37013).
   [B08_KIND, colossusDef],
   [B08_KIND + 1, colossusLegDef],
-  [B08_KIND + 2, colossusLegDef]
+  [B08_KIND + 2, colossusLegDef],
+  // WP-072: B04, the Mossgut Brood's body (33001) and its four egg sacs (33002-33005).
+  [33001, mossgutBroodDef],
+  [33002, eggSacDef],
+  [33003, eggSacDef],
+  [33004, eggSacDef],
+  [33005, eggSacDef]
 ]);
 
 // WP-074: B06, the Drowned Choir (three bodies).

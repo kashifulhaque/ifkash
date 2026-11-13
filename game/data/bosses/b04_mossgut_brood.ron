@@ -1,0 +1,139 @@
+// B04, the Mossgut Brood (registry 33000-33005): a fungal mother in the cave wall, ringed by egg
+// sacs. Source: docs/game/05-enemies-and-bosses.md, "B04 Mossgut Brood" (HP 2,400, two phases,
+// Fire weakness 1.5x, immune to Poison and Blight, Fungal Knife and the lift to Hollowdeep as
+// the reward). Defense, poise, resist, attack, sac HP, option weights, and cooldowns are tuning.
+//
+// How the fight works (the special rules are in `lf_core::ai::bosses::b04`):
+//   - She never walks in phase 1: no option moves her, and `Wait` is always eligible, so the
+//     AI's "approach when nothing fits" fallback never fires. In phase 2 only `Approach` does,
+//     at `speed_percent` 25, so she crawls slowly.
+//   - The four egg sacs are parts, in the order the arena places them (NW, NE, SW, SE). They
+//     aren't required for the win. Each spawns a Marsh Crawler every 300 ticks while it lives.
+//   - Destroying all four exposes a weak point: she takes double damage from then on.
+//   - The Fungal Knife is a pickup in the arena's alcove (`knife_fungal`), so it isn't a
+//     reward item here; the defeat flag and the codex entry are.
+#![enable(implicit_some)]
+(
+  id: "b04_mossgut_brood",
+  name: "The Mossgut Brood",
+  body: (
+    id: "b04_mossgut_brood_body",
+    model: "boss_mossgut_brood",
+    hp: 2400,
+    poise: 0,
+    defense: (flat: 30, weakness: [(Fire, 150)]),
+    resist: (immunity: 400, robustness: 400, composure: 400),
+    immune: [Poison, Blight],
+    glimmer: 0,
+    attack: 95,
+    stamina: 200,
+    speed_percent: 25,
+    leash_m: 80.0,
+    ignores_tokens: true,
+    moveset: "bosses/b04.ron",
+    options: [
+      // Phase 1 and 2: a glob at range, a tendril combo up close.
+      (move: "b04_spit_near", when: [DistBetween(4.5, 11.0), FacingWithin(30.0)], weight: 5, cooldown: 150),
+      (move: "b04_spit_far", when: [DistAbove(11.0), FacingWithin(30.0)], weight: 5, cooldown: 150),
+      (move: "b04_tendril", when: [DistBelow(4.0), FacingWithin(60.0)], weight: 6, cooldown: 120),
+      // Phase 2: the cone of Poison, and the crawl toward the player.
+      (move: "b04_spray", when: [Phase(2), DistBelow(8.0), FacingWithin(25.0)], weight: 6, cooldown: 160),
+      (behavior: Approach(dur: 30), when: [Phase(2), DistAbove(4.5)], weight: 4),
+      // Always eligible: she stands facing the player, and never falls back to walking.
+      (behavior: Wait(dur: 25), weight: 1),
+    ],
+  ),
+  parts: [
+    (
+      // Four egg sacs; NW first.
+      def: (
+        id: "b04_egg_sac_nw",
+        model: "b04_egg_sac",
+        hp: 220,
+        poise: 0,
+        defense: (flat: 10, weakness: [(Fire, 150)]),
+        immune: [Poison, Blight],
+        glimmer: 0,
+        leash_m: 80.0,
+        ignores_tokens: true,
+        options: [
+          (behavior: Wait(dur: 30), weight: 1),
+        ],
+      ),
+      offset: (-10.0, 0.0, -22.0),
+      required: false,
+    ),
+    (
+      def: (
+        id: "b04_egg_sac_ne",
+        model: "b04_egg_sac",
+        hp: 220,
+        poise: 0,
+        defense: (flat: 10, weakness: [(Fire, 150)]),
+        immune: [Poison, Blight],
+        glimmer: 0,
+        leash_m: 80.0,
+        ignores_tokens: true,
+        options: [
+          (behavior: Wait(dur: 30), weight: 1),
+        ],
+      ),
+      offset: (10.0, 0.0, -22.0),
+      required: false,
+    ),
+    (
+      def: (
+        id: "b04_egg_sac_sw",
+        model: "b04_egg_sac",
+        hp: 220,
+        poise: 0,
+        defense: (flat: 10, weakness: [(Fire, 150)]),
+        immune: [Poison, Blight],
+        glimmer: 0,
+        leash_m: 80.0,
+        ignores_tokens: true,
+        options: [
+          (behavior: Wait(dur: 30), weight: 1),
+        ],
+      ),
+      offset: (-10.0, 0.0, -8.0),
+      required: false,
+    ),
+    (
+      def: (
+        id: "b04_egg_sac_se",
+        model: "b04_egg_sac",
+        hp: 220,
+        poise: 0,
+        defense: (flat: 10, weakness: [(Fire, 150)]),
+        immune: [Poison, Blight],
+        glimmer: 0,
+        leash_m: 80.0,
+        ignores_tokens: true,
+        options: [
+          (behavior: Wait(dur: 30), weight: 1),
+        ],
+      ),
+      offset: (10.0, 0.0, -8.0),
+      required: false,
+    ),
+  ],
+  phases: [
+    (below: 0.5, transition: "b04_tear_free"),
+  ],
+  rewards: (
+    glimmer: 900,
+    items: [],
+    codex: "b04_mossgut_brood",
+  ),
+  // Read by `lf_core::ai::bosses::b04`. `spawn_every_ticks` is the spec's 300; the rest is tuning.
+  params: {
+    "spawn_every_ticks": 300.0,
+    "sac_stagger_ticks": 75.0,
+    "max_alive": 6.0,
+    "spawn_offset_m": 1.2,
+    "weak_point_percent": 200.0,
+  },
+  echo_stone: true,
+  music: (intro: "boss_b04_intro", loop_stem: "boss_b04_loop", phase2_stem: "boss_b04_p2"),
+)

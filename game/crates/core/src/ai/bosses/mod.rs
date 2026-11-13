@@ -8,10 +8,14 @@
 //! - [`tick`] runs once a tick per boss while that boss's fight is in the Fight stage, from
 //!   `boss.rs` just before the framework's fight step.
 //!
+//! - [`b04`]: the Mossgut Brood: egg sacs, weak point, and Crawler spawns (WP-072).
 //! - [`b06`]: the Drowned Choir: the verse, the Cantor's mend, and the Lamenter's teleport
 //!   (WP-074; [`tick`]).
 //! - [`b08`]: the Forgeheart Colossus's legs, kneel, and lava (WP-076; [`run`]).
 
+pub mod b04;
+#[cfg(test)]
+mod b04_tests;
 pub mod b06;
 #[cfg(test)]
 mod b06_tests;
@@ -24,9 +28,11 @@ use crate::world::World;
 /// Runs every whole-world boss mechanic for this tick.
 pub fn run(world: &mut World) {
     b08::run(world);
+    b04::run(world);
 }
 
 /// Runs the in-fight mechanic of boss `b` (an index into `Layout::bosses`), if it has one.
 pub fn tick(world: &mut World, b: usize) {
     b06::tick(world, b);
+    b04::tick(world, b);
 }

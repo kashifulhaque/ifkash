@@ -1,0 +1,47 @@
+// The B04 boss arena (WP-072): Mossgut Cave's Brood Chamber and the passage before it, and the
+// Mossgut Brood. docs/game/05-enemies-and-bosses.md, "B04 Mossgut Brood". The geometry is the
+// level's (levels/mossgut_cave: the chamber is x in [-15, 15], z in [46, 88]; the passage is
+// x in [-6, 6]), as boxes, in the level's own coordinates, so the boss, sacs, gate, and Echo
+// Stone sit where `entities.ron` puts them.
+//   - The player spawns at (0, 0, 34) facing +Z, in the passage outside the fog gate.
+//   - The fog gate is the plane z = 44, 12 m wide, opening north into the chamber (+Z).
+//   - The mother is embedded in the north wall at (0, 0, 84), facing -Z. Her four egg sacs
+//     stand at (-10, 62), (10, 62), (-10, 76), and (10, 76) (the boss definition's offsets).
+//   - The roof is 2.0 m high over the passage and the chamber (the level's `low_pgb` and
+//     `low_bc` zones): an overhead swing strikes the rock.
+//   - The Echo Stone stands just inside the gate, west of the entrance.
+(
+  spawn: (0.0, 0.0, 34.0),
+  spawn_yaw: 0.0,
+  kill_y: -12.0,
+  heightfield: None,
+  boxes: [
+    (name: "floor_passage", center: (0.0, -0.5, 38.0), half_extents: (6.0, 0.5, 8.0)),
+    (name: "floor_chamber", center: (0.0, -0.5, 67.0), half_extents: (15.0, 0.5, 21.0)),
+    (name: "wall_passage_west", center: (-6.5, 3.0, 38.0), half_extents: (0.5, 3.0, 8.0)),
+    (name: "wall_passage_east", center: (6.5, 3.0, 38.0), half_extents: (0.5, 3.0, 8.0)),
+    (name: "wall_passage_south", center: (0.0, 3.0, 29.5), half_extents: (7.0, 3.0, 0.5)),
+    (name: "wall_chamber_front_west", center: (-10.5, 3.0, 46.5), half_extents: (4.5, 3.0, 0.5)),
+    (name: "wall_chamber_front_east", center: (10.5, 3.0, 46.5), half_extents: (4.5, 3.0, 0.5)),
+    (name: "wall_chamber_west", center: (-15.5, 3.0, 67.0), half_extents: (0.5, 3.0, 21.5)),
+    (name: "wall_chamber_east", center: (15.5, 3.0, 67.0), half_extents: (0.5, 3.0, 21.5)),
+    (name: "wall_chamber_back", center: (0.0, 3.0, 88.5), half_extents: (16.0, 3.0, 0.5)),
+  ],
+  low_ceilings: [
+    (name: "low_pgb", center: (0.0, 38.0), half_extents: (6.0, 8.0), height_m: 2.0),
+    (name: "low_bc", center: (0.0, 67.0), half_extents: (15.0, 21.0), height_m: 2.0),
+  ],
+  echo_stones: [
+    (id: "stone_b04", pos: (-9.0, 0.0, 50.0), yaw: 0.7854),
+  ],
+  start_glimmer: 0,
+  bosses: [
+    (
+      name: "b04",
+      boss: "b04_mossgut_brood",
+      pos: (0.0, 0.0, 84.0),
+      yaw: 3.1415927,
+      gate: (pos: (0.0, 0.0, 44.0), yaw: 0.0, half_width_m: 6.0, depth_m: 3.0),
+    ),
+  ],
+)

@@ -575,7 +575,7 @@ fn assert_walked(r: &Run) {
 
 /// Mossgut Cave's route: the Low Gallery and the Spore Hall, the Nursery's Wick Bead and chest, the
 /// hollow wall and the closet behind it, the Warren's lever (which wakes the nests), the Gate Hall,
-/// B04's chamber (the fog gate is a placeholder), the Fungal Knife, and the lift down.
+/// B04's chamber (through its fog gate), the Fungal Knife, and the lift down.
 fn moss_legs(w: &World) -> Vec<Leg> {
     let mut legs = Vec::new();
     let at = std::cell::Cell::new(w.layout.spawn);
@@ -793,7 +793,7 @@ fn the_glasswing_critical_path_is_walkable() {
 /// What the spec puts in D1 is placed: Marsh Crawlers and Husks, the Wick Bead, Veil, the
 /// Quickening Charm, the Fungal Knife, Forgeglass Shards, a hollow wall, a lift with a call lever
 /// at each stop, a one-way shortcut, B04's Echo Stone inside its chamber, no Lantern (the spec's
-/// L05 is outside, in the Verge), and no boss entity (B04 is an M7 work package).
+/// L05 is outside, in the Verge), and B04's boss entity (WP-072) at the chamber's wall.
 #[test]
 fn mossgut_cave_has_what_the_spec_puts_in_d1() {
     let content = Content::load_embedded().unwrap();
@@ -838,7 +838,13 @@ fn mossgut_cave_has_what_the_spec_puts_in_d1() {
         s.pos
     );
     assert_eq!(world(MOSS, 1).echo_table.stones.len(), 1);
-    assert!(sc.bosses.is_empty(), "B04 is an M7 work package");
+    // B04, the Mossgut Brood: one boss, in the north wall of the chamber, behind the fog gate
+    // at z = 44 (WP-072).
+    assert_eq!(sc.bosses.len(), 1);
+    let b = &sc.bosses[0];
+    assert_eq!(b.boss, "b04_mossgut_brood");
+    assert!(b.pos[2] > 46.0 && b.pos[2] < 88.0, "{:?}", b.pos);
+    assert_eq!(b.gate.pos, [0.0, 0.0, 44.0]);
     // The exits: out to the Verge, down to Hollowdeep (whose stub names this area).
     let area = &content.level(MOSS).unwrap().area;
     assert!(area.connections.iter().any(|c| c.to == "verge"));

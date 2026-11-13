@@ -118,19 +118,23 @@
     Pickup(id: "knife_fungal", item: "wpn_fungal_knife", pos: (22.0, 1.0, 75.0), interact: true),
 
     // --- B04's arena: the Brood Chamber (x -15..15, z 46..88) ------------------------------------
-    // The boss: PLACEHOLDER. B04 (the Mossgut Brood, an M7 work package) has no boss definition
-    // yet, so no Boss entity is placed. When it exists, add:
-    //   Boss(name: "b04", boss: "<b04 id>", pos: (0.0, 0.0, 84.0), yaw: 3.1415927,
-    //     gate: (pos: (0.0, 0.0, 44.0), yaw: 0.0, half_width_m: 6.0, depth_m: 3.0)),
-    // The fog gate is the plane z = 44 across the passage (x -6..6), opening north into the
-    // chamber (its frame is `gate_post_w` and `gate_post_e` in layout.ron). The Brood is embedded
-    // in the north wall at (0, 0, 86), and the four egg sacs stand at (-10, 0, 62), (10, 0, 62),
-    // (-10, 0, 76), and (10, 0, 76). The ceiling is low here, the same as in the rest of the cave:
-    // the zone `low_bc` covers the chamber. The reward is the Fungal Knife (`knife_fungal`, in the
-    // alcove at x 15..26, z 70..80), and the way on is the lift (x 36..40, z 56..62). B04 is not a
-    // required boss, so the rule that puts a Lantern within 20 s of every required fog gate
-    // doesn't apply: the nearest rest is L05, outside the mouth, and the return corridor is the
-    // way back to it.
+    // The boss: B04, the Mossgut Brood (WP-072; `bosses/b04_mossgut_brood.ron`). The fog gate is
+    // the plane z = 44 across the passage (x -6..6), opening north into the chamber (its frame is
+    // `gate_post_w` and `gate_post_e` in layout.ron). The Brood is embedded in the north wall at
+    // (0, 0, 84), and her four egg sacs stand at (-10, 0, 62), (10, 0, 62), (-10, 0, 76), and
+    // (10, 0, 76): they are the boss's parts, placed by its offsets from her spawn. The ceiling is
+    // low here, the same as in the rest of the cave: the zone `low_bc` covers the chamber. The
+    // reward is the Fungal Knife (`knife_fungal`, in the alcove at x 15..26, z 70..80), and the
+    // way on is the lift (x 36..40, z 56..62). B04 is not a required boss, so the rule that puts
+    // a Lantern within 20 s of every required fog gate doesn't apply: the nearest rest is L05,
+    // outside the mouth, and the return corridor is the way back to it.
+    Boss(
+      name: "b04",
+      boss: "b04_mossgut_brood",
+      pos: (0.0, 0.0, 84.0),
+      yaw: 3.1415927,
+      gate: (pos: (0.0, 0.0, 44.0), yaw: 0.0, half_width_m: 6.0, depth_m: 3.0),
+    ),
     // The Echo Stone stands just inside the gate, west of the entrance.
     EchoStone(id: "stone_b04", pos: (-9.0, 0.0, 50.0), yaw: 0.7854),
   ],

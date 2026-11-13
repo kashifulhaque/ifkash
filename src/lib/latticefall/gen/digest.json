@@ -278,8 +278,8 @@
     "start_max": 16,
     "start_min": 4
   },
-  "contentHash": "17799013193455976164",
-  "contentHashHex": "f702cc323c6f3ee4",
+  "contentHash": "8775820314139045311",
+  "contentHashHex": "79c9fa1454ea2dbf",
   "moves": [
     {
       "anim": "ep_sentinel_thrust",
@@ -770,6 +770,66 @@
       "stamina": 0,
       "stub": false,
       "totalFrames": 78
+    },
+    {
+      "anim": "b04_spit_near",
+      "file": "moves/bosses/b04.ron",
+      "fp": 0,
+      "id": "b04_spit_near",
+      "num": 33100,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 78
+    },
+    {
+      "anim": "b04_spit_far",
+      "file": "moves/bosses/b04.ron",
+      "fp": 0,
+      "id": "b04_spit_far",
+      "num": 33101,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 82
+    },
+    {
+      "anim": "b04_tendril",
+      "file": "moves/bosses/b04.ron",
+      "fp": 0,
+      "id": "b04_tendril",
+      "num": 33102,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 54
+    },
+    {
+      "anim": "b04_tendril_back",
+      "file": "moves/bosses/b04.ron",
+      "fp": 0,
+      "id": "b04_tendril_back",
+      "num": 33103,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 60
+    },
+    {
+      "anim": "b04_spray",
+      "file": "moves/bosses/b04.ron",
+      "fp": 0,
+      "id": "b04_spray",
+      "num": 33104,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 80
+    },
+    {
+      "anim": "b04_tear_free",
+      "file": "moves/bosses/b04.ron",
+      "fp": 0,
+      "id": "b04_tear_free",
+      "num": 33105,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 45
     },
     {
       "anim": "cantor_beam",

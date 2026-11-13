@@ -1,0 +1,114 @@
+// B11, the Bound Exile (registry 40000-40999): a sorcerer sealed in a ring of standing stones.
+// Source: docs/game/05-enemies-and-bosses.md, "B11 The Bound Exile" (4,500 HP, teleports between
+// stones, summons orbiting orbs, fires an Aether beam with a visible glyph ring that a hit
+// interrupts and staggers, splits into two images at 50% HP of which only the real one casts,
+// immune to Delirium, rewards Exile's Stylus and the Unbinding Lance). Defense, poise, attack,
+// speed, option weights, and cooldowns are tuning.
+//
+// Phase 2 (below 50%) plays `b11_split`; near its end the Exile's image appears (a second part
+// actor: the framework spawns it with the fight and `ai::bosses::b11` keeps it hidden and out of
+// the fight until then). The image has the same blink and a glyph ring of its own with no beam
+// behind it. The Exile's `b11_shuffle` (phase 2 only) swaps the two so the player must read the
+// rings, not follow the body.
+//
+// The rewards: the Exile's Stylus and the Unbinding Lance lie on the plinth and in the alcove
+// behind the Ring (game/data/levels/bound_ring/entities.ron), so the boss pays Glimmer and the
+// codex entry only; paying them again here would hand them out twice.
+#![enable(implicit_some)]
+(
+  id: "b11_bound_exile",
+  name: "The Bound Exile",
+  body: (
+    // The real Exile: a caster who keeps to the stones.
+    id: "b11_exile",
+    model: "boss_bound_exile",
+    hp: 4500,
+    poise: 180,
+    defense: (flat: 12),
+    resist: (immunity: 400, robustness: 300, composure: 300),
+    immune: [Delirium],
+    glimmer: 0,
+    attack: 40,
+    element_attack: (Aether, 70),
+    stamina: 100,
+    speed_percent: 100,
+    leash_m: 80.0,
+    ignores_tokens: true,
+    moveset: "bosses/b11.ron",
+    options: [
+      // The glyph beam: a cast the player can break by getting to the Exile and hitting it.
+      (move: "b11_beam", when: [DistBetween(2.5, 11.0), FacingWithin(25.0)], weight: 6, cooldown: 180),
+      // Orbiting orbs, then a volley of three.
+      (move: "b11_orbs", when: [DistBelow(16.0), FacingWithin(40.0)], weight: 4, cooldown: 240),
+      // The blink: now and then away from anyone who crowds the Exile, and from afar.
+      (move: "b11_blink", when: [DistBelow(6.0)], weight: 2, cooldown: 480),
+      (move: "b11_blink", when: [DistAbove(12.0)], weight: 3, cooldown: 400),
+      // Phase 2: the shuffle swaps the Exile and its image.
+      (move: "b11_shuffle", when: [Phase(2), DistAbove(3.0)], weight: 5, cooldown: 330),
+      (behavior: Retreat(dur: 20), when: [DistBelow(4.0)], weight: 3),
+      (behavior: Strafe(dur: 30), when: [DistAbove(5.0)], weight: 3),
+      (behavior: Wait(dur: 40), weight: 3),
+    ],
+  ),
+  parts: [
+    (
+      // The image: hidden until phase 2, then a second Exile that blinks and fakes a cast. It
+      // is never required, and its HP is so large and is topped up every tick (see
+      // `ai::bosses::b11`) that nothing done to it matters to the fight.
+      def: (
+        id: "b11_exile_image",
+        model: "boss_bound_exile_image",
+        hp: 900000,
+        poise: 120,
+        defense: (flat: 0),
+        resist: (immunity: 999, robustness: 999, composure: 999),
+        immune: [Delirium],
+        glimmer: 0,
+        attack: 0,
+        stamina: 100,
+        speed_percent: 100,
+        leash_m: 80.0,
+        ignores_tokens: true,
+        moveset: "bosses/b11.ron",
+        options: [
+          (move: "b11_image_beam", when: [Phase(2), DistBetween(2.5, 11.0), FacingWithin(25.0)], weight: 5, cooldown: 240),
+          (move: "b11_image_blink", when: [Phase(2), DistBelow(6.0)], weight: 6, cooldown: 200),
+          (move: "b11_image_blink", when: [Phase(2), DistAbove(12.0)], weight: 2, cooldown: 300),
+          (behavior: Retreat(dur: 20), when: [DistBelow(4.0)], weight: 3),
+          (behavior: Strafe(dur: 30), when: [DistAbove(5.0)], weight: 3),
+          (behavior: Wait(dur: 40), weight: 3),
+        ],
+      ),
+      offset: (4.0, 0.0, 0.0),
+      required: false,
+    ),
+  ],
+  phases: [
+    (below: 0.5, transition: "b11_split"),
+  ],
+  rewards: (
+    glimmer: 2500,
+    items: [],
+    codex: "b11_bound_exile",
+  ),
+  echo_stone: true,
+  music: (intro: "boss_b11_intro", loop_stem: "boss_b11_loop", phase2_stem: "boss_b11_split"),
+  // Numbers `ai::bosses::b11` reads (see that file). Positions are in meters from the Exile's
+  // spawn, in the world's axes. Everything here is tuning except the stone count and the ring's
+  // width (spec: eight stones, 30 m across: a radius of 15 m).
+  params: {
+    "ring_dx_m": 0.0, // the ring's center, from the Exile's spawn: the Ring's center is (0, 4)
+    "ring_dz_m": -12.0, // and the Exile's plinth stands at (0, 16)
+    "ring_dy_m": -0.5, // the floor is 0.5 m below the Exile's spawn: it stands on the plinth
+    "ring_radius_m": 15.0, // 30 m across
+    "stone_count": 8.0,
+    "stone_first_deg": 22.5, // bearing of stone 0 from +Z toward +X, then every 360/8 degrees
+    "teleport_frame": 22.0, // the frame of every blink move on which the actor reappears
+    "blink_min_player_m": 5.0, // it never appears closer than this to the player
+    "blink_gap_m": 6.0, // nor closer than this to its image
+    "glyph_from": 6.0, // the glyph ring's first frame in b11_beam
+    "glyph_to": 65.0, // its last frame: the beam lands on 66
+    "seal_inside_m": 30.0, // the player is in the Ring within this of its center (the sigil is 20 m out, the seal door 27 m, the road beyond it)
+    "split_ticks_left": 15.0, // the image appears when this many ticks of b11_split remain
+  },
+)

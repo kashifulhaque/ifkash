@@ -202,8 +202,9 @@ impl LfWorld {
     ///   exposed, 132 egg sac spawned a Crawler; WP-074: 150 the Drowned Choir sang a new verse,
     ///   151 the Cantor's hymn healed a member, 152 the Lamenter reappeared behind the player;
     ///   WP-076: 170 a Colossus leg's stance broke, 171 the Colossus's lava began to creep,
-    ///   172 the lava burned the player; WP-075: 160 B07 counted a player action, 161 B07 chose
-    ///   its counters, 162 B07's guard blocked a hit, 163 a chandelier marker appeared, 164 a
+    ///   172 the lava burned the player; WP-079: 200 the Bound Exile or its image blinked to a
+    ///   stone, 201 the image split off, 202 the two swapped places; WP-075: 160 B07 counted a
+    ///   player action, 161 B07 chose its counters, 162 B07's guard blocked a hit, 163 a chandelier marker appeared, 164 a
     ///   chandelier fell, 165 a chandelier hit the player; WP-078: 190 a beat of the
     ///   Bellwright's fight, 191 the bell wound up, 192 the bell tolled, 193 the shockwave hit
     ///   the player, 194 an ice patch cracked, 195 an ice patch broke, 196 freezing water
@@ -218,7 +219,8 @@ impl LfWorld {
     ///   none); for 163 and 164, `slot << 14 | x << 7 | z`, the marker's slot and its
     ///   half-meter offset from the boss's spawn plus 64 on each axis; for 165, the slot; for
     ///   190, the beat in the bar, 0 to 3, where 0 is the toll's beat; for 194-196, the ice
-    ///   patch; for 191-193 and 197, the boss).
+    ///   patch; for 191-193 and 197, the boss; for 200-202, the member (0 Exile, 1 image) times
+    ///   256 plus the stone, 0 to 7).
     /// - Kind 15, `Loot` (WP-042), 6 words: kind, source (1 chest), the chest's index, the
     ///   item's registry number (0 for none), how many, and Glimmer.
     /// - Kind 16, `Message` (WP-042), 2 words: kind, the message's index (see

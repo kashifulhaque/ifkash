@@ -278,6 +278,16 @@ impl MechanicEvent {
     pub const ICE_WATER_BURNED: u8 = 196;
     /// B10: the chain snapped and the bell is a flail (phase 2). `index` is the boss.
     pub const BELL_CHAIN_SNAPPED: u8 = 197;
+    /// B11's Exile or its image reappeared at a stone after a blink (WP-079); `index` is the
+    /// member (0 the Exile, 1 its image) in the high byte and the stone (0-7) in the low byte.
+    /// WASM kind 14, sub-kinds 200-209 are B11's.
+    pub const EXILE_BLINK: u8 = 200;
+    /// B11's image stepped out of the Exile as phase 2 began (WP-079); `index` as for
+    /// [`Self::EXILE_BLINK`], with the image's member number and the stone it stands at.
+    pub const EXILE_SPLIT: u8 = 201;
+    /// B11's Exile and its image swapped places (`b11_shuffle`, WP-079); `index` is the member
+    /// that cast it in the high byte and the stone the other one left, in the low byte.
+    pub const EXILE_SHUFFLE: u8 = 202;
 }
 
 /// The player opened a chest (`source` is always 1; pickups send `PickupEvent`), and

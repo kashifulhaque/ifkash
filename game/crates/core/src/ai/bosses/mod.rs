@@ -26,6 +26,7 @@
 //!   gate (WP-075; [`run`]).
 //! - [`b09`]: the Lamplight Matriarch's flight, drained light, and lamps (WP-077; [`run`]).
 //! - [`b10`]: the Bellwright's beat, toll, and cracking ice (WP-078; [`run`]).
+//! - [`b11`]: the Bound Exile's glyph ring, blink, image, and seal (WP-079; [`run`] and [`tick`]).
 
 pub mod b02;
 #[cfg(test)]
@@ -51,6 +52,9 @@ mod b09_tests;
 pub mod b10;
 #[cfg(test)]
 mod b10_tests;
+pub mod b11;
+#[cfg(test)]
+mod b11_tests;
 
 use crate::world::World;
 
@@ -62,12 +66,14 @@ pub fn run(world: &mut World) {
     b07::run(world);
     b09::run(world);
     b10::run(world);
+    b11::run(world);
 }
 
 /// Runs the in-fight mechanic of boss `b` (an index into `Layout::bosses`), if it has one.
 pub fn tick(world: &mut World, b: usize) {
     b06::tick(world, b);
     b04::tick(world, b);
+    b11::tick(world, b);
 }
 
 /// The bosses' effects on the player's movement: tick system 5, before the controller moves

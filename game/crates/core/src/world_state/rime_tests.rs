@@ -649,6 +649,9 @@ fn whitewarden_has_what_the_spec_puts_in_d6() {
 #[test]
 fn a_cold_sigil_can_be_touched_and_shuts_nothing() {
     let mut w = ring();
+    // B11 stands in the Ring now (WP-079), so the level's sigil is armed; this checks the
+    // unarmed mechanism on its own.
+    w.layout.sigils[0].armed = false;
     idle(&mut w, 2);
     assert!(w.state.flags.is_set(&flags::door_open("door_ring_seal")));
     put_player(&mut w, [0.0, 0.0, -16.0]);
@@ -659,7 +662,6 @@ fn a_cold_sigil_can_be_touched_and_shuts_nothing() {
     assert!(w.state.flags.is_set(&brazier::touched_flag("sigil_ring")));
     assert!(!w.state.flags.is_set(&brazier::sealed_flag("sigil_ring")));
     assert!(w.state.flags.is_set(&flags::door_open("door_ring_seal")));
-    assert!(!w.layout.sigils[0].armed, "B11 doesn't exist yet");
 }
 
 /// An armed sigil seals: touching it shuts the door behind the player (they can't walk out), the
@@ -669,12 +671,17 @@ fn an_armed_sigil_seals_the_door_until_it_is_released() {
     let mut w = ring();
     w.layout.sigils[0].armed = true;
     idle(&mut w, 2);
-    // Walk in through the door: the way is open.
+    // Walk in through the door: the way is open. (Stop short of B11's fog gate at z = -14: that
+    // starts the fight; the sigil is at z = -16 and the door at z = -23.)
     put_player(&mut w, [0.0, 0.0, -40.0]);
-    for _ in 0..240 {
+    for _ in 0..150 {
         step(&mut w, 0, 127, 0);
     }
-    assert!(player_pos(&w)[2] > -16.0, "walked in: {:?}", player_pos(&w));
+    assert!(
+        player_pos(&w)[2] > -23.0 && player_pos(&w)[2] < -14.0,
+        "walked in: {:?}",
+        player_pos(&w)
+    );
     // Touch the sigil.
     put_player(&mut w, [0.0, 0.0, -16.0]);
     idle(&mut w, 2);
@@ -726,7 +733,9 @@ fn the_bound_ring_has_what_the_spec_puts_in_d7() {
     let level = content.level(RING).unwrap();
     assert!(level.area.connections.iter().any(|c| c.to == "rimeshelf"));
     assert!(w.layout.lanterns.is_empty());
-    assert!(w.layout.bosses.is_empty(), "B11 has no definition yet");
+    assert_eq!(w.layout.bosses.len(), 1, "B11, the Bound Exile");
+    assert_eq!(w.layout.bosses[0].def.id, "b11_bound_exile");
+    assert!(w.layout.sigils[0].armed);
     let stones = level
         .layout
         .landmarks
@@ -899,15 +908,24 @@ fn ward_legs(w: &World) -> Vec<Leg> {
     legs
 }
 
-/// The Ring's route: the road, the alcove's charm, in through the doorway to the sigil, touch it,
-/// then on past the plinth to the reward alcove and the stylus.
+/// The Ring's route as far as the seal: the road, the alcove's charm, in through the doorway to
+/// the sigil, touch it. The sigil is armed now (B11 stands in the Ring, WP-079), so this walk
+/// stops there: the door shuts behind the bot, and going on across the fog gate starts B11's
+/// fight (`ai::bosses::b11_tests` has the bot that wins it).
 fn ring_legs() -> Vec<Leg> {
-    // The Ring has no enemies, so no navigation grid: straight legs between known-clear points.
+    // The Ring has no enemies besides B11, so no navigation grid: straight legs between
+    // known-clear points.
     let mut legs = vec![Leg::Goto(0.0, -46.0), Leg::Goto(-12.0, -46.0)];
     press(&mut legs);
     legs.extend([Leg::Goto(0.0, -46.0), Leg::Goto(0.0, -17.0)]);
     press(&mut legs);
-    // Round the prisoner's plinth, up the passage to the reward alcove.
+    legs
+}
+
+/// The rest of the route, once the Exile has fallen: round the prisoner's plinth, up the passage
+/// to the reward alcove and the stylus.
+fn ring_reward_legs() -> Vec<Leg> {
+    let mut legs = ring_legs();
     legs.extend([
         Leg::Goto(5.0, -8.0),
         Leg::Goto(5.0, 22.0),
@@ -979,13 +997,32 @@ fn the_whitewarden_critical_path_is_walkable() {
     assert!(player_pos(w)[2] > 30.0);
 }
 
-/// The bot walks the Ring: in, touches the cold sigil, takes the charm, the stylus.
+/// The bot walks the Ring as far as the seal: in, takes the charm, touches the (armed) sigil; the
+/// door shuts behind it and B11's fight has not begun.
 #[test]
 fn the_bound_ring_critical_path_is_walkable() {
     let r = ring_walk();
     assert_walked(&r);
     let w = &r.world;
     assert!(w.state.flags.is_set(&brazier::touched_flag("sigil_ring")));
+    assert!(w.state.flags.is_set(&brazier::sealed_flag("sigil_ring")));
+    assert!(taken(w, "chm_last_stand_alcove"));
+    assert!(!taken(w, "wpn_exile_stylus_plinth"));
+    assert_eq!(w.bosses[0].stage, crate::ai::boss::Stage::Dormant);
+}
+
+/// Once the Exile has fallen (the flag a defeat raises), the whole route is walkable: the
+/// release opens the seal door behind the bot, and it reaches the stylus.
+#[test]
+fn the_bound_ring_reward_alcove_is_walkable_after_b11_falls() {
+    let mut w = ring();
+    w.state
+        .flags
+        .raise(&flags::boss_defeated("b11_bound_exile"));
+    let r = walk(w, ring_reward_legs());
+    assert_walked(&r);
+    let w = &r.world;
+    assert!(w.state.flags.is_set(&brazier::released_flag("sigil_ring")));
     for p in ["chm_last_stand_alcove", "wpn_exile_stylus_plinth"] {
         assert!(taken(w, p), "{p}");
     }
@@ -1081,7 +1118,7 @@ fn record_the_rime_goldens() {
             &r,
             RING,
             RING_SEED,
-            "the Bound Ring: the road, the charm, the sigil, the plinth, and the reward alcove",
+            "the Bound Ring: the road, the charm, and the sigil that seals the Ring",
         ),
     );
 }

@@ -824,5 +824,18 @@
     (id: "b10_flail_slam", num: 39105),
     (id: "b10_flail_swing", num: 39106),
     (id: "b10_flail_spin", num: 39107),
+    // WP-079: B11, the Bound Exile, takes 40000-40999: the boss 40000, its two actors 40001-40002,
+    // its moves 40100-40199, and its projectile 40200.
+    (id: "b11_bound_exile", num: 40000),
+    (id: "b11_exile", num: 40001),
+    (id: "b11_exile_image", num: 40002),
+    (id: "b11_beam", num: 40100),
+    (id: "b11_blink", num: 40101),
+    (id: "b11_orbs", num: 40102),
+    (id: "b11_shuffle", num: 40103),
+    (id: "b11_split", num: 40104),
+    (id: "b11_image_blink", num: 40110),
+    (id: "b11_image_beam", num: 40111),
+    (id: "proj_b11_orb", num: 40200),
   ],
 )

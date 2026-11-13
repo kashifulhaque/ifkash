@@ -218,5 +218,20 @@ lf-tools replay record-script tests/replays/m1_movement.script --out tests/repla
   lamps with the sword's Fire; it beats her with the player alive. A player who walks in and does
   nothing dies. Tests in `b09_tests.rs` check both.
 
+- `m7_b11_bot_win.lfr`: the WP-079 golden on `boss_b11`, from `m7_b11_bot_win.script`. The scripted
+  bot (`Bot` in `game/crates/core/src/ai/bosses/b11_tests.rs`) walks through the Ring's fog gate
+  wielding the Gray Greatsword, rolls through the Exile's beam, burst, and orbs, breaks the glyph
+  ring by hitting the Exile while it is lit, punishes it when it stands open, and beats the Bound
+  Exile (flag `boss.b11_bound_exile.defeated`) with the player alive.
+  `the_bot_golden_replay_beats_b11_with_the_player_alive` checks it.
+- `m7_b11_idle_dies.lfr`: the WP-079 golden on `boss_b11`, from `m7_b11_idle_dies.script`. The
+  player walks in and does nothing, and the Exile kills them.
+  `the_idle_golden_replay_kills_the_player` (in `b11_tests.rs`) checks it. Both `.script` files come
+  from the ignored test `record_the_b11_goldens`.
+- `m6_bound_ring.lfr` was re-recorded by WP-079: the Ring's sigil is armed now, so the walk stops
+  at the sigil's seal (the road, the charm, the touch) instead of going on to the reward alcove,
+  which needs B11 beaten first. `the_bound_ring_reward_alcove_is_walkable_after_b11_falls` (in
+  `rime_tests.rs`) walks the rest with the defeat flag raised.
+
 Rehash only when a change to the simulation or the content data is intended. Review the
 old and new final hash it prints, and commit the updated file with that change.

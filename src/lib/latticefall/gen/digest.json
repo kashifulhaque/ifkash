@@ -278,8 +278,8 @@
     "start_max": 16,
     "start_min": 4
   },
-  "contentHash": "13138634794830880888",
-  "contentHashHex": "b655cebc037b6078",
+  "contentHash": "15478451741065994869",
+  "contentHashHex": "d6ce81d9a343e275",
   "moves": [
     {
       "anim": "ep_sentinel_thrust",
@@ -1650,6 +1650,76 @@
       "stamina": 0,
       "stub": false,
       "totalFrames": 128
+    },
+    {
+      "anim": "beam",
+      "file": "moves/bosses/b11.ron",
+      "fp": 0,
+      "id": "b11_beam",
+      "num": 40100,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 140
+    },
+    {
+      "anim": "blink",
+      "file": "moves/bosses/b11.ron",
+      "fp": 0,
+      "id": "b11_blink",
+      "num": 40101,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 84
+    },
+    {
+      "anim": "orbs",
+      "file": "moves/bosses/b11.ron",
+      "fp": 0,
+      "id": "b11_orbs",
+      "num": 40102,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 120
+    },
+    {
+      "anim": "shuffle",
+      "file": "moves/bosses/b11.ron",
+      "fp": 0,
+      "id": "b11_shuffle",
+      "num": 40103,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 90
+    },
+    {
+      "anim": "split",
+      "file": "moves/bosses/b11.ron",
+      "fp": 0,
+      "id": "b11_split",
+      "num": 40104,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 45
+    },
+    {
+      "anim": "blink",
+      "file": "moves/bosses/b11.ron",
+      "fp": 0,
+      "id": "b11_image_blink",
+      "num": 40110,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 84
+    },
+    {
+      "anim": "beam",
+      "file": "moves/bosses/b11.ron",
+      "fp": 0,
+      "id": "b11_image_beam",
+      "num": 40111,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 140
     },
     {
       "anim": "boss_swipe",

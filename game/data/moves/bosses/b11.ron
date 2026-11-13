@@ -1,0 +1,201 @@
+// Moves for B11, the Bound Exile (registry 40100-40199). Source: docs/game/05-enemies-and-bosses.md,
+// "B11 The Bound Exile". The Exile: an Aether beam behind a glyph ring (the cast bar: frames 6 to 65
+// of `b11_beam`; a hit on the Exile in that window interrupts and staggers it, which is
+// `ai::bosses::b11`), a blink between the ring's stones that ends in a burst where it arrives,
+// orbiting orbs that fly off in a volley, and in phase 2 the shuffle (a blink that swaps places with
+// its image). The image's two moves look the same and hurt nobody (their rings are another color
+// and shape, which is the renderer's). The blink's teleport itself is in `ai::bosses::b11`; the
+// moves only time it (`params.teleport_frame`). Damage comes from the Exile's `attack` and
+// `element_attack`, so `motion_value` is the only multiplier. Frame counts and numbers are tuning,
+// bounded by the fairness rules (docs "Fairness rules"; checked by `lf_content::boss::check`):
+// every attack telegraphs for at least 12 frames, and every combo ends in at least 20 frames of
+// recovery.
+#![enable(implicit_some)]
+[
+  (
+    // Glyph beam: a ring of glyphs lights round the Exile over 60 frames (the cast bar), then an
+    // Aether line lashes out. It stops aiming 4 frames before it fires. Hit the Exile while the
+    // ring is lit and the cast breaks; otherwise roll sideways.
+    id: "b11_beam",
+    anim: "beam",
+    total_frames: 140,
+    stamina: 0,
+    fp: 0,
+    root_motion: [(0, 0.0), (140, 0.0)],
+    track_deg_per_tick: 3.0,
+    hyperarmor: None,
+    iframes: None,
+    cancel_attack_from: None,
+    cancel_dodge_from: None,
+    cancel_any_from: None,
+    next_chain: None,
+    hitboxes: [
+      (
+        frames: (66, 70),
+        shape: Capsule(a: (0.0, 1.3, 0.8), b: (0.0, 1.3, 22.0), radius: 0.5),
+        motion_value: 2.0,
+        phys: Neutral,
+        element: Aether,
+        poise_damage: 40,
+        status: [],
+        knockback: 0.4,
+        hitstop: 4,
+        tags: [],
+      ),
+    ],
+    sfx: [(6, "glyph_hum_rise"), (66, "aether_beam")],
+    vfx: [(6, "glyph_ring_real"), (66, "aether_beam")],
+  ),
+  (
+    // Blink: the Exile fades, reappears at another stone on frame 22 (see `params.teleport_frame`),
+    // and 16 frames later bursts in a ring round itself, so crowding where it lands has a price.
+    // It is untouchable while it is gone.
+    id: "b11_blink",
+    anim: "blink",
+    total_frames: 84,
+    stamina: 0,
+    fp: 0,
+    root_motion: [(0, 0.0), (84, 0.0)],
+    track_deg_per_tick: 4.0,
+    hyperarmor: None,
+    iframes: (from: 6, to: 22),
+    cancel_attack_from: None,
+    cancel_dodge_from: None,
+    cancel_any_from: None,
+    next_chain: None,
+    hitboxes: [
+      (
+        frames: (40, 43),
+        shape: Sphere(center: (0.0, 0.9, 0.0), radius: 2.6),
+        motion_value: 1.2,
+        phys: Neutral,
+        element: Aether,
+        poise_damage: 30,
+        status: [],
+        knockback: 1.0,
+        hitstop: 4,
+        tags: [],
+      ),
+    ],
+    sfx: [(6, "blink_out"), (22, "blink_in")],
+    vfx: [(6, "blink_fade"), (22, "blink_arrive")],
+  ),
+  (
+    // Orbs: three orbs of Aether circle the Exile for 30 frames, then leave one after another,
+    // on frames 36, 48, and 60, in a loose fan. They are slow and steer a little: sidestep or roll.
+    id: "b11_orbs",
+    anim: "orbs",
+    total_frames: 120,
+    stamina: 0,
+    fp: 0,
+    root_motion: [(0, 0.0), (120, 0.0)],
+    track_deg_per_tick: 3.0,
+    hyperarmor: None,
+    iframes: None,
+    cancel_attack_from: None,
+    cancel_dodge_from: None,
+    cancel_any_from: None,
+    next_chain: None,
+    hitboxes: [],
+    projectiles: [
+      (frame: 36, projectile: "proj_b11_orb", offset: (1.6, 1.6, 0.0), yaw_deg: -16.0, pitch_deg: 0.0),
+      (frame: 48, projectile: "proj_b11_orb", offset: (-1.6, 1.6, 0.0), yaw_deg: 16.0, pitch_deg: 0.0),
+      (frame: 60, projectile: "proj_b11_orb", offset: (0.0, 1.9, 1.0), yaw_deg: 0.0, pitch_deg: 0.0),
+    ],
+    sfx: [(4, "orbs_summon")],
+    vfx: [(4, "orbs_orbit")],
+  ),
+  (
+    // Shuffle (phase 2): a blink that swaps the Exile and its image, so the one that was at the
+    // far stone is now the real one. Both burst where they arrive (the image's burst is only light).
+    id: "b11_shuffle",
+    anim: "shuffle",
+    total_frames: 90,
+    stamina: 0,
+    fp: 0,
+    root_motion: [(0, 0.0), (90, 0.0)],
+    track_deg_per_tick: 4.0,
+    hyperarmor: None,
+    iframes: (from: 6, to: 22),
+    cancel_attack_from: None,
+    cancel_dodge_from: None,
+    cancel_any_from: None,
+    next_chain: None,
+    hitboxes: [
+      (
+        frames: (40, 43),
+        shape: Sphere(center: (0.0, 0.9, 0.0), radius: 2.6),
+        motion_value: 1.2,
+        phys: Neutral,
+        element: Aether,
+        poise_damage: 30,
+        status: [],
+        knockback: 1.0,
+        hitstop: 4,
+        tags: [],
+      ),
+    ],
+    sfx: [(6, "blink_out"), (22, "blink_in")],
+    vfx: [(6, "blink_fade"), (22, "blink_swap")],
+  ),
+  (
+    // The split (phase 2's transition, 45 ticks, invulnerable throughout): the Exile gathers
+    // itself and its image steps out of it near the end (the image appears 15 ticks before the end).
+    id: "b11_split",
+    anim: "split",
+    total_frames: 45,
+    stamina: 0,
+    fp: 0,
+    root_motion: [(0, 0.0), (45, 0.0)],
+    track_deg_per_tick: 0.0,
+    hyperarmor: None,
+    iframes: (from: 0, to: 44),
+    cancel_attack_from: None,
+    cancel_dodge_from: None,
+    cancel_any_from: None,
+    next_chain: None,
+    hitboxes: [],
+    sfx: [(0, "exile_split")],
+    vfx: [(0, "aura_split")],
+  ),
+  // ---- The image: the same look, no harm -------------------------------------------------------
+  (
+    // The image's blink: the same fade, arrival, and light, and nothing in it hurts.
+    id: "b11_image_blink",
+    anim: "blink",
+    total_frames: 84,
+    stamina: 0,
+    fp: 0,
+    root_motion: [(0, 0.0), (84, 0.0)],
+    track_deg_per_tick: 4.0,
+    hyperarmor: None,
+    iframes: (from: 6, to: 22),
+    cancel_attack_from: None,
+    cancel_dodge_from: None,
+    cancel_any_from: None,
+    next_chain: None,
+    hitboxes: [],
+    sfx: [(6, "blink_out"), (22, "blink_in")],
+    vfx: [(6, "blink_fade"), (22, "blink_arrive"), (40, "echo_burst")],
+  ),
+  (
+    // The image's cast: a glyph ring in a different color and shape from the real one, and a
+    // beam of light at the end of it that does nothing. Hitting the image does nothing either.
+    id: "b11_image_beam",
+    anim: "beam",
+    total_frames: 140,
+    stamina: 0,
+    fp: 0,
+    root_motion: [(0, 0.0), (140, 0.0)],
+    track_deg_per_tick: 3.0,
+    hyperarmor: None,
+    iframes: None,
+    cancel_attack_from: None,
+    cancel_dodge_from: None,
+    cancel_any_from: None,
+    next_chain: None,
+    hitboxes: [],
+    sfx: [(6, "glyph_hum_rise_hollow")],
+    vfx: [(6, "glyph_ring_echo"), (66, "echo_beam_fizzle")],
+  ),
+]

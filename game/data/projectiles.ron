@@ -317,4 +317,23 @@
     status: (kind: Poison, amount: 70), // tuning
     area_radius_m: 1.5, // tuning
   ),
+  (
+    // WP-079, B11: the Exile's orb (b11_orbs): slow and gently steering, so a roll or a
+    // sidestep sheds it: 0.2 m a tick, turning 2 degrees a tick. Aether. Damage comes from
+    // the Exile's `attack` and `element_attack`. (tuning: no spec row fixes the numbers)
+    id: "proj_b11_orb",
+    speed: 6.0, // tuning
+    gravity: 0.0,
+    radius: 0.3, // tuning
+    lifetime_ticks: 150, // tuning
+    pierce: 0,
+    homing: (turn_deg_per_tick: 2.0, range_m: 25.0), // tuning
+    motion_value: 0.9, // tuning
+    phys: Neutral,
+    element: Aether,
+    poise_damage: 14, // tuning
+    knockback: 0.3, // tuning
+    hitstop: 3, // tuning
+    tags: [],
+  ),
 ]

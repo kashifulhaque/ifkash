@@ -12,17 +12,19 @@
 // THE SEAL. `Sigil(id:, pos:, doors:, armed:)` (core `mechanics/brazier.rs`): touching it with
 // `INTERACT` raises `sigil.<id>.touched`, and, if it is `armed`, also `sigil.<id>.sealed`, which
 // shuts the doors it names; they open again when the world raises `sigil.<id>.released`. B11 (the
-// Bound Exile, an M7 work package) has no boss definition yet, so the sigil is UNARMED and the
-// player can't be locked in with nothing. When the boss exists, make the same change as the
-// Boss entity:
-//   - set `armed: true` on `sigil_ring`;
-//   - place, inside the Ring (it stands at (0, 0, 16) on the plinth, facing south):
-//       Boss(name: "b11", boss: "<b11 id>", pos: (0.0, 0.0, 16.0), yaw: 3.1415927,
-//         gate: (pos: (0.0, 0.0, -14.0), yaw: 0.0, half_width_m: 6.0, depth_m: 3.0)),
-//     (or no gate at all: the sigil is the seal, and the boss's fight starts on the touch);
-//   - have the boss's defeat raise `sigil.sigil_ring.released` (with `boss.<id>.defeated`), which
-//     opens the seal door again. B11's rewards, Exile's Stylus and the Unbinding Lance Formula, then
-//     belong on the plinth in the reward alcove; they lie there already, beyond the prisoner.
+// Bound Exile, WP-079) stands in the Ring, and the sigil is ARMED:
+//   - `sigil_ring` is `armed: true`;
+//   - the Boss entity, "b11", stands inside the Ring on the plinth at (0, 0.5, 16) (the plinth is 0.5 m high), facing south,
+//     with a fog gate across the Ring at z = -14, 2 m inside the sigil (so the seal shuts first,
+//     then the fight starts when the player walks on);
+//   - the boss's defeat raises `sigil.sigil_ring.released` (with `boss.b11_bound_exile.defeated`),
+//     which opens the seal door again (`ai::bosses::b11`). If the player dies in the fight or
+//     reloads outside the Ring, that module lifts the seal (`sigil.sigil_ring.sealed`) so the
+//     door doesn't lock them out. B11's rewards, Exile's Stylus and the Unbinding Lance Formula,
+//     lie on the plinth in the reward alcove beyond the prisoner, so the boss pays Glimmer and
+//     the codex entry only.
+// The Exile's eight blink stones are not entities: they are a ring of radius 15 m about (0, 4)
+// (the boss's `params`), inside the twelve standing stones (radius 21 m).
 //
 // Registry numbers used here (27000 block): bound_ring 27002.
 (
@@ -34,7 +36,7 @@
     // the road: its slab sinks into the floor when open. It is shown `Locked` because nothing but
     // the sigil opens or shuts it.
     Door(id: "door_ring_seal", pos: (0.0, 0.0, -23.0), yaw: 0.0, half_width_m: 6.2, height_m: 6.0, kind: Locked),
-    Sigil(id: "sigil_ring", pos: (0.0, 0.2, -16.0), doors: ["door_ring_seal"], armed: false),
+    Sigil(id: "sigil_ring", pos: (0.0, 0.2, -16.0), doors: ["door_ring_seal"], armed: true),
     // The shortcut's door faces +X, the niche, so it opens from the niche only.
     Door(id: "door_ring_return", pos: (6.0, 0.0, -46.0), yaw: 1.5707964, half_width_m: 4.2, height_m: 4.0, kind: OneWay),
 
@@ -46,7 +48,7 @@
     Message(id: "msg_ring_door", pos: (3.0, 0.0, -26.0),
       text: "A slab of stone stands in the doorway, sunk in the floor. It sinks when it is told to, and it rises when it is touched."),
     Message(id: "msg_ring_sigil", pos: (3.0, 0.0, -14.0),
-      text: "A sigil in the snow. Touch it, and the way behind you shuts, and what the stones hold is let out. It is cold now: whatever was bound here is not yet ready to be let out."),
+      text: "A sigil in the snow. Touch it, and the way behind you shuts, and what the stones hold is let out. It is cold, and it is not a door you can take back."),
     Message(id: "msg_ring_prisoner", pos: (0.0, 0.0, 12.0),
       text: "A plinth, and iron on it, bright where something pulled. The stones lean in around it."),
     Message(id: "msg_ring_reward", pos: (4.0, 0.0, 40.0),
@@ -66,8 +68,11 @@
     Chest(id: "chest_starglass_ring", pos: (-7.5, 0.0, 45.0), yaw: 1.5707964, loot: (item: "itm_starglass", count: 1, glimmer: 300)),
 
     // --- B11's Ring (x -26..26, z -22..30) ----------------------------------------------------------
-    // PLACEHOLDER: no Boss entity until B11 has a definition (see the notes at the top). The Echo
-    // Stone stands inside the Ring, by the west stones, for the day the sigil is armed.
+    // The Bound Exile, bound on the prisoner's plinth, facing the way in. The gate is 2 m past the
+    // sigil (z = -16), 12 m wide across the Ring's mouth; the Exile is 30 m beyond it.
+    Boss(name: "b11", boss: "b11_bound_exile", pos: (0.0, 0.5, 16.0), yaw: 3.1415927,
+      gate: (pos: (0.0, 0.0, -14.0), yaw: 0.0, half_width_m: 6.0, depth_m: 3.0)),
+    // The Echo Stone stands inside the Ring, by the west stones.
     EchoStone(id: "stone_b11", pos: (-14.0, 0.0, 6.0), yaw: 1.5707964),
   ],
 )

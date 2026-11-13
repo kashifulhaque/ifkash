@@ -57,6 +57,10 @@ Copy this block to the top of the entries and fill it in as you go:
   and 079. Wave 3 is WP-080. WP-071 moved up from haiku to sonnet: B01 needed the same
   move, and every boss WP needs a scripted bot that wins.
 - **WPs:**
+  - WP-071: sonnet (moved up from haiku), worktree; `63961ab`; 295K. Clean cherry-pick; 100 goldens A -> A on the merged tree.
+  - WP-076: sonnet, worktree; `2f57de8`; 463K. Merged onto WP-071 (keep-both). Deliberate: `m6_cinderdeep_mine` (boss placed), `m4_mechanics_yard` (new `MechState` field). No boss screenshots: the worker ran out of budget, and the orchestrator only confirmed the scenario loads.
+  - WP-074: sonnet, worktree; `42a1ed2`; 426K. Merged onto WP-076 with one boss-mechanic shape: the `BossDef.params` map (B06's `mechanics` renamed) and both hooks in `ai/bosses/mod.rs` (`run` for the world, `tick` per fight). Deliberate: `m6_mirrormere` (boss and water), `m7_b06_bot_win` (WP-076's fix now pays the Choir Glaive as gear).
+  - Wave 1 ran six workers at once; machine load reached 37 and three workers ended at or over the 500K budget (WP-070 580K, WP-073 514K, WP-072 470K by the tool, 650K by its own count). Wave 2 runs four.
 
 ### 2026-11-12: latticefall-m6 (M6)
 

@@ -25,6 +25,7 @@
 //! - [`b07`]: Castellan Voss: the counts, the counters, the guard, the chandeliers, and the back
 //!   gate (WP-075; [`run`]).
 //! - [`b09`]: the Lamplight Matriarch's flight, drained light, and lamps (WP-077; [`run`]).
+//! - [`b10`]: the Bellwright's beat, toll, and cracking ice (WP-078; [`run`]).
 
 pub mod b02;
 #[cfg(test)]
@@ -47,6 +48,9 @@ mod b08_tests;
 pub mod b09;
 #[cfg(test)]
 mod b09_tests;
+pub mod b10;
+#[cfg(test)]
+mod b10_tests;
 
 use crate::world::World;
 
@@ -57,6 +61,7 @@ pub fn run(world: &mut World) {
     b02::run(world);
     b07::run(world);
     b09::run(world);
+    b10::run(world);
 }
 
 /// Runs the in-fight mechanic of boss `b` (an index into `Layout::bosses`), if it has one.

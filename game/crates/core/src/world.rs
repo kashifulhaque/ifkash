@@ -174,6 +174,13 @@ struct HashView<'a> {
     /// Left out while no fight with B09 is on, for the same reason.
     #[serde(skip_serializing_if = "b09_inert")]
     b09: &'a crate::ai::bosses::b09::State,
+    /// B10's beat state (WP-078), left out while at rest, for the same reason.
+    #[serde(skip_serializing_if = "b10_rest")]
+    b10: &'a crate::ai::bosses::b10::B10State,
+}
+
+fn b10_rest(b10: &&crate::ai::bosses::b10::B10State) -> bool {
+    b10.is_rest()
 }
 
 fn b09_inert(b09: &&crate::ai::bosses::b09::State) -> bool {
@@ -407,6 +414,7 @@ impl World {
             echo: &self.echo,
             b07: &self.b07,
             b09: &self.b09,
+            b10: &self.mech.b10,
         };
         let bytes = postcard::to_allocvec(&view).expect("world serialization cannot fail");
         xxhash_rust::xxh3::xxh3_64(&bytes)

@@ -204,7 +204,11 @@ impl LfWorld {
     ///   WP-076: 170 a Colossus leg's stance broke, 171 the Colossus's lava began to creep,
     ///   172 the lava burned the player; WP-075: 160 B07 counted a player action, 161 B07 chose
     ///   its counters, 162 B07's guard blocked a hit, 163 a chandelier marker appeared, 164 a
-    ///   chandelier fell, 165 a chandelier hit the player), and the index of the door, lever, lift, ladder, wall,
+    ///   chandelier fell, 165 a chandelier hit the player; WP-078: 190 a beat of the
+    ///   Bellwright's fight, 191 the bell wound up, 192 the bell tolled, 193 the shockwave hit
+    ///   the player, 194 an ice patch cracked, 195 an ice patch broke, 196 freezing water
+    ///   burned the player, 197 the chain snapped), and the index of the door, lever, lift,
+    ///   ladder, wall,
     ///   cart, trapdoor, mirror, receptor, low-ceiling zone, brazier, or sigil in its scenario
     ///   list (for 110 and 111, the boss's index; for 130 and 132, the egg sac's index among
     ///   the boss's four parts; for 150-152, the Choir member's number: 0 Cantor, 1 Bellbearer,
@@ -212,7 +216,9 @@ impl LfWorld {
     ///   `category << 8 | count` (categories 0 to 5: roll left, roll right, roll back, parry,
     ///   guard, ranged); for 161, `first << 8 | second` of the two chosen categories (0xFF for
     ///   none); for 163 and 164, `slot << 14 | x << 7 | z`, the marker's slot and its
-    ///   half-meter offset from the boss's spawn plus 64 on each axis; for 165, the slot).
+    ///   half-meter offset from the boss's spawn plus 64 on each axis; for 165, the slot; for
+    ///   190, the beat in the bar, 0 to 3, where 0 is the toll's beat; for 194-196, the ice
+    ///   patch; for 191-193 and 197, the boss).
     /// - Kind 15, `Loot` (WP-042), 6 words: kind, source (1 chest), the chest's index, the
     ///   item's registry number (0 for none), how many, and Glimmer.
     /// - Kind 16, `Message` (WP-042), 2 words: kind, the message's index (see

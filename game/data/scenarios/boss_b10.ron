@@ -1,0 +1,43 @@
+// The B10 boss arena (WP-078): Rimeshelf's open-air forge, and the Bellwright.
+// docs/game/05-enemies-and-bosses.md, "B10 The Bellwright". The scenario keeps the level's x and
+// z (the arena is x -26..26, z 96..122, entered through a gap in the wall at z 96, x -6..6) on a
+// flat floor at y = 0 (the level's terrace is at y = 6), so the boss's `params` (the ice zones'
+// offsets, in meters from its spawn) fit both. The level format has no ice or water, so the cracked
+// ice is only the boss's mechanic (see `lf_core::ai::bosses::b10`).
+//   - The player spawns at (0, 0, 88) facing +Z, on the approach, outside the fog gate.
+//   - The fog gate is the plane z = 96, 12 m wide, opening north into the arena.
+//   - The Bellwright stands at (0, 0, 112) facing -Z (toward the gate).
+//   - Four ice patches, 3.5 m in radius, lie at (-12, 106), (12, 106), (-12, 118), (12, 118).
+//   - The arena has no edge to fall off and every side open: a second way out of every corner.
+(
+  spawn: (0.0, 0.0, 88.0),
+  spawn_yaw: 0.0,
+  kill_y: -12.0,
+  heightfield: None,
+  boxes: [
+    (name: "floor", center: (0.0, -0.5, 109.0), half_extents: (26.5, 0.5, 13.5)),
+    (name: "approach_floor", center: (0.0, -0.5, 88.0), half_extents: (8.0, 0.5, 9.0)),
+    (name: "wall_gate_w", center: (-16.0, 3.0, 96.5), half_extents: (10.0, 3.0, 0.5)),
+    (name: "wall_gate_e", center: (16.0, 3.0, 96.5), half_extents: (10.0, 3.0, 0.5)),
+    (name: "wall_north", center: (0.0, 3.0, 122.5), half_extents: (26.5, 3.0, 0.5)),
+    (name: "wall_west", center: (-26.5, 3.0, 109.5), half_extents: (0.5, 3.0, 13.5)),
+    (name: "wall_east", center: (26.5, 3.0, 109.5), half_extents: (0.5, 3.0, 13.5)),
+    (name: "approach_wall_w", center: (-8.5, 3.0, 88.0), half_extents: (0.5, 3.0, 9.0)),
+    (name: "approach_wall_e", center: (8.5, 3.0, 88.0), half_extents: (0.5, 3.0, 9.0)),
+    (name: "approach_wall_s", center: (0.0, 3.0, 79.5), half_extents: (8.5, 3.0, 0.5)),
+    (name: "forge_anvil", center: (0.0, 0.7, 120.0), half_extents: (1.5, 0.7, 1.0)),
+  ],
+  start_glimmer: 0,
+  bosses: [
+    (
+      name: "b10",
+      boss: "b10_the_bellwright",
+      pos: (0.0, 0.0, 112.0),
+      yaw: 3.1415927,
+      gate: (pos: (0.0, 0.0, 96.0), yaw: 0.0, half_width_m: 6.0, depth_m: 3.0),
+    ),
+  ],
+  echo_stones: [
+    (id: "stone_b10", pos: (-14.0, 0.0, 102.0), yaw: 0.5),
+  ],
+)

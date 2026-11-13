@@ -87,6 +87,12 @@ pub struct MechState {
     /// `ai::bosses::b08`).
     #[serde(default)]
     pub b08_lava_from: u64,
+    /// B10's beat, tolls, and shockwave (WP-078; see `ai::bosses::b10`). Not serialized here:
+    /// the state hash reads it as a field of its own (`HashView::b10`), left out while it is at
+    /// rest, so no other scenario's hash changes (a field here would change the hash of every
+    /// world whose mechanics aren't at rest).
+    #[serde(skip)]
+    pub b10: crate::ai::bosses::b10::B10State,
     /// The player let go of a ladder this tick, so the buttons that did it stay masked
     /// for the rest of the tick. Recomputed every tick, so not saved or hashed.
     #[serde(skip)]
@@ -101,6 +107,7 @@ impl MechState {
             carts: vec![mine_cart::CartRun::default(); layout.carts.len()],
             flare_until: 0,
             b08_lava_from: 0,
+            b10: Default::default(),
             suppress: false,
         }
     }

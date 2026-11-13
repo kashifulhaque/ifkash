@@ -28,13 +28,13 @@
 //   Pickup(id: "page_chronicle_4", item: "chronicle_page_4", pos: (-59.0, 1.0, 47.0),
 //     codex: Some("work.<slug>"), interact: true),
 //
-// BELLWRIGHT'S STEPS. A ramp (x -8..8, z 56..76) climbs 6 m to the arena terrace. B10 (the
-// Bellwright, an M7 work package) has no boss definition yet, so no Boss entity is placed:
-// the arena (x -26..26, z 96..122) has its fog gate's frame (the plane z = 96, a gap x -6..6 in a
-// wall, two posts) and an Echo Stone just inside. When the boss exists, add:
-//   Boss(name: "b10", boss: "<b10 id>", pos: (0.0, 6.0, 112.0), yaw: 3.1415927,
-//     gate: (pos: (0.0, 6.0, 96.0), yaw: 0.0, half_width_m: 6.0, depth_m: 3.0)),
-// L20 stands 16 m from the gate. The Great Bell hangs frozen in the cliff behind the arena.
+// BELLWRIGHT'S STEPS. A ramp (x -8..8, z 56..76) climbs 6 m to the arena terrace. The arena
+// (x -26..26, z 96..122) has its fog gate's frame (the plane z = 96, a gap x -6..6 in a wall, two
+// posts), an Echo Stone just inside, and B10, the Bellwright (WP-078, bosses/b10_the_bellwright.ron),
+// who waits in its middle facing the gate. L20 stands 16 m from the gate. The Great Bell hangs
+// frozen in the cliff behind the arena. The four cracked-ice patches of the fight are measured from
+// the Bellwright's spot: (+-12, -6) and (+-12, +6) m (the `ice<i>_x_m` and `ice<i>_z_m` numbers in
+// its definition).
 //
 // Registry numbers used here (27000 block): rimeshelf 27000 (the catacombs are 27001 and the
 // Ring 27002); chronicle_page_4 27011 is reserved for slot 4 (a stub, not yet placed).
@@ -130,8 +130,12 @@
     Chest(id: "chest_terrace", pos: (20.0, 6.0, 84.0), yaw: -1.5707964, loot: (item: "itm_forgeglass_shard", count: 4, glimmer: 350)),
 
     // --- B10's arena: the Bellwright's open forge (x -26..26, z 96..122, y 6) ------------------------
-    // PLACEHOLDER: no Boss entity until B10 has a definition (see the notes at the top). The Echo
-    // Stone stands just inside the gate, by the west wall.
+    // The boss: the Bellwright, in the middle of the forge facing the gate (the notes at the top
+    // have the rest). It pays out the Great Sigil of Rimeshelf and Bellwright's Mallet into the
+    // player's pack when it falls, as every boss does. The Echo Stone stands just inside the gate,
+    // by the west wall.
+    Boss(name: "b10", boss: "b10_the_bellwright", pos: (0.0, 6.0, 112.0), yaw: 3.1415927,
+      gate: (pos: (0.0, 6.0, 96.0), yaw: 0.0, half_width_m: 6.0, depth_m: 3.0)),
     EchoStone(id: "stone_b10", pos: (-14.0, 6.0, 102.0), yaw: 0.5),
   ],
 )

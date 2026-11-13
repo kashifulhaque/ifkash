@@ -278,8 +278,8 @@
     "start_max": 16,
     "start_min": 4
   },
-  "contentHash": "159356888968511094",
-  "contentHashHex": "0236263f077abe76",
+  "contentHash": "13138634794830880888",
+  "contentHashHex": "b655cebc037b6078",
   "moves": [
     {
       "anim": "ep_sentinel_thrust",
@@ -1570,6 +1570,86 @@
       "stamina": 0,
       "stub": false,
       "totalFrames": 60
+    },
+    {
+      "anim": "bellwright_hammer",
+      "file": "moves/bosses/b10.ron",
+      "fp": 0,
+      "id": "b10_hammer",
+      "num": 39100,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 80
+    },
+    {
+      "anim": "bellwright_combo",
+      "file": "moves/bosses/b10.ron",
+      "fp": 0,
+      "id": "b10_hammer_combo",
+      "num": 39101,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 160
+    },
+    {
+      "anim": "bellwright_sweep",
+      "file": "moves/bosses/b10.ron",
+      "fp": 0,
+      "id": "b10_sweep",
+      "num": 39102,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 120
+    },
+    {
+      "anim": "bellwright_drag",
+      "file": "moves/bosses/b10.ron",
+      "fp": 0,
+      "id": "b10_bell_drag",
+      "num": 39103,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 120
+    },
+    {
+      "anim": "bellwright_snap",
+      "file": "moves/bosses/b10.ron",
+      "fp": 0,
+      "id": "b10_snap",
+      "num": 39104,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 45
+    },
+    {
+      "anim": "bellwright_flail_slam",
+      "file": "moves/bosses/b10.ron",
+      "fp": 0,
+      "id": "b10_flail_slam",
+      "num": 39105,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 64
+    },
+    {
+      "anim": "bellwright_flail_swing",
+      "file": "moves/bosses/b10.ron",
+      "fp": 0,
+      "id": "b10_flail_swing",
+      "num": 39106,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 96
+    },
+    {
+      "anim": "bellwright_flail_spin",
+      "file": "moves/bosses/b10.ron",
+      "fp": 0,
+      "id": "b10_flail_spin",
+      "num": 39107,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 128
     },
     {
       "anim": "boss_swipe",

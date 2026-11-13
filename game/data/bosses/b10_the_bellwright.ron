@@ -1,0 +1,102 @@
+// B10, the Bellwright (registry 39010-39011): a giant smith who hauls a frozen bell on a chain and
+// rings it in rhythm. Source: docs/game/05-enemies-and-bosses.md, "B10 The Bellwright" (HP 8,000,
+// two phases, phase 2 at 50%, Fire weakness 1.3x, immune to Rime and Drowse, rewards: the Great
+// Sigil of Rimeshelf and Bellwright's Mallet). Defense, poise, attack, option weights, and
+// cooldowns are tuning.
+//
+// The mechanic is in `lf_core::ai::bosses::b10`, and reads `params` below:
+//   - The beat. The fight runs on a beat, one every `beat_ticks_p1` ticks (40) in phase 1 and
+//     `beat_ticks_p2` (32) in phase 2 once the chain snaps. The Bellwright only picks a move
+//     `slot_offset_ticks` (9) after a beat, so every hit in `bosses/b10.ron` lands on one: a hit
+//     on frame F lands F - 1 ticks after the move is picked (measured by the test
+//     `he_starts_every_move_on_the_slot_so_each_hit_lands_on_a_beat`), and 9 + 31 is a beat.
+//   - The toll. Every `toll_every_beats` (4) beats the bell tolls. The bell winds up for
+//     `toll_warn_ticks` (20) and then a Rime shockwave runs out from where the Bellwright
+//     stands at `toll_speed_m_per_tick`, up to `toll_max_m`. It passes the player harmlessly if
+//     they are in the air (jumped) or in a roll's i-frames; otherwise it deals
+//     `toll_damage_percent` of their max HP and builds `toll_rime_milli` thousandths of Rime.
+//   - The ice. `ice_zones` cracked patches of ice, `ice_radius_m` wide, at the `ice<i>_x_m` and
+//     `ice<i>_z_m` offsets (meters from the Bellwright's spawn, in world axes). Zone `i` cracks
+//     at toll `ice_first_crack_toll + i * ice_crack_step_tolls` and breaks `ice_break_after_tolls`
+//     (2) tolls after that; a broken patch is freezing water that deals `water_damage_percent`
+//     of max HP every `water_interval_ticks` to anyone standing in it, until the fight resets.
+//   - The hurtbox numbers give the Bellwright his size (the sim's default capsule is a person's).
+#![enable(implicit_some)]
+(
+  id: "b10_the_bellwright",
+  name: "The Bellwright",
+  body: (
+    id: "b10_the_bellwright_body",
+    model: "boss_bellwright",
+    hp: 8000,
+    poise: 300,
+    stance: 0,
+    defense: (flat: 35, weakness: [(Fire, 130)]),
+    resist: (immunity: 500, robustness: 500, composure: 400),
+    immune: [Rime, Drowse],
+    glimmer: 0,
+    attack: 64,
+    stamina: 0,
+    speed_percent: 70,
+    leash_m: 80.0,
+    ignores_tokens: true,
+    moveset: "bosses/b10.ron",
+    options: [
+      // Phase 1: the hammer. He walks to the player on the beat and swings.
+      (move: "b10_hammer", when: [Phase(1), DistBelow(4.2), FacingWithin(60.0)], weight: 4, cooldown: 80),
+      (move: "b10_hammer_combo", when: [Phase(1), DistBelow(4.0), FacingWithin(50.0)], weight: 3, cooldown: 240),
+      (move: "b10_sweep", when: [Phase(1), DistBelow(5.0), FacingWithin(60.0)], weight: 3, cooldown: 200),
+      (move: "b10_bell_drag", when: [Phase(1), DistBelow(3.6)], weight: 2, cooldown: 300),
+      (behavior: Approach(dur: 40), when: [Phase(1), DistAbove(3.6)], weight: 8),
+      (behavior: Wait(dur: 40), when: [Phase(1)], weight: 1),
+      // Phase 2: the chain is gone and the bell is a flail with 6 m of reach.
+      (move: "b10_flail_slam", when: [Phase(2), DistBetween(3.0, 8.0), FacingWithin(40.0)], weight: 4, cooldown: 64),
+      (move: "b10_flail_swing", when: [Phase(2), DistBelow(7.0), FacingWithin(60.0)], weight: 4, cooldown: 100),
+      (move: "b10_flail_spin", when: [Phase(2), DistBelow(6.0)], weight: 3, cooldown: 250),
+      (behavior: Approach(dur: 32), when: [Phase(2), DistAbove(5.5)], weight: 8),
+      (behavior: Wait(dur: 32), when: [Phase(2)], weight: 1),
+    ],
+  ),
+  parts: [],
+  phases: [
+    (below: 0.5, transition: "b10_snap"),
+  ],
+  rewards: (
+    glimmer: 5000,
+    items: [
+      (item: "itm_great_sigil_bellwright", count: 1),
+      (item: "wpn_bellwright_mallet", count: 1),
+    ],
+    codex: "b10_the_bellwright",
+  ),
+  echo_stone: true,
+  music: (intro: "boss_b10_intro", loop_stem: "boss_b10_loop", phase2_stem: "boss_b10_flail"),
+  params: {
+    "beat_ticks_p1": 40.0,
+    "beat_ticks_p2": 32.0,
+    "slot_offset_ticks": 9.0,
+    "toll_every_beats": 4.0,
+    "toll_warn_ticks": 20.0,
+    "toll_speed_m_per_tick": 0.9,
+    "toll_max_m": 32.0,
+    "toll_damage_percent": 18.0,
+    "toll_rime_milli": 300.0,
+    "body_radius_m": 1.1,
+    "body_half_height_m": 2.0,
+    "ice_zones": 4.0,
+    "ice_radius_m": 3.5,
+    "ice_first_crack_toll": 1.0,
+    "ice_crack_step_tolls": 1.0,
+    "ice_break_after_tolls": 2.0,
+    "water_damage_percent": 6.0,
+    "water_interval_ticks": 20.0,
+    "ice0_x_m": -12.0,
+    "ice0_z_m": -6.0,
+    "ice1_x_m": 12.0,
+    "ice1_z_m": -6.0,
+    "ice2_x_m": -12.0,
+    "ice2_z_m": 6.0,
+    "ice3_x_m": 12.0,
+    "ice3_z_m": 6.0,
+  },
+)

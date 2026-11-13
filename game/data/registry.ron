@@ -812,5 +812,17 @@
     (id: "b09_drain", num: 38110),
     (id: "b09_stunned", num: 38111),
     (id: "b09_air_dive_short", num: 38112),
+    // WP-078: B10, the Bellwright, takes 39000-39999. The boss 39010 and its body 39011; its
+    // moves 39100-39119.
+    (id: "b10_the_bellwright", num: 39010),
+    (id: "b10_the_bellwright_body", num: 39011),
+    (id: "b10_hammer", num: 39100),
+    (id: "b10_hammer_combo", num: 39101),
+    (id: "b10_sweep", num: 39102),
+    (id: "b10_bell_drag", num: 39103),
+    (id: "b10_snap", num: 39104),
+    (id: "b10_flail_slam", num: 39105),
+    (id: "b10_flail_swing", num: 39106),
+    (id: "b10_flail_spin", num: 39107),
   ],
 )

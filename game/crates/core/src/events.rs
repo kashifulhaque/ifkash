@@ -260,6 +260,24 @@ impl MechanicEvent {
     pub const MATRIARCH_LAMP_STUN: u8 = 184;
     /// The fight ended or reset and the lamps went out. `index` is the boss's index in the scenario.
     pub const MATRIARCH_LAMPS_DOUSED: u8 = 185;
+    /// B10, the Bellwright (WP-078; WASM kind 14, sub-kinds 190-199 are B10's): a beat of the
+    /// fight. `index` is the beat in the bar, 0 to 3; 0 is the toll's beat.
+    pub const BELL_BEAT: u8 = 190;
+    /// B10: the bell winds up; the toll lands in `toll_warn_ticks` more. `index` is the boss.
+    pub const BELL_TOLL_WARNED: u8 = 191;
+    /// B10: the bell tolled and its Rime shockwave runs out from the Bellwright. `index` is the
+    /// boss.
+    pub const BELL_TOLLED: u8 = 192;
+    /// B10: the shockwave hit the player (not jumped or rolled). `index` is the boss.
+    pub const BELL_TOLL_HIT: u8 = 193;
+    /// B10: a patch of ice cracked; `index` is the patch.
+    pub const ICE_CRACKED: u8 = 194;
+    /// B10: a patch of ice broke into freezing water; `index` is the patch.
+    pub const ICE_BROKE: u8 = 195;
+    /// B10: freezing water burned the player; `index` is the patch.
+    pub const ICE_WATER_BURNED: u8 = 196;
+    /// B10: the chain snapped and the bell is a flail (phase 2). `index` is the boss.
+    pub const BELL_CHAIN_SNAPPED: u8 = 197;
 }
 
 /// The player opened a chest (`source` is always 1; pickups send `PickupEvent`), and

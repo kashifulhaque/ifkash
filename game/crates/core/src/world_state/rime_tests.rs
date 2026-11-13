@@ -313,7 +313,7 @@ fn a_sprint_through_deep_snow_costs_half_again_as_much_stamina() {
 // Rimeshelf: contents
 
 /// Rimeshelf has what the spec puts in it: the foundry's Smiths and the Frost Husks, the wolves,
-/// a Bell Warden, B10's arena (Echo Stone, fog-gate frame; no boss yet), the four connections.
+/// a Bell Warden, B10's arena (Echo Stone, fog-gate frame, and the Bellwright), the four connections.
 #[test]
 fn rimeshelf_has_what_the_spec_puts_in_it() {
     let w = rime();
@@ -324,7 +324,8 @@ fn rimeshelf_has_what_the_spec_puts_in_it() {
     assert!(kinds("husk_frost") >= 4);
     assert!(kinds("rime_wolf") >= 6, "wolves hunt in packs");
     assert!(kinds("bell_warden") >= 1);
-    assert!(w.layout.bosses.is_empty(), "B10 has no definition yet");
+    assert_eq!(w.layout.bosses.len(), 1, "B10, the Bellwright (WP-078)");
+    assert_eq!(w.layout.bosses[0].def.id, "b10_the_bellwright");
     assert_eq!(w.layout.snow.len(), 5);
     // B10's Echo Stone is inside the gate (the plane z = 96), on the terrace.
     let stones = &content.level(RIME).unwrap().entities;

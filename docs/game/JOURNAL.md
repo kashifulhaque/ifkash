@@ -72,6 +72,7 @@ Copy this block to the top of the entries and fill it in as you go:
   - WP-088: sonnet (moved up), worktree; `9577c5a6`; 448K. Merged onto WP-100 and WP-101: keep-both in `engine/events.ts` and `engine/index.ts`; every golden conflicted (WP-101 rewrote the headers), so the orchestrator took the merged tree's goldens and rehashed. Deliberate: the same 46 the worker named (Lantern rests and boss wins). Merged tree: 909 tests, clippy, fmt, validate, `bun run check`, second rehash 120 A -> A. WASM rebuilt locally. Orchestrator screenshot of the Marks screen.
   - The owner asked mid-session to mute the game: a hidden Browser pane tab on `/game` was playing WP-087's music. The orchestrator moved the tab to `/codex`. Leave `/game` after every visual check.
   - WP-082: sonnet, worktree; `a05335af`; 239K. Clean cherry-pick; no Rust changes. Orchestrator checked `bun run check` and the diff only; screenshots are the worker's.
+  - WP-086: sonnet, worktree; `a38a9bff`; 105K. Verified in its worktree (`bun run check`, `bun run build`) and held off `main` for the owner. The ADR 0003 rollout looks done: the `CLOUDFLARE_PAGES_API_TOKEN` secret exists and `web-deploy.yml` (which builds the WASM) passed on every M8 push. The README's open-decision row is stale. WP-084's Worker deploy passed and `/api/latticefall/speedrun/leaderboard` returns 200 in production.
 ### 2026-11-13: latticefall-m7 (M7)
 
 - **Orchestrator:** Opus 5.5, low effort

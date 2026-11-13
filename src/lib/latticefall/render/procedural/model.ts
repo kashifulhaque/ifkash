@@ -34,5 +34,11 @@ export interface ModelDef {
    */
   stagger?(t: number): Pose;
   /** Optional per-frame hook after the pose is applied (an arrow vanishing, a lantern flaring). */
+  /**
+   * Bones whose meshes the `tick` hook shows or hides, so they stay separate meshes. A model with a
+   * `tick` hook is drawn as one merged mesh only if it lists these (an empty list when the hook
+   * only scales bones, which a merged mesh follows).
+   */
+  animatedBones?: string[];
   tick?(rig: Rig, ctx: { frame: number; total: number; inMove: boolean; anim: string }): void;
 }

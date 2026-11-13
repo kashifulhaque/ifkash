@@ -17,6 +17,7 @@ import {
   PropertyBinding,
   Quaternion,
   type Scene,
+  type SkinnedMesh,
   Euler,
   Vector3,
   type WebGLRenderer
@@ -29,6 +30,9 @@ import type { DrawActor } from '../../engine/snapshot';
 import { PlayerGear, type Equipped, type RigFrame } from '../equipment/playerGear';
 import { SpellFx } from '../equipment/spellFx';
 import type { ModelDef } from '../procedural';
+import { getQuality } from '../lighting/quality';
+import { actorCullDistance } from '../perf/lod';
+import { capSceneTextures } from '../perf/textures';
 import { AirTracker, LAND_SECONDS } from './airState';
 import { parsePreview, type PreviewRequest } from './devPreview';
 import { locomotionBlend, type LocoBands } from './locomotion';
@@ -149,6 +153,14 @@ const smooth = (x: number) => {
   return t * t * (3 - 2 * t);
 };
 
+/** Frees the bone-matrix textures of a cloned model's skeletons (WP-081: they leaked on every despawn). */
+function disposeSkeletons(root: Object3D): void {
+  root.traverse((o) => {
+    const skinned = o as Partial<SkinnedMesh>;
+    if (skinned.isSkinnedMesh) skinned.skeleton?.dispose();
+  });
+}
+
 export class ActorRenderer {
   private scene: Scene;
   private renderer: WebGLRenderer;
@@ -204,6 +216,8 @@ export class ActorRenderer {
       loader.loadAsync(`${ACTOR_ASSET_BASE}ual.glb`)
     ]);
     ktx2.dispose();
+    // Texture budget (WP-081): nothing here is above the preset's longest edge today; this keeps it so.
+    capSceneTextures(wayfarer.scene, getQuality().name);
 
     // Measure the rest pose with no transform on the scene.
     wayfarer.scene.updateMatrixWorld(true);
@@ -299,6 +313,7 @@ export class ActorRenderer {
 
   /** Advances the catalyst effects. Call once per rendered frame, before the scene draws. */
   updateFx(dt: number, camera: PerspectiveCamera, viewportPx: number): void {
+    (this.cameraAt ??= new Vector3()).copy(camera.position);
     this.spellFx.update(dt, camera, viewportPx);
   }
 
@@ -392,6 +407,7 @@ export class ActorRenderer {
         this.gear.get(id)?.dispose();
         this.gear.delete(id);
         this.scene.remove(inst.holder);
+        disposeSkeletons(inst.holder);
         this.instances.delete(id);
       }
     }
@@ -402,7 +418,10 @@ export class ActorRenderer {
     this.gear.clear();
     this.scene.remove(this.spellFx.points);
     this.spellFx.dispose();
-    for (const inst of this.instances.values()) this.scene.remove(inst.holder);
+    for (const inst of this.instances.values()) {
+      this.scene.remove(inst.holder);
+      disposeSkeletons(inst.holder);
+    }
     this.instances.clear();
     for (const e of [...this.enemies.values(), ...this.propActors]) {
       this.scene.remove(e.holder);
@@ -433,9 +452,23 @@ export class ActorRenderer {
     return { l: get('Foot.L'), r: get('Foot.R'), speed: inst.speed };
   }
 
+  /** Where the camera was at the last `updateFx`, for the enemies' distance cull. Null before it. */
+  private cameraAt: Vector3 | null = null;
+
   /** Draws one enemy as its procedural model, posed from the snapshot's move and flags. */
   private updateEnemy(a: DrawActor, def: ModelDef, frameMs: number): void {
     let e = this.enemies.get(a.id);
+    // Beyond the cull distance an enemy is neither posed nor drawn (WP-081). Bosses are exempt.
+    const cam = this.cameraAt;
+    if (cam && def.height < 3) {
+      const limit = actorCullDistance(getQuality());
+      const dx = a.x - cam.x;
+      const dz = a.z - cam.z;
+      if (dx * dx + dz * dz > limit * limit) {
+        if (e) e.holder.visible = false;
+        return;
+      }
+    }
     if (!e) {
       e = new ProceduralActor(def, a.id);
       this.enemies.set(a.id, e);

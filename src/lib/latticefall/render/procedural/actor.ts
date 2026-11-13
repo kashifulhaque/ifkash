@@ -75,6 +75,9 @@ export class ProceduralActor {
     // Offsets the idle sway so a pack doesn't breathe in unison.
     this.idleT = (seed % 7) * 0.9;
     this.rig = def.build();
+    // One draw call instead of a dozen. A model with a `tick` hook that hides parts keeps those
+    // parts separate (`animatedBones`); one that doesn't say so keeps all its meshes.
+    if (!def.tick || def.animatedBones) this.rig.batch(def.animatedBones);
     this.holder.add(this.rig.root);
   }
 

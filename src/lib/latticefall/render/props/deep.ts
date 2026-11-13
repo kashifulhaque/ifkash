@@ -10,6 +10,8 @@ import {
   CylinderGeometry,
   Euler,
   Group,
+  InstancedMesh,
+  Matrix4,
   Mesh,
   MeshStandardMaterial,
   type BufferGeometry,
@@ -53,6 +55,7 @@ export class DeepProps {
   private geometries: BufferGeometry[] = [];
   private materials: Material[] = [];
   private carts: Cart[] = [];
+  private instanced: InstancedMesh[] = [];
   private hatches: Hatch[] = [];
   readonly group = new Group();
 
@@ -97,6 +100,8 @@ export class DeepProps {
 
   dispose(): void {
     this.group.parent?.remove(this.group);
+    for (const t of this.instanced) t.dispose();
+    this.instanced = [];
     for (const g of this.geometries) g.dispose();
     for (const m of this.materials) m.dispose();
     this.geometries = [];
@@ -141,10 +146,16 @@ export class DeepProps {
         seg.add(r);
       }
       const tie = this.geo(new BoxGeometry(GAUGE + 0.5, 0.06, 0.18));
-      for (let t = SLEEPER_GAP / 2; t < len; t += SLEEPER_GAP) {
-        const s = new Mesh(tie, timber);
-        s.position.set(0, 0.05, t);
-        seg.add(s);
+      // The sleepers are one instanced mesh per segment: dozens of draw calls become one (WP-081).
+      const spots: number[] = [];
+      for (let t = SLEEPER_GAP / 2; t < len; t += SLEEPER_GAP) spots.push(t);
+      if (spots.length) {
+        const ties = new InstancedMesh(tie, timber, spots.length);
+        const m = new Matrix4();
+        spots.forEach((t, k) => ties.setMatrixAt(k, m.makeTranslation(0, 0.05, t)));
+        ties.instanceMatrix.needsUpdate = true;
+        seg.add(ties);
+        this.instanced.push(ties);
       }
       this.group.add(seg);
     }

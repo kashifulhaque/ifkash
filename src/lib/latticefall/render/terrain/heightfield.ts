@@ -28,17 +28,43 @@ const smooth = (a: number, b: number, v: number): number => {
   return t * t * (3 - 2 * t);
 };
 
+/** A rectangle of the heightfield, in vertex indices (rows `r0` up to `r1`, columns `c0` up to `c1`). */
+export interface ChunkSpec {
+  r0: number;
+  r1: number;
+  c0: number;
+  c1: number;
+  /** Heightfield cells per drawn quad edge: 1 draws every cell, 2 every other, and so on. */
+  stride: number;
+  /** Meters of skirt hung below the chunk's border, to hide cracks against a neighbor of another stride. 0 for none. */
+  skirt: number;
+}
+
+/** Builds the whole heightfield as one geometry, every cell, no skirts. */
 export function buildTerrainGeometry(hf: Heightfield, regions: readonly Region[]): BufferGeometry {
-  const { rows, cols } = hf;
+  return buildTerrainChunk(hf, regions, { r0: 0, r1: hf.rows - 1, c0: 0, c1: hf.cols - 1, stride: 1, skirt: 0 });
+}
+
+/**
+ * Builds one rectangle of the heightfield. The quads are `stride` cells wide; a rectangle whose
+ * size isn't a multiple of `stride` ends in a narrower quad, so neighbors always meet exactly at
+ * the chunk border's corners. Vertex positions are the core's at every drawn vertex.
+ */
+export function buildTerrainChunk(hf: Heightfield, regions: readonly Region[], spec: ChunkSpec): BufferGeometry {
+  const { cols } = hf;
+  const { r0, r1, c0, c1, stride, skirt } = spec;
   const x0 = hf.center[0] - hf.size_x / 2;
   const z0 = hf.center[2] - hf.size_z / 2;
   const dx = hf.size_x / (cols - 1);
-  const dz = hf.size_z / (rows - 1);
+  const dz = hf.size_z / (hf.rows - 1);
   const px = (c: number): number => x0 + c * dx;
   const pz = (r: number): number => z0 + r * dz;
   const py = (r: number, c: number): number => hf.center[1] + hf.heights[r * cols + c];
 
-  const faces = (rows - 1) * (cols - 1) * 2;
+  const nr = Math.ceil((r1 - r0) / stride);
+  const nc = Math.ceil((c1 - c0) / stride);
+  const skirtFaces = skirt > 0 ? 2 * (nr + nc) * 2 : 0;
+  const faces = nr * nc * 2 + skirtFaces;
   const pos = new Float32Array(faces * 9);
   const col = new Float32Array(faces * 9);
   const tmp = new Color();
@@ -47,8 +73,10 @@ export function buildTerrainGeometry(hf: Heightfield, regions: readonly Region[]
   const rock = new Color();
   const high = new Color();
   let f = 0;
+  /** The surface color of each border quad, for the skirt under it: north, south, west, east. */
+  const edge = { n: new Float32Array(nc * 3), s: new Float32Array(nc * 3), w: new Float32Array(nr * 3), e: new Float32Array(nr * 3) };
 
-  const face = (r: number, c: number, i: Array<[number, number]>): void => {
+  const face = (r: number, c: number, i: Array<[number, number]>, qr: number, qc: number): void => {
     const o = f * 9;
     for (let k = 0; k < 3; k++) {
       pos[o + k * 3] = px(i[k][1]);
@@ -84,14 +112,71 @@ export function buildTerrainGeometry(hf: Heightfield, regions: readonly Region[]
       col[o + k * 3 + 1] = tmp.g;
       col[o + k * 3 + 2] = tmp.b;
     }
+    if (skirt > 0) {
+      const put = (a: Float32Array, at: number): void => {
+        a[at * 3] = tmp.r;
+        a[at * 3 + 1] = tmp.g;
+        a[at * 3 + 2] = tmp.b;
+      };
+      if (qr === 0) put(edge.n, qc);
+      if (qr === nr - 1) put(edge.s, qc);
+      if (qc === 0) put(edge.w, qr);
+      if (qc === nc - 1) put(edge.e, qr);
+    }
     f++;
   };
 
-  for (let r = 0; r < rows - 1; r++) {
-    for (let c = 0; c < cols - 1; c++) {
+  for (let qr = 0; qr < nr; qr++) {
+    const r = r0 + qr * stride;
+    const rn = Math.min(r + stride, r1);
+    for (let qc = 0; qc < nc; qc++) {
+      const c = c0 + qc * stride;
+      const cn = Math.min(c + stride, c1);
       // Counter-clockwise from above (+Y up).
-      face(r, c, [[r, c], [r + 1, c], [r, c + 1]]);
-      face(r, c, [[r, c + 1], [r + 1, c], [r + 1, c + 1]]);
+      face(r, c, [[r, c], [rn, c], [r, cn]], qr, qc);
+      face(r, c, [[r, cn], [rn, c], [rn, cn]], qr, qc);
+    }
+  }
+
+  if (skirt > 0) {
+    // A vertical strip under each border segment, wound to face outward.
+    const strip = (ax: number, ay: number, az: number, bx: number, by: number, bz: number, rgb: Float32Array, k: number, ox: number, oz: number): void => {
+      const quad: Array<[number, number, number]> = [
+        [ax, ay, az],
+        [bx, by, bz],
+        [bx, by - skirt, bz],
+        [ax, ay - skirt, az]
+      ];
+      for (const tri of [[0, 1, 2], [0, 2, 3]]) {
+        const [p, q, r] = tri.map((i) => quad[i]);
+        // Flip the winding if the face's normal points inward.
+        const nx = (q[1] - p[1]) * (r[2] - p[2]) - (q[2] - p[2]) * (r[1] - p[1]);
+        const nz = (q[0] - p[0]) * (r[1] - p[1]) - (q[1] - p[1]) * (r[0] - p[0]);
+        const out = nx * ox + nz * oz >= 0;
+        const order = out ? [p, q, r] : [p, r, q];
+        const o = f * 9;
+        order.forEach((v, j) => {
+          pos[o + j * 3] = v[0];
+          pos[o + j * 3 + 1] = v[1];
+          pos[o + j * 3 + 2] = v[2];
+          col[o + j * 3] = rgb[k * 3];
+          col[o + j * 3 + 1] = rgb[k * 3 + 1];
+          col[o + j * 3 + 2] = rgb[k * 3 + 2];
+        });
+        f++;
+      }
+    };
+    for (let qc = 0; qc < nc; qc++) {
+      const c = c0 + qc * stride;
+      const cn = Math.min(c + stride, c1);
+      strip(px(c), py(r0, c), pz(r0), px(cn), py(r0, cn), pz(r0), edge.n, qc, 0, -1);
+      strip(px(c), py(r1, c), pz(r1), px(cn), py(r1, cn), pz(r1), edge.s, qc, 0, 1);
+    }
+    for (let qr = 0; qr < nr; qr++) {
+      const r = r0 + qr * stride;
+      const rn = Math.min(r + stride, r1);
+      strip(px(c0), py(r, c0), pz(r), px(c0), py(rn, c0), pz(rn), edge.w, qr, -1, 0);
+      strip(px(c1), py(r, c1), pz(r), px(c1), py(rn, c1), pz(rn), edge.e, qr, 1, 0);
     }
   }
 

@@ -6,24 +6,26 @@
 // lighting, and shows or hides scatter chunks by distance. Quality changes arrive through
 // `subscribeQuality` (see `../lighting/quality.ts`).
 
-import { Mesh, MeshStandardMaterial, PerspectiveCamera, Scene, type WebGLRenderer, PCFSoftShadowMap } from 'three';
+import { MeshStandardMaterial, PerspectiveCamera, Scene, type WebGLRenderer, PCFSoftShadowMap } from 'three';
 import { InstanceLayer } from '../kits/instances';
 import { KitBatch } from '../kits/kitBatch';
+import { ScatterBatch } from '../kits/scatterBatch';
 import { PieceLibrary } from '../kits/library';
 import { fetchManifest, type LevelManifest } from '../kits/manifest';
 import { applyHeightFog, heightFogUniforms } from '../lighting/fogPatch';
 import { LevelLighting } from '../lighting/lighting';
 import { getQuality, subscribeQuality, type QualityPreset } from '../lighting/quality';
 import { Sky } from '../sky/sky';
-import { buildTerrainGeometry } from './heightfield';
+import { TerrainChunks, type TerrainStats } from './TerrainChunks';
 
 export class LevelRenderer {
   manifest: LevelManifest | null = null;
-  private terrain: Mesh | null = null;
+  private terrain: TerrainChunks | null = null;
   private terrainMaterial: MeshStandardMaterial | null = null;
   private library: PieceLibrary | null = null;
   private batch: KitBatch | null = null;
   private instances: InstanceLayer | null = null;
+  private scatter: ScatterBatch | null = null;
   private lighting: LevelLighting | null = null;
   private sky: Sky | null = null;
   private quality: QualityPreset = getQuality();
@@ -60,13 +62,12 @@ export class LevelRenderer {
     if (manifest.terrain) {
       this.terrainMaterial = new MeshStandardMaterial({ vertexColors: true, flatShading: true, roughness: 1, metalness: 0 });
       applyHeightFog(this.terrainMaterial);
-      this.terrain = new Mesh(buildTerrainGeometry(manifest.terrain, a.regions), this.terrainMaterial);
-      this.terrain.receiveShadow = true;
-      this.scene.add(this.terrain);
+      this.terrain = new TerrainChunks(this.scene, manifest.terrain, a.regions, this.terrainMaterial);
     }
 
     this.library = new PieceLibrary(manifest);
     this.batch = new KitBatch(this.scene, manifest, this.library);
+    this.scatter = new ScatterBatch(this.scene, manifest, this.library);
     this.instances = new InstanceLayer(this.scene, manifest, this.library);
 
     this.applyQuality(this.quality);
@@ -77,6 +78,7 @@ export class LevelRenderer {
   private applyQuality(p: QualityPreset): void {
     this.quality = p;
     this.lighting?.setQuality(p);
+    this.scatter?.setGrassDensity(p.grassDensity);
     this.instances?.setGrassDensity(p.grassDensity);
   }
 
@@ -92,19 +94,26 @@ export class LevelRenderer {
     camera.updateMatrixWorld();
     heightFogUniforms.lfViewInv.value.copy(camera.matrixWorld);
     this.sky.update(camera, this.lighting.fogColor, this.lighting.sunColor);
-    this.instances?.update(focus.x, focus.z, this.quality.drawDistance);
+    const draw = this.quality.drawDistance;
+    this.terrain?.update(focus.x, focus.z, frameMs, this.quality);
+    this.batch?.update(focus.x, focus.z, draw);
+    this.scatter?.update(focus.x, focus.z, draw);
+    this.instances?.update(focus.x, focus.z, draw);
+  }
+
+  /** Terrain streaming numbers, for the benchmark and the dev tools. Null with no terrain. */
+  get terrainStats(): TerrainStats | null {
+    return this.terrain?.stats ?? null;
   }
 
   dispose(): void {
     this.disposed = true;
     this.unsubscribe?.();
     this.instances?.dispose();
+    this.scatter?.dispose();
     this.batch?.dispose();
     this.library?.dispose();
-    if (this.terrain) {
-      this.scene.remove(this.terrain);
-      this.terrain.geometry.dispose();
-    }
+    this.terrain?.dispose();
     this.terrainMaterial?.dispose();
     this.sky?.dispose();
     this.lighting?.dispose();

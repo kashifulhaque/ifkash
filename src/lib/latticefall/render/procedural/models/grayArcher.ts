@@ -108,6 +108,7 @@ export const grayArcherDef: ModelDef = {
   fallback: shoot,
   fallAxis: 'x',
   death: (u) => ({ spine: [0.3 * u], head: [0.4 * u], kneeL: [0.7 * u], kneeR: [0.5 * u] }),
+  animatedBones: ['arrow'],
   tick(rig, ctx) {
     const arrow = rig.bones.get('arrow');
     if (arrow) arrow.visible = !ctx.inMove || ctx.frame < 27 || ctx.total < 50;

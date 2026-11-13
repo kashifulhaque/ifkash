@@ -108,6 +108,19 @@ export class PieceLibrary {
       .finally(() => this.loading.delete(id));
   }
 
+  /**
+   * Unloads a piece's model (WP-081 streaming): frees its geometry and goes back to the stand-in,
+   * which the instance code swaps in through `onModel`. The next time a chunk of the piece comes
+   * near, `ensureModel` fetches it again (from the browser's cache, normally).
+   */
+  release(id: string): void {
+    if (!this.loaded.delete(id)) return;
+    this.geometries.get(id)?.dispose();
+    this.geometries.delete(id);
+    const standIn = this.geometry(id);
+    for (const fn of this.listeners) fn(id, standIn);
+  }
+
   dispose(): void {
     this.disposed = true;
     for (const g of this.geometries.values()) g.dispose();

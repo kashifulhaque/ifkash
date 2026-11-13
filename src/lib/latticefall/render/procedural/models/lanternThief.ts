@@ -106,6 +106,7 @@ export const lanternThiefDef: ModelDef = {
   fallAxis: 'x',
   death: (u) => ({ spine: [0.4 * u], head: [0.4 * u], kneeL: [0.8 * u], kneeR: [0.8 * u] }),
   // The bomb is in hand until it leaves on the lob frame; a new one is ready after the move.
+  animatedBones: ['bomb'],
   tick: (rig, ctx) => {
     rig.bones.get('bomb')!.visible = !(ctx.inMove && ctx.anim === 'lt_bomb' && ctx.frame >= LOB_FRAME);
   }

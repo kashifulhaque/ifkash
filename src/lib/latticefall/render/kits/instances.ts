@@ -23,11 +23,15 @@ function hash(seed: number): number {
 }
 
 const UP = new Vector3(0, 1, 0);
+/** A model nothing has been near for this long is unloaded (WP-081). */
+const RELEASE_AFTER_MS = 20_000;
 
 export class InstanceLayer {
   private chunks: Chunk[] = [];
   private grass = 1;
   private offModel: () => void;
+  /** When each piece last had a chunk within the draw distance, in `performance.now()` ms. */
+  private lastNear = new Map<string, number>();
 
   constructor(
     private scene: Scene,
@@ -41,7 +45,9 @@ export class InstanceLayer {
     const s = new Vector3();
 
     // Scatter: one chunk per (batch, cell).
+    // Scatter with no model is `ScatterBatch`'s job (one draw call for the whole field).
     for (const batch of manifest.scatter) {
+      if (!manifest.pieces[batch.piece]?.model) continue;
       const cells = new Map<string, Array<(typeof batch.transforms)[number]>>();
       for (const t of batch.transforms) {
         const key = `${Math.floor(t[0] / size)},${Math.floor(t[2] / size)}`;
@@ -122,12 +128,21 @@ export class InstanceLayer {
 
   /** Shows the chunks within `drawDistance` of the focus and starts streaming their models. */
   update(fx: number, fz: number, drawDistance: number): void {
+    const now = performance.now();
     for (const c of this.chunks) {
       const dx = Math.max(c.box[0] - fx, 0, fx - c.box[2]);
       const dz = Math.max(c.box[1] - fz, 0, fz - c.box[3]);
       const near = dx * dx + dz * dz <= drawDistance * drawDistance;
       c.mesh.visible = near && c.mesh.count > 0;
+      if (near) this.lastNear.set(c.piece, now);
       if (near && this.library.needsModel(c.piece)) this.library.ensureModel(c.piece);
+    }
+    // Streaming: a piece nothing has been near for a while gives its model back.
+    for (const [piece, at] of this.lastNear) {
+      if (now - at > RELEASE_AFTER_MS) {
+        this.lastNear.delete(piece);
+        this.library.release(piece);
+      }
     }
   }
 

@@ -20,6 +20,13 @@
 //                           catalysts or armor (default blades); `cam=fixed:` still overrides it
 //   &fakelock=X,Y,Z         frames a fixed point as if it were the locked-on actor's feet
 //
+//   &bench=1|AREA,AREA     (dev only) runs the performance benchmark (WP-081): flies a fixed camera path
+//                           through every area (or the listed ones) on the medium preset and shows
+//                           a per-region report of frame work, draw calls and triangles
+//   &benchstep=M            with bench, meters the player walks per frame (default 1.5)
+//   &benchcrowd=N           with bench, how many stand-in enemies surround the player (default 39, the
+//                           active-actor budget less the player)
+//
 // `cam`, `camt`, `fakelock` and `scenario` predate the tools and work without `dev`.
 // The animation preview parameters (`anim*`) are parsed in `render/actors/devPreview.ts`.
 
@@ -46,6 +53,10 @@ export interface DevParams {
   scene: 'armory' | null;
   /** `&armory=SECTION`, or null for the default. */
   armorySection: string | null;
+  /** `&bench=`: null when off, an empty list for every area, else the named areas. */
+  bench: string[] | null;
+  benchStep: number | null;
+  benchCrowd: number | null;
   spawn: string | null;
   seed: bigint | null;
   freeze: boolean;
@@ -119,6 +130,9 @@ export function parseDevParams(search: string): DevParams {
     scenario: p.get('scenario') || null,
     scene: dev && p.get('scene') === 'armory' ? 'armory' : null,
     armorySection: p.get('armory') || null,
+    bench: dev && p.has('bench') ? (p.get('bench') === '1' ? [] : (p.get('bench') ?? '').split(',').map((a) => a.trim()).filter(Boolean)) : null,
+    benchStep: dev && Number(p.get('benchstep')) > 0 ? Number(p.get('benchstep')) : null,
+    benchCrowd: dev && p.has('benchcrowd') && Number(p.get('benchcrowd')) >= 0 ? Number(p.get('benchcrowd')) : null,
     spawn: dev ? p.get('spawn') || null : null,
     seed: dev ? seed : null,
     freeze: dev && ['1', 'true'].includes(p.get('freeze') ?? ''),

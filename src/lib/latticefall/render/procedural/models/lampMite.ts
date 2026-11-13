@@ -76,6 +76,7 @@ export const lampMiteDef: ModelDef = {
   fallAxis: 'z',
   death: (u) => ({ body: [0, 0, 0, 0, -0.06 * u, 0], head: [0.3 * u] }),
   // The bulb swells over the flare and bursts past full size at the blast.
+  animatedBones: [],
   tick: (rig, ctx) => {
     const bulb = rig.bones.get('bulb')!;
     const k = !ctx.inMove ? 1 : ctx.frame < 12 ? 1 + (ctx.frame / 12) * 0.9 : ctx.frame < 16 ? 2.6 : Math.max(1, 2.6 - (ctx.frame - 16) * 0.12);

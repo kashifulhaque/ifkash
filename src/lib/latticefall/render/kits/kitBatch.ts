@@ -3,6 +3,7 @@
 // Pieces with a model go through `InstanceLayer` instead.
 
 import { BatchedMesh, Color, Matrix4, Quaternion, Scene, Vector3 } from 'three';
+import { DistanceCuller, type CullEntry } from '../perf/culling';
 import type { PieceLibrary } from './library';
 import type { LevelManifest } from './manifest';
 
@@ -12,8 +13,16 @@ function hash(s: string): number {
   return (h >>> 0) / 4294967296;
 }
 
+/** Radius of a piece's bounding sphere, cached per geometry. */
+function pieceRadius(library: PieceLibrary, piece: string): number {
+  const g = library.geometry(piece);
+  if (!g.boundingSphere) g.computeBoundingSphere();
+  return g.boundingSphere?.radius ?? 0;
+}
+
 export class KitBatch {
   readonly mesh: BatchedMesh | null = null;
+  private cull: DistanceCuller | null = null;
 
   constructor(
     private scene: Scene,
@@ -36,8 +45,16 @@ export class KitBatch {
     const p = new Vector3();
     const s = new Vector3();
     const tint = new Color();
+    const entries: CullEntry[] = [];
     for (const inst of insts) {
       const id = mesh.addInstance(geo.get(inst.piece)!);
+      entries.push({
+        id,
+        x: inst.pos[0],
+        z: inst.pos[2],
+        rank: -1,
+        pad: pieceRadius(library, inst.piece) * Math.max(...inst.scale)
+      });
       q.setFromAxisAngle(up, inst.yaw);
       mesh.setMatrixAt(id, m.compose(p.set(...inst.pos), q, s.set(...inst.scale)));
       // A few percent of per-instance tint so stacked steps and blocks read as separate pieces.
@@ -51,6 +68,12 @@ export class KitBatch {
     mesh.computeBoundingBox();
     scene.add(mesh);
     this.mesh = mesh;
+    this.cull = new DistanceCuller(mesh, entries);
+  }
+
+  /** Hides the pieces beyond `drawDistance` of the focus (they are also culled by the frustum). */
+  update(fx: number, fz: number, drawDistance: number): void {
+    this.cull?.update(fx, fz, drawDistance);
   }
 
   get instanceCount(): number {

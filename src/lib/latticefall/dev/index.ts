@@ -87,6 +87,20 @@ export class DevTools {
       warnings,
       onOverlayChange: () => this.draw.update(this.actors)
     });
+    // `&bench=...`: the performance benchmark (WP-081). Its code is a separate chunk.
+    if (params.bench) {
+      const { bench, benchStep, benchCrowd } = params;
+      void import('../render/perf/bench').then(({ runBenchmarkWithPanel }) =>
+        runBenchmarkWithPanel({
+          renderer: deps.renderer,
+          gameScene: deps.scene,
+          parent: deps.canvas.parentElement ?? document.body,
+          areas: bench.length ? bench : undefined,
+          stepM: benchStep ?? undefined,
+          crowd: benchCrowd ?? undefined
+        })
+      );
+    }
     window.__lfDev = { commands: this.commands, draw: this.draw, params, vfx: deps.vfx };
   }
 

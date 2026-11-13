@@ -278,8 +278,8 @@
     "start_max": 16,
     "start_min": 4
   },
-  "contentHash": "8576319963578645097",
-  "contentHashHex": "770535914d323a69",
+  "contentHash": "159356888968511094",
+  "contentHashHex": "0236263f077abe76",
   "moves": [
     {
       "anim": "ep_sentinel_thrust",
@@ -1437,6 +1437,136 @@
       "fp": 0,
       "id": "b08_leg_buckle",
       "num": 37110,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 60
+    },
+    {
+      "anim": "matriarch_dive",
+      "file": "moves/bosses/b09.ron",
+      "fp": 0,
+      "id": "b09_air_dive",
+      "num": 38100,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 84
+    },
+    {
+      "anim": "matriarch_dive",
+      "file": "moves/bosses/b09.ron",
+      "fp": 0,
+      "id": "b09_air_dive_short",
+      "num": 38112,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 84
+    },
+    {
+      "anim": "matriarch_dust",
+      "file": "moves/bosses/b09.ron",
+      "fp": 0,
+      "id": "b09_air_dust",
+      "num": 38101,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 110
+    },
+    {
+      "anim": "matriarch_beam",
+      "file": "moves/bosses/b09.ron",
+      "fp": 0,
+      "id": "b09_air_beam",
+      "num": 38102,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 46
+    },
+    {
+      "anim": "matriarch_beam_b",
+      "file": "moves/bosses/b09.ron",
+      "fp": 0,
+      "id": "b09_air_beam_b",
+      "num": 38103,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 70
+    },
+    {
+      "anim": "matriarch_pass",
+      "file": "moves/bosses/b09.ron",
+      "fp": 0,
+      "id": "b09_air_pass",
+      "num": 38104,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 96
+    },
+    {
+      "anim": "matriarch_buffet",
+      "file": "moves/bosses/b09.ron",
+      "fp": 0,
+      "id": "b09_gnd_buffet",
+      "num": 38105,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 66
+    },
+    {
+      "anim": "matriarch_buffet_b",
+      "file": "moves/bosses/b09.ron",
+      "fp": 0,
+      "id": "b09_gnd_buffet_b",
+      "num": 38106,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 60
+    },
+    {
+      "anim": "matriarch_lunge",
+      "file": "moves/bosses/b09.ron",
+      "fp": 0,
+      "id": "b09_gnd_lunge",
+      "num": 38107,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 78
+    },
+    {
+      "anim": "matriarch_sweep",
+      "file": "moves/bosses/b09.ron",
+      "fp": 0,
+      "id": "b09_gnd_sweep",
+      "num": 38108,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 104
+    },
+    {
+      "anim": "matriarch_flare",
+      "file": "moves/bosses/b09.ron",
+      "fp": 0,
+      "id": "b09_gnd_flare",
+      "num": 38109,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 100
+    },
+    {
+      "anim": "matriarch_drain",
+      "file": "moves/bosses/b09.ron",
+      "fp": 0,
+      "id": "b09_drain",
+      "num": 38110,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 45
+    },
+    {
+      "anim": "matriarch_stunned",
+      "file": "moves/bosses/b09.ron",
+      "fp": 0,
+      "id": "b09_stunned",
+      "num": 38111,
       "stamina": 0,
       "stub": false,
       "totalFrames": 60

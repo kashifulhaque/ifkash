@@ -795,5 +795,22 @@
     (id: "b07_c_delay_2", num: 36112),
     (id: "b07_c_kick", num: 36113),
     (id: "b07_c_dash", num: 36114),
+    // WP-077: B09, the Lamplight Matriarch, takes 38000-38999: the boss 38010, its body 38011, and
+    // its moves 38100-38119.
+    (id: "b09_lamplight_matriarch", num: 38010),
+    (id: "b09_lamplight_matriarch_body", num: 38011),
+    (id: "b09_air_dive", num: 38100),
+    (id: "b09_air_dust", num: 38101),
+    (id: "b09_air_beam", num: 38102),
+    (id: "b09_air_beam_b", num: 38103),
+    (id: "b09_air_pass", num: 38104),
+    (id: "b09_gnd_buffet", num: 38105),
+    (id: "b09_gnd_buffet_b", num: 38106),
+    (id: "b09_gnd_lunge", num: 38107),
+    (id: "b09_gnd_sweep", num: 38108),
+    (id: "b09_gnd_flare", num: 38109),
+    (id: "b09_drain", num: 38110),
+    (id: "b09_stunned", num: 38111),
+    (id: "b09_air_dive_short", num: 38112),
   ],
 )

@@ -300,6 +300,10 @@ const EMBEDDED_MOVES: &[(&str, &str)] = &[
         "moves/bosses/b07.ron",
         include_str!("../../../data/moves/bosses/b07.ron"),
     ),
+    (
+        "moves/bosses/b09.ron",
+        include_str!("../../../data/moves/bosses/b09.ron"),
+    ),
 ];
 const EMBEDDED_WEAPONS: &[(&str, &str)] = &[
     (
@@ -661,6 +665,10 @@ const EMBEDDED_SCENARIOS: &[(&str, &str)] = &[
         "scenarios/boss_b07.ron",
         include_str!("../../../data/scenarios/boss_b07.ron"),
     ),
+    (
+        "scenarios/boss_b09.ron",
+        include_str!("../../../data/scenarios/boss_b09.ron"),
+    ),
 ];
 const EMBEDDED_BOSSES: &[(&str, &str)] = &[
     (
@@ -678,6 +686,10 @@ const EMBEDDED_BOSSES: &[(&str, &str)] = &[
     (
         "bosses/b08_forgeheart_colossus.ron",
         include_str!("../../../data/bosses/b08_forgeheart_colossus.ron"),
+    ),
+    (
+        "bosses/b09_lamplight_matriarch.ron",
+        include_str!("../../../data/bosses/b09_lamplight_matriarch.ron"),
     ),
     (
         "bosses/b06_drowned_choir.ron",

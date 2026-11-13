@@ -24,6 +24,7 @@
 //! - [`b08`]: the Forgeheart Colossus's legs, kneel, and lava (WP-076; [`run`]).
 //! - [`b07`]: Castellan Voss: the counts, the counters, the guard, the chandeliers, and the back
 //!   gate (WP-075; [`run`]).
+//! - [`b09`]: the Lamplight Matriarch's flight, drained light, and lamps (WP-077; [`run`]).
 
 pub mod b02;
 #[cfg(test)]
@@ -43,6 +44,9 @@ mod b07_tests;
 pub mod b08;
 #[cfg(test)]
 mod b08_tests;
+pub mod b09;
+#[cfg(test)]
+mod b09_tests;
 
 use crate::world::World;
 
@@ -52,6 +56,7 @@ pub fn run(world: &mut World) {
     b04::run(world);
     b02::run(world);
     b07::run(world);
+    b09::run(world);
 }
 
 /// Runs the in-fight mechanic of boss `b` (an index into `Layout::bosses`), if it has one.

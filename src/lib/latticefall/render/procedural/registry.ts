@@ -40,6 +40,7 @@ import { corvaneDef } from '../bosses/b03/corvane';
 import { vossDef } from '../bosses/b07/voss';
 import { B06_BELLBEARER_KIND, B06_CANTOR_KIND, B06_LAMENTER_KIND, bellbearerDef, cantorDef, lamenterDef } from '../bosses/b06';
 import { eggSacDef, mossgutBroodDef } from '../bosses/b04/mossgutBrood';
+import { B09_KIND, matriarchDef } from '../bosses/b09';
 
 /**
  * Registry number of B01's body: `b01_hollow_sentry_body`. The boss definition
@@ -109,6 +110,8 @@ defs.set(B06_LAMENTER_KIND, lamenterDef);
 
 // WP-075: B07, Castellan Voss.
 defs.set(B07_KIND, vossDef);
+// WP-077: B09, the Lamplight Matriarch (one body).
+defs.set(B09_KIND, matriarchDef);
 
 /** The model for an actor kind, or undefined for kinds drawn some other way (the player). */
 export function modelForKind(kind: number): ModelDef | undefined {

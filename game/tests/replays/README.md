@@ -210,5 +210,13 @@ lf-tools replay record-script tests/replays/m1_movement.script --out tests/repla
   player dies. The tests in `ai/bosses/b02_tests.rs` check the win, the death, the stun, and
   the phase 2 bramble patches.
 
+- `m7_b09_bot_win.lfr` and `m7_b09_idle_dies.lfr`: the WP-077 goldens on `boss_b09`, from their
+  `.script` files (written by `record_the_b09_goldens` in
+  `game/crates/core/src/ai/bosses/b09_tests.rs`). The scripted bot (`Bot` in that file) walks
+  through the cavern's fog gate wielding the Lantern Sword, rolls out of each telegraphed hit,
+  fights the Lamplight Matriarch while she is low enough to reach, and in phase 2 lights the
+  lamps with the sword's Fire; it beats her with the player alive. A player who walks in and does
+  nothing dies. Tests in `b09_tests.rs` check both.
+
 Rehash only when a change to the simulation or the content data is intended. Review the
 old and new final hash it prints, and commit the updated file with that change.

@@ -97,6 +97,10 @@ pub struct World {
     /// (WP-075; see `ai::bosses::b07`). Hashed only while a fight with B07 is on.
     #[serde(default)]
     pub b07: crate::ai::bosses::b07::B07Run,
+    /// B09's flight, drained light, and lamps (WP-077; see `ai::bosses::b09`). Hashed only
+    /// while a fight with B09 is on.
+    #[serde(default)]
+    pub b09: crate::ai::bosses::b09::State,
     /// Drained by the host every tick; excluded from the state hash.
     pub events: EventQueue,
 }
@@ -167,6 +171,13 @@ struct HashView<'a> {
     /// Left out while no fight with B07 is on, for the same reason.
     #[serde(skip_serializing_if = "b07_inert")]
     b07: &'a crate::ai::bosses::b07::B07Run,
+    /// Left out while no fight with B09 is on, for the same reason.
+    #[serde(skip_serializing_if = "b09_inert")]
+    b09: &'a crate::ai::bosses::b09::State,
+}
+
+fn b09_inert(b09: &&crate::ai::bosses::b09::State) -> bool {
+    b09.is_inert()
 }
 
 fn b07_inert(b07: &&crate::ai::bosses::b07::B07Run) -> bool {
@@ -308,6 +319,7 @@ impl World {
             echo_table,
             echo: EchoRun::default(),
             b07: crate::ai::bosses::b07::B07Run::default(),
+            b09: crate::ai::bosses::b09::State::default(),
             events: EventQueue::default(),
         };
         crate::world_state::mechanics::install(&mut world);
@@ -394,6 +406,7 @@ impl World {
             spells: &self.spells,
             echo: &self.echo,
             b07: &self.b07,
+            b09: &self.b09,
         };
         let bytes = postcard::to_allocvec(&view).expect("world serialization cannot fail");
         xxhash_rust::xxh3::xxh3_64(&bytes)

@@ -247,6 +247,19 @@ impl MechanicEvent {
     pub const VOSS_CHANDELIER_FELL: u8 = 164;
     /// B07: a falling chandelier hit the player; `index` is the marker's slot.
     pub const VOSS_CHANDELIER_HIT: u8 = 165;
+    /// B09, the Lamplight Matriarch (WP-077): she took off for an air phase. `index` is the boss's
+    /// index in the scenario. WASM kind 14, sub-kinds 180-189 are B09's.
+    pub const MATRIARCH_TOOK_FLIGHT: u8 = 180;
+    /// B09 landed. `index` is why: 0 after her dives, 1 a stance break, 2 a lit lamp's stun.
+    pub const MATRIARCH_LANDED: u8 = 181;
+    /// B09 drained the cavern's light (phase 2 began). `index` is the boss's index in the scenario.
+    pub const MATRIARCH_DRAINED: u8 = 182;
+    /// A lamp lit (phase 2). `index` is the lamp, 0 to 5.
+    pub const MATRIARCH_LAMP_LIT: u8 = 183;
+    /// A lit lamp stunned her as she flew past it. `index` is the lamp, 0 to 5.
+    pub const MATRIARCH_LAMP_STUN: u8 = 184;
+    /// The fight ended or reset and the lamps went out. `index` is the boss's index in the scenario.
+    pub const MATRIARCH_LAMPS_DOUSED: u8 = 185;
 }
 
 /// The player opened a chest (`source` is always 1; pickups send `PickupEvent`), and

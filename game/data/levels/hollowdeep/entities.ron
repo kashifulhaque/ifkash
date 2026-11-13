@@ -122,13 +122,13 @@
     Pickup(id: "relic_endark", item: "relic_endark", pos: (106.0, 8.57, -20.0), codex: Some("projects.endark"), interact: true),
 
     // --- B09's arena: Lamplight Hollow's cavern (x 78..146, z 94..146) --------------------------
-    // The boss: PLACEHOLDER. B09 (the Lamplight Matriarch, an M7 work package) has no boss
-    // definition yet, so no Boss entity is placed. When it exists, add:
-    //   Boss(name: "b09", boss: "<b09 id>", pos: (112.0, 0.0, 120.0), yaw: 3.1415927,
-    //     gate: (pos: (104.0, 0.0, 92.0), yaw: 0.0, half_width_m: 6.0, depth_m: 3.0)),
-    // The fog gate is the plane z = 92 across the corridor (x 98..110), opening north into the
-    // cavern; the six unlit lamps (`lamp_0` to `lamp_5` in layout.ron) ring the middle. L13 is 22
-    // m from the gate (about 5 s). The reward is the Great Sigil of the Deep Lamp.
+    // The boss: B09, the Lamplight Matriarch (WP-077). The fog gate is the plane z = 92 across the
+    // corridor (x 98..110), opening north into the cavern; the six unlit lamps (`lamp_0` to
+    // `lamp_5` in layout.ron) ring the middle, and her `params` (bosses/b09_lamplight_matriarch.ron)
+    // put them at the same places. L13 is 22 m from the gate (about 5 s). The reward is the Great
+    // Sigil of the Deep Lamp.
+    Boss(name: "b09", boss: "b09_lamplight_matriarch", pos: (112.0, 0.0, 120.0), yaw: 3.1415927,
+      gate: (pos: (104.0, 0.0, 92.0), yaw: 0.0, half_width_m: 6.0, depth_m: 3.0)),
     // The Echo Stone stands just inside the gate, west of the entrance.
     EchoStone(id: "stone_b09", pos: (94.0, 0.0, 100.0), yaw: 0.7854),
   ],

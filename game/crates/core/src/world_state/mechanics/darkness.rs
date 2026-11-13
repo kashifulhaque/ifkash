@@ -22,6 +22,10 @@ pub fn lit_at(world: &World, x: f32, z: f32) -> bool {
     let Some(rule) = &world.layout.darkness else {
         return true;
     };
+    // B09 drains the light of her cavern in phase 2 (WP-077).
+    if let Some(lit) = crate::ai::bosses::b09::light_at(world, x, z) {
+        return lit;
+    }
     lit_by(
         &world.layout.glows,
         &world.layout.lanterns,

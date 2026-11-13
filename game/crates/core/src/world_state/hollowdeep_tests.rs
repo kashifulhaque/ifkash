@@ -887,8 +887,8 @@ fn the_levels_have_their_enemies_relics_materials_and_echo_stones() {
         let w = world(scenario, 1);
         assert_eq!(w.echo_table.stones.len(), 1);
         assert!(
-            sc.bosses.is_empty() || id == "stone_b08",
-            "only B08 is placed so far; B09 is an M7 work package"
+            sc.bosses.len() == 1,
+            "{id}'s arena has its boss (B08 is WP-076, B09 is WP-077)"
         );
     }
     // The Lanterns, in the order of the spec's checkpoint table.

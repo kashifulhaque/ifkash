@@ -1,0 +1,119 @@
+// B09, the Lamplight Matriarch (registry 38010-38011): a vast moth, mother of every light in
+// Hollowdeep. Source: docs/game/05-enemies-and-bosses.md, "B09 The Lamplight Matriarch" (HP
+// 6,500, two phases, phase 2 at 50%, Fire weakness 1.3x, immune to Drowse, reward: the Great
+// Sigil of the Deep Lamp). Defense, poise, stance, attack, resist numbers, option weights, and
+// cooldowns are tuning.
+//
+// The mechanic is in `lf_core::ai::bosses::b09`, and reads `params` below:
+//   - She flies. Her `flying` rule keeps her feet near the floor; the module raises her to
+//     `air_height_m` while she is in the air, moves her through a dive by the move's frame
+//     (`dive_*`), and puts her down on the floor to walk. The air phase ends after
+//     `dives_per_air` dives or a stance break (a hit that fills her stance meter, which only
+//     a ranged hit can do while she is out of a sword's reach). The ground phase lasts
+//     `ground_ticks`, then she takes off again.
+//   - Only the moves named `b09_air_*` start in the air and `b09_gnd_*` on the ground.
+//   - Phase 2 ("she drains the light"): the arena (`arena_half_*_m` around her spawn) goes
+//     dark and only her abdomen shows. Six lamps ring the middle (`lamp_N_dx_m`, `_dz_m`, from her
+//     spawn). A lamp lights when the player's Fire hits it (`lamp_hit_m` around the lamp), when
+//     the player holds the smoltorch within `torch_m` of it for `torch_hold_ticks`, or when
+//     they cast Lantern Flare within `flare_m`. A lit lamp lights the ground `lamp_light_m` around
+//     it, and stuns her for `lamp_stun_ticks` when she flies within `lamp_pass_m` of it (no more
+//     often than every `lamp_stun_cooldown_ticks`): she lands, kneeling, open to a riposte.
+// The hurtbox numbers give her body its size: the sim's default capsule is a person's.
+#![enable(implicit_some)]
+(
+  id: "b09_lamplight_matriarch",
+  name: "The Lamplight Matriarch",
+  body: (
+    id: "b09_lamplight_matriarch_body",
+    model: "boss_lamplight_matriarch",
+    hp: 6500,
+    poise: 0,
+    stance: 260,
+    defense: (flat: 30, weakness: [(Fire, 130)]),
+    resist: (immunity: 500, robustness: 300, composure: 400),
+    immune: [Drowse],
+    glimmer: 0,
+    attack: 70,
+    element_attack: (Radiance, 50),
+    stamina: 0,
+    speed_percent: 75,
+    leash_m: 80.0,
+    ignores_tokens: true,
+    flying: (hover_m: 0.3, climb_mps: 0.3, light_m: 0.0, dives: []),
+    moveset: "bosses/b09.ron",
+    options: [
+      // The air phase (the module masks the ground moves while she flies).
+      (move: "b09_air_dive", when: [DistBetween(6.0, 11.0), FacingWithin(40.0)], weight: 6, cooldown: 90),
+      (move: "b09_air_dive_short", when: [DistBetween(2.5, 6.0), FacingWithin(40.0)], weight: 5, cooldown: 90),
+      (move: "b09_air_dust", when: [DistBelow(7.0)], weight: 3, cooldown: 200),
+      (move: "b09_air_beam", when: [DistBetween(5.0, 16.0), FacingWithin(30.0)], weight: 3, cooldown: 180),
+      // The ground phase (the module masks the air moves while she walks).
+      (move: "b09_gnd_buffet", when: [DistBelow(5.0), FacingWithin(60.0)], weight: 5, cooldown: 90),
+      (move: "b09_gnd_lunge", when: [DistBetween(3.0, 9.0), FacingWithin(40.0)], weight: 4, cooldown: 120),
+      (move: "b09_gnd_sweep", when: [DistBelow(5.0)], weight: 3, cooldown: 180),
+      // Both phases.
+      (behavior: Approach(dur: 20), when: [DistAbove(6.0)], weight: 6),
+      (behavior: Strafe(dur: 25), when: [DistBelow(6.0)], weight: 2),
+      (behavior: Wait(dur: 15), weight: 1),
+      // In the air only (the module masks a retreat on the ground): back off from a player she
+      // hangs over, so a dive has room.
+      (behavior: Retreat(dur: 45), when: [DistBelow(2.5)], weight: 8),
+      // Phase 2: the drained cavern. The pass is the flight a lit lamp stuns her on.
+      (move: "b09_air_pass", when: [Phase(2), DistAbove(8.0), FacingWithin(40.0)], weight: 5, cooldown: 240),
+      (move: "b09_gnd_flare", when: [Phase(2), DistBelow(6.0)], weight: 4, cooldown: 260),
+    ],
+  ),
+  parts: [],
+  phases: [
+    (below: 0.5, transition: "b09_drain"),
+  ],
+  rewards: (
+    glimmer: 4500,
+    items: [
+      (item: "itm_great_sigil_matriarch", count: 1),
+    ],
+    codex: "b09_lamplight_matriarch",
+  ),
+  echo_stone: true,
+  music: (intro: "boss_b09_intro", loop_stem: "boss_b09_loop", phase2_stem: "boss_b09_dark"),
+  params: {
+    "body_radius_m": 1.4,
+    "body_half_height_m": 0.4,
+    "air_height_m": 3.2,
+    "ground_height_m": 0.3,
+    "climb_mps": 3.0,
+    "land_mps": 9.0,
+    "dive_down_from": 24.0,
+    "dive_down_until": 34.0,
+    "dive_up_from": 50.0,
+    "dive_up_until": 74.0,
+    "dive_low_m": 0.2,
+    "dives_per_air": 4.0,
+    "ground_ticks": 600.0,
+    "arena_half_x_m": 34.0,
+    "arena_half_z_m": 26.0,
+    "lamp_radius_m": 0.7,
+    "lamp_height_m": 3.0,
+    "lamp_hit_m": 0.4,
+    "lamp_light_m": 9.0,
+    "torch_m": 2.5,
+    "torch_hold_ticks": 45.0,
+    "flare_m": 14.0,
+    "lamp_pass_m": 3.0,
+    "lamp_stun_ticks": 60.0,
+    "lamp_stun_cooldown_ticks": 450.0,
+    "lamp_0_dx_m": 20.0,
+    "lamp_0_dz_m": 0.0,
+    "lamp_1_dx_m": 10.0,
+    "lamp_1_dz_m": 17.32,
+    "lamp_2_dx_m": -10.0,
+    "lamp_2_dz_m": 17.32,
+    "lamp_3_dx_m": -20.0,
+    "lamp_3_dz_m": 0.0,
+    "lamp_4_dx_m": -10.0,
+    "lamp_4_dz_m": -17.32,
+    "lamp_5_dx_m": 10.0,
+    "lamp_5_dz_m": -17.32,
+  },
+)

@@ -204,6 +204,7 @@ export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions
     const words = world.drain_events();
     if (opts.autosave !== false) saves.onEventWords(words);
     if (words.length) {
+      view.voss.events(words);
       opts.hud?.events(words);
       // Authored ground messages (the cave's tutorial lines): the HUD shows the text.
       for (const i of messageIndexesFromWords(words)) opts.hud?.message(world.message_text(i));

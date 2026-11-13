@@ -37,6 +37,7 @@ import { shardGolemDef } from './models/shardGolem';
 import { skeletonDef } from './models/skeleton';
 import { thornHoundDef } from './models/thornHound';
 import { corvaneDef } from '../bosses/b03/corvane';
+import { vossDef } from '../bosses/b07/voss';
 import { B06_BELLBEARER_KIND, B06_CANTOR_KIND, B06_LAMENTER_KIND, bellbearerDef, cantorDef, lamenterDef } from '../bosses/b06';
 import { eggSacDef, mossgutBroodDef } from '../bosses/b04/mossgutBrood';
 
@@ -48,6 +49,8 @@ export const B01_KIND = 9011;
 
 /** Registry number of B03's body: `b03_bridgewarden_corvane_body` (the boss is 32010). */
 export const B03_KIND = 32011;
+/** Registry number of B07's body: `b07_castellan_voss_body` (the boss is 36010). */
+export const B07_KIND = 36011;
 /** Registry number of B08's body: `b08_forgeheart_colossus_body`. Its legs are the next two. */
 export const B08_KIND = 37011;
 
@@ -103,6 +106,9 @@ const defs = new Map<number, ModelDef>([
 defs.set(B06_CANTOR_KIND, cantorDef);
 defs.set(B06_BELLBEARER_KIND, bellbearerDef);
 defs.set(B06_LAMENTER_KIND, lamenterDef);
+
+// WP-075: B07, Castellan Voss.
+defs.set(B07_KIND, vossDef);
 
 /** The model for an actor kind, or undefined for kinds drawn some other way (the player). */
 export function modelForKind(kind: number): ModelDef | undefined {

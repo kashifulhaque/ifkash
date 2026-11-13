@@ -22,6 +22,8 @@
 //! - [`b06`]: the Drowned Choir: the verse, the Cantor's mend, and the Lamenter's teleport
 //!   (WP-074; [`tick`]).
 //! - [`b08`]: the Forgeheart Colossus's legs, kneel, and lava (WP-076; [`run`]).
+//! - [`b07`]: Castellan Voss: the counts, the counters, the guard, the chandeliers, and the back
+//!   gate (WP-075; [`run`]).
 
 pub mod b02;
 #[cfg(test)]
@@ -35,6 +37,9 @@ mod b05_tests;
 pub mod b06;
 #[cfg(test)]
 mod b06_tests;
+pub mod b07;
+#[cfg(test)]
+mod b07_tests;
 pub mod b08;
 #[cfg(test)]
 mod b08_tests;
@@ -46,6 +51,7 @@ pub fn run(world: &mut World) {
     b08::run(world);
     b04::run(world);
     b02::run(world);
+    b07::run(world);
 }
 
 /// Runs the in-fight mechanic of boss `b` (an index into `Layout::bosses`), if it has one.

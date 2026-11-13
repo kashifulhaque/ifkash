@@ -93,6 +93,10 @@ pub struct World {
     /// Which Echo the Bell will call and the Echo that is out now (WP-059). Hashed only
     /// while it isn't at rest.
     pub echo: EchoRun,
+    /// B07's counts of the player's actions, its chosen counters, and its chandeliers
+    /// (WP-075; see `ai::bosses::b07`). Hashed only while a fight with B07 is on.
+    #[serde(default)]
+    pub b07: crate::ai::bosses::b07::B07Run,
     /// Drained by the host every tick; excluded from the state hash.
     pub events: EventQueue,
 }
@@ -160,6 +164,13 @@ struct HashView<'a> {
     /// Left out while no Echo is out and the Bell hasn't been cycled, for the same reason.
     #[serde(skip_serializing_if = "echo_inert")]
     echo: &'a EchoRun,
+    /// Left out while no fight with B07 is on, for the same reason.
+    #[serde(skip_serializing_if = "b07_inert")]
+    b07: &'a crate::ai::bosses::b07::B07Run,
+}
+
+fn b07_inert(b07: &&crate::ai::bosses::b07::B07Run) -> bool {
+    b07.is_inert()
 }
 
 fn echo_inert(echo: &&EchoRun) -> bool {
@@ -296,6 +307,7 @@ impl World {
             mech,
             echo_table,
             echo: EchoRun::default(),
+            b07: crate::ai::bosses::b07::B07Run::default(),
             events: EventQueue::default(),
         };
         crate::world_state::mechanics::install(&mut world);
@@ -381,6 +393,7 @@ impl World {
             mech: &self.mech,
             spells: &self.spells,
             echo: &self.echo,
+            b07: &self.b07,
         };
         let bytes = postcard::to_allocvec(&view).expect("world serialization cannot fail");
         xxhash_rust::xxh3::xxh3_64(&bytes)

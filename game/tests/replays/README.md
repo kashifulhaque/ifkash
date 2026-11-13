@@ -183,6 +183,13 @@ lf-tools replay record-script tests/replays/m1_movement.script --out tests/repla
   `the_idle_golden_replay_kills_the_player` (in `b06_tests.rs`) checks it. Both `.script` files
   come from the ignored test `record_the_b06_goldens`; record the `.lfr` files with
   `lf-tools replay record-script --out <lfr> <script>`.
+- `m7_b07_bot_win.lfr` and `m7_b07_idle_dies.lfr`: the WP-075 goldens on `boss_b07`, from their
+  `.script` files (written by `record_the_b07_goldens` in
+  `game/crates/core/src/ai/bosses/b07_tests.rs`). The scripted bot rolls to its left through
+  every hit of Castellan Voss's phase 1 (so he overfits to rolling left), then rolls through
+  him in phase 2, steps out of the chandeliers' markers, punishes each recovery, and beats him
+  with the player alive; a player who walks in and does nothing dies. Tests in `b07_tests.rs`
+  check both. Record the `.lfr` files with `lf-tools replay record-script --out <lfr> <script>`.
 
 - `m7_b04_bot_win.lfr`: the WP-072 golden on `boss_b04`, from `m7_b04_bot_win.script`. The
   scripted bot (`Bot` in `game/crates/core/src/ai/bosses/b04_tests.rs`) walks through the

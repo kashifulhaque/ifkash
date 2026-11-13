@@ -229,6 +229,24 @@ impl MechanicEvent {
     pub const B05_DROWNED_JOIN: u8 = 142;
     /// B05: the Keeper took a fallen thrall's weapon.
     pub const B05_WEAPON_TAKEN: u8 = 143;
+    /// B07, Castellan Voss (WP-075): the core counted one of the player's actions. WASM kind
+    /// 14, sub-kinds 160-169 are B07's. `index` is `category << 8 | count` (the count capped at
+    /// 255); the categories are 0 roll left, 1 roll right, 2 roll back, 3 parry, 4 guard, 5
+    /// ranged or spell. The dev overlay shows the counts.
+    pub const VOSS_COUNTED: u8 = 160;
+    /// B07: phase 2 began and Voss chose his counters. `index` is `first << 8 | second`, the
+    /// two most-counted categories (0xFF for none).
+    pub const VOSS_OVERFIT: u8 = 161;
+    /// B07: Voss's guard stance blocked a hit and he is about to counter. `index` is 0.
+    pub const VOSS_BLOCKED: u8 = 162;
+    /// B07: a chandelier marker appeared on the floor. `index` is `slot << 14 | x << 7 | z`:
+    /// the marker's slot (0 or 1), and its center in half-meters from the boss's spawn plus 64
+    /// on each axis (so 0 to 127, meters -32 to +31.5).
+    pub const VOSS_CHANDELIER_MARKED: u8 = 163;
+    /// B07: the chandelier fell on its marker; `index` is as for the marker.
+    pub const VOSS_CHANDELIER_FELL: u8 = 164;
+    /// B07: a falling chandelier hit the player; `index` is the marker's slot.
+    pub const VOSS_CHANDELIER_HIT: u8 = 165;
 }
 
 /// The player opened a chest (`source` is always 1; pickups send `PickupEvent`), and

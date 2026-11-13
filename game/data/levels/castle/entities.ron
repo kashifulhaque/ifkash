@@ -29,10 +29,10 @@
 // A hollow wall on the library's east wall (a faint hum, then a hit) opens the Boo alcove.
 //
 // THE HALL. B07's fog gate is the plane z = 340 across the gap in the antechamber's north wall
-// (x -4..4), opening north into the hall. Castellan Voss has no boss definition yet (M7), so no
-// Boss entity is placed, and the back gate toward Rimeshelf is a flag-keyed door: `gate_castle_back`
-// is Locked, and it opens when the world raises the flag `door.gate_castle_back.open`. M7's B07
-// raises it when Voss falls (alongside `boss.<id>.defeated`); nothing else opens it.
+// (x -4..4), opening north into the hall. Castellan Voss (B07, WP-075) waits mid-hall, and the
+// back gate toward Rimeshelf is a flag-keyed door: `gate_castle_back` is Locked, and it opens
+// when the world raises the flag `door.gate_castle_back.open`. B07 raises it when Voss falls
+// (`ai::bosses::b07`, alongside `boss.b07_castellan_voss.defeated`); nothing else opens it.
 //
 // Registry numbers used here (25000 block): castle 25000. Part 2 (26000 block): itm_lost_folio
 // 26001, relic_boo 26010, chronicle_page_3 26011 (all stubs).
@@ -225,13 +225,12 @@
     Pickup(id: "spl_gradient_descent_desk", item: "spl_gradient_descent", pos: (-3.0, 12.3, 378.2), interact: true),
 
     // --- B07's arena: Castellan's Hall (x -22..22, z 342..384) ------------------------------------
-    // The boss: PLACEHOLDER. B07 (Castellan Voss, an M7 work package) has no boss definition yet,
-    // so no Boss entity is placed. When it exists, add:
-    //   Boss(name: "b07", boss: "<b07 id>", pos: (0.0, 12.0, 364.0), yaw: 3.1415927,
-    //     gate: (pos: (0.0, 12.0, 340.0), yaw: 0.0, half_width_m: 4.0, depth_m: 3.0)),
-    // The fog gate is the plane z = 340 across the gap in the antechamber's north wall, opening
-    // north; Voss waits mid-hall facing south. L17 is about 10 m from the gate. The Echo Stone
-    // stands just inside it, by the west wall. M7 also raises `door.gate_castle_back.open` when he falls.
+    // The boss: Castellan Voss (WP-075). The fog gate is the plane z = 340 across the gap in the
+    // antechamber's north wall, opening north; Voss waits mid-hall facing south. L17 is about 10 m
+    // from the gate. The Echo Stone stands just inside it, by the west wall. When Voss falls, the
+    // world raises `door.gate_castle_back.open` (`ai::bosses::b07`), which opens the back gate.
+    Boss(name: "b07", boss: "b07_castellan_voss", pos: (0.0, 12.0, 364.0), yaw: 3.1415927,
+      gate: (pos: (0.0, 12.0, 340.0), yaw: 0.0, half_width_m: 4.0, depth_m: 3.0)),
     EchoStone(id: "stone_b07", pos: (-10.0, 12.0, 346.0), yaw: 0.5),
   ],
 )

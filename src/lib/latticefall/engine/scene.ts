@@ -24,6 +24,7 @@ import { digestMoveResolver } from '../render/actors/moveTable';
 import { CombatVfx } from '../render/vfx';
 import { LevelRenderer } from '../render/terrain';
 import { PropsRenderer } from '../render/props';
+import { VossArena } from '../render/bosses/b07/arena';
 import { getQuality, pixelRatioFor, subscribeQuality } from '../render/lighting';
 import {
   CameraRig,
@@ -70,6 +71,8 @@ export class SceneView {
   private level: LevelRenderer | null = null;
   /** Ladders, lifts, doors, levers, pickups and the other world mechanics (WP-042). */
   readonly props = new PropsRenderer(this.scene);
+  /** B07's chandeliers and, with `&dev=1`, its counts readout (WP-075). */
+  readonly voss: VossArena;
   /** The stand-in ground, proxy and lights that the level renderer replaces. */
   private standIns: Object3D[] = [];
   private offQuality: () => void;
@@ -160,6 +163,7 @@ export class SceneView {
     const resolveMove = digestMoveResolver();
     this.actors = new ActorRenderer(this.scene, this.renderer, { resolveMove });
     this.vfx = new CombatVfx(this.scene, this.actors, { resolveMove });
+    this.voss = new VossArena(this.scene, canvas.parentElement);
     this.actors.load().catch((err) => console.error('Latticefall actor assets failed to load; keeping capsules', err));
 
     this.resizeObserver = new ResizeObserver(() => this.resize());
@@ -295,6 +299,7 @@ export class SceneView {
     }
     if (this.props.active) this.props.update(simPaused ? 0 : frameMs);
     this.vfx.update(actors, simPaused ? 0 : Math.min(frameMs, 100) / 1000, this.camera, this.canvas.clientHeight || 1);
+    this.voss.update(simPaused ? 0 : Math.min(frameMs, 100), actors);
     this.vfx.applyCamera(this.camera);
     const dtSeconds = simPaused ? 0 : Math.min(frameMs, 100) / 1000;
     this.actors.updateFx(dtSeconds, this.camera, this.canvas.clientHeight || 1);
@@ -311,6 +316,7 @@ export class SceneView {
     this.level = null;
     this.props.dispose();
     this.vfx.dispose();
+    this.voss.dispose();
     this.actors.dispose();
     for (const d of this.disposables) d.dispose();
     this.disposables = [];

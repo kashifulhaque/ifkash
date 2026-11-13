@@ -474,7 +474,7 @@ fn the_castle_has_its_enemies_items_and_echo_stone() {
         stone.pos
     );
     assert!(!world().echo_table.stones.is_empty());
-    // B03 (WP-071) is placed mid-span, behind the gate and the stone. B07 belongs to a later WP.
+    // B03 (WP-071) is placed mid-span, behind the gate and the stone. B07 (WP-075) is in the hall.
     let b03 = level
         .bosses
         .iter()
@@ -482,7 +482,15 @@ fn the_castle_has_its_enemies_items_and_echo_stone() {
         .expect("B03's Boss entity");
     assert_eq!(b03.gate.pos, B03_GATE);
     assert!(b03.pos[0].abs() < 6.0 && b03.pos[2] > B03_GATE[2] && b03.pos[2] < 60.0);
-    assert!(level.bosses.iter().all(|b| b.boss != "b07_castellan_voss"));
+    assert_eq!(
+        level
+            .bosses
+            .iter()
+            .filter(|b| b.boss == "b07_castellan_voss")
+            .count(),
+        1,
+        "B07 is placed once, in the hall (see castle2_tests)"
+    );
     // Two Lanterns, the gate and postern, one lever, and the ladder.
     // (Part 2 adds Lanterns, doors, levers, and ladders of its own; see castle2_tests.)
     for id in ["lantern_l14", "lantern_l15"] {

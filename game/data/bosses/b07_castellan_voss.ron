@@ -1,0 +1,84 @@
+// B07, Castellan Voss, the Overfit Warden (registry 36000-36999): the castle's lord, who
+// memorized every duel he ever fought. Source: docs/game/05-enemies-and-bosses.md, "B07 Castellan
+// Voss, the Overfit Warden" (HP 6,000, two phases, immune to Drowse, the Great Sigil of Graymantle
+// as the reward, an Echo Stone in the arena, a boss fight in the Castellan's Hall). Defense, poise,
+// resist, attack, option weights, and cooldowns are tuning.
+//
+// Phase 1 is a duelist: a greatsword combo (the third cut delayed), a dagger stab, a guard stance
+// with a counter (`ai::bosses::b07` makes the guard block), and a leaping slam. While it lasts,
+// the core counts the player's actions in six categories (roll left, roll right, roll back, parry,
+// guard, ranged or spell). Phase 2 starts at 60% HP: the framework plays `b07_overfit` (45 ticks,
+// invulnerable), and then `ai::bosses::b07` enables the counter for each of the two most-counted
+// categories and keeps the other counters' options on cooldown. The counters are the `Phase(2)`
+// options below, in the order of the categories: sweep toward the player's left, sweep toward the
+// player's right, lunge, delayed swing, guard-break kick, closing dash. Chandeliers fall on
+// markers from phase 2 on (the `chandelier_*` numbers below).
+#![enable(implicit_some)]
+(
+  id: "b07_castellan_voss",
+  name: "Castellan Voss, the Overfit Warden",
+  body: (
+    id: "b07_castellan_voss_body",
+    model: "boss_castellan_voss",
+    hp: 6000,
+    poise: 220,
+    defense: (flat: 30, weakness: []),
+    resist: (immunity: 300, robustness: 300, composure: 300),
+    immune: [Drowse],
+    glimmer: 0,
+    attack: 105,
+    stamina: 200,
+    speed_percent: 100,
+    leash_m: 80.0,
+    ignores_tokens: true,
+    moveset: "bosses/b07.ron",
+    options: [
+      // Phase 1 (and every phase after it).
+      (move: "b07_gs_1", when: [DistBelow(3.2), FacingWithin(40.0)], weight: 6, cooldown: 140),
+      (move: "b07_stab", when: [DistBetween(1.2, 3.6), FacingWithin(35.0)], weight: 3, cooldown: 110),
+      (move: "b07_guard", when: [DistBelow(4.0), FacingWithin(60.0)], weight: 3, cooldown: 330),
+      (move: "b07_leap_slam", when: [DistBetween(3.5, 9.0), FacingWithin(30.0)], weight: 4, cooldown: 200),
+      // Phase 2: the six counters. `ai::bosses::b07` keeps the four that aren't in the top two
+      // categories on cooldown. Their order is the order of the categories (the first two are the
+      // sweeps for rolling left and right).
+      (move: "b07_c_sweep_pl", when: [Phase(2), DistBelow(4.0), FacingWithin(60.0)], weight: 12, cooldown: 120),
+      (move: "b07_c_sweep_pr", when: [Phase(2), DistBelow(4.0), FacingWithin(60.0)], weight: 12, cooldown: 120),
+      (move: "b07_c_lunge", when: [Phase(2), DistBetween(2.5, 6.5), FacingWithin(25.0)], weight: 12, cooldown: 120),
+      (move: "b07_c_delay_1", when: [Phase(2), DistBelow(3.2), FacingWithin(40.0)], weight: 12, cooldown: 120),
+      (move: "b07_c_kick", when: [Phase(2), DistBelow(3.0), FacingWithin(40.0)], weight: 6, cooldown: 120),
+      (move: "b07_c_kick", when: [Phase(2), TargetGuarding, DistBelow(3.4), FacingWithin(40.0)], weight: 30, cooldown: 120),
+      (move: "b07_c_dash", when: [Phase(2), DistAbove(6.0), FacingWithin(25.0)], weight: 14, cooldown: 120),
+      (behavior: Approach(dur: 20), when: [DistAbove(2.6)], weight: 4),
+      (behavior: Strafe(dur: 24), when: [DistBelow(5.0)], weight: 2),
+      (behavior: Wait(dur: 14), when: [DistBelow(4.0)], weight: 1),
+    ],
+  ),
+  parts: [],
+  phases: [
+    (below: 0.6, transition: "b07_overfit"),
+  ],
+  rewards: (
+    glimmer: 3500,
+    items: [(item: "itm_great_sigil_castellan", count: 1)],
+    codex: "b07_castellan_voss",
+  ),
+  echo_stone: true,
+  music: (intro: "boss_b07_intro", loop_stem: "boss_b07_loop", phase2_stem: "boss_b07_overfit"),
+  // Numbers `ai::bosses::b07` reads (see that file). All are tuning except the category count.
+  params: {
+    // Frames of `b07_guard` in which a hit is blocked (no damage; the counter plays).
+    "guard_from": 14.0,
+    "guard_to": 60.0,
+    // A category needs at least this many counted actions to earn a counter.
+    "favor_min_count": 2.0,
+    // Phase 2's chandeliers: the first marker comes this many ticks after the phase starts, then
+    // one every interval; each marker shows for `telegraph` ticks (45 ticks is above the 36 of a
+    // heavy attack) and then the chandelier falls on a circle of `radius` meters and takes
+    // `damage_percent` of a player's max HP, unless they are in the i-frames of a roll.
+    "chandelier_first_ticks": 150.0,
+    "chandelier_interval_ticks": 240.0,
+    "chandelier_telegraph_ticks": 45.0,
+    "chandelier_radius_m": 2.2,
+    "chandelier_damage_percent": 20.0,
+  },
+)

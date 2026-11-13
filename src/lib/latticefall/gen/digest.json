@@ -278,8 +278,8 @@
     "start_max": 16,
     "start_min": 4
   },
-  "contentHash": "7549401716157915203",
-  "contentHashHex": "68c4dcdcc6512043",
+  "contentHash": "8576319963578645097",
+  "contentHashHex": "770535914d323a69",
   "moves": [
     {
       "anim": "ep_sentinel_thrust",
@@ -1180,6 +1180,156 @@
       "stamina": 0,
       "stub": false,
       "totalFrames": 100
+    },
+    {
+      "anim": "voss_gs_1",
+      "file": "moves/bosses/b07.ron",
+      "fp": 0,
+      "id": "b07_gs_1",
+      "num": 36100,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 46
+    },
+    {
+      "anim": "voss_gs_2",
+      "file": "moves/bosses/b07.ron",
+      "fp": 0,
+      "id": "b07_gs_2",
+      "num": 36101,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 40
+    },
+    {
+      "anim": "voss_gs_3",
+      "file": "moves/bosses/b07.ron",
+      "fp": 0,
+      "id": "b07_gs_3",
+      "num": 36102,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 88
+    },
+    {
+      "anim": "voss_stab",
+      "file": "moves/bosses/b07.ron",
+      "fp": 0,
+      "id": "b07_stab",
+      "num": 36103,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 58
+    },
+    {
+      "anim": "voss_guard",
+      "file": "moves/bosses/b07.ron",
+      "fp": 0,
+      "id": "b07_guard",
+      "num": 36104,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 98
+    },
+    {
+      "anim": "voss_counter",
+      "file": "moves/bosses/b07.ron",
+      "fp": 0,
+      "id": "b07_guard_counter",
+      "num": 36105,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 72
+    },
+    {
+      "anim": "voss_leap_slam",
+      "file": "moves/bosses/b07.ron",
+      "fp": 0,
+      "id": "b07_leap_slam",
+      "num": 36106,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 80
+    },
+    {
+      "anim": "voss_overfit",
+      "file": "moves/bosses/b07.ron",
+      "fp": 0,
+      "id": "b07_overfit",
+      "num": 36107,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 45
+    },
+    {
+      "anim": "voss_sweep_pl",
+      "file": "moves/bosses/b07.ron",
+      "fp": 0,
+      "id": "b07_c_sweep_pl",
+      "num": 36108,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 74
+    },
+    {
+      "anim": "voss_sweep_pr",
+      "file": "moves/bosses/b07.ron",
+      "fp": 0,
+      "id": "b07_c_sweep_pr",
+      "num": 36109,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 74
+    },
+    {
+      "anim": "voss_lunge",
+      "file": "moves/bosses/b07.ron",
+      "fp": 0,
+      "id": "b07_c_lunge",
+      "num": 36110,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 66
+    },
+    {
+      "anim": "voss_delay_1",
+      "file": "moves/bosses/b07.ron",
+      "fp": 0,
+      "id": "b07_c_delay_1",
+      "num": 36111,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 34
+    },
+    {
+      "anim": "voss_delay_2",
+      "file": "moves/bosses/b07.ron",
+      "fp": 0,
+      "id": "b07_c_delay_2",
+      "num": 36112,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 80
+    },
+    {
+      "anim": "voss_kick",
+      "file": "moves/bosses/b07.ron",
+      "fp": 0,
+      "id": "b07_c_kick",
+      "num": 36113,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 64
+    },
+    {
+      "anim": "voss_dash",
+      "file": "moves/bosses/b07.ron",
+      "fp": 0,
+      "id": "b07_c_dash",
+      "num": 36114,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 76
     },
     {
       "anim": "colossus_stomp_l",

@@ -301,7 +301,7 @@ fn the_back_gate_opens_only_on_its_flag() {
     assert!(!w.state.flags.is_set(&flag), "INTERACT opened the gate");
     push_toward(&mut w, 0.0, 392.0, 200);
     assert!(player_pos(&w)[2] < 384.8, "walked through the shut gate");
-    // M7 raises the flag when B07 falls.
+    // B07 raises the flag when Voss falls (`ai::bosses::b07`).
     w.state.flags.set(&flag, 1);
     wait(&mut w, 5);
     push_toward(&mut w, 0.0, 392.0, 240);
@@ -373,7 +373,7 @@ fn the_castle_has_its_second_half() {
         .find(|p| p.item == "relic_boo")
         .unwrap();
     assert_eq!(boo.codex.as_deref(), Some("projects.boo"));
-    // B07's Echo Stone is inside the hall, past the fog gate; there is still no boss.
+    // B07's Echo Stone is inside the hall, past the fog gate.
     let stone = level
         .echo_stones
         .iter()
@@ -385,13 +385,24 @@ fn the_castle_has_its_second_half() {
         stone.pos
     );
     assert_eq!(world().echo_table.stones.len(), 2);
-    // B07 is an M7 work package (WP-075); B03 (WP-071) is the bridge's boss.
+    // Castellan Voss (WP-075) waits mid-hall, behind the fog gate; B03 (WP-071) holds the bridge.
+    let voss = level
+        .bosses
+        .iter()
+        .find(|b| b.boss == "b07_castellan_voss")
+        .expect("B07 is placed");
+    assert_eq!(voss.gate.pos, B07_GATE);
+    assert!(
+        voss.pos[0].abs() < 22.0 && voss.pos[2] > B07_GATE[2] && voss.pos[2] < 384.0,
+        "Voss is outside the hall: {:?}",
+        voss.pos
+    );
     assert!(
         level
             .bosses
             .iter()
-            .all(|b| b.boss == "b03_bridgewarden_corvane"),
-        "B07 is an M7 work package"
+            .all(|b| b.boss == "b03_bridgewarden_corvane" || b.boss == "b07_castellan_voss"),
+        "an unexpected boss in the castle"
     );
     // Mechanics.
     let gate = level
@@ -409,7 +420,7 @@ fn the_castle_has_its_second_half() {
 
 /// The route leg by leg, from the arrival road: part 1's legs to the foot of the keep stair, then
 /// L16 (rest), the keep's door, the dining stair, the library, the corridor, L17 (rest), and B07's
-/// fog gate (one step past its plane: there is no boss yet, so nothing seals).
+/// fog gate (one step past its plane: Voss's gate seals behind the player, which starts his intro).
 fn route(w: &World) -> Vec<Leg> {
     let mut l = legs(w);
     let l16 = lantern_pos(w, "lantern_l16");
@@ -507,7 +518,7 @@ fn the_route_reaches_l16_l17_and_the_fog_gate() {
         r.bot.legs.len(),
         p.pos
     );
-    // The walk ends one step past B07's fog gate, in the hall.
+    // The walk ends one step past B07's fog gate, in the hall (the gate has sealed: his intro).
     assert!(
         p.pos[0].abs() < 2.0
             && p.pos[2] > B07_GATE[2]

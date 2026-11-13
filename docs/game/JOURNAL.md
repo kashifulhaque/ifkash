@@ -66,6 +66,9 @@ Copy this block to the top of the entries and fill it in as you go:
   - WP-081: sonnet, worktree; `32233fd`; 296K. Clean cherry-pick; no Rust changes. Orchestrator re-ran `bun run check` and the benchmark for the Verge and the castle (matches the report) and took a gameplay screenshot.
   - WP-101: sonnet, worktree; `d5f15c0`; 171K. Clean cherry-pick. Deliberate: `m6_bound_ring`, `m7_b11_bot_win`, `m7_b11_idle_dies`. Orchestrator fixed a stale B11 comment in `scenarios/boss_b11.ron` (content hash unchanged).
   - WP-087: haiku, worktree; `cf78346`; 242K. Clean cherry-pick. Merged tree with WP-101: 877 tests, clippy, fmt, validate, 120 goldens A -> A, `bun run check` clean, `lf-tools credits` writes 3 packs.
+  - WP-089 (opus) started after WP-101.
+  - A Claude outage stopped the session and every process; WP-088 and WP-089 were resumed with `SendMessage` from their transcripts. WP-089's worktree had no changes yet.
+  - WP-100: sonnet, worktree; `c951eab`; 324K. Clean cherry-pick; no Rust changes. Orchestrator screenshots from the worker's staged-event preview URLs.
 ### 2026-11-13: latticefall-m7 (M7)
 
 - **Orchestrator:** Opus 5.5, low effort

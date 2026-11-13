@@ -15,6 +15,7 @@ use crate::combat::guard::GuardState;
 use crate::events::{Event, ReviveEvent};
 use crate::world::World;
 use crate::world_state::flags::lantern_lit;
+use crate::world_state::mechanics::brazier;
 
 /// How the blow that killed an actor was dealt.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
@@ -33,7 +34,7 @@ fn stops(world: &World, a: &Actor, stop: ReviveStop, blow: DeathBlow) -> bool {
         ReviveStop::LitLantern(m) => {
             world.layout.lanterns.iter().any(|l| {
                 world.state.flags.is_set(&lantern_lit(&l.id)) && dist_xz(l.pos, a.pos) <= m
-            })
+            }) || brazier::lit_near(world, a.pos, m)
         }
     }
 }
@@ -70,6 +71,21 @@ pub fn tick_dead(world: &mut World, id: Id) {
         return;
     };
     if b.stays_dead {
+        return;
+    }
+    // WP-066: a brazier lit after the death keeps it down too (a lit Lantern is lit at rest,
+    // which respawns the world, so only braziers can be lit while a body lies).
+    let lit_radius = rule.stopped_by.iter().find_map(|s| match s {
+        ReviveStop::LitLantern(m) => Some(*m),
+        _ => None,
+    });
+    if let Some(m) = lit_radius
+        && !world.layout.braziers.is_empty()
+        && brazier::lit_near(world, a.pos, m)
+    {
+        if let Some(b) = world.actors.get_mut(id).and_then(|a| a.ai.as_mut()) {
+            b.stays_dead = true;
+        }
         return;
     }
     let (after, percent) = (rule.after_ticks, rule.hp_percent);

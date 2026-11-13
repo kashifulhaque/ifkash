@@ -1,0 +1,22 @@
+// Bound Ring layout (WP-066): the standing stones round the Ring's edge (a circle of radius about
+// 21 m, centered at (0, 4); a stone is left out where it would stand outside the floor), the
+// prisoner's plinth, the sigil's dais, and the reward's plinth. The Ring's walls are the terrain.
+(
+  landmarks: [
+    (name: "standing_stone_0", kit: "block_unit", pos: (20.20, 3.00, 9.40), scale: (1.60, 6.00, 1.60)),
+    (name: "standing_stone_1", kit: "block_unit", pos: (14.80, 3.00, 18.80), scale: (1.60, 6.00, 1.60)),
+    (name: "standing_stone_2", kit: "block_unit", pos: (5.40, 3.00, 24.20), scale: (1.60, 6.00, 1.60)),
+    (name: "standing_stone_3", kit: "block_unit", pos: (-5.40, 3.00, 24.20), scale: (1.60, 6.00, 1.60)),
+    (name: "standing_stone_4", kit: "block_unit", pos: (-14.80, 3.00, 18.80), scale: (1.60, 6.00, 1.60)),
+    (name: "standing_stone_5", kit: "block_unit", pos: (-20.20, 3.00, 9.40), scale: (1.60, 6.00, 1.60)),
+    (name: "standing_stone_6", kit: "block_unit", pos: (-20.20, 3.00, -1.40), scale: (1.60, 6.00, 1.60)),
+    (name: "standing_stone_7", kit: "block_unit", pos: (-14.80, 3.00, -10.80), scale: (1.60, 6.00, 1.60)),
+    (name: "standing_stone_8", kit: "block_unit", pos: (-5.40, 3.00, -16.20), scale: (1.60, 6.00, 1.60)),
+    (name: "standing_stone_9", kit: "block_unit", pos: (5.40, 3.00, -16.20), scale: (1.60, 6.00, 1.60)),
+    (name: "standing_stone_10", kit: "block_unit", pos: (14.80, 3.00, -10.80), scale: (1.60, 6.00, 1.60)),
+    (name: "standing_stone_11", kit: "block_unit", pos: (20.20, 3.00, -1.40), scale: (1.60, 6.00, 1.60)),
+    (name: "prisoner_plinth", kit: "block_unit", pos: (0.00, 0.25, 16.00), scale: (3.00, 0.50, 3.00)),
+    (name: "sigil_dais", kit: "block_unit", pos: (0.00, 0.10, -16.00), scale: (3.00, 0.20, 3.00)),
+    (name: "reward_plinth", kit: "block_unit", pos: (0.00, 0.50, 44.00), scale: (1.60, 1.00, 1.60)),
+  ],
+)

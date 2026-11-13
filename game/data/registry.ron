@@ -668,5 +668,13 @@
     (id: "mossgut_cave", num: 24000),
     (id: "glasswing_grotto", num: 24001),
     (id: "glasswing_stalker_elite", num: 24010),
+
+    // WP-066: Rimeshelf, the Whitewarden Catacombs, and the Bound Ring take 27000-27999. The
+    // areas 27000-27002, and Chronicle Page slot 4 (27011), a stub that stays unplaced until the
+    // portfolio has five work entries (docs/game/08-portfolio-integration.md).
+    (id: "rimeshelf", num: 27000),
+    (id: "whitewarden", num: 27001),
+    (id: "bound_ring", num: 27002),
+    (id: "chronicle_page_4", num: 27011), // stub page: the foundry office's desk, slot 4 (not placed yet)
   ],
 )

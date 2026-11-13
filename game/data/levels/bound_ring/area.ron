@@ -1,0 +1,34 @@
+// The Bound Ring (WP-066, D7): a ring of standing stones on a frozen plateau west of Rimeshelf's
+// pass, 128 x 128 m. Y is up and the Ring lies north (+Z) of the road. Touching the sigil inside
+// the stones seals the way you came in, with the prisoner (B11, the Bound Exile: an M7 work
+// package, so the sigil is unarmed until it exists). See docs/game/02-world.md, "Mini-dungeons"
+// (D7), and the notes at the top of terrain.ron, layout.ron, and entities.ron. L21 stands outside,
+// in Rimeshelf.
+(
+  id: "bound_ring",
+  name: "The Bound Ring",
+  seed: 20262703,
+  bounds: (min: (-64.0, -64.0), max: (64.0, 64.0)),
+  kill_y: -60.0,
+  start_glimmer: 0,
+  // Low sun on old snow: a long, pale, slightly violet light, no fog to hide the stones.
+  ambient: (
+    sky: "day",
+    fog_color: (0.7, 0.72, 0.84),
+    fog_near_m: 60.0,
+    fog_far_m: 200.0,
+    sun_dir: (-0.6, -0.35, -0.3),
+    sun_color: (0.95, 0.85, 0.9),
+    sun_intensity: 0.8,
+    ambient_color: (0.6, 0.66, 0.84),
+    ambient_intensity: 0.7,
+  ),
+  regions: [
+    // The Ring itself.
+    (name: "ring", points: [(-26.0, -22.0), (26.0, -22.0), (26.0, 30.0), (-26.0, 30.0)]),
+  ],
+  connections: [
+    // Back out to Rimeshelf: the arch north of L21.
+    (to: "rimeshelf", pos: (0.0, 0.0, -62.0), radius_m: 2.5),
+  ],
+)

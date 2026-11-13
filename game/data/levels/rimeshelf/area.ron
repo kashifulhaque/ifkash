@@ -1,0 +1,46 @@
+// Rimeshelf (WP-066): the frozen highland behind Castle Graymantle, 300 x 250 m. Y is up and the
+// highland runs north (+Z). The castle's back gate (`gate_castle_back`, opened when B07 falls)
+// comes out at the south gate; a packed path, Rimeshelf Pass, runs north through deep snow to
+// Bellwright's Steps and B10's arena, with the Frozen Foundry on its west flank and the gates of
+// the Whitewarden Catacombs (east) and the Bound Ring (west). L18-L21 stand here; the catacombs
+// and the Ring have none inside. See docs/game/02-world.md, "Rimeshelf", and the notes at the top
+// of layout.ron and entities.ron.
+(
+  id: "rimeshelf",
+  name: "Rimeshelf",
+  seed: 20262701,
+  bounds: (min: (-150.0, -125.0), max: (150.0, 125.0)),
+  kill_y: -60.0,
+  start_glimmer: 0,
+  // Pale blue-white overcast over snow: a short fog, so the foundry's chimney and the Steps show
+  // from the Pass.
+  ambient: (
+    sky: "day",
+    fog_color: (0.78, 0.84, 0.9),
+    fog_near_m: 70.0,
+    fog_far_m: 300.0,
+    sun_dir: (-0.35, -0.7, -0.4),
+    sun_color: (0.85, 0.92, 1.0),
+    sun_intensity: 0.7,
+    ambient_color: (0.72, 0.8, 0.92),
+    ambient_intensity: 0.85,
+  ),
+  regions: [
+    // Rimeshelf Pass: the spine and its snow fields.
+    (name: "pass", points: [(-104.0, -122.0), (104.0, -122.0), (104.0, -20.0), (-104.0, -20.0)]),
+    // The Frozen Foundry.
+    (name: "foundry", points: [(-66.0, -4.0), (-14.0, -4.0), (-14.0, 52.0), (-66.0, 52.0)]),
+    // Bellwright's Steps and the arena terrace.
+    (name: "steps", points: [(-28.0, 56.0), (28.0, 56.0), (28.0, 122.0), (-28.0, 122.0)]),
+  ],
+  connections: [
+    // Back through the castle's back gate (the south notch).
+    (to: "castle", pos: (0.0, 0.0, -122.0), radius_m: 2.5),
+    // The collapsed foundry chimney drops into the castle's upper tier, at L16 (the windward court).
+    (to: "castle", pos: (-22.0, -6.0, 44.0), radius_m: 2.5),
+    // The Whitewarden Catacombs (D6), through the pylon arch east of L19.
+    (to: "whitewarden", pos: (112.0, 0.0, -30.0), radius_m: 2.5),
+    // The Bound Ring (D7), through the pylon arch west of L21.
+    (to: "bound_ring", pos: (-112.0, 0.0, -30.0), radius_m: 2.5),
+  ],
+)

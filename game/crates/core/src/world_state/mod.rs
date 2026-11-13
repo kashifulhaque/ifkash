@@ -30,6 +30,7 @@ mod hollowdeep_tests;
 // WP-063: Mossgut Cave and Glasswing Grotto.
 #[cfg(test)]
 mod cave_tests;
+// WP-066: Rimeshelf, the Whitewarden Catacombs, and the Bound Ring.
 pub mod lantern;
 pub mod lantern_menu;
 pub mod map;
@@ -39,6 +40,8 @@ pub mod mechanics;
 #[cfg(test)]
 mod mirrormere_tests;
 pub mod quests;
+#[cfg(test)]
+mod rime_tests;
 #[cfg(test)]
 mod spire_tests;
 #[cfg(test)]
@@ -104,6 +107,9 @@ pub struct Layout {
     pub beam_sources: Vec<lf_content::scenario::BeamSource>,
     pub mirrors: Vec<lf_content::scenario::Mirror>,
     pub receptors: Vec<lf_content::scenario::Receptor>,
+    /// Warden Braziers and seal sigils (WP-066; see `mechanics::brazier`).
+    pub braziers: Vec<lf_content::scenario::Brazier>,
+    pub sigils: Vec<lf_content::scenario::Sigil>,
 }
 
 impl Layout {
@@ -138,6 +144,8 @@ impl Layout {
             beam_sources: level.beam_sources.clone(),
             mirrors: level.mirrors.clone(),
             receptors: level.receptors.clone(),
+            braziers: level.braziers.clone(),
+            sigils: level.sigils.clone(),
         }
     }
 

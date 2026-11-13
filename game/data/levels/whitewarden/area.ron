@@ -1,0 +1,37 @@
+// The Whitewarden Catacombs (WP-066, D6): the catacombs under Rimeshelf's east cliff, 128 x 200 m.
+// Y is up and the catacombs run north (+Z). Their signature mechanic is the revive: Whitewarden
+// Skeletons stand up again 180 ticks after they fall unless a Radiance blow or a critical put them
+// down, or a lit Warden Brazier stands within 6 m. The Twin Wardens (a pair of Bell Wardens) guard
+// the Whitewarden Seal at the end. See docs/game/02-world.md, "Mini-dungeons" (D6), and the notes
+// at the top of terrain.ron, layout.ron, and entities.ron. L19 stands outside, in Rimeshelf.
+(
+  id: "whitewarden",
+  name: "Whitewarden Catacombs",
+  seed: 20262702,
+  bounds: (min: (-64.0, -100.0), max: (64.0, 100.0)),
+  kill_y: -60.0,
+  start_glimmer: 0,
+  // Cold stone and brazier-light: a dim blue-gray, warm where a brazier burns (the renderer lights
+  // the braziers themselves).
+  ambient: (
+    sky: "night",
+    fog_color: (0.06, 0.07, 0.1),
+    fog_near_m: 24.0,
+    fog_far_m: 110.0,
+    sun_dir: (-0.2, -1.0, -0.2),
+    sun_color: (0.6, 0.66, 0.8),
+    sun_intensity: 0.35,
+    ambient_color: (0.5, 0.55, 0.7),
+    ambient_intensity: 0.7,
+  ),
+  regions: [
+    // The gatehall and the first two halls.
+    (name: "halls", points: [(-15.0, -96.0), (15.0, -96.0), (15.0, -12.0), (-15.0, -12.0)]),
+    // The Vigil and the Twins' Vault.
+    (name: "deep", points: [(-18.0, -6.0), (18.0, -6.0), (18.0, 70.0), (-18.0, 70.0)]),
+  ],
+  connections: [
+    // Back out to Rimeshelf: the east arch north of L19.
+    (to: "rimeshelf", pos: (0.0, 0.0, -98.0), radius_m: 2.5),
+  ],
+)

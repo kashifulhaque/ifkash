@@ -263,6 +263,51 @@ const GLASSWING_GROTTO: Record<string, SpawnPoint> = {
   corridor: { x: 30, z: 38, yaw: HALF_PI, note: 'the return corridor, running east from the Guardian Hall' }
 };
 
+// Rimeshelf (WP-066): the Lanterns, the foundry, the Steps, and the gates of the two dungeons. North is +Z.
+const RIMESHELF: Record<string, SpawnPoint> = {
+  gate: { x: 0, z: -110, yaw: 0, note: "the area start, just north of the castle's back gate" },
+  l18: { x: 2, z: -96, yaw: 0, note: 'beside L18, Rimeshelf Pass, facing north up the packed spine' },
+  snow: { x: 40, z: -80, yaw: HALF_PI, note: 'in the south-east deep snow (a quarter slower)' },
+  fork: { x: 0, z: -30, yaw: 0, note: 'the fork: east to the catacombs, west to the Ring, north to the Steps' },
+  l19: { x: 68, z: -30, yaw: HALF_PI, note: "beside L19, Whitewarden Gate, facing the catacombs' pylon arch" },
+  ww_gate: { x: 98, z: -30, yaw: HALF_PI, note: "before the catacombs' arch (the connection is just past it)" },
+  l21: { x: -78, z: -30, yaw: -HALF_PI, note: "beside L21, The Bound Ring, facing the Ring's pylon arch" },
+  br_gate: { x: -98, z: -30, yaw: -HALF_PI, note: "before the Ring's arch" },
+  yard: { x: -9, z: 7, yaw: -HALF_PI, note: "the foundry's yard, facing its east door" },
+  casting: { x: -24, z: 7, yaw: -HALF_PI, note: 'inside the foundry: the casting floor, the Smith ahead' },
+  chimney: { x: -26, z: 35, yaw: 0, note: 'the chimney room, facing the collapsed stack (the pit is the drop to the castle)' },
+  office: { x: -52, z: 41, yaw: -HALF_PI, note: "the foundry's office: the desk where Chronicle Page 4 will lie" },
+  steps: { x: 0, z: 54, yaw: 0, note: "the foot of Bellwright's Steps" },
+  l20: { x: 2, z: 78, y: 6, yaw: 0, note: "beside L20, Bellwright's Steps, on the terrace landing" },
+  gate_b10: { x: 0, z: 92, y: 6, yaw: 0, note: "B10's fog gate (a placeholder: a gap in the wall and two posts), from the landing" },
+  arena: { x: 0, z: 104, y: 6, yaw: 0, note: "inside B10's open forge, facing the Great Bell in the cliff" }
+};
+
+// The Whitewarden Catacombs (WP-066, D6): the rooms of the dungeon, north (+Z).
+const WHITEWARDEN: Record<string, SpawnPoint> = {
+  mouth: { x: 0, z: -92, yaw: 0, note: 'the Gatehall, the area start (L19 is outside, in Rimeshelf)' },
+  ash: { x: 0, z: -68, yaw: 0, note: 'the Hall of Ash: one skeleton and one brazier ahead' },
+  brazier: { x: 4, z: -63, yaw: 0, note: 'beside the first brazier (interact to light it)' },
+  walk: { x: 0, z: -39, yaw: 0, note: 'the Ossuary Walk, from the door: four skeletons, two braziers' },
+  branch: { x: -20, z: -23, yaw: -HALF_PI, note: 'the side tunnel to the Quill Ossuary' },
+  quill: { x: -34, z: -20, yaw: Math.PI, note: 'the Quill Ossuary, facing the slab' },
+  vigil: { x: 0, z: -5, yaw: 0, note: "the Warden's Vigil: four cold braziers, a chest in the middle" },
+  vault: { x: 0, z: 30, yaw: 0, note: "the Twins' Vault, from the door: two Bell Wardens at the far end" },
+  plinth: { x: 0, z: 62, yaw: 0, note: "the Whitewarden Seal's plinth" },
+  corridor: { x: 30, z: 38, yaw: HALF_PI, note: 'the return corridor, running east from the Vault' }
+};
+
+// The Bound Ring (WP-066, D7): the road, the Ring, and the reward alcove, north (+Z).
+const BOUND_RING: Record<string, SpawnPoint> = {
+  mouth: { x: 0, z: -60, yaw: 0, note: "the road's south end, the area start (L21 is outside, in Rimeshelf)" },
+  alcove: { x: -9, z: -46, yaw: -HALF_PI, note: "the pilgrims' alcove, with the Last Stand Charm" },
+  door: { x: 0, z: -26, yaw: 0, note: "the Ring's doorway: the seal door stands open, sunk in the floor" },
+  sigil: { x: 0, z: -13, yaw: 0, note: 'before the sigil on the Ring floor (interact touches it; it is cold until B11 exists)' },
+  ring: { x: 0, z: 0, yaw: 0, note: 'the middle of the Ring: twelve standing stones, the prisoner on its plinth ahead' },
+  reward: { x: 0, z: 40, yaw: 0, note: "the reward alcove behind the prisoner: Exile's Stylus on its plinth" },
+  corridor: { x: 30, z: 44, yaw: HALF_PI, note: 'the return corridor, running east from the alcove' }
+};
+
 const TABLES: Record<string, Record<string, SpawnPoint>> = {
   sunken_ossuary: SUNKEN_OSSUARY,
   drowned_belfry: DROWNED_BELFRY,
@@ -277,6 +322,9 @@ const TABLES: Record<string, Record<string, SpawnPoint>> = {
   spire: SPIRE,
   mossgut_cave: MOSSGUT_CAVE,
   glasswing_grotto: GLASSWING_GROTTO,
+  rimeshelf: RIMESHELF,
+  whitewarden: WHITEWARDEN,
+  bound_ring: BOUND_RING,
   m0_flat: {
     far: { x: 40, z: 40, yaw: Math.PI, note: 'far corner of the flat floor' }
   }

@@ -1,0 +1,23 @@
+// Whitewarden Catacombs layout (WP-066): greybox blocks. The catacombs' walls are the terrain
+// (terrain.ron); the blocks are furniture: columns, sarcophagi, and the Seal's plinth. Nothing
+// stands in a doorway. Y is up. Walks between the rooms are checked by world_state/rime_tests.rs.
+(
+  landmarks: [
+    (name: "t1_column_0", kit: "block_unit", pos: (-9.00, 1.50, -50.00), scale: (1.60, 3.00, 1.60)),
+    (name: "t1_column_1", kit: "block_unit", pos: (9.00, 1.50, -50.00), scale: (1.60, 3.00, 1.60)),
+    (name: "t2_sarcophagus_0", kit: "block_unit", pos: (-12.00, 0.50, -34.00), scale: (3.00, 1.00, 1.40)),
+    (name: "t2_sarcophagus_1", kit: "block_unit", pos: (12.00, 0.50, -34.00), scale: (3.00, 1.00, 1.40)),
+    (name: "t2_sarcophagus_2", kit: "block_unit", pos: (-12.00, 0.50, -18.00), scale: (3.00, 1.00, 1.40)),
+    (name: "t2_sarcophagus_3", kit: "block_unit", pos: (12.00, 0.50, -18.00), scale: (3.00, 1.00, 1.40)),
+    (name: "vigil_pillar_0", kit: "block_unit", pos: (-8.00, 2.00, -2.00), scale: (1.60, 4.00, 1.60)),
+    (name: "vigil_pillar_1", kit: "block_unit", pos: (8.00, 2.00, -2.00), scale: (1.60, 4.00, 1.60)),
+    (name: "vigil_pillar_2", kit: "block_unit", pos: (-8.00, 2.00, 16.00), scale: (1.60, 4.00, 1.60)),
+    (name: "vigil_pillar_3", kit: "block_unit", pos: (8.00, 2.00, 16.00), scale: (1.60, 4.00, 1.60)),
+    (name: "b_slab", kit: "block_unit", pos: (-36.00, 0.40, -24.00), scale: (4.00, 0.80, 1.20)),
+    (name: "g_column_0", kit: "block_unit", pos: (-11.00, 2.00, 38.00), scale: (1.60, 4.00, 1.60)),
+    (name: "g_column_1", kit: "block_unit", pos: (11.00, 2.00, 38.00), scale: (1.60, 4.00, 1.60)),
+    (name: "g_column_2", kit: "block_unit", pos: (-11.00, 2.00, 56.00), scale: (1.60, 4.00, 1.60)),
+    (name: "g_column_3", kit: "block_unit", pos: (11.00, 2.00, 56.00), scale: (1.60, 4.00, 1.60)),
+    (name: "g_plinth", kit: "block_unit", pos: (0.00, 0.50, 64.00), scale: (1.20, 1.00, 1.20)),
+  ],
+)

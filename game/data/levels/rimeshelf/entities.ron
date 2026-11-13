@@ -1,0 +1,137 @@
+// The Rimeshelf entities (WP-066). Yaw is in radians from +Z toward +X: 0 faces +Z (north, toward
+// Bellwright's Steps), 3.1415927 faces -Z (south, toward the castle), 1.5707964 faces +X, -1.5707964
+// faces -X.
+//
+// THE ROUTE. The castle's back gate comes out at the south notch (the spawn). Rimeshelf Pass is a
+// packed spine along x = 0, and every walk between two Lanterns follows it (the packed ground is
+// the ground without a snow zone: deep snow slows the player by a quarter and makes sprinting cost
+// half as much again, see data/locomotion.ron), so the player can run the whole way if they stay
+// on it:
+//   L18 Rimeshelf Pass (0, -98) -> the fork at (0, -30) -> east spur to L19 Whitewarden Gate
+//   (70, -30), the catacombs' arch at x 104 -> west spur to L21 The Bound Ring (-80, -30), the Ring's
+//   arch at x -104 -> the spine north past the Frozen Foundry's yard to Bellwright's Steps and L20
+//   (0, 6, 80), 16 m from B10's fog gate.
+// The Pass's flanks are deep snow with Rime Wolves (packs) and Frost Husks, and the loot lies in
+// them: the cost of leaving the path.
+//
+// THE FROZEN FOUNDRY (x -66..-14, z -4..52). The east door at z 4..10 opens on the casting floor
+// (a Foundry Smith, two Frost Husks, the furnaces, the anvil with the Rimeforged Claymore on it,
+// the Rime Edge scroll on the slag trough). A doorway in the divider at x -34..-26 leads north to the
+// annex: the chimney room (a second Smith; the collapsed chimney's pit, 6 m down, is the drop into
+// the castle, a `connection` in area.ron) and, through a doorway at z 38..44, the office (Chronicle
+// Page slot 4's desk, a chest of Flask Dew). The foundry is the loop back to the castle: the
+// chimney drops to L16, the windward court.
+//
+// CHRONICLE PAGE 4. The office desk is slot 4 (docs/game/08-portfolio-integration.md): it stays
+// empty until the portfolio has five or more work entries, so no pickup is placed today. When it
+// has, add (and register `chronicle_page_4` as 27011):
+//   Pickup(id: "page_chronicle_4", item: "chronicle_page_4", pos: (-59.0, 1.0, 47.0),
+//     codex: Some("work.<slug>"), interact: true),
+//
+// BELLWRIGHT'S STEPS. A ramp (x -8..8, z 56..76) climbs 6 m to the arena terrace. B10 (the
+// Bellwright, an M7 work package) has no boss definition yet, so no Boss entity is placed:
+// the arena (x -26..26, z 96..122) has its fog gate's frame (the plane z = 96, a gap x -6..6 in a
+// wall, two posts) and an Echo Stone just inside. When the boss exists, add:
+//   Boss(name: "b10", boss: "<b10 id>", pos: (0.0, 6.0, 112.0), yaw: 3.1415927,
+//     gate: (pos: (0.0, 6.0, 96.0), yaw: 0.0, half_width_m: 6.0, depth_m: 3.0)),
+// L20 stands 16 m from the gate. The Great Bell hangs frozen in the cliff behind the arena.
+//
+// Registry numbers used here (27000 block): rimeshelf 27000 (the catacombs are 27001 and the
+// Ring 27002); chronicle_page_4 27011 is reserved for slot 4 (a stub, not yet placed).
+(
+  // North of the castle's back gate, facing the highland.
+  spawn: (pos: (0.0, 0.0, -110.0), yaw: 0.0),
+  entities: [
+    // --- Lanterns: L18, L19, L20, L21 -------------------------------------------------------------
+    Lantern(id: "lantern_l18", pos: (0.0, 0.0, -98.0), yaw: 0.0),
+    Lantern(id: "lantern_l19", pos: (70.0, 0.0, -30.0), yaw: 1.5707964),
+    Lantern(id: "lantern_l20", pos: (0.0, 6.0, 80.0), yaw: 0.0),
+    Lantern(id: "lantern_l21", pos: (-80.0, 0.0, -30.0), yaw: -1.5707964),
+
+    // --- Deep snow: the Pass's flanks (the spine, the spurs, and the foundry's yard stay packed) --
+    Snow(name: "snow_sw", center: (-56.0, -75.0), half_extents: (48.0, 35.0)),
+    Snow(name: "snow_se", center: (56.0, -75.0), half_extents: (48.0, 35.0)),
+    Snow(name: "snow_east", center: (55.0, 25.0), half_extents: (45.0, 45.0)),
+    Snow(name: "snow_west", center: (-104.0, 25.0), half_extents: (36.0, 45.0)),
+    Snow(name: "snow_ne", center: (65.0, 95.0), half_extents: (35.0, 25.0)),
+
+    // --- Authored messages -----------------------------------------------------------------------
+    Message(id: "msg_rime_arrive", pos: (3.0, 0.0, -108.0),
+      text: "Rimeshelf. The castle's back gate shuts behind you, and the wind has nothing between it and the sea. The packed path runs north. Deep snow either side slows you by a quarter, and sprinting through it costs half as much again."),
+    Message(id: "msg_rime_pass", pos: (3.0, 0.0, -94.0),
+      text: "Rimeshelf Pass. Rime Wolves hunt in the snow beyond the path, in packs. Frost builds on whoever stands still in the cold; a Hearth Ember cures it."),
+    Message(id: "msg_rime_fork", pos: (3.0, 0.0, -34.0),
+      text: "A fork. East, the Whitewarden Catacombs, where the dead stand up again. West, the Bound Ring, where something is held. North, the foundry and the Steps."),
+    Message(id: "msg_ww_gate", pos: (96.0, 0.0, -30.0),
+      text: "The Whitewarden Gate. The catacombs beyond are kept by wardens with a bell. The skeletons within rise again unless they are struck with Radiance, finished with a critical, or put down beside a lit brazier."),
+    Message(id: "msg_ring_gate", pos: (-96.0, 0.0, -30.0),
+      text: "The Bound Ring's gate. Twelve stones stand in a ring beyond the arch. Whatever touches the sigil in the middle is shut in with what the stones hold."),
+    Message(id: "msg_foundry_yard", pos: (-10.0, 0.0, 8.0),
+      text: "The Frozen Foundry. Its great chimney came down long ago, and the forges went cold with it. Something still swings a hammer inside."),
+    Message(id: "msg_foundry_casting", pos: (-22.0, 0.0, 6.0),
+      text: "The casting floor. Three furnaces, an anvil, a trough of black slag. The hammer heads are the size of a man."),
+    Message(id: "msg_foundry_chimney", pos: (-30.0, 0.0, 36.0),
+      text: "The chimney room. The stack fell inward and left a pit; the wind from it smells of salt. Far below, gray stone: the castle."),
+    Message(id: "msg_foundry_office", pos: (-50.0, 0.0, 40.0),
+      text: "The foundry's office. A ledger-desk, a lamp, and a place on it for something that isn't here yet."),
+    Message(id: "msg_steps", pos: (3.0, 0.0, 52.0),
+      text: "Bellwright's Steps. A long stair, then the cliff, and in the cliff a bell the size of a house, frozen where it hung. A Lantern waits at the top."),
+    Message(id: "msg_bellwright_gate", pos: (3.0, 6.0, 92.0),
+      text: "The gate to the arena is a gap in the wall, and the air in it is cold fog. Past it, the Bellwright's open forge."),
+
+    // --- Enemies: Rime Wolf packs, Frost Husks, Foundry Smiths, a Bell Warden --------------------
+    // Pass (south): a pack of three east of the spine and two Husks west of it.
+    Enemy(name: "wolf_pass_a", enemy: "rime_wolf", pos: (18.0, 0.0, -66.0), yaw: -1.5707964),
+    Enemy(name: "wolf_pass_b", enemy: "rime_wolf", pos: (22.0, 0.0, -62.0), yaw: -1.5707964),
+    Enemy(name: "wolf_pass_c", enemy: "rime_wolf", pos: (20.0, 0.0, -70.0), yaw: -1.5707964),
+    Enemy(name: "husk_pass_a", enemy: "husk_frost", pos: (-18.0, 0.0, -66.0), yaw: 1.5707964),
+    Enemy(name: "husk_pass_b", enemy: "husk_frost", pos: (-12.0, 0.0, -53.0), yaw: 1.5707964),
+    // The spurs: a Husk on the east spur and a pair of Wolves on the west one.
+    Enemy(name: "husk_spur_east", enemy: "husk_frost", pos: (44.0, 0.0, -36.0), yaw: -1.5707964),
+    Enemy(name: "wolf_spur_a", enemy: "rime_wolf", pos: (-50.0, 0.0, -36.0), yaw: 1.5707964),
+    Enemy(name: "wolf_spur_b", enemy: "rime_wolf", pos: (-54.0, 0.0, -24.0), yaw: 1.5707964),
+    // The flanks: loot guards, far enough from the path not to join its fights.
+    Enemy(name: "wolf_flank_a", enemy: "rime_wolf", pos: (60.0, 0.0, 24.0), yaw: 3.1415927),
+    Enemy(name: "wolf_flank_b", enemy: "rime_wolf", pos: (64.0, 0.0, 28.0), yaw: 3.1415927),
+    Enemy(name: "husk_flank", enemy: "husk_frost", pos: (-100.0, 0.0, 30.0), yaw: 1.5707964),
+    // The foot of the Steps: two Husks beside the stair.
+    Enemy(name: "husk_steps_a", enemy: "husk_frost", pos: (-16.0, 0.0, 56.0), yaw: 1.5707964),
+    Enemy(name: "husk_steps_b", enemy: "husk_frost", pos: (16.0, 0.0, 58.0), yaw: -1.5707964),
+    // The Frozen Foundry: a Smith and two Husks on the casting floor, a Smith in the chimney room.
+    Enemy(name: "smith_casting", enemy: "foundry_smith", pos: (-40.0, 0.0, 8.0), yaw: 1.5707964),
+    Enemy(name: "husk_casting_a", enemy: "husk_frost", pos: (-52.0, 0.0, 14.0), yaw: 1.5707964),
+    Enemy(name: "husk_casting_b", enemy: "husk_frost", pos: (-24.0, 0.0, 22.0), yaw: 1.5707964),
+    Enemy(name: "smith_chimney", enemy: "foundry_smith", pos: (-32.0, 0.0, 46.0), yaw: 3.1415927),
+    // A Bell Warden on the north-east drifts, far from the Steps.
+    Enemy(name: "warden_drifts", enemy: "bell_warden", pos: (80.0, 0.0, 84.0), yaw: 3.1415927),
+
+    // --- Items and materials ----------------------------------------------------------------------
+    // Rimeshelf Pass: a Wick Bead on the path, the Mail satchel (the Courier's quest), Ironbound
+    // Knuckles, and the Rimeward Charm, each a little way into the snow.
+    Pickup(id: "bead_pass", item: "itm_wick_bead", pos: (3.0, 0.0, -88.0), interact: true),
+    Pickup(id: "satchel_rimeshelf", item: "itm_mail_satchel", pos: (-24.0, 0.0, -84.0), interact: true),
+    Pickup(id: "wpn_iron_knuckles_pass", item: "wpn_iron_knuckles", pos: (26.0, 0.0, -88.0), interact: true),
+    Pickup(id: "chm_rimeward_pass", item: "chm_rimeward", pos: (-30.0, 0.0, -60.0), interact: true),
+    // The Pass and the spurs: a Hearth Ember (cures Rime) and Frostjars.
+    Pickup(id: "ember_pass", item: "itm_hearth_ember", pos: (-3.0, 0.0, -60.0), interact: true),
+    Pickup(id: "frostjar_east", item: "itm_frostjar", pos: (62.0, 0.0, -34.0), count: 3, interact: true),
+    Pickup(id: "ember_ring_gate", item: "itm_hearth_ember", pos: (-70.0, 0.0, -34.0), interact: true),
+    // The foundry's casting floor: the Rimeforged Claymore on the anvil, the Rime Edge scroll on
+    // the slag trough, and the Rimeforged helm on a hook by the furnaces.
+    Pickup(id: "wpn_rimeforged_claymore_anvil", item: "wpn_rimeforged_claymore", pos: (-58.0, 1.2, 6.0), interact: true),
+    Pickup(id: "scroll_rime_edge_trough", item: "itm_art_scroll_rime_edge", pos: (-32.0, 0.6, 15.0), interact: true),
+    Pickup(id: "arm_rimeforged_head_casting", item: "arm_rimeforged_head", pos: (-46.0, 0.0, 20.0), interact: true),
+    // The annex: Rimeforged Mail in the chimney room, Flask Dew and a Forgeglass Chunk in the office.
+    Chest(id: "chest_rimeforged_mail", pos: (-20.0, 0.0, 36.0), yaw: -1.5707964, loot: (item: "arm_rimeforged_body", count: 1, glimmer: 400)),
+    Chest(id: "chest_office_dew", pos: (-62.0, 0.0, 38.0), yaw: 3.1415927, loot: (item: "itm_flask_dew", count: 1, glimmer: 300)),
+    Pickup(id: "chunk_office", item: "itm_forgeglass_chunk", pos: (-46.0, 0.0, 48.0), interact: true),
+    // The Steps: a Forgeglass Chunk under the stair, and the terrace's shard chest.
+    Pickup(id: "chunk_steps", item: "itm_forgeglass_chunk", pos: (12.0, 0.0, 48.0), interact: true),
+    Chest(id: "chest_terrace", pos: (20.0, 6.0, 84.0), yaw: -1.5707964, loot: (item: "itm_forgeglass_shard", count: 4, glimmer: 350)),
+
+    // --- B10's arena: the Bellwright's open forge (x -26..26, z 96..122, y 6) ------------------------
+    // PLACEHOLDER: no Boss entity until B10 has a definition (see the notes at the top). The Echo
+    // Stone stands just inside the gate, by the west wall.
+    EchoStone(id: "stone_b10", pos: (-14.0, 6.0, 102.0), yaw: 0.5),
+  ],
+)

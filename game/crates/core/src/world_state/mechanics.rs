@@ -127,6 +127,8 @@ enum Target {
     Cart(usize),
     Trapdoor(usize),
     Mirror(usize),
+    Brazier(usize),
+    Sigil(usize),
 }
 
 impl Target {
@@ -144,6 +146,8 @@ impl Target {
             Self::Cart(_) => 8,
             Self::Trapdoor(_) => 9,
             Self::Mirror(_) => 10,
+            Self::Brazier(_) => 11,
+            Self::Sigil(_) => 12,
         }
     }
 
@@ -159,7 +163,9 @@ impl Target {
             | Self::LadderKick(i)
             | Self::Cart(i)
             | Self::Trapdoor(i)
-            | Self::Mirror(i) => i,
+            | Self::Mirror(i)
+            | Self::Brazier(i)
+            | Self::Sigil(i) => i,
         }
     }
 }
@@ -230,6 +236,8 @@ fn has_any(layout: &Layout) -> bool {
         && layout.mirrors.is_empty()
         && layout.beam_sources.is_empty()
         && layout.receptors.is_empty()
+        && layout.braziers.is_empty()
+        && layout.sigils.is_empty()
         && layout.pickups.iter().all(|p| !p.interact))
 }
 
@@ -348,6 +356,8 @@ pub fn run(world: &mut World, input: &TickInput) {
     mine_cart::step(world);
     // WP-063: light beams light the receptors they reach, after this tick's turns and doors.
     light_beam::step(world);
+    // WP-066: a sealing sigil holds its doors open or shut.
+    brazier::step(world);
     sync_colliders(world);
 }
 
@@ -435,7 +445,8 @@ fn nearest(world: &World) -> Option<Target> {
         offer(reach(feet, l.pos, r, h), Target::Lever(i));
     }
     for (i, d) in world.layout.doors.iter().enumerate() {
-        if !flags.is_set(&flags::door_open(&d.id)) {
+        // A sigil's seal door answers to the sigil, not to a hand (WP-066).
+        if !flags.is_set(&flags::door_open(&d.id)) && !brazier::is_seal_door(world, &d.id) {
             offer(reach(feet, d.pos, r + d.half_width_m, h), Target::Door(i));
         }
     }
@@ -469,6 +480,17 @@ fn nearest(world: &World) -> Option<Target> {
     for (i, m) in world.layout.mirrors.iter().enumerate() {
         offer(reach(feet, m.pos, r, h), Target::Mirror(i));
     }
+    // WP-066: a Warden Brazier not yet lit, and a seal sigil not yet sealed.
+    for (i, b) in world.layout.braziers.iter().enumerate() {
+        if !brazier::is_lit(world, &b.id) {
+            offer(reach(feet, b.pos, r, h), Target::Brazier(i));
+        }
+    }
+    for (i, g) in world.layout.sigils.iter().enumerate() {
+        if brazier::sigil_touchable(world, &g.id) {
+            offer(reach(feet, g.pos, r, h), Target::Sigil(i));
+        }
+    }
     best.map(|(_, t)| t)
 }
 
@@ -491,6 +513,9 @@ pub fn prompt(world: &World) -> u32 {
         Some(Target::Trapdoor(_)) => trapdoor::PROMPT_OPEN,
         // 40 turn a crystal mirror (WP-063).
         Some(Target::Mirror(_)) => light_beam::PROMPT_TURN,
+        // 55 light a Warden Brazier, 56 touch a seal sigil (WP-066).
+        Some(Target::Brazier(_)) => brazier::PROMPT_LIGHT,
+        Some(Target::Sigil(_)) => brazier::PROMPT_TOUCH,
     }
 }
 
@@ -522,6 +547,8 @@ fn interact(world: &mut World) {
         Target::Cart(i) => mine_cart::interact(world, i),
         Target::Trapdoor(i) => trapdoor::interact(world, i),
         Target::Mirror(i) => light_beam::turn(world, i),
+        Target::Brazier(i) => brazier::light(world, i),
+        Target::Sigil(i) => brazier::touch(world, i),
     }
 }
 
@@ -1002,7 +1029,8 @@ pub fn after_hits(world: &mut World) {
 /// doors (1 if open), levers (1 if pulled), hollow walls (1 if revealed), pickups (1 if
 /// taken), chests (1 if opened), messages (1 if read), and pools (the water's depth). Then
 /// WP-062's words (carts, trapdoors, and, in a dark area, the visibility), then WP-063's
-/// (`light_beam::render_words`: the mirrors' facings, the receptors, and each beam's legs).
+/// (`light_beam::render_words`: the mirrors' facings, the receptors, and each beam's legs), then
+/// WP-066's (`brazier::render_words`: each brazier, each sigil).
 pub fn render_state(world: &World) -> Vec<f32> {
     let flag = |k: String| f32::from(u8::from(world.state.flags.is_set(&k)));
     let l = &world.layout;
@@ -1029,6 +1057,8 @@ pub fn render_state(world: &World) -> Vec<f32> {
     }
     // WP-063: each mirror's facing, each receptor (1 once lit), then each beam's legs.
     out.extend(light_beam::render_words(world));
+    // WP-066: each Warden Brazier (1 once lit), then each seal sigil (0 cold, 1 touched, 2 sealed).
+    out.extend(brazier::render_words(world));
     out
 }
 
@@ -1043,6 +1073,8 @@ pub mod slumber;
 // WP-063: light beams with mirrors and receptors, and low ceilings.
 pub mod light_beam;
 pub mod low_ceiling;
+// WP-066: Warden Braziers and seal sigils.
+pub mod brazier;
 
 #[cfg(test)]
 mod tests;

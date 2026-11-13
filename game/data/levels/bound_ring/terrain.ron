@@ -1,0 +1,34 @@
+// The Bound Ring terrain (WP-066, D7). Vertices are 2 m apart (65 x 65). Rock (a 20 m plateau) with
+// the Ring carved out of it, flat at 0 m. Places (x, z):
+//   the mouth and the Pilgrim's Road   x -6..6      z -64..-24   from Rimeshelf's gate; an alcove west
+//   the Ring                           x -26..26    z -22..30    twelve standing stones round its edge
+//   the reward alcove                  x -10..10    z  30..48    behind the prisoner
+//   the return corridor                from the alcove east, south, and west to the niche at
+//                                      x 6..16, z -50..-42, which a one-way door opens onto the road
+#![enable(implicit_some)]
+(
+  spacing_m: 2.0,
+  base_y: 20.00,
+  ops: [
+    // mouth
+    SetRect(min: (-4.00, -64.00), max: (4.00, -58.00), height: 0.00),
+    // causeway
+    SetRect(min: (-6.00, -60.00), max: (6.00, -24.00), height: 0.00),
+    // alcove w
+    SetRect(min: (-16.00, -50.00), max: (-6.00, -42.00), height: 0.00),
+    // ring
+    SetRect(min: (-26.00, -22.00), max: (26.00, 30.00), height: 0.00),
+    // pn
+    SetRect(min: (-4.00, 30.00), max: (4.00, 38.00), height: 0.00),
+    // reward
+    SetRect(min: (-10.00, 38.00), max: (10.00, 48.00), height: 0.00),
+    // rc1
+    SetRect(min: (10.00, 42.00), max: (46.00, 46.00), height: 0.00),
+    // rc2
+    SetRect(min: (44.00, -48.00), max: (48.00, 46.00), height: 0.00),
+    // rc3
+    SetRect(min: (16.00, -48.00), max: (48.00, -44.00), height: 0.00),
+    // niche
+    SetRect(min: (6.00, -50.00), max: (16.00, -42.00), height: 0.00),
+  ],
+)

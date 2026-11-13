@@ -1027,6 +1027,55 @@ const EMBEDDED_LEVELS: &[(&str, &str)] = &[
         "levels/glasswing_grotto/entities.ron",
         include_str!("../../../data/levels/glasswing_grotto/entities.ron"),
     ),
+    // WP-066: Rimeshelf, the Whitewarden Catacombs, and the Bound Ring.
+    (
+        "levels/rimeshelf/area.ron",
+        include_str!("../../../data/levels/rimeshelf/area.ron"),
+    ),
+    (
+        "levels/rimeshelf/terrain.ron",
+        include_str!("../../../data/levels/rimeshelf/terrain.ron"),
+    ),
+    (
+        "levels/rimeshelf/layout.ron",
+        include_str!("../../../data/levels/rimeshelf/layout.ron"),
+    ),
+    (
+        "levels/rimeshelf/entities.ron",
+        include_str!("../../../data/levels/rimeshelf/entities.ron"),
+    ),
+    (
+        "levels/whitewarden/area.ron",
+        include_str!("../../../data/levels/whitewarden/area.ron"),
+    ),
+    (
+        "levels/whitewarden/terrain.ron",
+        include_str!("../../../data/levels/whitewarden/terrain.ron"),
+    ),
+    (
+        "levels/whitewarden/layout.ron",
+        include_str!("../../../data/levels/whitewarden/layout.ron"),
+    ),
+    (
+        "levels/whitewarden/entities.ron",
+        include_str!("../../../data/levels/whitewarden/entities.ron"),
+    ),
+    (
+        "levels/bound_ring/area.ron",
+        include_str!("../../../data/levels/bound_ring/area.ron"),
+    ),
+    (
+        "levels/bound_ring/terrain.ron",
+        include_str!("../../../data/levels/bound_ring/terrain.ron"),
+    ),
+    (
+        "levels/bound_ring/layout.ron",
+        include_str!("../../../data/levels/bound_ring/layout.ron"),
+    ),
+    (
+        "levels/bound_ring/entities.ron",
+        include_str!("../../../data/levels/bound_ring/entities.ron"),
+    ),
 ];
 
 /// All parsed content.

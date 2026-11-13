@@ -1,0 +1,47 @@
+// The Whitewarden Catacombs terrain (WP-066, D6). Vertices are 2 m apart (65 x 101). The whole area
+// is rock (a 20 m plateau) and the catacombs are carved out of it, flat at 0 m: the carved rooms'
+// sheer sides are its walls, so the nav grid and the controller treat them as walls. Rooms (x, z):
+//   E   Gatehall          x -10..10   z -96..-76  open to Rimeshelf's gate (z -100..-96)
+//   T1  Hall of Ash       x -14..14   z -70..-46  the teaching room: one skeleton, one brazier
+//   T2  Ossuary Walk      x -15..15   z -40..-12  the test room: four skeletons, two braziers
+//   B   Quill Ossuary     x -42..-26  z -34..-12  the branch: a dead end with the Quill and the Folio
+//   W   Warden's Vigil    x -16..16   z -6..22    the twist: the chest wakes six skeletons; four braziers
+//   G   Twins' Vault      x -18..18   z  28..70   the Twin Wardens and the Whitewarden Seal
+//   R   Return corridor   from G's east wall, east to x 40..44, south to z -90..-84, west to E
+#![enable(implicit_some)]
+(
+  spacing_m: 2.0,
+  base_y: 20.00,
+  ops: [
+    // mouth
+    SetRect(min: (-4.00, -100.00), max: (4.00, -96.00), height: 0.00),
+    // e
+    SetRect(min: (-10.00, -96.00), max: (10.00, -76.00), height: 0.00),
+    // pe
+    SetRect(min: (-4.00, -77.00), max: (4.00, -71.00), height: 0.00),
+    // t1
+    SetRect(min: (-14.00, -70.00), max: (14.00, -46.00), height: 0.00),
+    // pt1
+    SetRect(min: (-3.00, -47.00), max: (3.00, -41.00), height: 0.00),
+    // t2
+    SetRect(min: (-15.00, -40.00), max: (15.00, -12.00), height: 0.00),
+    // pb
+    SetRect(min: (-27.00, -26.00), max: (-14.00, -20.00), height: 0.00),
+    // b
+    SetRect(min: (-42.00, -34.00), max: (-26.00, -12.00), height: 0.00),
+    // pm2
+    SetRect(min: (-3.00, -13.00), max: (3.00, -7.00), height: 0.00),
+    // w
+    SetRect(min: (-16.00, -6.00), max: (16.00, 22.00), height: 0.00),
+    // pw
+    SetRect(min: (-3.00, 21.00), max: (3.00, 27.00), height: 0.00),
+    // g
+    SetRect(min: (-18.00, 28.00), max: (18.00, 70.00), height: 0.00),
+    // c1
+    SetRect(min: (18.00, 36.00), max: (44.00, 40.00), height: 0.00),
+    // c2
+    SetRect(min: (40.00, -90.00), max: (44.00, 40.00), height: 0.00),
+    // c3
+    SetRect(min: (10.00, -90.00), max: (44.00, -84.00), height: 0.00),
+  ],
+)

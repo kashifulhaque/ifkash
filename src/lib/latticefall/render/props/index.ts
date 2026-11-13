@@ -26,6 +26,7 @@ import { manifestUrl } from '../kits/manifest';
 import { DeepProps } from './deep';
 import { GlassProps } from './glass';
 import { HearthProps } from './hearth';
+import { RimeProps } from './rime';
 import { createPoolWater, type PoolData } from '../water';
 
 type V3 = [number, number, number];
@@ -70,6 +71,10 @@ export class PropsRenderer {
   private mirrorAt = -1;
   private receptorAt = -1;
   private beamAt = -1;
+  /** The Catacombs' braziers and the Ring's sigil (WP-066), after the beams' words. */
+  private rime = new RimeProps(this.root);
+  private brazierAt = -1;
+  private sigilAt = -1;
   /** The state word holding the player's visibility in meters, or -1 in an area with no darkness. */
   private visAt = -1;
   private geometries: BufferGeometry[] = [];
@@ -126,6 +131,12 @@ export class PropsRenderer {
     this.receptorAt = at;
     at += kindCount('Receptor');
     this.beamAt = at;
+    // WP-066: after the beams' words (a count and 8 legs of 4 words each, per source) come each
+    // brazier (1 when lit) and each sigil (0 cold, 1 touched, 2 sealed).
+    at += kindCount('BeamSource') * (1 + 4 * 8);
+    this.brazierAt = at;
+    at += kindCount('Brazier');
+    this.sigilAt = at;
     const seen = new Map<StateKind, number>();
     let any = false;
     for (const e of entities) {
@@ -147,6 +158,11 @@ export class PropsRenderer {
       }
       if (kind === 'BeamSource' || kind === 'Mirror' || kind === 'Receptor') {
         this.glass.add(kind, d);
+        any = true;
+        continue;
+      }
+      if (kind === 'Brazier' || kind === 'Sigil') {
+        this.rime.add(kind, d);
         any = true;
         continue;
       }
@@ -193,6 +209,7 @@ export class PropsRenderer {
     this.hearth.update(frameMs);
     this.deep.update(frameMs, this.state, this.cartAt, this.hatchAt);
     this.glass.update(frameMs, this.state, this.mirrorAt, this.receptorAt, this.beamAt);
+    this.rime.update(frameMs, this.state, this.brazierAt, this.sigilAt);
     for (const u of this.updaters) {
       const word = this.state[(this.offsets.get(u.kind) ?? 0) + u.index];
       if (word === undefined) continue;
@@ -205,6 +222,7 @@ export class PropsRenderer {
     this.hearth.dispose();
     this.deep.dispose();
     this.glass.dispose();
+    this.rime.dispose();
     this.scene.remove(this.root);
     for (const g of this.geometries) g.dispose();
     for (const m of this.materials) m.dispose();

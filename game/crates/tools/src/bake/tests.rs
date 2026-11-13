@@ -199,3 +199,25 @@ fn the_caves_bake_cleanly() {
         );
     }
 }
+
+/// WP-066: Rimeshelf, the Whitewarden Catacombs, and the Bound Ring bake with no warnings (every
+/// Lantern is reachable, no enemy or item stands in a collider or under the terrain), and the
+/// committed manifests are current.
+#[test]
+fn the_rimeshelf_areas_bake_cleanly() {
+    let content = Content::load_dir(data()).unwrap();
+    let kits = Kits::new(content.kits.iter().map(|(f, c)| (f.as_str(), c))).unwrap();
+    let nav = NavConfig::load_dir(data()).unwrap();
+    for area in ["rimeshelf", "whitewarden", "bound_ring"] {
+        let level = content.level(area).expect("the area exists");
+        let baked = bake_level(area, level, &kits, &nav).unwrap();
+        assert!(baked.warnings.is_empty(), "{area}: {:?}", baked.warnings);
+        let committed =
+            std::fs::read_to_string(super::default_manifest_dir().join(format!("{area}.json")))
+                .unwrap_or_else(|_| panic!("static/latticefall/levels/{area}.json exists"));
+        assert!(
+            committed == baked.manifest,
+            "the committed manifest is stale: run `cargo run -p lf-tools -- bake {area}`"
+        );
+    }
+}

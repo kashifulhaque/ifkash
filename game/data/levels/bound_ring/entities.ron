@@ -1,0 +1,73 @@
+// The Bound Ring entities (WP-066, D7). Yaw is in radians from +Z toward +X: 0 faces +Z (north,
+// toward the Ring), 3.1415927 faces -Z, 1.5707964 faces +X, -1.5707964 faces -X.
+//
+// The route: the mouth at the area's south edge (L21 stands outside, in Rimeshelf), the Pilgrim's
+// Road north (an alcove on the west with the Last Stand Charm), and the Ring: a floor 52 m across
+// with twelve standing stones round the edge and a single way in, across the road's end. A seal door
+// (`door_ring_seal`) stands open in that doorway, and the sigil on the Ring's floor, 8 m inside, is
+// the touch that shuts it. Past the prisoner's plinth, the reward alcove; from it a return corridor
+// runs east, south, and west to a niche in the road's east wall, closed by a one-way door (the
+// shortcut).
+//
+// THE SEAL. `Sigil(id:, pos:, doors:, armed:)` (core `mechanics/brazier.rs`): touching it with
+// `INTERACT` raises `sigil.<id>.touched`, and, if it is `armed`, also `sigil.<id>.sealed`, which
+// shuts the doors it names; they open again when the world raises `sigil.<id>.released`. B11 (the
+// Bound Exile, an M7 work package) has no boss definition yet, so the sigil is UNARMED and the
+// player can't be locked in with nothing. When the boss exists, make the same change as the
+// Boss entity:
+//   - set `armed: true` on `sigil_ring`;
+//   - place, inside the Ring (it stands at (0, 0, 16) on the plinth, facing south):
+//       Boss(name: "b11", boss: "<b11 id>", pos: (0.0, 0.0, 16.0), yaw: 3.1415927,
+//         gate: (pos: (0.0, 0.0, -14.0), yaw: 0.0, half_width_m: 6.0, depth_m: 3.0)),
+//     (or no gate at all: the sigil is the seal, and the boss's fight starts on the touch);
+//   - have the boss's defeat raise `sigil.sigil_ring.released` (with `boss.<id>.defeated`), which
+//     opens the seal door again. B11's rewards, Exile's Stylus and the Unbinding Lance Formula, then
+//     belong on the plinth in the reward alcove; they lie there already, beyond the prisoner.
+//
+// Registry numbers used here (27000 block): bound_ring 27002.
+(
+  // The mouth, facing north up the road.
+  spawn: (pos: (0.0, 0.0, -60.0), yaw: 0.0),
+  entities: [
+    // --- The seal and the shortcut ---------------------------------------------------------------
+    // The seal door stands in the doorway of the Ring (open until the sigil is touched), as wide as
+    // the road: its slab sinks into the floor when open. It is shown `Locked` because nothing but
+    // the sigil opens or shuts it.
+    Door(id: "door_ring_seal", pos: (0.0, 0.0, -23.0), yaw: 0.0, half_width_m: 6.2, height_m: 6.0, kind: Locked),
+    Sigil(id: "sigil_ring", pos: (0.0, 0.2, -16.0), doors: ["door_ring_seal"], armed: false),
+    // The shortcut's door faces +X, the niche, so it opens from the niche only.
+    Door(id: "door_ring_return", pos: (6.0, 0.0, -46.0), yaw: 1.5707964, half_width_m: 4.2, height_m: 4.0, kind: OneWay),
+
+    // --- Authored messages -----------------------------------------------------------------------
+    Message(id: "msg_ring_mouth", pos: (0.0, 0.0, -56.0),
+      text: "The Bound Ring. A road of packed snow, and at the end of it, stones. The wind drops as you walk north."),
+    Message(id: "msg_ring_alcove", pos: (-9.0, 0.0, -44.0),
+      text: "A pilgrims' alcove. Someone left a keepsake here for whoever walked in last, and did not need it themselves."),
+    Message(id: "msg_ring_door", pos: (3.0, 0.0, -26.0),
+      text: "A slab of stone stands in the doorway, sunk in the floor. It sinks when it is told to, and it rises when it is touched."),
+    Message(id: "msg_ring_sigil", pos: (3.0, 0.0, -14.0),
+      text: "A sigil in the snow. Touch it, and the way behind you shuts, and what the stones hold is let out. It is cold now: whatever was bound here is not yet ready to be let out."),
+    Message(id: "msg_ring_prisoner", pos: (0.0, 0.0, 12.0),
+      text: "A plinth, and iron on it, bright where something pulled. The stones lean in around it."),
+    Message(id: "msg_ring_reward", pos: (4.0, 0.0, 40.0),
+      text: "Behind the plinth, a narrow hall with a stylus on a pedestal, and a robe folded beside a chest. Whoever was bound kept a library."),
+    Message(id: "msg_ring_return", pos: (30.0, 0.0, 44.0),
+      text: "A long dry corridor. It runs back to the road, to a door that opens from this side only."),
+
+    // --- Items, materials, and the reward -----------------------------------------------------------
+    // The Pilgrim's alcove: the Last Stand Charm.
+    Pickup(id: "chm_last_stand_alcove", item: "chm_last_stand", pos: (-12.0, 0.0, -46.0), interact: true),
+    // The reward alcove (behind the prisoner): Exile's Stylus on the plinth (the D7 reward), the
+    // Unbinding Lance Formula, Exile's Robe in a chest, its hood on the floor, and the Starglass.
+    Pickup(id: "wpn_exile_stylus_plinth", item: "wpn_exile_stylus", pos: (0.0, 1.0, 44.0), interact: true),
+    Pickup(id: "spl_unbinding_lance_alcove", item: "spl_unbinding_lance", pos: (-5.0, 0.0, 42.0), interact: true),
+    Pickup(id: "arm_exile_head_alcove", item: "arm_exile_head", pos: (6.0, 0.0, 41.0), interact: true),
+    Chest(id: "chest_exile_robe", pos: (7.5, 0.0, 45.0), yaw: -1.5707964, loot: (item: "arm_exile_body", count: 1, glimmer: 300)),
+    Chest(id: "chest_starglass_ring", pos: (-7.5, 0.0, 45.0), yaw: 1.5707964, loot: (item: "itm_starglass", count: 1, glimmer: 300)),
+
+    // --- B11's Ring (x -26..26, z -22..30) ----------------------------------------------------------
+    // PLACEHOLDER: no Boss entity until B11 has a definition (see the notes at the top). The Echo
+    // Stone stands inside the Ring, by the west stones, for the day the sigil is armed.
+    EchoStone(id: "stone_b11", pos: (-14.0, 0.0, 6.0), yaw: 1.5707964),
+  ],
+)

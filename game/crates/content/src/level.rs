@@ -49,7 +49,8 @@
 //! mechanics this way: ladders, lifts, doors, levers, hollow walls, pickups, chests,
 //! messages, pools, and snow. A new sculpt operation is a new [`Sculpt`] variant and a match arm in
 //! [`Sculpt::apply`]. WP-062 added `Darkness`, `Glow`, `Cart`, and `Trapdoor` the same way, and
-//! WP-063 added `LowCeiling`, `BeamSource`, `Mirror`, and `Receptor`.
+//! WP-063 added `LowCeiling`, `BeamSource`, `Mirror`, and `Receptor`, and WP-066 added `Brazier`
+//! and `Sigil`.
 //! WP-060 added `EchoStone(id:, pos:, yaw:)` the same way: a level places
 //! the summoning spot of a boss arena in `entities.ron` instead of in a scenario file, and
 //! compile hands it to the core's Echo rules (`Scenario::echo_stones`).
@@ -60,9 +61,9 @@ use serde::{Deserialize, Serialize};
 
 use crate::Scenario;
 use crate::scenario::{
-    BeamSource, BossSpawn, BoxCollider, Cart, Chest, Darkness, Door, Dummy, EchoStone, EnemySpawn,
-    Heightfield, HollowWall, Ladder, Lantern, Lever, LeverTarget, Lift, LowCeiling, Message,
-    Mirror, NpcSpawn, Pickup, Pool, Receptor, StationSpawn, Trapdoor, Zone,
+    BeamSource, BossSpawn, BoxCollider, Brazier, Cart, Chest, Darkness, Door, Dummy, EchoStone,
+    EnemySpawn, Heightfield, HollowWall, Ladder, Lantern, Lever, LeverTarget, Lift, LowCeiling,
+    Message, Mirror, NpcSpawn, Pickup, Pool, Receptor, Sigil, StationSpawn, Trapdoor, Zone,
 };
 
 /// The files an area directory can hold, in load order.
@@ -858,6 +859,10 @@ pub enum Entity {
     Mirror(Mirror),
     /// A beam receptor that opens a door (WP-063).
     Receptor(Receptor),
+    /// A Warden Brazier the player lights (WP-066).
+    Brazier(Brazier),
+    /// A seal sigil that shuts doors behind the player (WP-066).
+    Sigil(Sigil),
 }
 
 impl Entity {
@@ -891,6 +896,8 @@ impl Entity {
             Self::BeamSource(_) => "BeamSource",
             Self::Mirror(_) => "Mirror",
             Self::Receptor(_) => "Receptor",
+            Self::Brazier(_) => "Brazier",
+            Self::Sigil(_) => "Sigil",
         }
     }
 
@@ -922,6 +929,8 @@ impl Entity {
             Self::BeamSource(s) => &s.id,
             Self::Mirror(m) => &m.id,
             Self::Receptor(r) => &r.id,
+            Self::Brazier(b) => &b.id,
+            Self::Sigil(g) => &g.id,
         }
     }
 
@@ -948,6 +957,9 @@ impl Entity {
             // A mirror is turned from beside it, so the bake checks the ground at its foot. The
             // emitters and sockets stand at beam height, on the walls: not walk targets.
             Self::Mirror(m) => Some(m.pos),
+            // A brazier is lit, and a sigil touched, from beside it.
+            Self::Brazier(b) => Some(b.pos),
+            Self::Sigil(g) => Some(g.pos),
             Self::BeamSource(_)
             | Self::Receptor(_)
             | Self::Darkness(_)
@@ -1592,6 +1604,8 @@ impl Level {
             beam_sources: Vec::new(),
             mirrors: Vec::new(),
             receptors: Vec::new(),
+            braziers: Vec::new(),
+            sigils: Vec::new(),
         };
         for e in &self.entities.entities {
             match e {
@@ -1626,6 +1640,8 @@ impl Level {
                 Entity::BeamSource(s) => sc.beam_sources.push(s.clone()),
                 Entity::Mirror(m) => sc.mirrors.push(m.clone()),
                 Entity::Receptor(r) => sc.receptors.push(r.clone()),
+                Entity::Brazier(b) => sc.braziers.push(b.clone()),
+                Entity::Sigil(g) => sc.sigils.push(g.clone()),
             }
         }
         sc.check().map_err(|e| format!("entities.ron: {e}"))?;

@@ -28,7 +28,9 @@
     30: 'Ride the cart',
     31: 'Push the cart',
     32: 'Push the hatch open',
-    40: 'Turn the mirror'
+    40: 'Turn the mirror',
+    55: 'Light the brazier',
+    56: 'Touch the sigil'
   };
 
   let innerWidth = 1280;

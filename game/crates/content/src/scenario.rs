@@ -133,6 +133,13 @@ pub struct Scenario {
     pub mirrors: Vec<Mirror>,
     #[serde(default)]
     pub receptors: Vec<Receptor>,
+    /// Warden Braziers (WP-066, the Whitewarden Catacombs): lit with `INTERACT`; a lit brazier
+    /// keeps a revive-prone enemy down within its radius.
+    #[serde(default)]
+    pub braziers: Vec<Brazier>,
+    /// Seal sigils (WP-066, the Bound Ring): touching one shuts the doors it names.
+    #[serde(default)]
+    pub sigils: Vec<Sigil>,
 }
 
 /// Where an NPC stands. The NPC's lines and quest are in `npcs/<name>.ron`.
@@ -748,6 +755,39 @@ pub struct Receptor {
     pub opens: Option<String>,
 }
 
+/// A Warden Brazier (D6, Whitewarden Catacombs): the player lights it with `INTERACT` (the flag
+/// `brazier.<id>.lit`, for good). A Whitewarden Skeleton that dies within its revive rule's
+/// `LitLantern` radius of a lit brazier stays down, and one already down when the brazier is lit
+/// stays down from then on.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Brazier {
+    /// Unique among the scenario's braziers.
+    pub id: String,
+    /// Where the bowl stands (feet level), in meters. The player lights it from beside it.
+    pub pos: [f32; 3],
+}
+
+/// A seal sigil (D7, the Bound Ring): the player touches it with `INTERACT`, which raises
+/// `sigil.<id>.touched`. If it is `armed`, that also raises `sigil.<id>.sealed` and shuts every
+/// door in `doors`: they stand open until then, and open again when the world raises
+/// `sigil.<id>.released` (M7's B11 raises it when the prisoner falls). An unarmed sigil is cold: it
+/// can be touched and nothing shuts. B11 has no definition yet, so the Ring's sigil is unarmed;
+/// arm it in the same change that places the boss.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Sigil {
+    /// Unique among the scenario's sigils.
+    pub id: String,
+    /// Where the player stands to touch it (feet level), in meters.
+    pub pos: [f32; 3],
+    /// The doors the seal shuts. Each must exist.
+    pub doors: Vec<String>,
+    /// Whether touching it seals anything yet.
+    #[serde(default)]
+    pub armed: bool,
+}
+
 impl Scenario {
     /// Checks shape invariants the physics builder relies on.
     pub fn check(&self) -> Result<(), String> {
@@ -1083,6 +1123,30 @@ impl Scenario {
                 return Err(format!(
                     "receptor {:?}: it opens door {d:?}, which doesn't exist",
                     r.id
+                ));
+            }
+        }
+        for (i, b) in self.braziers.iter().enumerate() {
+            unique(
+                self.braziers[..i].iter().any(|o| o.id == b.id),
+                "brazier",
+                &b.id,
+            )?;
+        }
+        for (i, g) in self.sigils.iter().enumerate() {
+            unique(
+                self.sigils[..i].iter().any(|o| o.id == g.id),
+                "sigil",
+                &g.id,
+            )?;
+            if let Some(d) = g
+                .doors
+                .iter()
+                .find(|d| !self.doors.iter().any(|o| &o.id == *d))
+            {
+                return Err(format!(
+                    "sigil {:?}: it seals door {d:?}, which doesn't exist",
+                    g.id
                 ));
             }
         }

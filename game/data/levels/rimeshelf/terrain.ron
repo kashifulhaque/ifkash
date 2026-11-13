@@ -1,0 +1,40 @@
+// The Rimeshelf terrain (WP-066). Vertices are 2 m apart (151 x 126). The highland floor is flat at
+// 0 m (the packed paths and the deep snow differ only by the snow zones in entities.ron, which slow
+// the player; the ground doesn't change), with a few domed rocks as scenery, a 30 m rim of cliff
+// all round, Bellwright's Steps (a ramp to a 6 m terrace in the north: B10's arena), and the pit
+// under the foundry's collapsed chimney (-6 m: a drop of 6 m, under the 8 m of fall damage). The
+// buildings (the foundry, the gate frames) are blocks in layout.ron.
+#![enable(implicit_some)]
+(
+  spacing_m: 2.0,
+  base_y: 0.00,
+  ops: [
+    // rocks and drifts (smooth domes; every path and spur stays clear of them)
+    RaiseCircle(center: (-112.00, 72.00), radius: 14.00, height: 10.00),
+    RaiseCircle(center: (112.00, 62.00), radius: 16.00, height: 12.00),
+    RaiseCircle(center: (98.00, -96.00), radius: 14.00, height: 9.00),
+    RaiseCircle(center: (-102.00, -96.00), radius: 16.00, height: 10.00),
+    RaiseCircle(center: (62.00, 98.00), radius: 12.00, height: 8.00),
+    RaiseCircle(center: (-92.00, 104.00), radius: 12.00, height: 8.00),
+    RaiseCircle(center: (118.00, -60.00), radius: 10.00, height: 6.00),
+    RaiseCircle(center: (-122.00, -70.00), radius: 10.00, height: 6.00),
+    // Bellwright's Steps: a ramp up to the arena terrace (6 m), then the terrace
+    Ramp(min: (-8.00, 56.00), max: (8.00, 76.00), axis: Z, from: 0.00, to: 6.00),
+    // the arena terrace
+    SetRect(min: (-28.00, 76.00), max: (28.00, 122.00), height: 6.00),
+    // the chimney pit in the foundry's annex
+    // chimney pit
+    SetRect(min: (-26.00, 40.00), max: (-18.00, 48.00), height: -6.00),
+    // the rim: a cliff all round the highland (the south has a notch for the back gate)
+    // rim w
+    SetRect(min: (-150.00, -125.00), max: (-148.00, 125.00), height: 30.00),
+    // rim e
+    SetRect(min: (148.00, -125.00), max: (150.00, 125.00), height: 30.00),
+    // rim s
+    SetRect(min: (-148.00, -125.00), max: (148.00, -123.00), height: 30.00),
+    // rim n
+    SetRect(min: (-148.00, 124.00), max: (148.00, 125.00), height: 30.00),
+    // back gate notch
+    SetRect(min: (-6.00, -125.00), max: (6.00, -123.00), height: 0.00),
+  ],
+)

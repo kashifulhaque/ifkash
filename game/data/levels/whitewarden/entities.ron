@@ -1,0 +1,104 @@
+// The Whitewarden Catacombs entities (WP-066, D6). Yaw is in radians from +Z toward +X: 0 faces +Z
+// (north, deeper in), 3.1415927 faces -Z, 1.5707964 faces +X, -1.5707964 faces -X.
+//
+// The route follows the dungeon template (docs/game/02-world.md): the Gatehall (entrance; L19
+// stands outside, in Rimeshelf), the Hall of Ash (teaching: one Whitewarden Skeleton and one Warden
+// Brazier), the Ossuary Walk (test: four skeletons, two braziers), the Quill Ossuary (the branch: a
+// dead end with the Rewrite Quill, the Lost Folio, and Wide Mend), the Warden's Vigil (twist: the
+// chest in the middle wakes six skeletons; four braziers in the corners), and the Twins' Vault (the
+// Twin Wardens, then the Whitewarden Seal on its plinth). The shortcut is the return corridor: from
+// the Vault's east wall, round to a one-way door in the Gatehall.
+//
+// THE REVIVE. A Whitewarden Skeleton stands up 180 ticks after it falls with half its health, unless
+// it was killed by a Radiance blow or a critical (a riposte or a backstab), or a lit Lantern or Warden
+// Brazier stands within 6 m of it. `INTERACT` beside a brazier lights it for good (the flag
+// `brazier.<id>.lit`); a body already down beside it stays down from then on. A skeleton that is
+// up stays up. See the core's `mechanics/brazier.rs` and `ai/special/revive.rs`.
+//
+// THE ELITE GUARDIAN. The Twin Wardens are a pair of Bell Wardens (D6's end encounter, "Elite: Twin
+// Wardens"), standing deep in the Vault, 24 m or more from its door. Like D5's Stalkers they are
+// not behind a fog gate: a fog gate belongs to a Boss entity, and an elite is an ordinary enemy.
+//
+// Registry numbers used here (27000 block): whitewarden 27001.
+(
+  // The Gatehall, facing north into the first hall.
+  spawn: (pos: (0.0, 0.0, -92.0), yaw: 0.0),
+  entities: [
+    // --- The shortcut: a one-way door in the corridor's mouth ------------------------------------
+    // It faces +X, the corridor, so it opens from the corridor only.
+    Door(id: "door_return", pos: (14.0, 0.0, -87.0), yaw: 1.5707964, half_width_m: 3.2, height_m: 4.0, kind: OneWay),
+
+    // --- Braziers: the signature mechanic ---------------------------------------------------------
+    // The Hall of Ash: one, beside the skeleton, so the lesson is plain.
+    Brazier(id: "brz_ash", pos: (4.0, 0.0, -64.0)),
+    // The Ossuary Walk: one near the way in and one half way up, each beside two skeletons.
+    Brazier(id: "brz_walk_a", pos: (-5.0, 0.0, -35.0)),
+    Brazier(id: "brz_walk_b", pos: (5.0, 0.0, -22.0)),
+    // The Quill Ossuary: one by the slab.
+    Brazier(id: "brz_quill", pos: (-30.0, 0.0, -16.0)),
+    // The Warden's Vigil: four, one in each corner.
+    Brazier(id: "brz_vigil_a", pos: (-14.0, 0.0, -4.0)),
+    Brazier(id: "brz_vigil_b", pos: (14.0, 0.0, -4.0)),
+    Brazier(id: "brz_vigil_c", pos: (-14.0, 0.0, 20.0)),
+    Brazier(id: "brz_vigil_d", pos: (14.0, 0.0, 20.0)),
+    // The Twins' Vault: one at the door, so the way back is lit.
+    Brazier(id: "brz_vault", pos: (-4.0, 0.0, 32.0)),
+
+    // --- Authored messages ---------------------------------------------------------------------
+    Message(id: "msg_ww_mouth", pos: (0.0, 0.0, -88.0),
+      text: "The Whitewarden Catacombs. The wardens who kept the dead here kept them with fire, and the fire went out. The way goes north."),
+    Message(id: "msg_ww_ash", pos: (-3.0, 0.0, -66.0),
+      text: "The Hall of Ash. A skeleton stands by an iron brazier. Strike it down and it stands up again in three seconds. Light the brazier first (interact) and it stays down: the flame keeps the dead down within six meters. Radiance or a critical blow does it too."),
+    Message(id: "msg_ww_walk", pos: (0.0, 0.0, -38.0),
+      text: "The Ossuary Walk. Two braziers, each beside two skeletons. A flame lit is lit for good, and the dead beside it stay down."),
+    Message(id: "msg_ww_branch", pos: (-20.0, 0.0, -23.0),
+      text: "A side tunnel to a small ossuary, west. Someone filed things here, and meant to come back."),
+    Message(id: "msg_ww_quill", pos: (-34.0, 0.0, -28.0),
+      text: "The Quill Ossuary. A quill, a folio nobody finished, and a prayer, left on the shelves. A dead end."),
+    Message(id: "msg_ww_vigil", pos: (0.0, 0.0, -4.0),
+      text: "The Warden's Vigil. Four braziers in the corners, all cold. A chest stands in the middle of the floor, and the shadows along the walls are not shadows."),
+    Message(id: "msg_ww_vault", pos: (0.0, 0.0, 30.0),
+      text: "The Twins' Vault. Two wardens with a hand bell between them. Each third ring is a wave that knocks the strength out of your legs. A seal waits on the plinth at the far end."),
+    Message(id: "msg_ww_return", pos: (22.0, 0.0, 38.0),
+      text: "A long dry corridor. It runs back to the Gatehall, to a door that opens from this side only."),
+
+    // --- Enemies: Whitewarden Skeletons and the Twin Wardens -------------------------------------
+    // The Hall of Ash (teaching): one skeleton, 5 m from the brazier, facing away.
+    Enemy(name: "skel_ash", enemy: "whitewarden_skeleton", pos: (7.0, 0.0, -60.0), yaw: 0.0),
+    // The Ossuary Walk (test): two beside each brazier (the braziers stand by the way in, so a fight
+    // at the brazier is a fight on safe ground).
+    Enemy(name: "skel_walk_a1", enemy: "whitewarden_skeleton", pos: (-8.0, 0.0, -31.0), yaw: 0.0),
+    Enemy(name: "skel_walk_a2", enemy: "whitewarden_skeleton", pos: (-2.0, 0.0, -31.0), yaw: 0.0),
+    Enemy(name: "skel_walk_b1", enemy: "whitewarden_skeleton", pos: (8.0, 0.0, -17.0), yaw: 3.1415927),
+    Enemy(name: "skel_walk_b2", enemy: "whitewarden_skeleton", pos: (3.0, 0.0, -17.0), yaw: 3.1415927),
+    // The Quill Ossuary: one, by the brazier.
+    Enemy(name: "skel_quill", enemy: "whitewarden_skeleton", pos: (-33.0, 0.0, -17.0), yaw: 3.1415927),
+    // The Warden's Vigil (twist): six that sleep until the chest in the middle is opened. Four
+    // lie beside a corner brazier; two lie in the middle of the long walls, far from any.
+    Enemy(name: "skel_vigil_a", enemy: "whitewarden_skeleton", pos: (-11.0, 0.0, -1.0), yaw: 1.5707964, wakes_on: Some("chest.chest_vigil.opened")),
+    Enemy(name: "skel_vigil_b", enemy: "whitewarden_skeleton", pos: (11.0, 0.0, -1.0), yaw: -1.5707964, wakes_on: Some("chest.chest_vigil.opened")),
+    Enemy(name: "skel_vigil_c", enemy: "whitewarden_skeleton", pos: (-11.0, 0.0, 17.0), yaw: 1.5707964, wakes_on: Some("chest.chest_vigil.opened")),
+    Enemy(name: "skel_vigil_d", enemy: "whitewarden_skeleton", pos: (11.0, 0.0, 17.0), yaw: -1.5707964, wakes_on: Some("chest.chest_vigil.opened")),
+    Enemy(name: "skel_vigil_e", enemy: "whitewarden_skeleton", pos: (-13.0, 0.0, 8.0), yaw: 1.5707964, wakes_on: Some("chest.chest_vigil.opened")),
+    Enemy(name: "skel_vigil_f", enemy: "whitewarden_skeleton", pos: (13.0, 0.0, 8.0), yaw: -1.5707964, wakes_on: Some("chest.chest_vigil.opened")),
+    // The Twins' Vault: two Bell Wardens, deep in the hall.
+    Enemy(name: "warden_twin_a", enemy: "bell_warden", pos: (-7.0, 0.0, 54.0), yaw: 3.1415927),
+    Enemy(name: "warden_twin_b", enemy: "bell_warden", pos: (7.0, 0.0, 58.0), yaw: 3.1415927),
+
+    // --- Items, materials, and the reward ----------------------------------------------------------
+    // The Quill Ossuary (the branch): the Rewrite Quill on the slab, the Lost Folio (the Archivist's
+    // quest), and Wide Mend (the Litany taught in the catacombs).
+    Pickup(id: "quill_ossuary", item: "itm_rewrite_quill", pos: (-36.0, 0.8, -24.0), interact: true),
+    Pickup(id: "folio_whitewarden", item: "itm_lost_folio", pos: (-40.0, 0.0, -30.0), interact: true),
+    Pickup(id: "spl_wide_mend_ossuary", item: "spl_wide_mend", pos: (-30.0, 0.0, -30.0), interact: true),
+    // The Vigil's chest: Forgeglass Shards, and it wakes the sleepers.
+    Chest(id: "chest_vigil", pos: (0.0, 0.0, 8.0), yaw: 3.1415927, loot: (item: "itm_forgeglass_shard", count: 3, glimmer: 250)),
+    // The Gatehall and the Walk: Spark Oil and a Glimmer Vial.
+    Pickup(id: "oil_ww_mouth", item: "itm_spark_oil", pos: (-8.0, 0.0, -88.0), count: 2, interact: true),
+    Pickup(id: "vial_ww_walk", item: "itm_glimmer_vial", pos: (13.0, 0.0, -28.0), interact: true),
+    // The Vault: a Forgeglass Chunk in a corner chest, and, after the Twins, the Whitewarden Seal
+    // on its plinth (the D6 reward).
+    Chest(id: "chest_vault", pos: (15.0, 0.0, 34.0), yaw: -1.5707964, loot: (item: "itm_forgeglass_chunk", count: 1, glimmer: 300)),
+    Pickup(id: "seal_whitewarden", item: "wpn_whitewarden_seal", pos: (0.0, 1.0, 64.0), interact: true),
+  ],
+)

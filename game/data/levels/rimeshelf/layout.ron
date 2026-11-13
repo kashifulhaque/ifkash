@@ -1,0 +1,69 @@
+// Rimeshelf layout (WP-066): greybox blocks (scaled `block_unit`, centered on `pos`). Y is up, +Z is
+// north. The highland is flat (terrain.ron). Places, with extents (x, z):
+//   the back gate      x -9..9, z -117..-115   the castle's back gate comes out here; the spawn
+//                      stands just north of it
+//   Rimeshelf Pass     the packed spine x -6..6 from z -112 to z 76; L18 at (0, -98); wolves and
+//                      Frost Husks in the deep snow either side
+//   the Whitewarden gate   x 103..105, z -37..-23   a pylon arch east of L19 (70, -30); the
+//                      connection to the catacombs is just past it
+//   the Bound Ring gate    the same arch, west of L21 (-80, -30), at x -105..-103
+//   the Frozen Foundry x -66..-14, z -4..52   walls 8 m high; the east door at z 4..10; the
+//                      casting floor (z -2..30), the annex (z 32..50): the chimney room (x
+//                      -40..-16) and the office (x -64..-42)
+//   Bellwright's Steps a 20 m ramp (x -8..8, z 56..76) up to the terrace (y 6): L20 at (0, 6, 80);
+//                      B10's fog gate is the plane z = 96 across the gap in the arena wall (x -6..6)
+//   the arena          x -26..26, z 96..122   the Great Bell frozen in the north cliff
+// Colliders are axis-aligned boxes, so every doorway is a gap between two boxes plus a lintel.
+// Walks between Lanterns are checked by world_state/rime_tests.rs.
+(
+  landmarks: [
+    (name: "backgate_w", kit: "block_unit", pos: (-8.00, 4.50, -116.00), scale: (2.00, 9.00, 2.00)),
+    (name: "backgate_e", kit: "block_unit", pos: (8.00, 4.50, -116.00), scale: (2.00, 9.00, 2.00)),
+    (name: "backgate_lintel", kit: "block_unit", pos: (0.00, 8.00, -116.00), scale: (14.00, 2.00, 2.00)),
+    (name: "ww_gate_s", kit: "block_unit", pos: (104.00, 4.50, -36.00), scale: (2.00, 9.00, 2.00)),
+    (name: "ww_gate_n", kit: "block_unit", pos: (104.00, 4.50, -24.00), scale: (2.00, 9.00, 2.00)),
+    (name: "ww_gate_lintel", kit: "block_unit", pos: (104.00, 8.00, -30.00), scale: (2.00, 2.00, 10.00)),
+    (name: "br_gate_s", kit: "block_unit", pos: (-104.00, 4.50, -36.00), scale: (2.00, 9.00, 2.00)),
+    (name: "br_gate_n", kit: "block_unit", pos: (-104.00, 4.50, -24.00), scale: (2.00, 9.00, 2.00)),
+    (name: "br_gate_lintel", kit: "block_unit", pos: (-104.00, 8.00, -30.00), scale: (2.00, 2.00, 10.00)),
+    (name: "foundry_s_0", kit: "block_unit", pos: (-40.00, 4.00, -3.00), scale: (52.00, 8.00, 2.00)),
+    (name: "foundry_n_0", kit: "block_unit", pos: (-40.00, 4.00, 51.00), scale: (52.00, 8.00, 2.00)),
+    (name: "foundry_w_0", kit: "block_unit", pos: (-65.00, 4.00, 24.00), scale: (2.00, 8.00, 56.00)),
+    (name: "foundry_e_0", kit: "block_unit", pos: (-15.00, 4.00, 0.00), scale: (2.00, 8.00, 8.00)),
+    (name: "foundry_e_lintel_1", kit: "block_unit", pos: (-15.00, 6.25, 7.00), scale: (2.00, 3.50, 6.00)),
+    (name: "foundry_e_2", kit: "block_unit", pos: (-15.00, 4.00, 31.00), scale: (2.00, 8.00, 42.00)),
+    (name: "foundry_div_0", kit: "block_unit", pos: (-49.00, 4.00, 31.00), scale: (30.00, 8.00, 2.00)),
+    (name: "foundry_div_lintel_1", kit: "block_unit", pos: (-30.00, 6.25, 31.00), scale: (8.00, 3.50, 2.00)),
+    (name: "foundry_div_2", kit: "block_unit", pos: (-21.00, 4.00, 31.00), scale: (10.00, 8.00, 2.00)),
+    (name: "annex_div_0", kit: "block_unit", pos: (-41.00, 4.00, 35.00), scale: (2.00, 8.00, 6.00)),
+    (name: "annex_div_lintel_1", kit: "block_unit", pos: (-41.00, 6.25, 41.00), scale: (2.00, 3.50, 6.00)),
+    (name: "annex_div_2", kit: "block_unit", pos: (-41.00, 4.00, 47.00), scale: (2.00, 8.00, 6.00)),
+    (name: "furnace_0", kit: "block_unit", pos: (-58.00, 2.25, 26.00), scale: (4.00, 4.50, 4.00)),
+    (name: "furnace_1", kit: "block_unit", pos: (-50.00, 2.25, 26.00), scale: (4.00, 4.50, 4.00)),
+    (name: "furnace_2", kit: "block_unit", pos: (-42.00, 2.25, 26.00), scale: (4.00, 4.50, 4.00)),
+    (name: "anvil_plinth", kit: "block_unit", pos: (-58.00, 0.60, 6.00), scale: (2.00, 1.20, 2.00)),
+    (name: "slag_trough", kit: "block_unit", pos: (-32.00, 0.30, 15.00), scale: (16.00, 0.60, 2.00)),
+    (name: "office_desk", kit: "block_unit", pos: (-59.00, 0.50, 47.00), scale: (6.00, 1.00, 2.00)),
+    (name: "chimney_rim_n", kit: "block_unit", pos: (-22.00, 0.50, 48.50), scale: (10.00, 1.00, 1.00)),
+    (name: "chimney_rim_w", kit: "block_unit", pos: (-26.50, 0.50, 44.00), scale: (1.00, 1.00, 8.00)),
+    (name: "chimney_rim_e", kit: "block_unit", pos: (-17.50, 0.50, 44.00), scale: (1.00, 1.00, 8.00)),
+    (name: "arena_gate_0", kit: "block_unit", pos: (-17.00, 9.00, 96.00), scale: (22.00, 6.00, 2.00)),
+    (name: "arena_gate_1", kit: "block_unit", pos: (17.00, 9.00, 96.00), scale: (22.00, 6.00, 2.00)),
+    (name: "gate_post_w", kit: "block_unit", pos: (-7.00, 9.00, 96.00), scale: (2.00, 6.00, 2.00)),
+    (name: "gate_post_e", kit: "block_unit", pos: (7.00, 9.00, 96.00), scale: (2.00, 6.00, 2.00)),
+    (name: "terrace_rail_w", kit: "block_unit", pos: (-27.50, 6.60, 86.00), scale: (1.00, 1.20, 20.00)),
+    (name: "terrace_rail_e", kit: "block_unit", pos: (27.50, 6.60, 86.00), scale: (1.00, 1.20, 20.00)),
+    (name: "arena_wall_w", kit: "block_unit", pos: (-27.00, 9.00, 109.00), scale: (2.00, 6.00, 26.00)),
+    (name: "arena_wall_e", kit: "block_unit", pos: (27.00, 9.00, 109.00), scale: (2.00, 6.00, 26.00)),
+    (name: "great_bell", kit: "block_unit", pos: (0.00, 11.00, 120.50), scale: (10.00, 10.00, 3.00)),
+    (name: "great_bell_yoke", kit: "block_unit", pos: (0.00, 17.00, 120.50), scale: (14.00, 2.00, 3.00)),
+    (name: "ice_pillar_0", kit: "block_unit", pos: (-20.00, 2.50, -80.00), scale: (2.00, 5.00, 2.00)),
+    (name: "ice_pillar_1", kit: "block_unit", pos: (20.00, 2.50, -80.00), scale: (2.00, 5.00, 2.00)),
+    (name: "ice_pillar_2", kit: "block_unit", pos: (-16.00, 2.50, -50.00), scale: (2.00, 5.00, 2.00)),
+    (name: "ice_pillar_3", kit: "block_unit", pos: (16.00, 2.50, -60.00), scale: (2.00, 5.00, 2.00)),
+    (name: "ice_pillar_4", kit: "block_unit", pos: (22.00, 2.50, 20.00), scale: (2.00, 5.00, 2.00)),
+    (name: "ice_pillar_5", kit: "block_unit", pos: (-24.00, 2.50, 60.00), scale: (2.00, 5.00, 2.00)),
+    (name: "ice_pillar_6", kit: "block_unit", pos: (26.00, 2.50, 40.00), scale: (2.00, 5.00, 2.00)),
+    (name: "ice_pillar_7", kit: "block_unit", pos: (30.00, 2.50, -10.00), scale: (2.00, 5.00, 2.00)),
+  ],
+)

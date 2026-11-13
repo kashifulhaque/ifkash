@@ -63,6 +63,7 @@ Copy this block to the top of the entries and fill it in as you go:
   - Started WP-083 (sonnet) and WP-087 (haiku) while WP-081 and WP-101 run.
   - WP-083: sonnet, worktree; `3e20d7f`; 142K. Clean cherry-pick. Orchestrator re-ran `bun run check` and took screenshots at 375 x 812 on port 5180 (phone view, touch mode).
   - Started WP-088 early (it was wave 3), moved up from haiku to sonnet: it adds Marks to the simulation state, gestures to the input frame, and UI. WP-082 now waits for both WP-081 and WP-088. Orchestrator context 150K.
+  - WP-081: sonnet, worktree; `32233fd`; 296K. Clean cherry-pick; no Rust changes. Orchestrator re-ran `bun run check` and the benchmark for the Verge and the castle (matches the report) and took a gameplay screenshot.
 ### 2026-11-13: latticefall-m7 (M7)
 
 - **Orchestrator:** Opus 5.5, low effort

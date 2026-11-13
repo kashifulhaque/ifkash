@@ -180,6 +180,15 @@ impl MechanicEvent {
     pub const COLOSSUS_LAVA_STARTED: u8 = 171;
     /// B08: the lava burned the player. `index` is the boss's index in the scenario.
     pub const COLOSSUS_LAVA_BURNED: u8 = 172;
+    /// B06's survivors sang a new verse (WP-074); `index` is the member that fell (0 the
+    /// Cantor, 1 the Bellbearer, 2 the Lamenter). WASM kind 14, sub-kinds 150-159 are B06's.
+    pub const CHOIR_VERSE: u8 = 150;
+    /// The Cantor's mending hymn finished and healed a member (WP-074); `index` is the member
+    /// healed.
+    pub const CHOIR_MEND: u8 = 151;
+    /// The Lamenter reappeared behind the player after fading (WP-074); `index` is her
+    /// member number (2).
+    pub const CHOIR_TELEPORT: u8 = 152;
 }
 
 /// The player opened a chest (`source` is always 1; pickups send `PickupEvent`), and

@@ -172,5 +172,17 @@ lf-tools replay record-script tests/replays/m1_movement.script --out tests/repla
   Corvane's hits and punishes, and beats him; a player who walks in and does nothing dies.
   Tests in `b03_tests.rs` check both.
 
+- `m7_b06_bot_win.lfr`: the WP-074 golden on `boss_b06`, from `m7_b06_bot_win.script`. The
+  scripted bot (`Bot` in `game/crates/core/src/ai/bosses/b06_tests.rs`) walks through the
+  nave's fog gate wielding the Gray Greatsword, rolls through each member's telegraphed hit,
+  punishes the recovery of their last move (the Cantor first, since she mends the others),
+  and beats the Drowned Choir (flag `boss.b06_drowned_choir.defeated`) with the player alive.
+  `the_bot_golden_replay_beats_b06_with_the_player_alive` checks it.
+- `m7_b06_idle_dies.lfr`: the WP-074 golden on `boss_b06`, from `m7_b06_idle_dies.script`. The
+  player walks in and does nothing, and the Choir kills them.
+  `the_idle_golden_replay_kills_the_player` (in `b06_tests.rs`) checks it. Both `.script` files
+  come from the ignored test `record_the_b06_goldens`; record the `.lfr` files with
+  `lf-tools replay record-script --out <lfr> <script>`.
+
 Rehash only when a change to the simulation or the content data is intended. Review the
 old and new final hash it prints, and commit the updated file with that change.

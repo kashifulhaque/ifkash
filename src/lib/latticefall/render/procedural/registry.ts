@@ -28,6 +28,7 @@ import { shardGolemDef } from './models/shardGolem';
 import { skeletonDef } from './models/skeleton';
 import { thornHoundDef } from './models/thornHound';
 import { corvaneDef } from '../bosses/b03/corvane';
+import { B06_BELLBEARER_KIND, B06_CANTOR_KIND, B06_LAMENTER_KIND, bellbearerDef, cantorDef, lamenterDef } from '../bosses/b06';
 
 /**
  * Registry number of B01's body: `b01_hollow_sentry_body`. The boss definition
@@ -75,6 +76,11 @@ const defs = new Map<number, ModelDef>([
   [B08_KIND + 1, colossusLegDef],
   [B08_KIND + 2, colossusLegDef]
 ]);
+
+// WP-074: B06, the Drowned Choir (three bodies).
+defs.set(B06_CANTOR_KIND, cantorDef);
+defs.set(B06_BELLBEARER_KIND, bellbearerDef);
+defs.set(B06_LAMENTER_KIND, lamenterDef);
 
 /** The model for an actor kind, or undefined for kinds drawn some other way (the player). */
 export function modelForKind(kind: number): ModelDef | undefined {

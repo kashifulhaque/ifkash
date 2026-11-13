@@ -122,12 +122,19 @@
     Chest(id: "chest_forecourt", pos: (98.0, 0.0, 22.0), yaw: 3.1415927, loot: (item: "itm_glimmer_vial_large", count: 1, glimmer: 300)),
 
     // --- B06's arena: the Drowned Cathedral's nave (x 68..104, z -17..17) ----------------------
-    // The boss: PLACEHOLDER. B06 (the Drowned Choir, an M7 work package) has no boss definition
-    // yet, so no Boss entity is placed. When it exists, add:
-    //   Boss(name: "b06", boss: "<b06 id>", pos: (86.0, 0.0, -9.0), yaw: 0.0,
-    //     gate: (pos: (85.0, 0.0, 19.0), yaw: 3.1415927, half_width_m: 4.0, depth_m: 3.0)),
+    // The boss: B06, the Drowned Choir (WP-074). The Cantor is the body at (86, 0, -9); the
+    // Bellbearer (4.5 m west, 3 m nearer the door) and the Lamenter (4.5 m east) are its parts, so
+    // all three face the door and the fight ends when all three fall.
     // The fog gate is the plane z = 19 across the front door (x 81..89), opening south into the
     // nave; the Choir waits at (86, 0, -9) facing it. L09 is 39 m from the gate (about 9 s).
+    Boss(name: "b06", boss: "b06_drowned_choir", pos: (86.0, 0.0, -9.0), yaw: 0.0,
+      gate: (pos: (85.0, 0.0, 19.0), yaw: 3.1415927, half_width_m: 4.0, depth_m: 3.0)),
+    // The side aisles (x 68..75 and 97..104, beyond the pillar rows) are waist-deep water, 0.9 m:
+    // it slows the player, and Storm deals 1.5x to anything standing in it (the `Water` zones).
+    Pool(name: "nave_aisle_west", center: (71.5, 0.0), half_extents: (3.5, 17.0), depth_m: 0.9),
+    Pool(name: "nave_aisle_east", center: (100.5, 0.0), half_extents: (3.5, 17.0), depth_m: 0.9),
+    Water(name: "water_nave_aisle_west", center: (71.5, 0.0), half_extents: (3.5, 17.0)),
+    Water(name: "water_nave_aisle_east", center: (100.5, 0.0), half_extents: (3.5, 17.0)),
     // The Echo Stone stands just inside the door, west of the pillar row (the nave's lone one).
     EchoStone(id: "stone_b06", pos: (72.0, 0.0, 12.0), yaw: 0.7854),
   ],

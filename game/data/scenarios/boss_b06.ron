@@ -1,0 +1,52 @@
+// The B06 boss arena (WP-074): a flat copy of the Drowned Cathedral's nave and the Drowned
+// Choir. docs/game/05-enemies-and-bosses.md, "B06 The Drowned Choir". The layout matches the
+// level (game/data/levels/mirrormere), shifted so the nave runs x in [-18, 18], z in [0, 34]:
+//   - The player spawns at (0, 0, 46) facing -Z, outside the fog gate.
+//   - The fog gate is the plane z = 36, 8 m wide, opening into the nave (-Z). The front door is
+//     x in [-4, 4]; walls close the west, east, apse, and the rest of the front.
+//   - The Choir waits at the apse end: the Cantor at (0, 0, 8), the Bellbearer 4.5 m to -X and
+//     3 m nearer the door, the Lamenter 4.5 m to +X, all facing the door (+Z).
+//   - Two rows of four pillars stand at x = +-10 (z = 7, 14, 21, 28). The side aisles beyond
+//     them (|x| in [11, 18]) are waist-deep water (0.9 m; it slows the player), where Storm
+//     deals 1.5x (a `water` zone, which the Storm Spear reads).
+(
+  spawn: (0.0, 0.0, 46.0),
+  spawn_yaw: 3.1415927,
+  kill_y: -12.0,
+  heightfield: None,
+  boxes: [
+    (name: "floor", center: (0.0, -0.5, 22.0), half_extents: (19.0, 0.5, 26.0)),
+    (name: "wall_west", center: (-19.0, 5.0, 17.0), half_extents: (1.0, 5.0, 18.0)),
+    (name: "wall_east", center: (19.0, 5.0, 17.0), half_extents: (1.0, 5.0, 18.0)),
+    (name: "wall_apse", center: (0.0, 5.0, -1.0), half_extents: (20.0, 5.0, 1.0)),
+    (name: "wall_front_west", center: (-11.5, 5.0, 35.0), half_extents: (7.5, 5.0, 1.0)),
+    (name: "wall_front_east", center: (11.5, 5.0, 35.0), half_extents: (7.5, 5.0, 1.0)),
+    (name: "pillar_w0", center: (-10.0, 3.5, 7.0), half_extents: (0.75, 3.5, 0.75)),
+    (name: "pillar_e0", center: (10.0, 3.5, 7.0), half_extents: (0.75, 3.5, 0.75)),
+    (name: "pillar_w1", center: (-10.0, 3.5, 14.0), half_extents: (0.75, 3.5, 0.75)),
+    (name: "pillar_e1", center: (10.0, 3.5, 14.0), half_extents: (0.75, 3.5, 0.75)),
+    (name: "pillar_w2", center: (-10.0, 3.5, 21.0), half_extents: (0.75, 3.5, 0.75)),
+    (name: "pillar_e2", center: (10.0, 3.5, 21.0), half_extents: (0.75, 3.5, 0.75)),
+    (name: "pillar_w3", center: (-10.0, 3.5, 28.0), half_extents: (0.75, 3.5, 0.75)),
+    (name: "pillar_e3", center: (10.0, 3.5, 28.0), half_extents: (0.75, 3.5, 0.75)),
+  ],
+  start_glimmer: 0,
+  player_weapon: Some("wpn_gray_greatsword"),
+  pools: [
+    (name: "aisle_west", center: (-14.5, 17.0), half_extents: (3.5, 17.0), depth_m: 0.9),
+    (name: "aisle_east", center: (14.5, 17.0), half_extents: (3.5, 17.0), depth_m: 0.9),
+  ],
+  water: [
+    (name: "water_aisle_west", center: (-14.5, 17.0), half_extents: (3.5, 17.0)),
+    (name: "water_aisle_east", center: (14.5, 17.0), half_extents: (3.5, 17.0)),
+  ],
+  bosses: [
+    (
+      name: "b06",
+      boss: "b06_drowned_choir",
+      pos: (0.0, 0.0, 8.0),
+      yaw: 0.0,
+      gate: (pos: (0.0, 0.0, 36.0), yaw: 3.1415927, half_width_m: 4.0, depth_m: 3.0),
+    ),
+  ],
+)

@@ -1,0 +1,122 @@
+// B06, the Drowned Choir (registry 35000-35003): three singers who drowned in their own
+// cathedral. Source: docs/game/05-enemies-and-bosses.md, "B06 The Drowned Choir" (3 x 1,800
+// HP, the Cantor / Bellbearer / Lamenter, each member immune to a different status, a new verse
+// for the survivors when a member dies, the Great Sigil of Stillwater and the Choir Glaive as
+// rewards). The Cantor is the body and the other two are required parts, so the fight ends when
+// all three are down. Defense, poise, attack, speed, option weights, and cooldowns are tuning.
+//
+// Verses: `Phase(2)` options are the verse moves (the Cantor's homing chorus, the Bellbearer's
+// charge, the Lamenter's teleport-stab). `ai::bosses::b06` raises the boss's phase to 2 the
+// moment the first member falls, so every survivor gains its move together (see that file).
+// The one `phases` entry only declares the second phase for the validator and the options: its
+// threshold (2% of the three members' HP together) is below anything the fight can show once
+// the verse hook has run, so its transition move never plays.
+#![enable(implicit_some)]
+(
+  id: "b06_drowned_choir",
+  name: "The Drowned Choir",
+  body: (
+    // The Cantor: a caster who stays at range, mends the others, and fires Radiance beams.
+    id: "b06_cantor",
+    model: "boss_choir_cantor",
+    hp: 1800,
+    poise: 120,
+    defense: (flat: 15, weakness: [(Slash, 110)]),
+    resist: (immunity: 300, robustness: 300, composure: 500),
+    immune: [Delirium],
+    glimmer: 0,
+    attack: 48,
+    stamina: 100,
+    speed_percent: 85,
+    leash_m: 80.0,
+    ignores_tokens: true,
+    moveset: "bosses/b06.ron",
+    options: [
+      (move: "b06_cantor_beam", when: [DistAbove(5.0), FacingWithin(20.0)], weight: 4, cooldown: 150),
+      (move: "b06_cantor_rebuke", when: [DistBelow(3.5), FacingWithin(40.0)], weight: 5, cooldown: 90),
+      (move: "b06_cantor_mend", when: [DistAbove(2.0)], weight: 3, cooldown: 330),
+      (move: "b06_cantor_orbs", when: [Phase(2), DistAbove(4.0), FacingWithin(40.0)], weight: 5, cooldown: 180),
+      (behavior: Retreat(dur: 24), when: [DistBelow(5.0)], weight: 4),
+      (behavior: Strafe(dur: 30), when: [DistAbove(4.0)], weight: 2),
+      (behavior: Wait(dur: 45), weight: 3),
+    ],
+  ),
+  parts: [
+    (
+      // The Bellbearer: the tank. Slow, hard to stagger, and it rings its bell to stun.
+      def: (
+        id: "b06_bellbearer",
+        model: "boss_choir_bellbearer",
+        hp: 1800,
+        poise: 300,
+        defense: (flat: 40, weakness: [(Blunt, 115)]),
+        resist: (immunity: 500, robustness: 200, composure: 400),
+        immune: [Rupture],
+        glimmer: 0,
+        attack: 48,
+        stamina: 200,
+        speed_percent: 75,
+        leash_m: 80.0,
+        ignores_tokens: true,
+        moveset: "bosses/b06.ron",
+        options: [
+          (move: "b06_bell_slam", when: [DistBelow(3.2), FacingWithin(40.0)], weight: 4, cooldown: 120),
+          (move: "b06_bell_swing_1", when: [DistBelow(3.0), FacingWithin(40.0)], weight: 3, cooldown: 140),
+          (move: "b06_bell_ring", when: [DistBelow(5.0)], weight: 3, cooldown: 240),
+          (move: "b06_bell_charge", when: [Phase(2), DistBetween(5.0, 14.0), FacingWithin(20.0)], weight: 6, cooldown: 240),
+          (behavior: Approach(dur: 25), when: [DistAbove(2.6)], weight: 4),
+          (behavior: Wait(dur: 45), when: [DistBelow(4.0)], weight: 3),
+        ],
+      ),
+      offset: (-4.5, 0.0, 3.0),
+      required: true,
+    ),
+    (
+      // The Lamenter: the fast flanker, with Rime knives and, in the verse, a teleport-stab.
+      def: (
+        id: "b06_lamenter",
+        model: "boss_choir_lamenter",
+        hp: 1800,
+        poise: 80,
+        defense: (flat: 5, weakness: [(Pierce, 110)]),
+        resist: (immunity: 400, robustness: 300, composure: 200),
+        immune: [Rime],
+        glimmer: 0,
+        attack: 48,
+        stamina: 100,
+        speed_percent: 125,
+        leash_m: 80.0,
+        ignores_tokens: true,
+        moveset: "bosses/b06.ron",
+        options: [
+          (move: "b06_lam_knives", when: [DistAbove(4.0), FacingWithin(30.0)], weight: 3, cooldown: 120),
+          (move: "b06_lam_slash_1", when: [DistBelow(2.6), FacingWithin(40.0)], weight: 4, cooldown: 100),
+          (move: "b06_lam_veilstab", when: [Phase(2), DistAbove(3.0)], weight: 5, cooldown: 240),
+          (behavior: Approach(dur: 15), when: [DistAbove(2.2)], weight: 4),
+          (behavior: Strafe(dur: 30), when: [DistBelow(6.0)], weight: 3),
+          (behavior: Wait(dur: 40), weight: 2),
+        ],
+      ),
+      offset: (4.5, 0.0, 3.0),
+      required: true,
+    ),
+  ],
+  phases: [
+    (below: 0.02, transition: "b06_verse"),
+  ],
+  rewards: (
+    glimmer: 1500,
+    items: [(item: "itm_great_sigil_choir", count: 1), (item: "wpn_choir_glaive", count: 1)],
+    codex: "b06_drowned_choir",
+  ),
+  echo_stone: true,
+  music: (intro: "boss_b06_intro", loop_stem: "boss_b06_loop", phase2_stem: "boss_b06_verse"),
+  // Numbers `ai::bosses::b06` reads (see that file). Heal and teleport values are tuning.
+  params: {
+    "mend_heal_percent": 8.0, // of each other member's max HP, when the hymn completes
+    "mend_frame": 34.0, // the frame of b06_cantor_mend on which the heal lands
+    "teleport_frame": 18.0, // the frame of b06_lam_veilstab on which the Lamenter reappears
+    "teleport_behind_m": 2.4, // how far past the player she appears, along the line from her
+    "teleport_min_m": 1.2, // the nearest she will appear to the player when a wall is in the way
+  },
+)

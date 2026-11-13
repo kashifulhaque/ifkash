@@ -257,4 +257,42 @@
     hitstop: 2,
     tags: [],
   ),
+  (
+    // WP-074, B06: the Cantor's chorus orb (verse move). Slow and steering gently, so a roll
+    // or a sidestep sheds it: 0.2 m a tick, turning 2 degrees a tick. Radiance, a Formula.
+    // Damage comes from the Cantor's `attack`. (tuning: no spec row fixes the numbers)
+    id: "proj_b06_chorus_orb",
+    speed: 6.0, // tuning
+    gravity: 0.0,
+    radius: 0.3, // tuning
+    lifetime_ticks: 150, // tuning
+    pierce: 0,
+    homing: (turn_deg_per_tick: 2.0, range_m: 25.0), // tuning
+    motion_value: 0.9, // tuning
+    phys: Neutral,
+    element: Radiance,
+    poise_damage: 14, // tuning
+    knockback: 0.3, // tuning
+    hitstop: 3, // tuning
+    tags: [],
+  ),
+  (
+    // WP-074, B06: the Lamenter's Rime knife: quick and straight, 30 Rime buildup per hit.
+    // Fired three to a throw, fanned 12 degrees apart. (tuning)
+    id: "proj_b06_rime_knife",
+    speed: 14.0, // tuning
+    gravity: 0.0,
+    radius: 0.12, // tuning
+    lifetime_ticks: 50, // tuning
+    pierce: 0,
+    homing: None,
+    motion_value: 0.6, // tuning
+    phys: Pierce,
+    element: Aether,
+    poise_damage: 8, // tuning
+    knockback: 0.2, // tuning
+    hitstop: 2, // tuning
+    tags: [],
+    status: (kind: Rime, amount: 30), // tuning
+  ),
 ]

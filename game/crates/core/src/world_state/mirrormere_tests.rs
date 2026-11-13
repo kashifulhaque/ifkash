@@ -432,8 +432,8 @@ fn the_main_route_reaches_every_lantern() {
     assert!(w.tick < 18_000, "took {} ticks", w.tick);
 }
 
-/// Every enemy the spec puts in Mirrormere is placed, the relic, the Page, the key items, and
-/// B06's Echo Stone are in the level, and B06 itself is an M7 work package.
+/// Every enemy the spec puts in Mirrormere is placed, the relic, the Page, the key items,
+/// B06's Echo Stone, and B06 itself.
 #[test]
 fn mirrormere_has_its_enemies_relics_and_echo_stone() {
     let content = Content::load_embedded().unwrap();
@@ -483,7 +483,13 @@ fn mirrormere_has_its_enemies_relics_and_echo_stone() {
     );
     let w = world();
     assert_eq!(w.echo_table.stones.len(), 1);
-    assert!(level.bosses.is_empty(), "B06 is an M7 work package");
+    // B06, the Drowned Choir (WP-074), waits in the nave behind a fog gate across its door.
+    assert_eq!(level.bosses.len(), 1);
+    let boss = &level.bosses[0];
+    assert_eq!(boss.boss, "b06_drowned_choir");
+    assert!(boss.pos[0] > 68.0 && boss.pos[0] < 104.0 && boss.pos[2] > -17.0 && boss.pos[2] < 17.0);
+    assert_eq!(w.layout.bosses.len(), 1);
+    assert_eq!(w.layout.bosses[0].members.len(), 3);
 }
 
 /// Blight water builds Blight in the Reed Marsh, and the village flood only slows.

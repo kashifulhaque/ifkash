@@ -278,8 +278,8 @@
     "start_max": 16,
     "start_min": 4
   },
-  "contentHash": "8141677234777733683",
-  "contentHashHex": "70fd0c4efecfba33",
+  "contentHash": "17799013193455976164",
+  "contentHashHex": "f702cc323c6f3ee4",
   "moves": [
     {
       "anim": "ep_sentinel_thrust",
@@ -770,6 +770,156 @@
       "stamina": 0,
       "stub": false,
       "totalFrames": 78
+    },
+    {
+      "anim": "cantor_beam",
+      "file": "moves/bosses/b06.ron",
+      "fp": 0,
+      "id": "b06_cantor_beam",
+      "num": 35100,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 102
+    },
+    {
+      "anim": "cantor_rebuke",
+      "file": "moves/bosses/b06.ron",
+      "fp": 0,
+      "id": "b06_cantor_rebuke",
+      "num": 35101,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 76
+    },
+    {
+      "anim": "cantor_mend",
+      "file": "moves/bosses/b06.ron",
+      "fp": 0,
+      "id": "b06_cantor_mend",
+      "num": 35102,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 104
+    },
+    {
+      "anim": "cantor_orbs",
+      "file": "moves/bosses/b06.ron",
+      "fp": 0,
+      "id": "b06_cantor_orbs",
+      "num": 35103,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 110
+    },
+    {
+      "anim": "choir_verse",
+      "file": "moves/bosses/b06.ron",
+      "fp": 0,
+      "id": "b06_verse",
+      "num": 35104,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 45
+    },
+    {
+      "anim": "bell_slam",
+      "file": "moves/bosses/b06.ron",
+      "fp": 0,
+      "id": "b06_bell_slam",
+      "num": 35110,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 98
+    },
+    {
+      "anim": "bell_swing_1",
+      "file": "moves/bosses/b06.ron",
+      "fp": 0,
+      "id": "b06_bell_swing_1",
+      "num": 35111,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 44
+    },
+    {
+      "anim": "bell_swing_2",
+      "file": "moves/bosses/b06.ron",
+      "fp": 0,
+      "id": "b06_bell_swing_2",
+      "num": 35112,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 90
+    },
+    {
+      "anim": "bell_ring",
+      "file": "moves/bosses/b06.ron",
+      "fp": 0,
+      "id": "b06_bell_ring",
+      "num": 35113,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 104
+    },
+    {
+      "anim": "bell_charge",
+      "file": "moves/bosses/b06.ron",
+      "fp": 0,
+      "id": "b06_bell_charge",
+      "num": 35114,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 120
+    },
+    {
+      "anim": "lamenter_knives",
+      "file": "moves/bosses/b06.ron",
+      "fp": 0,
+      "id": "b06_lam_knives",
+      "num": 35120,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 86
+    },
+    {
+      "anim": "lamenter_slash_1",
+      "file": "moves/bosses/b06.ron",
+      "fp": 0,
+      "id": "b06_lam_slash_1",
+      "num": 35121,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 28
+    },
+    {
+      "anim": "lamenter_slash_2",
+      "file": "moves/bosses/b06.ron",
+      "fp": 0,
+      "id": "b06_lam_slash_2",
+      "num": 35122,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 28
+    },
+    {
+      "anim": "lamenter_slash_3",
+      "file": "moves/bosses/b06.ron",
+      "fp": 0,
+      "id": "b06_lam_slash_3",
+      "num": 35123,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 74
+    },
+    {
+      "anim": "lamenter_veilstab",
+      "file": "moves/bosses/b06.ron",
+      "fp": 0,
+      "id": "b06_lam_veilstab",
+      "num": 35124,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 100
     },
     {
       "anim": "colossus_stomp_l",

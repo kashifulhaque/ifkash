@@ -294,6 +294,8 @@ pub fn run(world: &mut World) {
                     continue;
                 }
                 seal(world, b, pos);
+                // A boss's own mechanic (WP-074 onward; see `ai/bosses`).
+                super::bosses::tick(world, b);
                 fight(world, b);
             }
         }

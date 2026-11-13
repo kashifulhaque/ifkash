@@ -197,9 +197,10 @@ impl LfWorld {
     ///   40 mine cart set off, 41 cart arrived, 42 pushed cart broke its wall, 43 trapdoor
     ///   pushed open; WP-063: 70 mirror turned, 71 receptor lit by a beam, 72 a swing struck a
     ///   low ceiling; WP-066: 100 brazier lit, 101 sigil touched, 102 sigil sealed its doors,
-    ///   103 sigil's doors opened again), and the index of the door, lever, lift, ladder, wall,
-    ///   cart, trapdoor, mirror, receptor, low-ceiling zone, brazier, or sigil in its scenario
-    ///   list.
+    ///   103 sigil's doors opened again; WP-076: 170 a Colossus leg's stance broke, 171
+    ///   the Colossus's lava began to creep, 172 the lava burned the player), and the index of
+    ///   the door, lever, lift, ladder, wall, cart, trapdoor, mirror, receptor, low-ceiling zone, brazier, or sigil in its scenario
+    ///   list (for 170, the leg: 0 left, 1 right; for 171 and 172, the boss).
     /// - Kind 15, `Loot` (WP-042), 6 words: kind, source (1 chest), the chest's index, the
     ///   item's registry number (0 for none), how many, and Glimmer.
     /// - Kind 16, `Message` (WP-042), 2 words: kind, the message's index (see

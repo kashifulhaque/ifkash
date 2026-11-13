@@ -29,6 +29,7 @@
 pub mod attack;
 pub mod behaviors;
 pub mod boss;
+pub mod bosses;
 pub mod echo;
 pub mod options;
 pub mod pathing;
@@ -358,6 +359,7 @@ pub fn run(world: &mut World) {
     let Some(tuning) = world.ai.tuning else {
         return;
     };
+    bosses::run(world);
     boss::run(world);
     // Echoes (WP-059) have an AI brain but think on the player's side: `echo::run` drives them.
     let ids: Vec<Id> = world

@@ -83,6 +83,10 @@ pub struct MechState {
     /// The tick a Lantern Flare burns out at, 0 for none (WP-062; see `darkness`).
     #[serde(default)]
     pub flare_until: u64,
+    /// The tick B08's lava began to creep at, 0 while it is dry (WP-076; see
+    /// `ai::bosses::b08`).
+    #[serde(default)]
+    pub b08_lava_from: u64,
     /// The player let go of a ladder this tick, so the buttons that did it stay masked
     /// for the rest of the tick. Recomputed every tick, so not saved or hashed.
     #[serde(skip)]
@@ -96,6 +100,7 @@ impl MechState {
             climb: None,
             carts: vec![mine_cart::CartRun::default(); layout.carts.len()],
             flare_until: 0,
+            b08_lava_from: 0,
             suppress: false,
         }
     }
@@ -110,6 +115,7 @@ impl MechState {
                 .iter()
                 .all(|c| *c == mine_cart::CartRun::default())
             && self.flare_until == 0
+            && self.b08_lava_from == 0
     }
 }
 

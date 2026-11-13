@@ -2,6 +2,8 @@
 // registry number (game/data/registry.ron), so this table is the model lookup of
 // docs/game/07-presentation.md.
 
+import { colossusDef } from '../bosses/b08/colossus';
+import { colossusLegDef } from '../bosses/b08/legs';
 import type { ModelDef } from './model';
 import { acolyteDef } from './models/acolyte';
 import { bellWardenDef } from './models/bellWarden';
@@ -35,6 +37,8 @@ export const B01_KIND = 9011;
 
 /** Registry number of B03's body: `b03_bridgewarden_corvane_body` (the boss is 32010). */
 export const B03_KIND = 32011;
+/** Registry number of B08's body: `b08_forgeheart_colossus_body`. Its legs are the next two. */
+export const B08_KIND = 37011;
 
 const defs = new Map<number, ModelDef>([
   [7000, huskDef('husk')],
@@ -65,7 +69,11 @@ const defs = new Map<number, ModelDef>([
   [7086, foundrySmithDef],
   [7087, bellWardenDef],
   [B01_KIND, hollowSentryDef],
-  [B03_KIND, corvaneDef]
+  [B03_KIND, corvaneDef],
+  // WP-076: B08, the Forgeheart Colossus: its body, and its two legs (37010-37013).
+  [B08_KIND, colossusDef],
+  [B08_KIND + 1, colossusLegDef],
+  [B08_KIND + 2, colossusLegDef]
 ]);
 
 /** The model for an actor kind, or undefined for kinds drawn some other way (the player). */

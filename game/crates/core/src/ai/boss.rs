@@ -553,7 +553,13 @@ fn defeat(world: &mut World, b: usize) {
     if let Some(p) = world.actors.get_mut(world.player) {
         p.inventory.glimmer = p.inventory.glimmer.saturating_add(glimmer);
         for (item, count) in items {
-            p.inventory.pick_up(item, count, &world.items);
+            // A weapon joins the owned gear (one of each); `pick_up` only takes stacks and
+            // charms and armor (WP-076: B08's Forgeheart Maul).
+            if world.items.is_weapon(item) {
+                p.inventory.give_gear(item);
+            } else {
+                p.inventory.pick_up(item, count, &world.items);
+            }
         }
     }
     emit(world, b, BossEvent::DEFEATED, 0);

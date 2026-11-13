@@ -1,0 +1,134 @@
+// B08, the Forgeheart Colossus (registry 37010-37013): a forge golem as tall as the cavern,
+// its heart a furnace. Source: docs/game/05-enemies-and-bosses.md, "B08 Forgeheart Colossus"
+// (HP 7,000, two phases, phase 2 at 40%, Blunt weakness 1.2x, Fire absorbed 80%, immune to
+// Poison, Blight, and Rupture, low Rime resistance, rewards: Forgeheart Maul and Forgeheart
+// Ember). Defense, poise, attack, resist numbers, option weights, and cooldowns are tuning.
+//
+// The mechanic is in `lf_core::ai::bosses::b08`, and reads `params` below:
+//   - Each leg is a boss part with a stance meter of its own, standing at `leg_x_m` to either
+//     side of the body (the core puts it there every tick). The legs take hits like the body
+//     and pass the damage on to it, so any hit hurts the Colossus; but only a leg's stance
+//     break makes the Colossus kneel for 60 ticks, exposing its furnace to a riposte. A leg
+//     can't be broken again while the Colossus kneels.
+//   - Phase 2 ("the heart ignites"): lava creeps in from the four walls of the forge, `lava_*`
+//     below, and burns anyone standing in it. It can't pass `lava_max_m`, so a core of the
+//     arena stays dry.
+// The `*_m` edges are meters from the body's spawn, in world axes (the forge is
+// x 44..78, z 54..92 around a body at (62, 72)). The hurtbox numbers give the body and legs
+// their size: the sim's default capsule is a person's.
+#![enable(implicit_some)]
+(
+  id: "b08_forgeheart_colossus",
+  name: "The Forgeheart Colossus",
+  body: (
+    id: "b08_forgeheart_colossus_body",
+    model: "boss_forgeheart_colossus",
+    hp: 7000,
+    poise: 0,
+    stance: 0,
+    defense: (flat: 30, absorption: [(Fire, 80)], weakness: [(Blunt, 120)]),
+    // Poison and Blight are immune below, and Rupture too; Rime builds quickly (the spec's "low
+    // Rime resistance"): the player's own Robustness starts near 100, so 60 procs in a few hits.
+    resist: (immunity: 500, robustness: 60, composure: 400),
+    immune: [Poison, Blight, Rupture],
+    glimmer: 0,
+    attack: 60,
+    element_attack: (Fire, 45),
+    stamina: 0,
+    speed_percent: 40,
+    leash_m: 80.0,
+    ignores_tokens: true,
+    moveset: "bosses/b08.ron",
+    options: [
+      // Phase 1. The Colossus walks slowly toward the player and breathes or slams from afar.
+      (move: "b08_stomp_l", when: [DistBelow(6.5), FacingWithin(70.0)], weight: 4, cooldown: 150),
+      (move: "b08_sweep", when: [DistBelow(6.5), FacingWithin(70.0)], weight: 4, cooldown: 140),
+      (move: "b08_breath", when: [DistAbove(5.0), FacingWithin(40.0)], weight: 3, cooldown: 200),
+      (move: "b08_slam", when: [DistBetween(2.0, 14.0), FacingWithin(40.0)], weight: 3, cooldown: 180),
+      (behavior: Approach(dur: 20), when: [DistAbove(9.0)], weight: 6),
+      (behavior: Wait(dur: 20), weight: 1),
+      // Phase 2: the heart flare keeps legs-huggers moving, and the double breath sweeps.
+      (move: "b08_flare", when: [Phase(2), DistBelow(6.5)], weight: 4, cooldown: 240),
+      (move: "b08_breath_l", when: [Phase(2), DistAbove(5.0), FacingWithin(40.0)], weight: 3, cooldown: 260),
+    ],
+  ),
+  parts: [
+    (
+      // The left leg (x -2.4 in the body's space; the offset is in world axes, for a body
+      // that spawns facing -X, as in the forge and in boss_b08). It has no attacks: its stance meter is
+      // the point. Not required to win.
+      def: (
+        id: "b08_forgeheart_colossus_leg_l",
+        model: "boss_forgeheart_colossus_leg",
+        hp: 7000,
+        poise: 0,
+        stance: 240,
+        defense: (flat: 30, absorption: [(Fire, 80)], weakness: [(Blunt, 120)]),
+        resist: (immunity: 500, robustness: 60, composure: 400),
+        immune: [Poison, Blight, Rupture],
+        glimmer: 0,
+        speed_percent: 1,
+        leash_m: 80.0,
+        ignores_tokens: true,
+        moveset: "bosses/b08.ron",
+        options: [
+          (behavior: Wait(dur: 30), weight: 1),
+        ],
+      ),
+      offset: (0.0, 0.0, 2.4),
+      required: false,
+    ),
+    (
+      // The right leg (x +2.4 in the body's space).
+      def: (
+        id: "b08_forgeheart_colossus_leg_r",
+        model: "boss_forgeheart_colossus_leg",
+        hp: 7000,
+        poise: 0,
+        stance: 240,
+        defense: (flat: 30, absorption: [(Fire, 80)], weakness: [(Blunt, 120)]),
+        resist: (immunity: 500, robustness: 60, composure: 400),
+        immune: [Poison, Blight, Rupture],
+        glimmer: 0,
+        speed_percent: 1,
+        leash_m: 80.0,
+        ignores_tokens: true,
+        moveset: "bosses/b08.ron",
+        options: [
+          (behavior: Wait(dur: 30), weight: 1),
+        ],
+      ),
+      offset: (0.0, 0.0, -2.4),
+      required: false,
+    ),
+  ],
+  phases: [
+    (below: 0.4, transition: "b08_ignite"),
+  ],
+  rewards: (
+    glimmer: 3500,
+    items: [
+      (item: "wpn_forgeheart_maul", count: 1),
+      (item: "itm_forgeheart_ember", count: 1),
+    ],
+    codex: "b08_forgeheart_colossus",
+  ),
+  echo_stone: true,
+  music: (intro: "boss_b08_intro", loop_stem: "boss_b08_loop", phase2_stem: "boss_b08_heart"),
+  params: {
+    "leg_x_m": 2.4,
+    "leg_z_m": 0.0,
+    "body_radius_m": 1.6,
+    "body_half_height_m": 3.0,
+    "leg_radius_m": 1.0,
+    "leg_half_height_m": 1.4,
+    "lava_edge_w_m": 18.0,
+    "lava_edge_e_m": 16.0,
+    "lava_edge_s_m": 18.0,
+    "lava_edge_n_m": 20.0,
+    "lava_m_per_100_ticks": 0.5,
+    "lava_max_m": 7.0,
+    "lava_damage_percent": 3.0,
+    "lava_interval_ticks": 20.0,
+  },
+)

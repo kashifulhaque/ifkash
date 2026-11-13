@@ -687,5 +687,22 @@
     (id: "b03_combo_3", num: 32103),
     (id: "b03_sweep", num: 32104),
     (id: "b03_lunge", num: 32105),
+    // WP-076: B08, the Forgeheart Colossus, takes 37000-37999. The boss 37010, its body 37011, and
+    // its two legs 37012-37013 (parts with stance meters); its moves 37100-37119.
+    (id: "b08_forgeheart_colossus", num: 37010),
+    (id: "b08_forgeheart_colossus_body", num: 37011),
+    (id: "b08_forgeheart_colossus_leg_l", num: 37012),
+    (id: "b08_forgeheart_colossus_leg_r", num: 37013),
+    (id: "b08_stomp_l", num: 37100),
+    (id: "b08_stomp_r", num: 37101),
+    (id: "b08_sweep", num: 37102),
+    (id: "b08_breath", num: 37103),
+    (id: "b08_slam", num: 37104),
+    (id: "b08_ignite", num: 37105),
+    (id: "b08_flare", num: 37106),
+    (id: "b08_breath_l", num: 37107),
+    (id: "b08_breath_r", num: 37108),
+    (id: "b08_kneel", num: 37109),
+    (id: "b08_leg_buckle", num: 37110),
   ],
 )

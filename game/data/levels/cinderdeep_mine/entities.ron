@@ -68,13 +68,16 @@
     Chest(id: "chest_chamber", pos: (-50.0, -22.0, 88.0), yaw: 3.1415927, loot: (item: "itm_forgeglass_shard", count: 3, glimmer: 200)),
 
     // --- B08's arena: the forge (x 44..78, z 54..92) ---------------------------------------------
-    // The boss: PLACEHOLDER. B08 (the Forgeheart Colossus, an M7 work package) has no boss
-    // definition yet, so no Boss entity is placed. When it exists, add:
-    //   Boss(name: "b08", boss: "<b08 id>", pos: (62.0, -22.0, 72.0), yaw: -1.5707964,
-    //     gate: (pos: (44.0, -22.0, 82.0), yaw: 1.5707964, half_width_m: 4.0, depth_m: 3.0)),
+    // The boss: the Forgeheart Colossus (WP-076, bosses/b08_forgeheart_colossus.ron). It waits in
+    // the middle of the forge facing the gate; its legs stand 2.4 m to either side of it, and
+    // the lava of its second phase creeps in from the four walls (the `lava_edge_*` numbers in
+    // its definition are measured from this spot).
     // The fog gate is the plane x = 44 across the corridor (z 78..86), opening east into the
-    // forge. The reward, the Forgeheart Ember (itm_forgeheart_ember), goes on a pedestal behind
-    // the furnace after the fight. L10 is 45 m from the gate (about 10 s).
+    // forge. The boss pays out the Forgeheart Maul and the Forgeheart Ember
+    // (itm_forgeheart_ember) into the player's pack when it falls, as every boss does, so there is
+    // no pedestal behind the furnace. L10 is 45 m from the gate (about 10 s).
+    Boss(name: "b08", boss: "b08_forgeheart_colossus", pos: (62.0, -22.0, 72.0), yaw: -1.5707964,
+      gate: (pos: (44.0, -22.0, 82.0), yaw: 1.5707964, half_width_m: 4.0, depth_m: 3.0)),
     // The Echo Stone stands just inside the gate, in the forge's north-west corner.
     EchoStone(id: "stone_b08", pos: (48.0, -22.0, 88.0), yaw: 0.7854),
   ],

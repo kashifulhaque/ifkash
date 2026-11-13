@@ -278,8 +278,8 @@
     "start_max": 16,
     "start_min": 4
   },
-  "contentHash": "1466826265235887158",
-  "contentHashHex": "145b36b776991436",
+  "contentHash": "8141677234777733683",
+  "contentHashHex": "70fd0c4efecfba33",
   "moves": [
     {
       "anim": "ep_sentinel_thrust",
@@ -770,6 +770,116 @@
       "stamina": 0,
       "stub": false,
       "totalFrames": 78
+    },
+    {
+      "anim": "colossus_stomp_l",
+      "file": "moves/bosses/b08.ron",
+      "fp": 0,
+      "id": "b08_stomp_l",
+      "num": 37100,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 56
+    },
+    {
+      "anim": "colossus_stomp_r",
+      "file": "moves/bosses/b08.ron",
+      "fp": 0,
+      "id": "b08_stomp_r",
+      "num": 37101,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 52
+    },
+    {
+      "anim": "colossus_sweep",
+      "file": "moves/bosses/b08.ron",
+      "fp": 0,
+      "id": "b08_sweep",
+      "num": 37102,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 70
+    },
+    {
+      "anim": "colossus_breath",
+      "file": "moves/bosses/b08.ron",
+      "fp": 0,
+      "id": "b08_breath",
+      "num": 37103,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 110
+    },
+    {
+      "anim": "colossus_slam",
+      "file": "moves/bosses/b08.ron",
+      "fp": 0,
+      "id": "b08_slam",
+      "num": 37104,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 96
+    },
+    {
+      "anim": "colossus_ignite",
+      "file": "moves/bosses/b08.ron",
+      "fp": 0,
+      "id": "b08_ignite",
+      "num": 37105,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 45
+    },
+    {
+      "anim": "colossus_flare",
+      "file": "moves/bosses/b08.ron",
+      "fp": 0,
+      "id": "b08_flare",
+      "num": 37106,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 90
+    },
+    {
+      "anim": "colossus_breath_l",
+      "file": "moves/bosses/b08.ron",
+      "fp": 0,
+      "id": "b08_breath_l",
+      "num": 37107,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 70
+    },
+    {
+      "anim": "colossus_breath_r",
+      "file": "moves/bosses/b08.ron",
+      "fp": 0,
+      "id": "b08_breath_r",
+      "num": 37108,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 80
+    },
+    {
+      "anim": "colossus_kneel",
+      "file": "moves/bosses/b08.ron",
+      "fp": 0,
+      "id": "b08_kneel",
+      "num": 37109,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 60
+    },
+    {
+      "anim": "colossus_leg_buckle",
+      "file": "moves/bosses/b08.ron",
+      "fp": 0,
+      "id": "b08_leg_buckle",
+      "num": 37110,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 60
     },
     {
       "anim": "boss_swipe",

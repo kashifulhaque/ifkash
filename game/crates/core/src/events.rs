@@ -172,6 +172,14 @@ impl MechanicEvent {
     pub const MARKER_PLACED: u8 = 91;
     /// The player removed a map marker (WP-069).
     pub const MARKER_REMOVED: u8 = 92;
+    /// B08, the Forgeheart Colossus (WP-076): a leg's stance broke and the Colossus kneels,
+    /// its furnace open for a riposte. `index` is the leg: 0 the left, 1 the right.
+    pub const COLOSSUS_LEG_BROKE: u8 = 170;
+    /// B08: the heart ignited and lava began to creep in from the walls. `index` is the boss's
+    /// index in the scenario.
+    pub const COLOSSUS_LAVA_STARTED: u8 = 171;
+    /// B08: the lava burned the player. `index` is the boss's index in the scenario.
+    pub const COLOSSUS_LAVA_BURNED: u8 = 172;
 }
 
 /// The player opened a chest (`source` is always 1; pickups send `PickupEvent`), and

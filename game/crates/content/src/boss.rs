@@ -9,6 +9,8 @@
 //!
 //! Phase 1 needs no entry. `phases[0]` starts phase 2, `phases[1]` phase 3, and so on.
 
+use std::collections::BTreeMap;
+
 use serde::{Deserialize, Serialize};
 
 use crate::enemy::EnemyDef;
@@ -41,6 +43,11 @@ pub struct BossDef {
     pub echo_stone: bool,
     #[serde(default)]
     pub music: BossMusic,
+    /// Named numbers for the boss's special mechanic, read by `lf_core::ai::bosses::bNN` (the
+    /// Colossus's leg offsets, its lava's speed and damage). Empty for a boss with no
+    /// mechanic of its own. WP-076.
+    #[serde(default)]
+    pub params: BTreeMap<String, f32>,
 }
 
 fn default_intro_ticks() -> u16 {

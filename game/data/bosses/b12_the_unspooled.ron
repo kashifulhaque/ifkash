@@ -1,0 +1,94 @@
+// B12, the Unspooled (registry 41000-41001): the thing that pulled the thread, the last fight.
+// Source: docs/game/05-enemies-and-bosses.md, "B12 The Unspooled" (final, rebirth, HP 9,000 +
+// 9,000, two phases, immune to Drowse and Delirium; reward: the ending, the Courier's Letter, the
+// credits). Defense, poise, resist, attack, option weights, and cooldowns are tuning.
+//
+// Two lives. The body has 9,000 HP. Phase 2 is set at a fraction no hit leaves standing (below
+// 0.1%), so it starts at the Weaver's first death: `lf_core::ai::bosses::b12` stands the body back
+// up, the framework plays `b12_unravel` (45 ticks, invulnerable), and the module refills the 9,000
+// HP over those ticks. The second death is the defeat.
+//
+// Phase 1, the Weaver: thread lashes, loom lines, the stitching grab, and the spinning cut. Phase 2,
+// the Unspooled: a larger, many-limbed shape (a bigger hurtbox, the `p2_*` numbers) with its own
+// flurry and loom storm, the lash and the spin, and one signature move borrowed from each Great
+// Sigil boss the player defeated (B06's Radiance beam, B07's leaping slam, B09's ground flare,
+// B10's flail slam). The module keeps a borrowed option on cooldown unless its boss is beaten (its
+// `boss.<id>.defeated` flag, or the player holds its Great Sigil). The Echo Stone serves phase 1
+// only: in phase 2 the Unspooled unspools any Echo that is out (docs "Boss framework", Echo Stone).
+//
+// The module reads `params` below:
+//   - Loom lines. On frame `loom_lay_frame` of `b12_loom` the floor lights `loom_lines` parallel
+//     lines, `loom_spacing_m` apart, across the line from the Weaver to the player (the middle one
+//     through the player). `b12_loom_storm` lays the same set and a second one at right angles.
+//     Each line is `loom_half_length_m` long each way and `loom_half_width_m` wide each side. After
+//     `loom_warn_ticks` (30, the spec) a line becomes a beam for `loom_beam_ticks`; a beam takes
+//     `loom_damage_percent` of the max HP of a player standing on it, once a cast, unless they are
+//     in the i-frames of a roll.
+//   - The hurtbox: `p1_body_*` for the tall Weaver, `p2_body_*` for the Unspooled.
+#![enable(implicit_some)]
+(
+  id: "b12_the_unspooled",
+  name: "The Unspooled",
+  body: (
+    id: "b12_the_unspooled_body",
+    model: "boss_unspooled",
+    hp: 9000,
+    poise: 260,
+    stance: 0,
+    defense: (flat: 35, weakness: []),
+    resist: (immunity: 500, robustness: 500, composure: 500),
+    immune: [Drowse, Delirium],
+    glimmer: 0,
+    attack: 72,
+    stamina: 0,
+    speed_percent: 85,
+    leash_m: 80.0,
+    ignores_tokens: true,
+    moveset: "bosses/b12.ron",
+    options: [
+      // Both phases: the lash and the spin.
+      (move: "b12_lash", when: [DistBetween(1.5, 6.5), FacingWithin(35.0)], weight: 5, cooldown: 120),
+      (move: "b12_spin", when: [DistBelow(4.0)], weight: 3, cooldown: 220),
+      // Phase 1, the Weaver.
+      (move: "b12_loom", when: [Phase(1), DistAbove(2.5)], weight: 3, cooldown: 300),
+      (move: "b12_stitch", when: [Phase(1), DistBelow(2.2), FacingWithin(40.0)], weight: 3, cooldown: 260),
+      // Phase 2, the Unspooled: its own moves.
+      (move: "b12_flurry", when: [Phase(2), DistBelow(3.4), FacingWithin(45.0)], weight: 5, cooldown: 120),
+      (move: "b12_loom_storm", when: [Phase(2)], weight: 3, cooldown: 340),
+      // Phase 2: the borrowed signatures, one per Great Sigil boss (masked by the module unless
+      // that boss is beaten). Their moves are the other bosses' own.
+      (move: "b06_cantor_beam", when: [Phase(2), DistBetween(4.0, 14.0), FacingWithin(25.0)], weight: 4, cooldown: 260),
+      (move: "b07_leap_slam", when: [Phase(2), DistBetween(3.5, 9.0), FacingWithin(30.0)], weight: 4, cooldown: 260),
+      (move: "b09_gnd_flare", when: [Phase(2), DistBelow(5.0)], weight: 4, cooldown: 280),
+      (move: "b10_flail_slam", when: [Phase(2), DistBetween(3.0, 8.0), FacingWithin(40.0)], weight: 4, cooldown: 240),
+      (behavior: Approach(dur: 20), when: [DistAbove(3.0)], weight: 6),
+      (behavior: Strafe(dur: 24), when: [DistBelow(6.0)], weight: 2),
+      (behavior: Wait(dur: 14), when: [DistBelow(4.0)], weight: 1),
+    ],
+  ),
+  parts: [],
+  phases: [
+    (below: 0.001, transition: "b12_unravel"),
+  ],
+  rewards: (
+    glimmer: 8000,
+    items: [(item: "itm_couriers_letter", count: 1)],
+    codex: "b12_the_unspooled",
+  ),
+  echo_stone: true,
+  music: (intro: "boss_b12_intro", loop_stem: "boss_b12_loop", phase2_stem: "boss_b12_unspooled"),
+  params: {
+    "loom_lay_frame": 6.0,
+    "loom_lines": 3.0,
+    "loom_spacing_m": 4.0,
+    "loom_half_length_m": 18.0,
+    "loom_half_width_m": 0.6,
+    "loom_warn_ticks": 30.0,
+    "loom_beam_ticks": 9.0,
+    "loom_damage_percent": 22.0,
+    "p1_body_radius_m": 0.45,
+    "p1_body_half_height_m": 1.05,
+    "p2_body_radius_m": 1.0,
+    "p2_body_half_height_m": 1.0,
+  },
+)

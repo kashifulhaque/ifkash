@@ -52,6 +52,38 @@ pub enum Event {
     /// The Briar Stag's bramble patches grew or went (`ai::bosses::b02`, WP-070; WASM event
     /// kind 40).
     Briar(BriarEvent),
+    /// B12's loom lines were laid, became beams, or went (`ai::bosses::b12`, WP-080; WASM event
+    /// kind 50).
+    Loom(LoomEvent),
+}
+
+/// What happened to one of B12's loom lines (WASM event kind 50). `what` is one of the consts;
+/// `boss` is the boss's index in the scenario's bosses and `slot` the line's slot (0 to 5). The
+/// line runs through `center` along `dir` (a unit vector on the ground plane, x and z),
+/// `half_length` each way and `half_width` to each side; `ticks` is how long until it becomes a
+/// beam (`LAID`) or how long the beam lasts (`BEAM`), and 0 otherwise.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct LoomEvent {
+    pub what: u8,
+    pub boss: u16,
+    pub slot: u16,
+    pub center: [f32; 3],
+    pub dir: [f32; 2],
+    pub half_length: f32,
+    pub half_width: f32,
+    pub ticks: u16,
+}
+
+impl LoomEvent {
+    /// A line lit on the floor (the warning).
+    pub const LAID: u8 = 0;
+    /// The line became a beam.
+    pub const BEAM: u8 = 1;
+    /// The beam went out.
+    pub const FADED: u8 = 2;
+    /// Every line went at once, and the fight's rebirth state with them: the fight ended or
+    /// reset. `slot` is 1 if the boss was defeated and 0 for a reset.
+    pub const CLEARED: u8 = 3;
 }
 
 /// What happened to B02's bramble patches (WASM event kind 40). `what` is one of the consts;
@@ -288,6 +320,15 @@ impl MechanicEvent {
     /// B11's Exile and its image swapped places (`b11_shuffle`, WP-079); `index` is the member
     /// that cast it in the high byte and the stone the other one left, in the low byte.
     pub const EXILE_SHUFFLE: u8 = 202;
+    /// B12's Weaver died the first time and stood up as the Unspooled (WP-080); `index` is the
+    /// mask of the Great Sigil bosses whose moves it borrows (bit 0 B06, 1 B07, 2 B09, 3 B10).
+    /// WASM kind 14, sub-kinds 210-219 are B12's.
+    pub const UNSPOOLED_REBORN: u8 = 210;
+    /// A B12 loom beam hit the player; `index` is the line's slot.
+    pub const LOOM_BEAM_HIT: u8 = 211;
+    /// The Unspooled unspooled an Echo body in phase 2 (the Echo Stone serves phase 1 only);
+    /// `index` is the boss.
+    pub const ECHO_UNSPOOLED: u8 = 212;
 }
 
 /// The player opened a chest (`source` is always 1; pickups send `PickupEvent`), and

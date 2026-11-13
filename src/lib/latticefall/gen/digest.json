@@ -278,8 +278,8 @@
     "start_max": 16,
     "start_min": 4
   },
-  "contentHash": "15478451741065994869",
-  "contentHashHex": "d6ce81d9a343e275",
+  "contentHash": "12827707318717836302",
+  "contentHashHex": "b2052bd79edaec0e",
   "moves": [
     {
       "anim": "ep_sentinel_thrust",
@@ -1720,6 +1720,106 @@
       "stamina": 0,
       "stub": false,
       "totalFrames": 140
+    },
+    {
+      "anim": "b12_lash",
+      "file": "moves/bosses/b12.ron",
+      "fp": 0,
+      "id": "b12_lash",
+      "num": 41100,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 34
+    },
+    {
+      "anim": "b12_lash_2",
+      "file": "moves/bosses/b12.ron",
+      "fp": 0,
+      "id": "b12_lash_2",
+      "num": 41101,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 64
+    },
+    {
+      "anim": "b12_loom",
+      "file": "moves/bosses/b12.ron",
+      "fp": 0,
+      "id": "b12_loom",
+      "num": 41102,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 74
+    },
+    {
+      "anim": "b12_stitch",
+      "file": "moves/bosses/b12.ron",
+      "fp": 0,
+      "id": "b12_stitch",
+      "num": 41103,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 74
+    },
+    {
+      "anim": "b12_spin",
+      "file": "moves/bosses/b12.ron",
+      "fp": 0,
+      "id": "b12_spin",
+      "num": 41104,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 80
+    },
+    {
+      "anim": "b12_unravel",
+      "file": "moves/bosses/b12.ron",
+      "fp": 0,
+      "id": "b12_unravel",
+      "num": 41105,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 45
+    },
+    {
+      "anim": "b12_flurry",
+      "file": "moves/bosses/b12.ron",
+      "fp": 0,
+      "id": "b12_flurry",
+      "num": 41106,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 30
+    },
+    {
+      "anim": "b12_flurry_2",
+      "file": "moves/bosses/b12.ron",
+      "fp": 0,
+      "id": "b12_flurry_2",
+      "num": 41107,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 22
+    },
+    {
+      "anim": "b12_flurry_3",
+      "file": "moves/bosses/b12.ron",
+      "fp": 0,
+      "id": "b12_flurry_3",
+      "num": 41108,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 66
+    },
+    {
+      "anim": "b12_loom_storm",
+      "file": "moves/bosses/b12.ron",
+      "fp": 0,
+      "id": "b12_loom_storm",
+      "num": 41109,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 74
     },
     {
       "anim": "boss_swipe",

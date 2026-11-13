@@ -84,12 +84,12 @@
     Pickup(id: "starglass_f3", item: "itm_starglass", pos: (-8.2, 17.00, -7.0), interact: true),
 
     // --- B12's arena: the roof of the Spire (an octagon about 36 m across at y = 22) -----------------
-    // The boss: PLACEHOLDER. B12 (the Unspooled, an M7 work package) has no boss definition yet, so
-    // no Boss entity is placed. When it exists, add:
-    //   Boss(name: "b12", boss: "<b12 id>", pos: (0.0, 22.00, 8.0), yaw: 3.1415927,
-    //     gate: (pos: (6.5, 22.00, -5.25), yaw: 0.0, half_width_m: 1.5, depth_m: 3.0))
-    // The fog gate is the plane z = -5.25 across the corridor's opening (x 5..8), opening north onto
-    // the roof. L23 is about 20 m from the gate. The Echo Stone stands just inside it.
+    // The boss (WP-080): B12, the Unspooled, at the roof's middle facing the gate. The fog gate is the
+    // plane z = -5.25 across the corridor's opening (x 5..8), opening north onto the roof. L23 is
+    // about 20 m from the gate. The Echo Stone stands just inside it (phase 1 only). Its defeat raises
+    // `boss.b12_the_unspooled.defeated`, the ending's flag, and pays the Courier's Letter.
+    Boss(name: "b12", boss: "b12_the_unspooled", pos: (0.0, 22.00, 8.0), yaw: 3.1415927,
+      gate: (pos: (6.5, 22.00, -5.25), yaw: 0.0, half_width_m: 1.5, depth_m: 3.0)),
     EchoStone(id: "stone_b12", pos: (3.0, 22.00, -2.5), yaw: 0.7854),
   ],
 )

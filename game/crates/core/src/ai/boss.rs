@@ -55,6 +55,10 @@ pub const TRACK_STOP_TICKS: u16 = 4;
 /// How far outside the gate a Remnant drops, in meters ("just outside the fog gate",
 /// docs "Glimmer and death").
 const REMNANT_OUTSIDE_M: f32 = 1.5;
+/// A fog gate is a doorway: a player more than this many meters above or below it is on another
+/// floor, and neither walks through it nor is held back by it (WP-080: the Spire's stairs pass
+/// under B12's gate, 5 m a floor).
+const GATE_REACH_Y_M: f32 = 3.0;
 
 /// One boss in the scenario: its definition, gate, and members. Not hashed (it is built
 /// from content).
@@ -249,7 +253,10 @@ pub fn remnant_override(world: &World) -> Option<[f32; 3]> {
 /// True if a living player at `pos` has walked through the gate.
 fn through(g: &FogGate, pos: [f32; 3]) -> bool {
     let (along, across) = gate_coords(g, pos);
-    along > 0.0 && along <= g.depth_m && across.abs() <= g.half_width_m
+    along > 0.0
+        && along <= g.depth_m
+        && across.abs() <= g.half_width_m
+        && (pos[1] - g.pos[1]).abs() <= GATE_REACH_Y_M
 }
 
 /// The boss half of tick system 3: gates, intros, phases, defeat, and resets.
@@ -315,7 +322,7 @@ fn emit(world: &mut World, b: usize, kind: u8, phase: u8) {
 fn seal(world: &mut World, b: usize, pos: [f32; 3]) {
     let g = world.layout.bosses[b].gate;
     let (along, across) = gate_coords(&g, pos);
-    if along >= 0.0 || across.abs() > g.half_width_m {
+    if along >= 0.0 || across.abs() > g.half_width_m || (pos[1] - g.pos[1]).abs() > GATE_REACH_Y_M {
         return;
     }
     let n = inward(&g);

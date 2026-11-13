@@ -77,5 +77,7 @@
     (id: "itm_great_sigil_castellan", name: "Great Sigil of the Castellan", kind: Key, stack: 1),
     (id: "itm_great_sigil_matriarch", name: "Great Sigil of the Matriarch", kind: Key, stack: 1),
     (id: "itm_great_sigil_bellwright", name: "Great Sigil of the Bellwright", kind: Key, stack: 1),
+    // WP-080: B12's reward, the ending's letter: the Courier's contact links (docs/game/08-portfolio-integration.md, "Contact").
+    (id: "itm_couriers_letter", name: "The Courier's Letter", kind: Key, stack: 1),
   ],
 )

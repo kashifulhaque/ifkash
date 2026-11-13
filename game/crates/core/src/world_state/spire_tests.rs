@@ -453,7 +453,8 @@ fn route(w: &World) -> Vec<Act> {
     acts.push(Act::Rest);
     acts.push(Act::Wait(10));
     sneak(w, &mut acts, beside, FOG_SOUTH);
-    // The fog gate's plane, then one step past it (there is no boss yet, so nothing seals).
+    // The fog gate's plane, then one step past it: B12's gate seals behind the player, and the
+    // walk ends there (WP-080).
     acts.push(Act::Sneak(FOG_NORTH[0], FOG_NORTH[2]));
     acts
 }
@@ -553,6 +554,13 @@ fn walk() -> Run {
         }
         tick(&mut w, &input);
         w.events.drain();
+        // Through B12's fog gate: it sealed, and the walk is over (WP-080).
+        if w.bosses
+            .first()
+            .is_some_and(|b| b.stage != crate::ai::boss::Stage::Dormant)
+        {
+            leg = acts.len();
+        }
         for id in &w.state.ai_enemies {
             if let Some(b) = w.actors.get(*id).and_then(|a| a.ai.as_ref())
                 && b.awareness.code() > worst.code()
@@ -610,6 +618,12 @@ fn the_route_reaches_the_fog_gate() {
         p.pos,
         r.stopped_in,
         r.acts
+    );
+    // B12's gate sealed behind the player (WP-080).
+    assert!(
+        matches!(w.bosses[0].stage, crate::ai::boss::Stage::Intro { .. }),
+        "{:?}",
+        w.bosses[0].stage
     );
     assert!(
         r.worst.code() < Awareness::Aware.code(),
@@ -684,7 +698,10 @@ fn the_spire_has_its_floors_items_and_echo_stone() {
         "the stone is outside the arena: {:?}",
         stone.pos
     );
-    assert!(level.bosses.is_empty(), "B12 is an M7 work package");
+    // B12 (WP-080) stands on the roof, its gate across the corridor's opening.
+    assert_eq!(level.bosses.len(), 1);
+    assert_eq!(level.bosses[0].boss, "b12_the_unspooled");
+    assert_eq!(level.bosses[0].gate.pos, FOG_GATE);
     let w = world();
     assert_eq!(w.echo_table.stones.len(), 1);
     // Two Lanterns, L22 outside the gate and L23 on the third floor.

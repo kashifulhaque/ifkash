@@ -1,0 +1,49 @@
+// The B12 boss arena (WP-080, BossArena-v0): the roof of the Lattice Spire and the Unspooled.
+// docs/game/05-enemies-and-bosses.md, "B12 The Unspooled". The scenario keeps the level's x and z
+// (game/data/levels/spire/layout.ron: a roof about 36 m across, a low rim, four loom pillars, and
+// the stair corridor from F3 ending in the fog gate) on a flat floor at y = 0 (the level's roof is
+// at y = 22), so a position in one is the same position in the other.
+//   - The player spawns in the corridor at (6.5, 0, -8) facing +Z, outside the fog gate.
+//   - The fog gate is the plane z = -5.25 across the corridor's opening (x 5..8), opening north.
+//   - The Unspooled stands at (0, 0, 8) facing -Z (toward the gate).
+//   - The Echo Stone stands just inside the gate (phase 1 only; see the boss file).
+//   - The roof is open on every side within the rim, so every corner has two ways out.
+//   - The player carries two Great Sigils, as in the level (`spire/area.ron`), so phase 2 borrows
+//     B06's and B07's moves.
+(
+  spawn: (6.5, 0.0, -8.0),
+  spawn_yaw: 0.0,
+  kill_y: -12.0,
+  heightfield: None,
+  boxes: [
+    (name: "roof", center: (0.0, -0.5, 0.0), half_extents: (18.5, 0.5, 18.5)),
+    (name: "corridor_floor", center: (0.0, -0.5, -7.5), half_extents: (10.0, 0.5, 2.5)),
+    (name: "rim_n", center: (0.0, 0.7, 18.25), half_extents: (18.5, 0.7, 0.25)),
+    (name: "rim_s", center: (0.0, 0.7, -18.25), half_extents: (18.5, 0.7, 0.25)),
+    (name: "rim_e", center: (18.25, 0.7, 0.0), half_extents: (0.25, 0.7, 18.5)),
+    (name: "rim_w", center: (-18.25, 0.7, 0.0), half_extents: (0.25, 0.7, 18.5)),
+    (name: "corr_n0", center: (-0.5, 2.5, -5.25), half_extents: (5.5, 2.5, 0.25)),
+    (name: "corr_n1", center: (8.5, 2.5, -5.25), half_extents: (0.5, 2.5, 0.25)),
+    (name: "corr_s", center: (0.0, 2.5, -9.5), half_extents: (10.0, 2.5, 0.5)),
+    (name: "corr_e", center: (9.5, 2.5, -7.5), half_extents: (0.5, 2.5, 2.5)),
+    (name: "corr_w", center: (-6.5, 2.5, -7.5), half_extents: (0.5, 2.5, 2.0)),
+    (name: "loom_pillar_ws", center: (-12.5, 4.0, -12.5), half_extents: (1.0, 4.0, 1.0)),
+    (name: "loom_pillar_wn", center: (-12.5, 4.0, 12.5), half_extents: (1.0, 4.0, 1.0)),
+    (name: "loom_pillar_es", center: (12.5, 4.0, -12.5), half_extents: (1.0, 4.0, 1.0)),
+    (name: "loom_pillar_en", center: (12.5, 4.0, 12.5), half_extents: (1.0, 4.0, 1.0)),
+  ],
+  start_glimmer: 0,
+  player_items: ["itm_great_sigil_choir", "itm_great_sigil_castellan"],
+  bosses: [
+    (
+      name: "b12",
+      boss: "b12_the_unspooled",
+      pos: (0.0, 0.0, 8.0),
+      yaw: 3.1415927,
+      gate: (pos: (6.5, 0.0, -5.25), yaw: 0.0, half_width_m: 1.5, depth_m: 3.0),
+    ),
+  ],
+  echo_stones: [
+    (id: "stone_b12", pos: (3.0, 0.0, -2.5), yaw: 0.7854),
+  ],
+)

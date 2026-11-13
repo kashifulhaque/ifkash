@@ -241,6 +241,14 @@ impl LfWorld {
     /// - Kind 40, `Briar` (WP-070), 9 words: kind, what happened (0 a bramble patch grew, 1 one
     ///   withered, 2 every patch went), the boss's index, the patch's id, its position (3
     ///   floats), its slowing radius (a float), and how many ticks it lasts (0 for 1 and 2).
+    /// - Kind 50, `Loom` (WP-080), 12 words: kind, what happened (0 a B12 loom line was laid, 1
+    ///   it became a beam, 2 the beam went out, 3 every line went), the boss's index, the line's
+    ///   slot (0 to 5; for 3, 1 if the boss was defeated and 0 for a reset), its center (3
+    ///   floats), its direction on the ground (2 floats, x and z), its half-length and half-width
+    ///   (floats), and the ticks until it fires (for 0) or the beam lasts (for 1), else 0. Kind 51
+    ///   is reserved for B12. Mechanic sub-kinds 210 (the Weaver rose as the Unspooled; the index
+    ///   is the borrowed-move mask), 211 (a beam hit the player; the slot), and 212 (an Echo was
+    ///   unspooled; the boss) are B12's (WP-080).
     pub fn drain_events(&mut self) -> Vec<u32> {
         let mut out = Vec::new();
         for event in self.world.events.drain() {
@@ -362,6 +370,22 @@ impl LfWorld {
                         e.pos[1].to_bits(),
                         e.pos[2].to_bits(),
                         e.radius.to_bits(),
+                        u32::from(e.ticks),
+                    ]);
+                }
+                Event::Loom(e) => {
+                    out.extend([
+                        50,
+                        u32::from(e.what),
+                        u32::from(e.boss),
+                        u32::from(e.slot),
+                        e.center[0].to_bits(),
+                        e.center[1].to_bits(),
+                        e.center[2].to_bits(),
+                        e.dir[0].to_bits(),
+                        e.dir[1].to_bits(),
+                        e.half_length.to_bits(),
+                        e.half_width.to_bits(),
                         u32::from(e.ticks),
                     ]);
                 }

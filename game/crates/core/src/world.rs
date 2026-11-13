@@ -101,6 +101,10 @@ pub struct World {
     /// while a fight with B09 is on.
     #[serde(default)]
     pub b09: crate::ai::bosses::b09::State,
+    /// B12's rebirth, borrowed moves, and loom lines (WP-080; see `ai::bosses::b12`). Hashed only
+    /// while a fight with B12 is on.
+    #[serde(default)]
+    pub b12: crate::ai::bosses::b12::B12Run,
     /// Drained by the host every tick; excluded from the state hash.
     pub events: EventQueue,
 }
@@ -177,6 +181,13 @@ struct HashView<'a> {
     /// B10's beat state (WP-078), left out while at rest, for the same reason.
     #[serde(skip_serializing_if = "b10_rest")]
     b10: &'a crate::ai::bosses::b10::B10State,
+    /// Left out while no fight with B12 is on, for the same reason.
+    #[serde(skip_serializing_if = "b12_inert")]
+    b12: &'a crate::ai::bosses::b12::B12Run,
+}
+
+fn b12_inert(b12: &&crate::ai::bosses::b12::B12Run) -> bool {
+    b12.is_inert()
 }
 
 fn b10_rest(b10: &&crate::ai::bosses::b10::B10State) -> bool {
@@ -327,6 +338,7 @@ impl World {
             echo: EchoRun::default(),
             b07: crate::ai::bosses::b07::B07Run::default(),
             b09: crate::ai::bosses::b09::State::default(),
+            b12: crate::ai::bosses::b12::B12Run::default(),
             events: EventQueue::default(),
         };
         crate::world_state::mechanics::install(&mut world);
@@ -415,6 +427,7 @@ impl World {
             b07: &self.b07,
             b09: &self.b09,
             b10: &self.mech.b10,
+            b12: &self.b12,
         };
         let bytes = postcard::to_allocvec(&view).expect("world serialization cannot fail");
         xxhash_rust::xxh3::xxh3_64(&bytes)

@@ -27,6 +27,7 @@
 //! - [`b09`]: the Lamplight Matriarch's flight, drained light, and lamps (WP-077; [`run`]).
 //! - [`b10`]: the Bellwright's beat, toll, and cracking ice (WP-078; [`run`]).
 //! - [`b11`]: the Bound Exile's glyph ring, blink, image, and seal (WP-079; [`run`] and [`tick`]).
+//! - [`b12`]: the Unspooled's rebirth, borrowed moves, and loom lines (WP-080; [`run`]).
 
 pub mod b02;
 #[cfg(test)]
@@ -55,6 +56,9 @@ mod b10_tests;
 pub mod b11;
 #[cfg(test)]
 mod b11_tests;
+pub mod b12;
+#[cfg(test)]
+mod b12_tests;
 
 use crate::world::World;
 
@@ -67,6 +71,7 @@ pub fn run(world: &mut World) {
     b09::run(world);
     b10::run(world);
     b11::run(world);
+    b12::run(world);
 }
 
 /// Runs the in-fight mechanic of boss `b` (an index into `Layout::bosses`), if it has one.

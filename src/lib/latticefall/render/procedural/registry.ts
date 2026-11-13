@@ -43,6 +43,7 @@ import { eggSacDef, mossgutBroodDef } from '../bosses/b04/mossgutBrood';
 import { B09_KIND, matriarchDef } from '../bosses/b09';
 import { B10_KIND, bellwrightDef } from '../bosses/b10';
 import { B11_EXILE_KIND, B11_IMAGE_KIND, exileDef, exileImageDef } from '../bosses/b11';
+import { B12_KIND, unspooledDef } from '../bosses/b12';
 
 /**
  * Registry number of B01's body: `b01_hollow_sentry_body`. The boss definition
@@ -119,6 +120,8 @@ defs.set(B10_KIND, bellwrightDef);
 // WP-079: B11, the Bound Exile (the Exile and its image).
 defs.set(B11_EXILE_KIND, exileDef);
 defs.set(B11_IMAGE_KIND, exileImageDef);
+// WP-080: B12, the Unspooled (one body, two shapes).
+defs.set(B12_KIND, unspooledDef);
 
 /** The model for an actor kind, or undefined for kinds drawn some other way (the player). */
 export function modelForKind(kind: number): ModelDef | undefined {

@@ -6,6 +6,7 @@ import { parseDevParams } from '../dev/params';
 import { AudioEngine } from '../audio/engine';
 import { cameraOptions } from '../render/camera';
 import { BriarFx } from '../render/bosses/b02';
+import { LoomFx } from '../render/bosses/b12';
 import { digestMoveResolver } from '../render/actors/moveTable';
 import { parseSection, sectionCam } from '../render/equipment/layout';
 import { equippedFromMenuWords, type Equipped } from '../render/equipment/playerGear';
@@ -128,6 +129,9 @@ export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions
   // B02's patches, charge line and leap marker (WP-070); fed by the events and the drawn actors.
   const briar = new BriarFx(view.scene, digestMoveResolver(), view.vfx.shake);
   view.frameHooks.push((dt) => briar.update(dt));
+  // B12's loom lines (WP-080); fed by the events.
+  const loom = new LoomFx(view.scene);
+  view.frameHooks.push((dt) => loom.update(dt));
   // Draws the area's baked level when it has a manifest; the flat scenarios keep the stand-in ground.
   void view.loadLevel(scenario);
   // The armory loads only for `&dev=1&scene=armory`; its code is a separate chunk.
@@ -224,6 +228,7 @@ export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions
       audio?.handleEvents(events);
       view.vfx.handleEvents(events);
       briar.handleEvents(events);
+      loom.handleEvents(events);
       tools?.onEvents(events);
     }
   }
@@ -341,6 +346,7 @@ export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions
       tools?.dispose();
       input.detach();
       briar.dispose();
+      loom.dispose();
       view.dispose();
       world.free();
     }

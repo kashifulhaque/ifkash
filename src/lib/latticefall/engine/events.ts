@@ -33,7 +33,8 @@ export const EVENT_WORDS: Readonly<Record<number, number>> = {
   32: 3, // Quest: the giver's index, the new state (WP-068)
   33: 3, // Appearance: the Mirror's preset and dye (WP-068)
   // Kinds 34-39 are reserved for other work packages.
-  40: 9 // Briar: what happened, boss, patch slot, position, radius, ticks (WP-070)
+  40: 9, // Briar: what happened, boss, patch slot, position, radius, ticks (WP-070)
+  50: 12 // Loom: what happened, boss, line slot, center, direction, half-length, half-width, ticks (WP-080)
   // Kinds 2-9, 11, and 13 aren't decoded into events yet; the decoder skips them by length.
 };
 
@@ -114,7 +115,32 @@ export const BRIAR_CLEARED = 2;
 export const MECHANIC_BRIAR_CHARGE_STARTED = 110;
 export const MECHANIC_BRIAR_TREE_STRUCK = 111;
 
-export type GameEvent = HitEvent | PickupEvent | MechanicEvent | BriarEvent;
+/** B12's loom lines (WP-080). */
+export interface LoomEvent {
+  kind: 'loom';
+  /** 0 a line was laid (the warning), 1 it became a beam, 2 the beam went out, 3 every line went. */
+  what: number;
+  boss: number;
+  /** The line's slot, 0 to 5; for `LOOM_CLEARED`, 1 if the boss was defeated and 0 for a reset. */
+  slot: number;
+  center: [number, number, number];
+  /** Unit direction on the ground: x and z. */
+  dir: [number, number];
+  halfLength: number;
+  halfWidth: number;
+  /** Ticks until the beam (for a laid line) or of the beam (for a beam); 0 otherwise. */
+  ticks: number;
+}
+
+export const EVENT_LOOM = 50;
+export const LOOM_LAID = 0;
+export const LOOM_BEAM = 1;
+export const LOOM_FADED = 2;
+export const LOOM_CLEARED = 3;
+export const MECHANIC_UNSPOOLED_REBORN = 210;
+export const MECHANIC_LOOM_BEAM_HIT = 211;
+
+export type GameEvent = HitEvent | PickupEvent | MechanicEvent | BriarEvent | LoomEvent;
 
 const scratch = new DataView(new ArrayBuffer(4));
 function f32(bits: number): number {
@@ -159,6 +185,18 @@ export function decodeEvents(words: ArrayLike<number>): GameEvent[] {
         pos: [f32(words[i + 4]), f32(words[i + 5]), f32(words[i + 6])],
         radius: f32(words[i + 7]),
         ticks: words[i + 8] >>> 0
+      });
+    } else if (kind === EVENT_LOOM) {
+      out.push({
+        kind: 'loom',
+        what: words[i + 1] >>> 0,
+        boss: words[i + 2] >>> 0,
+        slot: words[i + 3] >>> 0,
+        center: [f32(words[i + 4]), f32(words[i + 5]), f32(words[i + 6])],
+        dir: [f32(words[i + 7]), f32(words[i + 8])],
+        halfLength: f32(words[i + 9]),
+        halfWidth: f32(words[i + 10]),
+        ticks: words[i + 11] >>> 0
       });
     }
     i += len;

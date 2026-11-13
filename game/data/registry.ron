@@ -837,5 +837,20 @@
     (id: "b11_image_blink", num: 40110),
     (id: "b11_image_beam", num: 40111),
     (id: "proj_b11_orb", num: 40200),
+    // WP-080: B12, the Unspooled, takes 41000-41999: the boss 41000, its body 41001, the Courier's
+    // Letter 41010 (the ending's reward), and its moves 41100-41199.
+    (id: "b12_the_unspooled", num: 41000),
+    (id: "b12_the_unspooled_body", num: 41001),
+    (id: "itm_couriers_letter", num: 41010),
+    (id: "b12_lash", num: 41100),
+    (id: "b12_lash_2", num: 41101),
+    (id: "b12_loom", num: 41102),
+    (id: "b12_stitch", num: 41103),
+    (id: "b12_spin", num: 41104),
+    (id: "b12_unravel", num: 41105),
+    (id: "b12_flurry", num: 41106),
+    (id: "b12_flurry_2", num: 41107),
+    (id: "b12_flurry_3", num: 41108),
+    (id: "b12_loom_storm", num: 41109),
   ],
 )

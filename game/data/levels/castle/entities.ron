@@ -14,7 +14,7 @@
 //   - door_postern (one-way, opens from the bridge): the way in for a player who beat B03;
 //   - gate_main (locked): the main gate. The gatehouse lever, just inside, opens it, and the
 //     bridge is then the first shortcut from the Barbican back to L14.
-// B03 has no boss definition yet (an M7 work package), so no Boss entity is placed.
+// B03 (Bridgewarden Corvane, WP-071) waits mid-span; the Boss entity is below, in B03's arena.
 //
 // PART 2 (WP-065) continues north from the keep landing at (0, 6, 218). The stair climbs on to
 // the third tier, a terrace at y 12 (terrain.ron): the windward court with L16 at its south end,
@@ -129,13 +129,12 @@
     Chest(id: "chest_ledge", pos: (-45.0, 2.5, 165.0), yaw: 1.5707964, loot: (item: "itm_forgeglass_shard", count: 2, glimmer: 400)),
 
     // --- B03's arena: Graymantle Bridge (x -6..6, z 0..60) -----------------------------------
-    // The boss: PLACEHOLDER. B03 (Bridgewarden Corvane, an M7 work package) has no boss
-    // definition yet, so no Boss entity is placed. When it exists, add:
-    //   Boss(name: "b03", boss: "<b03 id>", pos: (0.0, 0.0, 32.0), yaw: 3.1415927,
-    //     gate: (pos: (0.0, 0.0, 3.5), yaw: 0.0, half_width_m: 6.0, depth_m: 3.0)),
-    // The fog gate is the plane z = 3.5 across the deck, between the two pylons, opening north
-    // along the bridge; Corvane waits mid-span facing south. L14 is about 30 m from the gate.
-    // The Echo Stone stands just inside the gate, on the west side of the deck.
+    // The boss: Bridgewarden Corvane (WP-071). The fog gate is the plane z = 3.5 across the deck,
+    // between the two pylons, opening north along the bridge; Corvane waits mid-span facing south.
+    // L14 is about 30 m from the gate. The Echo Stone stands just inside the gate, on the west
+    // side of the deck.
+    Boss(name: "b03", boss: "b03_bridgewarden_corvane", pos: (0.0, 0.0, 32.0), yaw: 3.1415927,
+      gate: (pos: (0.0, 0.0, 3.5), yaw: 0.0, half_width_m: 6.0, depth_m: 3.0)),
     EchoStone(id: "stone_b03", pos: (-4.5, 0.0, 9.0), yaw: 0.4),
 
     // =========================================================================================

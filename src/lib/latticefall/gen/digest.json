@@ -278,8 +278,8 @@
     "start_max": 16,
     "start_min": 4
   },
-  "contentHash": "4589056866026710921",
-  "contentHashHex": "3faf9ae7e196e789",
+  "contentHash": "1466826265235887158",
+  "contentHashHex": "145b36b776991436",
   "moves": [
     {
       "anim": "ep_sentinel_thrust",
@@ -710,6 +710,66 @@
       "stamina": 0,
       "stub": false,
       "totalFrames": 60
+    },
+    {
+      "anim": "corvane_shield_advance",
+      "file": "moves/bosses/b03.ron",
+      "fp": 0,
+      "id": "b03_shield_advance",
+      "num": 32100,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 66
+    },
+    {
+      "anim": "corvane_combo_1",
+      "file": "moves/bosses/b03.ron",
+      "fp": 0,
+      "id": "b03_combo_1",
+      "num": 32101,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 38
+    },
+    {
+      "anim": "corvane_combo_2",
+      "file": "moves/bosses/b03.ron",
+      "fp": 0,
+      "id": "b03_combo_2",
+      "num": 32102,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 34
+    },
+    {
+      "anim": "corvane_combo_3",
+      "file": "moves/bosses/b03.ron",
+      "fp": 0,
+      "id": "b03_combo_3",
+      "num": 32103,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 72
+    },
+    {
+      "anim": "corvane_sweep_turn",
+      "file": "moves/bosses/b03.ron",
+      "fp": 0,
+      "id": "b03_sweep",
+      "num": 32104,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 72
+    },
+    {
+      "anim": "corvane_lunge_shout",
+      "file": "moves/bosses/b03.ron",
+      "fp": 0,
+      "id": "b03_lunge",
+      "num": 32105,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 78
     },
     {
       "anim": "boss_swipe",

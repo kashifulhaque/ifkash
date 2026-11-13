@@ -272,6 +272,10 @@ const EMBEDDED_MOVES: &[(&str, &str)] = &[
         "moves/arts.ron",
         include_str!("../../../data/moves/arts.ron"),
     ),
+    (
+        "moves/bosses/b03.ron",
+        include_str!("../../../data/moves/bosses/b03.ron"),
+    ),
 ];
 const EMBEDDED_WEAPONS: &[(&str, &str)] = &[
     (
@@ -605,6 +609,10 @@ const EMBEDDED_SCENARIOS: &[(&str, &str)] = &[
         "scenarios/m5_art_toll.ron",
         include_str!("../../../data/scenarios/m5_art_toll.ron"),
     ),
+    (
+        "scenarios/boss_b03.ron",
+        include_str!("../../../data/scenarios/boss_b03.ron"),
+    ),
 ];
 const EMBEDDED_BOSSES: &[(&str, &str)] = &[
     (
@@ -614,6 +622,10 @@ const EMBEDDED_BOSSES: &[(&str, &str)] = &[
     (
         "bosses/b01_hollow_sentry.ron",
         include_str!("../../../data/bosses/b01_hollow_sentry.ron"),
+    ),
+    (
+        "bosses/b03_bridgewarden_corvane.ron",
+        include_str!("../../../data/bosses/b03_bridgewarden_corvane.ron"),
     ),
 ];
 const EMBEDDED_ECHOES: &[(&str, &str)] = &[

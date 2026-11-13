@@ -1,0 +1,35 @@
+// The B03 boss arena as a standalone scenario (WP-071, `BossArena-v0`): Graymantle Bridge and
+// Bridgewarden Corvane. docs/game/05-enemies-and-bosses.md, "B03 Bridgewarden Corvane". It
+// mirrors the castle level's bridge (data/levels/castle/layout.ron), at the level's own z.
+//   - The player spawns at (0, 0, -6) facing +Z, on the cliff plaza south of the bridge.
+//   - The fog gate is the plane z = 3.5, 12 m wide (the deck), opening north along the bridge.
+//   - The deck is x in [-6, 6], z in [-1, 63], with 1.3 m parapets (x +-6, z 4..58) and two
+//     cover blocks. The parapets keep the player on the deck; the two pylons close the gate's
+//     flanks.
+//   - Corvane waits mid-span at (0, 0, 32), facing -Z (south, toward the gate).
+(
+  spawn: (0.0, 0.0, -6.0),
+  spawn_yaw: 0.0,
+  kill_y: -12.0,
+  heightfield: None,
+  boxes: [
+    (name: "plaza", center: (0.0, -0.5, -4.0), half_extents: (12.0, 0.5, 4.0)),
+    (name: "deck", center: (0.0, -0.75, 31.0), half_extents: (6.0, 0.75, 32.0)),
+    (name: "parapet_w", center: (-6.0, 0.65, 31.0), half_extents: (0.4, 0.65, 27.0)),
+    (name: "parapet_e", center: (6.0, 0.65, 31.0), half_extents: (0.4, 0.65, 27.0)),
+    (name: "pylon_w", center: (-7.95, 5.0, 1.75), half_extents: (1.55, 5.0, 1.75)),
+    (name: "pylon_e", center: (7.95, 5.0, 1.75), half_extents: (1.55, 5.0, 1.75)),
+    (name: "cover_a", center: (-2.75, 0.6, 24.75), half_extents: (0.75, 0.6, 0.75)),
+    (name: "cover_b", center: (2.75, 0.6, 36.75), half_extents: (0.75, 0.6, 0.75)),
+  ],
+  start_glimmer: 0,
+  bosses: [
+    (
+      name: "b03",
+      boss: "b03_bridgewarden_corvane",
+      pos: (0.0, 0.0, 32.0),
+      yaw: 3.1415927,
+      gate: (pos: (0.0, 0.0, 3.5), yaw: 0.0, half_width_m: 6.0, depth_m: 3.0),
+    ),
+  ],
+)

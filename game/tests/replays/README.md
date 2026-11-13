@@ -166,6 +166,11 @@ lf-tools replay record-script tests/replays/m1_movement.script --out tests/repla
   (`GUARD+LIGHT`), and the bow shoots free-aimed, locked on, drawn, and fully drawn.
   `game/crates/tools/tests/wp052_movesets.rs` checks the hits, in order, and the guard staying
   up through the spear's and shield's guard attacks.
+- `m7_b03_bot_win.lfr` and `m7_b03_idle_dies.lfr`: the WP-071 goldens on `boss_b03`, from
+  their `.script` files (written by `record_the_b03_goldens` in
+  `game/crates/core/src/ai/b03_tests.rs`). The scripted bot rolls through each of Bridgewarden
+  Corvane's hits and punishes, and beats him; a player who walks in and does nothing dies.
+  Tests in `b03_tests.rs` check both.
 
 Rehash only when a change to the simulation or the content data is intended. Review the
 old and new final hash it prints, and commit the updated file with that change.

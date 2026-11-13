@@ -1,0 +1,49 @@
+// B03, Bridgewarden Corvane (registry 32010-32019): a knight who holds the bridge out of
+// habit, and the game's parry teacher. Source: docs/game/05-enemies-and-bosses.md, "B03
+// Bridgewarden Corvane" (HP 2,200, one phase, immune to Delirium, Starglass and a Wick Bead
+// as the reward, an Echo Stone in the arena). The moves are a shield advance, a three-hit
+// halberd combo (every hit parryable, the third delayed), a sweeping turn, and a lunge
+// that punishes healing within 6 m (the `TargetHealing` option below, telegraphed by a
+// shout for 18 ticks). Defense, poise, resist, attack, stamina, option weights, and
+// cooldowns are tuning: the numbers make a duel a player can win by parrying or rolling
+// each telegraphed swing and punishing the recovery.
+#![enable(implicit_some)]
+(
+  id: "b03_bridgewarden_corvane",
+  name: "Bridgewarden Corvane",
+  body: (
+    id: "b03_bridgewarden_corvane_body",
+    model: "boss_bridgewarden_corvane",
+    hp: 2200,
+    poise: 160,
+    defense: (flat: 50, weakness: []),
+    resist: (immunity: 300, robustness: 300, composure: 300),
+    immune: [Delirium],
+    glimmer: 0,
+    attack: 105,
+    stamina: 200,
+    speed_percent: 95,
+    leash_m: 80.0,
+    ignores_tokens: true,
+    moveset: "bosses/b03.ron",
+    options: [
+      // A flask drunk within 6 m is answered with the shout and the lunge. It outweighs
+      // everything else so the punishment is reliable, and its cooldown stops a chain of them.
+      (move: "b03_lunge", when: [TargetHealing, DistBelow(6.0), FacingWithin(70.0)], weight: 30, cooldown: 100),
+      (move: "b03_combo_1", when: [DistBelow(3.2), FacingWithin(40.0)], weight: 5, cooldown: 150),
+      (move: "b03_sweep", when: [DistBelow(3.4), FacingWithin(60.0)], weight: 3, cooldown: 110),
+      (move: "b03_shield_advance", when: [DistBetween(1.6, 5.5), FacingWithin(35.0)], weight: 4, cooldown: 120),
+      (behavior: Approach(dur: 20), when: [DistAbove(2.6)], weight: 4),
+      (behavior: Wait(dur: 12), when: [DistBelow(4.0)], weight: 1),
+    ],
+  ),
+  parts: [],
+  phases: [],
+  rewards: (
+    glimmer: 900,
+    items: [(item: "itm_starglass", count: 1), (item: "itm_wick_bead", count: 1)],
+    codex: "b03_bridgewarden_corvane",
+  ),
+  echo_stone: true,
+  music: (intro: "boss_b03_intro", loop_stem: "boss_b03_loop", phase2_stem: ""),
+)

@@ -614,6 +614,8 @@ fn return_home(world: &mut World, id: Id) {
 #[cfg(test)]
 mod b01_tests;
 #[cfg(test)]
+mod b03_tests;
+#[cfg(test)]
 mod batch2_tests;
 #[cfg(test)]
 mod enemy_tests;

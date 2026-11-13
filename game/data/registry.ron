@@ -676,5 +676,16 @@
     (id: "whitewarden", num: 27001),
     (id: "bound_ring", num: 27002),
     (id: "chronicle_page_4", num: 27011), // stub page: the foundry office's desk, slot 4 (not placed yet)
+
+    // WP-071: B03, Bridgewarden Corvane, takes 32000-32999. The boss 32010, its body 32011, and
+    // its moves 32100-32105.
+    (id: "b03_bridgewarden_corvane", num: 32010),
+    (id: "b03_bridgewarden_corvane_body", num: 32011),
+    (id: "b03_shield_advance", num: 32100),
+    (id: "b03_combo_1", num: 32101),
+    (id: "b03_combo_2", num: 32102),
+    (id: "b03_combo_3", num: 32103),
+    (id: "b03_sweep", num: 32104),
+    (id: "b03_lunge", num: 32105),
   ],
 )

@@ -385,7 +385,14 @@ fn the_castle_has_its_second_half() {
         stone.pos
     );
     assert_eq!(world().echo_table.stones.len(), 2);
-    assert!(level.bosses.is_empty(), "B07 is an M7 work package");
+    // B07 is an M7 work package (WP-075); B03 (WP-071) is the bridge's boss.
+    assert!(
+        level
+            .bosses
+            .iter()
+            .all(|b| b.boss == "b03_bridgewarden_corvane"),
+        "B07 is an M7 work package"
+    );
     // Mechanics.
     let gate = level
         .doors

@@ -25,12 +25,16 @@ import { rimeWolfDef } from './models/rimeWolf';
 import { shardGolemDef } from './models/shardGolem';
 import { skeletonDef } from './models/skeleton';
 import { thornHoundDef } from './models/thornHound';
+import { corvaneDef } from '../bosses/b03/corvane';
 
 /**
  * Registry number of B01's body: `b01_hollow_sentry_body`. The boss definition
  * (`b01_hollow_sentry`, 9010) isn't an actor; the snapshot carries the body's enemy number.
  */
 export const B01_KIND = 9011;
+
+/** Registry number of B03's body: `b03_bridgewarden_corvane_body` (the boss is 32010). */
+export const B03_KIND = 32011;
 
 const defs = new Map<number, ModelDef>([
   [7000, huskDef('husk')],
@@ -60,7 +64,8 @@ const defs = new Map<number, ModelDef>([
   [7085, grayCaptainDef],
   [7086, foundrySmithDef],
   [7087, bellWardenDef],
-  [B01_KIND, hollowSentryDef]
+  [B01_KIND, hollowSentryDef],
+  [B03_KIND, corvaneDef]
 ]);
 
 /** The model for an actor kind, or undefined for kinds drawn some other way (the player). */

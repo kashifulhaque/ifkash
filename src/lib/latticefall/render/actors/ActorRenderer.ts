@@ -42,7 +42,7 @@ import {
   parsePropPreview,
   type PropPreview
 } from '../procedural';
-import { FLAG_CLOAKED, FLAG_DEAD, FLAG_HIDDEN } from '../../engine/snapshot';
+import { FLAG_CLOAKED, FLAG_DEAD, FLAG_HIDDEN, FLAG_STAGGERED } from '../../engine/snapshot';
 
 /** Where the optimized assets live (`lf-tools assets` writes them). */
 export const ACTOR_ASSET_BASE = '/latticefall/actors/';
@@ -452,7 +452,8 @@ export class ActorRenderer {
         yaw: a.yaw,
         dead: (a.flags & FLAG_DEAD) !== 0,
         hidden: (a.flags & FLAG_HIDDEN) !== 0,
-        cloaked: (a.flags & FLAG_CLOAKED) !== 0
+        cloaked: (a.flags & FLAG_CLOAKED) !== 0,
+        staggered: (a.flags & FLAG_STAGGERED) !== 0
       },
       move,
       Math.max(frameMs, 0) / 1000

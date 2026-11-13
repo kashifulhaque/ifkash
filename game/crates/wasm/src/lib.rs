@@ -197,15 +197,16 @@ impl LfWorld {
     ///   40 mine cart set off, 41 cart arrived, 42 pushed cart broke its wall, 43 trapdoor
     ///   pushed open; WP-063: 70 mirror turned, 71 receptor lit by a beam, 72 a swing struck a
     ///   low ceiling; WP-066: 100 brazier lit, 101 sigil touched, 102 sigil sealed its doors,
-    ///   103 sigil's doors opened again; WP-072: 130 egg sac destroyed, 131 weak point exposed,
-    ///   132 egg sac spawned a Crawler; WP-074: 150 the Drowned Choir sang a new verse, 151
-    ///   the Cantor's hymn healed a member, 152 the Lamenter reappeared behind the player;
+    ///   103 sigil's doors opened again; WP-070: 110 a Briar Stag charge started, 111 a charge
+    ///   struck a tree and stunned the Stag; WP-072: 130 egg sac destroyed, 131 weak point
+    ///   exposed, 132 egg sac spawned a Crawler; WP-074: 150 the Drowned Choir sang a new verse,
+    ///   151 the Cantor's hymn healed a member, 152 the Lamenter reappeared behind the player;
     ///   WP-076: 170 a Colossus leg's stance broke, 171 the Colossus's lava began to creep,
     ///   172 the lava burned the player), and the index of the door, lever, lift, ladder, wall,
     ///   cart, trapdoor, mirror, receptor, low-ceiling zone, brazier, or sigil in its scenario
-    ///   list (for 130 and 132, the egg sac's index among the boss's four parts; for 150-152,
-    ///   the Choir member's number: 0 Cantor, 1 Bellbearer, 2 Lamenter; for 170, the leg: 0
-    ///   left, 1 right; for 171 and 172, the boss).
+    ///   list (for 110 and 111, the boss's index; for 130 and 132, the egg sac's index among
+    ///   the boss's four parts; for 150-152, the Choir member's number: 0 Cantor, 1 Bellbearer,
+    ///   2 Lamenter; for 170, the leg: 0 left, 1 right; for 171 and 172, the boss).
     /// - Kind 15, `Loot` (WP-042), 6 words: kind, source (1 chest), the chest's index, the
     ///   item's registry number (0 for none), how many, and Glimmer.
     /// - Kind 16, `Message` (WP-042), 2 words: kind, the message's index (see
@@ -223,6 +224,9 @@ impl LfWorld {
     /// - Kind 32, `Quest` (WP-068), 3 words: kind, the giver's index in the scenario's NPCs,
     ///   the new state (1 taken up, 2 done).
     /// - Kind 33, `Appearance` (WP-068), 3 words: kind, the Mirror's preset, and its dye.
+    /// - Kind 40, `Briar` (WP-070), 9 words: kind, what happened (0 a bramble patch grew, 1 one
+    ///   withered, 2 every patch went), the boss's index, the patch's id, its position (3
+    ///   floats), its slowing radius (a float), and how many ticks it lasts (0 for 1 and 2).
     pub fn drain_events(&mut self) -> Vec<u32> {
         let mut out = Vec::new();
         for event in self.world.events.drain() {
@@ -333,6 +337,19 @@ impl LfWorld {
                 }
                 Event::Appearance(e) => {
                     out.extend([33, u32::from(e.preset), u32::from(e.dye)]);
+                }
+                Event::Briar(e) => {
+                    out.extend([
+                        40,
+                        u32::from(e.what),
+                        u32::from(e.boss),
+                        u32::from(e.index),
+                        e.pos[0].to_bits(),
+                        e.pos[1].to_bits(),
+                        e.pos[2].to_bits(),
+                        e.radius.to_bits(),
+                        u32::from(e.ticks),
+                    ]);
                 }
                 Event::Echo(e) => {
                     out.extend([

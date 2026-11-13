@@ -743,5 +743,17 @@
     (id: "b04_spray", num: 33104),
     (id: "b04_tear_free", num: 33105),
     (id: "proj_b04_glob", num: 33200),
+    // WP-070: B02 the Briar Stag takes 31000-31999. The boss 31000, its body 31001, and the
+    // moves 31100-31107.
+    (id: "b02_briar_stag", num: 31000),
+    (id: "b02_briar_stag_body", num: 31001),
+    (id: "b02_scrape_charge", num: 31100),
+    (id: "b02_antler_toss", num: 31101),
+    (id: "b02_leap_stomp", num: 31102),
+    (id: "b02_thorn_burst", num: 31103),
+    (id: "b02_roar", num: 31104),
+    (id: "b02_scrape_charge_2", num: 31105),
+    (id: "b02_charge_again", num: 31106),
+    (id: "b02_thorn_burst_2", num: 31107),
   ],
 )

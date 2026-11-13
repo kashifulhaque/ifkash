@@ -31,7 +31,9 @@ export const EVENT_WORDS: Readonly<Record<number, number>> = {
   // Kinds 22-30 are reserved for other work packages.
   31: 5, // Dialogue: what happened, NPC or station, its index, open topic (WP-068)
   32: 3, // Quest: the giver's index, the new state (WP-068)
-  33: 3 // Appearance: the Mirror's preset and dye (WP-068)
+  33: 3, // Appearance: the Mirror's preset and dye (WP-068)
+  // Kinds 34-39 are reserved for other work packages.
+  40: 9 // Briar: what happened, boss, patch slot, position, radius, ticks (WP-070)
   // Kinds 2-9, 11, and 13 aren't decoded into events yet; the decoder skips them by length.
 };
 
@@ -78,7 +80,41 @@ export interface PickupEvent {
   item: number;
 }
 
-export type GameEvent = HitEvent | PickupEvent;
+export const EVENT_MECHANIC = 14;
+export const EVENT_BRIAR = 40;
+
+/** What a world mechanic did (WP-042; the sub-kinds are listed on `drain_events`). */
+export interface MechanicEvent {
+  kind: 'mechanic';
+  /** 110 a Briar Stag charge started, 111 a charge struck a tree and stunned the Stag (WP-070). */
+  what: number;
+  /** The index of the door, lever, lift, and so on; for 110 and 111, the boss's index. */
+  index: number;
+}
+
+/** B02's bramble patches (WP-070). */
+export interface BriarEvent {
+  kind: 'briar';
+  /** 0 a patch grew, 1 one withered, 2 every patch went (the fight ended or reset). */
+  what: number;
+  boss: number;
+  /** The patch's id, unique among the live patches. */
+  patch: number;
+  /** Where it lies. */
+  pos: [number, number, number];
+  /** How far it slows the player, in meters. */
+  radius: number;
+  /** How long it lasts, in ticks (0 for the withering and clearing events). */
+  ticks: number;
+}
+
+export const BRIAR_SPAWNED = 0;
+export const BRIAR_FADED = 1;
+export const BRIAR_CLEARED = 2;
+export const MECHANIC_BRIAR_CHARGE_STARTED = 110;
+export const MECHANIC_BRIAR_TREE_STRUCK = 111;
+
+export type GameEvent = HitEvent | PickupEvent | MechanicEvent | BriarEvent;
 
 const scratch = new DataView(new ArrayBuffer(4));
 function f32(bits: number): number {
@@ -112,6 +148,18 @@ export function decodeEvents(words: ArrayLike<number>): GameEvent[] {
       });
     } else if (kind === EVENT_PICKUP) {
       out.push({ kind: 'pickup', index: words[i + 1] >>> 0, item: words[i + 2] >>> 0 });
+    } else if (kind === EVENT_MECHANIC) {
+      out.push({ kind: 'mechanic', what: words[i + 1] >>> 0, index: words[i + 2] >>> 0 });
+    } else if (kind === EVENT_BRIAR) {
+      out.push({
+        kind: 'briar',
+        what: words[i + 1] >>> 0,
+        boss: words[i + 2] >>> 0,
+        patch: words[i + 3] >>> 0,
+        pos: [f32(words[i + 4]), f32(words[i + 5]), f32(words[i + 6])],
+        radius: f32(words[i + 7]),
+        ticks: words[i + 8] >>> 0
+      });
     }
     i += len;
   }

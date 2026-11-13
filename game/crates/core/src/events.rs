@@ -49,6 +49,32 @@ pub enum Event {
     Quest(QuestEvent),
     /// The Mirror changed the appearance preset or the dye (WP-068; WASM event kind 33).
     Appearance(AppearanceEvent),
+    /// The Briar Stag's bramble patches grew or went (`ai::bosses::b02`, WP-070; WASM event
+    /// kind 40).
+    Briar(BriarEvent),
+}
+
+/// What happened to B02's bramble patches (WASM event kind 40). `what` is one of the consts;
+/// `boss` is the boss's index in the scenario's bosses, `index` the patch's id (unique
+/// among the patches on the ground, see `World::briar_patches`), `pos` where it lies, `radius` how far it slows, and `ticks`
+/// how long it lasts (0 for `FADED` and `CLEARED`).
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct BriarEvent {
+    pub what: u8,
+    pub boss: u16,
+    pub index: u16,
+    pub pos: [f32; 3],
+    pub radius: f32,
+    pub ticks: u16,
+}
+
+impl BriarEvent {
+    /// A patch grew.
+    pub const SPAWNED: u8 = 0;
+    /// A patch ran out of time and withered.
+    pub const FADED: u8 = 1;
+    /// Every patch went at once: the fight ended or reset.
+    pub const CLEARED: u8 = 2;
 }
 
 /// What happened to a conversation (WASM event kind 31). `what` is one of the consts;
@@ -189,6 +215,12 @@ impl MechanicEvent {
     /// The Lamenter reappeared behind the player after fading (WP-074); `index` is her
     /// member number (2).
     pub const CHOIR_TELEPORT: u8 = 152;
+    /// A Briar Stag charge started (WP-070); `index` is the boss's index. The renderer
+    /// kicks up dust and the camera rumbles.
+    pub const BRIAR_CHARGE_STARTED: u8 = 110;
+    /// A Briar Stag charge ran into a tree or a hedge and stunned the Stag (WP-070);
+    /// `index` is the boss's index.
+    pub const BRIAR_TREE_STRUCK: u8 = 111;
 }
 
 /// The player opened a chest (`source` is always 1; pickups send `PickupEvent`), and

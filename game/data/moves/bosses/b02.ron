@@ -1,0 +1,271 @@
+// Moves for B02, the Briar Stag (registry 31100-31199). Source:
+// docs/game/05-enemies-and-bosses.md, "B02 The Briar Stag": hoof scrape then a charge along a
+// straight line (scrapes twice, 30 ticks), antler toss, leap stomp (shadow marker), thorn
+// burst (bristles for 36 ticks, then a Rupture aura). Phase 2: charges chain twice, and the
+// thorn burst leaves bramble patches that slow. Damage comes from the body's `attack`, so
+// `motion_value` is the only multiplier. Every attack telegraphs for at least 12 frames and
+// every combo ends in at least 20 frames of recovery (checked by `lf_content::boss::check`).
+// Hit and frame numbers are tuning.
+//
+// Two vfx names are read by the core (`lf_core::ai::bosses::b02`), not only by the renderer:
+//   "stag_charge"      from this frame on the move is a charge: a solid thing in the way
+//                      (a tree, a hedge) stops the Stag and stuns it for 60 ticks.
+//   "bramble_patches"  on this frame the move leaves bramble patches around the Stag.
+// "shadow_marker" (leap stomp) and "thorns_bristle" (thorn burst) are the renderer's telegraph.
+#![enable(implicit_some)]
+[
+  (
+    // Phase 1 charge. Scrapes the ground twice (frames 4-14 and 16-28), then runs 17 m in a
+    // straight line over frames 30-62 (16 m/s) and skids to a stop. Tracking ends 4 frames
+    // before the first active frame (the core enforces that), so the line is fixed while it
+    // scrapes. The recovery after the last hit is 43 frames.
+    id: "b02_scrape_charge",
+    anim: "stag_charge",
+    total_frames: 106,
+    stamina: 0,
+    fp: 0,
+    root_motion: [(0, 0.0), (30, 0.0), (62, 17.0), (72, 18.2), (106, 18.2)],
+    track_deg_per_tick: 6.0,
+    hyperarmor: (from: 28, to: 72),
+    iframes: None,
+    cancel_attack_from: None,
+    cancel_dodge_from: None,
+    cancel_any_from: None,
+    next_chain: None,
+    hitboxes: [
+      (
+        frames: (32, 62),
+        shape: Capsule(a: (0.0, 0.8, 0.5), b: (0.0, 1.2, 1.7), radius: 0.9),
+        motion_value: 1.8,
+        phys: Blunt,
+        element: None,
+        poise_damage: 60,
+        status: [],
+        knockback: 1.4,
+        hitstop: 6,
+        tags: [],
+      ),
+    ],
+    sfx: [(6, "hoof_scrape"), (18, "hoof_scrape"), (30, "stag_snort")],
+    vfx: [(8, "dust_scrape"), (20, "dust_scrape"), (30, "stag_charge"), (32, "dust_charge")],
+  ),
+  (
+    // Antler toss at close range: the head dips (frames 4-20), then heaves up and across.
+    id: "b02_antler_toss",
+    anim: "stag_toss",
+    total_frames: 66,
+    stamina: 0,
+    fp: 0,
+    root_motion: [(0, 0.0), (14, 0.0), (20, 0.6), (66, 0.6)],
+    track_deg_per_tick: 5.0,
+    hyperarmor: None,
+    iframes: None,
+    cancel_attack_from: None,
+    cancel_dodge_from: None,
+    cancel_any_from: None,
+    next_chain: None,
+    hitboxes: [
+      (
+        frames: (20, 24),
+        shape: Capsule(a: (-1.0, 0.6, 0.8), b: (1.0, 1.7, 1.9), radius: 0.7),
+        motion_value: 1.5,
+        phys: Pierce,
+        element: None,
+        poise_damage: 50,
+        status: [],
+        knockback: 1.6,
+        hitstop: 6,
+        tags: [],
+      ),
+    ],
+    sfx: [(10, "stag_snort"), (20, "swing_heavy")],
+    vfx: [(4, "antler_glint")],
+  ),
+  (
+    // Leap stomp. A shadow marker shows where it will land (the renderer draws it from frame
+    // 2 to the landing); it rears, leaps 6.5 m over frames 10-30, and lands on the marker.
+    id: "b02_leap_stomp",
+    anim: "stag_leap",
+    total_frames: 80,
+    stamina: 0,
+    fp: 0,
+    root_motion: [(0, 0.0), (10, 0.0), (30, 6.5), (80, 6.5)],
+    track_deg_per_tick: 5.0,
+    hyperarmor: None,
+    iframes: None,
+    cancel_attack_from: None,
+    cancel_dodge_from: None,
+    cancel_any_from: None,
+    next_chain: None,
+    hitboxes: [
+      (
+        frames: (30, 33),
+        shape: Sphere(center: (0.0, 0.4, 0.5), radius: 2.6),
+        motion_value: 1.9,
+        phys: Blunt,
+        element: None,
+        poise_damage: 70,
+        status: [],
+        knockback: 1.2,
+        hitstop: 7,
+        tags: [],
+      ),
+    ],
+    sfx: [(8, "stag_leap"), (30, "stomp_heavy")],
+    vfx: [(2, "shadow_marker"), (30, "dust_stomp")],
+  ),
+  (
+    // Thorn burst. The thorns bristle for 36 frames, then a Rupture aura bursts 3.4 m out.
+    // Roll away, or through it.
+    id: "b02_thorn_burst",
+    anim: "stag_thorn_burst",
+    total_frames: 90,
+    stamina: 0,
+    fp: 0,
+    root_motion: [(0, 0.0), (90, 0.0)],
+    track_deg_per_tick: 0.0,
+    hyperarmor: (from: 0, to: 40),
+    iframes: None,
+    cancel_attack_from: None,
+    cancel_dodge_from: None,
+    cancel_any_from: None,
+    next_chain: None,
+    hitboxes: [
+      (
+        frames: (36, 40),
+        shape: Sphere(center: (0.0, 0.9, 0.0), radius: 3.4),
+        motion_value: 1.0,
+        phys: Pierce,
+        element: None,
+        poise_damage: 30,
+        status: [(kind: Rupture, amount: 60)],
+        knockback: 0.8,
+        hitstop: 5,
+        tags: [],
+      ),
+    ],
+    sfx: [(2, "thorns_rattle"), (36, "thorn_burst")],
+    vfx: [(2, "thorns_bristle"), (36, "rupture_aura")],
+  ),
+  (
+    // The phase 2 transition: the Stag rears and its thorns grow. No attack, invulnerable
+    // throughout.
+    id: "b02_roar",
+    anim: "stag_roar",
+    total_frames: 45,
+    stamina: 0,
+    fp: 0,
+    root_motion: [(0, 0.0), (45, 0.0)],
+    track_deg_per_tick: 0.0,
+    hyperarmor: None,
+    iframes: (from: 0, to: 44),
+    cancel_attack_from: None,
+    cancel_dodge_from: None,
+    cancel_any_from: None,
+    next_chain: None,
+    hitboxes: [],
+    sfx: [(0, "boss_roar")],
+    vfx: [(0, "aura_phase"), (10, "thorns_grow")],
+  ),
+  (
+    // Phase 2 charge, first run: a shorter scrape (frames 4-22), a 14 m run over frames 26-54,
+    // and a short skid, then the Stag turns for the second run. It chains into
+    // `b02_charge_again`.
+    id: "b02_scrape_charge_2",
+    anim: "stag_charge_2",
+    total_frames: 72,
+    stamina: 0,
+    fp: 0,
+    root_motion: [(0, 0.0), (26, 0.0), (54, 14.0), (62, 14.8), (72, 14.8)],
+    track_deg_per_tick: 6.0,
+    hyperarmor: (from: 24, to: 72),
+    iframes: None,
+    cancel_attack_from: None,
+    cancel_dodge_from: None,
+    cancel_any_from: None,
+    next_chain: "b02_charge_again",
+    hitboxes: [
+      (
+        frames: (28, 54),
+        shape: Capsule(a: (0.0, 0.8, 0.5), b: (0.0, 1.2, 1.9), radius: 1.0),
+        motion_value: 1.8,
+        phys: Blunt,
+        element: None,
+        poise_damage: 60,
+        status: [],
+        knockback: 1.4,
+        hitstop: 6,
+        tags: [],
+      ),
+    ],
+    sfx: [(6, "hoof_scrape"), (26, "stag_snort")],
+    vfx: [(8, "dust_scrape"), (26, "stag_charge"), (28, "dust_charge")],
+  ),
+  (
+    // Phase 2 charge, second run: the Stag swings round (tracking turns it up to 10 degrees a
+    // frame until 4 frames before the hit), scrapes once more, and charges again. The combo
+    // ends with a 55-frame punish window.
+    id: "b02_charge_again",
+    anim: "stag_charge_again",
+    total_frames: 110,
+    stamina: 0,
+    fp: 0,
+    root_motion: [(0, 0.0), (26, 0.0), (54, 14.0), (64, 14.8), (110, 14.8)],
+    track_deg_per_tick: 10.0,
+    hyperarmor: (from: 24, to: 64),
+    iframes: None,
+    cancel_attack_from: None,
+    cancel_dodge_from: None,
+    cancel_any_from: None,
+    next_chain: None,
+    hitboxes: [
+      (
+        frames: (28, 54),
+        shape: Capsule(a: (0.0, 0.8, 0.5), b: (0.0, 1.2, 1.9), radius: 1.0),
+        motion_value: 2.0,
+        phys: Blunt,
+        element: None,
+        poise_damage: 60,
+        status: [],
+        knockback: 1.4,
+        hitstop: 6,
+        tags: [],
+      ),
+    ],
+    sfx: [(8, "hoof_scrape"), (26, "stag_snort")],
+    vfx: [(8, "dust_scrape"), (26, "stag_charge"), (28, "dust_charge")],
+  ),
+  (
+    // Phase 2 thorn burst: longer thorns, a wider aura (4 m), and bramble patches on the
+    // ground where it burst (frame 38). The patches slow the player for 20 s.
+    id: "b02_thorn_burst_2",
+    anim: "stag_thorn_burst_2",
+    total_frames: 96,
+    stamina: 0,
+    fp: 0,
+    root_motion: [(0, 0.0), (96, 0.0)],
+    track_deg_per_tick: 0.0,
+    hyperarmor: (from: 0, to: 40),
+    iframes: None,
+    cancel_attack_from: None,
+    cancel_dodge_from: None,
+    cancel_any_from: None,
+    next_chain: None,
+    hitboxes: [
+      (
+        frames: (36, 40),
+        shape: Sphere(center: (0.0, 0.9, 0.0), radius: 4.0),
+        motion_value: 1.1,
+        phys: Pierce,
+        element: None,
+        poise_damage: 30,
+        status: [(kind: Rupture, amount: 60)],
+        knockback: 0.8,
+        hitstop: 5,
+        tags: [],
+      ),
+    ],
+    sfx: [(2, "thorns_rattle"), (36, "thorn_burst")],
+    vfx: [(2, "thorns_bristle"), (36, "rupture_aura"), (38, "bramble_patches")],
+  ),
+]

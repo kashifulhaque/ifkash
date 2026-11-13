@@ -28,6 +28,11 @@ export interface ModelDef {
   death(u: number): Pose;
   /** Rotation axis for the whole-body fall: 'x' tips back, 'z' tips onto the side. */
   fallAxis: 'x' | 'z';
+  /**
+   * Optional pose while the actor is locked out and not in a move (a stagger, a stance break, a
+   * stun): `t` is seconds in that state. Models without it keep their idle.
+   */
+  stagger?(t: number): Pose;
   /** Optional per-frame hook after the pose is applied (an arrow vanishing, a lantern flaring). */
   tick?(rig: Rig, ctx: { frame: number; total: number; inMove: boolean; anim: string }): void;
 }

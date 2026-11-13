@@ -324,7 +324,11 @@ fn the_verge_has_its_enemies_and_relics() {
     ] {
         assert!(codex.contains(&entry), "no pickup unlocks {entry}");
     }
-    assert!(level.bosses.is_empty(), "B02 is an M7 work package");
+    // B02 the Briar Stag holds the Thicket (WP-070), behind a fog gate on the plane x = 112.
+    assert_eq!(level.bosses.len(), 1);
+    assert_eq!(level.bosses[0].boss, "b02_briar_stag");
+    assert_eq!(level.bosses[0].gate.pos, [112.0, 0.0, -80.0]);
+    assert!(level.echo_stones.iter().any(|s| s.id == "stone_b02"));
 }
 
 /// Writes `game/tests/replays/m4_verge.script`. See the module comment.

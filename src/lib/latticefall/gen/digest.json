@@ -278,8 +278,8 @@
     "start_max": 16,
     "start_min": 4
   },
-  "contentHash": "8775820314139045311",
-  "contentHashHex": "79c9fa1454ea2dbf",
+  "contentHash": "1821550242565817944",
+  "contentHashHex": "1947724b6ca98658",
   "moves": [
     {
       "anim": "ep_sentinel_thrust",
@@ -710,6 +710,86 @@
       "stamina": 0,
       "stub": false,
       "totalFrames": 60
+    },
+    {
+      "anim": "stag_charge",
+      "file": "moves/bosses/b02.ron",
+      "fp": 0,
+      "id": "b02_scrape_charge",
+      "num": 31100,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 106
+    },
+    {
+      "anim": "stag_toss",
+      "file": "moves/bosses/b02.ron",
+      "fp": 0,
+      "id": "b02_antler_toss",
+      "num": 31101,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 66
+    },
+    {
+      "anim": "stag_leap",
+      "file": "moves/bosses/b02.ron",
+      "fp": 0,
+      "id": "b02_leap_stomp",
+      "num": 31102,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 80
+    },
+    {
+      "anim": "stag_thorn_burst",
+      "file": "moves/bosses/b02.ron",
+      "fp": 0,
+      "id": "b02_thorn_burst",
+      "num": 31103,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 90
+    },
+    {
+      "anim": "stag_roar",
+      "file": "moves/bosses/b02.ron",
+      "fp": 0,
+      "id": "b02_roar",
+      "num": 31104,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 45
+    },
+    {
+      "anim": "stag_charge_2",
+      "file": "moves/bosses/b02.ron",
+      "fp": 0,
+      "id": "b02_scrape_charge_2",
+      "num": 31105,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 72
+    },
+    {
+      "anim": "stag_charge_again",
+      "file": "moves/bosses/b02.ron",
+      "fp": 0,
+      "id": "b02_charge_again",
+      "num": 31106,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 110
+    },
+    {
+      "anim": "stag_thorn_burst_2",
+      "file": "moves/bosses/b02.ron",
+      "fp": 0,
+      "id": "b02_thorn_burst_2",
+      "num": 31107,
+      "stamina": 0,
+      "stub": false,
+      "totalFrames": 96
     },
     {
       "anim": "corvane_shield_advance",

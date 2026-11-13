@@ -1,0 +1,48 @@
+// The B02 boss arena (WP-070), the `BossArena-v0` scenario: the Verge's Briar Thicket and the
+// Briar Stag, in the Verge's own coordinates so the fight plays the same here as in the level.
+// docs/game/05-enemies-and-bosses.md, "B02 The Briar Stag"; `levels/verge/layout.ron` for the
+// hedges and clumps.
+//   - The player spawns at (100, 0, -80) facing +X, on the approach, outside the fog gate.
+//   - The fog gate is the plane x = 112, 12 m wide, opening east into the arena (+X).
+//   - The arena is x in [112, 172], z in [-108, -52]; the Stag waits at (150, 0, -80) facing
+//     the gate (-X).
+//   - A hedge ring, 4 m tall, closes the arena; two hedges flank the gate (the gap between
+//     them is the gate, so it opens onto the arena and nowhere else).
+//   - Five briar clumps (2 x 3 x 2 m) stand in the arena. A charge that runs into one, or into
+//     a hedge, stuns the Stag for 60 ticks.
+//   - The Echo Stone stands just inside the gate at (118, 0, -92).
+(
+  spawn: (100.0, 0.0, -80.0),
+  spawn_yaw: 1.5707964,
+  kill_y: -12.0,
+  heightfield: None,
+  boxes: [
+    (name: "floor", center: (136.0, -0.5, -80.0), half_extents: (40.0, 0.5, 30.0)),
+    (name: "briar_n", center: (142.0, 2.0, -51.0), half_extents: (31.0, 2.0, 1.0)),
+    (name: "briar_s", center: (142.0, 2.0, -109.0), half_extents: (31.0, 2.0, 1.0)),
+    (name: "briar_e", center: (173.0, 2.0, -80.0), half_extents: (1.0, 2.0, 30.0)),
+    (name: "briar_w_s", center: (111.0, 2.0, -97.0), half_extents: (1.0, 2.0, 11.0)),
+    (name: "briar_w_n", center: (111.0, 2.0, -63.0), half_extents: (1.0, 2.0, 11.0)),
+    (name: "approach_n", center: (100.0, 2.0, -52.0), half_extents: (12.0, 2.0, 1.0)),
+    (name: "approach_s", center: (100.0, 2.0, -108.0), half_extents: (12.0, 2.0, 1.0)),
+    (name: "approach_w", center: (88.0, 2.0, -80.0), half_extents: (1.0, 2.0, 29.0)),
+    (name: "clump_a", center: (130.0, 1.5, -70.0), half_extents: (1.0, 1.5, 1.0)),
+    (name: "clump_b", center: (150.0, 1.5, -92.0), half_extents: (1.0, 1.5, 1.0)),
+    (name: "clump_c", center: (148.0, 1.5, -66.0), half_extents: (1.0, 1.5, 1.0)),
+    (name: "clump_d", center: (130.0, 1.5, -94.0), half_extents: (1.0, 1.5, 1.0)),
+    (name: "clump_e", center: (162.0, 1.5, -80.0), half_extents: (1.0, 1.5, 1.0)),
+  ],
+  start_glimmer: 0,
+  echo_stones: [
+    (id: "stone_b02", pos: (118.0, 0.0, -92.0), yaw: 0.7854),
+  ],
+  bosses: [
+    (
+      name: "b02",
+      boss: "b02_briar_stag",
+      pos: (150.0, 0.0, -80.0),
+      yaw: -1.5707964,
+      gate: (pos: (112.0, 0.0, -80.0), yaw: 1.5707964, half_width_m: 6.0, depth_m: 2.0),
+    ),
+  ],
+)

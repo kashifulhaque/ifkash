@@ -28,6 +28,8 @@ export interface ActorFrame {
   hidden?: boolean;
   /** Shimmering and still: drawn faint (the snapshot's `CLOAKED` flag). */
   cloaked?: boolean;
+  /** Locked out (the snapshot's `STAGGERED` flag): a model with a `stagger` pose plays it. */
+  staggered?: boolean;
 }
 
 /** Opacity of a cloaked enemy: enough to catch the eye against a plain wall, no more. */
@@ -61,6 +63,8 @@ export class ProceduralActor {
   private idleT: number;
   private last: [number, number, number] | null = null;
   private deathT = 0;
+  /** Seconds the actor has been staggered with no move, for `ModelDef.stagger`. */
+  private staggerT = 0;
   /** Hitstop: seconds left in which the drawn pose is frozen. */
   hold = 0;
 
@@ -113,6 +117,10 @@ export class ProceduralActor {
       this.deathT = 0;
       this.rig.root.rotation.set(0, 0, 0);
       this.rig.root.position.y = 0;
+      if (a.staggered && !move && def.stagger) {
+        this.staggerT += dt;
+        pose = overlayPose(pose, def.stagger(this.staggerT), smooth(this.staggerT / 0.12));
+      } else this.staggerT = 0;
       if (move) {
         const c = findChoreo(def, move.anim);
         const f = Math.max(0, move.frame);

@@ -68,8 +68,6 @@
     // --- The Briar Thicket approach and arena --------------------------------------------------
     Enemy(name: "hound_lane_a", enemy: "thorn_hound", pos: (96.0, 0.0, -78.0), yaw: 1.5707964),
     Enemy(name: "hound_lane_b", enemy: "thorn_hound", pos: (100.0, 0.0, -83.0), yaw: 1.5707964),
-    Enemy(name: "husk_arena_a", enemy: "husk", pos: (150.0, 0.0, -78.0), yaw: -1.5707964),
-    Enemy(name: "husk_arena_b", enemy: "husk", pos: (140.0, 0.0, -100.0), yaw: -1.5707964),
 
     // --- The Spire Approach ----------------------------------------------------------------------
     Enemy(name: "husk_spire_a", enemy: "husk", pos: (12.0, 0.0, 90.0), yaw: 3.1415927),
@@ -101,11 +99,17 @@
     Pickup(id: "oil_mossgut", item: "itm_spark_oil", pos: (-26.0, 0.0, 60.0), count: 2, interact: true),
 
     // --- B02's arena: the Briar Thicket (x 112..172, z -108..-52) --------------------------------------------
-    // PLACEHOLDER: B02 (the Briar Stag, an M7 work package) has no boss definition yet, so
-    // no Boss entity is placed. When it exists, add:
-    //   Boss(name: "b02", boss: "<b02 id>", pos: (150.0, 0.0, -80.0), yaw: -1.5707964,
-    //     gate: (pos: (112.0, 0.0, -80.0), yaw: 1.5707964, half_width_m: 6.0, depth_m: 2.0)),
-    // The fog gate is the plane x = 112, 12 m wide, opening east into the arena. The Stag
-    // waits at (150, 0, -80) facing the gate; the hedges and five clumps are in layout.ron.
+    // B02, the Briar Stag (WP-070). The fog gate is the plane x = 112, 12 m wide, opening east
+    // into the arena. The Stag waits at (150, 0, -80) facing the gate; the hedges and five
+    // clumps (the trees its charge can hit) are in layout.ron. The Echo Stone stands just
+    // inside the gate.
+    Boss(
+      name: "b02",
+      boss: "b02_briar_stag",
+      pos: (150.0, 0.0, -80.0),
+      yaw: -1.5707964,
+      gate: (pos: (112.0, 0.0, -80.0), yaw: 1.5707964, half_width_m: 6.0, depth_m: 2.0),
+    ),
+    EchoStone(id: "stone_b02", pos: (118.0, 0.0, -92.0), yaw: 0.7854),
   ],
 )

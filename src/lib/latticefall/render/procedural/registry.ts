@@ -4,6 +4,7 @@
 
 import { colossusDef } from '../bosses/b08/colossus';
 import { colossusLegDef } from '../bosses/b08/legs';
+import { B02_KIND, briarStagDef } from '../bosses/b02/briarStag';
 import type { ModelDef } from './model';
 import { acolyteDef } from './models/acolyte';
 import { bellWardenDef } from './models/bellWarden';
@@ -81,7 +82,9 @@ const defs = new Map<number, ModelDef>([
   [33002, eggSacDef],
   [33003, eggSacDef],
   [33004, eggSacDef],
-  [33005, eggSacDef]
+  [33005, eggSacDef],
+  // WP-070: B02, the Briar Stag.
+  [B02_KIND, briarStagDef]
 ]);
 
 // WP-074: B06, the Drowned Choir (three bodies).

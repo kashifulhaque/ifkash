@@ -5,6 +5,8 @@ import { InputController, ReplayRecorder, downloadBytes, encodeReplay } from '..
 import { parseDevParams } from '../dev/params';
 import { AudioEngine } from '../audio/engine';
 import { cameraOptions } from '../render/camera';
+import { BriarFx } from '../render/bosses/b02';
+import { digestMoveResolver } from '../render/actors/moveTable';
 import { parseSection, sectionCam } from '../render/equipment/layout';
 import { equippedFromMenuWords, type Equipped } from '../render/equipment/playerGear';
 import type { DevTools } from '../dev';
@@ -123,6 +125,9 @@ export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions
     },
     dev.active ? dev : null
   );
+  // B02's patches, charge line and leap marker (WP-070); fed by the events and the drawn actors.
+  const briar = new BriarFx(view.scene, digestMoveResolver(), view.vfx.shake);
+  view.frameHooks.push((dt) => briar.update(dt));
   // Draws the area's baked level when it has a manifest; the flat scenarios keep the stand-in ground.
   void view.loadLevel(scenario);
   // The armory loads only for `&dev=1&scene=armory`; its code is a separate chunk.
@@ -217,6 +222,7 @@ export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions
     if (events.length) {
       audio?.handleEvents(events);
       view.vfx.handleEvents(events);
+      briar.handleEvents(events);
       tools?.onEvents(events);
     }
   }
@@ -253,6 +259,7 @@ export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions
       input.updateLook(frameMs);
       view.setCamera(input.cameraYaw, input.cameraPitch);
       const drawn = snapshots.interpolate(alpha);
+      briar.setActors(drawn);
       tools?.beforeRender(drawn);
       view.render(drawn, frameMs, loop.isPaused);
       // The first drawn actor is the player; the listener follows it and the camera's yaw.
@@ -332,6 +339,7 @@ export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions
       audio?.dispose();
       tools?.dispose();
       input.detach();
+      briar.dispose();
       view.dispose();
       world.free();
     }

@@ -1,0 +1,61 @@
+// B02, the Briar Stag (registry 31000-31099): a field boss in the Verge's Briar Thicket.
+// Source: docs/game/05-enemies-and-bosses.md, "B02 The Briar Stag" (HP 2,600, two phases, the
+// second at 50%, immune to Rupture, a Briar Axe and three Bloodbloom Oil as rewards, an Echo
+// Stone in the arena). The special rules (a charge that hits a tree stuns it for 60 ticks;
+// bramble patches that slow) are in `lf_core::ai::bosses::b02`. Defense, poise, resist,
+// attack, speed, option weights, cooldowns, and the Glimmer reward are tuning.
+//
+// Phase 1 charges once (`b02_scrape_charge`) and bursts thorns. Phase 2 starts at 50% with a
+// 45-tick roar (`b02_roar`), after which it charges twice in a row (`b02_scrape_charge_2`
+// into `b02_charge_again`) and its thorn burst leaves bramble patches (`b02_thorn_burst_2`).
+// The antler toss and the leap stomp work in both phases.
+#![enable(implicit_some)]
+(
+  id: "b02_briar_stag",
+  name: "The Briar Stag",
+  body: (
+    id: "b02_briar_stag_body",
+    model: "boss_briar_stag",
+    hp: 2600,
+    poise: 300,
+    defense: (flat: 25),
+    resist: (immunity: 400, robustness: 400, composure: 400),
+    immune: [Rupture],
+    glimmer: 0,
+    attack: 125,
+    stamina: 300,
+    speed_percent: 115,
+    leash_m: 120.0,
+    ignores_tokens: true,
+    moveset: "bosses/b02.ron",
+    options: [
+      // Phase 1 and 2: close in, and punish a player who stays near.
+      (move: "b02_antler_toss", when: [DistBelow(3.4), FacingWithin(45.0)], weight: 6, cooldown: 90),
+      (move: "b02_leap_stomp", when: [DistBetween(4.0, 12.0), FacingWithin(40.0)], weight: 4, cooldown: 210),
+      // Phase 1: one charge from range, and the thorn burst.
+      (move: "b02_scrape_charge", when: [Phase(1), DistBetween(6.0, 30.0), FacingWithin(25.0)], weight: 8, cooldown: 150),
+      (move: "b02_thorn_burst", when: [Phase(1), DistBelow(5.0)], weight: 3, cooldown: 330),
+      // Phase 2: the charge chains twice, and the thorn burst leaves bramble patches.
+      (move: "b02_scrape_charge_2", when: [Phase(2), DistBetween(6.0, 30.0), FacingWithin(25.0)], weight: 8, cooldown: 150),
+      (move: "b02_thorn_burst_2", when: [Phase(2), DistBelow(5.0)], weight: 3, cooldown: 330),
+      // Between attacks. Close by, come back to the player or circle. At range the Stag turns to
+      // face the player and charges: it only walks up when the charge is on cooldown.
+      (behavior: Approach(dur: 24), when: [DistBetween(3.4, 6.0)], weight: 4),
+      (behavior: Approach(dur: 24), when: [DistAbove(6.0)], weight: 1),
+      (behavior: Wait(dur: 12), when: [DistAbove(6.0)], weight: 4),
+      (behavior: Strafe(dur: 30), when: [DistBetween(3.0, 14.0)], weight: 2, cooldown: 90),
+      (behavior: Wait(dur: 15), when: [DistBelow(6.0)], weight: 1),
+    ],
+  ),
+  parts: [],
+  phases: [
+    (below: 0.5, transition: "b02_roar"),
+  ],
+  rewards: (
+    glimmer: 1000,
+    items: [(item: "wpn_briar_axe", count: 1), (item: "itm_bloodbloom_oil", count: 3)],
+    codex: "b02_briar_stag",
+  ),
+  echo_stone: true,
+  music: (intro: "boss_b02_intro", loop_stem: "boss_b02_loop", phase2_stem: "boss_b02_p2"),
+)

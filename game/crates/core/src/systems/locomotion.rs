@@ -7,6 +7,7 @@ use crate::world::World;
 
 pub fn run(world: &mut World, _input: &TickInput) {
     let id = world.player;
+    crate::ai::bosses::before_locomotion(world);
     crate::world_state::mechanics::before_locomotion(world);
     // A player on a ladder is moved by the ladder (WP-042).
     if !crate::world_state::mechanics::climbing(world)

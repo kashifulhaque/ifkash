@@ -8,11 +8,19 @@
 //! - [`tick`] runs once a tick per boss while that boss's fight is in the Fight stage, from
 //!   `boss.rs` just before the framework's fight step.
 //!
+//! One more entry point, [`before_locomotion`], runs in tick system 5, before the controller
+//! moves the player, for a boss that slows or moves the player.
+//!
+//! - [`b02`]: the Briar Stag: the tree stun and the bramble patches (WP-070; [`run`], and
+//!   [`before_locomotion`]).
 //! - [`b04`]: the Mossgut Brood: egg sacs, weak point, and Crawler spawns (WP-072).
 //! - [`b06`]: the Drowned Choir: the verse, the Cantor's mend, and the Lamenter's teleport
 //!   (WP-074; [`tick`]).
 //! - [`b08`]: the Forgeheart Colossus's legs, kneel, and lava (WP-076; [`run`]).
 
+pub mod b02;
+#[cfg(test)]
+mod b02_tests;
 pub mod b04;
 #[cfg(test)]
 mod b04_tests;
@@ -29,10 +37,17 @@ use crate::world::World;
 pub fn run(world: &mut World) {
     b08::run(world);
     b04::run(world);
+    b02::run(world);
 }
 
 /// Runs the in-fight mechanic of boss `b` (an index into `Layout::bosses`), if it has one.
 pub fn tick(world: &mut World, b: usize) {
     b06::tick(world, b);
     b04::tick(world, b);
+}
+
+/// The bosses' effects on the player's movement: tick system 5, before the controller moves
+/// the player.
+pub fn before_locomotion(world: &mut World) {
+    b02::before_locomotion(world);
 }

@@ -75,6 +75,9 @@ pub struct World {
     /// Each boss fight's state, in `layout.bosses` order (WP-033). Hashed only when a
     /// scenario has a boss.
     pub bosses: Vec<BossRun>,
+    /// B02's bramble patches on the ground (WP-070; see `ai::bosses::b02`). Hashed only while
+    /// there are any.
+    pub briar_patches: Vec<crate::ai::bosses::b02::Patch>,
     /// Lanterns, the respawn point, the Remnant, and world flags (WP-029).
     pub state: WorldState,
     /// The player's attuned spells and the selected one (WP-055). Hashed only once a spell
@@ -145,6 +148,9 @@ struct HashView<'a> {
     /// Left out when the scenario has no boss, for the same reason as `projectiles`.
     #[serde(skip_serializing_if = "no_bosses")]
     bosses: &'a Vec<BossRun>,
+    /// Left out while there are no bramble patches, for the same reason.
+    #[serde(skip_serializing_if = "no_patches")]
+    briar_patches: &'a Vec<crate::ai::bosses::b02::Patch>,
     /// Left out while the world mechanics are at rest, for the same reason.
     #[serde(skip_serializing_if = "MechState::is_inert")]
     mech: &'a MechState,
@@ -162,6 +168,10 @@ fn echo_inert(echo: &&EchoRun) -> bool {
 
 fn no_bosses(bosses: &&Vec<BossRun>) -> bool {
     bosses.is_empty()
+}
+
+fn no_patches(patches: &&Vec<crate::ai::bosses::b02::Patch>) -> bool {
+    patches.is_empty()
 }
 
 impl World {
@@ -279,6 +289,7 @@ impl World {
             player,
             layout,
             bosses,
+            briar_patches: Vec::new(),
             state,
             spells: SpellState::default(),
             spells_table: SpellTable::from_content(content).map_err(WorldError::Items)?,
@@ -366,6 +377,7 @@ impl World {
             state: &self.state,
             projectiles: &self.projectiles,
             bosses: &self.bosses,
+            briar_patches: &self.briar_patches,
             mech: &self.mech,
             spells: &self.spells,
             echo: &self.echo,

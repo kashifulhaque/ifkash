@@ -196,5 +196,12 @@ lf-tools replay record-script tests/replays/m1_movement.script --out tests/repla
   ignored test `record_the_b04_goldens`; record the `.lfr` files with
   `lf-tools replay record-script --out <lfr> <script>`.
 
+- `m7_b02_bot_win.lfr`, `m7_b02_idle_dies.lfr`: the WP-070 goldens on `boss_b02`, from their
+  `.script` files (written by `record_the_b02_goldens` in `ai/bosses/b02_tests.rs`). The bot
+  baits the Briar Stag's first charge into a briar clump (a 60-tick stun), rolls out of the
+  other charges, tosses, leaps, and thorn bursts, and beats it through both phases; the idle
+  player dies. The tests in `ai/bosses/b02_tests.rs` check the win, the death, the stun, and
+  the phase 2 bramble patches.
+
 Rehash only when a change to the simulation or the content data is intended. Review the
 old and new final hash it prints, and commit the updated file with that change.

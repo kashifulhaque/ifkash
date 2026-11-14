@@ -426,8 +426,8 @@ pub fn run(world: &mut World) {
             None => hb.motion_value,
         };
         let motion_value = crit::scale_motion(motion_value, a, c.num, &world.moves);
-        // Damage, from the attacker's equipped weapon and stats. An actor with no
-        // weapon has no attack rating and deals the minimum of 1.
+        // Damage, from the attacker's equipped weapon and stats, or the player's fists. An
+        // actor with neither has no attack rating and deals the minimum of 1.
         let ar = super::spells::power(world, a, c.num)
             .or_else(|| {
                 a.inventory.equipment.right_weapon().and_then(|w| {
@@ -438,6 +438,12 @@ pub fn run(world: &mut World) {
                         a.stats.two_handing,
                     )
                 })
+            })
+            // An empty right hand: the player's fists (issue #76).
+            .or_else(|| {
+                (cand.attacker == world.player && a.inventory.equipment.right_weapon().is_none())
+                    .then(|| crate::items::upgrade::unarmed_rating(world, &a.stats.attrs))
+                    .flatten()
             })
             // An enemy has no weapon: its definition's attack rating (WP-032).
             .or_else(|| crate::ai::attack::rating(world, cand.attacker, a))

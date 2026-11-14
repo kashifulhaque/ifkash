@@ -173,6 +173,20 @@ pub fn weapon_rating(
     ))
 }
 
+/// The attack rating of an empty right hand in `attrs`' hands (`DamageRules::unarmed`), or
+/// `None` if the content gives fists none. Issue #76.
+pub fn unarmed_rating(world: &World, attrs: &Attrs) -> Option<AttackRating> {
+    let stats = world.damage.unarmed()?;
+    Some(damage::attack_rating(
+        &world.damage.rules,
+        world.damage.attr_max,
+        &stats,
+        attrs,
+        0,
+        false,
+    ))
+}
+
 /// The player, if the Smith can work now: resting at a Lantern, and alive.
 fn smith_player(world: &World) -> Result<&crate::actor::Actor, SmithError> {
     if world.state.resting.is_none() {

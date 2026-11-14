@@ -119,6 +119,23 @@ impl DamageTable {
         })
     }
 
+    /// The stats of an empty right hand (`DamageRules::unarmed`), as a weapon with no
+    /// requirements, element, or upgrades. Issue #76.
+    pub fn unarmed(&self) -> Option<WeaponStats> {
+        self.rules.unarmed.map(|u| WeaponStats {
+            base_damage: u32::from(u.base_damage),
+            elem: None,
+            scaling_permille: [
+                u32::from(u.might_permille),
+                u32::from(u.finesse_permille),
+                0,
+                0,
+            ],
+            requirements: [0; 4],
+            unique: false,
+        })
+    }
+
     pub fn weapon(&self, num: NumId) -> Option<&WeaponStats> {
         self.weapons
             .binary_search_by_key(&num, |(n, _)| *n)

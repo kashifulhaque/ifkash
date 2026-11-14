@@ -123,4 +123,42 @@ mod tests {
         let mine = snaps.iter().find(|s| s.id == me).unwrap();
         assert!(mine.flags & crate::snapshot::flags::TWO_HANDING != 0);
     }
+
+    /// Issue #76: an empty right hand punches with the fists' attack rating. Against an
+    /// ordinary defense (the stub of 40) a punch deals more than the minimum of 1, and less
+    /// than the content's default weapon; the swing connects in the world too.
+    #[test]
+    fn an_empty_hand_has_an_attack_rating() {
+        use crate::combat::damage::{self, Hit};
+        let mut w = world();
+        press(&mut w, buttons::CYCLE_RIGHT);
+        press(&mut w, 0);
+        let p = w.actors.get(w.player).unwrap();
+        assert_eq!(p.inventory.equipment.right_weapon(), None);
+        let attrs = p.stats.attrs;
+        let defense = p.stats.defense;
+        let fists = crate::items::upgrade::unarmed_rating(&w, &attrs).unwrap();
+        let hit = |ar| Hit {
+            ar,
+            phys: damage::phys_type(lf_content::moves::PhysType::Blunt),
+            element: None,
+            motion_milli: 1000,
+            counter: false,
+            buff_percent: 100,
+        };
+        let punch = damage::damage(&w.damage.rules, &hit(fists), &defense);
+        let blade = w.items.default_weapon.unwrap();
+        let blade_ar = crate::items::upgrade::weapon_rating(&w, blade, &attrs, false).unwrap();
+        let slash = damage::damage(&w.damage.rules, &hit(blade_ar), &defense);
+        assert!(punch.total > 1, "a punch deals {punch:?}");
+        assert!(
+            punch.total < slash.total,
+            "punch {punch:?} vs blade {slash:?}"
+        );
+
+        // Fists are short: the dummy steps into their reach, and the swing lands.
+        let dummy = w.actors.iter().find(|(id, _)| *id != w.player).unwrap().0;
+        w.actors.get_mut(dummy).unwrap().pos = [0.0, 0.0, 1.0];
+        assert!(first_hit(&mut w) >= 1);
+    }
 }

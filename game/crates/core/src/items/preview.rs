@@ -42,7 +42,12 @@ pub fn loadout_stats(world: &World, inv: &Inventory) -> Option<LoadoutStats> {
             let ar = crate::items::upgrade::weapon_rating(world, w, &p.stats.attrs, false)?;
             (ar.phys_milli, ar.unwieldy)
         }
-        None => (0, false),
+        // An empty right hand shows the fists' rating (issue #76).
+        None => (
+            crate::items::upgrade::unarmed_rating(world, &p.stats.attrs)
+                .map_or(0, |ar| ar.phys_milli),
+            false,
+        ),
     };
     let load = gear::load_tenths(world, inv);
     let max = gear::max_load_tenths(world, p.stats.attrs.endurance, inv);

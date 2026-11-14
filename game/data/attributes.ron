@@ -63,5 +63,8 @@
     counter_percent: 115, // Damage dealt, counter_mult: 1.15
     buff_cap_percent: 150, // Damage dealt, buff_mult: capped at 1.5
     absorption_cap_percent: 70, // Damage dealt, absorption_type: capped at 0.7
+    // tuning: an empty right hand (issue #76), after Elden Ring's Unarmed (20 base,
+    // E scaling in Strength and Dexterity); about a third of the Fist class's damage.
+    unarmed: (base_damage: 20, might_permille: 300, finesse_permille: 300),
   ),
 )

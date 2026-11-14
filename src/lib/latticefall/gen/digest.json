@@ -182,6 +182,11 @@
       ],
       "scaling_per_upgrade_percent": 3,
       "two_hand_might_percent": 150,
+      "unarmed": {
+        "base_damage": 20,
+        "finesse_permille": 300,
+        "might_permille": 300
+      },
       "unwieldy_base_percent": 60,
       "unwieldy_recovery_percent": 20
     },
@@ -278,8 +283,8 @@
     "start_max": 16,
     "start_min": 4
   },
-  "contentHash": "5499439176005270637",
-  "contentHashHex": "4c51eecb15a93c6d",
+  "contentHash": "3862779890130177288",
+  "contentHashHex": "359b59d81cbb4d08",
   "moves": [
     {
       "anim": "ep_sentinel_thrust",

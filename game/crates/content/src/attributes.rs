@@ -149,6 +149,21 @@ pub struct DamageRules {
     pub buff_cap_percent: u16,
     /// The most a target's armor absorbs of a damage type, in percent.
     pub absorption_cap_percent: u16,
+    /// The attack of an empty right hand. `None`: unarmed hits have no attack rating.
+    #[serde(default)]
+    pub unarmed: Option<UnarmedAttack>,
+}
+
+/// The attack rating of an empty right hand (issue #76), which swings the Fist class's
+/// moves. Elden Ring's Unarmed: a small base that scales a little with Strength and
+/// Dexterity, which are Might and Finesse here. Scaling is in thousandths, like a weapon's.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "ts", derive(ts_rs::TS))]
+#[serde(deny_unknown_fields)]
+pub struct UnarmedAttack {
+    pub base_damage: u16,
+    pub might_permille: u16,
+    pub finesse_permille: u16,
 }
 
 impl DamageRules {

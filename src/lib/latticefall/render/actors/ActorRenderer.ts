@@ -36,9 +36,18 @@ import { capSceneTextures } from '../perf/textures';
 import { AirTracker, LAND_SECONDS } from './airState';
 import { easeStance, GUARD_HIPS_DROP, stancePose } from './stancePose';
 import { parsePreview, type PreviewRequest } from './devPreview';
+import { digestAnimInfo } from './moveTable';
 import { locomotionBlend, type LocoBands } from './locomotion';
-import { clipForAnim, movePhase, moveClipTime, type MoveResolver } from './moveClips';
-import { BONE_MAP, type BakedClip, retargetClips, sampleClip } from './retarget';
+import {
+  clipsForAnim,
+  locateSpec,
+  moveClipFrame,
+  specLength,
+  type ClipSpec,
+  type MoveAnimInfo,
+  type MoveResolver
+} from './moveClips';
+import { BAKE_FPS, BONE_MAP, type BakedClip, retargetClips, sampleClip } from './retarget';
 import {
   ProceduralActor,
   findChoreo,
@@ -73,10 +82,17 @@ const WEAPON_LENGTH_M = 0.95;
 
 /** Crossfade between pose sources, in seconds. */
 const FADE_SECONDS = 0.12;
+/** Crossfade out of a move into locomotion: longer, so a cut follow-through settles. */
+const MOVE_EXIT_FADE_SECONDS = 0.2;
 /** Jump_Start is played this much faster than authored: the jump has already begun in the sim. */
 const JUMP_START_RATE = 2.5;
 /** Simulation tick length. Matches `TICK_MS` in `engine/loop.ts` (30 Hz). */
 const TICK_SECONDS = 1 / 30;
+/**
+ * After hitstop the drawn move plays this much faster than the sim until it has caught up,
+ * so the follow-through snaps on and the move still ends in step with the sim.
+ */
+const HITSTOP_CATCHUP = 0.6;
 /** A larger per-frame move than this (meters) is a teleport, not a speed. */
 const TELEPORT_METERS = 3;
 /** Time constant for smoothing the speed derived from position deltas, in seconds. */
@@ -120,6 +136,8 @@ interface Instance {
   tmp: Pose;
   from: Pose;
   fadeT: number;
+  /** Length of the current crossfade, in seconds. */
+  fadeLen: number;
   signature: string;
   lastPos: [number, number, number] | null;
   speed: number;
@@ -133,6 +151,8 @@ interface Instance {
   /** Frames the drawn move trails the sim by, from hitstop already served in this move. */
   lagFrames: number;
   lagMove: number;
+  /** Counts restarts of the same move (a repeated attack), so each restart crossfades. */
+  moveRun: number;
   /** Guard and two-hand stance weights, 0 to 1, eased toward the snapshot flags. */
   guardW: number;
   twoHandW: number;
@@ -173,6 +193,47 @@ function disposeSkeletons(root: Object3D): void {
     const skinned = o as Partial<SkinnedMesh>;
     if (skinned.isSkinnedMesh) skinned.skeleton?.dispose();
   });
+}
+
+/** The bones the generic pose turns, in the order `GENERIC_KEYS` lists them. */
+const GENERIC_BONES = ['Torso', 'UpperArm.R', 'LowerArm.R'] as const;
+type Key = readonly (readonly [number, number, number])[];
+/** Rest, wind-up, strike, follow-through, rest: Euler offsets per `GENERIC_BONES`. */
+const GENERIC_KEYS: readonly Key[] = [
+  [
+    [0, 0, 0],
+    [0, 0, 0],
+    [0, 0, 0]
+  ],
+  [
+    [-0.2, -0.45, 0],
+    [0, 0, -1.1],
+    [-0.9, 0, 0]
+  ],
+  [
+    [0.25, 0.55, 0],
+    [0, 0, 0.5],
+    [-0.2, 0, 0]
+  ],
+  [
+    [0.1, 0.15, 0],
+    [0, 0, 0.2],
+    [0, 0, 0]
+  ],
+  [
+    [0, 0, 0],
+    [0, 0, 0],
+    [0, 0, 0]
+  ]
+];
+
+/** Move frames of the `GENERIC_KEYS`: the strike lands on the hitbox, or on thirds without one. */
+function genericKeys(info: MoveAnimInfo): number[] {
+  const total = Math.max(info.totalFrames, 1);
+  const strike = info.strikeStart ?? total / 3;
+  const recovery = Math.max(info.recoveryStart ?? (total * 2) / 3, strike + 1);
+  const windup = Math.max(strike - Math.min(4, strike * 0.4), strike * 0.6);
+  return [0, windup, (strike + recovery) / 2, Math.min(recovery + 3, total), total];
 }
 
 export class ActorRenderer {
@@ -234,9 +295,10 @@ export class ActorRenderer {
     loader.setMeshoptDecoder(MeshoptDecoder);
     const ktx2 = new KTX2Loader().setTranscoderPath(BASIS_PATH).detectSupport(this.renderer);
     loader.setKTX2Loader(ktx2);
-    const [wayfarer, ual] = await Promise.all([
+    const [wayfarer, ual, ual2] = await Promise.all([
       loader.loadAsync(`${ACTOR_ASSET_BASE}wayfarer.glb`),
-      loader.loadAsync(`${ACTOR_ASSET_BASE}ual.glb`)
+      loader.loadAsync(`${ACTOR_ASSET_BASE}ual.glb`),
+      loader.loadAsync(`${ACTOR_ASSET_BASE}ual2.glb`).catch(() => null)
     ]);
     ktx2.dispose();
     // Texture budget (WP-081): nothing here is above the preset's longest edge today; this keeps it so.
@@ -249,6 +311,11 @@ export class ActorRenderer {
     const scale = WAYFARER_HEIGHT_M / height;
 
     const rt = retargetClips(ual.scene, ual.animations, wayfarer.scene, scale);
+    if (ual2) {
+      for (const [name, clip] of retargetClips(ual2.scene, ual2.animations, wayfarer.scene, scale).clips) {
+        rt.clips.set(name, clip);
+      }
+    }
     const band = (name: string) => {
       const clip = rt.clips.get(name);
       if (!clip || clip.stanceSpeed <= 0) throw new Error(`no measurable stride for clip ${name}`);
@@ -296,9 +363,10 @@ export class ActorRenderer {
 
     // Hitstop: hold the last drawn pose. The sim keeps ticking, so what was held is owed to
     // the move: it plays that many frames behind until the move ends.
-    if (a.moveId !== inst.lagMove) {
+    if (a.moveId !== inst.lagMove || a.moveFrame < inst.lastMoveFrame) {
       inst.lagMove = a.moveId;
       inst.lagFrames = 0;
+      if (a.moveId !== 0) inst.moveRun++;
     }
     if (inst.hold > 0) {
       const step = Math.min(dt, inst.hold);
@@ -306,6 +374,7 @@ export class ActorRenderer {
       inst.lagFrames += step / TICK_SECONDS;
       return true;
     }
+    inst.lagFrames = Math.max(0, inst.lagFrames - (dt / TICK_SECONDS) * HITSTOP_CATCHUP);
     if (dt > 0) inst.air.update(a.y, dt, (a.flags & FLAG_AIRBORNE) !== 0);
 
     const pv = this.preview;
@@ -592,6 +661,7 @@ export class ActorRenderer {
       tmp: newPose(n),
       from: newPose(n),
       fadeT: FADE_SECONDS,
+      fadeLen: FADE_SECONDS,
       signature: '',
       lastPos: null,
       speed: 0,
@@ -603,6 +673,7 @@ export class ActorRenderer {
       hold: 0,
       lagFrames: 0,
       lagMove: 0,
+      moveRun: 0,
       guardW: 0,
       twoHandW: 0
     };
@@ -646,20 +717,24 @@ export class ActorRenderer {
     let info = a.moveId !== 0 ? this.resolveMove(a.moveId) : undefined;
     let frame = Math.max(0, a.moveFrame + moveFrac - inst.lagFrames);
     if (pv && typeof pv.state === 'object') {
-      const total = 30;
-      info = { anim: pv.state.move, totalFrames: total };
-      frame = (pv.t ?? ((performance.now() / 1000) % 1)) * total;
+      // A move plays with its own frame data; a raw clip name over 30 frames.
+      info = digestAnimInfo(pv.state.move) ?? { anim: pv.state.move, totalFrames: 30 };
+      const total = info.totalFrames;
+      frame = (pv.t ?? ((performance.now() / 1000 / (total * TICK_SECONDS)) % 1)) * total;
     }
     if (info) {
-      const clipName = clipForAnim(info.anim);
-      const clip = clipName ? tpl.clips.get(clipName) : undefined;
-      if (clip) {
-        sampleClip(clip, moveClipTime(clip.duration, frame, info.totalFrames), false, out.q, out.hips);
-        return `move:${info.anim}`;
+      const sig = `move:${info.anim}:${inst.moveRun}`;
+      const choice = this.pickSpec(tpl, info.anim, !!pv);
+      if (choice) {
+        const frames = (c: string) => tpl.clips.get(c)!.frames;
+        const len = specLength(choice, frames);
+        const at = locateSpec(choice, moveClipFrame(len, choice.contact, info, frame), frames, BAKE_FPS);
+        sampleClip(tpl.clips.get(at.clip)!, at.time, false, out.q, out.hips);
+        return sig;
       }
-      this.warnMissing(info.anim, clipName);
+      this.warnMissing(info.anim);
       this.genericPose(out, tpl, info, frame);
-      return `move:${info.anim}`;
+      return sig;
     }
 
     // 2. Airborne.
@@ -766,13 +841,14 @@ export class ActorRenderer {
       if (inst.signature !== '') {
         copyPose(inst.from, inst.cur);
         inst.fadeT = 0;
+        inst.fadeLen = inst.signature.startsWith('move:') && !sig.startsWith('move:') ? MOVE_EXIT_FADE_SECONDS : FADE_SECONDS;
       }
       inst.signature = sig;
     }
     copyPose(inst.cur, inst.tmp);
-    if (inst.fadeT < FADE_SECONDS) {
+    if (inst.fadeT < inst.fadeLen) {
       inst.fadeT += dt;
-      const w = smooth(inst.fadeT / FADE_SECONDS);
+      const w = smooth(inst.fadeT / inst.fadeLen);
       // cur = slerp(from, target, w)
       const tgt = inst.tmp;
       copyPose(inst.cur, inst.from);
@@ -787,37 +863,51 @@ export class ActorRenderer {
   }
 
   /**
-   * The generic pose for a move with no clip: idle with the torso and sword arm swung by
-   * phase. Crude on purpose; it keeps gameplay unblocked by art.
+   * The generic pose for a move with no clip: idle with the torso and sword arm swung through
+   * wind-up, strike and follow-through keys, eased between them so the swing moves instead of
+   * snapping. The strike key sits on the move's hitbox when content gives it. Crude on
+   * purpose; it keeps gameplay unblocked by art.
    */
-  private genericPose(out: Pose, tpl: Template, info: { anim: string; totalFrames: number }, frame: number): void {
+  private genericPose(out: Pose, tpl: Template, info: MoveAnimInfo, frame: number): void {
     const idle = tpl.clips.get(LOOP_CLIPS.idle)!;
     sampleClip(idle, 0, true, out.q, out.hips);
-    const phase = movePhase(info, frame);
+    const k = genericKeys(info);
+    let a = GENERIC_KEYS[0];
+    let b = GENERIC_KEYS[0];
+    let w = 0;
+    for (let i = 0; i < k.length - 1; i++) {
+      if (frame <= k[i + 1] || i === k.length - 2) {
+        a = GENERIC_KEYS[i];
+        b = GENERIC_KEYS[i + 1];
+        w = smooth((frame - k[i]) / Math.max(k[i + 1] - k[i], 1e-3));
+        break;
+      }
+    }
     const e = new Euler();
-    const apply = (bone: string, x: number, y: number, z: number) => {
-      const i = tpl.boneIndex.get(bone);
-      if (i === undefined) return;
-      qa.fromArray(out.q, i * 4).multiply(qb.setFromEuler(e.set(x, y, z)));
+    for (let n = 0; n < GENERIC_BONES.length; n++) {
+      const i = tpl.boneIndex.get(GENERIC_BONES[n]);
+      if (i === undefined) continue;
+      const lerp = (c: number) => a[n][c] + (b[n][c] - a[n][c]) * w;
+      qa.fromArray(out.q, i * 4).multiply(qb.setFromEuler(e.set(lerp(0), lerp(1), lerp(2))));
       qa.toArray(out.q, i * 4);
-    };
-    if (phase === 'windup') {
-      apply('Torso', -0.2, -0.45, 0);
-      apply('UpperArm.R', 0, 0, -1.1);
-      apply('LowerArm.R', -0.9, 0, 0);
-    } else if (phase === 'strike') {
-      apply('Torso', 0.25, 0.55, 0);
-      apply('UpperArm.R', 0, 0, 0.5);
-      apply('LowerArm.R', -0.2, 0, 0);
-    } else {
-      apply('Torso', 0.1, 0.15, 0);
-      apply('UpperArm.R', 0, 0, 0.2);
     }
   }
 
-  private warnMissing(anim: string, clip: string | undefined): void {
+  /**
+   * The first clip choice for `anim` whose clips are all loaded. The dev preview also takes a
+   * raw clip name (`&anim=move:Sword_Regular_A`).
+   */
+  private pickSpec(tpl: Template, anim: string, preview: boolean): ClipSpec | undefined {
+    const found = clipsForAnim(anim)?.find((c) => c.segs.every((g) => tpl.clips.has(g.clip)));
+    if (found || !preview || !tpl.clips.has(anim)) return found;
+    return { segs: [{ clip: anim }], contact: 0 };
+  }
+
+  private warnMissing(anim: string): void {
     if (!import.meta.env.DEV || this.warned.has(anim)) return;
     this.warned.add(anim);
-    console.warn(`[latticefall] no clip for move anim "${anim}"${clip ? ` (mapped to ${clip}, not in the library)` : ''}; using the generic pose`);
+    const mapped = clipsForAnim(anim);
+    const clips = mapped?.flatMap((c) => c.segs.map((g) => g.clip)).join(', ');
+    console.warn(`[latticefall] no clip for move anim "${anim}"${clips ? ` (mapped to ${clips}, not all loaded)` : ''}; using the generic pose`);
   }
 }

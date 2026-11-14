@@ -6,8 +6,12 @@
         "path": "wayfarer.glb"
       },
       {
-        "bytes": 625052,
+        "bytes": 862280,
         "path": "ual.glb"
+      },
+      {
+        "bytes": 879256,
+        "path": "ual2.glb"
       }
     ]
   }

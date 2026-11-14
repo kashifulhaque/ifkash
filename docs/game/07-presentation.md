@@ -41,6 +41,7 @@ license file next to its source files in `game/assets-src/PACK_NAME/`, and
 | Source | License | Use for |
 |---|---|---|
 | Quaternius Universal Animation Library | CC0 (verified) | Humanoid locomotion, combat, and gesture clips |
+| Quaternius Universal Animation Library 2 | CC0 (verified; [ADR 0009](decisions/0009-animation-library-2.md)) | Sword, heavy, shield, and guard clips |
 | Quaternius modular character packs | CC0 (already in `static/models/npc`) | Player, Husks, NPCs |
 | Quaternius nature, monster, and modular ruin packs | CC0 (verify each pack page before use) | Terrain props, ruins, some creatures |
 | KayKit Character Pack: Skeletons | CC0 (verified) | Whitewarden Skeletons, Ossuary Keeper adds |
@@ -77,10 +78,13 @@ style and needs no art tools.
   7 full models.
 - **Weapons** attach to hand bones. Each weapon class has at least one mesh; weapons in
   the same class vary by mesh, material, and scale.
-- **Animation mapping:** Each move's `anim` field names a clip. The renderer maps it,
-  scrubs it by `move_frame / total_frames`, and blends locomotion by speed. If the clip's
-  length differs from the move's frames, the renderer retimes the clip; the frame data
-  is never changed to fit an animation.
+- **Animation mapping:** Each move's `anim` field maps to one or more clip stretches
+  (`render/actors/moveClips.ts`), with fallbacks if a library lacks a clip. The renderer
+  retimes the clip so its contact frame (the hand's peak speed) lands in the middle of the
+  move's hitbox window, plays the recovery at no more than 2.5 times the clip's rate, and
+  blends locomotion by speed. The frame data is never changed to fit an animation.
+- **Hitstop:** The drawn pose freezes for the hit's hitstop while the core keeps ticking,
+  then plays faster until it's back in step with the move.
 - **Missing clips:** If a clip is missing, the renderer plays a generic pose for the
   move's phase (wind-up, strike, recovery) and logs a warning in dev mode. This keeps
   gameplay WPs unblocked by art.

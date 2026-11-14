@@ -10,7 +10,7 @@
 import { type MeshBasicMaterial, type PerspectiveCamera, type Scene, type ShaderMaterial, Vector3 } from 'three';
 import type { GameEvent, HitEvent } from '../../engine/events';
 import type { DrawActor } from '../../engine/snapshot';
-import { movePhase, type MoveResolver } from '../actors/moveClips';
+import { movePhase, type MoveAnimInfo, type MoveResolver } from '../actors/moveClips';
 import { PointCloud, makePointMaterial } from './points';
 import { type HitFxResolver, fallbackHitstop, hitTrauma, sparkStyle, type SparkStyle } from './palette';
 import { CameraShake } from './shake';
@@ -256,9 +256,10 @@ export class CombatVfx {
       seen.add(a.id);
       const info = a.moveId !== 0 ? this.resolveMove(a.moveId) : undefined;
       const style = info ? trailStyleForAnim(info.anim) : null;
-      // The strike third of the move stands in for the hitbox's active frames until the
-      // resolver supplies `strikeStart` and `recoveryStart` from content.
-      const striking = info !== undefined && movePhase(info, a.moveFrame) === 'strike';
+      // The hitbox's active frames from content, widened by a couple of frames each side so
+      // the ribbon traces the whole swing the clip draws around the contact. Moves without
+      // hitbox data fall back to the middle third.
+      const striking = info !== undefined && trailActive(info, a.moveFrame);
       let emit: { tip: Vector3; base: Vector3; style: NonNullable<typeof style> } | null = null;
       if (style && striking && !this.hooks.isHeld(a.id) && this.hooks.weaponTip(a.id, this.tip, this.base)) {
         emit = { tip: this.tip, base: this.base, style };
@@ -358,4 +359,12 @@ export class CombatVfx {
     this.trailMaterial.dispose();
     this.shake.dispose();
   }
+}
+
+/** Frames the weapon trail starts before the first hitbox frame and runs past the last. */
+const TRAIL_PAD_FRAMES = 2;
+
+function trailActive(info: MoveAnimInfo, frame: number): boolean {
+  if (info.strikeStart === undefined || info.recoveryStart === undefined) return movePhase(info, frame) === 'strike';
+  return frame >= info.strikeStart - TRAIL_PAD_FRAMES && frame < info.recoveryStart + TRAIL_PAD_FRAMES;
 }

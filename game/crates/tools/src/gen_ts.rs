@@ -22,6 +22,10 @@ fn digest(content: &Content) -> Value {
                 "stamina": m.stamina,
                 "fp": m.fp,
                 "stub": m.stub,
+                // The first active hitbox frame and the frame after the last one, so the
+                // renderer can line a clip's contact up with the hit. Null with no hitbox.
+                "strikeStart": m.hitboxes.iter().map(|h| h.frames.0).min(),
+                "recoveryStart": m.hitboxes.iter().map(|h| h.frames.1 + 1).max(),
             })
         })
         .collect();

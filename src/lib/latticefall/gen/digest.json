@@ -292,7 +292,9 @@
       "fp": 0,
       "id": "ep_sentinel_thrust",
       "num": 17110,
+      "recoveryStart": 22,
       "stamina": 0,
+      "strikeStart": 18,
       "stub": false,
       "totalFrames": 50
     },
@@ -302,7 +304,9 @@
       "fp": 0,
       "id": "ep_sentinel_bash",
       "num": 17111,
+      "recoveryStart": 19,
       "stamina": 0,
+      "strikeStart": 15,
       "stub": false,
       "totalFrames": 46
     },
@@ -312,7 +316,9 @@
       "fp": 0,
       "id": "ep_hound_lunge",
       "num": 17130,
+      "recoveryStart": 19,
       "stamina": 0,
+      "strikeStart": 14,
       "stub": false,
       "totalFrames": 46
     },
@@ -322,7 +328,9 @@
       "fp": 0,
       "id": "ep_hound_snap",
       "num": 17131,
+      "recoveryStart": 16,
       "stamina": 0,
+      "strikeStart": 13,
       "stub": false,
       "totalFrames": 40
     },
@@ -332,7 +340,9 @@
       "fp": 0,
       "id": "ep_wisp_bolt",
       "num": 17120,
+      "recoveryStart": null,
       "stamina": 0,
+      "strikeStart": null,
       "stub": false,
       "totalFrames": 70
     },
@@ -342,7 +352,9 @@
       "fp": 0,
       "id": "ep_wisp_pulse",
       "num": 17121,
+      "recoveryStart": 18,
       "stamina": 0,
+      "strikeStart": 14,
       "stub": false,
       "totalFrames": 48
     },
@@ -352,7 +364,9 @@
       "fp": 0,
       "id": "ep_llama_bow_a",
       "num": 17100,
+      "recoveryStart": null,
       "stamina": 0,
+      "strikeStart": null,
       "stub": false,
       "totalFrames": 20
     },
@@ -362,7 +376,9 @@
       "fp": 0,
       "id": "ep_llama_bow_b",
       "num": 17101,
+      "recoveryStart": null,
       "stamina": 0,
+      "strikeStart": null,
       "stub": false,
       "totalFrames": 20
     },
@@ -372,7 +388,9 @@
       "fp": 0,
       "id": "ep_llama_headbutt",
       "num": 17102,
+      "recoveryStart": 20,
       "stamina": 0,
+      "strikeStart": 16,
       "stub": false,
       "totalFrames": 44
     },
@@ -382,7 +400,9 @@
       "fp": 0,
       "id": "ep_llama_stomp",
       "num": 17103,
+      "recoveryStart": 25,
       "stamina": 0,
+      "strikeStart": 20,
       "stub": false,
       "totalFrames": 58
     },
@@ -392,7 +412,9 @@
       "fp": 6,
       "id": "amv_feint_step",
       "num": 20000,
+      "recoveryStart": null,
       "stamina": 10,
+      "strikeStart": null,
       "stub": false,
       "totalFrames": 20
     },
@@ -402,7 +424,9 @@
       "fp": 10,
       "id": "amv_rending_sweep",
       "num": 20001,
+      "recoveryStart": 22,
       "stamina": 16,
+      "strikeStart": 12,
       "stub": false,
       "totalFrames": 40
     },
@@ -412,7 +436,9 @@
       "fp": 0,
       "id": "amv_bastion",
       "num": 20002,
+      "recoveryStart": null,
       "stamina": 20,
+      "strikeStart": null,
       "stub": false,
       "totalFrames": 150
     },
@@ -422,7 +448,9 @@
       "fp": 0,
       "id": "amv_windward_parry",
       "num": 20003,
+      "recoveryStart": null,
       "stamina": 0,
+      "strikeStart": null,
       "stub": false,
       "totalFrames": 40
     },
@@ -432,7 +460,9 @@
       "fp": 10,
       "id": "amv_rising_cleave",
       "num": 20004,
+      "recoveryStart": 16,
       "stamina": 20,
+      "strikeStart": 12,
       "stub": false,
       "totalFrames": 40
     },
@@ -442,7 +472,9 @@
       "fp": 12,
       "id": "amv_rallying_roar",
       "num": 20005,
+      "recoveryStart": null,
       "stamina": 0,
+      "strikeStart": null,
       "stub": false,
       "totalFrames": 48
     },
@@ -452,7 +484,9 @@
       "fp": 9,
       "id": "amv_lunging_thrust",
       "num": 20006,
+      "recoveryStart": 17,
       "stamina": 16,
+      "strikeStart": 8,
       "stub": false,
       "totalFrames": 36
     },
@@ -462,7 +496,9 @@
       "fp": 14,
       "id": "amv_earthsplit",
       "num": 20007,
+      "recoveryStart": 34,
       "stamina": 25,
+      "strikeStart": 30,
       "stub": false,
       "totalFrames": 60
     },
@@ -472,7 +508,9 @@
       "fp": 15,
       "id": "amv_rime_edge",
       "num": 20008,
+      "recoveryStart": null,
       "stamina": 0,
+      "strikeStart": null,
       "stub": false,
       "totalFrames": 40
     },
@@ -482,7 +520,9 @@
       "fp": 15,
       "id": "amv_radiant_blade",
       "num": 20009,
+      "recoveryStart": null,
       "stamina": 0,
+      "strikeStart": null,
       "stub": false,
       "totalFrames": 40
     },
@@ -492,7 +532,9 @@
       "fp": 10,
       "id": "amv_spark_volley",
       "num": 20010,
+      "recoveryStart": null,
       "stamina": 12,
+      "strikeStart": null,
       "stub": false,
       "totalFrames": 42
     },
@@ -502,7 +544,9 @@
       "fp": 12,
       "id": "amv_lantern_flare",
       "num": 20011,
+      "recoveryStart": 19,
       "stamina": 18,
+      "strikeStart": 14,
       "stub": false,
       "totalFrames": 44
     },
@@ -512,7 +556,9 @@
       "fp": 14,
       "id": "amv_glass_barrage",
       "num": 20012,
+      "recoveryStart": null,
       "stamina": 0,
+      "strikeStart": null,
       "stub": false,
       "totalFrames": 36
     },
@@ -522,7 +568,9 @@
       "fp": 18,
       "id": "amv_bell_toll",
       "num": 20013,
+      "recoveryStart": 29,
       "stamina": 30,
+      "strikeStart": 24,
       "stub": false,
       "totalFrames": 56
     },
@@ -532,7 +580,9 @@
       "fp": 18,
       "id": "amv_choir_toll",
       "num": 20014,
+      "recoveryStart": 29,
       "stamina": 30,
+      "strikeStart": 24,
       "stub": false,
       "totalFrames": 56
     },
@@ -542,7 +592,9 @@
       "fp": 0,
       "id": "ax_light_1",
       "num": 13400,
+      "recoveryStart": 15,
       "stamina": 16,
+      "strikeStart": 12,
       "stub": false,
       "totalFrames": 34
     },
@@ -552,7 +604,9 @@
       "fp": 0,
       "id": "ax_light_2",
       "num": 13401,
+      "recoveryStart": 15,
       "stamina": 16,
+      "strikeStart": 12,
       "stub": false,
       "totalFrames": 34
     },
@@ -562,7 +616,9 @@
       "fp": 0,
       "id": "ax_light_3",
       "num": 13402,
+      "recoveryStart": 18,
       "stamina": 20,
+      "strikeStart": 14,
       "stub": false,
       "totalFrames": 40
     },
@@ -572,7 +628,9 @@
       "fp": 0,
       "id": "ax_heavy",
       "num": 13403,
+      "recoveryStart": 24,
       "stamina": 24,
+      "strikeStart": 20,
       "stub": false,
       "totalFrames": 46
     },
@@ -582,7 +640,9 @@
       "fp": 0,
       "id": "ax_heavy_charged",
       "num": 13404,
+      "recoveryStart": 26,
       "stamina": 30,
+      "strikeStart": 22,
       "stub": false,
       "totalFrames": 50
     },
@@ -592,7 +652,9 @@
       "fp": 0,
       "id": "ax_running",
       "num": 13405,
+      "recoveryStart": 15,
       "stamina": 18,
+      "strikeStart": 10,
       "stub": false,
       "totalFrames": 36
     },
@@ -602,7 +664,9 @@
       "fp": 0,
       "id": "ax_rolling",
       "num": 13406,
+      "recoveryStart": 13,
       "stamina": 16,
+      "strikeStart": 9,
       "stub": false,
       "totalFrames": 30
     },
@@ -612,7 +676,9 @@
       "fp": 0,
       "id": "ax_backstep",
       "num": 13407,
+      "recoveryStart": 12,
       "stamina": 14,
+      "strikeStart": 8,
       "stub": false,
       "totalFrames": 30
     },
@@ -622,7 +688,9 @@
       "fp": 0,
       "id": "ax_jump_light",
       "num": 13408,
+      "recoveryStart": 17,
       "stamina": 20,
+      "strikeStart": 13,
       "stub": false,
       "totalFrames": 34
     },
@@ -632,7 +700,9 @@
       "fp": 0,
       "id": "ax_jump_heavy",
       "num": 13409,
+      "recoveryStart": 19,
       "stamina": 24,
+      "strikeStart": 15,
       "stub": false,
       "totalFrames": 38
     },
@@ -642,7 +712,9 @@
       "fp": 0,
       "id": "ax_plunge",
       "num": 13410,
+      "recoveryStart": 9,
       "stamina": 0,
+      "strikeStart": 5,
       "stub": false,
       "totalFrames": 32
     },
@@ -652,7 +724,9 @@
       "fp": 0,
       "id": "ax_guard_counter",
       "num": 13411,
+      "recoveryStart": 13,
       "stamina": 18,
+      "strikeStart": 9,
       "stub": false,
       "totalFrames": 30
     },
@@ -662,7 +736,9 @@
       "fp": 0,
       "id": "b01_overhead",
       "num": 9100,
+      "recoveryStart": 34,
       "stamina": 0,
+      "strikeStart": 30,
       "stub": false,
       "totalFrames": 74
     },
@@ -672,7 +748,9 @@
       "fp": 0,
       "id": "b01_sweep",
       "num": 9101,
+      "recoveryStart": 30,
       "stamina": 0,
+      "strikeStart": 24,
       "stub": false,
       "totalFrames": 66
     },
@@ -682,7 +760,9 @@
       "fp": 0,
       "id": "b01_bash",
       "num": 9102,
+      "recoveryStart": 18,
       "stamina": 0,
+      "strikeStart": 14,
       "stub": false,
       "totalFrames": 46
     },
@@ -692,7 +772,9 @@
       "fp": 0,
       "id": "b01_combo_1",
       "num": 9103,
+      "recoveryStart": 20,
       "stamina": 0,
+      "strikeStart": 16,
       "stub": false,
       "totalFrames": 40
     },
@@ -702,7 +784,9 @@
       "fp": 0,
       "id": "b01_combo_2",
       "num": 9104,
+      "recoveryStart": 18,
       "stamina": 0,
+      "strikeStart": 14,
       "stub": false,
       "totalFrames": 34
     },
@@ -712,7 +796,9 @@
       "fp": 0,
       "id": "b01_combo_3",
       "num": 9105,
+      "recoveryStart": 22,
       "stamina": 0,
+      "strikeStart": 18,
       "stub": false,
       "totalFrames": 60
     },
@@ -722,7 +808,9 @@
       "fp": 0,
       "id": "b02_scrape_charge",
       "num": 31100,
+      "recoveryStart": 63,
       "stamina": 0,
+      "strikeStart": 32,
       "stub": false,
       "totalFrames": 106
     },
@@ -732,7 +820,9 @@
       "fp": 0,
       "id": "b02_antler_toss",
       "num": 31101,
+      "recoveryStart": 25,
       "stamina": 0,
+      "strikeStart": 20,
       "stub": false,
       "totalFrames": 66
     },
@@ -742,7 +832,9 @@
       "fp": 0,
       "id": "b02_leap_stomp",
       "num": 31102,
+      "recoveryStart": 34,
       "stamina": 0,
+      "strikeStart": 30,
       "stub": false,
       "totalFrames": 80
     },
@@ -752,7 +844,9 @@
       "fp": 0,
       "id": "b02_thorn_burst",
       "num": 31103,
+      "recoveryStart": 41,
       "stamina": 0,
+      "strikeStart": 36,
       "stub": false,
       "totalFrames": 90
     },
@@ -762,7 +856,9 @@
       "fp": 0,
       "id": "b02_roar",
       "num": 31104,
+      "recoveryStart": null,
       "stamina": 0,
+      "strikeStart": null,
       "stub": false,
       "totalFrames": 45
     },
@@ -772,7 +868,9 @@
       "fp": 0,
       "id": "b02_scrape_charge_2",
       "num": 31105,
+      "recoveryStart": 55,
       "stamina": 0,
+      "strikeStart": 28,
       "stub": false,
       "totalFrames": 72
     },
@@ -782,7 +880,9 @@
       "fp": 0,
       "id": "b02_charge_again",
       "num": 31106,
+      "recoveryStart": 55,
       "stamina": 0,
+      "strikeStart": 28,
       "stub": false,
       "totalFrames": 110
     },
@@ -792,7 +892,9 @@
       "fp": 0,
       "id": "b02_thorn_burst_2",
       "num": 31107,
+      "recoveryStart": 41,
       "stamina": 0,
+      "strikeStart": 36,
       "stub": false,
       "totalFrames": 96
     },
@@ -802,7 +904,9 @@
       "fp": 0,
       "id": "b03_shield_advance",
       "num": 32100,
+      "recoveryStart": 24,
       "stamina": 0,
+      "strikeStart": 20,
       "stub": false,
       "totalFrames": 66
     },
@@ -812,7 +916,9 @@
       "fp": 0,
       "id": "b03_combo_1",
       "num": 32101,
+      "recoveryStart": 22,
       "stamina": 0,
+      "strikeStart": 18,
       "stub": false,
       "totalFrames": 38
     },
@@ -822,7 +928,9 @@
       "fp": 0,
       "id": "b03_combo_2",
       "num": 32102,
+      "recoveryStart": 20,
       "stamina": 0,
+      "strikeStart": 16,
       "stub": false,
       "totalFrames": 34
     },
@@ -832,7 +940,9 @@
       "fp": 0,
       "id": "b03_combo_3",
       "num": 32103,
+      "recoveryStart": 40,
       "stamina": 0,
+      "strikeStart": 36,
       "stub": false,
       "totalFrames": 72
     },
@@ -842,7 +952,9 @@
       "fp": 0,
       "id": "b03_sweep",
       "num": 32104,
+      "recoveryStart": 32,
       "stamina": 0,
+      "strikeStart": 26,
       "stub": false,
       "totalFrames": 72
     },
@@ -852,7 +964,9 @@
       "fp": 0,
       "id": "b03_lunge",
       "num": 32105,
+      "recoveryStart": 28,
       "stamina": 0,
+      "strikeStart": 18,
       "stub": false,
       "totalFrames": 78
     },
@@ -862,7 +976,9 @@
       "fp": 0,
       "id": "b04_spit_near",
       "num": 33100,
+      "recoveryStart": null,
       "stamina": 0,
+      "strikeStart": null,
       "stub": false,
       "totalFrames": 78
     },
@@ -872,7 +988,9 @@
       "fp": 0,
       "id": "b04_spit_far",
       "num": 33101,
+      "recoveryStart": null,
       "stamina": 0,
+      "strikeStart": null,
       "stub": false,
       "totalFrames": 82
     },
@@ -882,7 +1000,9 @@
       "fp": 0,
       "id": "b04_tendril",
       "num": 33102,
+      "recoveryStart": 31,
       "stamina": 0,
+      "strikeStart": 26,
       "stub": false,
       "totalFrames": 54
     },
@@ -892,7 +1012,9 @@
       "fp": 0,
       "id": "b04_tendril_back",
       "num": 33103,
+      "recoveryStart": 18,
       "stamina": 0,
+      "strikeStart": 14,
       "stub": false,
       "totalFrames": 60
     },
@@ -902,7 +1024,9 @@
       "fp": 0,
       "id": "b04_spray",
       "num": 33104,
+      "recoveryStart": 43,
       "stamina": 0,
+      "strikeStart": 30,
       "stub": false,
       "totalFrames": 80
     },
@@ -912,7 +1036,9 @@
       "fp": 0,
       "id": "b04_tear_free",
       "num": 33105,
+      "recoveryStart": null,
       "stamina": 0,
+      "strikeStart": null,
       "stub": false,
       "totalFrames": 45
     },
@@ -922,7 +1048,9 @@
       "fp": 0,
       "id": "b05_bell_1",
       "num": 34100,
+      "recoveryStart": 24,
       "stamina": 0,
+      "strikeStart": 20,
       "stub": false,
       "totalFrames": 46
     },
@@ -932,7 +1060,9 @@
       "fp": 0,
       "id": "b05_bell_2",
       "num": 34101,
+      "recoveryStart": 20,
       "stamina": 0,
+      "strikeStart": 16,
       "stub": false,
       "totalFrames": 40
     },
@@ -942,7 +1072,9 @@
       "fp": 0,
       "id": "b05_bell_3",
       "num": 34102,
+      "recoveryStart": 31,
       "stamina": 0,
+      "strikeStart": 26,
       "stub": false,
       "totalFrames": 80
     },
@@ -952,7 +1084,9 @@
       "fp": 0,
       "id": "b05_beam",
       "num": 34103,
+      "recoveryStart": 61,
       "stamina": 0,
+      "strikeStart": 28,
       "stub": false,
       "totalFrames": 110
     },
@@ -962,7 +1096,9 @@
       "fp": 0,
       "id": "b05_raise",
       "num": 34104,
+      "recoveryStart": 34,
       "stamina": 0,
+      "strikeStart": 30,
       "stub": false,
       "totalFrames": 120
     },
@@ -972,7 +1108,9 @@
       "fp": 0,
       "id": "b05_surge",
       "num": 34105,
+      "recoveryStart": null,
       "stamina": 0,
+      "strikeStart": null,
       "stub": false,
       "totalFrames": 45
     },
@@ -982,7 +1120,9 @@
       "fp": 0,
       "id": "b05_scavenge",
       "num": 34106,
+      "recoveryStart": 50,
       "stamina": 0,
+      "strikeStart": 46,
       "stub": false,
       "totalFrames": 84
     },
@@ -992,7 +1132,9 @@
       "fp": 0,
       "id": "b05_borrow_thrust",
       "num": 34107,
+      "recoveryStart": 28,
       "stamina": 0,
+      "strikeStart": 24,
       "stub": false,
       "totalFrames": 74
     },
@@ -1002,7 +1144,9 @@
       "fp": 0,
       "id": "b05_borrow_bash",
       "num": 34108,
+      "recoveryStart": 22,
       "stamina": 0,
+      "strikeStart": 18,
       "stub": false,
       "totalFrames": 60
     },
@@ -1012,7 +1156,9 @@
       "fp": 0,
       "id": "b05_thrall_slash",
       "num": 34110,
+      "recoveryStart": 26,
       "stamina": 0,
+      "strikeStart": 22,
       "stub": false,
       "totalFrames": 60
     },
@@ -1022,7 +1168,9 @@
       "fp": 0,
       "id": "b05_thrall_thrust",
       "num": 34111,
+      "recoveryStart": 32,
       "stamina": 0,
+      "strikeStart": 28,
       "stub": false,
       "totalFrames": 76
     },
@@ -1032,7 +1180,9 @@
       "fp": 0,
       "id": "b05_drowned_swipe",
       "num": 34120,
+      "recoveryStart": 35,
       "stamina": 0,
+      "strikeStart": 30,
       "stub": false,
       "totalFrames": 76
     },
@@ -1042,7 +1192,9 @@
       "fp": 0,
       "id": "b06_cantor_beam",
       "num": 35100,
+      "recoveryStart": 35,
       "stamina": 0,
+      "strikeStart": 30,
       "stub": false,
       "totalFrames": 102
     },
@@ -1052,7 +1204,9 @@
       "fp": 0,
       "id": "b06_cantor_rebuke",
       "num": 35101,
+      "recoveryStart": 20,
       "stamina": 0,
+      "strikeStart": 16,
       "stub": false,
       "totalFrames": 76
     },
@@ -1062,7 +1216,9 @@
       "fp": 0,
       "id": "b06_cantor_mend",
       "num": 35102,
+      "recoveryStart": 38,
       "stamina": 0,
+      "strikeStart": 34,
       "stub": false,
       "totalFrames": 104
     },
@@ -1072,7 +1228,9 @@
       "fp": 0,
       "id": "b06_cantor_orbs",
       "num": 35103,
+      "recoveryStart": null,
       "stamina": 0,
+      "strikeStart": null,
       "stub": false,
       "totalFrames": 110
     },
@@ -1082,7 +1240,9 @@
       "fp": 0,
       "id": "b06_verse",
       "num": 35104,
+      "recoveryStart": null,
       "stamina": 0,
+      "strikeStart": null,
       "stub": false,
       "totalFrames": 45
     },
@@ -1092,7 +1252,9 @@
       "fp": 0,
       "id": "b06_bell_slam",
       "num": 35110,
+      "recoveryStart": 36,
       "stamina": 0,
+      "strikeStart": 32,
       "stub": false,
       "totalFrames": 98
     },
@@ -1102,7 +1264,9 @@
       "fp": 0,
       "id": "b06_bell_swing_1",
       "num": 35111,
+      "recoveryStart": 22,
       "stamina": 0,
+      "strikeStart": 18,
       "stub": false,
       "totalFrames": 44
     },
@@ -1112,7 +1276,9 @@
       "fp": 0,
       "id": "b06_bell_swing_2",
       "num": 35112,
+      "recoveryStart": 26,
       "stamina": 0,
+      "strikeStart": 22,
       "stub": false,
       "totalFrames": 90
     },
@@ -1122,7 +1288,9 @@
       "fp": 0,
       "id": "b06_bell_ring",
       "num": 35113,
+      "recoveryStart": 38,
       "stamina": 0,
+      "strikeStart": 34,
       "stub": false,
       "totalFrames": 104
     },
@@ -1132,7 +1300,9 @@
       "fp": 0,
       "id": "b06_bell_charge",
       "num": 35114,
+      "recoveryStart": 47,
       "stamina": 0,
+      "strikeStart": 30,
       "stub": false,
       "totalFrames": 120
     },
@@ -1142,7 +1312,9 @@
       "fp": 0,
       "id": "b06_lam_knives",
       "num": 35120,
+      "recoveryStart": null,
       "stamina": 0,
+      "strikeStart": null,
       "stub": false,
       "totalFrames": 86
     },
@@ -1152,7 +1324,9 @@
       "fp": 0,
       "id": "b06_lam_slash_1",
       "num": 35121,
+      "recoveryStart": 15,
       "stamina": 0,
+      "strikeStart": 12,
       "stub": false,
       "totalFrames": 28
     },
@@ -1162,7 +1336,9 @@
       "fp": 0,
       "id": "b06_lam_slash_2",
       "num": 35122,
+      "recoveryStart": 15,
       "stamina": 0,
+      "strikeStart": 12,
       "stub": false,
       "totalFrames": 28
     },
@@ -1172,7 +1348,9 @@
       "fp": 0,
       "id": "b06_lam_slash_3",
       "num": 35123,
+      "recoveryStart": 20,
       "stamina": 0,
+      "strikeStart": 16,
       "stub": false,
       "totalFrames": 74
     },
@@ -1182,7 +1360,9 @@
       "fp": 0,
       "id": "b06_lam_veilstab",
       "num": 35124,
+      "recoveryStart": 38,
       "stamina": 0,
+      "strikeStart": 34,
       "stub": false,
       "totalFrames": 100
     },
@@ -1192,7 +1372,9 @@
       "fp": 0,
       "id": "b07_gs_1",
       "num": 36100,
+      "recoveryStart": 24,
       "stamina": 0,
+      "strikeStart": 20,
       "stub": false,
       "totalFrames": 46
     },
@@ -1202,7 +1384,9 @@
       "fp": 0,
       "id": "b07_gs_2",
       "num": 36101,
+      "recoveryStart": 20,
       "stamina": 0,
+      "strikeStart": 16,
       "stub": false,
       "totalFrames": 40
     },
@@ -1212,7 +1396,9 @@
       "fp": 0,
       "id": "b07_gs_3",
       "num": 36102,
+      "recoveryStart": 50,
       "stamina": 0,
+      "strikeStart": 46,
       "stub": false,
       "totalFrames": 88
     },
@@ -1222,7 +1408,9 @@
       "fp": 0,
       "id": "b07_stab",
       "num": 36103,
+      "recoveryStart": 19,
       "stamina": 0,
+      "strikeStart": 16,
       "stub": false,
       "totalFrames": 58
     },
@@ -1232,7 +1420,9 @@
       "fp": 0,
       "id": "b07_guard",
       "num": 36104,
+      "recoveryStart": 67,
       "stamina": 0,
+      "strikeStart": 64,
       "stub": false,
       "totalFrames": 98
     },
@@ -1242,7 +1432,9 @@
       "fp": 0,
       "id": "b07_guard_counter",
       "num": 36105,
+      "recoveryStart": 21,
       "stamina": 0,
+      "strikeStart": 16,
       "stub": false,
       "totalFrames": 72
     },
@@ -1252,7 +1444,9 @@
       "fp": 0,
       "id": "b07_leap_slam",
       "num": 36106,
+      "recoveryStart": 37,
       "stamina": 0,
+      "strikeStart": 32,
       "stub": false,
       "totalFrames": 80
     },
@@ -1262,7 +1456,9 @@
       "fp": 0,
       "id": "b07_overfit",
       "num": 36107,
+      "recoveryStart": null,
       "stamina": 0,
+      "strikeStart": null,
       "stub": false,
       "totalFrames": 45
     },
@@ -1272,7 +1468,9 @@
       "fp": 0,
       "id": "b07_c_sweep_pl",
       "num": 36108,
+      "recoveryStart": 29,
       "stamina": 0,
+      "strikeStart": 22,
       "stub": false,
       "totalFrames": 74
     },
@@ -1282,7 +1480,9 @@
       "fp": 0,
       "id": "b07_c_sweep_pr",
       "num": 36109,
+      "recoveryStart": 29,
       "stamina": 0,
+      "strikeStart": 22,
       "stub": false,
       "totalFrames": 74
     },
@@ -1292,7 +1492,9 @@
       "fp": 0,
       "id": "b07_c_lunge",
       "num": 36110,
+      "recoveryStart": 29,
       "stamina": 0,
+      "strikeStart": 22,
       "stub": false,
       "totalFrames": 66
     },
@@ -1302,7 +1504,9 @@
       "fp": 0,
       "id": "b07_c_delay_1",
       "num": 36111,
+      "recoveryStart": 18,
       "stamina": 0,
+      "strikeStart": 14,
       "stub": false,
       "totalFrames": 34
     },
@@ -1312,7 +1516,9 @@
       "fp": 0,
       "id": "b07_c_delay_2",
       "num": 36112,
+      "recoveryStart": 44,
       "stamina": 0,
+      "strikeStart": 40,
       "stub": false,
       "totalFrames": 80
     },
@@ -1322,7 +1528,9 @@
       "fp": 0,
       "id": "b07_c_kick",
       "num": 36113,
+      "recoveryStart": 26,
       "stamina": 0,
+      "strikeStart": 22,
       "stub": false,
       "totalFrames": 64
     },
@@ -1332,7 +1540,9 @@
       "fp": 0,
       "id": "b07_c_dash",
       "num": 36114,
+      "recoveryStart": 35,
       "stamina": 0,
+      "strikeStart": 30,
       "stub": false,
       "totalFrames": 76
     },
@@ -1342,7 +1552,9 @@
       "fp": 0,
       "id": "b08_stomp_l",
       "num": 37100,
+      "recoveryStart": 34,
       "stamina": 0,
+      "strikeStart": 30,
       "stub": false,
       "totalFrames": 56
     },
@@ -1352,7 +1564,9 @@
       "fp": 0,
       "id": "b08_stomp_r",
       "num": 37101,
+      "recoveryStart": 24,
       "stamina": 0,
+      "strikeStart": 20,
       "stub": false,
       "totalFrames": 52
     },
@@ -1362,7 +1576,9 @@
       "fp": 0,
       "id": "b08_sweep",
       "num": 37102,
+      "recoveryStart": 34,
       "stamina": 0,
+      "strikeStart": 28,
       "stub": false,
       "totalFrames": 70
     },
@@ -1372,7 +1588,9 @@
       "fp": 0,
       "id": "b08_breath",
       "num": 37103,
+      "recoveryStart": 50,
       "stamina": 0,
+      "strikeStart": 36,
       "stub": false,
       "totalFrames": 110
     },
@@ -1382,7 +1600,9 @@
       "fp": 0,
       "id": "b08_slam",
       "num": 37104,
+      "recoveryStart": 53,
       "stamina": 0,
+      "strikeStart": 34,
       "stub": false,
       "totalFrames": 96
     },
@@ -1392,7 +1612,9 @@
       "fp": 0,
       "id": "b08_ignite",
       "num": 37105,
+      "recoveryStart": null,
       "stamina": 0,
+      "strikeStart": null,
       "stub": false,
       "totalFrames": 45
     },
@@ -1402,7 +1624,9 @@
       "fp": 0,
       "id": "b08_flare",
       "num": 37106,
+      "recoveryStart": 35,
       "stamina": 0,
+      "strikeStart": 30,
       "stub": false,
       "totalFrames": 90
     },
@@ -1412,7 +1636,9 @@
       "fp": 0,
       "id": "b08_breath_l",
       "num": 37107,
+      "recoveryStart": 50,
       "stamina": 0,
+      "strikeStart": 36,
       "stub": false,
       "totalFrames": 70
     },
@@ -1422,7 +1648,9 @@
       "fp": 0,
       "id": "b08_breath_r",
       "num": 37108,
+      "recoveryStart": 36,
       "stamina": 0,
+      "strikeStart": 22,
       "stub": false,
       "totalFrames": 80
     },
@@ -1432,7 +1660,9 @@
       "fp": 0,
       "id": "b08_kneel",
       "num": 37109,
+      "recoveryStart": null,
       "stamina": 0,
+      "strikeStart": null,
       "stub": false,
       "totalFrames": 60
     },
@@ -1442,7 +1672,9 @@
       "fp": 0,
       "id": "b08_leg_buckle",
       "num": 37110,
+      "recoveryStart": null,
       "stamina": 0,
+      "strikeStart": null,
       "stub": false,
       "totalFrames": 60
     },
@@ -1452,7 +1684,9 @@
       "fp": 0,
       "id": "b09_air_dive",
       "num": 38100,
+      "recoveryStart": 41,
       "stamina": 0,
+      "strikeStart": 34,
       "stub": false,
       "totalFrames": 84
     },
@@ -1462,7 +1696,9 @@
       "fp": 0,
       "id": "b09_air_dive_short",
       "num": 38112,
+      "recoveryStart": 41,
       "stamina": 0,
+      "strikeStart": 34,
       "stub": false,
       "totalFrames": 84
     },
@@ -1472,7 +1708,9 @@
       "fp": 0,
       "id": "b09_air_dust",
       "num": 38101,
+      "recoveryStart": 79,
       "stamina": 0,
+      "strikeStart": 32,
       "stub": false,
       "totalFrames": 110
     },
@@ -1482,7 +1720,9 @@
       "fp": 0,
       "id": "b09_air_beam",
       "num": 38102,
+      "recoveryStart": 35,
       "stamina": 0,
+      "strikeStart": 30,
       "stub": false,
       "totalFrames": 46
     },
@@ -1492,7 +1732,9 @@
       "fp": 0,
       "id": "b09_air_beam_b",
       "num": 38103,
+      "recoveryStart": 23,
       "stamina": 0,
+      "strikeStart": 16,
       "stub": false,
       "totalFrames": 70
     },
@@ -1502,7 +1744,9 @@
       "fp": 0,
       "id": "b09_air_pass",
       "num": 38104,
+      "recoveryStart": 55,
       "stamina": 0,
+      "strikeStart": 30,
       "stub": false,
       "totalFrames": 96
     },
@@ -1512,7 +1756,9 @@
       "fp": 0,
       "id": "b09_gnd_buffet",
       "num": 38105,
+      "recoveryStart": 25,
       "stamina": 0,
+      "strikeStart": 20,
       "stub": false,
       "totalFrames": 66
     },
@@ -1522,7 +1768,9 @@
       "fp": 0,
       "id": "b09_gnd_buffet_b",
       "num": 38106,
+      "recoveryStart": 23,
       "stamina": 0,
+      "strikeStart": 18,
       "stub": false,
       "totalFrames": 60
     },
@@ -1532,7 +1780,9 @@
       "fp": 0,
       "id": "b09_gnd_lunge",
       "num": 38107,
+      "recoveryStart": 37,
       "stamina": 0,
+      "strikeStart": 28,
       "stub": false,
       "totalFrames": 78
     },
@@ -1542,7 +1792,9 @@
       "fp": 0,
       "id": "b09_gnd_sweep",
       "num": 38108,
+      "recoveryStart": 47,
       "stamina": 0,
+      "strikeStart": 30,
       "stub": false,
       "totalFrames": 104
     },
@@ -1552,7 +1804,9 @@
       "fp": 0,
       "id": "b09_gnd_flare",
       "num": 38109,
+      "recoveryStart": 43,
       "stamina": 0,
+      "strikeStart": 36,
       "stub": false,
       "totalFrames": 100
     },
@@ -1562,7 +1816,9 @@
       "fp": 0,
       "id": "b09_drain",
       "num": 38110,
+      "recoveryStart": null,
       "stamina": 0,
+      "strikeStart": null,
       "stub": false,
       "totalFrames": 45
     },
@@ -1572,7 +1828,9 @@
       "fp": 0,
       "id": "b09_stunned",
       "num": 38111,
+      "recoveryStart": null,
       "stamina": 0,
+      "strikeStart": null,
       "stub": false,
       "totalFrames": 60
     },
@@ -1582,7 +1840,9 @@
       "fp": 0,
       "id": "b10_hammer",
       "num": 39100,
+      "recoveryStart": 36,
       "stamina": 0,
+      "strikeStart": 32,
       "stub": false,
       "totalFrames": 80
     },
@@ -1592,7 +1852,9 @@
       "fp": 0,
       "id": "b10_hammer_combo",
       "num": 39101,
+      "recoveryStart": 116,
       "stamina": 0,
+      "strikeStart": 32,
       "stub": false,
       "totalFrames": 160
     },
@@ -1602,7 +1864,9 @@
       "fp": 0,
       "id": "b10_sweep",
       "num": 39102,
+      "recoveryStart": 76,
       "stamina": 0,
+      "strikeStart": 32,
       "stub": false,
       "totalFrames": 120
     },
@@ -1612,7 +1876,9 @@
       "fp": 0,
       "id": "b10_bell_drag",
       "num": 39103,
+      "recoveryStart": 38,
       "stamina": 0,
+      "strikeStart": 32,
       "stub": false,
       "totalFrames": 120
     },
@@ -1622,7 +1888,9 @@
       "fp": 0,
       "id": "b10_snap",
       "num": 39104,
+      "recoveryStart": null,
       "stamina": 0,
+      "strikeStart": null,
       "stub": false,
       "totalFrames": 45
     },
@@ -1632,7 +1900,9 @@
       "fp": 0,
       "id": "b10_flail_slam",
       "num": 39105,
+      "recoveryStart": 28,
       "stamina": 0,
+      "strikeStart": 24,
       "stub": false,
       "totalFrames": 64
     },
@@ -1642,7 +1912,9 @@
       "fp": 0,
       "id": "b10_flail_swing",
       "num": 39106,
+      "recoveryStart": 60,
       "stamina": 0,
+      "strikeStart": 24,
       "stub": false,
       "totalFrames": 96
     },
@@ -1652,7 +1924,9 @@
       "fp": 0,
       "id": "b10_flail_spin",
       "num": 39107,
+      "recoveryStart": 92,
       "stamina": 0,
+      "strikeStart": 24,
       "stub": false,
       "totalFrames": 128
     },
@@ -1662,7 +1936,9 @@
       "fp": 0,
       "id": "b11_beam",
       "num": 40100,
+      "recoveryStart": 71,
       "stamina": 0,
+      "strikeStart": 66,
       "stub": false,
       "totalFrames": 140
     },
@@ -1672,7 +1948,9 @@
       "fp": 0,
       "id": "b11_blink",
       "num": 40101,
+      "recoveryStart": 44,
       "stamina": 0,
+      "strikeStart": 40,
       "stub": false,
       "totalFrames": 84
     },
@@ -1682,7 +1960,9 @@
       "fp": 0,
       "id": "b11_orbs",
       "num": 40102,
+      "recoveryStart": null,
       "stamina": 0,
+      "strikeStart": null,
       "stub": false,
       "totalFrames": 120
     },
@@ -1692,7 +1972,9 @@
       "fp": 0,
       "id": "b11_shuffle",
       "num": 40103,
+      "recoveryStart": 44,
       "stamina": 0,
+      "strikeStart": 40,
       "stub": false,
       "totalFrames": 90
     },
@@ -1702,7 +1984,9 @@
       "fp": 0,
       "id": "b11_split",
       "num": 40104,
+      "recoveryStart": null,
       "stamina": 0,
+      "strikeStart": null,
       "stub": false,
       "totalFrames": 45
     },
@@ -1712,7 +1996,9 @@
       "fp": 0,
       "id": "b11_image_blink",
       "num": 40110,
+      "recoveryStart": null,
       "stamina": 0,
+      "strikeStart": null,
       "stub": false,
       "totalFrames": 84
     },
@@ -1722,7 +2008,9 @@
       "fp": 0,
       "id": "b11_image_beam",
       "num": 40111,
+      "recoveryStart": null,
       "stamina": 0,
+      "strikeStart": null,
       "stub": false,
       "totalFrames": 140
     },
@@ -1732,7 +2020,9 @@
       "fp": 0,
       "id": "b12_lash",
       "num": 41100,
+      "recoveryStart": 24,
       "stamina": 0,
+      "strikeStart": 20,
       "stub": false,
       "totalFrames": 34
     },
@@ -1742,7 +2032,9 @@
       "fp": 0,
       "id": "b12_lash_2",
       "num": 41101,
+      "recoveryStart": 30,
       "stamina": 0,
+      "strikeStart": 26,
       "stub": false,
       "totalFrames": 64
     },
@@ -1752,7 +2044,9 @@
       "fp": 0,
       "id": "b12_loom",
       "num": 41102,
+      "recoveryStart": 34,
       "stamina": 0,
+      "strikeStart": 30,
       "stub": false,
       "totalFrames": 74
     },
@@ -1762,7 +2056,9 @@
       "fp": 0,
       "id": "b12_stitch",
       "num": 41103,
+      "recoveryStart": 34,
       "stamina": 0,
+      "strikeStart": 28,
       "stub": false,
       "totalFrames": 74
     },
@@ -1772,7 +2068,9 @@
       "fp": 0,
       "id": "b12_spin",
       "num": 41104,
+      "recoveryStart": 44,
       "stamina": 0,
+      "strikeStart": 28,
       "stub": false,
       "totalFrames": 80
     },
@@ -1782,7 +2080,9 @@
       "fp": 0,
       "id": "b12_unravel",
       "num": 41105,
+      "recoveryStart": null,
       "stamina": 0,
+      "strikeStart": null,
       "stub": false,
       "totalFrames": 45
     },
@@ -1792,7 +2092,9 @@
       "fp": 0,
       "id": "b12_flurry",
       "num": 41106,
+      "recoveryStart": 26,
       "stamina": 0,
+      "strikeStart": 22,
       "stub": false,
       "totalFrames": 30
     },
@@ -1802,7 +2104,9 @@
       "fp": 0,
       "id": "b12_flurry_2",
       "num": 41107,
+      "recoveryStart": 18,
       "stamina": 0,
+      "strikeStart": 14,
       "stub": false,
       "totalFrames": 22
     },
@@ -1812,7 +2116,9 @@
       "fp": 0,
       "id": "b12_flurry_3",
       "num": 41108,
+      "recoveryStart": 28,
       "stamina": 0,
+      "strikeStart": 24,
       "stub": false,
       "totalFrames": 66
     },
@@ -1822,7 +2128,9 @@
       "fp": 0,
       "id": "b12_loom_storm",
       "num": 41109,
+      "recoveryStart": 34,
       "stamina": 0,
+      "strikeStart": 30,
       "stub": false,
       "totalFrames": 74
     },
@@ -1832,7 +2140,9 @@
       "fp": 0,
       "id": "tb_swipe",
       "num": 9200,
+      "recoveryStart": 22,
       "stamina": 0,
+      "strikeStart": 18,
       "stub": false,
       "totalFrames": 60
     },
@@ -1842,7 +2152,9 @@
       "fp": 0,
       "id": "tb_slam",
       "num": 9201,
+      "recoveryStart": 31,
       "stamina": 0,
+      "strikeStart": 26,
       "stub": false,
       "totalFrames": 72
     },
@@ -1852,7 +2164,9 @@
       "fp": 0,
       "id": "tb_roar",
       "num": 9202,
+      "recoveryStart": null,
       "stamina": 0,
+      "strikeStart": null,
       "stub": false,
       "totalFrames": 45
     },
@@ -1862,7 +2176,9 @@
       "fp": 0,
       "id": "tb_pillar_pulse",
       "num": 9203,
+      "recoveryStart": 25,
       "stamina": 0,
+      "strikeStart": 20,
       "stub": false,
       "totalFrames": 64
     },
@@ -1872,7 +2188,9 @@
       "fp": 0,
       "id": "bow_shot",
       "num": 18400,
+      "recoveryStart": null,
       "stamina": 6,
+      "strikeStart": null,
       "stub": false,
       "totalFrames": 26
     },
@@ -1882,7 +2200,9 @@
       "fp": 0,
       "id": "bow_heavy",
       "num": 18401,
+      "recoveryStart": null,
       "stamina": 12,
+      "strikeStart": null,
       "stub": false,
       "totalFrames": 38
     },
@@ -1892,7 +2212,9 @@
       "fp": 0,
       "id": "bow_heavy_charged",
       "num": 18402,
+      "recoveryStart": null,
       "stamina": 18,
+      "strikeStart": null,
       "stub": false,
       "totalFrames": 42
     },
@@ -1902,7 +2224,9 @@
       "fp": 0,
       "id": "bow_running",
       "num": 18403,
+      "recoveryStart": null,
       "stamina": 8,
+      "strikeStart": null,
       "stub": false,
       "totalFrames": 28
     },
@@ -1912,7 +2236,9 @@
       "fp": 0,
       "id": "bow_rolling",
       "num": 18404,
+      "recoveryStart": null,
       "stamina": 6,
+      "strikeStart": null,
       "stub": false,
       "totalFrames": 24
     },
@@ -1922,7 +2248,9 @@
       "fp": 0,
       "id": "bow_backstep",
       "num": 18405,
+      "recoveryStart": null,
       "stamina": 6,
+      "strikeStart": null,
       "stub": false,
       "totalFrames": 22
     },
@@ -1932,7 +2260,9 @@
       "fp": 0,
       "id": "bow_jump_light",
       "num": 18406,
+      "recoveryStart": null,
       "stamina": 8,
+      "strikeStart": null,
       "stub": false,
       "totalFrames": 28
     },
@@ -1942,7 +2272,9 @@
       "fp": 0,
       "id": "bow_jump_heavy",
       "num": 18407,
+      "recoveryStart": null,
       "stamina": 14,
+      "strikeStart": null,
       "stub": false,
       "totalFrames": 36
     },
@@ -1952,7 +2284,9 @@
       "fp": 0,
       "id": "bow_plunge",
       "num": 18408,
+      "recoveryStart": 9,
       "stamina": 0,
+      "strikeStart": 5,
       "stub": false,
       "totalFrames": 36
     },
@@ -1962,7 +2296,9 @@
       "fp": 0,
       "id": "bow_guard_counter",
       "num": 18409,
+      "recoveryStart": 11,
       "stamina": 12,
+      "strikeStart": 8,
       "stub": false,
       "totalFrames": 30
     },
@@ -1972,7 +2308,9 @@
       "fp": 0,
       "id": "ct_light_1",
       "num": 18600,
+      "recoveryStart": 14,
       "stamina": 9,
+      "strikeStart": 11,
       "stub": false,
       "totalFrames": 32
     },
@@ -1982,7 +2320,9 @@
       "fp": 0,
       "id": "ct_light_2",
       "num": 18601,
+      "recoveryStart": 14,
       "stamina": 9,
+      "strikeStart": 11,
       "stub": false,
       "totalFrames": 32
     },
@@ -1992,7 +2332,9 @@
       "fp": 0,
       "id": "ct_light_3",
       "num": 18602,
+      "recoveryStart": 16,
       "stamina": 12,
+      "strikeStart": 13,
       "stub": false,
       "totalFrames": 37
     },
@@ -2002,7 +2344,9 @@
       "fp": 0,
       "id": "ct_heavy",
       "num": 18603,
+      "recoveryStart": 20,
       "stamina": 16,
+      "strikeStart": 17,
       "stub": false,
       "totalFrames": 42
     },
@@ -2012,7 +2356,9 @@
       "fp": 0,
       "id": "ct_heavy_charged",
       "num": 18604,
+      "recoveryStart": 22,
       "stamina": 20,
+      "strikeStart": 19,
       "stub": false,
       "totalFrames": 46
     },
@@ -2022,7 +2368,9 @@
       "fp": 0,
       "id": "ct_running",
       "num": 18605,
+      "recoveryStart": 14,
       "stamina": 12,
+      "strikeStart": 10,
       "stub": false,
       "totalFrames": 34
     },
@@ -2032,7 +2380,9 @@
       "fp": 0,
       "id": "ct_rolling",
       "num": 18606,
+      "recoveryStart": 11,
       "stamina": 9,
+      "strikeStart": 8,
       "stub": false,
       "totalFrames": 29
     },
@@ -2042,7 +2392,9 @@
       "fp": 0,
       "id": "ct_backstep",
       "num": 18607,
+      "recoveryStart": 10,
       "stamina": 9,
+      "strikeStart": 7,
       "stub": false,
       "totalFrames": 28
     },
@@ -2052,7 +2404,9 @@
       "fp": 0,
       "id": "ct_jump_light",
       "num": 18608,
+      "recoveryStart": 14,
       "stamina": 12,
+      "strikeStart": 11,
       "stub": false,
       "totalFrames": 34
     },
@@ -2062,7 +2416,9 @@
       "fp": 0,
       "id": "ct_jump_heavy",
       "num": 18609,
+      "recoveryStart": 17,
       "stamina": 18,
+      "strikeStart": 13,
       "stub": false,
       "totalFrames": 39
     },
@@ -2072,7 +2428,9 @@
       "fp": 0,
       "id": "ct_plunge",
       "num": 18610,
+      "recoveryStart": 9,
       "stamina": 0,
+      "strikeStart": 5,
       "stub": false,
       "totalFrames": 36
     },
@@ -2082,7 +2440,9 @@
       "fp": 0,
       "id": "ct_guard_counter",
       "num": 18611,
+      "recoveryStart": 11,
       "stamina": 14,
+      "strikeStart": 8,
       "stub": false,
       "totalFrames": 30
     },
@@ -2092,7 +2452,9 @@
       "fp": 0,
       "id": "col_light_1",
       "num": 18000,
+      "recoveryStart": 24,
       "stamina": 22,
+      "strikeStart": 20,
       "stub": false,
       "totalFrames": 50
     },
@@ -2102,7 +2464,9 @@
       "fp": 0,
       "id": "col_light_2",
       "num": 18001,
+      "recoveryStart": 24,
       "stamina": 22,
+      "strikeStart": 20,
       "stub": false,
       "totalFrames": 50
     },
@@ -2112,7 +2476,9 @@
       "fp": 0,
       "id": "col_light_3",
       "num": 18002,
+      "recoveryStart": 30,
       "stamina": 28,
+      "strikeStart": 26,
       "stub": false,
       "totalFrames": 60
     },
@@ -2122,7 +2488,9 @@
       "fp": 0,
       "id": "col_heavy",
       "num": 18003,
+      "recoveryStart": 34,
       "stamina": 36,
+      "strikeStart": 30,
       "stub": false,
       "totalFrames": 68
     },
@@ -2132,7 +2500,9 @@
       "fp": 0,
       "id": "col_heavy_charged",
       "num": 18004,
+      "recoveryStart": 38,
       "stamina": 44,
+      "strikeStart": 34,
       "stub": false,
       "totalFrames": 74
     },
@@ -2142,7 +2512,9 @@
       "fp": 0,
       "id": "col_running",
       "num": 18005,
+      "recoveryStart": 27,
       "stamina": 26,
+      "strikeStart": 22,
       "stub": false,
       "totalFrames": 55
     },
@@ -2152,7 +2524,9 @@
       "fp": 0,
       "id": "col_rolling",
       "num": 18006,
+      "recoveryStart": 22,
       "stamina": 20,
+      "strikeStart": 18,
       "stub": false,
       "totalFrames": 46
     },
@@ -2162,7 +2536,9 @@
       "fp": 0,
       "id": "col_backstep",
       "num": 18007,
+      "recoveryStart": 20,
       "stamina": 18,
+      "strikeStart": 16,
       "stub": false,
       "totalFrames": 42
     },
@@ -2172,7 +2548,9 @@
       "fp": 0,
       "id": "col_jump_light",
       "num": 18008,
+      "recoveryStart": 22,
       "stamina": 26,
+      "strikeStart": 18,
       "stub": false,
       "totalFrames": 44
     },
@@ -2182,7 +2560,9 @@
       "fp": 0,
       "id": "col_jump_heavy",
       "num": 18009,
+      "recoveryStart": 24,
       "stamina": 34,
+      "strikeStart": 20,
       "stub": false,
       "totalFrames": 48
     },
@@ -2192,7 +2572,9 @@
       "fp": 0,
       "id": "col_plunge",
       "num": 18010,
+      "recoveryStart": 10,
       "stamina": 0,
+      "strikeStart": 6,
       "stub": false,
       "totalFrames": 38
     },
@@ -2202,7 +2584,9 @@
       "fp": 0,
       "id": "col_guard_counter",
       "num": 18011,
+      "recoveryStart": 16,
       "stamina": 24,
+      "strikeStart": 12,
       "stub": false,
       "totalFrames": 38
     },
@@ -2212,7 +2596,9 @@
       "fp": 0,
       "id": "dodge_roll_light",
       "num": 3000,
+      "recoveryStart": null,
       "stamina": 14,
+      "strikeStart": null,
       "stub": false,
       "totalFrames": 20
     },
@@ -2222,7 +2608,9 @@
       "fp": 0,
       "id": "dodge_roll_medium",
       "num": 3001,
+      "recoveryStart": null,
       "stamina": 14,
+      "strikeStart": null,
       "stub": false,
       "totalFrames": 24
     },
@@ -2232,7 +2620,9 @@
       "fp": 0,
       "id": "dodge_roll_heavy",
       "num": 3002,
+      "recoveryStart": null,
       "stamina": 14,
+      "strikeStart": null,
       "stub": false,
       "totalFrames": 30
     },
@@ -2242,7 +2632,9 @@
       "fp": 0,
       "id": "dodge_backstep",
       "num": 3003,
+      "recoveryStart": null,
       "stamina": 10,
+      "strikeStart": null,
       "stub": false,
       "totalFrames": 15
     },
@@ -2252,7 +2644,9 @@
       "fp": 0,
       "id": "flask_drink",
       "num": 3010,
+      "recoveryStart": null,
       "stamina": 0,
+      "strikeStart": null,
       "stub": false,
       "totalFrames": 30
     },
@@ -2262,7 +2656,9 @@
       "fp": 0,
       "id": "dummy_slash",
       "num": 3020,
+      "recoveryStart": 15,
       "stamina": 0,
+      "strikeStart": 12,
       "stub": false,
       "totalFrames": 40
     },
@@ -2272,7 +2668,9 @@
       "fp": 0,
       "id": "dummy_venom_slash",
       "num": 3021,
+      "recoveryStart": 15,
       "stamina": 0,
+      "strikeStart": 12,
       "stub": false,
       "totalFrames": 40
     },
@@ -2282,7 +2680,9 @@
       "fp": 0,
       "id": "crit_riposte",
       "num": 3030,
+      "recoveryStart": 15,
       "stamina": 0,
+      "strikeStart": 14,
       "stub": false,
       "totalFrames": 40
     },
@@ -2292,7 +2692,9 @@
       "fp": 0,
       "id": "crit_backstab",
       "num": 3031,
+      "recoveryStart": 17,
       "stamina": 0,
+      "strikeStart": 16,
       "stub": false,
       "totalFrames": 44
     },
@@ -2302,7 +2704,9 @@
       "fp": 0,
       "id": "crit_receive_riposte",
       "num": 3032,
+      "recoveryStart": null,
       "stamina": 0,
+      "strikeStart": null,
       "stub": false,
       "totalFrames": 40
     },
@@ -2312,7 +2716,9 @@
       "fp": 0,
       "id": "crit_receive_backstab",
       "num": 3033,
+      "recoveryStart": null,
       "stamina": 0,
+      "strikeStart": null,
       "stub": false,
       "totalFrames": 44
     },
@@ -2322,7 +2728,9 @@
       "fp": 0,
       "id": "cs_light_1",
       "num": 13200,
+      "recoveryStart": 11,
       "stamina": 10,
+      "strikeStart": 8,
       "stub": false,
       "totalFrames": 24
     },
@@ -2332,7 +2740,9 @@
       "fp": 0,
       "id": "cs_light_2",
       "num": 13201,
+      "recoveryStart": 11,
       "stamina": 10,
+      "strikeStart": 8,
       "stub": false,
       "totalFrames": 24
     },
@@ -2342,7 +2752,9 @@
       "fp": 0,
       "id": "cs_light_3",
       "num": 13202,
+      "recoveryStart": 13,
       "stamina": 14,
+      "strikeStart": 9,
       "stub": false,
       "totalFrames": 28
     },
@@ -2352,7 +2764,9 @@
       "fp": 0,
       "id": "cs_heavy",
       "num": 13203,
+      "recoveryStart": 19,
       "stamina": 20,
+      "strikeStart": 14,
       "stub": false,
       "totalFrames": 38
     },
@@ -2362,7 +2776,9 @@
       "fp": 0,
       "id": "cs_heavy_charged",
       "num": 13204,
+      "recoveryStart": 21,
       "stamina": 26,
+      "strikeStart": 16,
       "stub": false,
       "totalFrames": 40
     },
@@ -2372,7 +2788,9 @@
       "fp": 0,
       "id": "cs_running",
       "num": 13205,
+      "recoveryStart": 12,
       "stamina": 12,
+      "strikeStart": 7,
       "stub": false,
       "totalFrames": 28
     },
@@ -2382,7 +2800,9 @@
       "fp": 0,
       "id": "cs_rolling",
       "num": 13206,
+      "recoveryStart": 9,
       "stamina": 12,
+      "strikeStart": 6,
       "stub": false,
       "totalFrames": 22
     },
@@ -2392,7 +2812,9 @@
       "fp": 0,
       "id": "cs_backstep",
       "num": 13207,
+      "recoveryStart": 9,
       "stamina": 12,
+      "strikeStart": 5,
       "stub": false,
       "totalFrames": 22
     },
@@ -2402,7 +2824,9 @@
       "fp": 0,
       "id": "cs_jump_light",
       "num": 13208,
+      "recoveryStart": 13,
       "stamina": 16,
+      "strikeStart": 9,
       "stub": false,
       "totalFrames": 26
     },
@@ -2412,7 +2836,9 @@
       "fp": 0,
       "id": "cs_jump_heavy",
       "num": 13209,
+      "recoveryStart": 15,
       "stamina": 20,
+      "strikeStart": 10,
       "stub": false,
       "totalFrames": 30
     },
@@ -2422,7 +2848,9 @@
       "fp": 0,
       "id": "cs_plunge",
       "num": 13210,
+      "recoveryStart": 8,
       "stamina": 0,
+      "strikeStart": 4,
       "stub": false,
       "totalFrames": 26
     },
@@ -2432,7 +2860,9 @@
       "fp": 0,
       "id": "cs_guard_counter",
       "num": 13211,
+      "recoveryStart": 11,
       "stamina": 16,
+      "strikeStart": 7,
       "stub": false,
       "totalFrames": 26
     },
@@ -2442,7 +2872,9 @@
       "fp": 0,
       "id": "dag_light_1",
       "num": 13000,
+      "recoveryStart": 8,
       "stamina": 6,
+      "strikeStart": 6,
       "stub": false,
       "totalFrames": 18
     },
@@ -2452,7 +2884,9 @@
       "fp": 0,
       "id": "dag_light_2",
       "num": 13001,
+      "recoveryStart": 8,
       "stamina": 6,
+      "strikeStart": 6,
       "stub": false,
       "totalFrames": 18
     },
@@ -2462,7 +2896,9 @@
       "fp": 0,
       "id": "dag_light_3",
       "num": 13002,
+      "recoveryStart": 10,
       "stamina": 8,
+      "strikeStart": 7,
       "stub": false,
       "totalFrames": 22
     },
@@ -2472,7 +2908,9 @@
       "fp": 0,
       "id": "dag_heavy",
       "num": 13003,
+      "recoveryStart": 15,
       "stamina": 16,
+      "strikeStart": 12,
       "stub": false,
       "totalFrames": 26
     },
@@ -2482,7 +2920,9 @@
       "fp": 0,
       "id": "dag_heavy_charged",
       "num": 13004,
+      "recoveryStart": 17,
       "stamina": 20,
+      "strikeStart": 14,
       "stub": false,
       "totalFrames": 28
     },
@@ -2492,7 +2932,9 @@
       "fp": 0,
       "id": "dag_running",
       "num": 13005,
+      "recoveryStart": 10,
       "stamina": 10,
+      "strikeStart": 6,
       "stub": false,
       "totalFrames": 20
     },
@@ -2502,7 +2944,9 @@
       "fp": 0,
       "id": "dag_rolling",
       "num": 13006,
+      "recoveryStart": 8,
       "stamina": 8,
+      "strikeStart": 5,
       "stub": false,
       "totalFrames": 16
     },
@@ -2512,7 +2956,9 @@
       "fp": 0,
       "id": "dag_backstep",
       "num": 13007,
+      "recoveryStart": 7,
       "stamina": 8,
+      "strikeStart": 4,
       "stub": false,
       "totalFrames": 14
     },
@@ -2522,7 +2968,9 @@
       "fp": 0,
       "id": "dag_jump_light",
       "num": 13008,
+      "recoveryStart": 10,
       "stamina": 12,
+      "strikeStart": 7,
       "stub": false,
       "totalFrames": 20
     },
@@ -2532,7 +2980,9 @@
       "fp": 0,
       "id": "dag_jump_heavy",
       "num": 13009,
+      "recoveryStart": 11,
       "stamina": 16,
+      "strikeStart": 7,
       "stub": false,
       "totalFrames": 22
     },
@@ -2542,7 +2992,9 @@
       "fp": 0,
       "id": "dag_plunge",
       "num": 13010,
+      "recoveryStart": 7,
       "stamina": 0,
+      "strikeStart": 3,
       "stub": false,
       "totalFrames": 22
     },
@@ -2552,7 +3004,9 @@
       "fp": 0,
       "id": "dag_guard_counter",
       "num": 13011,
+      "recoveryStart": 9,
       "stamina": 18,
+      "strikeStart": 6,
       "stub": false,
       "totalFrames": 22
     },
@@ -2562,7 +3016,9 @@
       "fp": 0,
       "id": "ac_cast",
       "num": 8300,
+      "recoveryStart": null,
       "stamina": 0,
+      "strikeStart": null,
       "stub": false,
       "totalFrames": 80
     },
@@ -2572,7 +3028,9 @@
       "fp": 0,
       "id": "ac_smack",
       "num": 8301,
+      "recoveryStart": 17,
       "stamina": 0,
+      "strikeStart": 14,
       "stub": false,
       "totalFrames": 44
     },
@@ -2582,7 +3040,9 @@
       "fp": 0,
       "id": "ac_bell_cast",
       "num": 8302,
+      "recoveryStart": null,
       "stamina": 0,
+      "strikeStart": null,
       "stub": false,
       "totalFrames": 80
     },
@@ -2592,7 +3052,9 @@
       "fp": 0,
       "id": "bw_strike_1",
       "num": 8670,
+      "recoveryStart": 20,
       "stamina": 0,
+      "strikeStart": 16,
       "stub": false,
       "totalFrames": 44
     },
@@ -2602,7 +3064,9 @@
       "fp": 0,
       "id": "bw_strike_2",
       "num": 8671,
+      "recoveryStart": 20,
       "stamina": 0,
+      "strikeStart": 16,
       "stub": false,
       "totalFrames": 44
     },
@@ -2612,7 +3076,9 @@
       "fp": 0,
       "id": "bw_wave",
       "num": 8672,
+      "recoveryStart": 41,
       "stamina": 0,
+      "strikeStart": 36,
       "stub": false,
       "totalFrames": 80
     },
@@ -2622,7 +3088,9 @@
       "fp": 0,
       "id": "bb_swing_1",
       "num": 8630,
+      "recoveryStart": 29,
       "stamina": 0,
+      "strikeStart": 24,
       "stub": false,
       "totalFrames": 70
     },
@@ -2632,7 +3100,9 @@
       "fp": 0,
       "id": "bb_swing_2",
       "num": 8631,
+      "recoveryStart": 27,
       "stamina": 0,
+      "strikeStart": 22,
       "stub": false,
       "totalFrames": 64
     },
@@ -2642,7 +3112,9 @@
       "fp": 0,
       "id": "bb_slam",
       "num": 8632,
+      "recoveryStart": 39,
       "stamina": 0,
+      "strikeStart": 34,
       "stub": false,
       "totalFrames": 90
     },
@@ -2652,7 +3124,9 @@
       "fp": 0,
       "id": "cm_dive",
       "num": 8340,
+      "recoveryStart": 23,
       "stamina": 0,
+      "strikeStart": 16,
       "stub": false,
       "totalFrames": 56
     },
@@ -2662,7 +3136,9 @@
       "fp": 0,
       "id": "cm_dust",
       "num": 8341,
+      "recoveryStart": 25,
       "stamina": 0,
+      "strikeStart": 20,
       "stub": false,
       "totalFrames": 64
     },
@@ -2672,7 +3148,9 @@
       "fp": 0,
       "id": "ck_halberd_1",
       "num": 8640,
+      "recoveryStart": 25,
       "stamina": 0,
+      "strikeStart": 20,
       "stub": false,
       "totalFrames": 60
     },
@@ -2682,7 +3160,9 @@
       "fp": 0,
       "id": "ck_halberd_2",
       "num": 8641,
+      "recoveryStart": 29,
       "stamina": 0,
+      "strikeStart": 24,
       "stub": false,
       "totalFrames": 68
     },
@@ -2692,7 +3172,9 @@
       "fp": 0,
       "id": "ck_thrust",
       "num": 8642,
+      "recoveryStart": 26,
       "stamina": 0,
+      "strikeStart": 22,
       "stub": false,
       "totalFrames": 56
     },
@@ -2702,7 +3184,9 @@
       "fp": 0,
       "id": "ck_bell",
       "num": 8643,
+      "recoveryStart": 43,
       "stamina": 0,
+      "strikeStart": 38,
       "stub": false,
       "totalFrames": 90
     },
@@ -2712,7 +3196,9 @@
       "fp": 0,
       "id": "dr_grab",
       "num": 8310,
+      "recoveryStart": 29,
       "stamina": 0,
+      "strikeStart": 24,
       "stub": false,
       "totalFrames": 72
     },
@@ -2722,7 +3208,9 @@
       "fp": 0,
       "id": "dr_swipe",
       "num": 8311,
+      "recoveryStart": 24,
       "stamina": 0,
+      "strikeStart": 20,
       "stub": false,
       "totalFrames": 58
     },
@@ -2732,7 +3220,9 @@
       "fp": 0,
       "id": "fs_hammer",
       "num": 8660,
+      "recoveryStart": 131,
       "stamina": 0,
+      "strikeStart": 36,
       "stub": false,
       "totalFrames": 150
     },
@@ -2742,7 +3232,9 @@
       "fp": 0,
       "id": "fs_sweep",
       "num": 8661,
+      "recoveryStart": 34,
       "stamina": 0,
+      "strikeStart": 28,
       "stub": false,
       "totalFrames": 76
     },
@@ -2752,7 +3244,9 @@
       "fp": 0,
       "id": "fs_tongs",
       "num": 8662,
+      "recoveryStart": 22,
       "stamina": 0,
+      "strikeStart": 18,
       "stub": false,
       "totalFrames": 52
     },
@@ -2762,7 +3256,9 @@
       "fp": 0,
       "id": "gw_lunge",
       "num": 8370,
+      "recoveryStart": 21,
       "stamina": 0,
+      "strikeStart": 16,
       "stub": false,
       "totalFrames": 52
     },
@@ -2772,7 +3268,9 @@
       "fp": 0,
       "id": "gw_slash",
       "num": 8371,
+      "recoveryStart": 18,
       "stamina": 0,
+      "strikeStart": 14,
       "stub": false,
       "totalFrames": 46
     },
@@ -2782,7 +3280,9 @@
       "fp": 0,
       "id": "ga_shoot",
       "num": 8030,
+      "recoveryStart": null,
       "stamina": 0,
+      "strikeStart": null,
       "stub": false,
       "totalFrames": 70
     },
@@ -2792,7 +3292,9 @@
       "fp": 0,
       "id": "ga_shove",
       "num": 8031,
+      "recoveryStart": 17,
       "stamina": 0,
+      "strikeStart": 14,
       "stub": false,
       "totalFrames": 46
     },
@@ -2802,7 +3304,9 @@
       "fp": 0,
       "id": "gc_slash",
       "num": 8650,
+      "recoveryStart": 39,
       "stamina": 0,
+      "strikeStart": 34,
       "stub": false,
       "totalFrames": 74
     },
@@ -2812,7 +3316,9 @@
       "fp": 0,
       "id": "gc_overhead",
       "num": 8651,
+      "recoveryStart": 49,
       "stamina": 0,
+      "strikeStart": 44,
       "stub": false,
       "totalFrames": 84
     },
@@ -2822,7 +3328,9 @@
       "fp": 0,
       "id": "gc_thrust",
       "num": 8652,
+      "recoveryStart": 24,
       "stamina": 0,
+      "strikeStart": 20,
       "stub": false,
       "totalFrames": 54
     },
@@ -2832,7 +3340,9 @@
       "fp": 0,
       "id": "gc_cut",
       "num": 8653,
+      "recoveryStart": 23,
       "stamina": 0,
+      "strikeStart": 18,
       "stub": false,
       "totalFrames": 50
     },
@@ -2842,7 +3352,9 @@
       "fp": 0,
       "id": "gc_flurry",
       "num": 8654,
+      "recoveryStart": 23,
       "stamina": 0,
+      "strikeStart": 18,
       "stub": false,
       "totalFrames": 52
     },
@@ -2852,7 +3364,9 @@
       "fp": 0,
       "id": "gk_shield_advance",
       "num": 8020,
+      "recoveryStart": 29,
       "stamina": 0,
+      "strikeStart": 24,
       "stub": false,
       "totalFrames": 56
     },
@@ -2862,7 +3376,9 @@
       "fp": 0,
       "id": "gk_slash_1",
       "num": 8021,
+      "recoveryStart": 21,
       "stamina": 0,
+      "strikeStart": 17,
       "stub": false,
       "totalFrames": 52
     },
@@ -2872,7 +3388,9 @@
       "fp": 0,
       "id": "gk_slash_2",
       "num": 8022,
+      "recoveryStart": 23,
       "stamina": 0,
+      "strikeStart": 18,
       "stub": false,
       "totalFrames": 60
     },
@@ -2882,7 +3400,9 @@
       "fp": 0,
       "id": "gk_thrust",
       "num": 8023,
+      "recoveryStart": 22,
       "stamina": 0,
+      "strikeStart": 18,
       "stub": false,
       "totalFrames": 54
     },
@@ -2892,7 +3412,9 @@
       "fp": 0,
       "id": "gk_shield_bash",
       "num": 8024,
+      "recoveryStart": 19,
       "stamina": 0,
+      "strikeStart": 15,
       "stub": false,
       "totalFrames": 50
     },
@@ -2902,7 +3424,9 @@
       "fp": 0,
       "id": "husk_swipe_1",
       "num": 8000,
+      "recoveryStart": 22,
       "stamina": 0,
+      "strikeStart": 18,
       "stub": false,
       "totalFrames": 58
     },
@@ -2912,7 +3436,9 @@
       "fp": 0,
       "id": "husk_swipe_2",
       "num": 8001,
+      "recoveryStart": 25,
       "stamina": 0,
+      "strikeStart": 20,
       "stub": false,
       "totalFrames": 66
     },
@@ -2922,7 +3448,9 @@
       "fp": 0,
       "id": "husk_miner_pick",
       "num": 8002,
+      "recoveryStart": 27,
       "stamina": 0,
+      "strikeStart": 22,
       "stub": false,
       "totalFrames": 70
     },
@@ -2932,7 +3460,9 @@
       "fp": 0,
       "id": "husk_frost_swipe_1",
       "num": 8003,
+      "recoveryStart": 22,
       "stamina": 0,
+      "strikeStart": 18,
       "stub": false,
       "totalFrames": 58
     },
@@ -2942,7 +3472,9 @@
       "fp": 0,
       "id": "husk_frost_swipe_2",
       "num": 8004,
+      "recoveryStart": 25,
       "stamina": 0,
+      "strikeStart": 20,
       "stub": false,
       "totalFrames": 66
     },
@@ -2952,7 +3484,9 @@
       "fp": 0,
       "id": "lm_burst",
       "num": 8350,
+      "recoveryStart": 17,
       "stamina": 0,
+      "strikeStart": 12,
       "stub": false,
       "totalFrames": 36
     },
@@ -2962,7 +3496,9 @@
       "fp": 0,
       "id": "lt_bomb",
       "num": 8600,
+      "recoveryStart": null,
       "stamina": 0,
+      "strikeStart": null,
       "stub": false,
       "totalFrames": 60
     },
@@ -2972,7 +3508,9 @@
       "fp": 0,
       "id": "lt_stab",
       "num": 8601,
+      "recoveryStart": 17,
       "stamina": 0,
+      "strikeStart": 14,
       "stub": false,
       "totalFrames": 36
     },
@@ -2982,7 +3520,9 @@
       "fp": 0,
       "id": "mc_bite",
       "num": 8330,
+      "recoveryStart": 15,
       "stamina": 0,
+      "strikeStart": 12,
       "stub": false,
       "totalFrames": 36
     },
@@ -2992,7 +3532,9 @@
       "fp": 0,
       "id": "mc_chomp",
       "num": 8620,
+      "recoveryStart": 25,
       "stamina": 0,
+      "strikeStart": 20,
       "stub": false,
       "totalFrames": 62
     },
@@ -3002,7 +3544,9 @@
       "fp": 0,
       "id": "mc_slam",
       "num": 8621,
+      "recoveryStart": 31,
       "stamina": 0,
+      "strikeStart": 26,
       "stub": false,
       "totalFrames": 74
     },
@@ -3012,7 +3556,9 @@
       "fp": 0,
       "id": "mc_hop",
       "num": 8622,
+      "recoveryStart": 29,
       "stamina": 0,
+      "strikeStart": 22,
       "stub": false,
       "totalFrames": 70
     },
@@ -3022,7 +3568,9 @@
       "fp": 0,
       "id": "rs_lunge",
       "num": 8320,
+      "recoveryStart": 21,
       "stamina": 0,
+      "strikeStart": 16,
       "stub": false,
       "totalFrames": 60
     },
@@ -3032,7 +3580,9 @@
       "fp": 0,
       "id": "rw_lunge",
       "num": 8610,
+      "recoveryStart": 20,
       "stamina": 0,
+      "strikeStart": 14,
       "stub": false,
       "totalFrames": 48
     },
@@ -3042,7 +3592,9 @@
       "fp": 0,
       "id": "rw_bite",
       "num": 8611,
+      "recoveryStart": 16,
       "stamina": 0,
+      "strikeStart": 13,
       "stub": false,
       "totalFrames": 38
     },
@@ -3052,7 +3604,9 @@
       "fp": 0,
       "id": "sg_slam",
       "num": 8360,
+      "recoveryStart": 41,
       "stamina": 0,
+      "strikeStart": 36,
       "stub": false,
       "totalFrames": 92
     },
@@ -3062,7 +3616,9 @@
       "fp": 0,
       "id": "sg_sweep",
       "num": 8361,
+      "recoveryStart": 37,
       "stamina": 0,
+      "strikeStart": 30,
       "stub": false,
       "totalFrames": 80
     },
@@ -3072,7 +3628,9 @@
       "fp": 0,
       "id": "th_lunge",
       "num": 8010,
+      "recoveryStart": 19,
       "stamina": 0,
+      "strikeStart": 14,
       "stub": false,
       "totalFrames": 46
     },
@@ -3082,7 +3640,9 @@
       "fp": 0,
       "id": "th_snap",
       "num": 8011,
+      "recoveryStart": 16,
       "stamina": 0,
+      "strikeStart": 13,
       "stub": false,
       "totalFrames": 40
     },
@@ -3092,7 +3652,9 @@
       "fp": 0,
       "id": "ws_slash",
       "num": 8040,
+      "recoveryStart": 21,
       "stamina": 0,
+      "strikeStart": 17,
       "stub": false,
       "totalFrames": 54
     },
@@ -3102,7 +3664,9 @@
       "fp": 0,
       "id": "ws_lunge",
       "num": 8041,
+      "recoveryStart": 24,
       "stamina": 0,
+      "strikeStart": 20,
       "stub": false,
       "totalFrames": 60
     },
@@ -3112,7 +3676,9 @@
       "fp": 0,
       "id": "fi_light_1",
       "num": 18300,
+      "recoveryStart": 8,
       "stamina": 6,
+      "strikeStart": 6,
       "stub": false,
       "totalFrames": 18
     },
@@ -3122,7 +3688,9 @@
       "fp": 0,
       "id": "fi_light_2",
       "num": 18301,
+      "recoveryStart": 8,
       "stamina": 6,
+      "strikeStart": 6,
       "stub": false,
       "totalFrames": 18
     },
@@ -3132,7 +3700,9 @@
       "fp": 0,
       "id": "fi_light_3",
       "num": 18302,
+      "recoveryStart": 9,
       "stamina": 7,
+      "strikeStart": 7,
       "stub": false,
       "totalFrames": 20
     },
@@ -3142,7 +3712,9 @@
       "fp": 0,
       "id": "fi_light_4",
       "num": 18303,
+      "recoveryStart": 12,
       "stamina": 10,
+      "strikeStart": 9,
       "stub": false,
       "totalFrames": 27
     },
@@ -3152,7 +3724,9 @@
       "fp": 0,
       "id": "fi_heavy",
       "num": 18304,
+      "recoveryStart": 17,
       "stamina": 14,
+      "strikeStart": 14,
       "stub": false,
       "totalFrames": 35
     },
@@ -3162,7 +3736,9 @@
       "fp": 0,
       "id": "fi_heavy_charged",
       "num": 18305,
+      "recoveryStart": 19,
       "stamina": 18,
+      "strikeStart": 16,
       "stub": false,
       "totalFrames": 39
     },
@@ -3172,7 +3748,9 @@
       "fp": 0,
       "id": "fi_running",
       "num": 18306,
+      "recoveryStart": 10,
       "stamina": 10,
+      "strikeStart": 7,
       "stub": false,
       "totalFrames": 26
     },
@@ -3182,7 +3760,9 @@
       "fp": 0,
       "id": "fi_rolling",
       "num": 18307,
+      "recoveryStart": 9,
       "stamina": 8,
+      "strikeStart": 6,
       "stub": false,
       "totalFrames": 23
     },
@@ -3192,7 +3772,9 @@
       "fp": 0,
       "id": "fi_backstep",
       "num": 18308,
+      "recoveryStart": 8,
       "stamina": 8,
+      "strikeStart": 5,
       "stub": false,
       "totalFrames": 22
     },
@@ -3202,7 +3784,9 @@
       "fp": 0,
       "id": "fi_jump_light",
       "num": 18309,
+      "recoveryStart": 11,
       "stamina": 12,
+      "strikeStart": 8,
       "stub": false,
       "totalFrames": 27
     },
@@ -3212,7 +3796,9 @@
       "fp": 0,
       "id": "fi_jump_heavy",
       "num": 18310,
+      "recoveryStart": 13,
       "stamina": 16,
+      "strikeStart": 10,
       "stub": false,
       "totalFrames": 31
     },
@@ -3222,7 +3808,9 @@
       "fp": 0,
       "id": "fi_plunge",
       "num": 18311,
+      "recoveryStart": 7,
       "stamina": 0,
+      "strikeStart": 4,
       "stub": false,
       "totalFrames": 28
     },
@@ -3232,7 +3820,9 @@
       "fp": 0,
       "id": "fi_guard_counter",
       "num": 18312,
+      "recoveryStart": 9,
       "stamina": 12,
+      "strikeStart": 6,
       "stub": false,
       "totalFrames": 27
     },
@@ -3242,7 +3832,9 @@
       "fp": 0,
       "id": "gs_light_1",
       "num": 13100,
+      "recoveryStart": 19,
       "stamina": 18,
+      "strikeStart": 14,
       "stub": false,
       "totalFrames": 40
     },
@@ -3252,7 +3844,9 @@
       "fp": 0,
       "id": "gs_light_2",
       "num": 13101,
+      "recoveryStart": 19,
       "stamina": 18,
+      "strikeStart": 14,
       "stub": false,
       "totalFrames": 40
     },
@@ -3262,7 +3856,9 @@
       "fp": 0,
       "id": "gs_light_3",
       "num": 13102,
+      "recoveryStart": 24,
       "stamina": 24,
+      "strikeStart": 18,
       "stub": false,
       "totalFrames": 48
     },
@@ -3272,7 +3868,9 @@
       "fp": 0,
       "id": "gs_heavy",
       "num": 13103,
+      "recoveryStart": 29,
       "stamina": 30,
+      "strikeStart": 24,
       "stub": false,
       "totalFrames": 56
     },
@@ -3282,7 +3880,9 @@
       "fp": 0,
       "id": "gs_heavy_charged",
       "num": 13104,
+      "recoveryStart": 29,
       "stamina": 36,
+      "strikeStart": 24,
       "stub": false,
       "totalFrames": 60
     },
@@ -3292,7 +3892,9 @@
       "fp": 0,
       "id": "gs_running",
       "num": 13105,
+      "recoveryStart": 19,
       "stamina": 22,
+      "strikeStart": 12,
       "stub": false,
       "totalFrames": 44
     },
@@ -3302,7 +3904,9 @@
       "fp": 0,
       "id": "gs_rolling",
       "num": 13106,
+      "recoveryStart": 15,
       "stamina": 20,
+      "strikeStart": 8,
       "stub": false,
       "totalFrames": 36
     },
@@ -3312,7 +3916,9 @@
       "fp": 0,
       "id": "gs_backstep",
       "num": 13107,
+      "recoveryStart": 16,
       "stamina": 18,
+      "strikeStart": 10,
       "stub": false,
       "totalFrames": 34
     },
@@ -3322,7 +3928,9 @@
       "fp": 0,
       "id": "gs_jump_light",
       "num": 13108,
+      "recoveryStart": 19,
       "stamina": 22,
+      "strikeStart": 14,
       "stub": false,
       "totalFrames": 40
     },
@@ -3332,7 +3940,9 @@
       "fp": 0,
       "id": "gs_jump_heavy",
       "num": 13109,
+      "recoveryStart": 21,
       "stamina": 26,
+      "strikeStart": 16,
       "stub": false,
       "totalFrames": 46
     },
@@ -3342,7 +3952,9 @@
       "fp": 0,
       "id": "gs_plunge",
       "num": 13110,
+      "recoveryStart": 11,
       "stamina": 0,
+      "strikeStart": 6,
       "stub": false,
       "totalFrames": 36
     },
@@ -3352,7 +3964,9 @@
       "fp": 0,
       "id": "gs_guard_counter",
       "num": 13111,
+      "recoveryStart": 16,
       "stamina": 24,
+      "strikeStart": 12,
       "stub": false,
       "totalFrames": 38
     },
@@ -3362,7 +3976,9 @@
       "fp": 0,
       "id": "hb_light_1",
       "num": 18200,
+      "recoveryStart": 19,
       "stamina": 14,
+      "strikeStart": 15,
       "stub": false,
       "totalFrames": 40
     },
@@ -3372,7 +3988,9 @@
       "fp": 0,
       "id": "hb_light_2",
       "num": 18201,
+      "recoveryStart": 19,
       "stamina": 14,
+      "strikeStart": 15,
       "stub": false,
       "totalFrames": 40
     },
@@ -3382,7 +4000,9 @@
       "fp": 0,
       "id": "hb_light_3",
       "num": 18202,
+      "recoveryStart": 22,
       "stamina": 18,
+      "strikeStart": 18,
       "stub": false,
       "totalFrames": 46
     },
@@ -3392,7 +4012,9 @@
       "fp": 0,
       "id": "hb_heavy",
       "num": 18203,
+      "recoveryStart": 26,
       "stamina": 24,
+      "strikeStart": 22,
       "stub": false,
       "totalFrames": 52
     },
@@ -3402,7 +4024,9 @@
       "fp": 0,
       "id": "hb_heavy_charged",
       "num": 18204,
+      "recoveryStart": 28,
       "stamina": 30,
+      "strikeStart": 24,
       "stub": false,
       "totalFrames": 56
     },
@@ -3412,7 +4036,9 @@
       "fp": 0,
       "id": "hb_running",
       "num": 18205,
+      "recoveryStart": 17,
       "stamina": 18,
+      "strikeStart": 12,
       "stub": false,
       "totalFrames": 39
     },
@@ -3422,7 +4048,9 @@
       "fp": 0,
       "id": "hb_rolling",
       "num": 18206,
+      "recoveryStart": 15,
       "stamina": 14,
+      "strikeStart": 11,
       "stub": false,
       "totalFrames": 35
     },
@@ -3432,7 +4060,9 @@
       "fp": 0,
       "id": "hb_backstep",
       "num": 18207,
+      "recoveryStart": 14,
       "stamina": 14,
+      "strikeStart": 10,
       "stub": false,
       "totalFrames": 34
     },
@@ -3442,7 +4072,9 @@
       "fp": 0,
       "id": "hb_jump_light",
       "num": 18208,
+      "recoveryStart": 18,
       "stamina": 20,
+      "strikeStart": 14,
       "stub": false,
       "totalFrames": 40
     },
@@ -3452,7 +4084,9 @@
       "fp": 0,
       "id": "hb_jump_heavy",
       "num": 18209,
+      "recoveryStart": 20,
       "stamina": 26,
+      "strikeStart": 16,
       "stub": false,
       "totalFrames": 44
     },
@@ -3462,7 +4096,9 @@
       "fp": 0,
       "id": "hb_plunge",
       "num": 18210,
+      "recoveryStart": 9,
       "stamina": 0,
+      "strikeStart": 5,
       "stub": false,
       "totalFrames": 36
     },
@@ -3472,7 +4108,9 @@
       "fp": 0,
       "id": "hb_guard_counter",
       "num": 18211,
+      "recoveryStart": 14,
       "stamina": 20,
+      "strikeStart": 10,
       "stub": false,
       "totalFrames": 34
     },
@@ -3482,7 +4120,9 @@
       "fp": 0,
       "id": "hm_light_1",
       "num": 13500,
+      "recoveryStart": 16,
       "stamina": 16,
+      "strikeStart": 13,
       "stub": false,
       "totalFrames": 36
     },
@@ -3492,7 +4132,9 @@
       "fp": 0,
       "id": "hm_light_2",
       "num": 13501,
+      "recoveryStart": 16,
       "stamina": 16,
+      "strikeStart": 13,
       "stub": false,
       "totalFrames": 36
     },
@@ -3502,7 +4144,9 @@
       "fp": 0,
       "id": "hm_light_3",
       "num": 13502,
+      "recoveryStart": 20,
       "stamina": 20,
+      "strikeStart": 16,
       "stub": false,
       "totalFrames": 42
     },
@@ -3512,7 +4156,9 @@
       "fp": 0,
       "id": "hm_heavy",
       "num": 13503,
+      "recoveryStart": 26,
       "stamina": 28,
+      "strikeStart": 22,
       "stub": false,
       "totalFrames": 50
     },
@@ -3522,7 +4168,9 @@
       "fp": 0,
       "id": "hm_heavy_charged",
       "num": 13504,
+      "recoveryStart": 28,
       "stamina": 34,
+      "strikeStart": 24,
       "stub": false,
       "totalFrames": 54
     },
@@ -3532,7 +4180,9 @@
       "fp": 0,
       "id": "hm_running",
       "num": 13505,
+      "recoveryStart": 17,
       "stamina": 20,
+      "strikeStart": 12,
       "stub": false,
       "totalFrames": 40
     },
@@ -3542,7 +4192,9 @@
       "fp": 0,
       "id": "hm_rolling",
       "num": 13506,
+      "recoveryStart": 14,
       "stamina": 16,
+      "strikeStart": 10,
       "stub": false,
       "totalFrames": 32
     },
@@ -3552,7 +4204,9 @@
       "fp": 0,
       "id": "hm_backstep",
       "num": 13507,
+      "recoveryStart": 13,
       "stamina": 14,
+      "strikeStart": 9,
       "stub": false,
       "totalFrames": 30
     },
@@ -3562,7 +4216,9 @@
       "fp": 0,
       "id": "hm_jump_light",
       "num": 13508,
+      "recoveryStart": 19,
       "stamina": 22,
+      "strikeStart": 15,
       "stub": false,
       "totalFrames": 36
     },
@@ -3572,7 +4228,9 @@
       "fp": 0,
       "id": "hm_jump_heavy",
       "num": 13509,
+      "recoveryStart": 21,
       "stamina": 28,
+      "strikeStart": 17,
       "stub": false,
       "totalFrames": 42
     },
@@ -3582,7 +4240,9 @@
       "fp": 0,
       "id": "hm_plunge",
       "num": 13510,
+      "recoveryStart": 10,
       "stamina": 0,
+      "strikeStart": 6,
       "stub": false,
       "totalFrames": 36
     },
@@ -3592,7 +4252,9 @@
       "fp": 0,
       "id": "hm_guard_counter",
       "num": 13511,
+      "recoveryStart": 14,
       "stamina": 20,
+      "strikeStart": 10,
       "stub": false,
       "totalFrames": 32
     },
@@ -3602,7 +4264,9 @@
       "fp": 0,
       "id": "sh_bash_1",
       "num": 18500,
+      "recoveryStart": 14,
       "stamina": 12,
+      "strikeStart": 11,
       "stub": false,
       "totalFrames": 32
     },
@@ -3612,7 +4276,9 @@
       "fp": 0,
       "id": "sh_bash_2",
       "num": 18501,
+      "recoveryStart": 14,
       "stamina": 12,
+      "strikeStart": 11,
       "stub": false,
       "totalFrames": 32
     },
@@ -3622,7 +4288,9 @@
       "fp": 0,
       "id": "sh_bash_3",
       "num": 18502,
+      "recoveryStart": 17,
       "stamina": 16,
+      "strikeStart": 14,
       "stub": false,
       "totalFrames": 38
     },
@@ -3632,7 +4300,9 @@
       "fp": 0,
       "id": "sh_heavy",
       "num": 18503,
+      "recoveryStart": 22,
       "stamina": 20,
+      "strikeStart": 18,
       "stub": false,
       "totalFrames": 44
     },
@@ -3642,7 +4312,9 @@
       "fp": 0,
       "id": "sh_heavy_charged",
       "num": 18504,
+      "recoveryStart": 24,
       "stamina": 26,
+      "strikeStart": 20,
       "stub": false,
       "totalFrames": 48
     },
@@ -3652,7 +4324,9 @@
       "fp": 0,
       "id": "sh_guard_bash",
       "num": 18505,
+      "recoveryStart": 11,
       "stamina": 10,
+      "strikeStart": 8,
       "stub": false,
       "totalFrames": 27
     },
@@ -3662,7 +4336,9 @@
       "fp": 0,
       "id": "sh_running",
       "num": 18506,
+      "recoveryStart": 14,
       "stamina": 14,
+      "strikeStart": 10,
       "stub": false,
       "totalFrames": 34
     },
@@ -3672,7 +4348,9 @@
       "fp": 0,
       "id": "sh_rolling",
       "num": 18507,
+      "recoveryStart": 11,
       "stamina": 10,
+      "strikeStart": 8,
       "stub": false,
       "totalFrames": 29
     },
@@ -3682,7 +4360,9 @@
       "fp": 0,
       "id": "sh_backstep",
       "num": 18508,
+      "recoveryStart": 11,
       "stamina": 10,
+      "strikeStart": 8,
       "stub": false,
       "totalFrames": 29
     },
@@ -3692,7 +4372,9 @@
       "fp": 0,
       "id": "sh_jump_light",
       "num": 18509,
+      "recoveryStart": 14,
       "stamina": 14,
+      "strikeStart": 11,
       "stub": false,
       "totalFrames": 34
     },
@@ -3702,7 +4384,9 @@
       "fp": 0,
       "id": "sh_jump_heavy",
       "num": 18510,
+      "recoveryStart": 17,
       "stamina": 20,
+      "strikeStart": 13,
       "stub": false,
       "totalFrames": 39
     },
@@ -3712,7 +4396,9 @@
       "fp": 0,
       "id": "sh_plunge",
       "num": 18511,
+      "recoveryStart": 9,
       "stamina": 0,
+      "strikeStart": 5,
       "stub": false,
       "totalFrames": 36
     },
@@ -3722,7 +4408,9 @@
       "fp": 0,
       "id": "sh_guard_counter",
       "num": 18512,
+      "recoveryStart": 10,
       "stamina": 14,
+      "strikeStart": 7,
       "stub": false,
       "totalFrames": 28
     },
@@ -3732,7 +4420,9 @@
       "fp": 0,
       "id": "sp_light_1",
       "num": 18100,
+      "recoveryStart": 15,
       "stamina": 12,
+      "strikeStart": 12,
       "stub": false,
       "totalFrames": 32
     },
@@ -3742,7 +4432,9 @@
       "fp": 0,
       "id": "sp_light_2",
       "num": 18101,
+      "recoveryStart": 15,
       "stamina": 12,
+      "strikeStart": 12,
       "stub": false,
       "totalFrames": 32
     },
@@ -3752,7 +4444,9 @@
       "fp": 0,
       "id": "sp_light_3",
       "num": 18102,
+      "recoveryStart": 17,
       "stamina": 16,
+      "strikeStart": 14,
       "stub": false,
       "totalFrames": 37
     },
@@ -3762,7 +4456,9 @@
       "fp": 0,
       "id": "sp_heavy",
       "num": 18103,
+      "recoveryStart": 24,
       "stamina": 22,
+      "strikeStart": 20,
       "stub": false,
       "totalFrames": 48
     },
@@ -3772,7 +4468,9 @@
       "fp": 0,
       "id": "sp_heavy_charged",
       "num": 18104,
+      "recoveryStart": 26,
       "stamina": 28,
+      "strikeStart": 22,
       "stub": false,
       "totalFrames": 52
     },
@@ -3782,7 +4480,9 @@
       "fp": 0,
       "id": "sp_guard_thrust",
       "num": 18105,
+      "recoveryStart": 15,
       "stamina": 10,
+      "strikeStart": 12,
       "stub": false,
       "totalFrames": 31
     },
@@ -3792,7 +4492,9 @@
       "fp": 0,
       "id": "sp_running",
       "num": 18106,
+      "recoveryStart": 14,
       "stamina": 16,
+      "strikeStart": 10,
       "stub": false,
       "totalFrames": 34
     },
@@ -3802,7 +4504,9 @@
       "fp": 0,
       "id": "sp_rolling",
       "num": 18107,
+      "recoveryStart": 12,
       "stamina": 12,
+      "strikeStart": 9,
       "stub": false,
       "totalFrames": 30
     },
@@ -3812,7 +4516,9 @@
       "fp": 0,
       "id": "sp_backstep",
       "num": 18108,
+      "recoveryStart": 11,
       "stamina": 12,
+      "strikeStart": 8,
       "stub": false,
       "totalFrames": 29
     },
@@ -3822,7 +4528,9 @@
       "fp": 0,
       "id": "sp_jump_light",
       "num": 18109,
+      "recoveryStart": 16,
       "stamina": 18,
+      "strikeStart": 12,
       "stub": false,
       "totalFrames": 36
     },
@@ -3832,7 +4540,9 @@
       "fp": 0,
       "id": "sp_jump_heavy",
       "num": 18110,
+      "recoveryStart": 18,
       "stamina": 24,
+      "strikeStart": 14,
       "stub": false,
       "totalFrames": 40
     },
@@ -3842,7 +4552,9 @@
       "fp": 0,
       "id": "sp_plunge",
       "num": 18111,
+      "recoveryStart": 9,
       "stamina": 0,
+      "strikeStart": 5,
       "stub": false,
       "totalFrames": 36
     },
@@ -3852,7 +4564,9 @@
       "fp": 0,
       "id": "sp_guard_counter",
       "num": 18112,
+      "recoveryStart": 12,
       "stamina": 18,
+      "strikeStart": 8,
       "stub": false,
       "totalFrames": 32
     },
@@ -3862,7 +4576,9 @@
       "fp": 0,
       "id": "ss_light_1",
       "num": 2000,
+      "recoveryStart": 13,
       "stamina": 12,
+      "strikeStart": 10,
       "stub": false,
       "totalFrames": 27
     },
@@ -3872,7 +4588,9 @@
       "fp": 0,
       "id": "ss_light_2",
       "num": 2001,
+      "recoveryStart": 13,
       "stamina": 12,
+      "strikeStart": 10,
       "stub": false,
       "totalFrames": 27
     },
@@ -3882,7 +4600,9 @@
       "fp": 0,
       "id": "ss_light_3",
       "num": 2002,
+      "recoveryStart": 13,
       "stamina": 12,
+      "strikeStart": 10,
       "stub": false,
       "totalFrames": 27
     },
@@ -3892,7 +4612,9 @@
       "fp": 0,
       "id": "ss_heavy",
       "num": 2003,
+      "recoveryStart": 22,
       "stamina": 22,
+      "strikeStart": 18,
       "stub": false,
       "totalFrames": 42
     },
@@ -3902,7 +4624,9 @@
       "fp": 0,
       "id": "ss_heavy_charged",
       "num": 2004,
+      "recoveryStart": 22,
       "stamina": 28,
+      "strikeStart": 18,
       "stub": false,
       "totalFrames": 44
     },
@@ -3912,7 +4636,9 @@
       "fp": 0,
       "id": "ss_running",
       "num": 2005,
+      "recoveryStart": 12,
       "stamina": 14,
+      "strikeStart": 8,
       "stub": false,
       "totalFrames": 30
     },
@@ -3922,7 +4648,9 @@
       "fp": 0,
       "id": "ss_rolling",
       "num": 2006,
+      "recoveryStart": 10,
       "stamina": 12,
+      "strikeStart": 7,
       "stub": false,
       "totalFrames": 25
     },
@@ -3932,7 +4660,9 @@
       "fp": 0,
       "id": "ss_backstep",
       "num": 2007,
+      "recoveryStart": 9,
       "stamina": 12,
+      "strikeStart": 6,
       "stub": false,
       "totalFrames": 24
     },
@@ -3942,7 +4672,9 @@
       "fp": 0,
       "id": "ss_jump_light",
       "num": 2008,
+      "recoveryStart": 14,
       "stamina": 18,
+      "strikeStart": 10,
       "stub": false,
       "totalFrames": 30
     },
@@ -3952,7 +4684,9 @@
       "fp": 0,
       "id": "ss_jump_heavy",
       "num": 2009,
+      "recoveryStart": 14,
       "stamina": 18,
+      "strikeStart": 10,
       "stub": false,
       "totalFrames": 30
     },
@@ -3962,7 +4696,9 @@
       "fp": 0,
       "id": "ss_plunge",
       "num": 2010,
+      "recoveryStart": 8,
       "stamina": 0,
+      "strikeStart": 4,
       "stub": false,
       "totalFrames": 28
     },
@@ -3972,7 +4708,9 @@
       "fp": 0,
       "id": "ss_guard_counter",
       "num": 2011,
+      "recoveryStart": 12,
       "stamina": 18,
+      "strikeStart": 8,
       "stub": false,
       "totalFrames": 30
     },
@@ -3982,7 +4720,9 @@
       "fp": 0,
       "id": "stub_bow_shot",
       "num": 2100,
+      "recoveryStart": null,
       "stamina": 6,
+      "strikeStart": null,
       "stub": true,
       "totalFrames": 24
     },
@@ -3992,7 +4732,9 @@
       "fp": 0,
       "id": "stub_bow_seeker",
       "num": 2101,
+      "recoveryStart": null,
       "stamina": 6,
+      "strikeStart": null,
       "stub": true,
       "totalFrames": 30
     },
@@ -4002,7 +4744,9 @@
       "fp": 0,
       "id": "te_slash",
       "num": 8900,
+      "recoveryStart": 17,
       "stamina": 0,
+      "strikeStart": 14,
       "stub": false,
       "totalFrames": 44
     },
@@ -4012,7 +4756,9 @@
       "fp": 0,
       "id": "te_lunge",
       "num": 8901,
+      "recoveryStart": 21,
       "stamina": 0,
+      "strikeStart": 17,
       "stub": false,
       "totalFrames": 52
     },
@@ -4022,7 +4768,9 @@
       "fp": 0,
       "id": "ts_light_1",
       "num": 13300,
+      "recoveryStart": 12,
       "stamina": 10,
+      "strikeStart": 9,
       "stub": false,
       "totalFrames": 26
     },
@@ -4032,7 +4780,9 @@
       "fp": 0,
       "id": "ts_light_2",
       "num": 13301,
+      "recoveryStart": 12,
       "stamina": 10,
+      "strikeStart": 9,
       "stub": false,
       "totalFrames": 26
     },
@@ -4042,7 +4792,9 @@
       "fp": 0,
       "id": "ts_light_3",
       "num": 13302,
+      "recoveryStart": 14,
       "stamina": 14,
+      "strikeStart": 10,
       "stub": false,
       "totalFrames": 32
     },
@@ -4052,7 +4804,9 @@
       "fp": 0,
       "id": "ts_heavy",
       "num": 13303,
+      "recoveryStart": 18,
       "stamina": 22,
+      "strikeStart": 14,
       "stub": false,
       "totalFrames": 40
     },
@@ -4062,7 +4816,9 @@
       "fp": 0,
       "id": "ts_heavy_charged",
       "num": 13304,
+      "recoveryStart": 20,
       "stamina": 28,
+      "strikeStart": 16,
       "stub": false,
       "totalFrames": 42
     },
@@ -4072,7 +4828,9 @@
       "fp": 0,
       "id": "ts_running",
       "num": 13305,
+      "recoveryStart": 13,
       "stamina": 14,
+      "strikeStart": 8,
       "stub": false,
       "totalFrames": 30
     },
@@ -4082,7 +4840,9 @@
       "fp": 0,
       "id": "ts_rolling",
       "num": 13306,
+      "recoveryStart": 10,
       "stamina": 12,
+      "strikeStart": 6,
       "stub": false,
       "totalFrames": 24
     },
@@ -4092,7 +4852,9 @@
       "fp": 0,
       "id": "ts_backstep",
       "num": 13307,
+      "recoveryStart": 10,
       "stamina": 10,
+      "strikeStart": 6,
       "stub": false,
       "totalFrames": 22
     },
@@ -4102,7 +4864,9 @@
       "fp": 0,
       "id": "ts_jump_light",
       "num": 13308,
+      "recoveryStart": 14,
       "stamina": 16,
+      "strikeStart": 10,
       "stub": false,
       "totalFrames": 28
     },
@@ -4112,7 +4876,9 @@
       "fp": 0,
       "id": "ts_jump_heavy",
       "num": 13309,
+      "recoveryStart": 15,
       "stamina": 20,
+      "strikeStart": 11,
       "stub": false,
       "totalFrames": 32
     },
@@ -4122,7 +4888,9 @@
       "fp": 0,
       "id": "ts_plunge",
       "num": 13310,
+      "recoveryStart": 9,
       "stamina": 0,
+      "strikeStart": 5,
       "stub": false,
       "totalFrames": 26
     },
@@ -4132,7 +4900,9 @@
       "fp": 0,
       "id": "ts_guard_counter",
       "num": 13311,
+      "recoveryStart": 12,
       "stamina": 16,
+      "strikeStart": 8,
       "stub": false,
       "totalFrames": 24
     },
@@ -4142,7 +4912,9 @@
       "fp": 5,
       "id": "spm_aether_dart",
       "num": 15100,
+      "recoveryStart": null,
       "stamina": 0,
+      "strikeStart": null,
       "stub": false,
       "totalFrames": 20
     },
@@ -4152,7 +4924,9 @@
       "fp": 12,
       "id": "spm_aether_bolt",
       "num": 15101,
+      "recoveryStart": null,
       "stamina": 0,
+      "strikeStart": null,
       "stub": false,
       "totalFrames": 34
     },
@@ -4162,7 +4936,9 @@
       "fp": 16,
       "id": "spm_homing_motes",
       "num": 15102,
+      "recoveryStart": null,
       "stamina": 0,
+      "strikeStart": null,
       "stub": false,
       "totalFrames": 44
     },
@@ -4172,7 +4948,9 @@
       "fp": 20,
       "id": "spm_aether_wave",
       "num": 15103,
+      "recoveryStart": 16,
       "stamina": 0,
+      "strikeStart": 12,
       "stub": false,
       "totalFrames": 38
     },
@@ -4182,7 +4960,9 @@
       "fp": 14,
       "id": "spm_mirror_ward",
       "num": 15104,
+      "recoveryStart": null,
       "stamina": 0,
+      "strikeStart": null,
       "stub": false,
       "totalFrames": 40
     },
@@ -4192,7 +4972,9 @@
       "fp": 10,
       "id": "spm_veil",
       "num": 15105,
+      "recoveryStart": null,
       "stamina": 0,
+      "strikeStart": null,
       "stub": false,
       "totalFrames": 40
     },
@@ -4202,7 +4984,9 @@
       "fp": 24,
       "id": "spm_gradient_descent",
       "num": 15106,
+      "recoveryStart": null,
       "stamina": 0,
+      "strikeStart": null,
       "stub": false,
       "totalFrames": 54
     },
@@ -4212,7 +4996,9 @@
       "fp": 18,
       "id": "spm_glasswing_swarm",
       "num": 15107,
+      "recoveryStart": null,
       "stamina": 0,
+      "strikeStart": null,
       "stub": false,
       "totalFrames": 30
     },
@@ -4222,7 +5008,9 @@
       "fp": 32,
       "id": "spm_unbinding_lance",
       "num": 15108,
+      "recoveryStart": null,
       "stamina": 0,
+      "strikeStart": null,
       "stub": false,
       "totalFrames": 46
     },
@@ -4232,7 +5020,9 @@
       "fp": 32,
       "id": "spm_unbinding_lance_charged",
       "num": 15109,
+      "recoveryStart": null,
       "stamina": 0,
+      "strikeStart": null,
       "stub": false,
       "totalFrames": 72
     },
@@ -4242,7 +5032,9 @@
       "fp": 18,
       "id": "spm_mend",
       "num": 15150,
+      "recoveryStart": null,
       "stamina": 0,
+      "strikeStart": null,
       "stub": false,
       "totalFrames": 36
     },
@@ -4252,7 +5044,9 @@
       "fp": 32,
       "id": "spm_wide_mend",
       "num": 15151,
+      "recoveryStart": null,
       "stamina": 0,
+      "strikeStart": null,
       "stub": false,
       "totalFrames": 44
     },
@@ -4262,7 +5056,9 @@
       "fp": 8,
       "id": "spm_ember_toss",
       "num": 15152,
+      "recoveryStart": null,
       "stamina": 0,
+      "strikeStart": null,
       "stub": false,
       "totalFrames": 30
     },
@@ -4272,7 +5068,9 @@
       "fp": 0,
       "id": "spm_pyre_breath",
       "num": 15153,
+      "recoveryStart": null,
       "stamina": 0,
+      "strikeStart": null,
       "stub": false,
       "totalFrames": 30
     },
@@ -4282,7 +5080,9 @@
       "fp": 16,
       "id": "spm_storm_spear",
       "num": 15154,
+      "recoveryStart": null,
       "stamina": 0,
+      "strikeStart": null,
       "stub": false,
       "totalFrames": 36
     },
@@ -4292,7 +5092,9 @@
       "fp": 14,
       "id": "spm_radiant_edge",
       "num": 15155,
+      "recoveryStart": null,
       "stamina": 0,
+      "strikeStart": null,
       "stub": false,
       "totalFrames": 34
     },
@@ -4302,7 +5104,9 @@
       "fp": 28,
       "id": "spm_choir_litany",
       "num": 15156,
+      "recoveryStart": 20,
       "stamina": 0,
+      "strikeStart": 16,
       "stub": false,
       "totalFrames": 42
     },
@@ -4312,7 +5116,9 @@
       "fp": 12,
       "id": "spm_purge",
       "num": 15157,
+      "recoveryStart": null,
       "stamina": 0,
+      "strikeStart": null,
       "stub": false,
       "totalFrames": 34
     },
@@ -4322,7 +5128,9 @@
       "fp": 14,
       "id": "spm_steadfast",
       "num": 15158,
+      "recoveryStart": null,
       "stamina": 0,
+      "strikeStart": null,
       "stub": false,
       "totalFrames": 34
     }

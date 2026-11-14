@@ -7,7 +7,7 @@
 
 ## What is committed
 
-`ual1_standard_trimmed.glb` is `Unreal-Godot/UAL1_Standard.glb` with the meshes and skin removed and only these 13 clips kept: `Idle_Loop`, `Walk_Loop`, `Jog_Fwd_Loop`, `Sprint_Loop`, `Jump_Start`, `Jump_Loop`, `Jump_Land`, `Roll`, `Hit_Chest`, `Death01`, `Sword_Idle`, `Sword_Attack`, `Interact`. The full library is not committed (63 MB unpacked).
+`ual1_standard_trimmed.glb` is `Unreal-Godot/UAL1_Standard.glb` with the meshes and skin removed and only these 19 clips kept: `Idle_Loop`, `Walk_Loop`, `Jog_Fwd_Loop`, `Sprint_Loop`, `Jump_Start`, `Jump_Loop`, `Jump_Land`, `Roll`, `Hit_Chest`, `Death01`, `Sword_Idle`, `Sword_Attack`, `Interact`, `Punch_Jab`, `Punch_Cross`, `Spell_Simple_Enter`, `Spell_Simple_Shoot`, `Spell_Simple_Exit`, `Spell_Simple_Idle_Loop`. The full library is not committed (63 MB unpacked).
 
 The renderer measures each locomotion clip's stride from the planted foot at load time. The library's own root-motion variant (`UAL1_Standard_RM.glb`) is not used: its root distances are round numbers that don't match the feet, so they made the run clip slide.
 
@@ -15,5 +15,5 @@ Regenerate it from a fresh download:
 
 ```sh
 bun game/scripts/trim-glb.mjs UAL1_Standard.glb game/assets-src/universal-animation-library/ual1_standard_trimmed.glb \
-  --keep Idle_Loop,Walk_Loop,Jog_Fwd_Loop,Sprint_Loop,Jump_Start,Jump_Loop,Jump_Land,Roll,Hit_Chest,Death01,Sword_Idle,Sword_Attack,Interact
+  --keep Idle_Loop,Walk_Loop,Jog_Fwd_Loop,Sprint_Loop,Jump_Start,Jump_Loop,Jump_Land,Roll,Hit_Chest,Death01,Sword_Idle,Sword_Attack,Interact,Punch_Jab,Punch_Cross,Spell_Simple_Enter,Spell_Simple_Shoot,Spell_Simple_Exit,Spell_Simple_Idle_Loop
 ```

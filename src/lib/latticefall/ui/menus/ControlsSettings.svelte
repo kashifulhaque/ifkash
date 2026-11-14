@@ -44,8 +44,13 @@
   };
   const PAD_NAMES = ['A', 'B', 'X', 'Y', 'LB', 'RB', 'LT', 'RT', 'View', 'Menu', 'Left stick', 'Right stick', 'D-pad up', 'D-pad down', 'D-pad left', 'D-pad right', 'Home', 'Touchpad'];
   const MOUSE_NAMES = ['Left mouse', 'Middle mouse', 'Right mouse'];
-  // Interact and Use item share a gamepad button by design (see `InputController.padDown`).
+  // Interact and Use item may share a gamepad button (see `InputController.padDown`).
   const SHARE_PAD = new Set<Action>(['interact', 'useItem']);
+  // What a token occupies: its base, or the whole chord, so binding RB alone leaves Y + RB.
+  const slotOf = (t: string) => {
+    const p = parseToken(t);
+    return p.hold === null ? p.base : `${p.hold}+${p.base}`;
+  };
 
   let bindings = { ...input.settings.bindings };
   let options = { ...input.settings.options, toggle: { ...input.settings.options.toggle } };
@@ -56,7 +61,8 @@
   const isPad = (t: string) => parseToken(t).base.startsWith('Pad');
 
   export function friendly(token: string): string {
-    const { shift, base } = parseToken(token);
+    const { shift, hold, base } = parseToken(token);
+    if (hold !== null) return `${friendly(hold)} + ${friendly(base)}`;
     let name = base;
     if (base.startsWith('Pad')) name = PAD_NAMES[Number(base.slice(3))] ?? base;
     else if (base.startsWith('Mouse')) name = MOUSE_NAMES[Number(base.slice(5))] ?? base;
@@ -81,14 +87,14 @@
   }
 
   function bind(action: Action, device: 'kb' | 'pad', token: string): void {
-    const base = parseToken(token).base;
+    const taken = slotOf(token);
     const next = { ...bindings };
     next[action] = [...next[action].filter((t) => isPad(t) !== (device === 'pad')), token];
     // A token drives one action, so taking it from another action unbinds it there.
     for (const other of ALL_ACTIONS) {
       if (other === action) continue;
       if (device === 'pad' && SHARE_PAD.has(other) && SHARE_PAD.has(action)) continue;
-      next[other] = next[other].filter((t) => parseToken(t).base !== base);
+      next[other] = next[other].filter((t) => slotOf(t) !== taken);
     }
     bindings = next;
     commit();

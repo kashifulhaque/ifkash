@@ -115,7 +115,8 @@ All VFX are render-only and triggered by core events.
 
 ## Controls
 
-All bindings are remappable. The following table lists the defaults:
+All bindings are remappable. The gamepad defaults follow Elden Ring's layout. The
+following table lists the defaults:
 
 | Action | Keyboard and mouse | Gamepad (standard layout) |
 |---|---|---|
@@ -127,12 +128,12 @@ All bindings are remappable. The following table lists the defaults:
 | Art | Shift and right mouse | L2 or LT |
 | Dodge, sprint | Space (tap, hold) | Circle or B (tap, hold) |
 | Jump | F | Cross or A |
-| Interact | E | Square or X |
-| Use item | R | Square or X while not near an interactable |
+| Interact (rest, read, open) | E | Triangle or Y |
+| Use item | R | Square or X |
 | Lock-on | Q or middle mouse | Right stick press |
 | Switch target | Mouse wheel | Right stick flick |
 | Cycle slots | Arrow keys | D-pad |
-| Two-hand | V | Triangle or Y, then R1 |
+| Two-hand | V | Hold Triangle or Y, then press R1 or RB |
 | Map | M | Touchpad or View |
 | Menu and pause | Escape | Options or Menu |
 

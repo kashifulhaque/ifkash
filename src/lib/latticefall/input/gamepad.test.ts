@@ -23,7 +23,7 @@ import {
 } from './gamepad';
 import { radialDeadzone } from './frame';
 import { actionGlyph, keyGlyph } from './device';
-import { defaultSettings } from './bindings';
+import { defaultSettings, isPadToken, parseToken, resolveActions } from './bindings';
 
 const NEUTRAL_HAT_CHROME = 3.2857141494750977;
 
@@ -269,7 +269,21 @@ test('glyphs: Xbox names for pad tokens, key caps for keys', () => {
   assert.equal(keyGlyph('KeyE'), 'E');
   assert.equal(keyGlyph('Shift+Mouse0'), 'Shift LMB');
   const b = defaultSettings().bindings;
-  assert.equal(actionGlyph(b, 'interact', 'pad'), 'X');
+  assert.equal(actionGlyph(b, 'interact', 'pad'), 'Y');
+  assert.equal(actionGlyph(b, 'useItem', 'pad'), 'X');
+  assert.equal(actionGlyph(b, 'twoHand', 'pad'), 'Y + RB');
   assert.equal(actionGlyph(b, 'interact', 'keyboard'), 'E');
-  assert.equal(actionGlyph({ ...b, interact: ['KeyG', 'Pad3'] }, 'interact', 'pad'), 'Y');
+  assert.equal(actionGlyph({ ...b, interact: ['KeyG', 'Pad2'] }, 'interact', 'pad'), 'X');
+});
+
+test('Elden Ring layout: Y interacts, X uses items, Y + RB two-hands (issue #23)', () => {
+  const b = defaultSettings().bindings;
+  assert.deepEqual(resolveActions(b, 'Pad3', false), ['interact']);
+  assert.deepEqual(resolveActions(b, 'Pad2', false), ['useItem']);
+  assert.deepEqual(resolveActions(b, 'Pad5', false), ['light']);
+  assert.deepEqual(resolveActions(b, 'Pad5', false, new Set(['Pad3'])), ['twoHand']);
+  assert.deepEqual(resolveActions(b, 'Pad5', false, new Set(['Pad4'])), ['light']);
+  assert.deepEqual(parseToken('Pad3+Pad5'), { shift: false, hold: 'Pad3', base: 'Pad5' });
+  assert.equal(isPadToken('Pad3+Pad5'), true);
+  assert.equal(isPadToken('KeyV'), false);
 });

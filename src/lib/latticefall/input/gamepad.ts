@@ -57,6 +57,8 @@ export const PAD_GLYPHS = [
 
 /** The glyph of a `Pad<N>` binding token, or null if the token isn't a pad button. */
 export function padGlyph(token: string): string | null {
+  const chord = /^(Pad\d+)\+(Pad\d+)$/.exec(token);
+  if (chord) return `${padGlyph(chord[1])} + ${padGlyph(chord[2])}`;
   const m = /^Pad(\d+)$/.exec(token);
   if (!m) return null;
   return PAD_GLYPHS[Number(m[1])] ?? `Button ${m[1]}`;

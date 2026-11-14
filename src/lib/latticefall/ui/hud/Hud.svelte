@@ -41,7 +41,7 @@
 
   let innerWidth = 1280;
 
-  // The Interact glyph for the device used last: X on a pad, E on the keyboard by default.
+  // The Interact glyph for the device used last: Y on a pad, E on the keyboard by default.
   // Read from the saved bindings when the prompt or the device changes, so a remap shows.
   $: interactKey = s.prompt > 0 ? actionGlyph(loadSettings().bindings, 'interact', $lastDevice) || 'E' : 'E';
 

@@ -195,8 +195,21 @@ export class InputController {
   }
 
   private padDown(i: number): void {
-    let actions = resolveActions(this.settings.bindings, `Pad${i}`, false);
-    // X is Interact near an interactable, Use item otherwise.
+    const held = new Set([...this.padPressed.keys()].map((k) => `Pad${k}`));
+    let actions = resolveActions(this.settings.bindings, `Pad${i}`, false, held);
+    // A chord (Y + RB is Two-hand) takes over its held button: what that button started
+    // ends, so holding Y for the chord doesn't also keep Interact held.
+    if (held.size > 0) {
+      for (const t of Object.values(this.settings.bindings).flat()) {
+        const p = parseToken(t);
+        if (p.base !== `Pad${i}` || p.hold === null || !held.has(p.hold)) continue;
+        const k = Number(p.hold.slice(3));
+        for (const a of this.padPressed.get(k) ?? []) this.composer.release(a, `Pad${k}`);
+        this.padPressed.set(k, []);
+      }
+    }
+    // If Interact and Use item share a button (a remap can do that), it's Interact near an
+    // interactable and Use item otherwise.
     if (actions.includes('interact') && actions.includes('useItem')) {
       const drop: Action = this.nearInteractable() ? 'useItem' : 'interact';
       actions = actions.filter((a) => a !== drop);

@@ -5,6 +5,7 @@
 //   - a `KeyboardEvent.code`, such as `KeyW` or `Space`
 //   - `Mouse0` (left), `Mouse1` (middle), `Mouse2` (right), `WheelUp`, `WheelDown`
 //   - `Pad<N>`, button N of a standard-layout gamepad
+//   - `Pad<M>+Pad<N>`, a pad chord: button N pressed while button M is held (Y + RB)
 // A token can carry a `Shift+` prefix, which requires Shift to be held when it is pressed.
 
 /** Button bits of the ActionFrame. Mirrors `lf_core::input::buttons`. */
@@ -89,9 +90,9 @@ export const DEFAULT_BINDINGS: Bindings = {
   art: ['Shift+Mouse2', 'Pad6'],
   dodge: ['Space', 'Pad1'],
   jump: ['KeyF', 'Pad0'],
-  // On a gamepad, X is Interact near an interactable and Use item elsewhere; see
-  // `InputController.nearInteractable`.
-  interact: ['KeyE', 'Pad2'],
+  // Elden Ring's layout (issue #23): Y interacts, X uses the quick item, and Y + RB
+  // two-hands the right weapon.
+  interact: ['KeyE', 'Pad3'],
   useItem: ['KeyR', 'Pad2'],
   lock: ['KeyQ', 'Mouse1', 'Pad11'],
   switchL: ['WheelUp'],
@@ -100,7 +101,7 @@ export const DEFAULT_BINDINGS: Bindings = {
   cycleSpell: ['ArrowUp', 'Pad12'],
   cycleRight: ['ArrowRight', 'Pad15'],
   cycleLeft: ['ArrowLeft', 'Pad14'],
-  twoHand: ['KeyV', 'Pad3'],
+  twoHand: ['KeyV', 'Pad3+Pad5'],
   map: ['KeyM', 'Pad8', 'Pad17'],
   menu: ['Escape', 'Pad9']
 };
@@ -131,7 +132,8 @@ export interface InputSettings {
 }
 
 const STORAGE_KEY = 'ifkash-latticefall-input';
-const STORAGE_VERSION = 1;
+/** Version 2 moved Interact to Y and Two-hand to Y + RB (issue #23). */
+const STORAGE_VERSION = 2;
 
 export function defaultSettings(): InputSettings {
   return {
@@ -151,10 +153,13 @@ export function loadSettings(): InputSettings {
       bindings?: Record<string, unknown>;
       options?: Record<string, unknown>;
     };
-    if (saved.version !== STORAGE_VERSION) return out;
+    if (saved.version !== STORAGE_VERSION && saved.version !== 1) return out;
     for (const a of ALL_ACTIONS) {
       const b = saved.bindings?.[a];
-      if (Array.isArray(b) && b.every((t) => typeof t === 'string')) out.bindings[a] = b as string[];
+      if (!Array.isArray(b) || !b.every((t) => typeof t === 'string')) continue;
+      // Version 1 had the old pad layout: keep its keys and mouse, take the new pad defaults.
+      out.bindings[a] =
+        saved.version === 1 ? [...b.filter((t) => !isPadToken(t)), ...DEFAULT_BINDINGS[a].filter(isPadToken)] : b;
     }
     const o = saved.options;
     if (o) {
@@ -180,26 +185,42 @@ export function saveSettings(settings: InputSettings): void {
   }
 }
 
-/** Splits a token into its Shift requirement and base token. */
-export function parseToken(token: string): { shift: boolean; base: string } {
-  return token.startsWith('Shift+') ? { shift: true, base: token.slice(6) } : { shift: false, base: token };
+/**
+ * Splits a token into its Shift requirement, the pad button it needs held (`Pad3` in the
+ * chord `Pad3+Pad5`), and the base token that triggers it.
+ */
+export function parseToken(token: string): { shift: boolean; hold: string | null; base: string } {
+  if (token.startsWith('Shift+')) return { shift: true, hold: null, base: token.slice(6) };
+  const chord = /^(Pad\d+)\+(Pad\d+)$/.exec(token);
+  if (chord) return { shift: false, hold: chord[1], base: chord[2] };
+  return { shift: false, hold: null, base: token };
+}
+
+/** True for a gamepad token, chord or not. */
+export function isPadToken(token: string): boolean {
+  return parseToken(token).base.startsWith('Pad');
 }
 
 /**
  * The actions a pressed input triggers. `Shift+X` bindings match only while Shift is held.
  * A plain `X` binding is suppressed while Shift is held if some `Shift+X` binding exists,
- * so Shift and left mouse is Heavy and not Light and Heavy.
+ * so Shift and left mouse is Heavy and not Light and Heavy. Pad chords work the same way:
+ * with Y in `held`, RB triggers `Pad3+Pad5` (Two-hand) instead of the plain RB binding.
  */
-export function resolveActions(bindings: Bindings, base: string, shift: boolean): Action[] {
+export function resolveActions(bindings: Bindings, base: string, shift: boolean, held: ReadonlySet<string> = new Set()): Action[] {
   const plain: Action[] = [];
   const shifted: Action[] = [];
+  const chorded: Action[] = [];
   for (const a of ALL_ACTIONS) {
     for (const t of bindings[a]) {
       const p = parseToken(t);
       if (p.base !== base) continue;
-      (p.shift ? shifted : plain).push(a);
+      if (p.hold !== null) {
+        if (held.has(p.hold)) chorded.push(a);
+      } else (p.shift ? shifted : plain).push(a);
     }
   }
+  if (chorded.length > 0) return chorded;
   if (shift && shifted.length > 0) return shifted;
   return plain;
 }

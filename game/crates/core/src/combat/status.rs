@@ -1122,6 +1122,19 @@ mod tests {
         assert_eq!(a.stats.buff_percent, 100);
     }
 
+    /// Rallying Roar is +15% damage and +20% poise (docs/game/04-arsenal-and-builds.md,
+    /// "Arts"); `poise::apply_landing` reads the poise from the active body buff.
+    #[test]
+    fn rallying_roar_raises_damage_and_poise() {
+        let mut w = World::new(9, &content(), "test_field").unwrap();
+        let p = w.player;
+        buff(&mut w, p, "buf_rallying_roar");
+        let a = actor(&w, p);
+        assert_eq!(a.stats.buff_percent, 115);
+        let roar = a.status.body_buff.unwrap();
+        assert_eq!(w.status.buff(roar.num).unwrap().poise_percent, 120);
+    }
+
     // --- Buffs ---
 
     /// Adds a test buff to the table: a registry number the content doesn't use.

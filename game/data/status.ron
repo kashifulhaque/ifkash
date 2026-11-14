@@ -40,8 +40,7 @@
     enemy_stagger_ticks: 60, // Enemies that can go mad
   ),
 
-  // Buffs: one weapon slot and one body slot. Elemental oils (Pitch, Spark) and the Arts
-  // that add AR or poise arrive with the spell and consumable work (WP-055 to WP-057).
+  // Buffs: one weapon slot and one body slot.
   buffs: [
     (
       id: "buf_bloodbloom_oil", slot: Weapon, damage_percent: 100,
@@ -53,8 +52,8 @@
     ), // Rime Edge: +40 Rime buildup, 900 ticks (its +10% Aether waits on elemental AR)
     (
       id: "buf_rallying_roar", slot: Body, damage_percent: 115,
-      status: [], duration_ticks: 900, vfx: "roar_rally",
-    ), // Rallying Roar: +15% damage, 900 ticks (its +20% poise isn't modelled yet)
+      status: [], duration_ticks: 900, vfx: "roar_rally", poise_percent: 120,
+    ), // Rallying Roar: +15% damage and +20% poise, 900 ticks
     // WP-057: the elemental oils and Thornheart's buff.
     (
       id: "buf_pitch_oil", slot: Weapon, damage_percent: 100,

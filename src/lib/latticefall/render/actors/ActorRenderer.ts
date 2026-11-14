@@ -34,7 +34,20 @@ import { getQuality } from '../lighting/quality';
 import { actorCullDistance } from '../perf/lod';
 import { capSceneTextures } from '../perf/textures';
 import { AirTracker, LAND_SECONDS } from './airState';
-import { easeStance, GUARD_HIPS_DROP, stancePose } from './stancePose';
+import {
+  ARM_BONES,
+  easeStance,
+  GUARD_BONES,
+  GUARD_FALLBACK,
+  GUARD_HIPS_DROP,
+  SHIELD_GUARD_CLIP,
+  stanceWeights,
+  TWO_HAND,
+  WEAPON_GUARD_CLIP,
+  type StanceClip
+} from './stancePose';
+import { weaponByNum } from '../equipment/catalog';
+import type { BoneOffset } from '../../ui/gestures/gesturePose';
 import { parsePreview, type PreviewRequest } from './devPreview';
 import { digestAnimInfo } from './moveTable';
 import { locomotionBlend, type LocoBands } from './locomotion';
@@ -770,24 +783,81 @@ export class ActorRenderer {
   }
 
   /**
-   * Lays the guard and two-hand stances (`stancePose.ts`) over the pose in `out`, eased toward
-   * the snapshot's `GUARDING` and `TWO_HANDING` flags. Moves and airborne poses skip this, so
-   * the weights also ease out while they play.
+   * Blends the upper body in `out` toward the guard and two-hand stances (`stancePose.ts`),
+   * eased toward the snapshot's `GUARDING` and `TWO_HANDING` flags. The legs keep the walk or
+   * run. Moves and airborne poses skip this, so the weights also ease out while they play.
    */
   private layStance(inst: Instance, tpl: Template, a: DrawActor, dt: number, out: Pose): void {
     inst.guardW = easeStance(inst.guardW, (a.flags & FLAG_GUARDING) !== 0, dt);
     inst.twoHandW = easeStance(inst.twoHandW, (a.flags & FLAG_TWO_HANDING) !== 0, dt);
     if (inst.guardW <= 0 && inst.twoHandW <= 0) return;
+    const w = stanceWeights(inst.guardW, inst.twoHandW);
+    if (w.twoHand > 0) this.blendBones(out, this.offsetPose(tpl, 'twohand', TWO_HAND), tpl, ARM_BONES, w.twoHand);
+    if (w.guard > 0) this.blendBones(out, this.guardPose(inst, tpl, a), tpl, GUARD_BONES, w.guard);
+    if (inst.hips.parent) {
+      out.hips[1] -= (GUARD_HIPS_DROP * w.guard) / inst.hips.parent.getWorldScale(gestureScale).y;
+    }
+  }
+
+  /** Slerps the named bones of `out` toward `target` by `w`. */
+  private blendBones(out: Pose, target: Pose, tpl: Template, bones: readonly string[], w: number): void {
+    for (const name of bones) {
+      const i = tpl.boneIndex.get(name);
+      if (i === undefined) continue;
+      qa.fromArray(out.q, i * 4);
+      qb.fromArray(target.q, i * 4);
+      qa.slerp(qb, w).toArray(out.q, i * 4);
+    }
+  }
+
+  /**
+   * The guard's target: the shield guard with a shield in the off hand (and not two-handing),
+   * else the weapon guard, else the fitted offsets when the library lacks both clips.
+   */
+  private guardPose(inst: Instance, tpl: Template, a: DrawActor): Pose {
+    const left = a.id === this.playerId && this.equipped ? weaponByNum(this.equipped.left) : undefined;
+    const shield = left?.class === 'Shield' && (a.flags & FLAG_TWO_HANDING) === 0;
+    const pick = shield && tpl.clips.has(SHIELD_GUARD_CLIP.clip) ? SHIELD_GUARD_CLIP : WEAPON_GUARD_CLIP;
+    if (tpl.clips.has(pick.clip)) return this.clipPose(tpl, pick, inst.idleT);
+    return this.offsetPose(tpl, 'guard', GUARD_FALLBACK);
+  }
+
+  private stanceCache = new Map<string, Pose>();
+  private stanceLoop: Pose | null = null;
+
+  /** A stance clip's pose: a cached held frame, or the looping clip at time `t`. */
+  private clipPose(tpl: Template, s: StanceClip, t: number): Pose {
+    const clip = tpl.clips.get(s.clip)!;
+    if (s.frame === undefined) {
+      const p = (this.stanceLoop ??= newPose(tpl.boneNames.length));
+      sampleClip(clip, t % clip.duration, true, p.q, p.hips);
+      return p;
+    }
+    const key = `${s.clip}@${s.frame}`;
+    let p = this.stanceCache.get(key);
+    if (!p) {
+      p = newPose(tpl.boneNames.length);
+      sampleClip(clip, s.frame / BAKE_FPS, false, p.q, p.hips);
+      this.stanceCache.set(key, p);
+    }
+    return p;
+  }
+
+  /** The idle clip's first frame with `offsets` laid over it, cached. */
+  private offsetPose(tpl: Template, key: string, offsets: readonly BoneOffset[]): Pose {
+    let p = this.stanceCache.get(key);
+    if (p) return p;
+    p = newPose(tpl.boneNames.length);
+    sampleClip(tpl.clips.get(LOOP_CLIPS.idle)!, 0, true, p.q, p.hips);
     const e = new Euler();
-    for (const o of stancePose(inst.guardW, inst.twoHandW)) {
+    for (const o of offsets) {
       const i = tpl.boneIndex.get(o.bone);
       if (i === undefined) continue;
-      qa.fromArray(out.q, i * 4).multiply(qb.setFromEuler(e.set(o.x, o.y, o.z)));
-      qa.toArray(out.q, i * 4);
+      qa.fromArray(p.q, i * 4).multiply(qb.setFromEuler(e.set(o.x, o.y, o.z)));
+      qa.toArray(p.q, i * 4);
     }
-    if (inst.guardW > 0 && inst.hips.parent) {
-      out.hips[1] -= (GUARD_HIPS_DROP * smooth(inst.guardW)) / inst.hips.parent.getWorldScale(gestureScale).y;
-    }
+    this.stanceCache.set(key, p);
+    return p;
   }
 
   /** The idle pose with gesture `id`'s offsets laid over it (`ui/gestures/gesturePose.ts`). */

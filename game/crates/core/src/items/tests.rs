@@ -348,6 +348,66 @@ fn equip_commands_change_the_loadout_and_the_moveset() {
     assert_eq!(player(&w).inventory.equipment.right_active, 1);
 }
 
+/// Issue #20: with one right-hand weapon, `CYCLE_RIGHT` switches to an empty hand (the Fist
+/// class's moves, no Art, not two-handed) and back, as in Elden Ring.
+#[test]
+fn cycling_a_lone_weapon_switches_to_an_empty_hand_and_back() {
+    let mut w = flat();
+    let weapon = player(&w).inventory.equipment.right_weapon();
+    assert!(weapon.is_some());
+    assert_eq!(
+        player(&w).inventory.equipment.slots[usize::from(slot::RIGHT_2)],
+        None
+    );
+    let armed = w.moves.player_moveset.clone().unwrap();
+    player_mut(&mut w).stats.two_handing = true;
+
+    tick_with(&mut w, buttons::CYCLE_RIGHT, Vec::new());
+    assert_eq!(player(&w).inventory.equipment.right_weapon(), None);
+    let fists = w.moves.player_moveset.clone().unwrap();
+    let unarmed = w.moves.unarmed.clone().unwrap();
+    assert_eq!(fists.light_chain, unarmed.light_chain);
+    assert_ne!(fists.light_chain, armed.light_chain);
+    assert_eq!(fists.art, None);
+    assert!(!player(&w).stats.two_handing);
+    // Unarmed, the light attack still swings.
+    idle(&mut w, 2);
+    tick_with(&mut w, buttons::LIGHT, Vec::new());
+    assert!(player(&w).moves.current.is_some());
+    idle(&mut w, 90);
+
+    tick_with(&mut w, buttons::CYCLE_RIGHT, Vec::new());
+    assert_eq!(player(&w).inventory.equipment.right_weapon(), weapon);
+    assert_eq!(
+        w.moves.player_moveset.as_ref().unwrap().light_chain,
+        armed.light_chain
+    );
+}
+
+/// A hand with nothing in either slot stays put; given one weapon, the left hand cycles
+/// between it and empty too.
+#[test]
+fn an_empty_hand_does_not_cycle_and_the_left_hand_reaches_empty_too() {
+    let mut w = flat();
+    let weapon = w.items.default_weapon.unwrap();
+    let eq = &player(&w).inventory.equipment;
+    assert!(eq.slots[2..4].iter().all(Option::is_none));
+    assert_eq!(eq.left_active, 0);
+    tick_with(&mut w, buttons::CYCLE_LEFT, Vec::new());
+    assert_eq!(player(&w).inventory.equipment.left_active, 0);
+
+    let equip = vec![Command::Equip {
+        slot: slot::LEFT_2,
+        item: weapon,
+    }];
+    tick_with(&mut w, 0, equip);
+    tick_with(&mut w, buttons::CYCLE_LEFT, Vec::new());
+    assert_eq!(player(&w).inventory.equipment.left_weapon(), Some(weapon));
+    tick_with(&mut w, 0, Vec::new());
+    tick_with(&mut w, buttons::CYCLE_LEFT, Vec::new());
+    assert_eq!(player(&w).inventory.equipment.left_weapon(), None);
+}
+
 /// The equip commands replay: a recording with commands re-simulates to the recorded
 /// hashes, and the commands change the state.
 #[test]

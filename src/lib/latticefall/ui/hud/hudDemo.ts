@@ -19,7 +19,8 @@ export function demoHud(): HudState {
     prompt: 1,
     boss: { name: 'The Hollow Sentry', frac: 0.62, phase: 2 },
     status: [0.55, 0, 0.2, 0, 0.8, 0],
-    dead: false
+    dead: false,
+    twoHanding: false
   };
 }
 

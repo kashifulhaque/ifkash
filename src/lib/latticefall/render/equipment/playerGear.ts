@@ -95,6 +95,9 @@ export class PlayerGear {
   private attached: Object3D[] = [];
   private tinted = new Map<Material, { color: Color }>();
   private sig = '';
+  /** The off-hand item's holder, hidden while two-handing. */
+  private offHand: Object3D | null = null;
+  private offHandStowed = false;
 
   constructor(private fx: SpellFx | null = null) {}
 
@@ -122,6 +125,10 @@ export class PlayerGear {
       const toUnits = new Matrix4().makeScale(unit.x, unit.y, unit.z);
       attachAtRest(holder, frame.bone(`Hand.${side}`), frame.restBone(`Hand.${side}`), basis.multiply(toUnits));
       this.attached.push(holder);
+      if (side === 'L') {
+        this.offHand = holder;
+        holder.visible = !this.offHandStowed;
+      }
       this.weapons.push({ spec, model });
       if (model.castPoint && spec.school) this.fx?.track(model.group, model.castPoint, spec.school);
     }
@@ -138,6 +145,15 @@ export class PlayerGear {
       }
       if (piece.tint) this.tint(frame, piece.tint);
     }
+  }
+
+  /**
+   * Hides the off-hand item while the right weapon is two-handed: the off hand is on the
+   * grip, so a shield or second weapon there would float. Cheap to call every frame.
+   */
+  setOffHandStowed(stowed: boolean): void {
+    this.offHandStowed = stowed;
+    if (this.offHand) this.offHand.visible = !stowed;
   }
 
   /** Recolors the cloth materials (`Green`, `LightGreen`) on this instance. */
@@ -159,6 +175,7 @@ export class PlayerGear {
       o.removeFromParent();
     }
     this.attached = [];
+    this.offHand = null;
     for (const w of this.weapons) {
       this.fx?.untrack(w.model.group);
       w.model.dispose();

@@ -1,12 +1,14 @@
-// Grounded or airborne, derived from position deltas. Read-only: the snapshot has no
-// grounded flag yet (see the WP-013 report), so the renderer infers it. Pure math.
+// Grounded or airborne, from the core's `AIRBORNE` snapshot flag. Pure math, read-only.
+//
+// The flag says whether the actor is off the ground; the vertical speed from position deltas
+// only splits that into rising and falling. Heights alone used to decide it, which latched:
+// landing a few centimeters higher than the takeoff (a step, a slope, or the controller
+// settling) kept the actor in the jump or fall pose while it stood still (issues #16, #17).
 
-/** Vertical speed (m/s) above which an actor counts as leaving the ground. */
-export const AIR_VY = 1.2;
-/** Height above the last ground height (m) that also counts as airborne. */
-export const AIR_HEIGHT = 0.12;
 /** How long the landing animation holds control, in seconds. */
 export const LAND_SECONDS = 0.38;
+/** Upward speed (m/s) that counts as rising rather than falling. */
+const RISE_VY = 0.3;
 
 export type AirPhase = 'ground' | 'rising' | 'falling' | 'landing';
 
@@ -14,31 +16,25 @@ export class AirTracker {
   phase: AirPhase = 'ground';
   /** Seconds in the current phase. */
   t = 0;
-  private groundY = NaN;
   private lastY = NaN;
 
-  /** Advance by `dt` seconds (> 0) with the actor's current height. */
-  update(y: number, dt: number): AirPhase {
-    if (Number.isNaN(this.groundY)) {
-      this.groundY = y;
-      this.lastY = y;
-    }
-    const vy = dt > 0 ? (y - this.lastY) / dt : 0;
+  /**
+   * Advance by `dt` seconds (> 0) with the actor's current height and the core's airborne
+   * flag.
+   */
+  update(y: number, dt: number, airborne: boolean): AirPhase {
+    const vy = Number.isNaN(this.lastY) || dt <= 0 ? 0 : (y - this.lastY) / dt;
     this.lastY = y;
-    const offGround = y - this.groundY > AIR_HEIGHT || Math.abs(vy) > AIR_VY;
-    const inAir = this.phase === 'rising' || this.phase === 'falling';
     this.t += dt;
 
-    if (offGround) {
-      const up = vy > 0.3 || (this.phase === 'rising' && vy > -0.3);
+    if (airborne) {
+      // A jump rises until its peak; anything else in the air falls.
+      const up = vy > RISE_VY || (this.phase === 'rising' && vy > -RISE_VY);
       this.set(up ? 'rising' : 'falling');
-    } else if (inAir) {
-      this.groundY = y;
+    } else if (this.phase === 'rising' || this.phase === 'falling') {
       this.set('landing');
-    } else {
-      // Follow slopes and steps slowly while grounded.
-      this.groundY = y;
-      if (this.phase === 'landing' && this.t >= LAND_SECONDS) this.set('ground');
+    } else if (this.phase === 'landing' && this.t >= LAND_SECONDS) {
+      this.set('ground');
     }
     return this.phase;
   }

@@ -504,6 +504,42 @@ mod tests {
         assert_eq!(flags_of(w.player), 0);
     }
 
+    /// The airborne bit follows the controller's grounded state, on the player only here:
+    /// scripted dummies never touch the controller, so they never read as airborne.
+    #[test]
+    fn the_snapshot_flags_the_player_airborne_during_a_jump() {
+        let mut w = field();
+        let d = dummy(&mut w, 0.0, 5.0);
+        let snap = |w: &World| {
+            let mut out: Vec<ActorSnap> = Vec::new();
+            write_snapshot(w, &mut out);
+            out
+        };
+        let flags_of = |out: &[ActorSnap], id: Id| {
+            out.iter()
+                .find(|s| s.id == crate::snapshot::pack_id(id))
+                .unwrap()
+                .flags
+        };
+        for _ in 0..5 {
+            step(&mut w, 0, 0, 0);
+        }
+        let out = snap(&w);
+        assert_eq!(flags_of(&out, w.player) & flags::AIRBORNE, 0);
+        assert_eq!(flags_of(&out, d) & flags::AIRBORNE, 0);
+        tap(&mut w, buttons::JUMP);
+        for _ in 0..10 {
+            step(&mut w, 0, 0, 0);
+        }
+        let out = snap(&w);
+        assert_ne!(flags_of(&out, w.player) & flags::AIRBORNE, 0);
+        assert_eq!(flags_of(&out, d) & flags::AIRBORNE, 0);
+        for _ in 0..60 {
+            step(&mut w, 0, 0, 0);
+        }
+        assert_eq!(flags_of(&snap(&w), w.player) & flags::AIRBORNE, 0);
+    }
+
     #[test]
     fn the_test_field_has_three_dummies_that_stand_still() {
         let content = Content::load_embedded().unwrap();

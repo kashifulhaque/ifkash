@@ -19,6 +19,8 @@ export const FLAG_TWO_HANDING = 1 << 5;
 export const FLAG_CLOAKED = 1 << 6;
 /** An enemy hidden in reeds (Reed Stalker). */
 export const FLAG_HIDDEN = 1 << 7;
+/** Off the ground (jumping or falling), from the core's controller. */
+export const FLAG_AIRBORNE = 1 << 8;
 
 export interface ActorSnap {
   id: number;

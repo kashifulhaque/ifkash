@@ -392,18 +392,23 @@ impl World {
     }
 
     /// Points the player's active moveset (`moves.player_moveset`) at the equipped
-    /// right-hand weapon. With nothing in the right hand the moveset stays as it was, a
-    /// stand-in until fists exist. Called whenever equipment can change.
+    /// right-hand weapon, or at the Fist class's moves (`MoveTable::unarmed`) when the right
+    /// hand is empty. Called whenever equipment can change.
     pub fn sync_player_moveset(&mut self) {
         let weapon = self
             .actors
             .get(self.player)
             .and_then(|p| p.inventory.equipment.right_weapon());
-        if let Some(set) = weapon.and_then(|w| self.moves.moveset_of(w)) {
-            // A different weapon is held in one hand again (`combat::two_hand`). The spell
-            // overlay below changes only cast moves, so compare the weapon's own chain.
-            let same_weapon =
-                self.moves.player_moveset.as_ref().is_some_and(|cur| {
+        let set = match weapon {
+            Some(w) => self.moves.moveset_of(w),
+            None => self.moves.unarmed.as_ref(),
+        };
+        if let Some(set) = set {
+            // A different weapon is held in one hand again (`combat::two_hand`), or the hand
+            // is empty and there's nothing to two-hand. The spell overlay below changes only
+            // cast moves, so compare the weapon's own chain.
+            let same_weapon = weapon.is_some()
+                && self.moves.player_moveset.as_ref().is_some_and(|cur| {
                     cur.light_chain == set.light_chain && cur.heavy == set.heavy
                 });
             if !same_weapon && let Some(p) = self.actors.get_mut(self.player) {
@@ -412,7 +417,8 @@ impl World {
             let mut set = set.clone();
             // The selected spell's cast moves, if a catalyst holds them (WP-055).
             crate::combat::spells::overlay(self, &mut set);
-            // The Art the weapon has now, which an Art Scroll may have changed (WP-054).
+            // The Art the weapon has now, which an Art Scroll may have changed (WP-054). An
+            // empty hand has none.
             set.art = weapon.and_then(|w| crate::combat::arts::player_art_move(self, w));
             self.moves.player_moveset = Some(set);
         }

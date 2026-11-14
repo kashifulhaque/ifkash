@@ -20,6 +20,10 @@ pub mod flags {
     pub const CLOAKED: u16 = 1 << 6;
     /// An enemy hidden in reeds (Reed Stalker, WP-036).
     pub const HIDDEN: u16 = 1 << 7;
+    /// Off the ground: jumping, falling, or walked off an edge. Set only on actors the
+    /// controller moves (the player and walking AI actors). The renderer picks the jump and
+    /// fall poses from this bit, not from position deltas.
+    pub const AIRBORNE: u16 = 1 << 8;
 }
 
 /// One actor as the renderer sees it. 40 bytes, 4-byte aligned, no padding. The TypeScript
@@ -45,8 +49,8 @@ pub struct ActorSnap {
     /// Registry number of the enemy definition (7000 is the Husk), for model lookup. 0 for the
     /// player and any actor with no AI brain.
     pub kind: u16,
-    /// See [`flags`]. Only dead, staggered, guarding, invulnerable (i-frames), locked target,
-    /// cloaked, and hidden are set so far.
+    /// See [`flags`]. Every bit is set: dead, staggered, guarding, invulnerable (i-frames),
+    /// locked target, two-handing, cloaked, hidden, and airborne.
     pub flags: u16,
     /// Meters.
     pub pos: [f32; 3],
@@ -146,6 +150,13 @@ pub fn write_snapshot(world: &World, out: &mut Vec<ActorSnap>) {
         }
         if crate::ai::special::reeds::hidden(actor) {
             bits |= flags::HIDDEN;
+        }
+        // Only actors the controller moves have a grounded state (`systems::locomotion`):
+        // the player and walking AI actors. Scripted dummies and flyers never touch it.
+        let walks = id == world.player
+            || (actor.ai.is_some() && !crate::ai::special::flying::flies(world, id));
+        if walks && !actor.motor.grounded {
+            bits |= flags::AIRBORNE;
         }
         let current = actor.moves.current;
         out.push(ActorSnap {

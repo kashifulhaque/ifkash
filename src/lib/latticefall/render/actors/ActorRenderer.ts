@@ -2,7 +2,7 @@
 // snapshot fields and never writes simulation state.
 //
 // Pose priority each frame: a move (by `move_id`, scrubbed by `move_frame`), then airborne
-// states derived from position deltas, then locomotion blended by ground speed. A short
+// states from the snapshot's `AIRBORNE` flag, then locomotion blended by ground speed. A short
 // crossfade hides every switch between those.
 
 import {
@@ -34,6 +34,7 @@ import { getQuality } from '../lighting/quality';
 import { actorCullDistance } from '../perf/lod';
 import { capSceneTextures } from '../perf/textures';
 import { AirTracker, LAND_SECONDS } from './airState';
+import { easeStance, GUARD_HIPS_DROP, stancePose } from './stancePose';
 import { parsePreview, type PreviewRequest } from './devPreview';
 import { locomotionBlend, type LocoBands } from './locomotion';
 import { clipForAnim, movePhase, moveClipTime, type MoveResolver } from './moveClips';
@@ -46,7 +47,15 @@ import {
   parsePropPreview,
   type PropPreview
 } from '../procedural';
-import { FLAG_CLOAKED, FLAG_DEAD, FLAG_HIDDEN, FLAG_STAGGERED } from '../../engine/snapshot';
+import {
+  FLAG_AIRBORNE,
+  FLAG_CLOAKED,
+  FLAG_DEAD,
+  FLAG_GUARDING,
+  FLAG_HIDDEN,
+  FLAG_STAGGERED,
+  FLAG_TWO_HANDING
+} from '../../engine/snapshot';
 import { gesturePose } from '../../ui/gestures/gesturePose';
 
 /** Where the optimized assets live (`lf-tools assets` writes them). */
@@ -124,6 +133,9 @@ interface Instance {
   /** Frames the drawn move trails the sim by, from hitstop already served in this move. */
   lagFrames: number;
   lagMove: number;
+  /** Guard and two-hand stance weights, 0 to 1, eased toward the snapshot flags. */
+  guardW: number;
+  twoHandW: number;
 }
 
 const newPose = (n: number): Pose => ({ q: new Float32Array(n * 4), hips: new Float32Array(3) });
@@ -273,7 +285,7 @@ export class ActorRenderer {
     inst.holder.position.set(a.x, a.y, a.z);
     inst.holder.rotation.y = a.yaw + MODEL_YAW_OFFSET;
 
-    // Ground speed and airborne state from position deltas (the snapshot has neither).
+    // Ground speed from position deltas (the snapshot has none).
     if (inst.lastPos && dt > 0) {
       const d = Math.hypot(a.x - inst.lastPos[0], a.z - inst.lastPos[2]);
       const raw = d > TELEPORT_METERS ? 0 : d / dt;
@@ -294,7 +306,7 @@ export class ActorRenderer {
       inst.lagFrames += step / TICK_SECONDS;
       return true;
     }
-    if (dt > 0) inst.air.update(a.y, dt);
+    if (dt > 0) inst.air.update(a.y, dt, (a.flags & FLAG_AIRBORNE) !== 0);
 
     const pv = this.preview;
     if (pv) this.applyPreview(inst, pv, dt);
@@ -310,7 +322,10 @@ export class ActorRenderer {
     const sig = this.composePose(inst, a, tpl, dt, moveFrac);
     this.crossfade(inst, sig, dt);
     this.apply(inst);
-    if (this.equipped && a.id === this.playerId) this.applyGear(a.id, inst, tpl);
+    if (this.equipped && a.id === this.playerId) {
+      this.applyGear(a.id, inst, tpl);
+      this.gear.get(a.id)?.setOffHandStowed((a.flags & FLAG_TWO_HANDING) !== 0);
+    }
     if (pv && (pv.state === 'jump' || pv.state === 'fall' || pv.state === 'land')) {
       inst.holder.position.y += pv.state === 'land' ? 0 : PREVIEW_AIR_LIFT_M;
     }
@@ -587,7 +602,9 @@ export class ActorRenderer {
       previewT: 0,
       hold: 0,
       lagFrames: 0,
-      lagMove: 0
+      lagMove: 0,
+      guardW: 0,
+      twoHandW: 0
     };
     this.instances.set(id, inst);
     return inst;
@@ -659,8 +676,9 @@ export class ActorRenderer {
         return 'air:loop';
       }
     }
-    // 3. Locomotion, with the landing blended into it.
+    // 3. Locomotion, with the landing blended into it, and the guard or two-hand stance on top.
     this.locomotion(inst, tpl, dt, frozen, out);
+    let sig = 'loco';
     if (air.phase === 'landing') {
       const land = tpl.clips.get('Jump_Land');
       if (land) {
@@ -669,10 +687,32 @@ export class ActorRenderer {
         // Full landing pose at touchdown, easing into locomotion over LAND_SECONDS.
         blendPose(sample, out, smooth(air.t / LAND_SECONDS));
         copyPose(out, sample);
-        return 'air:land';
+        sig = 'air:land';
       }
     }
-    return 'loco';
+    this.layStance(inst, tpl, a, dt, out);
+    return sig;
+  }
+
+  /**
+   * Lays the guard and two-hand stances (`stancePose.ts`) over the pose in `out`, eased toward
+   * the snapshot's `GUARDING` and `TWO_HANDING` flags. Moves and airborne poses skip this, so
+   * the weights also ease out while they play.
+   */
+  private layStance(inst: Instance, tpl: Template, a: DrawActor, dt: number, out: Pose): void {
+    inst.guardW = easeStance(inst.guardW, (a.flags & FLAG_GUARDING) !== 0, dt);
+    inst.twoHandW = easeStance(inst.twoHandW, (a.flags & FLAG_TWO_HANDING) !== 0, dt);
+    if (inst.guardW <= 0 && inst.twoHandW <= 0) return;
+    const e = new Euler();
+    for (const o of stancePose(inst.guardW, inst.twoHandW)) {
+      const i = tpl.boneIndex.get(o.bone);
+      if (i === undefined) continue;
+      qa.fromArray(out.q, i * 4).multiply(qb.setFromEuler(e.set(o.x, o.y, o.z)));
+      qa.toArray(out.q, i * 4);
+    }
+    if (inst.guardW > 0 && inst.hips.parent) {
+      out.hips[1] -= (GUARD_HIPS_DROP * smooth(inst.guardW)) / inst.hips.parent.getWorldScale(gestureScale).y;
+    }
   }
 
   /** The idle pose with gesture `id`'s offsets laid over it (`ui/gestures/gesturePose.ts`). */

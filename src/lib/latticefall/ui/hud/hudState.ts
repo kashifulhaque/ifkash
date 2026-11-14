@@ -3,7 +3,7 @@
 // imports, so it can be drawn without the engine. The HUD never writes simulation state.
 
 /** Floats in a `hud_state` record. Must equal `hud_words()` from the module. */
-export const HUD_WORDS = 29;
+export const HUD_WORDS = 30;
 
 /** The statuses, in the order of the core's `StatusProc` codes. */
 export const STATUS_NAMES = ['Poison', 'Blight', 'Drowse', 'Delirium', 'Rupture', 'Rime'] as const;
@@ -48,6 +48,8 @@ export interface HudState {
   /** Buildup 0 to 1 per status, in `STATUS_NAMES` order. */
   status: number[];
   dead: boolean;
+  /** Two-handing the right weapon. */
+  twoHanding: boolean;
 }
 
 /** Resolves registry numbers and boss indexes to display names. */
@@ -74,7 +76,8 @@ export function emptyHud(): HudState {
     prompt: 0,
     boss: null,
     status: STATUS_NAMES.map(() => 0),
-    dead: false
+    dead: false,
+    twoHanding: false
   };
 }
 
@@ -102,7 +105,8 @@ export function parseHud(w: ArrayLike<number>, names: NameLookup): HudState {
     prompt: w[17],
     boss,
     status: Array.from({ length: STATUS_NAMES.length }, (_, i) => clamp01(w[21 + i])),
-    dead: w[27] > 0
+    dead: w[27] > 0,
+    twoHanding: w[29] > 0
   };
 }
 

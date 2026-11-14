@@ -130,8 +130,12 @@
           <span class="slot-key">Left</span>
           <span class="slot-name">{s.left.name || '—'}</span>
         </div>
-        <div class="slot right" aria-label={`Right hand: ${slotLabel(s.right, 'empty')}`}>
-          <span class="slot-key">Right</span>
+        <div
+          class="slot right"
+          class:two-handing={s.twoHanding}
+          aria-label={`Right hand: ${slotLabel(s.right, 'empty')}${s.twoHanding ? ', two-handed' : ''}`}
+        >
+          <span class="slot-key">{s.twoHanding ? 'Both hands' : 'Right'}</span>
           <span class="slot-name">{s.right.name || '—'}</span>
         </div>
         <div class="slot item" aria-label={`Item: ${slotLabel(s.item, 'none')}`}>
@@ -396,6 +400,15 @@
   .item {
     grid-column: 2;
     grid-row: 3;
+  }
+
+  /* Two-handing: the right weapon is held in both hands. */
+  .right.two-handing {
+    border-color: var(--fjord);
+  }
+
+  .right.two-handing .slot-key {
+    color: var(--fjord);
   }
 
   .slot-key {

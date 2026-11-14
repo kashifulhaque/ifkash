@@ -331,7 +331,7 @@ views.
 |---|---|---|
 | `id` | `u32` | Arena index and generation |
 | `kind` | `u16` | Content ID of the actor type, for model lookup |
-| `flags` | `u16` | Dead, staggered, guarding, invulnerable, locked target, two-handing |
+| `flags` | `u16` | Dead, staggered, guarding, invulnerable, locked target, two-handing, cloaked, hidden, airborne |
 | `pos` | `f32 x 3` | Meters |
 | `yaw` | `f32` | Radians |
 | `move_id` | `u16` | Current move, for animation lookup |

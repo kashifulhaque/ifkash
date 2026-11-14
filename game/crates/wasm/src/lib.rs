@@ -481,6 +481,7 @@ impl LfWorld {
     ///   event's status codes (Poison, Blight, Drowse, Delirium, Rupture, Rime).
     /// - 27: 1 if the player is dead.
     /// - 28: 1 if the quick item is a flask (so word 15 is charges, not a stack).
+    /// - 29: 1 if the player is two-handing the right weapon.
     pub fn hud_state(&self) -> Vec<f32> {
         use lf_core::ai::{Awareness, boss::Stage};
         use lf_core::combat::status::KINDS;
@@ -568,6 +569,7 @@ impl LfWorld {
             }
         }
         out[27] = f32::from(u8::from(p.dead));
+        out[29] = f32::from(u8::from(p.stats.two_handing));
         out
     }
 
@@ -686,7 +688,7 @@ impl LfWorld {
 }
 
 /// Floats in `LfWorld::hud_state`.
-const HUD_WORDS: usize = 29;
+const HUD_WORDS: usize = 30;
 
 /// Length of `LfWorld::hud_state`, so the host can check it matches its reader.
 #[wasm_bindgen]

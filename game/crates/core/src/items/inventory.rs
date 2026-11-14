@@ -143,6 +143,15 @@ fn group(slot: u8) -> Option<Group> {
     }
 }
 
+/// The hand slot after `active`, wrapping, whether or not it holds a weapon; `active`
+/// itself if the hand holds nothing at all.
+fn other_hand_slot(slots: &[Option<NumId>], active: u8) -> u8 {
+    if slots.iter().all(Option::is_none) {
+        return active;
+    }
+    ((usize::from(active) + 1) % slots.len()) as u8
+}
+
 /// The index after `active` within `slots` that holds an item, wrapping; `active` itself
 /// if no other slot does.
 fn next_filled(slots: &[Option<NumId>], active: u8) -> u8 {
@@ -178,14 +187,16 @@ impl Equipment {
         self.quick_active = next_filled(self.quick(), self.quick_active);
     }
 
-    /// Selects the other right-hand slot if it's filled (`CYCLE_RIGHT`).
+    /// Selects the other right-hand slot (`CYCLE_RIGHT`). An empty slot is a valid choice:
+    /// it leaves the hand unarmed, as in Elden Ring, so a lone weapon alternates with an
+    /// empty hand (issue #20). A hand with nothing in either slot stays as it is.
     pub fn cycle_right(&mut self) {
-        self.right_active = next_filled(&self.slots[0..2], self.right_active);
+        self.right_active = other_hand_slot(&self.slots[0..2], self.right_active);
     }
 
-    /// Selects the other left-hand slot if it's filled (`CYCLE_LEFT`).
+    /// Selects the other left-hand slot (`CYCLE_LEFT`), empty or not, like `cycle_right`.
     pub fn cycle_left(&mut self) {
-        self.left_active = next_filled(&self.slots[2..4], self.left_active);
+        self.left_active = other_hand_slot(&self.slots[2..4], self.left_active);
     }
 
     /// After a slot empties: moves a selection off an empty slot onto a filled one.

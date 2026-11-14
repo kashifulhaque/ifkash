@@ -234,6 +234,10 @@ pub struct MoveTable {
     pub player_moveset: Option<Moveset>,
     /// The moveset of every weapon, sorted by weapon number. See [`MoveTable::moveset_of`].
     movesets: Vec<(NumId, Moveset)>,
+    /// The moveset of an empty right hand: the Fist class's, which every Fist weapon shares
+    /// (docs/game/04-arsenal-and-builds.md, "Weapon classes"), with no Art. `None` if the
+    /// content has no Fist weapon.
+    pub unarmed: Option<Moveset>,
     /// Flask numbers, copied from `consumables.ron` (`None` if the content has none).
     pub flask: Option<FlaskRules>,
     /// The critical hit moves, if the content has them. See `combat::crit`.
@@ -366,8 +370,23 @@ impl MoveTable {
             }
             None => None,
         };
+        // An empty hand fights with the Fist class's moves (issue #20).
+        let unarmed = content
+            .all_weapons()
+            .find(|(_, w)| w.class == lf_content::weapons::WeaponClass::Fist)
+            .and_then(|(_, w)| {
+                let n = num(&w.id).ok()?;
+                movesets
+                    .iter()
+                    .find(|(k, _)| *k == n)
+                    .map(|(_, s)| Moveset {
+                        art: None,
+                        ..s.clone()
+                    })
+            });
         movesets.sort_by_key(|(n, _)| *n);
         table.movesets = movesets;
+        table.unarmed = unarmed;
         table.flask = FlaskRules::from_content(content)?;
         table.crits = super::crit::CritMoves::resolve(&table);
         table.arts = arts;

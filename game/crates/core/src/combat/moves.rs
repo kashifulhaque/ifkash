@@ -471,6 +471,14 @@ pub fn root_motion_delta(keys: &[(u16, f32)], frame: u16) -> f32 {
     root_motion_at(keys, frame.saturating_add(1)) - root_motion_at(keys, frame)
 }
 
+/// The world-space direction the left stick points in `input`, or `None` when it's at rest
+/// (the controller's dead zone) or there's no input (an AI actor).
+fn stick_yaw(input: Option<ActionFrame>) -> Option<f32> {
+    let f = input?;
+    let (x, z) = (f32::from(f.move_x), f32::from(f.move_z));
+    (x * x + z * z >= 1.0).then(|| atan2(x, z))
+}
+
 /// Turns `yaw` toward `target` by at most `max_step` radians, the short way round.
 pub fn turn_toward(yaw: f32, target: f32, max_step: f32) -> f32 {
     let diff = wrap_pi(target - yaw);
@@ -704,6 +712,13 @@ pub fn step(
             }
             if b.action == Action::Dodge && b.dir != [0, 0] {
                 a.yaw = atan2(f32::from(b.dir[0]), f32::from(b.dir[1]));
+            } else if lock_pos.is_none()
+                && let Some(y) = stick_yaw(input)
+            {
+                // Unlocked, every other move starts facing the stick, so each swing of a
+                // combo can be aimed, as in Elden Ring (issue #78). Locked on, tracking
+                // turns it toward the target instead.
+                a.yaw = y;
             }
             // A spell's startup is shorter with Finesse (`MoveTable::cast_skip`).
             let skip = table.cast_skip(d, a.stats.attrs.finesse);
@@ -1015,6 +1030,37 @@ mod tests {
         }
         assert_eq!(step(&mut w, 0, 0, 127), None);
         assert!(player(&w).vel[2] > 0.0);
+    }
+
+    /// Issue #78: unlocked, a swing starts facing the stick, and the next swing of the
+    /// combo can face somewhere else.
+    #[test]
+    fn the_stick_aims_each_swing_of_a_combo() {
+        use core::f32::consts::FRAC_PI_2;
+        let mut w = flat();
+        assert_eq!(player(&w).yaw, 0.0);
+        // Light with the stick at +X: the swing faces +X.
+        let first = step(&mut w, buttons::LIGHT, 127, 0).unwrap();
+        assert!(
+            (player(&w).yaw - FRAC_PI_2).abs() < 1e-5,
+            "{}",
+            player(&w).yaw
+        );
+        // Ride the first swing with the stick at rest until the chain can continue, then
+        // press light with the stick at -X: the second swing turns round.
+        let mut c = first;
+        while c.num == first.num {
+            c = step(&mut w, buttons::LIGHT, -127, 0).unwrap_or(c);
+            if c.num == first.num {
+                step(&mut w, 0, 0, 0);
+            }
+        }
+        assert_ne!(c.num, first.num);
+        assert!(
+            (player(&w).yaw + FRAC_PI_2).abs() < 1e-5,
+            "{}",
+            player(&w).yaw
+        );
     }
 
     #[test]

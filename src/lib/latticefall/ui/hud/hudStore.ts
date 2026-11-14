@@ -25,6 +25,8 @@ export interface HudSink {
   events(words: ArrayLike<number>): void;
   /** The text of an authored ground message the player just read (WP-043). */
   message(text: string): void;
+  /** Closes the ground message on screen, if any (issue #79). */
+  closeMessage(): void;
   /** Screen position of the locked-on actor in CSS pixels over the canvas, or null. */
   lock(p: ScreenPoint | null): void;
 }
@@ -44,7 +46,7 @@ export interface HudController {
 const NOTICE_MS = 3200;
 const NOTICE_MAX = 3;
 /** An authored message stays longer, and long enough to read a few sentences. */
-const MESSAGE_MS = 11000;
+export const MESSAGE_MS = 11000;
 
 /** The scenario message indexes in a batch of raw event words (kind 16, WP-042). */
 export function messageIndexesFromWords(words: ArrayLike<number>): number[] {
@@ -116,6 +118,9 @@ export function createHudController(): HudController {
     },
     message(text) {
       if (text) notify(text, true);
+    },
+    closeMessage() {
+      notices.update((list) => (list.some((n) => n.message) ? list.filter((n) => !n.message) : list));
     },
     lock(p) {
       // The marker follows the camera every frame; skip the store write when it hasn't moved.

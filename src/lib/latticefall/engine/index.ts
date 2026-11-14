@@ -21,13 +21,16 @@ import { FixedStepLoop } from './loop';
 import { SceneView } from './scene';
 import { FLAG_LOCKED, SnapshotBuffer } from './snapshot';
 import { parseHud, type NameLookup } from '../ui/hud/hudState';
-import { messageIndexesFromWords, type HudSink } from '../ui/hud/hudStore';
+import { MESSAGE_MS, messageIndexesFromWords, type HudSink } from '../ui/hud/hudStore';
 import { COMMAND, createMenuHost, type MenuHost, type MenuSink } from '../ui/menus/menuHost';
 import { createDialogueHost, type DialogueHost, type DialogueSink } from '../ui/dialogue/dialogueHost';
 import { dialogueEventsFromWords } from '../ui/dialogue/dialogueState';
 import { createMapHost, type MapHost } from '../ui/map/mapState';
 import { createMarksHost, type MarksHost } from '../ui/marks/marksHost';
 import { clampPose, composeImage, gradeFilter, type PhotoHost } from '../ui/photo/photoMath';
+
+/** Meters the player can walk from where they read a ground message before it closes. */
+const MESSAGE_CLOSE_M = 2.5;
 
 export interface EngineStats {
   tick: number;
@@ -228,6 +231,14 @@ export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions
   // The pad's X is Interact while the core shows an interact prompt and Use item otherwise.
   input.nearInteractable = () => lastPrompt > 0;
   let prevInteract = false;
+  // The ground message on screen (issue #79): where the player read it and until when it
+  // shows. Walking away or pressing Interact again closes it, as in Elden Ring.
+  let openMessage: { x: number; z: number; until: number } | null = null;
+  let swallowInteract = false;
+  function closeMessage(): void {
+    openMessage = null;
+    opts.hud?.closeMessage();
+  }
   let paused = false;
   let travelled = false;
   const commandLog: number[] = [];
@@ -261,7 +272,11 @@ export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions
       view.voss.events(words);
       opts.hud?.events(words);
       // Authored ground messages (the cave's tutorial lines): the HUD shows the text.
-      for (const i of messageIndexesFromWords(words)) opts.hud?.message(world.message_text(i));
+      for (const i of messageIndexesFromWords(words)) {
+        opts.hud?.message(world.message_text(i));
+        const p = snapshots.curr[0];
+        if (p) openMessage = { x: p.x, z: p.z, until: performance.now() + MESSAGE_MS };
+      }
       if (restedIn(words)) opts.menu?.rested();
       // Conversations with the hub's NPCs and stations (WP-068).
       if (opts.dialogue) for (const e of dialogueEventsFromWords(words)) opts.dialogue.event(e);
@@ -358,8 +373,21 @@ export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions
       input.poll();
       const frame = input.frame();
       const interact = (frame[2] & 0x80) !== 0;
-      if (interact && !prevInteract && lastPrompt === 1) sendCommand(COMMAND.Rest);
+      const pressed = interact && !prevInteract;
       prevInteract = interact;
+      if (!interact) swallowInteract = false;
+      if (openMessage && performance.now() > openMessage.until) openMessage = null;
+      if (openMessage) {
+        const p = snapshots.curr[0];
+        if (p && Math.hypot(p.x - openMessage.x, p.z - openMessage.z) > MESSAGE_CLOSE_M) closeMessage();
+        else if (pressed) {
+          // Interact closes the message. The press goes no further while the button stays
+          // down, so the core never sees it and doesn't read the same message again.
+          closeMessage();
+          swallowInteract = true;
+        }
+      } else if (pressed && lastPrompt === 1) sendCommand(COMMAND.Rest);
+      if (swallowInteract) frame[2] &= ~0x80;
       runTick(frame);
     },
     render(alpha, frameMs) {

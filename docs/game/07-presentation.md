@@ -7,6 +7,10 @@ the HUD and menus, audio, accessibility, and mobile. Read it before any WP in th
 
 ## Art direction
 
+> **Under review:** The owner wants to move to a more realistic look, in the style of
+> *Demon's Souls* and *Dark Souls*. See [the art direction research plan](art-direction-research.md).
+> This section stands until an ADR replaces it.
+
 **Low-poly, flat-shaded, atmospheric.** Silhouettes and fog do the work that texture
 detail does in larger games. The look sits next to the existing site: muted, calm,
 restrained color, with one accent color per region.

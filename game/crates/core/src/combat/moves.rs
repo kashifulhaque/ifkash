@@ -190,8 +190,8 @@ pub struct Moveset {
     pub running: MoveNum,
     pub rolling: MoveNum,
     pub backstep: MoveNum,
-    /// Jump and plunge moves are resolved but not started yet: they need airborne
-    /// attacks.
+    /// The jumping attacks, started by `LIGHT` and `HEAVY` in the air. The plunge isn't
+    /// started yet.
     pub jump_light: MoveNum,
     pub jump_heavy: MoveNum,
     pub plunge: MoveNum,
@@ -680,10 +680,22 @@ pub fn step(
     // lowering one blocks starting anything.
     if let (Some(b), Some(s)) = (a.moves.buffer, set) {
         let grounded = a.motor.grounded && a.motor.jump_startup == 0 && a.motor.landing == 0;
+        // Off the ground with nothing running, a light or heavy press is a jumping attack, as
+        // in Elden Ring (issue #81). A press during the jump's crouch stays buffered for it.
+        let airborne = !a.motor.grounded
+            && a.moves.current.is_none()
+            && matches!(b.action, Action::Light | Action::Heavy);
         let counter = a.moves.guard.counter > 0;
         let guarding = a.moves.guard.active;
         let num = if b.action == Action::UseItem {
             crate::items::inventory::drink_move(a, table)
+        } else if airborne {
+            // In the air, the jumping attacks (issue #81).
+            Some(if b.action == Action::Heavy {
+                s.jump_heavy
+            } else {
+                s.jump_light
+            })
         } else {
             resolve(
                 b,
@@ -695,7 +707,7 @@ pub fn step(
                 table,
             )
         };
-        if grounded
+        if (grounded || airborne)
             && can_act
             && let Some(d) = num.and_then(|n| table.get(n))
             && stamina::try_spend(a, &d.data)
@@ -1061,6 +1073,43 @@ mod tests {
             "{}",
             player(&w).yaw
         );
+    }
+
+    /// Issue #81: in the air, light and heavy start the jumping attacks.
+    #[test]
+    fn light_and_heavy_in_the_air_are_jumping_attacks() {
+        for (button, pick) in [(buttons::LIGHT, 0), (buttons::HEAVY, 1)] {
+            let mut w = flat();
+            let set = w.moves.player_moveset.clone().unwrap();
+            let want = [set.jump_light, set.jump_heavy][pick];
+            step(&mut w, buttons::JUMP, 0, 0);
+            let mut ticks = 0;
+            while player(&w).motor.grounded || player(&w).motor.jump_startup > 0 {
+                step(&mut w, 0, 0, 0);
+                ticks += 1;
+                assert!(ticks < 30, "never left the ground");
+            }
+            let c = step(&mut w, button, 0, 0).expect("a jumping attack starts");
+            assert_eq!(c.num, want);
+            assert!(!player(&w).motor.grounded);
+            // It plays through the landing and the player ends on the ground.
+            for _ in 0..90 {
+                step(&mut w, 0, 0, 0);
+            }
+            assert!(player(&w).motor.grounded);
+            assert_eq!(player(&w).moves.current, None);
+        }
+        // On the ground, light is still the first swing of the chain.
+        let mut w = flat();
+        let first = *w
+            .moves
+            .player_moveset
+            .as_ref()
+            .unwrap()
+            .light_chain
+            .first()
+            .unwrap();
+        assert_eq!(step(&mut w, buttons::LIGHT, 0, 0).unwrap().num, first);
     }
 
     #[test]

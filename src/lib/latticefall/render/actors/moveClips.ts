@@ -58,6 +58,39 @@ const THROW_OVERHEAD = spec(11, { clip: 'OverhandThrow' });
 // The chopping loop starts mid-swing: play its wind-up, then the chop from the loop's start.
 const CHOP = spec(23, { clip: 'TreeChopping_Loop', from: 10, to: 29 }, { clip: 'TreeChopping_Loop', from: 0, to: 14 });
 
+// Arts (moves/arts.ron): each Art plays its own clip or chain of clips (issue #22).
+const CAST = spec(16 + 6, { clip: 'Spell_Simple_Enter' }, { clip: 'Spell_Simple_Shoot' }, { clip: 'Spell_Simple_Exit' });
+const ART_CHOICES: Readonly<Record<string, readonly ClipSpec[]>> = {
+  // Feint Step: a low forward dash with i-frames.
+  dash_feint: [spec(0, { clip: 'Sword_Dash', from: 0, to: 14 }), spec(0, { clip: 'Roll' })],
+  // Rending Sweep: a full spin.
+  spin_slash: [SPIN, SWORD_ATTACK],
+  // Bastion: brace behind the off arm, hold the shield guard, then lower it.
+  guard_brace: [
+    spec(0, { clip: 'Shield_OneShot', from: 0, to: 6 }, { clip: 'Idle_Shield_Loop' }, { clip: 'Shield_OneShot', from: 6 })
+  ],
+  // Windward Parry: a sharp brace and release.
+  parry_raise: [spec(0, { clip: 'Shield_OneShot' }), spec(0, { clip: 'Hit_Chest' })],
+  // Rising Cleave: an upward cut.
+  sword_rising: [RISING, SWORD_ATTACK],
+  // Rallying Roar: chest out and arms flung wide.
+  roar: [spec(0, { clip: 'Idle_Shield_Break' }), spec(0, { clip: 'Interact' })],
+  // Lunging Thrust: gather low, then drive forward.
+  thrust_lunge: [spec(6 + 10, { clip: 'NinjaJump_Start', from: 0, to: 6 }, { clip: 'Sword_Heavy_Combo', from: 44, to: 64 }), PUNCH_CROSS],
+  // Earthsplit: crouch to gather, then a full overhead slam.
+  hammer_slam: [spec(20 + 13, { clip: 'NinjaJump_Start', from: 0, to: 20 }, { clip: 'Sword_Heavy_Combo', from: 22, to: 46 }), SWORD_ATTACK],
+  // Rime Edge and Radiant Blade: raise the free hand to the blade, then release.
+  edge_infuse: [CAST],
+  // Spark Volley: the bow arm thrust forward.
+  bow_volley: [CAST],
+  // Lantern Flare: fling the flare overhand.
+  lantern_swing: [THROW_OVERHEAD, SWORD_ATTACK],
+  // Glass Barrage: a cast from the off hand.
+  glass_cast: [CAST],
+  // Bell Toll and Choir Toll: a wound-up sweep that turns into an overhead strike.
+  mallet_toll: [spec(22 + 13, { clip: 'Sword_Heavy_Combo', from: 0, to: 46 }), SWORD_ATTACK]
+};
+
 /** Each family of move `anim` names, and the clip choices it plays, best first. */
 const FAMILIES: ReadonlyArray<readonly [readonly ClipSpec[], readonly string[]]> = [
   // Forehand and backhand cuts: the first two hits of most light combos.
@@ -237,6 +270,7 @@ const FAMILIES: ReadonlyArray<readonly [readonly ClipSpec[], readonly string[]]>
  */
 export const ANIM_TO_CLIP: Readonly<Record<string, readonly ClipSpec[]>> = {
   ...Object.fromEntries(FAMILIES.flatMap(([choices, anims]) => anims.map((a) => [a, choices]))),
+  ...ART_CHOICES,
   roll: [spec(0, { clip: 'Roll' })],
   roll_quick: [spec(0, { clip: 'Roll' })],
   roll_heavy: [spec(0, { clip: 'Roll' })],

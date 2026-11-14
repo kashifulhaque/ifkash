@@ -80,7 +80,9 @@ fn line_of_sight(from: [f32; 3], to: [f32; 3], physics: &PhysicsState, t: &LockO
 
 /// The target `LOCK` picks: the valid actor with the smallest angle to `facing` inside
 /// the acquisition range and cone, with a clear line of sight; ties go to the nearer
-/// one, then the lower index.
+/// one, then the lower index. With nothing in the cone, the nearest valid actor in sight
+/// within the retarget radius, in any direction: the core can't see the camera, and a
+/// player running from an enemy faces away from it (issue #80).
 pub fn acquire(
     actors: &Arena<Actor>,
     pos: [f32; 3],
@@ -109,6 +111,32 @@ pub fn acquire(
         }
     }
     best.map(|(_, _, id)| id)
+        .or_else(|| nearest_in_sight(actors, pos, physics, t))
+}
+
+/// The nearest valid actor within the retarget radius of `pos` with a clear line of sight,
+/// whatever its direction. Ties go to the lower index.
+fn nearest_in_sight(
+    actors: &Arena<Actor>,
+    pos: [f32; 3],
+    physics: &PhysicsState,
+    t: &LockOn,
+) -> Option<Id> {
+    let range_sq = t.retarget_range_m * t.retarget_range_m;
+    let mut best: Option<(f32, Id)> = None;
+    for (id, a) in actors.iter() {
+        if !is_valid(a) {
+            continue;
+        }
+        let d = dist_sq(pos, a.pos);
+        if d <= range_sq
+            && best.is_none_or(|(bd, _)| d < bd)
+            && line_of_sight(pos, a.pos, physics, t)
+        {
+            best = Some((d, id));
+        }
+    }
+    best.map(|(_, id)| id)
 }
 
 /// The nearest valid actor within the retarget radius of `pos` (no cone, no line of
@@ -308,14 +336,32 @@ mod tests {
         assert_eq!(locked(&w), Some(first));
     }
 
+    /// Issue #80: running away, the player faces away from the enemy. With nothing in the
+    /// cone, `LOCK` takes the nearest enemy in sight within the retarget radius, behind or
+    /// not; one farther away is left alone.
+    #[test]
+    fn with_nothing_ahead_lock_takes_the_nearest_enemy_behind() {
+        let mut w = field();
+        let t = tuning(&w);
+        let far = dummy(&mut w, 180.0, t.retarget_range_m + 1.0);
+        tap(&mut w, buttons::LOCK);
+        assert_eq!(locked(&w), None);
+        let near = dummy(&mut w, 150.0, t.retarget_range_m - 2.0);
+        tap(&mut w, buttons::LOCK);
+        assert_eq!(locked(&w), Some(near));
+        assert_ne!(locked(&w), Some(far));
+    }
+
     #[test]
     fn acquisition_respects_the_cone_and_the_range() {
         let mut w = field();
         let t = tuning(&w);
         let half = t.acquire_cone_deg * 0.5;
-        // Just outside the cone on either side, and just beyond range straight ahead.
-        dummy(&mut w, half + 1.0, 5.0);
-        dummy(&mut w, -(half + 1.0), 5.0);
+        // Just outside the cone on either side (beyond the any-direction fallback radius),
+        // and just beyond range straight ahead.
+        let off = t.retarget_range_m + 1.0;
+        dummy(&mut w, half + 1.0, off);
+        dummy(&mut w, -(half + 1.0), off);
         dummy(&mut w, 0.0, t.acquire_range_m + 0.5);
         tap(&mut w, buttons::LOCK);
         assert_eq!(locked(&w), None);

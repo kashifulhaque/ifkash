@@ -629,8 +629,11 @@ impl LfWorld {
             1
         } else {
             match lf_core::world_state::mechanics::prompt(&self.world) {
-                // 8 speak with someone, 9 use a station (WP-068).
-                0 => lf_core::world_state::quests::prompt(&self.world),
+                // 8 speak with someone, 9 use a station (WP-068), 10 a boss's fog gate.
+                0 => match lf_core::world_state::quests::prompt(&self.world) {
+                    0 => lf_core::ai::boss::prompt(&self.world),
+                    code => code,
+                },
                 code => code,
             }
         }

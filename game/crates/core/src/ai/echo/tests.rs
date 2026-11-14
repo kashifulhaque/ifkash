@@ -129,7 +129,8 @@ fn start_fight(w: &mut World) -> Vec<Event> {
             frame: ActionFrame {
                 move_x: 0,
                 move_z: 127,
-                buttons: 0,
+                // Interact passes the fog gate (issue #82).
+                buttons: buttons::INTERACT,
             },
             commands: Vec::new(),
         },
@@ -704,9 +705,12 @@ impl Bot {
                     });
                 }
             }
-            // Through the fog gate to the Echo Stone.
+            // Through the fog gate to the Echo Stone. Interact passes the fog (issue #82).
             1 => {
                 stick = Self::toward(p.pos, RING_AT);
+                if crate::ai::boss::walking_into_fog(w, stick.0, stick.1) {
+                    pressed = buttons::INTERACT;
+                }
                 if dist_xz(p.pos, [-4.0, 0.0, 3.0]) <= 2.0 {
                     stick = (0, 0);
                     self.stage = 2;

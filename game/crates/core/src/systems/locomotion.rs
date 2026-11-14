@@ -13,7 +13,10 @@ pub fn run(world: &mut World, _input: &TickInput) {
     if !crate::world_state::mechanics::climbing(world)
         && let Some(actor) = world.actors.get_mut(id)
     {
+        let before = actor.pos;
         controller::step(actor, &world.physics, &world.locomotion);
+        // A dormant boss's fog gate holds the player back (issue #82).
+        crate::ai::boss::block_fog(world, before);
     }
     // AI actors share the player's capsule and controller tuning. Scripted dummies stand.
     let ai: Vec<_> = world

@@ -184,6 +184,10 @@ impl Bot {
     pub(super) fn act(&mut self, w: &World) -> TickInput {
         let (frame, commands) = self.decide(w);
         let mut f = frame;
+        // At a boss's fog gate, Interact passes through it, as a player would (issue #82).
+        if crate::ai::boss::walking_into_fog(w, f.move_x, f.move_z) {
+            f.buttons |= crate::input::buttons::INTERACT;
+        }
         f.buttons &= !self.last;
         self.last = f.buttons;
         TickInput { frame: f, commands }
@@ -308,6 +312,14 @@ impl Bot {
         if p.lock_target.is_none() {
             if self.approach && dist > 6.0 {
                 return go(toward.0, toward.1, 0);
+            }
+            // Face the enemy before locking on. Lock-on also takes a nearby enemy behind the
+            // player now (issue #80), which may not be the one this bot means to fight.
+            let off = crate::actor::targeting::wrap_pi(
+                crate::actor::targeting::bearing(p.pos, e.pos, p.yaw) - p.yaw,
+            );
+            if off.abs() > 0.5 {
+                return go(toward.0 / 8, toward.1 / 8, 0);
             }
             return go(0, 0, buttons::LOCK);
         }

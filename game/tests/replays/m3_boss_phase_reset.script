@@ -4,8 +4,9 @@
 # is the plane z = 0 and the boss waits at (0, 0, 12).
 seed 33
 scenario boss_gate
-80  0 127            # walk through the gate: it seals and the 90-tick intro starts
-100 0   0            # stand through the intro: the fight starts on tick 158
+80  0 127 INTERACT   # walk to the gate holding Interact (issue #82): it passes the player
+                     # through, seals, and the 90-tick intro starts
+100 0   0            # stand through the intro: the fight starts during it
 1   0   0 LOCK       # lock on to the boss as it closes in
 60  0   0
 6   0   0 LIGHT      # nine light swings, one every 20 ticks: the third takes the boss under

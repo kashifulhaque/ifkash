@@ -187,7 +187,7 @@ impl Bot {
         let ids = members(w);
         let exile = w.actors.get(ids[0]).map_or([0.0; 3], |a| a.pos);
         match w.bosses[0].stage {
-            Stage::Dormant => return (toward(player.pos, exile), 0), // walk through the gate
+            Stage::Dormant => return (toward(player.pos, exile), crate::ai::boss::fog_buttons(w)), // walk through the gate
             Stage::Intro { .. } | Stage::Defeated => return ((0, 0), 0),
             Stage::Fight => {}
         }
@@ -341,17 +341,17 @@ pub(crate) fn run_bot(seed: u64) -> Fight {
 /// Plays the fight with a player who walks in through the gate and then does nothing.
 pub(crate) fn run_idle(seed: u64) -> Fight {
     play(seed, |w| {
-        let (stick, _) = if w.bosses[0].stage == Stage::Dormant {
+        let (stick, buttons) = if w.bosses[0].stage == Stage::Dormant {
             let p = w.actors.get(w.player).map_or([0.0; 3], |a| a.pos);
             let c = w.actors.get(members(w)[0]).map_or([0.0; 3], |a| a.pos);
-            (toward(p, c), 0)
+            (toward(p, c), crate::ai::boss::fog_buttons(w))
         } else {
             ((0, 0), 0)
         };
         ActionFrame {
             move_x: stick.0,
             move_z: stick.1,
-            buttons: 0,
+            buttons,
         }
     })
 }
@@ -914,6 +914,7 @@ fn record_the_b11_goldens() {
             let mut names = Vec::new();
             for (mask, name) in [
                 (buttons::LIGHT, "LIGHT"),
+                (buttons::INTERACT, "INTERACT"),
                 (buttons::DODGE, "DODGE"),
                 (buttons::USE_ITEM, "USE_ITEM"),
                 (buttons::LOCK, "LOCK"),

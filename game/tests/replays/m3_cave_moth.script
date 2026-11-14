@@ -3,7 +3,8 @@
 seed 54
 scenario fight_cave_moth
 200 0 0              # stand: it hovers in, then dives and dusts
-1   0 0  LOCK
+1   0 0              # (no lock-on: since issue #80 it would lock the moth from behind and
+                     # turn the player; the player stands facing +Z as before)
 10  0 0
 1   0 0  LIGHT
 24  0 0

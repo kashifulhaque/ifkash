@@ -338,7 +338,7 @@ The following mechanics are available to every area. Each lives in
 | Door | Locked, one-way (opens from one side), or keyed | One-way doors show a "Opens from the other side" prompt |
 | Lever | Toggles a linked entity: door, lift, water level, bridge | State saved in world flags |
 | Hollow wall | Looks like a wall; one hit reveals a passage | Up to 1 per region; a faint hum near it is the hint |
-| Fog gate | Boss arena entrance; walk through to enter; sealed during the fight | Shows the Echo Stone prompt if one is near |
+| Fog gate | Boss arena entrance; a wall unless the player holds Interact while walking into it, which passes them through; sealed during the fight | Shows the Echo Stone prompt if one is near |
 | Water | Shallow (under 0.6 m): slows 20%. Deep (over 1.4 m): blocks with an invisible wall at the edge, no swimming | |
 | Blight water | Shallow water that builds Blight status | Reed Marsh only |
 | Water level | A pool's depth follows a lever (`raised_depth_m`) or a world flag (`lowered_by`, `lowered_depth_m`); a pool's surface is `floor_y_m` plus its depth | Mirrormere's lake drops 1.5 m when the Belfry raises `sluice.mirrormere.open`; see `mechanics/water_level.rs` |

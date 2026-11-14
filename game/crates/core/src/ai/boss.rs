@@ -259,6 +259,116 @@ fn through(g: &FogGate, pos: [f32; 3]) -> bool {
         && (pos[1] - g.pos[1]).abs() <= GATE_REACH_Y_M
 }
 
+/// True if a living player at `pos` stands just outside a dormant gate, within Interact's
+/// reach of its plane and inside its width.
+fn at_gate(world: &World, g: &FogGate, pos: [f32; 3]) -> bool {
+    let (along, across) = gate_coords(g, pos);
+    let reach = world.locomotion.mechanics.interact_radius_m;
+    along <= 0.0
+        && along >= -reach
+        && across.abs() <= g.half_width_m
+        && (pos[1] - g.pos[1]).abs() <= GATE_REACH_Y_M
+}
+
+/// True while the player holds `INTERACT` this tick. Player intent (tick system 2) has
+/// already stored this tick's buttons.
+fn interact_held(world: &World) -> bool {
+    world
+        .actors
+        .get(world.player)
+        .is_some_and(|p| p.motor.prev_buttons & crate::input::buttons::INTERACT != 0)
+}
+
+/// The fog of a dormant gate is a wall (issue #82): a player move that starts outside the
+/// gate's plane and ends past it is held on the plane, unless the player holds Interact,
+/// which lets them walk through. Called by the locomotion system right after the player's
+/// controller step, with the position before it. A player put inside some other way (a
+/// respawn, a test) crossed nothing and isn't held.
+pub fn block_fog(world: &mut World, before: [f32; 3]) {
+    if interact_held(world) {
+        return;
+    }
+    let Some(p) = world.actors.get(world.player) else {
+        return;
+    };
+    let after = p.pos;
+    for (r, lay) in world.bosses.iter().zip(&world.layout.bosses) {
+        if r.stage != Stage::Dormant {
+            continue;
+        }
+        let g = &lay.gate;
+        let (was, _) = gate_coords(g, before);
+        let (along, across) = gate_coords(g, after);
+        if was <= 0.0
+            && along > 0.0
+            && across.abs() <= g.half_width_m
+            && (after[1] - g.pos[1]).abs() <= GATE_REACH_Y_M
+        {
+            let n = inward(g);
+            if let Some(p) = world.actors.get_mut(world.player) {
+                p.pos[0] -= n[0] * along;
+                p.pos[2] -= n[1] * along;
+            }
+            return;
+        }
+    }
+}
+
+/// The HUD prompt code for a dormant gate in reach (`PROMPT_FOG`), or 0.
+pub fn prompt(world: &World) -> u32 {
+    let Some(p) = world.actors.get(world.player) else {
+        return 0;
+    };
+    if is_down(p) {
+        return 0;
+    }
+    let near = world
+        .bosses
+        .iter()
+        .zip(&world.layout.bosses)
+        .any(|(r, lay)| r.stage == Stage::Dormant && at_gate(world, &lay.gate, p.pos));
+    if near { PROMPT_FOG } else { 0 }
+}
+
+/// For test bots that walked through fog gates before they took Interact (issue #82): true
+/// when the player is at a dormant gate and the stick `(move_x, move_z)` points into it, so a
+/// bot presses Interact only where it would have walked through, never just walking by.
+#[cfg(test)]
+pub(crate) fn walking_into_fog(world: &World, move_x: i8, move_z: i8) -> bool {
+    let Some(p) = world.actors.get(world.player) else {
+        return false;
+    };
+    let (x, z) = (f32::from(move_x), f32::from(move_z));
+    let len = crate::math::dmath::sqrt(x * x + z * z);
+    if len < 1.0 {
+        return false;
+    }
+    world
+        .bosses
+        .iter()
+        .zip(&world.layout.bosses)
+        .any(|(r, lay)| {
+            let n = inward(&lay.gate);
+            r.stage == Stage::Dormant
+                && at_gate(world, &lay.gate, p.pos)
+                && (x * n[0] + z * n[1]) / len > 0.0
+        })
+}
+
+/// For test bots: `INTERACT` while the player stands at a dormant fog gate (the HUD's fog
+/// prompt), else nothing, so a bot walking in holds it only where it crosses the fog.
+#[cfg(any(test, feature = "bots"))]
+pub(crate) fn fog_buttons(world: &World) -> u16 {
+    if prompt(world) == PROMPT_FOG {
+        crate::input::buttons::INTERACT
+    } else {
+        0
+    }
+}
+
+/// The `interact_prompt` code for "Pass through the fog".
+pub const PROMPT_FOG: u32 = 10;
+
 /// The boss half of tick system 3: gates, intros, phases, defeat, and resets.
 pub fn run(world: &mut World) {
     if world.bosses.is_empty() {
@@ -278,6 +388,8 @@ pub fn run(world: &mut World) {
                     world.bosses[b].stage = Stage::Defeated;
                     fell_members(world, b, true);
                 } else if alive && through(&world.layout.bosses[b].gate, pos) {
+                    // Through the fog: the player held Interact to cross it (`block_fog`), or
+                    // was put inside.
                     let left = world.layout.bosses[b].def.intro_ticks.max(1);
                     world.bosses[b].stage = Stage::Intro { left };
                     emit(world, b, BossEvent::SEALED, 0);
@@ -673,11 +785,32 @@ mod tests {
     /// Ticks until the fight starts, with the player just inside the gate.
     fn start_fight_now(w: &mut World) -> Vec<Event> {
         put_player(w, [0.0, 0.0, -0.2]);
-        let mut events = step(w, 0, 127, 0, 12);
+        let mut events = step(w, 0, 127, crate::input::buttons::INTERACT, 12);
         assert!(matches!(w.bosses[0].stage, Stage::Intro { .. }));
         events.extend(step(w, 0, 0, 0, 100));
         assert_eq!(w.bosses[0].stage, Stage::Fight);
         events
+    }
+
+    /// Issue #82: walking into a dormant fog gate holds the player on its plane; walking in
+    /// while holding Interact passes through and starts the intro. The HUD prompt shows at it.
+    #[test]
+    fn the_fog_is_a_wall_unless_interact_is_held() {
+        let interact = crate::input::buttons::INTERACT;
+        let mut w = arena(1);
+        put_player(&mut w, [0.0, 0.0, -1.0]);
+        assert_eq!(prompt(&w), PROMPT_FOG);
+        step(&mut w, 0, 127, 0, 30);
+        assert_eq!(w.bosses[0].stage, Stage::Dormant);
+        let z = w.actors.get(w.player).unwrap().pos[2];
+        assert!(z <= 0.0 && z > -0.1, "held on the plane, at z {z}");
+        // A tap while standing still doesn't move the player.
+        step(&mut w, 0, 0, interact, 1);
+        assert_eq!(w.bosses[0].stage, Stage::Dormant);
+        step(&mut w, 0, 127, interact, 12);
+        assert!(matches!(w.bosses[0].stage, Stage::Intro { .. }));
+        assert!(w.actors.get(w.player).unwrap().pos[2] > 0.0);
+        assert_eq!(prompt(&w), 0);
     }
 
     #[test]
@@ -778,7 +911,7 @@ mod tests {
         step(&mut w, 0, 0, 0, 5);
         assert_eq!(w.bosses[0].stage, Stage::Dormant);
         put_player(&mut w, [0.0, 0.0, -0.1]);
-        let mut events = step(&mut w, 0, 127, 0, 12);
+        let mut events = step(&mut w, 0, 127, crate::input::buttons::INTERACT, 12);
         let Stage::Intro { left } = w.bosses[0].stage else {
             panic!("{:?}", w.bosses[0].stage);
         };

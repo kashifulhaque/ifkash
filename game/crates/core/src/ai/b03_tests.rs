@@ -110,7 +110,7 @@ impl Bot {
         };
         let g = geometry(player, boss);
         match w.bosses[0].stage {
-            Stage::Dormant => return ((0, 127), 0), // walk through the fog gate
+            Stage::Dormant => return ((0, 127), crate::ai::boss::fog_buttons(w)), // walk through the fog gate
             Stage::Intro { .. } | Stage::Defeated => return ((0, 0), 0),
             Stage::Fight => {}
         }
@@ -267,7 +267,7 @@ pub(crate) fn run_idle(seed: u64) -> Fight {
         } else {
             0
         },
-        buttons: 0,
+        buttons: crate::ai::boss::fog_buttons(w),
     })
 }
 
@@ -384,6 +384,7 @@ fn record_the_b03_goldens() {
             let mut names = Vec::new();
             for (mask, name) in [
                 (buttons::LIGHT, "LIGHT"),
+                (buttons::INTERACT, "INTERACT"),
                 (buttons::DODGE, "DODGE"),
                 (buttons::USE_ITEM, "USE_ITEM"),
                 (buttons::LOCK, "LOCK"),
@@ -478,7 +479,7 @@ fn lunges_after_a_flask(distance_m: f32) -> bool {
         let frame = ActionFrame {
             move_x: 0,
             move_z: if walking { 127 } else { 0 },
-            buttons: 0,
+            buttons: crate::ai::boss::fog_buttons(&w),
         };
         tick(
             &mut w,

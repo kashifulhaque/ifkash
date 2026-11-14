@@ -3,6 +3,8 @@
 # Each line: <ticks> <move_x> <move_z> [BUTTONS].
 seed 71
 scenario boss_b03
-65 0 127
+53 0 127
+11 0 127 INTERACT
+1 0 127
 2460 0 0
 28 0 127

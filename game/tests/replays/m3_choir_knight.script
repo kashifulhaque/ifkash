@@ -3,7 +3,8 @@
 seed 45
 scenario fight_choir_knight
 150 0 0             # stand: it notices and closes in
-1   0 0  LOCK
+1   0 0             # (no lock-on: since issue #80 it would lock the knight from behind and
+                    # turn the player, so the halberd would miss; the player stands as before)
 100 0 0
 1   0 0  LIGHT
 60  0 0

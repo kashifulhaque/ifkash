@@ -104,7 +104,7 @@ impl Bot {
             return ((0, 0), 0);
         };
         match w.bosses[0].stage {
-            Stage::Dormant => return ((0, 127), 0), // through the fog gate, north
+            Stage::Dormant => return ((0, 127), crate::ai::boss::fog_buttons(w)), // through the fog gate, north
             Stage::Intro { .. } | Stage::Defeated => return ((0, 0), 0),
             Stage::Fight => {}
         }
@@ -345,7 +345,7 @@ pub(crate) fn run_idle(seed: u64) -> Fight {
         } else {
             0
         },
-        buttons: 0,
+        buttons: crate::ai::boss::fog_buttons(w),
     })
 }
 
@@ -465,7 +465,8 @@ fn fight_world_with(content: &Content) -> World {
             } else {
                 0
             },
-            ..ActionFrame::default()
+            buttons: crate::ai::boss::fog_buttons(&w),
+            move_x: 0,
         };
         tick(
             &mut w,
@@ -1078,6 +1079,7 @@ fn record_the_b09_goldens() {
             let mut names = Vec::new();
             for (mask, name) in [
                 (buttons::LIGHT, "LIGHT"),
+                (buttons::INTERACT, "INTERACT"),
                 (buttons::DODGE, "DODGE"),
                 (buttons::USE_ITEM, "USE_ITEM"),
                 (buttons::LOCK, "LOCK"),

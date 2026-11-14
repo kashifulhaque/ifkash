@@ -31,6 +31,7 @@
     7: 'Kick the ladder down',
     8: 'Speak',
     9: 'Look closer',
+    10: 'Pass through the fog',
     30: 'Ride the cart',
     31: 'Push the cart',
     32: 'Push the hatch open',

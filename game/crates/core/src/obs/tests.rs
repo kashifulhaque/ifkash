@@ -29,12 +29,14 @@ fn in_fight(seed: u64) -> World {
         } else {
             0
         };
+        // Interact passes the fog gate (issue #82).
+        let buttons = crate::ai::boss::fog_buttons(&w);
         step(
             &mut w,
             ActionFrame {
                 move_x: 0,
                 move_z,
-                buttons: 0,
+                buttons,
             },
         );
     }

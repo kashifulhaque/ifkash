@@ -541,6 +541,10 @@ fn walk() -> Run {
                 jump_t += 1;
             }
         }
+        // At a boss's fog gate, Interact passes through it, as a player would (issue #82).
+        if crate::ai::boss::walking_into_fog(&w, frame.move_x, frame.move_z) {
+            frame.buttons |= buttons::INTERACT;
+        }
         // Every button is a press edge.
         frame.buttons &= !last_buttons;
         last_buttons = frame.buttons;

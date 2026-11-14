@@ -37,7 +37,8 @@ pub struct EnemyDef {
     /// Delirium staggers it.
     #[serde(default)]
     pub can_go_mad: bool,
-    /// Glimmer dropped on death. Not paid out yet (enemy drops arrive later).
+    /// Glimmer paid to the player when it dies (`systems::deaths_drops`). 0 on a boss body,
+    /// whose reward is the boss definition's.
     #[serde(default)]
     pub glimmer: u32,
     /// Sight and hearing. `None` uses the defaults in `ai.ron`.

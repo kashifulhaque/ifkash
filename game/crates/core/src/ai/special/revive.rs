@@ -86,6 +86,8 @@ pub fn tick_dead(world: &mut World, id: Id) {
         if let Some(b) = world.actors.get_mut(id).and_then(|a| a.ai.as_mut()) {
             b.stays_dead = true;
         }
+        // The death is final now, so it pays (issue #75).
+        crate::systems::deaths_drops::pay(world, id);
         return;
     }
     let (after, percent) = (rule.after_ticks, rule.hp_percent);

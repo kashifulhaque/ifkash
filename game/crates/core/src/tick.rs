@@ -6,6 +6,8 @@ use crate::world::World;
 
 /// Advances the world by one tick, running the eleven systems in spec order.
 pub fn tick(world: &mut World, input: &TickInput) {
+    // Enemies alive at the start of the tick pay Glimmer if they die in it (issue #75).
+    let living = systems::deaths_drops::living_enemies(world);
     systems::apply_commands::run(world, input);
     // A player on a ladder (or who just let go) can't attack, dodge, or jump (WP-042).
     let masked = crate::world_state::mechanics::mask_input(world, input);
@@ -19,6 +21,7 @@ pub fn tick(world: &mut World, input: &TickInput) {
     systems::status_regen::run(world, input);
     systems::deaths_drops::run(world, input);
     systems::world_logic::run(world, input);
+    systems::deaths_drops::pay_enemy_glimmer(world, &living);
     systems::snapshot::run(world, input);
 }
 

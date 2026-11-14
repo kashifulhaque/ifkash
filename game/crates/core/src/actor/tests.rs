@@ -260,3 +260,27 @@ fn world_clones_and_serializes_in_lockstep() {
     assert_eq!(a.state_hash(), b.state_hash());
     assert_eq!(a.state_hash(), c.state_hash());
 }
+
+/// Issue #77: on m0_flat's box floor, a landed jump rests on the floor, not sunk into it,
+/// and walking off doesn't pop the player up.
+#[test]
+fn a_landing_on_the_box_floor_does_not_sink() {
+    let mut w = World::new(7, &content(), "m0_flat").expect("m0_flat exists");
+    run(&mut w, &frame(0, 0, 0), 10);
+    let offset = w.locomotion.controller_offset;
+    for _ in 0..3 {
+        // At rest the feet are on the floor (0) or up to the controller offset above it.
+        run(&mut w, &frame(0, 0, buttons::JUMP), 1);
+        run(&mut w, &frame(0, 0, 0), 60);
+        let p = player(&w);
+        assert!(p.motor.grounded);
+        assert!(
+            (-0.001..=offset + 0.005).contains(&p.pos[1]),
+            "rests at {} after a landing",
+            p.pos[1]
+        );
+    }
+    let before = player(&w).pos[1];
+    run(&mut w, &frame(0, 127, 0), 10);
+    assert!(near(player(&w).pos[1], before, 0.005));
+}

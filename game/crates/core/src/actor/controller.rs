@@ -209,6 +209,15 @@ pub fn step(a: &mut Actor, physics: &PhysicsState, t: &Locomotion) {
         let surface = footing(a.pos, physics, t);
         if let Some(y) = surface {
             m.ground_y = y;
+            // Rapier's snap to ground can push the capsule into a large box floor (0.1 to
+            // 0.17 m on m0_flat, issue #77); the feet then stay sunk until the next move. Lift
+            // the feet back to the surface under the center. On a slope that surface is below
+            // the feet, so this only lifts out of a floor. A sink within the controller offset
+            // is float noise and stays, and a lift is never more than the snap distance.
+            let sink = y - a.pos[1];
+            if sink > t.controller_offset && sink <= t.snap_to_ground {
+                a.pos[1] = y;
+            }
         }
         if !was_grounded {
             let landed_on = surface.unwrap_or(a.pos[1] - t.controller_offset);

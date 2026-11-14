@@ -138,10 +138,14 @@ mod tests {
         );
         assert_eq!(w.state_hash(), before_owned);
         assert_ne!(before, before_owned, "giving gear is a state change");
-        // Emptying the right hand drops the attack rating to 0 and the load by the weapon.
+        // Emptying the right hand drops the attack rating to the fists' (issue #76) and the
+        // load by the weapon.
         let (ok, bare) = preview_equip(&w, slot::RIGHT_1, 0).unwrap();
         assert!(ok);
-        assert_eq!(bare.ar_phys_milli, 0);
+        let attrs = w.actors.get(id).unwrap().stats.attrs;
+        let fists = crate::items::upgrade::unarmed_rating(&w, &attrs).unwrap();
+        assert_eq!(bare.ar_phys_milli, fists.phys_milli);
+        assert!(bare.ar_phys_milli < current(&w).ar_phys_milli);
         assert!(bare.load_tenths < current(&w).load_tenths);
         // An empty slot can't be emptied.
         assert!(!can_equip(&w, slot::HEAD, 0));

@@ -71,6 +71,8 @@ const armorByNum = new Map<number, ArmorSpec>(ARMOR.map((a) => [a.num, a]));
 export const SPELLS: Array<{ id: string; name: string; school: string }> = d.spells ?? [];
 
 export const weaponByNum = (n: number): WeaponSpec | undefined => byNum.get(n);
+/** A weapon's registry number from its content id (`wpn_gray_greatsword`), or 0 if unknown. */
+export const weaponNumById = (id: string): number => d.weapons.find((w) => w.id === id)?.num ?? 0;
 export const armorByNumber = (n: number): ArmorSpec | undefined => armorByNum.get(n);
 
 /** Classes in the order the armory shows them. */

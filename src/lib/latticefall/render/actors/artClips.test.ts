@@ -2,7 +2,21 @@
 
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
-import { artAssetBase, artGuard, artSpecFor, artTwoHand, MIXAMO_BONE_MAP, PLAYER_ART, playerArt, type ArtClipInfo } from './artClips';
+import {
+  artAssetBase,
+  artGuard,
+  artSpecFor,
+  artTwoHand,
+  enemyArt,
+  ENEMY_ART,
+  lanternGlow,
+  LANTERN_PEAK,
+  MIXAMO_BONE_MAP,
+  PLAYER_ART,
+  playerArt,
+  PRIVATE_ART,
+  type ArtClipInfo
+} from './artClips';
 import { BONE_MAP } from './retarget';
 
 const clip = (contact: number | null): ArtClipInfo => ({ frames: 30, duration: 1, loop: false, contact, source: 'x.fbx' });
@@ -75,5 +89,42 @@ describe('art assets', () => {
     assert.equal(playerArt(null), PLAYER_ART);
     assert.equal(playerArt('standin'), 'standin');
     assert.equal(playerArt('off'), null);
+  });
+});
+
+describe('enemy art', () => {
+  test('husks and B01 have art characters, and &enemyart=off turns them off', () => {
+    assert.equal(enemyArt(7000, null), 'husk');
+    assert.equal(enemyArt(9011, null), 'sentry');
+    assert.equal(enemyArt(7010, null), undefined);
+    assert.equal(enemyArt(7000, 'off'), undefined);
+    for (const name of ENEMY_ART.values()) assert.ok(PRIVATE_ART.has(name), `${name} is private`);
+  });
+
+  test('every husk and B01 move maps to a clip with its contact frame', () => {
+    const clips = { idle: clip(null), attack_a: clip(14), attack_b: clip(17), slam: clip(20), sweep: clip(15), bash: clip(9), combo_1: clip(12), combo_2: clip(11), combo_3: clip(19) };
+    const want: Record<string, [string, number]> = {
+      husk_swipe_1: ['attack_a', 14],
+      husk_swipe_2: ['attack_b', 17],
+      sentry_overhead: ['slam', 20],
+      sentry_sweep: ['sweep', 15],
+      sentry_bash: ['bash', 9],
+      sentry_combo_1: ['combo_1', 12],
+      sentry_combo_2: ['combo_2', 11],
+      sentry_combo_3: ['combo_3', 19]
+    };
+    for (const [anim, [id, contact]] of Object.entries(want)) {
+      assert.deepEqual(artSpecFor(anim, true, clips), { segs: [{ clip: id }], contact }, anim);
+    }
+  });
+
+  test('the lantern swells through the wind-up, peaks at the strike, and settles', () => {
+    const slam = { totalFrames: 74, strikeStart: 30, recoveryStart: 34 };
+    assert.equal(lanternGlow(slam, 0), 1);
+    assert.ok(lanternGlow(slam, 15) > 1 && lanternGlow(slam, 15) < lanternGlow(slam, 29));
+    assert.equal(lanternGlow(slam, 30), LANTERN_PEAK);
+    assert.equal(lanternGlow(slam, 60), 1);
+    assert.equal(lanternGlow(undefined, 10), 1);
+    assert.equal(lanternGlow({ totalFrames: 30 }, 10), 1);
   });
 });

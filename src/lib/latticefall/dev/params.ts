@@ -25,6 +25,8 @@
 //                           `mise run art:character -- NAME` (render/actors/artClips.ts). Without
 //                           it the player is PLAYER_ART; `&art=off` draws the old Wayfarer. Any
 //                           character falls back to the Wayfarer if it fails to load
+//   &enemyart=off           (dev only) draws every enemy as its old procedural model instead of
+//                           its art character (ENEMY_ART in render/actors/artClips.ts)
 //   &fakelock=X,Y,Z         frames a fixed point as if it were the locked-on actor's feet
 //
 //   &bench=1|AREA,AREA     (dev only) runs the performance benchmark (WP-081): flies a fixed camera path
@@ -68,6 +70,8 @@ export interface DevParams {
   ktx2Test: boolean;
   /** `&art=NAME` with `&dev=1`: the art character to draw as the player, or null. */
   art: string | null;
+  /** `&enemyart=off` with `&dev=1`, else null: enemies keep their procedural models. */
+  enemyArt: 'off' | null;
   spawn: string | null;
   seed: bigint | null;
   freeze: boolean;
@@ -131,6 +135,8 @@ export function parseDevParams(search: string): DevParams {
     else warnings.push(`art=${rawArt}: expected a character name (lowercase letters, digits, underscores)`);
   }
 
+  const enemyArt = dev && p.get('enemyart') === 'off' ? 'off' : null;
+
   const rawHit = p.get('freezeonhit');
   const hitMs = rawHit !== null && /^\d+$/.test(rawHit) ? Number(rawHit) : null;
 
@@ -153,6 +159,7 @@ export function parseDevParams(search: string): DevParams {
     benchCrowd: dev && p.has('benchcrowd') && Number(p.get('benchcrowd')) >= 0 ? Number(p.get('benchcrowd')) : null,
     ktx2Test: dev && p.get('ktx2test') === '1',
     art,
+    enemyArt,
     spawn: dev ? p.get('spawn') || null : null,
     seed: dev ? seed : null,
     freeze: dev && ['1', 'true'].includes(p.get('freeze') ?? ''),

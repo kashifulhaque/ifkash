@@ -21,6 +21,8 @@ export interface VfxActorHooks {
   /** Freezes an actor's drawn animation for `seconds`. */
   holdPose(id: number, seconds: number): void;
   isHeld(id: number): boolean;
+  /** Plays a hit reaction on an actor that took an unguarded hit, if its model has one. */
+  hitReact?(id: number): void;
   /** World positions of the weapon's tip and base (hand). False if the actor isn't drawn yet. */
   weaponTip(id: number, tip: Vector3, base: Vector3): boolean;
 }
@@ -171,6 +173,7 @@ export class CombatVfx {
     this.hooks.holdPose(e.attacker, seconds);
     this.hooks.holdPose(e.target, seconds);
     this.hold = Math.max(this.hold, seconds);
+    if (!guarded) this.hooks.hitReact?.(e.target);
 
     // Only hits the player is part of shake the camera.
     if (!guarded && (e.attacker === this.playerId || e.target === this.playerId)) {

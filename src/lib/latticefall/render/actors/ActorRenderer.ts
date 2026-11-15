@@ -1,23 +1,29 @@
-// Draws actors as the Wayfarer model and animates them from snapshots. Render-only: it reads
-// snapshot fields and never writes simulation state.
+// Draws actors as skinned characters and animates them from snapshots: the player as the
+// Wayfarer or an art character, and enemies as art characters (`ENEMY_ART`) or procedural
+// models. Render-only: it reads snapshot fields and never writes simulation state.
 //
-// Pose priority each frame: a move (by `move_id`, scrubbed by `move_frame`), then airborne
-// states from the snapshot's `AIRBORNE` flag, then locomotion blended by ground speed. A short
-// crossfade hides every switch between those.
+// Player pose priority each frame: a move (by `move_id`, scrubbed by `move_frame`), then
+// airborne states from the snapshot's `AIRBORNE` flag, then locomotion blended by ground
+// speed. An art enemy's: death, waking (`rise`), a move, a stagger, a hit reaction, then
+// locomotion. A short crossfade hides every switch between those.
 
 import {
   Box3,
   type Bone,
   Group,
   type Material,
+  Color,
   Matrix4,
-  type Mesh,
+  Mesh,
+  MeshBasicMaterial,
   type Object3D,
   type PerspectiveCamera,
+  PointLight,
   PropertyBinding,
   Quaternion,
   type Scene,
   type SkinnedMesh,
+  SphereGeometry,
   Euler,
   Vector3,
   type WebGLRenderer
@@ -46,7 +52,7 @@ import {
   WEAPON_GUARD_CLIP,
   type StanceClip
 } from './stancePose';
-import { weaponByNum } from '../equipment/catalog';
+import { weaponByNum, weaponNumById } from '../equipment/catalog';
 import type { BoneOffset } from '../../ui/gestures/gesturePose';
 import { parsePreview, type PreviewRequest } from './devPreview';
 import { digestAnimInfo } from './moveTable';
@@ -63,13 +69,19 @@ import {
 import { BAKE_FPS, BONE_MAP, type BakedClip, retargetClips, sampleClip } from './retarget';
 import {
   artAssetBase,
+  enemyArt,
+  lanternGlow,
   playerArt,
+  ART_CHARACTERS,
   ART_LOOPS,
+  DEFAULT_ART_HEIGHT_M,
   MIXAMO_BONE_MAP,
   MIXAMO_FEET,
   artGuard,
   artTwoHand,
   artSpecFor,
+  type ArtCharacter,
+  type ArtLantern,
   type ArtSidecar
 } from './artClips';
 import { parseDevParams } from '../../dev/params';
@@ -135,6 +147,21 @@ type LoopClips = { idle: string; walk: string; run: string; sprint: string };
 
 /** An art character without a sprint clip runs this much faster instead. */
 const ART_SPRINT_RATE = 1.3;
+/** An art character without a run clip walks this much faster instead. */
+const ART_RUN_RATE = 1.6;
+
+/** A dormant enemy wakes when it moves faster than this (m/s), starts a move, or is struck. */
+const RISE_SPEED = 0.3;
+/** The waking clip plays this much faster than authored: the sim has already sent it walking. */
+const RISE_RATE = 1.6;
+/** Hit reactions play this much faster than authored, so they read as a flinch. */
+const HIT_RATE = 1.3;
+/** A hit reaction gives way to locomotion after this long if the enemy is already moving. */
+const HIT_MIN_SECONDS = 0.25;
+/** Ground speed (m/s) above which a hit reaction gives way to locomotion. */
+const HIT_MOVING_SPEED = 1;
+/** Seconds the lantern takes to go out after its bearer dies. */
+const LANTERN_DIE_SECONDS = 1.2;
 
 /** What an art character (`&art=NAME`, see `artClips.ts`) adds to the template. */
 interface ArtKit {
@@ -147,6 +174,10 @@ interface ArtKit {
 
 interface Template {
   gltf: GLTF;
+  /** How the game dresses this art character (`ART_CHARACTERS`), or null for the Wayfarer. */
+  look: ArtCharacter | null;
+  /** Reach of the weapon past the hand, for trails, in meters. */
+  weaponLength: number;
   /** The idle and locomotion clip names. */
   loops: LoopClips;
   /** Set when the player is an art character instead of the Wayfarer. */
@@ -196,6 +227,27 @@ interface Instance {
   /** Guard and two-hand stance weights, 0 to 1, eased toward the snapshot flags. */
   guardW: number;
   twoHandW: number;
+  /** The template this instance was cloned from. */
+  tpl: Template;
+  /** Drawn by the enemy pose path (`composeEnemyPose`). */
+  enemy: boolean;
+  /** Waking: lying where it fell until it first stirs, then rising (`ART_CLIP_IDS`' `rise`). */
+  rise: 'dormant' | 'rising' | 'up';
+  riseT: number;
+  /** Seconds into the hit reaction, or null when none plays. */
+  hitT: number | null;
+  /** Counts hit reactions, so each restart crossfades. */
+  hitRun: number;
+  /** Seconds staggered, or -1 when not. */
+  staggerT: number;
+  /** Seconds dead, or -1 while alive. */
+  deathT: number;
+  /** The move being drawn and its fractional frame, for the lantern. Undefined between moves. */
+  drawnMove: MoveAnimInfo | undefined;
+  drawnFrame: number;
+  lantern: { spec: ArtLantern; light: PointLight; flame: Mesh; material: MeshBasicMaterial; phase: number } | null;
+  /** True once an enemy's weapon is attached. */
+  armed: boolean;
 }
 
 const newPose = (n: number): Pose => ({ q: new Float32Array(n * 4), hips: new Float32Array(3) });
@@ -276,6 +328,84 @@ function genericKeys(info: MoveAnimInfo): number[] {
   return [0, windup, (strike + recovery) / 2, Math.min(recovery + 3, total), total];
 }
 
+/**
+ * Loads an art character baked by the pipeline: the GLB's own clips on its own skeleton, so
+ * the bake is an identity retarget that only resamples them to 30 Hz arrays and measures
+ * the strides. Its bones are found by Mixamo name (`MIXAMO_BONE_MAP`), and it is scaled to
+ * its `ART_CHARACTERS` height. `idle` and `walk` are required; a missing `run` is a faster
+ * walk, and a missing `sprint` a faster run.
+ */
+async function loadArtTemplate(renderer: WebGLRenderer, name: string): Promise<Template> {
+  const loader = createGltfLoader(renderer);
+  const base = artAssetBase(name, import.meta.env.DEV, getApiBase());
+  const [gltf, sidecar] = await Promise.all([
+    loader.loadAsync(`${base}${name}.glb`),
+    fetch(`${base}${name}.json`).then((r) => {
+      if (!r.ok) throw new Error(`${name}.json: HTTP ${r.status}`);
+      return r.json() as Promise<ArtSidecar>;
+    })
+  ]);
+  capSceneTextures(gltf.scene, getQuality().name);
+  gltf.scene.updateMatrixWorld(true);
+  const look = ART_CHARACTERS[name] ?? null;
+  const box = new Box3().setFromObject(gltf.scene, true);
+  const scale = (look?.height ?? DEFAULT_ART_HEIGHT_M) / (box.max.y - box.min.y);
+
+  // Every bone plays its clip, the mapped ones first so `boneIndex` finds them.
+  const core = new Set(MIXAMO_BONE_MAP.map(([m]) => m));
+  const extra: string[] = [];
+  gltf.scene.traverse((o) => {
+    if ((o as Bone).isBone && !core.has(o.name)) extra.push(o.name);
+  });
+  const map = [...MIXAMO_BONE_MAP.map(([m]) => [m, m] as const), ...extra.map((n) => [n, n] as const)];
+  const source = cloneSkinned(gltf.scene) as Object3D;
+  const rt = retargetClips(source, gltf.animations, gltf.scene, scale, map, MIXAMO_FEET);
+  for (const id of [ART_LOOPS.idle, ART_LOOPS.walk]) {
+    if (!rt.clips.has(id)) throw new Error(`${name}.glb has no clip ${id}`);
+  }
+  const band = (id: string) => {
+    const clip = rt.clips.get(id)!;
+    if (clip.stanceSpeed <= 0) throw new Error(`no measurable stride for clip ${id}`);
+    const speed = clip.stanceSpeed * STANCE_CALIBRATION * rt.strideScale;
+    return { metersPerCycle: speed * clip.duration, speed };
+  };
+  // A sidecar from another bake must not name clips the GLB lacks.
+  sidecar.clips = Object.fromEntries(Object.entries(sidecar.clips).filter(([id]) => rt.clips.has(id)));
+  const walk = band(ART_LOOPS.walk);
+  const hasRun = rt.clips.has(ART_LOOPS.run);
+  const run = hasRun ? band(ART_LOOPS.run) : { metersPerCycle: walk.metersPerCycle, speed: walk.speed * ART_RUN_RATE };
+  const runClip = hasRun ? ART_LOOPS.run : ART_LOOPS.walk;
+  const hasSprint = rt.clips.has(ART_LOOPS.sprint);
+  console.info(`[latticefall] art character ${name}: ${sidecar.triangles} triangles, clips ${[...rt.clips.keys()].join(', ')}`);
+  return {
+    gltf,
+    look,
+    weaponLength: look?.weaponLength ?? WEAPON_LENGTH_M,
+    loops: { ...ART_LOOPS, run: runClip, sprint: hasSprint ? ART_LOOPS.sprint : runClip },
+    art: { sidecar, guard: artGuard((c) => rt.clips.has(c)), twoHand: artTwoHand((c) => rt.clips.has(c)) },
+    boneNames: rt.boneNames,
+    clips: rt.clips,
+    bands: {
+      walk,
+      run,
+      sprint: hasSprint ? band(ART_LOOPS.sprint) : { metersPerCycle: run.metersPerCycle, speed: run.speed * ART_SPRINT_RATE }
+    },
+    scale,
+    footLift: -box.min.y,
+    boneIndex: new Map(MIXAMO_BONE_MAP.map(([, logical], i) => [logical, i]))
+  };
+}
+
+/** Frees a template's geometry and materials. */
+function disposeTemplate(tpl: Template): void {
+  tpl.gltf.scene.traverse((o) => {
+    const m = o as { geometry?: { dispose(): void }; material?: { dispose(): void } | Array<{ dispose(): void }> };
+    m.geometry?.dispose();
+    if (Array.isArray(m.material)) m.material.forEach((x) => x.dispose());
+    else m.material?.dispose();
+  });
+}
+
 export class ActorRenderer {
   private scene: Scene;
   private renderer: WebGLRenderer;
@@ -302,6 +432,10 @@ export class ActorRenderer {
   readonly spellFx = new SpellFx();
   /** The art character to draw as the player (`PLAYER_ART`, or `&art=` with `&dev=1`), or null. */
   private artName: string | null = null;
+  /** Enemy art characters by name: the loaded template, or the load's state. */
+  private enemyTpls = new Map<string, Template | 'loading' | 'failed'>();
+  /** `&enemyart=off` turns the enemy art characters off. */
+  private enemyArtParam: string | null = null;
 
   constructor(scene: Scene, renderer: WebGLRenderer, opts: { resolveMove?: MoveResolver } = {}) {
     this.scene = scene;
@@ -310,7 +444,9 @@ export class ActorRenderer {
     if (typeof location !== 'undefined') {
       this.preview = parsePreview(location.search);
       this.propPreview = parsePropPreview(location.search);
-      this.artName = playerArt(parseDevParams(location.search).art);
+      const params = parseDevParams(location.search);
+      this.artName = playerArt(params.art);
+      this.enemyArtParam = params.enemyArt;
     }
     this.scene.add(this.spellFx.points);
     if (this.preview || import.meta.env.DEV) (globalThis as Record<string, unknown>).__lfActors = this;
@@ -372,6 +508,8 @@ export class ActorRenderer {
     };
     this.tpl = {
       gltf: wayfarer,
+      look: null,
+      weaponLength: WEAPON_LENGTH_M,
       loops: LOOP_CLIPS,
       art: null,
       boneNames: rt.boneNames,
@@ -386,78 +524,46 @@ export class ActorRenderer {
     }
   }
 
-  /**
-   * Loads an art character baked by the pipeline: the GLB's own clips on its own skeleton,
-   * so the bake is an identity retarget that only resamples them to 30 Hz arrays and
-   * measures the strides. Its bones are found by Mixamo name (`MIXAMO_BONE_MAP`).
-   */
+  /** Loads an art character as the player's template (see `loadArtTemplate`). */
   private async loadArt(name: string): Promise<void> {
-    const loader = createGltfLoader(this.renderer);
-    const base = artAssetBase(name, import.meta.env.DEV, getApiBase());
-    const [gltf, sidecar] = await Promise.all([
-      loader.loadAsync(`${base}${name}.glb`),
-      fetch(`${base}${name}.json`).then((r) => {
-        if (!r.ok) throw new Error(`${name}.json: HTTP ${r.status}`);
-        return r.json() as Promise<ArtSidecar>;
-      })
-    ]);
-    capSceneTextures(gltf.scene, getQuality().name);
-    gltf.scene.updateMatrixWorld(true);
-    const box = new Box3().setFromObject(gltf.scene, true);
-    const scale = WAYFARER_HEIGHT_M / (box.max.y - box.min.y);
-
-    // Every bone plays its clip, the mapped ones first so `boneIndex` finds them.
-    const core = new Set(MIXAMO_BONE_MAP.map(([m]) => m));
-    const extra: string[] = [];
-    gltf.scene.traverse((o) => {
-      if ((o as Bone).isBone && !core.has(o.name)) extra.push(o.name);
-    });
-    const map = [...MIXAMO_BONE_MAP.map(([m]) => [m, m] as const), ...extra.map((n) => [n, n] as const)];
-    const source = cloneSkinned(gltf.scene) as Object3D;
-    const rt = retargetClips(source, gltf.animations, gltf.scene, scale, map, MIXAMO_FEET);
-    for (const id of [ART_LOOPS.idle, ART_LOOPS.walk, ART_LOOPS.run]) {
-      if (!rt.clips.has(id)) throw new Error(`${name}.glb has no clip ${id}`);
-    }
-    const band = (id: string) => {
-      const clip = rt.clips.get(id)!;
-      if (clip.stanceSpeed <= 0) throw new Error(`no measurable stride for clip ${id}`);
-      const speed = clip.stanceSpeed * STANCE_CALIBRATION * rt.strideScale;
-      return { metersPerCycle: speed * clip.duration, speed };
-    };
-    // A sidecar from another bake must not name clips the GLB lacks.
-    sidecar.clips = Object.fromEntries(Object.entries(sidecar.clips).filter(([id]) => rt.clips.has(id)));
-    const run = band(ART_LOOPS.run);
-    const hasSprint = rt.clips.has(ART_LOOPS.sprint);
-    this.tpl = {
-      gltf,
-      loops: { ...ART_LOOPS, sprint: hasSprint ? ART_LOOPS.sprint : ART_LOOPS.run },
-      art: { sidecar, guard: artGuard((c) => rt.clips.has(c)), twoHand: artTwoHand((c) => rt.clips.has(c)) },
-      boneNames: rt.boneNames,
-      clips: rt.clips,
-      bands: {
-        walk: band(ART_LOOPS.walk),
-        run,
-        sprint: hasSprint ? band(ART_LOOPS.sprint) : { metersPerCycle: run.metersPerCycle, speed: run.speed * ART_SPRINT_RATE }
-      },
-      scale,
-      footLift: -box.min.y,
-      boneIndex: new Map(MIXAMO_BONE_MAP.map(([, logical], i) => [logical, i]))
-    };
-    console.info(`[latticefall] art character ${name}: ${sidecar.triangles} triangles, clips ${[...rt.clips.keys()].join(', ')}`);
+    this.tpl = await loadArtTemplate(this.renderer, name);
   }
 
   /** Draws one actor. Returns false (and draws nothing) until the assets are loaded. */
   update(a: DrawActor, frameMs: number): boolean {
     const def = a.kind ? modelForKind(a.kind) : undefined;
     if (def) {
-      this.updateEnemy(a, def, frameMs);
+      const art = this.enemyTemplate(a.kind);
+      if (art) this.updateArtEnemy(a, def, art, frameMs);
+      else this.updateEnemy(a, def, frameMs);
       return true;
     }
     const tpl = this.tpl;
     if (!tpl) return false;
-    const dt = Math.max(frameMs, 0) / 1000;
-    const inst = this.instances.get(a.id) ?? this.spawn(a.id, tpl);
+    const inst = this.instances.get(a.id) ?? this.spawn(a.id, tpl, false);
+    const pv = this.preview;
+    if (!this.step(inst, a, frameMs)) return true;
+    if (a.id === this.playerId) {
+      // An art character with its own weapon (a boss drawn as the player for a preview) holds it.
+      const own = this.ownWeapon(tpl);
+      if (own) this.applyGear(a.id, inst, own, tpl.look?.weaponScale);
+      else if (this.equipped) {
+        this.applyGear(a.id, inst, this.equipped);
+        this.gear.get(a.id)?.setOffHandStowed((a.flags & FLAG_TWO_HANDING) !== 0);
+      }
+    }
+    if (pv && (pv.state === 'jump' || pv.state === 'fall' || pv.state === 'land')) {
+      inst.holder.position.y += pv.state === 'land' ? 0 : PREVIEW_AIR_LIFT_M;
+    }
+    return true;
+  }
 
+  /**
+   * Moves, times, and poses one skinned instance for this frame. Returns false while the
+   * actor is held by hitstop (its last pose stays).
+   */
+  private step(inst: Instance, a: DrawActor, frameMs: number): boolean {
+    const dt = Math.max(frameMs, 0) / 1000;
     inst.holder.position.set(a.x, a.y, a.z);
     inst.holder.rotation.y = a.yaw + MODEL_YAW_OFFSET;
 
@@ -481,12 +587,12 @@ export class ActorRenderer {
       const step = Math.min(dt, inst.hold);
       inst.hold -= step;
       inst.lagFrames += step / TICK_SECONDS;
-      return true;
+      return false;
     }
     inst.lagFrames = Math.max(0, inst.lagFrames - (dt / TICK_SECONDS) * HITSTOP_CATCHUP);
-    if (dt > 0) inst.air.update(a.y, dt, (a.flags & FLAG_AIRBORNE) !== 0);
+    if (dt > 0 && !inst.enemy) inst.air.update(a.y, dt, (a.flags & FLAG_AIRBORNE) !== 0);
 
-    const pv = this.preview;
+    const pv = inst.enemy ? null : this.preview;
     if (pv) this.applyPreview(inst, pv, dt);
 
     // Move frame, made fractional between ticks.
@@ -497,17 +603,87 @@ export class ActorRenderer {
     }
     const moveFrac = Math.min((now - inst.moveFrameAt) / 1000 / TICK_SECONDS, 1);
 
-    const sig = this.composePose(inst, a, tpl, dt, moveFrac);
+    inst.drawnMove = undefined;
+    const sig = inst.enemy ? this.composeEnemyPose(inst, a, dt, moveFrac) : this.composePose(inst, a, inst.tpl, dt, moveFrac);
     this.crossfade(inst, sig, dt);
     this.apply(inst);
-    if (this.equipped && a.id === this.playerId) {
-      this.applyGear(a.id, inst, tpl);
-      this.gear.get(a.id)?.setOffHandStowed((a.flags & FLAG_TWO_HANDING) !== 0);
-    }
-    if (pv && (pv.state === 'jump' || pv.state === 'fall' || pv.state === 'land')) {
-      inst.holder.position.y += pv.state === 'land' ? 0 : PREVIEW_AIR_LIFT_M;
-    }
+    this.updateLantern(inst, a, dt);
     return true;
+  }
+
+  /** The weapon an art character always holds (`ArtCharacter.weapon`), as equipment, or null. */
+  private ownWeapon(tpl: Template): Equipped | null {
+    const id = tpl.look?.weapon;
+    if (!id) return null;
+    const right = weaponNumById(id);
+    return right ? { right, left: 0, head: 0, body: 0 } : null;
+  }
+
+  /**
+   * The art template for an enemy kind once it's loaded, else undefined (the procedural model
+   * draws meanwhile, and for good if the load fails). The first call starts the load.
+   */
+  private enemyTemplate(kind: number): Template | undefined {
+    const name = enemyArt(kind, this.enemyArtParam);
+    if (!name) return undefined;
+    const state = this.enemyTpls.get(name);
+    if (state === undefined) {
+      this.enemyTpls.set(name, 'loading');
+      loadArtTemplate(this.renderer, name).then(
+        (tpl) => {
+          if (this.enemyTpls.get(name) === 'loading') this.enemyTpls.set(name, tpl);
+          else disposeTemplate(tpl);
+        },
+        (err) => {
+          console.error(`[latticefall] enemy art character "${name}" failed to load; keeping its procedural model`, err);
+          this.enemyTpls.set(name, 'failed');
+        }
+      );
+      return undefined;
+    }
+    return typeof state === 'string' ? undefined : state;
+  }
+
+  /** Draws one enemy as its art character. Takes over from its procedural model, if it had one. */
+  private updateArtEnemy(a: DrawActor, def: ModelDef, tpl: Template, frameMs: number): void {
+    const old = this.enemies.get(a.id);
+    if (old) {
+      this.scene.remove(old.holder);
+      old.dispose();
+      this.enemies.delete(a.id);
+    }
+    let inst = this.instances.get(a.id);
+    // Beyond the cull distance an enemy is neither posed nor drawn (WP-081). Bosses are exempt.
+    const cam = this.cameraAt;
+    if (cam && def.height < 3) {
+      const limit = actorCullDistance(getQuality());
+      const dx = a.x - cam.x;
+      const dz = a.z - cam.z;
+      if (dx * dx + dz * dz > limit * limit) {
+        if (inst) inst.holder.visible = false;
+        return;
+      }
+    }
+    if (!inst) {
+      inst = this.spawn(a.id, tpl, true);
+      // Already on screen as its procedural model: it is awake, so it doesn't lie down.
+      if (old) inst.rise = 'up';
+    }
+    inst.holder.visible = (a.flags & FLAG_HIDDEN) === 0;
+    if (!this.step(inst, a, frameMs)) return;
+    if (!inst.armed) {
+      inst.armed = true;
+      const own = this.ownWeapon(tpl);
+      if (own) this.applyGear(a.id, inst, own, tpl.look?.weaponScale);
+    }
+  }
+
+  /** Plays a hit reaction on an art enemy (from a hit event). The pose path decides if it shows. */
+  hitReact(id: number): void {
+    const inst = this.instances.get(id);
+    if (!inst?.enemy || (inst.deathT >= 0)) return;
+    inst.hitT = 0;
+    inst.hitRun++;
   }
 
   /** Sets what the player wears (registry numbers from the menu state). Drawn on the next frame. */
@@ -521,7 +697,8 @@ export class ActorRenderer {
     this.spellFx.update(dt, camera, viewportPx);
   }
 
-  private applyGear(id: number, inst: Instance, tpl: Template): void {
+  private applyGear(id: number, inst: Instance, eq: Equipped, weaponScale = 1): void {
+    const tpl = inst.tpl;
     let g = this.gear.get(id);
     if (!g) {
       g = new PlayerGear(this.spellFx);
@@ -544,7 +721,7 @@ export class ActorRenderer {
     const frame: RigFrame = {
       bodyToTemplate: new Matrix4()
         .makeTranslation(0, -tpl.footLift, 0)
-        .multiply(new Matrix4().makeScale(1 / tpl.scale, 1 / tpl.scale, 1 / tpl.scale)),
+        .multiply(new Matrix4().makeScale(weaponScale / tpl.scale, weaponScale / tpl.scale, weaponScale / tpl.scale)),
       restBone: (n) => tpl.gltf.scene.getObjectByName(PropertyBinding.sanitizeNodeName(named(n)))!,
       bone: (n) => inst.bones[tpl.boneIndex.get(n)!],
       materials,
@@ -556,7 +733,7 @@ export class ActorRenderer {
     };
     tpl.gltf.scene.updateMatrixWorld(true);
     // An art character wears its own armor: it carries the weapons only.
-    g.apply(tpl.art ? { ...this.equipped!, head: 0, body: 0 } : this.equipped!, frame);
+    g.apply(tpl.art ? { ...eq, head: 0, body: 0 } : eq, frame);
   }
 
   /** Hitstop: freezes the actor's drawn animation for `seconds` (never longer than a quarter second). */
@@ -576,14 +753,14 @@ export class ActorRenderer {
    */
   weaponTip(id: number, tip: Vector3, base: Vector3): boolean {
     const inst = this.instances.get(id);
-    const tpl = this.tpl;
-    if (!inst || !tpl) return false;
+    if (!inst || !inst.holder.visible) return false;
+    const tpl = inst.tpl;
     inst.holder.updateMatrixWorld(true);
     const hand = inst.bones[tpl.boneIndex.get('Hand.R')!];
     const fore = inst.bones[tpl.boneIndex.get('LowerArm.R')!];
     hand.getWorldPosition(base);
     fore.getWorldPosition(tip);
-    tip.sub(base).negate().normalize().multiplyScalar(WEAPON_LENGTH_M).add(base);
+    tip.sub(base).negate().normalize().multiplyScalar(tpl.weaponLength).add(base);
     return true;
   }
 
@@ -616,8 +793,7 @@ export class ActorRenderer {
       if (!live.has(id)) {
         this.gear.get(id)?.dispose();
         this.gear.delete(id);
-        this.scene.remove(inst.holder);
-        disposeSkeletons(inst.holder);
+        this.removeInstance(inst);
         this.instances.delete(id);
       }
     }
@@ -628,10 +804,7 @@ export class ActorRenderer {
     this.gear.clear();
     this.scene.remove(this.spellFx.points);
     this.spellFx.dispose();
-    for (const inst of this.instances.values()) {
-      this.scene.remove(inst.holder);
-      disposeSkeletons(inst.holder);
-    }
+    for (const inst of this.instances.values()) this.removeInstance(inst);
     this.instances.clear();
     for (const e of [...this.enemies.values(), ...this.propActors]) {
       this.scene.remove(e.holder);
@@ -639,13 +812,11 @@ export class ActorRenderer {
     }
     this.enemies.clear();
     this.propActors = [];
-    this.tpl?.gltf.scene.traverse((o) => {
-      const m = o as { geometry?: { dispose(): void }; material?: { dispose(): void } | Array<{ dispose(): void }> };
-      m.geometry?.dispose();
-      if (Array.isArray(m.material)) m.material.forEach((x) => x.dispose());
-      else m.material?.dispose();
-    });
+    if (this.tpl) disposeTemplate(this.tpl);
     this.tpl = null;
+    for (const state of this.enemyTpls.values()) if (typeof state !== 'string') disposeTemplate(state);
+    // A load still in flight finds its slot gone and frees what it loaded.
+    this.enemyTpls.clear();
     if ((globalThis as Record<string, unknown>).__lfActors === this) delete (globalThis as Record<string, unknown>).__lfActors;
   }
 
@@ -655,7 +826,7 @@ export class ActorRenderer {
     if (!inst) return null;
     inst.holder.updateMatrixWorld(true);
     const get = (name: string): [number, number, number] => {
-      const b = inst.bones[this.tpl!.boneIndex.get(name)!];
+      const b = inst.bones[inst.tpl.boneIndex.get(name)!];
       const p = b.getWorldPosition(new Vector3());
       return [p.x, p.y, p.z];
     };
@@ -753,7 +924,7 @@ export class ActorRenderer {
 
   // -- internals ------------------------------------------------------------------------
 
-  private spawn(id: number, tpl: Template): Instance {
+  private spawn(id: number, tpl: Template, enemy: boolean): Instance {
     const root = cloneSkinned(tpl.gltf.scene) as Object3D;
     root.position.y = tpl.footLift;
     const holder = new Group();
@@ -790,14 +961,79 @@ export class ActorRenderer {
       lagMove: 0,
       moveRun: 0,
       guardW: 0,
-      twoHandW: 0
+      twoHandW: 0,
+      tpl,
+      enemy,
+      rise: enemy && tpl.clips.has('rise') ? 'dormant' : 'up',
+      riseT: 0,
+      hitT: null,
+      hitRun: 0,
+      staggerT: -1,
+      deathT: -1,
+      drawnMove: undefined,
+      drawnFrame: 0,
+      lantern: null,
+      armed: false
     };
+    if (tpl.look?.lantern) inst.lantern = this.makeLantern(tpl, root, tpl.look.lantern, id);
     this.instances.set(id, inst);
     return inst;
   }
 
+  /**
+   * A chest lantern on its bone: a flame sphere and a point light, placed `forward` and `up`
+   * meters from the bone at rest. The offset is found in the template's rest pose, so it
+   * holds for any bone orientation the bake produced.
+   */
+  private makeLantern(tpl: Template, root: Object3D, spec: ArtLantern, id: number): Instance['lantern'] {
+    const key = PropertyBinding.sanitizeNodeName(spec.bone);
+    const rest = tpl.gltf.scene.getObjectByName(key);
+    const bone = root.getObjectByName(key);
+    if (!rest || !bone) {
+      console.warn(`[latticefall] lantern bone ${spec.bone} not found on ${tpl.art?.sidecar.name}`);
+      return null;
+    }
+    tpl.gltf.scene.updateMatrixWorld(true);
+    const at = rest.getWorldPosition(new Vector3());
+    at.z += spec.forward / tpl.scale;
+    at.y += spec.up / tpl.scale;
+    const local = rest.worldToLocal(at);
+    const boneScale = rest.getWorldScale(new Vector3()).x;
+    const material = new MeshBasicMaterial({ color: new Color(spec.color), toneMapped: false });
+    const flame = new Mesh(new SphereGeometry(spec.radius / tpl.scale / boneScale, 12, 8), material);
+    flame.position.copy(local);
+    const light = new PointLight(spec.color, spec.intensity, spec.distance, 1.6);
+    light.position.copy(local);
+    bone.add(flame, light);
+    return { spec, light, flame, material, phase: (id % 13) * 0.7 };
+  }
+
+  /** Brightens the lantern through a wind-up (`lanternGlow`), flickers it, and puts it out on death. */
+  private updateLantern(inst: Instance, a: DrawActor, dt: number): void {
+    const l = inst.lantern;
+    if (!l) return;
+    l.phase += dt;
+    const flicker = 1 + 0.07 * Math.sin(l.phase * 11) + 0.05 * Math.sin(l.phase * 23.7);
+    let glow = lanternGlow(inst.drawnMove, inst.drawnFrame) * flicker;
+    if ((a.flags & FLAG_DEAD) !== 0) glow *= Math.max(0, 1 - Math.max(inst.deathT, 0) / LANTERN_DIE_SECONDS);
+    l.light.intensity = l.spec.intensity * glow;
+    // Past rest brightness the flame washes toward white.
+    l.material.color.setHex(l.spec.color).multiplyScalar(Math.max(glow, 0.05));
+    l.flame.scale.setScalar(0.8 + 0.2 * Math.min(glow, 2));
+  }
+
+  private removeInstance(inst: Instance): void {
+    this.scene.remove(inst.holder);
+    disposeSkeletons(inst.holder);
+    if (inst.lantern) {
+      inst.lantern.flame.geometry.dispose();
+      inst.lantern.material.dispose();
+      inst.lantern.light.dispose();
+    }
+  }
+
   private applyPreview(inst: Instance, pv: PreviewRequest, dt: number): void {
-    const tpl = this.tpl!;
+    const tpl = inst.tpl;
     const s = pv.state;
     inst.previewT += dt;
     const t = pv.t ?? inst.previewT % 1.5;
@@ -845,9 +1081,11 @@ export class ActorRenderer {
         const len = specLength(choice, frames);
         const at = locateSpec(choice, moveClipFrame(len, choice.contact, info, frame), frames, BAKE_FPS);
         sampleClip(tpl.clips.get(at.clip)!, at.time, false, out.q, out.hips);
+        inst.drawnMove = info;
+        inst.drawnFrame = frame;
         return sig;
       }
-      this.warnMissing(info.anim);
+      this.warnMissing(info.anim, tpl);
       if (tpl.art) {
         // The generic pose's offsets are for the Wayfarer's bone axes: hold the idle instead.
         sampleClip(tpl.clips.get(tpl.loops.idle)!, 0, true, out.q, out.hips);
@@ -887,6 +1125,99 @@ export class ActorRenderer {
     }
     this.layStance(inst, tpl, a, dt, out);
     return sig;
+  }
+
+  /**
+   * Fills `inst.tmp` with an art enemy's pose and returns its signature. In order: the death
+   * (played once and held), waking (lying still until it first stirs, then the `rise` clip),
+   * a move retimed to its frame data, a stagger while locked out, a hit reaction, and
+   * locomotion. A missing clip skips its state.
+   */
+  private composeEnemyPose(inst: Instance, a: DrawActor, dt: number, moveFrac: number): string {
+    const tpl = inst.tpl;
+    const out = inst.tmp;
+    const clip = (id: string) => tpl.clips.get(id);
+    const once = (id: string, t: number) => {
+      const c = clip(id)!;
+      sampleClip(c, Math.min(t, c.duration), false, out.q, out.hips);
+    };
+
+    if ((a.flags & FLAG_DEAD) !== 0) {
+      inst.deathT = inst.deathT < 0 ? 0 : inst.deathT + dt;
+      if (clip('death')) {
+        once('death', inst.deathT);
+        return 'death';
+      }
+    } else if (inst.deathT >= 0) {
+      // Back from the dead (the Lantern woke the cave): lie down again until stirred.
+      inst.deathT = -1;
+      inst.hitT = null;
+      inst.rise = clip('rise') ? 'dormant' : 'up';
+    }
+
+    const info = a.moveId !== 0 ? this.resolveMove(a.moveId) : undefined;
+    const staggered = (a.flags & FLAG_STAGGERED) !== 0;
+
+    if (inst.rise === 'dormant' && (info || staggered || inst.hitT !== null || inst.speed > RISE_SPEED)) {
+      inst.rise = 'rising';
+      inst.riseT = 0;
+      inst.hitT = null;
+    }
+    if (inst.rise === 'dormant') {
+      once('rise', 0);
+      return 'rise';
+    }
+    if (inst.rise === 'rising') {
+      // A move cuts the waking short; the crossfade covers it.
+      inst.riseT += dt * RISE_RATE;
+      if (!info && inst.riseT < clip('rise')!.duration) {
+        once('rise', inst.riseT);
+        return 'rise';
+      }
+      inst.rise = 'up';
+    }
+
+    if (info) {
+      inst.hitT = null;
+      const frame = Math.max(0, a.moveFrame + moveFrac - inst.lagFrames);
+      const choice = artSpecFor(info.anim, info.strikeStart !== undefined, tpl.art!.sidecar.clips);
+      inst.drawnMove = info;
+      inst.drawnFrame = frame;
+      if (choice) {
+        const frames = (c: string) => tpl.clips.get(c)!.frames;
+        const len = specLength(choice, frames);
+        const at = locateSpec(choice, moveClipFrame(len, choice.contact, info, frame), frames, BAKE_FPS);
+        sampleClip(tpl.clips.get(at.clip)!, at.time, false, out.q, out.hips);
+      } else {
+        this.warnMissing(info.anim, tpl);
+        sampleClip(tpl.clips.get(tpl.loops.idle)!, inst.idleT, true, out.q, out.hips);
+      }
+      return `move:${info.anim}:${inst.moveRun}`;
+    }
+
+    if (staggered) {
+      inst.staggerT = inst.staggerT < 0 ? 0 : inst.staggerT + dt;
+      const id = clip('stagger') ? 'stagger' : clip('hit') ? 'hit' : null;
+      if (id) {
+        inst.hitT = null;
+        once(id, inst.staggerT);
+        return 'stagger';
+      }
+    } else inst.staggerT = -1;
+
+    if (inst.hitT !== null) {
+      const hit = clip('hit');
+      inst.hitT += dt * HIT_RATE;
+      const moving = inst.hitT > HIT_MIN_SECONDS && inst.speed > HIT_MOVING_SPEED;
+      if (hit && inst.hitT < hit.duration && !moving) {
+        once('hit', inst.hitT);
+        return `hit:${inst.hitRun}`;
+      }
+      inst.hitT = null;
+    }
+
+    this.locomotion(inst, tpl, dt, false, out);
+    return 'loco';
   }
 
   /**
@@ -1087,11 +1418,11 @@ export class ActorRenderer {
     return { segs: [{ clip: anim }], contact: 0 };
   }
 
-  private warnMissing(anim: string): void {
+  private warnMissing(anim: string, tpl: Template): void {
     if (!import.meta.env.DEV || this.warned.has(anim)) return;
     this.warned.add(anim);
-    if (this.tpl?.art) {
-      console.warn(`[latticefall] art character ${this.tpl.art.sidecar.name} has no clip for move anim "${anim}" (see ART_ANIMS in artClips.ts); holding the idle`);
+    if (tpl.art) {
+      console.warn(`[latticefall] art character ${tpl.art.sidecar.name} has no clip for move anim "${anim}" (see ART_ANIMS in artClips.ts); holding the idle`);
       return;
     }
     const mapped = clipsForAnim(anim);

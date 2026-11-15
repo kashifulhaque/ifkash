@@ -70,6 +70,7 @@ import { BAKE_FPS, BONE_MAP, type BakedClip, retargetClips, sampleClip } from '.
 import {
   artAssetBase,
   enemyArt,
+  ENEMY_ART,
   lanternGlow,
   playerArt,
   ART_CHARACTERS,
@@ -160,6 +161,11 @@ const HIT_RATE = 1.3;
 const HIT_MIN_SECONDS = 0.25;
 /** Ground speed (m/s) above which a hit reaction gives way to locomotion. */
 const HIT_MOVING_SPEED = 1;
+/**
+ * How long an enemy with art still loading is left undrawn before its procedural model
+ * stands in, in milliseconds. Long enough for the art on a normal connection.
+ */
+const ENEMY_ART_WAIT_MS = 4000;
 /** Seconds the lantern takes to go out after its bearer dies. */
 const LANTERN_DIE_SECONDS = 1.2;
 
@@ -465,6 +471,10 @@ export class ActorRenderer {
 
   /** Starts loading; safe to call more than once. Rejects if an asset fails to load. */
   load(): Promise<void> {
+    if (!this.loading && this.enemyArtParam !== 'off') {
+      // The enemies' art loads beside the player's, so it is usually ready before they show.
+      for (const name of new Set(ENEMY_ART.values())) this.startEnemyLoad(name);
+    }
     this.loading ??= this.doLoad();
     return this.loading;
   }
@@ -534,6 +544,7 @@ export class ActorRenderer {
     const def = a.kind ? modelForKind(a.kind) : undefined;
     if (def) {
       const art = this.enemyTemplate(a.kind);
+      if (art === 'wait') return true;
       if (art) this.updateArtEnemy(a, def, art, frameMs);
       else this.updateEnemy(a, def, frameMs);
       return true;
@@ -620,28 +631,36 @@ export class ActorRenderer {
   }
 
   /**
-   * The art template for an enemy kind once it's loaded, else undefined (the procedural model
-   * draws meanwhile, and for good if the load fails). The first call starts the load.
+   * The art template for an enemy kind once it's loaded. While it loads, `'wait'` (draw
+   * nothing, so the enemy first appears as its art character, lying where it fell) for up to
+   * `ENEMY_ART_WAIT_MS`, then undefined: the procedural model draws until the art arrives,
+   * and for good if the load fails.
    */
-  private enemyTemplate(kind: number): Template | undefined {
+  private enemyTemplate(kind: number): Template | 'wait' | undefined {
     const name = enemyArt(kind, this.enemyArtParam);
     if (!name) return undefined;
-    const state = this.enemyTpls.get(name);
-    if (state === undefined) {
-      this.enemyTpls.set(name, 'loading');
-      loadArtTemplate(this.renderer, name).then(
-        (tpl) => {
-          if (this.enemyTpls.get(name) === 'loading') this.enemyTpls.set(name, tpl);
-          else disposeTemplate(tpl);
-        },
-        (err) => {
-          console.error(`[latticefall] enemy art character "${name}" failed to load; keeping its procedural model`, err);
-          this.enemyTpls.set(name, 'failed');
-        }
-      );
-      return undefined;
-    }
-    return typeof state === 'string' ? undefined : state;
+    const state = this.enemyTpls.get(name) ?? this.startEnemyLoad(name);
+    if (state === 'loading') return performance.now() - this.enemyLoadAt < ENEMY_ART_WAIT_MS ? 'wait' : undefined;
+    return state === 'failed' ? undefined : state;
+  }
+
+  /** When the first enemy art load started, for `ENEMY_ART_WAIT_MS`. */
+  private enemyLoadAt = 0;
+
+  private startEnemyLoad(name: string): 'loading' {
+    if (this.enemyTpls.size === 0) this.enemyLoadAt = performance.now();
+    this.enemyTpls.set(name, 'loading');
+    loadArtTemplate(this.renderer, name).then(
+      (tpl) => {
+        if (this.enemyTpls.get(name) === 'loading') this.enemyTpls.set(name, tpl);
+        else disposeTemplate(tpl);
+      },
+      (err) => {
+        console.error(`[latticefall] enemy art character "${name}" failed to load; keeping its procedural model`, err);
+        if (this.enemyTpls.get(name) === 'loading') this.enemyTpls.set(name, 'failed');
+      }
+    );
+    return 'loading';
   }
 
   /** Draws one enemy as its art character. Takes over from its procedural model, if it had one. */

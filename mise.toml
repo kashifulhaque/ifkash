@@ -107,6 +107,10 @@ bash game/scripts/build-wasm.sh
 mise exec -- node game/crates/wasm/tests/golden.mjs
 """
 
+[tasks."game:ktx"]
+description = "Install the pinned KTX-Software `ktx` tool for textured assets, without sudo"
+run = "bash game/scripts/install-ktx.sh"
+
 [tasks."game:py"]
 dir = "game/python"
 env = { RUSTUP_TOOLCHAIN = "1.99.1" }

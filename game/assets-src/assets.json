@@ -2,6 +2,7 @@
   "assets": [
     { "src": "quaternius-modular-characters/Adventurer.glb", "out": "actors/wayfarer.glb" },
     { "src": "universal-animation-library/ual1_standard_trimmed.glb", "out": "actors/ual.glb" },
-    { "src": "universal-animation-library-2/ual2_standard_trimmed.glb", "out": "actors/ual2.glb" }
+    { "src": "universal-animation-library-2/ual2_standard_trimmed.glb", "out": "actors/ual2.glb" },
+    { "src": "polyhaven-stone-fire-pit/stone_fire_pit_2k.glb", "out": "dev/stone_fire_pit.glb", "maxTextureSize": 1024 }
   ]
 }

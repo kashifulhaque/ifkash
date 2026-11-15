@@ -6,8 +6,16 @@
 //! every output, grouped by its first path segment (the region), is written next to them.
 //!
 //! The tool runs `gltf-transform` from the repository's `node_modules` (a Bun devDependency)
-//! and falls back to `bunx`. KTX2 conversion needs KTX-Software's `toktx` on the `PATH`
-//! (docs/game/decisions/0005-asset-pipeline-tools.md); files with no textures don't.
+//! and falls back to `bunx`. Files with no textures need nothing else.
+//!
+//! A file with textures also needs KTX-Software's `ktx` tool, which
+//! `game/scripts/install-ktx.sh` installs without sudo
+//! (docs/game/decisions/0010-ktx2-textures.md). `gltf-transform optimize` then writes each
+//! texture as KTX2 with mipmaps: UASTC for normal, occlusion, and metallic-roughness maps
+//! (linear), and ETC1S for every other map (base color and emissive, sRGB). No texture is
+//! written larger than the maximum texture size. When any output has KTX2 textures, the
+//! tool also copies the Basis transcoder from the installed `three` package into
+//! `basis/`, so the transcoder matches the renderer's Three.js version.
 
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
@@ -17,6 +25,19 @@ use serde_json::{Value, json};
 
 /// Version used when falling back to `bunx`; matches the root `package.json`.
 const GLTF_TRANSFORM_VERSION: &str = "4.5.1";
+
+/// The KTX-Software release that `game/scripts/install-ktx.sh` installs. Keep them in sync.
+const KTX_VERSION: &str = "4.4.2";
+/// The oldest `ktx` that gltf-transform 4.5 accepts.
+const KTX_VERSION_MIN: [u32; 3] = [4, 4, 0];
+const KTX_HELP: &str = "run `bash game/scripts/install-ktx.sh` (or `mise run game:ktx`); see docs/game/decisions/0010-ktx2-textures.md";
+
+/// The longest edge, in pixels, of a written texture unless the job or the command line
+/// sets another. Larger sources are scaled down; smaller ones keep their size.
+pub const DEFAULT_MAX_TEXTURE_SIZE: u32 = 2048;
+
+/// The Basis transcoder files that the renderer's `KTX2Loader` fetches from `basis/`.
+const TRANSCODER_FILES: [&str; 2] = ["basis_transcoder.js", "basis_transcoder.wasm"];
 
 /// `game/assets-src/`.
 pub fn default_src() -> PathBuf {
@@ -32,8 +53,8 @@ fn repo_root() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../..")
 }
 
-pub fn run(src: &Path, out: &Path) -> ExitCode {
-    match build(src, out) {
+pub fn run(src: &Path, out: &Path, max_texture_size: u32) -> ExitCode {
+    match build(src, out, max_texture_size) {
         Ok(count) => {
             println!("assets: {count} files written to {}", out.display());
             ExitCode::SUCCESS
@@ -49,6 +70,18 @@ struct Job {
     src: PathBuf,
     out: String,
     copy: bool,
+    /// The job's own `maxTextureSize`, which overrides the command line's.
+    max_texture_size: Option<u32>,
+}
+
+fn check_texture_size(size: u32) -> Result<u32, String> {
+    if (4..=8192).contains(&size) && size.is_power_of_two() {
+        Ok(size)
+    } else {
+        Err(format!(
+            "bad maximum texture size {size} (use a power of two from 4 to 8192)"
+        ))
+    }
 }
 
 fn read_jobs(src: &Path) -> Result<Vec<Job>, String> {
@@ -79,13 +112,23 @@ fn read_jobs(src: &Path) -> Result<Vec<Job>, String> {
                 src: src.join(field("src")?),
                 out: out.to_string(),
                 copy: e.get("copy").and_then(Value::as_bool).unwrap_or(false),
+                max_texture_size: match e.get("maxTextureSize") {
+                    None => None,
+                    Some(v) => Some(
+                        v.as_u64()
+                            .and_then(|n| u32::try_from(n).ok())
+                            .ok_or_else(|| format!("maxTextureSize {v}: not a size"))
+                            .and_then(check_texture_size)
+                            .map_err(|m| format!("{}: \"{out}\": {m}", path.display()))?,
+                    ),
+                },
             })
         })
         .collect()
 }
 
-/// True when the GLB's JSON chunk lists at least one image.
-fn glb_has_textures(path: &Path) -> Result<bool, String> {
+/// The MIME type of every image in the GLB's JSON chunk. Empty when it has no textures.
+fn glb_image_types(path: &Path) -> Result<Vec<String>, String> {
     let bytes = std::fs::read(path).map_err(|e| format!("{}: {e}", path.display()))?;
     let bad = || format!("{}: not a GLB file", path.display());
     if bytes.len() < 20 || &bytes[0..4] != b"glTF" {
@@ -98,7 +141,18 @@ fn glb_has_textures(path: &Path) -> Result<bool, String> {
     Ok(json
         .get("images")
         .and_then(Value::as_array)
-        .is_some_and(|a| !a.is_empty()))
+        .map(|images| {
+            images
+                .iter()
+                .map(|i| {
+                    i.get("mimeType")
+                        .and_then(Value::as_str)
+                        .unwrap_or("")
+                        .to_string()
+                })
+                .collect()
+        })
+        .unwrap_or_default())
 }
 
 fn gltf_transform() -> Command {
@@ -112,17 +166,86 @@ fn gltf_transform() -> Command {
     }
 }
 
-fn optimize(job: &Job, dest: &Path) -> Result<(), String> {
-    let textured = glb_has_textures(&job.src)?;
-    if textured && Command::new("toktx").arg("--version").output().is_err() {
-        return Err(format!(
-            "{} has textures but `toktx` (KTX-Software) is not installed; see docs/game/decisions/0005-asset-pipeline-tools.md",
-            job.src.display()
-        ));
+/// Reads the version from `ktx --version` output, which looks like `ktx version: v4.4.2`.
+fn parse_ktx_version(text: &str) -> Option<[u32; 3]> {
+    let v = text
+        .split_whitespace()
+        .filter_map(|w| w.strip_prefix('v'))
+        .find(|w| w.starts_with(|c: char| c.is_ascii_digit()))?;
+    // A build past a release reads `v4.4.2~3`; a release candidate reads `v5.0.0-rc1`.
+    let v = v.split(['~', '-', '+']).next()?;
+    let mut parts = v.split('.').map(|p| p.parse::<u32>().ok());
+    Some([parts.next()??, parts.next()??, parts.next()??])
+}
+
+/// Where `game/scripts/install-ktx.sh` puts KTX-Software: `LF_KTX_DIR`, or
+/// `latticefall/ktx-VERSION` under `XDG_DATA_HOME` (`~/.local/share` by default).
+fn ktx_install_dir(
+    lf_ktx_dir: Option<String>,
+    xdg_data_home: Option<String>,
+    home: Option<String>,
+) -> Option<PathBuf> {
+    let set = |v: Option<String>| v.filter(|s| !s.is_empty());
+    if let Some(dir) = set(lf_ktx_dir) {
+        return Some(PathBuf::from(dir));
+    }
+    let data = set(xdg_data_home)
+        .map(PathBuf::from)
+        .or_else(|| set(home).map(|h| PathBuf::from(h).join(".local/share")))?;
+    Some(data.join(format!("latticefall/ktx-{KTX_VERSION}")))
+}
+
+/// Finds a usable `ktx`: the pinned install first, then the `PATH`. Returns the directory to
+/// put first on the `PATH` for gltf-transform (none when `ktx` is already there).
+fn find_ktx() -> Result<Option<PathBuf>, String> {
+    let env = |k: &str| std::env::var(k).ok();
+    let pinned = ktx_install_dir(env("LF_KTX_DIR"), env("XDG_DATA_HOME"), env("HOME"))
+        .map(|d| d.join("bin"))
+        .filter(|bin| bin.join("ktx").exists());
+    let program = pinned
+        .as_ref()
+        .map_or_else(|| PathBuf::from("ktx"), |bin| bin.join("ktx"));
+    let output = Command::new(&program)
+        .arg("--version")
+        .output()
+        .map_err(|_| {
+            format!("the `ktx` tool (KTX-Software {KTX_VERSION}) is not installed; {KTX_HELP}")
+        })?;
+    let text = String::from_utf8_lossy(&output.stdout);
+    match parse_ktx_version(&text) {
+        Some(v) if v >= KTX_VERSION_MIN => Ok(pinned),
+        Some([a, b, c]) => Err(format!(
+            "{} is KTX-Software {a}.{b}.{c}, but gltf-transform needs 4.4.0 or later; {KTX_HELP}",
+            program.display()
+        )),
+        None => Err(format!(
+            "could not read a version from `{} --version`; {KTX_HELP}",
+            program.display()
+        )),
+    }
+}
+
+/// Optimizes one GLB. Returns true when the output has KTX2 textures.
+fn optimize(job: &Job, dest: &Path, max_texture_size: u32) -> Result<bool, String> {
+    let textured = !glb_image_types(&job.src)?.is_empty();
+    let mut cmd = gltf_transform();
+    if textured {
+        let ktx_bin =
+            find_ktx().map_err(|m| format!("{} has textures, but {m}", job.src.display()))?;
+        if let Some(bin) = ktx_bin {
+            let mut paths = vec![bin];
+            paths.extend(std::env::split_paths(
+                &std::env::var_os("PATH").unwrap_or_default(),
+            ));
+            cmd.env(
+                "PATH",
+                std::env::join_paths(paths).map_err(|e| e.to_string())?,
+            );
+        }
     }
     // Skinned characters: keep the scene graph, don't join meshes, and keep the flat material
     // colors (armor tints later edit them), so palette textures and simplification are off.
-    let status = gltf_transform()
+    let status = cmd
         .arg("optimize")
         .arg(&job.src)
         .arg(dest)
@@ -140,20 +263,43 @@ fn optimize(job: &Job, dest: &Path) -> Result<(), String> {
             "--texture-compress",
             if textured { "ktx2" } else { "false" },
         ])
+        .args(["--texture-size", &max_texture_size.to_string()])
         .status()
         .map_err(|e| format!("could not run gltf-transform (run `bun install`): {e}"))?;
-    if status.success() {
-        Ok(())
-    } else {
-        Err(format!(
+    if !status.success() {
+        return Err(format!(
             "gltf-transform failed on {} ({status})",
             job.src.display()
-        ))
+        ));
     }
+    // gltf-transform logs a failed `ktx` run and keeps the source image, so check the output.
+    if let Some(other) = glb_image_types(dest)?.iter().find(|t| *t != "image/ktx2") {
+        return Err(format!(
+            "{}: a texture was left as \"{other}\" instead of KTX2; read the gltf-transform output for the `ktx` error",
+            dest.display()
+        ));
+    }
+    Ok(textured)
 }
 
-fn build(src: &Path, out: &Path) -> Result<usize, String> {
+/// Copies the Basis transcoder from the installed `three` package into `out/basis/`.
+fn copy_transcoder(out: &Path) -> Result<(), String> {
+    let from = repo_root().join("node_modules/three/examples/jsm/libs/basis");
+    let to = out.join("basis");
+    std::fs::create_dir_all(&to).map_err(|e| format!("{}: {e}", to.display()))?;
+    for name in TRANSCODER_FILES {
+        let src = from.join(name);
+        std::fs::copy(&src, to.join(name))
+            .map_err(|e| format!("{}: {e} (run `bun install`)", src.display()))?;
+    }
+    println!("assets: Basis transcoder -> basis/");
+    Ok(())
+}
+
+fn build(src: &Path, out: &Path, max_texture_size: u32) -> Result<usize, String> {
+    let max_texture_size = check_texture_size(max_texture_size)?;
     let jobs = read_jobs(src)?;
+    let mut any_ktx2 = false;
     let mut regions: BTreeMap<String, Vec<Value>> = BTreeMap::new();
     for job in &jobs {
         let dest = out.join(&job.out);
@@ -164,7 +310,8 @@ fn build(src: &Path, out: &Path) -> Result<usize, String> {
         if job.copy {
             std::fs::copy(&job.src, &dest).map_err(|e| format!("{}: {e}", job.src.display()))?;
         } else {
-            optimize(job, &dest)?;
+            let size = job.max_texture_size.unwrap_or(max_texture_size);
+            any_ktx2 |= optimize(job, &dest, size)?;
         }
         let bytes = std::fs::metadata(&dest)
             .map_err(|e| format!("{}: {e}", dest.display()))?
@@ -179,7 +326,12 @@ fn build(src: &Path, out: &Path) -> Result<usize, String> {
     let text = serde_json::to_string_pretty(&manifest).map_err(|e| e.to_string())?;
     std::fs::write(out.join("manifest.json"), text + "\n")
         .map_err(|e| format!("manifest.json: {e}"))?;
-    Ok(jobs.len() + 1)
+    let mut written = jobs.len() + 1;
+    if any_ktx2 {
+        copy_transcoder(out)?;
+        written += TRANSCODER_FILES.len();
+    }
+    Ok(written)
 }
 
 #[cfg(test)]
@@ -203,6 +355,66 @@ mod tests {
         .unwrap();
         let jobs = read_jobs(&dir).unwrap();
         assert_eq!(jobs[0].out, "actors/x.glb");
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
+    #[test]
+    fn reads_ktx_versions() {
+        assert_eq!(parse_ktx_version("ktx version: v4.4.2\n"), Some([4, 4, 2]));
+        assert_eq!(parse_ktx_version("ktx version: v4.3.0~12"), Some([4, 3, 0]));
+        assert_eq!(
+            parse_ktx_version("ktx version: v5.0.0-rc2"),
+            Some([5, 0, 0])
+        );
+        assert_eq!(parse_ktx_version("command not found"), None);
+        assert!([4, 3, 2] < KTX_VERSION_MIN && [4, 10, 0] >= KTX_VERSION_MIN);
+    }
+
+    #[test]
+    fn resolves_the_ktx_install_dir() {
+        let s = |v: &str| Some(v.to_string());
+        assert_eq!(
+            ktx_install_dir(s("/opt/ktx"), s("/data"), s("/home/a")),
+            Some(PathBuf::from("/opt/ktx"))
+        );
+        assert_eq!(
+            ktx_install_dir(None, s("/data"), s("/home/a")),
+            Some(PathBuf::from(format!(
+                "/data/latticefall/ktx-{KTX_VERSION}"
+            )))
+        );
+        assert_eq!(
+            ktx_install_dir(s(""), None, s("/home/a")),
+            Some(PathBuf::from(format!(
+                "/home/a/.local/share/latticefall/ktx-{KTX_VERSION}"
+            )))
+        );
+        assert_eq!(ktx_install_dir(None, None, None), None);
+    }
+
+    #[test]
+    fn checks_texture_sizes() {
+        assert_eq!(check_texture_size(1024), Ok(1024));
+        assert!(check_texture_size(1000).is_err());
+        assert!(check_texture_size(2).is_err());
+        assert!(check_texture_size(16384).is_err());
+        let dir = std::env::temp_dir().join(format!("lf-assets-size-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let write = |size: &str| {
+            std::fs::write(
+                dir.join("assets.json"),
+                format!(
+                    r#"{{"assets":[{{"src":"a.glb","out":"dev/x.glb","maxTextureSize":{size}}}]}}"#
+                ),
+            )
+            .unwrap();
+        };
+        write("512");
+        assert_eq!(read_jobs(&dir).unwrap()[0].max_texture_size, Some(512));
+        write("500");
+        assert!(read_jobs(&dir).is_err());
+        write("\"big\"");
+        assert!(read_jobs(&dir).is_err());
         std::fs::remove_dir_all(&dir).ok();
     }
 

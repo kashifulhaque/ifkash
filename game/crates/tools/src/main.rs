@@ -58,6 +58,10 @@ enum Command {
         /// The output directory. Defaults to `static/latticefall/`.
         #[arg(long)]
         out: Option<PathBuf>,
+        /// The longest edge of a written texture, in pixels: a power of two. Larger source
+        /// textures are scaled down. A job's `maxTextureSize` in `assets.json` overrides it.
+        #[arg(long, default_value_t = assets::DEFAULT_MAX_TEXTURE_SIZE)]
+        max_texture_size: u32,
     },
     /// Collect every asset pack's title, author, source, and license into one JSON file.
     Credits {
@@ -98,9 +102,14 @@ fn main() -> ExitCode {
             &data.unwrap_or_else(default_data),
             &out.unwrap_or_else(default_gen_out),
         ),
-        Command::Assets { src, out } => assets::run(
+        Command::Assets {
+            src,
+            out,
+            max_texture_size,
+        } => assets::run(
             &src.unwrap_or_else(assets::default_src),
             &out.unwrap_or_else(assets::default_out),
+            max_texture_size,
         ),
         Command::Credits { src, out } => credits::run(
             &src.unwrap_or_else(assets::default_src),

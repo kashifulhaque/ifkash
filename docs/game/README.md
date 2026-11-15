@@ -52,6 +52,7 @@ AI coding agents can build it one work package at a time.
 | [11 Agent playbook](11-agent-playbook.md) | How a session runs, definition of done, determinism rules, visual checks, lanes |
 | [12 Research notes](12-research-notes.md) | What the plan's research found, with sources and open questions |
 | [Art direction research](art-direction-research.md) | The planned move from low-poly to a 2010s souls look: questions, deliverables, prerequisites |
+| [Tutorial production plan](tutorial-production-plan.md) | Making Waking Hollow a finished game: art sources, the asset list, owner setup, phases |
 | [STATUS.md](STATUS.md) | Live progress tracker |
 | [JOURNAL.md](JOURNAL.md) | Session handoff log: who did what, context used, next steps |
 | [decisions/](decisions/) | Architecture decision records (ADRs) |
@@ -66,7 +67,7 @@ These need an answer before the WPs that depend on them:
 | Confirm the Rust-core decision at gate G1 | [M2](10-roadmap.md#m2-combat-core) | Continue with Rust |
 | Approve each new asset pack (license check) | The WP that adds it | Use only packs already verified in [the presentation spec](07-presentation.md#sources) |
 | Choose whether research replays are collected at all | [WP-098](10-roadmap.md#wp-098) | Don't collect |
-| Approve the new art direction after [the art direction research](art-direction-research.md) | Any art or animation WP | Keep the low-poly direction, and do only the research's prerequisites |
+| Set up the tools and accounts in [the tutorial production plan](tutorial-production-plan.md#what-the-owner-sets-up), and answer its decisions. AI-generated art was approved on 2026-11-15 | Phase 1 of that plan | None |
 
 ## Glossary
 

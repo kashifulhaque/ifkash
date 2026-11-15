@@ -1,0 +1,159 @@
+# Tutorial production plan: Waking Hollow as a finished game
+
+- **Status:** Proposed, 2026-11-15. Waits for the owner to set up the tools and accounts
+  in [What the owner sets up](#what-the-owner-sets-up).
+- **Goal:** Make Waking Hollow, the tutorial cave from Lantern L01 to the Hollow Sentry
+  (B01), a complete, polished game in the 2010s souls look. Only then move on to the next
+  area.
+- **Live game today:** Players can only enter Waking Hollow
+  (`src/lib/latticefall/tutorialLock.ts`). Beating B01 shows an end-of-tutorial card. The
+  other 15 areas stay in the repo and open with `?dev=1`.
+- **Evidence:** [Research 1](art-research/01-characters-and-animation.md) (characters and
+  animation), [research 2](art-research/02-environments-and-renderer.md) (environments
+  and renderer), and [research 3](art-research/03-ai-tooling-and-pipeline.md) (AI tools and
+  the pipeline, written after the owner accepted AI-generated art).
+
+## Where the art comes from
+
+Nothing is modeled by hand, and nothing comes from a paid asset store. Store licenses (Fab,
+Unity Asset Store, Sketchfab Standard, Synty) forbid a public repository and require that
+players can't extract the files, which a web game can't promise. Each kind of asset comes
+from the source that fits it best:
+
+| Asset | Source | Why |
+|---|---|---|
+| Player, husks, hound, B01, NPCs, weapons, unique props | **Generated** with Meshy Pro from a concept image, then cleaned in Blender | On a paid plan the owner owns the output, so it can sit in a public repo |
+| Cave rock, stone, dirt, and wood surfaces | **Downloaded**, CC0 scans from Poly Haven and ambientCG | Public domain and photographic, the best match for the look |
+| Rocks, roots, rubble | **Downloaded** (Poly Haven, CC0) or generated locally with Hunyuan3D 2.1 | Free; generated only where no scan fits |
+| Cave walls, floors, the round arena, pillars | **Built by script** in headless Blender, covered with the scanned surfaces | Simple shapes with good surfaces and light are what the souls look is made of, and agents can build them |
+| Basic motion: idle, walk, run, hit reactions, deaths | **Downloaded** from Mixamo (free, Adobe account) | Real motion capture; most of the basics already exist |
+| Attacks, rolls, guard, parry, boss moves | **Drafted** with Uthana text-to-motion or the owner acting on a phone camera (Move One), then **polished by hand** in Cascadeur | No AI tool makes weighty sword combat on its own; the polish is what makes it look smooth |
+| Creature motion (the hound) | Mesh2Motion's CC0 quadruped rig, drafted, then polished in Cascadeur | Mixamo has no animals |
+
+Mixamo is a good base, but it can't carry the game alone: it's thin on parries,
+greatsword and boss-sized moves, and it has no animals. Research 3 has the license quotes
+and the rejected options, such as Cascadeur's free plan (non-commercial) and the TRELLIS.2
+Mac port (a non-commercial dependency).
+
+## What the tutorial needs
+
+The list follows the cave as it's built in `game/data/levels/waking_hollow/`, plus the
+additions the owner asked for: NPCs, more collectibles, and a hound.
+
+### Characters and creatures
+
+| Model | Count in the cave | Triangle budget | Notes |
+|---|---|---|---|
+| The Wayfarer (player) | 1 | 10-25K | Worn travel armor with a hood; hides the weak spots of generated faces and hands |
+| Wayfarer's Blade and a round shield | 1 each | 2-5K each | Starting gear |
+| Husk | 4 | 5-15K | Hollowed humans in rags. One body with two or three variants (helmet, weapon) |
+| Thorn Hound | 1, proposed 2-3 | 5-15K | The dog: lean and thorn-grown. Uses its own quadruped skeleton |
+| B01 Hollow Sentry | 1 | 20-60K | Empty armor with a lantern burning in its chest, a shield, and a heavy weapon. The lantern flares before each attack |
+| NPC: a wounded knight at L01 (proposed) | 1 | 10-20K | Sits by the Lantern and gives the opening lines and a gift. New content: needs dialogue and a WP |
+| Corpses and remains | 4-6 | 2-5K | Loot markers that make the cave feel used |
+
+### Animation clips
+
+About 60 clips, which is the biggest cost in the plan.
+
+- **Wayfarer, about 30:** idle, walk, run, sprint, strafe while locked on, jump, fall,
+  land, rolls, a backstep, three light attacks in a chain, a heavy attack, a sprint attack,
+  guard (idle, hit, break), parry, riposte, drink the flask, use an item, pick up, open a
+  chest, rest at a Lantern, light and heavy hit reactions, a stagger, a knockdown and
+  getting up, and a death.
+- **Husk, about 8:** rise from the ground, idle, shamble, two attacks, a hit, a stagger,
+  and a death.
+- **Thorn Hound, about 8:** idle, trot, run, a lunge bite, a pounce, a hit, a death, and a
+  growl.
+- **Hollow Sentry, about 12:** intro, idle, walk, overhead slam (30-tick wind-up), sweep,
+  shield bash (14-tick wind-up), a three-hit combo with a 40-tick punish window, a turn, a
+  stagger, and a death.
+- **NPC, about 3:** sitting, talking, and pointing.
+
+Every attack is timed against the frame data in `game/data/moves/`. The simulation decides
+when a hit lands, so a clip must match its move's wind-up, active, and recovery frames
+rather than the other way around.
+
+### Environment
+
+- A cave kit: rock walls, floors, a ceiling, the jump ledge, a collapsed corridor, the
+  cracked wall (hollow wall), and the 18 m round arena with four pillars.
+- Surfaces: wet rock, packed dirt, old stone masonry, and roots, each with color, normal,
+  and roughness maps (1K, KTX2).
+- Dressing: stalagmites, rubble, roots through the ceiling, bones, broken carts, a few
+  candles.
+- Light: baked lightmaps for the cave and arena, plus the warm Lantern, the Sentry's chest
+  lantern, and torches as flickering point lights. Fog and a cold color grade.
+- Props: the Lantern, chests, pickups with a glint, message markers, and the fog gate
+  effect.
+
+### Items and collectibles
+
+The cave has salts, clotweed, a closet chest, and B01's Wick Bead. Proposed additions: one
+relic (a portfolio project) behind the hollow wall, a Chronicle Page with the earliest work
+entry, and a few more Glimmer drops on corpses. Each item needs an icon and a ground model.
+
+## What the owner sets up
+
+| What | Why | Cost |
+|---|---|---|
+| Blender: `brew install --cask blender` | Agents clean meshes, bake maps and lightmaps, and export GLB with scripts | Free |
+| Cascadeur, Indie plan | Polishing every attack, roll, and boss move. The free plan is non-commercial and can't export | USD 19 a month, or USD 96 a year |
+| Meshy Pro account | Characters, creatures, weapons, and props. Keep the invoices and a copy of the terms | About USD 20 a month |
+| Adobe account (Mixamo) | Basic motion and a fallback auto-rigger. Mixamo has no API, so you download the clips agents list | Free |
+| Uthana account | Drafts of attacks that Mixamo lacks; agents can call its API | USD 0.10 per second of motion, pay as you go |
+| Optional: Tripo API credits | Rigs a generated mesh straight to the Mixamo skeleton, without the Mixamo website | Per use |
+| Optional: Move One | You act out heavy moves on a phone camera for real weight | USD 18 for a month |
+
+Expect about USD 45-60 a month for the two or three months the art is being made, and
+nothing after. Agents can't enter passwords or payment details, so you do every sign-up
+and download by hand.
+
+**Your time** is the real cost. Agents can generate, clean, rig, retime, and import, but
+they can't judge on a pad whether a swing has weight. Research 3 estimates 1-3 hours in
+Cascadeur per hero attack. That's roughly 30-60 hours for the tutorial's attacks and boss
+moves, spread over the phases below.
+
+## Phases
+
+Each phase ends with something you can play, and a pad check before the next one starts.
+
+1. **Pipeline and the Wayfarer.** Agents write the Blender scripts (clean, rig check,
+   bake, export), teach the renderer to play skinned GLB characters with baked clips timed
+   to the move frame data, and bring in a generated Wayfarer with Mixamo basics and drafted
+   attacks. You polish the first light attack in Cascadeur. **Check:** the Wayfarer moves
+   and swings in the cave and looks better than today, on a pad, at 60 fps.
+2. **The full player moveset.** All 30 player clips, polished. **Check:** a pad run of the
+   whole cave with the old enemies.
+3. **Enemies and the boss.** Husks, hounds, and the Hollow Sentry, each with its full
+   moveset retimed to its frame data. **Check:** the boss fight reads well: every wind-up
+   is visible and every punish window feels fair.
+4. **The cave.** The script-built kit, scanned surfaces, dressing, baked light, and fog.
+   **Check:** draw calls, triangles, download size, and frame time on the integrated-
+   graphics laptop target.
+5. **Content and finish.** The NPC and dialogue, the new collectibles, item icons,
+   sounds for new motions, the landing card's screenshots, and the controls teaching for
+   a pad. **Check:** a first-time player gets from L01 to the end card without help.
+
+Phase 1 replaces the prototype that the
+[art direction plan](art-direction-research.md) asked for. Its result decides whether the
+pipeline is good enough to write the ADR and run phases 2-5.
+
+## Decisions for the owner
+
+1. **NPC and new content.** Do you want the wounded knight at L01, a relic, and a
+   Chronicle Page in the tutorial? They need dialogue and new work packages.
+2. **Your Cascadeur time.** Will you do the polish yourself? If not, the animation stays
+   at draft quality: Mixamo plus AI drafts.
+3. **Hosting.** Generated models and textures for one area are about 20 MB. Keep them in
+   the repo for the tutorial, or move art to an R2 bucket now (research 2 recommends R2
+   for the full game)?
+
+## Risks
+
+1. **The motion still looks stiff.** If AI drafts are poor, polish takes longer. Phase 1
+   finds this out on one attack before anything else is built.
+2. **Generated meshes bend badly at the joints.** Armor over the shoulders and hips, and
+   hand fixes to skin weights in Blender, reduce it.
+3. **Performance.** Realistic surfaces and baked light cost more than flat colors. Phase 4
+   measures it on the target laptop; the low quality preset keeps smaller textures.

@@ -36,6 +36,11 @@ The design docs, roadmap, and status are in `docs/game/` (start at `docs/game/RE
 Useful dev URL parameters: `?dev=1` (developer tools), `&play=1` (skip the landing card),
 `&touch=1` (force touch mode).
 
+Players can only enter the tutorial, Waking Hollow, for now. The browser host enforces
+this in `src/lib/latticefall/tutorialLock.ts`. The lock covers the start area, autosaves
+from other areas, and Lantern travel, and beating B01 shows an end card. The simulation
+core has no lock, and `?dev=1` opens every area.
+
 A third, smaller piece lives in `/vm`: the **VM agent**, a dependency-free Node server
 that runs on the owner's VM behind a Cloudflare Tunnel at `claude.ifkash.dev` and backs
 the `/vm` console (chat with headless Claude Code, tmux sessions, a ttyd web terminal,

@@ -4,6 +4,7 @@
 // cells, the Lanterns, the markers); the DOM only reads it and sends `Command`s through
 // `command`, which queues them (see `queue_command` in game/crates/wasm/src/lib.rs).
 
+import { areaLocked } from '../../tutorialLock';
 import { areaName, placeName } from './places';
 
 /** The `kind` operand of `queue_command` for the map's commands. */
@@ -158,6 +159,7 @@ export function describeOffset(fromX: number, fromZ: number, toX: number, toZ: n
 export function travelBlock(view: MapView, place: MapPlace): string | null {
   if (view.resting === null) return 'Rest at a Lantern to travel';
   if (view.resting === place.id) return 'You are resting here';
+  if (areaLocked(place.area)) return 'Closed for now';
   if (!place.lit) return 'Not lit yet';
   if (!place.here && view.remnant) return 'Recover your Remnant first';
   return null;

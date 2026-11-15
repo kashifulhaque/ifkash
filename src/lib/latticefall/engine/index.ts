@@ -10,6 +10,8 @@ import { BriarFx } from '../render/bosses/b02';
 import { LoomFx } from '../render/bosses/b12';
 import { BossHazardFx } from '../render/bosses/hazards';
 import { endingFromEvents } from '../ui/ending/endingStore';
+import { tutorialEndFromEvents } from '../ui/ending/tutorialEnd';
+import { TUTORIAL_AREA, areaLocked, setAreaLock } from '../tutorialLock';
 import { digestMoveResolver } from '../render/actors/moveTable';
 import { parseSection, sectionCam } from '../render/equipment/layout';
 import { equippedFromMenuWords, type Equipped } from '../render/equipment/playerGear';
@@ -122,12 +124,18 @@ export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions
   // A plain visit (no `?dev=1`, no `scenario=`) is a player: continue the autosave if there
   // is one, or start a new game in Waking Hollow (L01, the spec's start point). Developer
   // URLs keep the flat test field as their default.
-  const resume =
-    !opts.save && !opts.scenario && !params.scenario && !params.dev ? await readAutosave() : null;
+  // Only the tutorial is open to players (`tutorialLock.ts`); `?dev=1` opens every area.
+  setAreaLock(!params.dev);
+  const askedScenario = params.scenario && !areaLocked(params.scenario) ? params.scenario : null;
+  let resume =
+    !opts.save && !opts.scenario && !askedScenario && !params.dev ? await readAutosave() : null;
+  // An autosave from before the lock, in a closed area, starts a new game in the tutorial.
+  if (resume && areaLocked(resume.scenario)) resume = null;
   if (resume) opts = { ...opts, save: resume.data };
+  if (opts.scenario && areaLocked(opts.scenario)) opts = { ...opts, save: undefined, scenario: TUTORIAL_AREA };
   const seed = opts.seed ?? (resume ? BigInt(resume.seed) : null) ?? params.seed ?? 1n;
   const scenario =
-    opts.scenario ?? resume?.scenario ?? params.scenario ?? (params.dev ? 'm0_flat' : 'waking_hollow');
+    opts.scenario ?? resume?.scenario ?? askedScenario ?? (params.dev ? 'm0_flat' : TUTORIAL_AREA);
   // The dev armory (`&scene=armory`) starts its camera at a section unless `cam` says otherwise.
   if (params.scene === 'armory' && !params.cam) {
     const c = sectionCam(parseSection(params.armorySection));
@@ -296,6 +304,7 @@ export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions
       loom.handleEvents(events);
       hazards.handleEvents(events, world.tick_count());
       endingFromEvents(events);
+      tutorialEndFromEvents(events, scenario);
       marks.handleEvents(events);
       tools?.onEvents(events);
     }

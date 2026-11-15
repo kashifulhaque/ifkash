@@ -7,6 +7,7 @@
   import type { HudSettings } from './hudSettings';
   import type { HudController } from './hudStore';
   import CouriersLetter from '../ending/CouriersLetter.svelte';
+  import TutorialEnd from '../ending/TutorialEnd.svelte';
   import { loadSettings } from '../../input/bindings';
   import { actionGlyph, lastDevice } from '../../input/device';
 
@@ -204,6 +205,8 @@
 
 <!-- The ending (WP-100): the Courier's Letter after B12 falls. -->
 <CouriersLetter />
+<!-- The end of the tutorial while only Waking Hollow is open: after B01 falls. -->
+<TutorialEnd />
 
 <style>
   .hud {

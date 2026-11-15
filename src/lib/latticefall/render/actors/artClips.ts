@@ -27,6 +27,12 @@ export interface ArtSidecar {
   triangles: number;
   bones: string[];
   clips: Record<string, ArtClipInfo>;
+  /**
+   * How each hand holds a weapon, from the config's `grips`: a column-major 4x4 in the GLB's
+   * scene coordinates at rest, with the grip at the origin, the blade along +Y, and the flat
+   * facing +Z (the layout of `equipment/weapons.ts`).
+   */
+  grips?: Partial<Record<'L' | 'R', number[]>>;
 }
 
 /**
@@ -78,7 +84,10 @@ export const ART_CLIP_IDS = [
   'roll',
   'hit',
   'death',
-  'drink'
+  'drink',
+  'twohand_idle',
+  'twohand_slash',
+  'twohand_heavy'
 ] as const;
 
 /** Locomotion loops. A character without `sprint` runs faster instead. */
@@ -86,6 +95,9 @@ export const ART_LOOPS = { idle: 'idle', walk: 'walk', run: 'run', sprint: 'spri
 
 /** The guard: the looping block idle, else the block clip held at its raised frame. */
 export const ART_GUARD: readonly StanceClip[] = [{ clip: 'block_idle' }, { clip: 'block', frame: 8 }];
+
+/** The two-handed stance: a two-handed idle that loops, with both hands on the grip. */
+export const ART_TWO_HAND: readonly StanceClip[] = [{ clip: 'twohand_idle' }];
 
 /** The clips an attack with no listed mapping plays, best first. */
 const ATTACK_FALLBACK = ['slash_a', 'slash_b', 'slash_c', 'heavy'] as const;
@@ -133,11 +145,27 @@ export const ART_ANIMS: Readonly<Record<string, readonly string[]>> = {
  * for an attack without a listing, its first slash. `contact` comes from the sidecar; a
  * clip without one is scaled to the move. Undefined means "hold the idle pose".
  */
-export function artSpecFor(anim: string, isAttack: boolean, clips: Readonly<Record<string, ArtClipInfo>>): ClipSpec | undefined {
-  const choices = ART_ANIMS[anim] ?? (isAttack ? ATTACK_FALLBACK : []);
+export function artSpecFor(
+  anim: string,
+  isAttack: boolean,
+  clips: Readonly<Record<string, ArtClipInfo>>,
+  twoHanded = false
+): ClipSpec | undefined {
+  let choices = ART_ANIMS[anim] ?? (isAttack ? ATTACK_FALLBACK : []);
+  // Two-handed, an attack swings with both hands: heavies take the two-handed heavy, the
+  // rest the two-handed slash. A character without them keeps its one-handed clips.
+  if (twoHanded && isAttack) {
+    const own = choices[0] === 'heavy' ? ['twohand_heavy', 'twohand_slash'] : ['twohand_slash'];
+    choices = [...own, ...choices];
+  }
   const id = choices.find((c) => c in clips) ?? (anim in clips ? anim : undefined);
   if (id === undefined) return undefined;
   return { segs: [{ clip: id }], contact: clips[id].contact ?? 0 };
+}
+
+/** The two-handed stance clip for a character with these clips, or undefined. */
+export function artTwoHand(has: (clip: string) => boolean): StanceClip | undefined {
+  return ART_TWO_HAND.find((s) => has(s.clip));
 }
 
 /** The guard stance clip for a character with these clips, or undefined. */

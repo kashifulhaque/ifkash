@@ -198,8 +198,10 @@ what you downloaded. A `file` can list several names; the first one found wins. 
 extensions, and repeated spaces don't matter.
 
 The clip ids are `idle`, `walk`, `run`, `sprint`, `slash_a`, `slash_b`, `slash_c`, `heavy`,
-`block`, `block_idle`, `roll`, `hit`, `death`, and `drink`. Only `idle`, `walk`, and `run`
-are required. `ART_ANIMS` in `src/lib/latticefall/render/actors/artClips.ts` lists which
+`block`, `block_idle`, `roll`, `hit`, `death`, `drink`, `twohand_idle`, `twohand_slash`, and
+`twohand_heavy`. Only `idle`, `walk`, and `run` are required. While the player two-hands the
+weapon, `twohand_idle` is the arms' stance, and attacks play `twohand_slash`, or
+`twohand_heavy` for heavies. Mixamo's Great Sword Pack has clips for all three. `ART_ANIMS` in `src/lib/latticefall/render/actors/artClips.ts` lists which
 moves play which clip, and the fallbacks for a missing clip.
 
 Each clip takes these options:
@@ -217,6 +219,21 @@ Each clip takes these options:
 
 The config also sets `triangles`, `textureSize`, and `character`, the character file's
 name. Without `character`, the one FBX that no clip uses is the character.
+
+### Set the grip
+
+Mixamo's sword clips were captured holding a prop, so a weapon held at any other angle
+looks broken. A config's `grips` stores how the hand holds the prop. Measure it once from
+a Mixamo "W/Prop" character, such as Paladin W/Prop J Nordstrom, downloaded as FBX:
+
+```sh
+blender --background --factory-startup --python game/art/blender/measure_grip.py -- ~/cinderheart-art/reference/paladin_wprop.fbx
+```
+
+Copy the printed list into the config as `"grips": {"R": [...]}`. The bake places that grip
+on the character's own hand, and the game attaches every held weapon there, except shields
+and bows. Every Mixamo skeleton shares the same hand bones, so one measurement serves any
+character that uses Mixamo's sword clips. A config without `grips` keeps the computed grip.
 
 ### Check it in the game
 

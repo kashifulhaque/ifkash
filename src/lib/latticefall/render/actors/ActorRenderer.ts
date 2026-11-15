@@ -66,6 +66,7 @@ import {
   MIXAMO_BONE_MAP,
   MIXAMO_FEET,
   artGuard,
+  artTwoHand,
   artSpecFor,
   type ArtSidecar
 } from './artClips';
@@ -138,6 +139,8 @@ interface ArtKit {
   sidecar: ArtSidecar;
   /** The guard stance clip, if the character has one. */
   guard: StanceClip | undefined;
+  /** The two-handed stance clip, if the character has one. */
+  twoHand: StanceClip | undefined;
 }
 
 interface Template {
@@ -425,7 +428,7 @@ export class ActorRenderer {
     this.tpl = {
       gltf,
       loops: { ...ART_LOOPS, sprint: hasSprint ? ART_LOOPS.sprint : ART_LOOPS.run },
-      art: { sidecar, guard: artGuard((c) => rt.clips.has(c)) },
+      art: { sidecar, guard: artGuard((c) => rt.clips.has(c)), twoHand: artTwoHand((c) => rt.clips.has(c)) },
       boneNames: rt.boneNames,
       clips: rt.clips,
       bands: {
@@ -541,7 +544,12 @@ export class ActorRenderer {
         .multiply(new Matrix4().makeScale(1 / tpl.scale, 1 / tpl.scale, 1 / tpl.scale)),
       restBone: (n) => tpl.gltf.scene.getObjectByName(PropertyBinding.sanitizeNodeName(named(n)))!,
       bone: (n) => inst.bones[tpl.boneIndex.get(n)!],
-      materials
+      materials,
+      // An art character's grips come from its bake (the clips' own prop), in template space.
+      grip: (side) => {
+        const g = tpl.art?.sidecar.grips?.[side];
+        return g ? new Matrix4().fromArray(g) : undefined;
+      }
     };
     tpl.gltf.scene.updateMatrixWorld(true);
     // An art character wears its own armor: it carries the weapons only.
@@ -828,7 +836,7 @@ export class ActorRenderer {
     }
     if (info) {
       const sig = `move:${info.anim}:${inst.moveRun}`;
-      const choice = this.pickSpec(tpl, info.anim, !!pv, info);
+      const choice = this.pickSpec(tpl, info.anim, !!pv, info, (a.flags & FLAG_TWO_HANDING) !== 0);
       if (choice) {
         const frames = (c: string) => tpl.clips.get(c)!.frames;
         const len = specLength(choice, frames);
@@ -888,7 +896,11 @@ export class ActorRenderer {
     inst.twoHandW = easeStance(inst.twoHandW, (a.flags & FLAG_TWO_HANDING) !== 0, dt);
     if (inst.guardW <= 0 && inst.twoHandW <= 0) return;
     const w = stanceWeights(inst.guardW, inst.twoHandW);
-    if (w.twoHand > 0) this.blendBones(out, this.offsetPose(tpl, 'twohand', TWO_HAND), tpl, ARM_BONES, w.twoHand);
+    if (w.twoHand > 0) {
+      // An art character has a two-handed idle; the fitted offsets are for the Wayfarer's bones.
+      const target = tpl.art?.twoHand ? this.clipPose(tpl, tpl.art.twoHand, inst.idleT) : this.offsetPose(tpl, 'twohand', TWO_HAND);
+      this.blendBones(out, target, tpl, ARM_BONES, w.twoHand);
+    }
     if (w.guard > 0) this.blendBones(out, this.guardPose(inst, tpl, a), tpl, GUARD_BONES, w.guard);
     if (inst.hips.parent) {
       out.hips[1] -= (GUARD_HIPS_DROP * w.guard) / inst.hips.parent.getWorldScale(gestureScale).y;
@@ -1065,8 +1077,8 @@ export class ActorRenderer {
    * The first clip choice for `anim` whose clips are all loaded. The dev preview also takes a
    * raw clip name (`&anim=move:Sword_Regular_A`).
    */
-  private pickSpec(tpl: Template, anim: string, preview: boolean, info?: MoveAnimInfo): ClipSpec | undefined {
-    if (tpl.art) return artSpecFor(anim, info?.strikeStart !== undefined, tpl.art.sidecar.clips);
+  private pickSpec(tpl: Template, anim: string, preview: boolean, info?: MoveAnimInfo, twoHanded = false): ClipSpec | undefined {
+    if (tpl.art) return artSpecFor(anim, info?.strikeStart !== undefined, tpl.art.sidecar.clips, twoHanded);
     const found = clipsForAnim(anim)?.find((c) => c.segs.every((g) => tpl.clips.has(g.clip)));
     if (found || !preview || !tpl.clips.has(anim)) return found;
     return { segs: [{ clip: anim }], contact: 0 };

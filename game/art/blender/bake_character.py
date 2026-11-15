@@ -18,6 +18,9 @@ Steps:
    - Smooths every channel with a small Gaussian filter to remove capture jitter, but
      leaves the frames around the contact untouched so the strike stays sharp.
 5. Exports one GLB with the skinned mesh and every clip, named by its game clip id.
+6. Grips: places each hand's grip from the config's `grips` (measured once from a Mixamo
+   "W/Prop" character with `measure_grip.py`) on this character's hand, and writes it to
+   the sidecar in the GLB's coordinates, so the game holds weapons the way the clips expect.
 
 Run:
     blender --background --factory-startup --python bake_character.py -- CONFIG [--source DIR]
@@ -523,6 +526,29 @@ def export(arm, body, actions, path):
     )
 
 
+# glTF is Y-up: Blender (x, y, z) is glTF (x, z, -y).
+TO_GLTF = Matrix(((1, 0, 0, 0), (0, 0, 1, 0), (0, -1, 0, 0), (0, 0, 0, 1)))
+GRIP_HANDS = {"R": "RightHand", "L": "LeftHand"}
+
+
+def grips(arm, cfg):
+    """Each configured grip on this character's hand at rest, in glTF scene coordinates.
+
+    A config grip is a row-major 4x4 relative to the hand bone's rest frame with its scale
+    removed. The result is column-major, the layout Three.js's `Matrix4.fromArray` reads.
+    """
+    out = {}
+    for side, rel in (cfg.get("grips") or {}).items():
+        name = GRIP_HANDS.get(side)
+        if name is None or name not in arm.data.bones or len(rel) != 16:
+            fail(f"grips.{side}: needs 16 numbers and a {name or 'known'} hand bone")
+        rel_m = Matrix([rel[i * 4:(i + 1) * 4] for i in range(4)])
+        hand = (arm.matrix_world @ arm.data.bones[name].matrix_local).normalized()
+        m = TO_GLTF @ hand @ rel_m
+        out[side] = [round(m[r][c], 6) for c in range(4) for r in range(4)]
+    return out
+
+
 def register_assets(name):
     """Adds the character's jobs to `game/assets-src/assets.json` once."""
     path = os.path.join(REPO, "game", "assets-src", "assets.json")
@@ -614,6 +640,10 @@ def main():
         "contactBone": cfg["contactBone"],
         "clips": sidecar_clips,
     }
+    held = grips(arm, cfg)
+    if held:
+        sidecar["grips"] = held
+        log(f"grips: {', '.join(sorted(held))}")
     if "credits" in cfg:
         sidecar["credits"] = cfg["credits"]
     with open(os.path.join(out_dir, f"{cfg['name']}.json"), "w") as f:

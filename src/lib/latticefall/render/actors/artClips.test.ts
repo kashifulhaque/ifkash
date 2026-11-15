@@ -2,7 +2,7 @@
 
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
-import { artGuard, artSpecFor, MIXAMO_BONE_MAP, type ArtClipInfo } from './artClips';
+import { artGuard, artSpecFor, artTwoHand, MIXAMO_BONE_MAP, type ArtClipInfo } from './artClips';
 import { BONE_MAP } from './retarget';
 
 const clip = (contact: number | null): ArtClipInfo => ({ frames: 30, duration: 1, loop: false, contact, source: 'x.fbx' });
@@ -29,6 +29,19 @@ describe('artSpecFor', () => {
   test('takes a raw clip id, for the animation preview', () => {
     assert.equal(artSpecFor('block', false, CLIPS)?.segs[0].clip, 'block');
   });
+
+  test('two-handed, light attacks take the two-handed slash and heavies the two-handed heavy', () => {
+    const two = { ...CLIPS, twohand_slash: clip(16), twohand_heavy: clip(9) };
+    assert.equal(artSpecFor('sword_slash_r', true, two, true)?.segs[0].clip, 'twohand_slash');
+    assert.deepEqual(artSpecFor('sword_overhead', true, two, true), { segs: [{ clip: 'twohand_heavy' }], contact: 9 });
+    // One-handed, or not an attack, nothing changes.
+    assert.equal(artSpecFor('sword_slash_r', true, two, false)?.segs[0].clip, 'slash_a');
+    assert.equal(artSpecFor('roll', false, two, true)?.segs[0].clip, 'roll');
+  });
+
+  test('two-handed without two-handed clips keeps the one-handed ones', () => {
+    assert.equal(artSpecFor('sword_overhead', true, CLIPS, true)?.segs[0].clip, 'heavy');
+  });
 });
 
 describe('art rig', () => {
@@ -43,5 +56,10 @@ describe('art rig', () => {
     assert.deepEqual(artGuard((c) => c === 'block' || c === 'block_idle'), { clip: 'block_idle' });
     assert.deepEqual(artGuard((c) => c === 'block'), { clip: 'block', frame: 8 });
     assert.equal(artGuard(() => false), undefined);
+  });
+
+  test('the two-handed stance is the two-handed idle, when there is one', () => {
+    assert.deepEqual(artTwoHand((c) => c === 'twohand_idle'), { clip: 'twohand_idle' });
+    assert.equal(artTwoHand(() => false), undefined);
   });
 });

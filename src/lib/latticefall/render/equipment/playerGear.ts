@@ -36,6 +36,11 @@ export interface RigFrame {
   bone(name: string): Object3D;
   /** Every mesh material of this instance, to tint. */
   materials(): Material[];
+  /**
+   * A measured grip for a hand, in template space at rest, when the model has one (art
+   * characters, from their bake). Used for held weapons instead of the computed grip.
+   */
+  grip?(side: 'L' | 'R'): Matrix4 | undefined;
 }
 
 /** Angle between a held weapon and the forearm's continuation, toward the player's front. */
@@ -121,7 +126,8 @@ export class PlayerGear {
       // meters -> template units, applied on top of the grip's orientation.
       const unit = new Vector3();
       frame.bodyToTemplate.decompose(new Vector3(), new Quaternion(), unit);
-      const basis = gripBasis(frame, side, spec.class, unit.x);
+      const held = spec.class === 'Shield' || spec.class === 'Bow' ? undefined : frame.grip?.(side);
+      const basis = held ?? gripBasis(frame, side, spec.class, unit.x);
       const toUnits = new Matrix4().makeScale(unit.x, unit.y, unit.z);
       attachAtRest(holder, frame.bone(`Hand.${side}`), frame.restBone(`Hand.${side}`), basis.multiply(toUnits));
       this.attached.push(holder);

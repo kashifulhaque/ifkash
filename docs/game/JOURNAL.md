@@ -38,6 +38,46 @@ Copy this block to the top of the entries and fill it in as you go:
 
 ## Entries
 
+### 2026-11-15: tutorial-enemies (husks and B01 as Mixamo characters)
+
+- **Orchestrator:** Opus 5.5, a side session of the tutorial planning session
+- **Branch:** `claude/tutorial-enemies-21ec0c`, started from `main` at `9323653`
+- **Target:** phase 3 of [the tutorial production plan](tutorial-production-plan.md) for
+  Waking Hollow: the husks, B01, and the Thorn Hound as art characters.
+- **Work:**
+  - `ActorRenderer` draws enemy kinds in `ENEMY_ART` (`artClips.ts`) as art characters,
+    with the procedural model as the fallback. An art enemy wakes from lying down
+    (`rise`), plays its moves retimed to their frame data, flinches on unguarded hits
+    (`CombatVfx` calls `hitReact`), staggers, and dies. Characters can hold a weapon at the
+    measured grip and carry a chest lantern (`lanternGlow`). `&enemyart=off` (dev) draws
+    the procedural models.
+  - Husk: Mixamo's Romero and nine zombie clips (`game/art/characters/husk.json`). B01:
+    Castle Guard 02 at 2.9 m with the Great Sword Pack and `wpn_gray_greatsword` at 1.45x
+    (`sentry.json`). Slam is the jump attack, with its contact set by hand to the landing
+    (frame 40); the auto pick was in the air. The 3-hit combo is `slash (2)` trimmed into three.
+  - Both are private: baked to the gitignored paths and uploaded to the `ifkash-art` R2
+    bucket. `GET /api/art/private/{husk,sentry}.{glb,json}` returns them.
+  - Thorn Hound: kept procedural. Mesh2Motion's assets are CC0 and its fox rig has idle,
+    walk, trot, run, bite, and death clips, but no hit, no dog rig (only an unrigged dog
+    model), and the bake reads only Mixamo skeletons. It needs a quadruped bake path.
+- **Verified:** `bun run check` (0 errors), `bun run build`, and `bun test` on
+  `render/actors/` (21 tests). Fallbacks: a 404 and a bad bake each kept the procedural
+  model. Dev preview poses for the husk's swipes, rise, and idle, and B01's idle, slam
+  wind-up (lantern lighting the visor and floor), bash, and combo. In play, the four husks
+  start dormant, and the first one rose and walked in. Measured at most 41 draw calls and
+  38,281 triangles (B01's arena), against budgets of 250 and 600K.
+- **Not verified:** real-time motion. The Browser pane was hidden the whole session, so
+  the game only drew frames on screenshots. Crossfades, the rise speed, the hit reactions,
+  and the slam's timing need a pad playtest.
+- **Gotcha:** Mixamo downloads made from a hidden Browser pane can return the previously
+  selected clip. Check each clip's frame count and motion after downloading. Here the
+  idle came down twice and every later clip was shifted by one; the clips were renamed by
+  content.
+- **Waiting on the owner:** a pad playtest of the husks and B01; whether B01 should keep a
+  shield (the spec has one; the greatsword clips are two-handed).
+- **Next steps:** the owner's playtest notes, then the Thorn Hound's quadruped path if
+  wanted.
+
 ### 2026-11-15: tutorial-cave (tutorial plan, phase 4 environment)
 
 - **Orchestrator:** Opus 5.5, a side session of the tutorial planning session

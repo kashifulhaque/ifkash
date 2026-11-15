@@ -46,9 +46,9 @@ additions the owner asked for: NPCs, more collectibles, and a hound.
 |---|---|---|---|
 | The Wayfarer (player) | 1 | 10-25K | Worn travel armor with a hood; hides the weak spots of generated faces and hands |
 | Wayfarer's Blade and a round shield | 1 each | 2-5K each | Starting gear |
-| Husk | 4 | 5-15K | Hollowed humans in rags. One body with two or three variants (helmet, weapon) |
-| Thorn Hound | 1, proposed 2-3 | 5-15K | The dog: lean and thorn-grown. Uses its own quadruped skeleton |
-| B01 Hollow Sentry | 1 | 20-60K | Empty armor with a lantern burning in its chest, a shield, and a heavy weapon. The lantern flares before each attack |
+| Husk | 4 | 5-15K | Hollowed humans in rags. One body with two or three variants (helmet, weapon). In the game: Mixamo's Romero, 15,000 triangles |
+| Thorn Hound | 1, proposed 2-3 | 5-15K | The dog: lean and thorn-grown. Uses its own quadruped skeleton. In the game: the procedural model |
+| B01 Hollow Sentry | 1 | 20-60K | Empty armor with a lantern burning in its chest, a shield, and a heavy weapon. The lantern flares before each attack. In the game: Mixamo's Castle Guard 02 with a greatsword and no shield, 4,421 triangles |
 | NPC: a wounded knight at L01 (proposed) | 1 | 10-20K | Sits by the Lantern and gives the opening lines and a gift. New content: needs dialogue and a WP |
 | Corpses and remains | 4-6 | 2-5K | Loot markers that make the cave feel used |
 
@@ -265,16 +265,58 @@ end to end:
   Wayfarer. If a character fails to load, the game draws the Wayfarer instead.
 
 After a bake, upload both files so players get the new version (within an hour, the
-route's cache time):
+route's cache time). From the `api` folder, run the following commands:
 
 ```sh
-cd api
-npx wrangler r2 object put ifkash-art/private/paladin.glb --file ../static/latticefall/private/paladin.glb --content-type model/gltf-binary --remote
-npx wrangler r2 object put ifkash-art/private/paladin.json --file ../static/latticefall/private/paladin.json --content-type application/json --remote
+npx wrangler r2 object put ifkash-art/private/NAME.glb --file ../static/latticefall/private/NAME.glb --content-type model/gltf-binary --remote
+npx wrangler r2 object put ifkash-art/private/NAME.json --file ../static/latticefall/private/NAME.json --content-type application/json --remote
 ```
+
+Replace `NAME` with the character's name: `paladin`, `husk`, or `sentry`.
 
 The raw Mixamo downloads stay in `~/cinderheart-art/`. Back them up yourself: they're in
 neither Git nor R2.
+
+### Give an enemy an art character
+
+Enemies and bosses use the same pipeline as the player. The husks in Waking Hollow are
+Mixamo's Romero with Mixamo zombie clips (`game/art/characters/husk.json`), and B01 is
+Mixamo's Castle Guard 02 at 2.9 m with the Great Sword Pack
+(`game/art/characters/sentry.json`). Both are private art. The Thorn Hound keeps its
+procedural model.
+
+To give another enemy kind an art character, do the following:
+
+1. Write its config in `game/art/characters/`, with `"private": true` for a Mixamo
+   character, and bake it with `mise run art:character -- NAME`. Besides the player's ids,
+   an enemy config can fill these clip ids:
+   - `rise`: the enemy lies at the start of this clip until it first moves, starts a move,
+     or is struck, and then plays the rest. The husks use Zombie Stand Up.
+   - `stagger`: plays while the snapshot's `STAGGERED` flag is set. Without it, `hit` plays.
+   - `attack_a`, `attack_b`, `slam`, `sweep`, `bash`, and `combo_1` to `combo_3`: the
+     attacks that `ART_ANIMS` maps the enemy's moves to.
+
+   `hit` plays on an unguarded hit, and `death` plays once and holds its last frame.
+   One clip file can fill several ids with `trim`; B01's 3-hit combo is one Mixamo clip
+   cut into three.
+1. In `src/lib/latticefall/render/actors/artClips.ts`, do the following:
+   - Add the enemy's registry number to `ENEMY_ART`.
+   - Add its name to `PRIVATE_ART`.
+   - Map its move `anim` names to clip ids in `ART_ANIMS`.
+   - Give it an `ART_CHARACTERS` entry with its height in meters, and optionally a held
+     `weapon` and its `weaponScale`, or a chest `lantern`.
+1. Upload both baked files to R2, as in [Private art](#private-art).
+
+The renderer starts loading every enemy character with the player. For up to four
+seconds, an enemy whose character is still loading isn't drawn. After that, its
+procedural model draws until the character arrives. If the character fails to load, the
+procedural model stays. To compare, open the game with `&dev=1&enemyart=off`, which draws
+every enemy as its procedural model.
+
+B01's lantern is an emissive flame on the `Spine2` bone with a point light. Its light
+swells through each attack's wind-up, peaks as the hitbox opens, and goes out when B01
+dies (`lanternGlow` in `artClips.ts`). To check a pose, draw the character as the player,
+for example `&art=sentry&anim=move:sentry_overhead&animt=0.36&animcam=three`.
 
 ### Test without Mixamo files
 

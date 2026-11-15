@@ -1,0 +1,51 @@
+{
+  "name": "husk",
+  "private": true,
+  "source": "~/cinderheart-art/husk",
+  "character": "Romero.fbx",
+  "triangles": 15000,
+  "textureSize": 1024,
+  "credits": {
+    "title": "Husk: Romero (Mixamo character)",
+    "author": "Mixamo character and zombie clips",
+    "license": "Mixamo terms: baked into the game only; raw files stay private"
+  },
+  "clips": {
+    "idle": {
+      "file": "zombie idle.fbx",
+      "loop": true
+    },
+    "walk": {
+      "file": "zombie walk.fbx",
+      "loop": true
+    },
+    "run": {
+      "file": "zombie run.fbx",
+      "loop": true
+    },
+    "rise": {
+      "file": "zombie stand up.fbx"
+    },
+    "attack_a": {
+      "file": "zombie swipe.fbx",
+      "contact": "auto"
+    },
+    "attack_b": {
+      "file": "zombie overhead.fbx",
+      "contact": "auto",
+      "contactWindow": [
+        0.25,
+        0.6
+      ]
+    },
+    "hit": {
+      "file": "zombie hit.fbx"
+    },
+    "stagger": {
+      "file": "zombie stagger.fbx"
+    },
+    "death": {
+      "file": "zombie death.fbx"
+    }
+  }
+}

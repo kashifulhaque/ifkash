@@ -1,0 +1,106 @@
+{
+  "name": "sentry",
+  "private": true,
+  "source": "~/cinderheart-art/sentry",
+  "character": "Castle Guard 02.fbx",
+  "triangles": 30000,
+  "textureSize": 1024,
+  "credits": {
+    "title": "B01 Hollow Sentry: Castle Guard 02 (Mixamo character)",
+    "author": "Mixamo character and Great Sword Pack",
+    "license": "Mixamo terms: baked into the game only; raw files stay private"
+  },
+  "clips": {
+    "idle": {
+      "file": "great sword idle.fbx",
+      "loop": true
+    },
+    "walk": {
+      "file": "great sword walk.fbx",
+      "loop": true
+    },
+    "run": {
+      "file": "great sword run (2).fbx",
+      "loop": true
+    },
+    "slam": {
+      "file": "great sword jump attack.fbx",
+      "contact": 40
+    },
+    "sweep": {
+      "file": "great sword high spin attack.fbx",
+      "contact": "auto",
+      "contactWindow": [
+        0.45,
+        0.8
+      ]
+    },
+    "bash": {
+      "file": "great sword kick.fbx",
+      "contact": "auto",
+      "contactBone": "RightFoot",
+      "contactWindow": [
+        0.1,
+        0.5
+      ]
+    },
+    "combo_1": {
+      "file": "great sword slash (2).fbx",
+      "trim": [
+        0,
+        36
+      ],
+      "contact": "auto"
+    },
+    "combo_2": {
+      "file": "great sword slash (2).fbx",
+      "trim": [
+        36,
+        63
+      ],
+      "contact": "auto"
+    },
+    "combo_3": {
+      "file": "great sword slash (2).fbx",
+      "trim": [
+        63,
+        106
+      ],
+      "contact": "auto",
+      "contactWindow": [
+        0.1,
+        0.6
+      ]
+    },
+    "hit": {
+      "file": "great sword impact.fbx"
+    },
+    "stagger": {
+      "file": "great sword impact (2).fbx"
+    },
+    "death": {
+      "file": "two handed sword death.fbx"
+    }
+  },
+  "grips": {
+    "R": [
+      0.25252,
+      0.96705,
+      -0.03243,
+      -0.00773,
+      -0.96217,
+      0.24742,
+      -0.11408,
+      0.07918,
+      -0.1023,
+      0.06001,
+      0.99294,
+      0.03039,
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ]
+  },
+  "gripsFrom": "Paladin W/Prop J Nordstrom (Mixamo), measured with game/art/blender/measure_grip.py"
+}

@@ -26,6 +26,9 @@ const MOVE_M = 1.5;
 
 export class DistanceCuller {
   private visible: Uint8Array;
+  /** Instances held off whatever the distance says: a model is drawn in their place. */
+  private covered: Uint8Array;
+  private dirty = false;
   private fx = Infinity;
   private fz = Infinity;
   private radius = -1;
@@ -38,6 +41,7 @@ export class DistanceCuller {
     private entries: readonly CullEntry[]
   ) {
     this.visible = new Uint8Array(entries.length).fill(1);
+    this.covered = new Uint8Array(entries.length);
     this.shown = entries.length;
   }
 
@@ -45,10 +49,18 @@ export class DistanceCuller {
     return this.entries.length;
   }
 
+  /** Hides entry `index` (its place in the entry list) until it is uncovered again. */
+  setCovered(index: number, covered: boolean): void {
+    if (index < 0 || index >= this.covered.length || (this.covered[index] === 1) === covered) return;
+    this.covered[index] = covered ? 1 : 0;
+    this.dirty = true;
+  }
+
   /** Retests every instance against `radius` around (fx, fz) and the `keep` fraction in [0, 1]. */
   update(fx: number, fz: number, radius: number, keep = 1): void {
     const moved = Math.hypot(fx - this.fx, fz - this.fz);
-    if (moved < MOVE_M && radius === this.radius && keep === this.keep) return;
+    if (!this.dirty && moved < MOVE_M && radius === this.radius && keep === this.keep) return;
+    this.dirty = false;
     this.fx = fx;
     this.fz = fz;
     this.radius = radius;
@@ -63,6 +75,7 @@ export class DistanceCuller {
       const reach = radius + (e.pad ?? 0) + (was ? HYSTERESIS_M : 0);
       let now = d2 <= reach * reach;
       if (now && e.rank >= keep) now = false;
+      if (this.covered[i] === 1) now = false;
       if (now) shown++;
       if (now !== was) {
         this.visible[i] = now ? 1 : 0;

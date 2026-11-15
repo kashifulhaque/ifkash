@@ -1,6 +1,7 @@
 // The kit batch: every layout piece, landmark, and prop that has no model draws through one
 // `BatchedMesh`, so any mix of pieces (the greybox blocks, today) costs a single draw call.
-// Pieces with a model go through `InstanceLayer` instead.
+// Pieces with a model go through `InstanceLayer` instead. So do the instances the area art
+// manifest gives a model: their greybox here is the stand-in, hidden while the model draws.
 
 import { BatchedMesh, Color, Matrix4, Quaternion, Scene, Vector3 } from 'three';
 import { DistanceCuller, type CullEntry } from '../perf/culling';
@@ -23,6 +24,8 @@ function pieceRadius(library: PieceLibrary, piece: string): number {
 export class KitBatch {
   readonly mesh: BatchedMesh | null = null;
   private cull: DistanceCuller | null = null;
+  /** Instance name to its place in the cull list. */
+  private byName = new Map<string, number>();
 
   constructor(
     private scene: Scene,
@@ -48,6 +51,7 @@ export class KitBatch {
     const entries: CullEntry[] = [];
     for (const inst of insts) {
       const id = mesh.addInstance(geo.get(inst.piece)!);
+      this.byName.set(inst.name, entries.length);
       entries.push({
         id,
         x: inst.pos[0],
@@ -74,6 +78,17 @@ export class KitBatch {
   /** Hides the pieces beyond `drawDistance` of the focus (they are also culled by the frustum). */
   update(fx: number, fz: number, drawDistance: number): void {
     this.cull?.update(fx, fz, drawDistance);
+  }
+
+  /**
+   * Hides the greybox of the named instances while a model is drawn in their place, or shows
+   * it again when the model is unloaded.
+   */
+  setCovered(names: readonly string[], covered: boolean): void {
+    for (const name of names) {
+      const i = this.byName.get(name);
+      if (i !== undefined) this.cull?.setCovered(i, covered);
+    }
   }
 
   get instanceCount(): number {

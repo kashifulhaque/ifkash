@@ -12,6 +12,7 @@ import { KitBatch } from '../kits/kitBatch';
 import { ScatterBatch } from '../kits/scatterBatch';
 import { PieceLibrary } from '../kits/library';
 import { fetchManifest, type LevelManifest } from '../kits/manifest';
+import { fetchAreaArt } from '../kits/art';
 import { applyHeightFog, heightFogUniforms } from '../lighting/fogPatch';
 import { LevelLighting } from '../lighting/lighting';
 import { getQuality, subscribeQuality, type QualityPreset } from '../lighting/quality';
@@ -47,7 +48,8 @@ export class LevelRenderer {
    * drawn, false when the area has no manifest (the flat scenarios keep their own ground).
    */
   async load(area: string): Promise<boolean> {
-    const manifest = await fetchManifest(area);
+    // The art manifest names the model files that replace the area's greybox. Most areas have none.
+    const [manifest, art] = await Promise.all([fetchManifest(area), fetchAreaArt(area)]);
     if (!manifest || this.disposed) return false;
     this.manifest = manifest;
     const a = manifest.area;
@@ -65,10 +67,10 @@ export class LevelRenderer {
       this.terrain = new TerrainChunks(this.scene, manifest.terrain, a.regions, this.terrainMaterial);
     }
 
-    this.library = new PieceLibrary(manifest);
+    this.library = new PieceLibrary(manifest, art);
     this.batch = new KitBatch(this.scene, manifest, this.library);
     this.scatter = new ScatterBatch(this.scene, manifest, this.library);
-    this.instances = new InstanceLayer(this.scene, manifest, this.library);
+    this.instances = new InstanceLayer(this.scene, manifest, this.library, art, this.batch);
 
     this.applyQuality(this.quality);
     this.unsubscribe = subscribeQuality((p) => this.applyQuality(p));
@@ -99,6 +101,11 @@ export class LevelRenderer {
     this.batch?.update(focus.x, focus.z, draw);
     this.scatter?.update(focus.x, focus.z, draw);
     this.instances?.update(focus.x, focus.z, draw);
+  }
+
+  /** How many model files are still loading. The benchmark waits for 0 before it measures. */
+  get modelsPending(): number {
+    return this.library?.pending ?? 0;
   }
 
   /** Terrain streaming numbers, for the benchmark and the dev tools. Null with no terrain. */

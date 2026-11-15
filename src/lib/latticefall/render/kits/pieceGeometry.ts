@@ -1,6 +1,8 @@
-// Geometry for kit pieces that have no model yet. Every piece is non-indexed with
+// Stand-in geometry for kit pieces: what draws when a piece has no model file, while its
+// file is loading, or when the file fails to load. Every stand-in is non-indexed with
 // `position`, `normal`, and a linear `color` attribute, so one vertex-colored flat-shaded
-// material draws them all and `BatchedMesh` can hold any mix of them.
+// material draws them all and `BatchedMesh` can hold any mix of them. Loaded models don't
+// come through here; they keep their own geometry and materials (`modelCache.ts`).
 //
 //   - Greybox pieces (tag `block`, or any piece with colliders and no recognized tag) are
 //     drawn from their colliders.
@@ -141,13 +143,4 @@ export function placeholderGeometry(id: string, piece: ManifestPiece): BufferGeo
 /** Grass blades are single triangles, so they draw from both sides. */
 export function needsDoubleSide(piece: ManifestPiece): boolean {
   return piece.tags.includes('ash_grass');
-}
-
-/** Converts a model's mesh geometry to the kit attribute set (position, normal, color). */
-export function toKitGeometry(source: BufferGeometry): BufferGeometry {
-  const g = source.index ? source.toNonIndexed() : source.clone();
-  for (const name of Object.keys(g.attributes)) if (name !== 'position' && name !== 'normal' && name !== 'color') g.deleteAttribute(name);
-  if (!g.getAttribute('normal')) g.computeVertexNormals();
-  if (!g.getAttribute('color')) return paint(g, new Color('#9a968c'));
-  return g;
 }

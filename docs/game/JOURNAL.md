@@ -38,6 +38,40 @@ Copy this block to the top of the entries and fill it in as you go:
 
 ## Entries
 
+### 2026-11-15: phase1-pipeline (tutorial plan, phase 1 engineering)
+
+- **Orchestrator:** Opus 5.5, a side session of the tutorial planning session
+- **Branch:** `claude/phase1-pipeline-c01da6`, started from `main` at `3df8c8a`
+- **Target:** the engineering half of phase 1 in
+  [the tutorial production plan](tutorial-production-plan.md): a Blender pipeline from
+  Mixamo files to a game GLB, and renderer support behind `&art=NAME`.
+- **Work:**
+  - `game/art/blender/bake_character.py` and `game/scripts/art-character.sh`
+    (`mise run art:character -- NAME`). Per-character configs in `game/art/characters/`.
+    How to run it: [Run the character pipeline](tutorial-production-plan.md#run-the-character-pipeline).
+  - Clips move onto the character in armature space, not by copying actions: a Mixamo
+    clip file without a mesh can import with another rest pose. The first version copied
+    actions and played every clip against the wrong rest.
+  - `render/actors/artClips.ts` maps moves to the art clip ids; `ActorRenderer` loads an
+    art character with `&art=NAME` and `&dev=1`, bakes its own clips through `retargetClips`
+    with an identity Mixamo map, and keeps the weapons but not the armor pieces.
+  - `game/art/blender/make_standin.py` (`mise run art:standin`) scripts a stand-in with
+    Mixamo bone names. Its baked output ships at `static/latticefall/characters/standin.*`.
+- **Verified:** `bun run check`, `bun run build`, `bun test` on `render/actors/`. In the
+  browser, Waking Hollow with `&art=standin`: idle, a light attack at contact, a roll,
+  guard, and a run; no new console errors. Draw calls 21-27 and about 22,900 triangles
+  with the stand-in, against 35 and 13,048 for the old Wayfarer in the same view.
+- **Not verified:** the owner's real Mixamo files (they had not arrived), the feel on a
+  pad, and 60 fps on the laptop target.
+- **Context:** about 200K.
+- **Waiting on the owner:** the Meshy model and Mixamo clips in
+  `~/cinderheart-art/wayfarer/`.
+- **Next steps:**
+  1. When the files arrive, fix the `file` names in `game/art/characters/wayfarer.json`
+     and run `mise run art:character -- wayfarer`.
+  1. Check `/game?dev=1&play=1&art=wayfarer&scenario=waking_hollow` on a pad, and
+     credit Meshy (CC BY 4.0) in the game's credits before the model ships to players.
+
 ### 2026-11-15: art-direction (issues 84, 85, and 86)
 
 - **Orchestrator:** Fable 5.2

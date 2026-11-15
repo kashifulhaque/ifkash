@@ -139,6 +139,105 @@ Phase 1 replaces the prototype that the
 [art direction plan](art-direction-research.md) asked for. Its result decides whether the
 pipeline is good enough to write the ADR and run phases 2-5.
 
+## Run the character pipeline
+
+The engineering half of phase 1 is in place: one command turns a Mixamo-rigged character
+and its Mixamo clips into a player model the game can draw. The scripts run headless
+Blender, so you don't open Blender yourself.
+
+### Prepare the files
+
+Keep the source files outside the repository. Raw Mixamo and Meshy files must never be
+committed; only the baked GLB and its sidecar ship.
+
+1. Generate the model in Meshy and download it as FBX with its textures.
+1. Upload the FBX to Mixamo and let it rig the character.
+1. Download the character from Mixamo as FBX, **With Skin**, in its T-pose.
+1. Download each clip as FBX, **Without Skin**, at **30** frames per second, with
+   **In Place** turned on where Mixamo offers it.
+1. Put every file in `~/cinderheart-art/wayfarer/`.
+
+### Bake the character
+
+To bake the Wayfarer, run the following command from the repository root:
+
+```sh
+mise run art:character -- wayfarer
+```
+
+The first time, also run `mise run game:ktx`, which installs the texture compressor.
+
+The command takes about a minute and does the following:
+
+1. Runs `game/art/blender/bake_character.py` in headless Blender, which reads
+   `game/art/characters/wayfarer.json` and writes
+   `game/assets-src/characters/wayfarer/wayfarer.glb` and `wayfarer.json`:
+   - Joins the meshes, merges duplicate vertices, recalculates normals, decimates to the
+     triangle budget (20,000 by default), and keeps four bone weights per vertex.
+   - Scales textures down to 1024 pixels.
+   - Strips the `mixamorig:` prefix from bone names.
+   - Moves each clip onto the character in armature space, so a clip file with another
+     rest pose still plays correctly.
+   - Removes horizontal root travel, so every clip stays in place and loops meet.
+   - Finds each attack's contact frame, where the right hand moves fastest.
+   - Smooths capture jitter with a small filter that leaves the frames around the contact
+     untouched.
+1. Adds the character to `game/assets-src/assets.json` the first time.
+1. Runs `lf-tools assets`, which compresses the textures to KTX2 (ADR 0010) and writes
+   `static/latticefall/characters/wayfarer.glb` and `wayfarer.json`.
+
+The command prints each step's result: triangles before and after, each clip's frames,
+how much travel it removed, and each contact frame. It warns about a clip it can't find
+and about files in the folder that the config doesn't name.
+
+### Edit the clip mapping
+
+The config, `game/art/characters/wayfarer.json`, maps Mixamo file names to the game's clip
+ids. Mixamo names its downloads after the animation, so edit the `file` entries to match
+what you downloaded. A `file` can list several names; the first one found wins. Case,
+extensions, and repeated spaces don't matter.
+
+The clip ids are `idle`, `walk`, `run`, `sprint`, `slash_a`, `slash_b`, `slash_c`, `heavy`,
+`block`, `block_idle`, `roll`, `hit`, `death`, and `drink`. Only `idle`, `walk`, and `run`
+are required. `ART_ANIMS` in `src/lib/latticefall/render/actors/artClips.ts` lists which
+moves play which clip, and the fallbacks for a missing clip.
+
+Each clip takes these options:
+
+- `loop`: `true` for idle, walk, run, and block idle. Smoothing then wraps around the
+  ends.
+- `contact`: `"auto"` finds the contact frame; a number sets it by hand. Leave it out
+  for clips without a strike.
+- `root`: `"lock"` pins the hips over the feet instead of only removing drift. The roll
+  uses it.
+- `smooth`: the filter width in frames (default 1). Use `0` to turn it off.
+- `trim`: `[FIRST, LAST]` frames to keep.
+- `contactBone` and `contactWindow`: which bone and which part of the clip (default
+  `[0.1, 0.85]`) the contact search uses.
+
+The config also sets `triangles`, `textureSize`, and `character`, the character file's
+name. Without `character`, the one FBX that no clip uses is the character.
+
+### Check it in the game
+
+Start the dev server and open
+`/game?dev=1&play=1&art=wayfarer&scenario=waking_hollow`. Without `&art=`, the game draws
+the old Wayfarer, and players never see an art character. To hold one pose for a
+close look, add the animation preview parameters, for example
+`&anim=move:sword_slash_r&animt=0.41&animcam=front`.
+
+The renderer plays the clips at the move's own frame data: it stretches or squeezes each
+attack so that the clip's contact frame lands in the middle of the move's hitbox window,
+and it crossfades between locomotion, guard, and moves.
+
+### Test without Mixamo files
+
+`mise run art:standin` writes a scripted stand-in to `~/cinderheart-art/standin/`: a
+Mixamo-named skeleton, a 62,000-triangle mesh with duplicate vertices and a 2048-pixel
+texture, and 13 clips that travel and jitter. `mise run art:character -- standin` bakes it,
+and `&art=standin` draws it. The stand-in is made by script, so it carries no third-party
+license.
+
 ## Decisions for the owner
 
 1. **NPC and new content.** Do you want the wounded knight at L01, a relic, and a

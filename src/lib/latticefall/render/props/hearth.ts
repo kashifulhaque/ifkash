@@ -46,16 +46,20 @@ export class HearthProps {
     parent.add(this.group);
   }
 
-  /** Adds an NPC or station from its manifest entity. */
-  add(kind: 'Npc' | 'Station', d: Record<string, unknown>): void {
+  /**
+   * Adds an NPC or station from its manifest entity. For an NPC, returns the group placed at
+   * the NPC's feet and the greybox figure inside it.
+   */
+  add(kind: 'Npc' | 'Station', d: Record<string, unknown>): { holder: Group; figure: Group } | null {
     const pos = d.pos as V3;
     const yaw = d.yaw as number;
     const g = new Group();
     g.position.set(pos[0], pos[1], pos[2]);
     g.rotation.y = yaw;
-    if (kind === 'Npc') this.npc(g, String(d.npc));
-    else this.station(g, String(d.station));
     this.group.add(g);
+    if (kind === 'Npc') return { holder: g, figure: this.npc(g, String(d.npc)) };
+    this.station(g, String(d.station));
+    return null;
   }
 
   /** Flickers the flames. Call once per frame. */
@@ -113,30 +117,33 @@ export class HearthProps {
     this.flames.push({ mat: flame, light: pl, base, phase: at[0] * 1.3 + at[2] * 0.7 });
   }
 
-  private npc(g: Group, id: string): void {
+  /** Builds the greybox figure and returns it, so a model can take its place (see `figures.ts`). */
+  private npc(g: Group, id: string): Group {
+    const fig = new Group();
+    g.add(fig);
     const look = LOOKS[id] ?? FALLBACK;
     const robe = this.mat(look.robe);
     const trim = this.mat(look.trim);
     const skin = this.mat('#d9b48f');
     // Robe, shoulders, hood and face: a simple tapering figure about 1.7 m tall.
-    this.mesh(new CylinderGeometry(0.26, 0.46, 1.2, 14), robe, [0, 0.6, 0], g);
-    this.mesh(new SphereGeometry(0.29, 14, 10), robe, [0, 1.22, 0], g).scale.set(1, 0.7, 0.8);
-    this.mesh(new SphereGeometry(0.2, 14, 12), robe, [0, 1.5, -0.02], g);
-    this.mesh(new SphereGeometry(0.145, 12, 10), skin, [0, 1.49, 0.07], g);
+    this.mesh(new CylinderGeometry(0.26, 0.46, 1.2, 14), robe, [0, 0.6, 0], fig);
+    this.mesh(new SphereGeometry(0.29, 14, 10), robe, [0, 1.22, 0], fig).scale.set(1, 0.7, 0.8);
+    this.mesh(new SphereGeometry(0.2, 14, 12), robe, [0, 1.5, -0.02], fig);
+    this.mesh(new SphereGeometry(0.145, 12, 10), skin, [0, 1.49, 0.07], fig);
     // A sash, and arms held forward.
-    this.mesh(new CylinderGeometry(0.31, 0.33, 0.07, 14), trim, [0, 0.82, 0], g);
+    this.mesh(new CylinderGeometry(0.31, 0.33, 0.07, 14), trim, [0, 0.82, 0], fig);
     for (const x of [-0.3, 0.3]) {
-      const arm = this.mesh(new CylinderGeometry(0.06, 0.075, 0.55, 8), robe, [x, 1.0, 0.18], g);
+      const arm = this.mesh(new CylinderGeometry(0.06, 0.075, 0.55, 8), robe, [x, 1.0, 0.18], fig);
       arm.rotation.x = Math.PI / 2.6;
     }
     switch (look.carry) {
       case 'book': {
-        const b = this.mesh(new BoxGeometry(0.3, 0.06, 0.22), this.mat('#8a4a38'), [0, 1.02, 0.38], g);
+        const b = this.mesh(new BoxGeometry(0.3, 0.06, 0.22), this.mat('#8a4a38'), [0, 1.02, 0.38], fig);
         b.rotation.x = -0.25;
         break;
       }
       case 'map': {
-        const m = this.mesh(new CylinderGeometry(0.045, 0.045, 0.5, 8), this.mat('#e6d6a8'), [0.05, 1.02, 0.4], g);
+        const m = this.mesh(new CylinderGeometry(0.045, 0.045, 0.5, 8), this.mat('#e6d6a8'), [0.05, 1.02, 0.4], fig);
         m.rotation.z = Math.PI / 2;
         break;
       }
@@ -146,23 +153,24 @@ export class HearthProps {
         this.mesh(new BoxGeometry(0.2, 0.12, 0.12), this.mat('#5a5a5f', { metalness: 0.5 }), [0, 0.36, 0], h);
         h.position.set(0.36, 0.95, 0.3);
         h.rotation.x = 0.5;
-        g.add(h);
-        this.mesh(new BoxGeometry(0.5, 0.7, 0.05), this.mat('#6b4a32'), [0, 0.8, 0.27], g);
+        fig.add(h);
+        this.mesh(new BoxGeometry(0.5, 0.7, 0.05), this.mat('#6b4a32'), [0, 0.8, 0.27], fig);
         break;
       }
       case 'satchel':
-        this.mesh(new BoxGeometry(0.32, 0.26, 0.12), this.mat('#8a6a42'), [0.32, 0.72, 0.02], g);
-        this.mesh(new CylinderGeometry(0.21, 0.21, 0.05, 12), this.mat('#3f6c8a'), [0, 1.66, 0], g);
+        this.mesh(new BoxGeometry(0.32, 0.26, 0.12), this.mat('#8a6a42'), [0.32, 0.72, 0.02], fig);
+        this.mesh(new CylinderGeometry(0.21, 0.21, 0.05, 12), this.mat('#3f6c8a'), [0, 1.66, 0], fig);
         break;
       case 'pack': {
-        this.mesh(new BoxGeometry(0.62, 0.7, 0.34), this.mat('#8a6a42'), [0, 1.0, -0.36], g);
-        this.mesh(new BoxGeometry(0.5, 0.25, 0.3), this.mat('#6b4a32'), [0, 1.5, -0.36], g);
-        this.mesh(new CylinderGeometry(0.02, 0.02, 1.9, 6), this.mat('#6f4e37'), [-0.42, 0.95, -0.2], g);
+        this.mesh(new BoxGeometry(0.62, 0.7, 0.34), this.mat('#8a6a42'), [0, 1.0, -0.36], fig);
+        this.mesh(new BoxGeometry(0.5, 0.25, 0.3), this.mat('#6b4a32'), [0, 1.5, -0.36], fig);
+        this.mesh(new CylinderGeometry(0.02, 0.02, 1.9, 6), this.mat('#6f4e37'), [-0.42, 0.95, -0.2], fig);
         break;
       }
     }
     // A candle at the NPC's counter side, lit, so each person stands in a small pool of light.
     this.candle(g, [0.9, 1.0, 1.4], { color: '#ffb066', distance: 7 }, 1.2);
+    return fig;
   }
 
   private station(g: Group, id: string): void {

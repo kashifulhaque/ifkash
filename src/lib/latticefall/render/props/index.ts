@@ -22,8 +22,10 @@ import {
   type Object3D,
   type Scene
 } from 'three';
+import { fetchAreaArt, type AreaArt } from '../kits/art';
 import { manifestUrl } from '../kits/manifest';
 import { DeepProps } from './deep';
+import { FigureProps } from './figures';
 import { GlassProps } from './glass';
 import { HearthProps } from './hearth';
 import { RimeProps } from './rime';
@@ -62,6 +64,8 @@ export class PropsRenderer {
   private root = new Group();
   /** Hollowhearth's NPCs and stations (WP-068). */
   private hearth = new HearthProps(this.root);
+  /** The Lantern and the NPC figures, where the area art manifest gives them a model file. */
+  private figures = new FigureProps(this.root);
   /** Mine carts and the Root Stair's trapdoor (WP-062). */
   private deep = new DeepProps(this.root);
   private cartAt = -1;
@@ -95,15 +99,24 @@ export class PropsRenderer {
 
   /** Loads `area`'s entities from its manifest and builds the props. Resolves false if there are none. */
   async load(area: string): Promise<boolean> {
-    const res = await fetch(manifestUrl(area));
+    const [res, art] = await Promise.all([fetch(manifestUrl(area)), fetchAreaArt(area)]);
     if (!res.ok || !(res.headers.get('content-type') ?? '').includes('json')) return false;
     const data = (await res.json()) as { entities?: Entity[] };
     if (this.disposed) return false;
-    return this.build(data.entities ?? []);
+    return this.build(data.entities ?? [], art);
   }
 
-  /** Builds props from a manifest's entity list. Exposed for tests. */
-  build(entities: Entity[]): boolean {
+  /** How many model files are still loading. The benchmark waits for 0 before it measures. */
+  get modelsPending(): number {
+    return this.figures.pending;
+  }
+
+  /**
+   * Builds props from a manifest's entity list. `art` is the area art manifest, which names
+   * the model files for the Lantern and the NPCs; without it they draw as greybox or not at
+   * all. Exposed for tests.
+   */
+  build(entities: Entity[], art: AreaArt | null = null): boolean {
     for (const k of STATE_KINDS) this.counts.set(k, 0);
     // Pass 1: counts, so the offsets into the state words are known.
     for (const e of entities) {
@@ -167,8 +180,20 @@ export class PropsRenderer {
         continue;
       }
       if (kind === 'Npc' || kind === 'Station') {
-        this.hearth.add(kind, d);
+        const npc = this.hearth.add(kind, d);
+        const spec = npc ? art?.entities?.npcs?.[String(d.npc)] : undefined;
+        const file = spec ? art?.models[spec.model]?.file : undefined;
+        if (npc && spec && file) this.figures.npc(npc.holder, npc.figure, spec, file);
         any = true;
+        continue;
+      }
+      if (kind === 'Lantern') {
+        const spec = art?.entities?.lantern;
+        const file = spec ? art?.models[spec.model]?.file : undefined;
+        if (spec && file) {
+          this.figures.lantern(d, spec, file);
+          any = true;
+        }
         continue;
       }
       if (kind === 'Snow') {
@@ -207,6 +232,7 @@ export class PropsRenderer {
   update(frameMs: number): void {
     this.clock += frameMs;
     this.hearth.update(frameMs);
+    this.figures.update(frameMs);
     this.deep.update(frameMs, this.state, this.cartAt, this.hatchAt);
     this.glass.update(frameMs, this.state, this.mirrorAt, this.receptorAt, this.beamAt);
     this.rime.update(frameMs, this.state, this.brazierAt, this.sigilAt);
@@ -220,6 +246,7 @@ export class PropsRenderer {
   dispose(): void {
     this.disposed = true;
     this.hearth.dispose();
+    this.figures.dispose();
     this.deep.dispose();
     this.glass.dispose();
     this.rime.dispose();

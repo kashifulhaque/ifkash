@@ -339,7 +339,9 @@ async function warm(
   ring: Ring,
   manifest: LevelManifest
 ): Promise<void> {
-  for (let i = 0; i < 20; i++) {
+  // Keep drawing until the model files the first frame asked for have landed (20 frames at
+  // least, and no more than 10 seconds), so the route measures the area as the player sees it.
+  for (let i = 0; i < 600 && (i < 20 || level.modelsPending + props.modelsPending > 0); i++) {
     await nextFrame();
     drawFrame(renderer, scene, camera, level, props, actors, f, ring, manifest, FRAME_MS);
   }

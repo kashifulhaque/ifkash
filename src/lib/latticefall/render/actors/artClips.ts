@@ -11,6 +11,36 @@ import type { StanceClip } from './stancePose';
 /** Where `lf-tools assets` writes art characters: `NAME.glb` and `NAME.json`. */
 export const ART_ASSET_BASE = '/latticefall/characters/';
 
+/** Where the dev server serves private art, baked locally and never committed. */
+export const PRIVATE_ART_LOCAL_BASE = '/latticefall/private/';
+
+/** The API route that serves private art from R2 in production (`api/src/handlers/art.rs`). */
+export const PRIVATE_ART_API_PATH = '/api/art/private/';
+
+/**
+ * Characters whose license forbids a public repository (Mixamo's own characters). Their
+ * baked files live in the `ifkash-art` R2 bucket, not in Git.
+ */
+export const PRIVATE_ART: ReadonlySet<string> = new Set(['paladin']);
+
+/** The character every player plays, unless `&art=` names another (or `off`, for the Wayfarer). */
+export const PLAYER_ART = 'paladin';
+
+/**
+ * The URL folder of a character's `NAME.glb` and `NAME.json`. Private art comes from the
+ * local build in development and from the API in production.
+ */
+export function artAssetBase(name: string, dev: boolean, apiBase: string): string {
+  if (!PRIVATE_ART.has(name)) return ART_ASSET_BASE;
+  return dev ? PRIVATE_ART_LOCAL_BASE : `${apiBase}${PRIVATE_ART_API_PATH}`;
+}
+
+/** The character to draw as the player, from the `&art=` parameter (null when it's absent). */
+export function playerArt(param: string | null): string | null {
+  if (param === 'off') return null;
+  return param ?? PLAYER_ART;
+}
+
 /** One clip in the sidecar. Frames are 30 Hz; `contact` is null for clips without a strike. */
 export interface ArtClipInfo {
   frames: number;

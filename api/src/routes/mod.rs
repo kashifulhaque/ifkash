@@ -33,6 +33,8 @@ pub fn register_routes(router: Router<'_, ()>) -> Router<'_, ()> {
     .get_async("/api/home_weather", home_weather::route)
     .get_async("/api/edge-signal", edge_signal::route)
     .get_async("/api/whoami", whoami::route)
+    // Private game art (Mixamo characters) from the ART_BUCKET R2 bucket.
+    .get_async("/api/art/private/:file", handlers::art::private_file)
     .post_async("/api/game/score", game::submit_score)
     .get_async("/api/game/leaderboard", game::leaderboard)
     .post_async("/api/game/daily/score", game::submit_daily_score)

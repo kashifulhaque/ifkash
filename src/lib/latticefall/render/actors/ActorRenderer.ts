@@ -24,6 +24,7 @@ import {
 } from 'three';
 import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { createGltfLoader } from '../assets/gltfLoader';
+import { getApiBase } from '$lib/apiBase';
 import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import type { DrawActor } from '../../engine/snapshot';
 import { PlayerGear, type Equipped, type RigFrame } from '../equipment/playerGear';
@@ -61,7 +62,8 @@ import {
 } from './moveClips';
 import { BAKE_FPS, BONE_MAP, type BakedClip, retargetClips, sampleClip } from './retarget';
 import {
-  ART_ASSET_BASE,
+  artAssetBase,
+  playerArt,
   ART_LOOPS,
   MIXAMO_BONE_MAP,
   MIXAMO_FEET,
@@ -298,7 +300,7 @@ export class ActorRenderer {
   private gesture: number | null = null;
   private gestureT = 0;
   readonly spellFx = new SpellFx();
-  /** `&art=NAME` with `&dev=1`: the art character to draw as the player, or null. */
+  /** The art character to draw as the player (`PLAYER_ART`, or `&art=` with `&dev=1`), or null. */
   private artName: string | null = null;
 
   constructor(scene: Scene, renderer: WebGLRenderer, opts: { resolveMove?: MoveResolver } = {}) {
@@ -308,7 +310,7 @@ export class ActorRenderer {
     if (typeof location !== 'undefined') {
       this.preview = parsePreview(location.search);
       this.propPreview = parsePropPreview(location.search);
-      this.artName = parseDevParams(location.search).art;
+      this.artName = playerArt(parseDevParams(location.search).art);
     }
     this.scene.add(this.spellFx.points);
     if (this.preview || import.meta.env.DEV) (globalThis as Record<string, unknown>).__lfActors = this;
@@ -391,9 +393,10 @@ export class ActorRenderer {
    */
   private async loadArt(name: string): Promise<void> {
     const loader = createGltfLoader(this.renderer);
+    const base = artAssetBase(name, import.meta.env.DEV, getApiBase());
     const [gltf, sidecar] = await Promise.all([
-      loader.loadAsync(`${ART_ASSET_BASE}${name}.glb`),
-      fetch(`${ART_ASSET_BASE}${name}.json`).then((r) => {
+      loader.loadAsync(`${base}${name}.glb`),
+      fetch(`${base}${name}.json`).then((r) => {
         if (!r.ok) throw new Error(`${name}.json: HTTP ${r.status}`);
         return r.json() as Promise<ArtSidecar>;
       })

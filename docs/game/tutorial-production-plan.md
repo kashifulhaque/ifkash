@@ -247,6 +247,35 @@ The renderer plays the clips at the move's own frame data: it stretches or squee
 attack so that the clip's contact frame lands in the middle of the move's hitbox window,
 and it crossfades between locomotion, guard, and moves.
 
+### Private art
+
+Mixamo's own characters, such as the Paladin, may ship inside the game but may not sit in
+the public repository. A config with `"private": true` keeps the character out of Git from
+end to end:
+
+- The bake writes its sources to `game/assets-src/private/` and its jobs to
+  `game/assets-src/assets.private.json`. `lf-tools assets` builds them into
+  `static/latticefall/private/` and leaves them out of `manifest.json`. All three paths
+  are gitignored.
+- In development, the game loads the character from `/latticefall/private/`.
+- In production, it loads it from `GET /api/art/private/NAME.glb`, which the API Worker
+  serves from the `ifkash-art` R2 bucket (`api/src/handlers/art.rs`).
+- `PRIVATE_ART` in `src/lib/latticefall/render/actors/artClips.ts` lists the private
+  characters, and `PLAYER_ART` names the one every player plays. `&art=off` draws the old
+  Wayfarer. If a character fails to load, the game draws the Wayfarer instead.
+
+After a bake, upload both files so players get the new version (within an hour, the
+route's cache time):
+
+```sh
+cd api
+npx wrangler r2 object put ifkash-art/private/paladin.glb --file ../static/latticefall/private/paladin.glb --content-type model/gltf-binary --remote
+npx wrangler r2 object put ifkash-art/private/paladin.json --file ../static/latticefall/private/paladin.json --content-type application/json --remote
+```
+
+The raw Mixamo downloads stay in `~/cinderheart-art/`. Back them up yourself: they're in
+neither Git nor R2.
+
 ### Test without Mixamo files
 
 `mise run art:standin` writes a scripted stand-in to `~/cinderheart-art/standin/`: a

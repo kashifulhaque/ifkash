@@ -1,8 +1,12 @@
 //! `lf-tools assets`: optimizes the source art in `game/assets-src/` into `static/latticefall/`.
 //!
-//! The job list is `game/assets-src/assets.json`. Each entry is either a glTF binary that
-//! goes through `gltf-transform optimize` (meshopt-compressed geometry and animation, KTX2
-//! textures when the file has any) or a plain file that is copied. A `manifest.json` listing
+//! The job list is `game/assets-src/assets.json`, plus `assets.private.json` beside it when
+//! that file exists. The private list is gitignored: it holds art whose license forbids a
+//! public repository (Mixamo characters), and its outputs stay out of the manifest and out
+//! of Git (`static/latticefall/private/`); see docs/game/tutorial-production-plan.md,
+//! "Private art". Each entry is either a glTF binary that goes through `gltf-transform
+//! optimize` (meshopt-compressed geometry and animation, KTX2 textures when the file has
+//! any) or a plain file that is copied. A `manifest.json` listing
 //! every output, grouped by its first path segment (the region), is written next to them.
 //!
 //! The tool runs `gltf-transform` from the repository's `node_modules` (a Bun devDependency)
@@ -72,6 +76,8 @@ struct Job {
     copy: bool,
     /// The job's own `maxTextureSize`, which overrides the command line's.
     max_texture_size: Option<u32>,
+    /// From `assets.private.json`: built, but left out of the manifest.
+    private: bool,
 }
 
 fn check_texture_size(size: u32) -> Result<u32, String> {
@@ -84,8 +90,20 @@ fn check_texture_size(size: u32) -> Result<u32, String> {
     }
 }
 
+/// The public job list, then the private one when it exists.
 fn read_jobs(src: &Path) -> Result<Vec<Job>, String> {
-    let path = src.join("assets.json");
+    let mut jobs = read_job_file(src, "assets.json", false)?;
+    if src.join(PRIVATE_JOBS).exists() {
+        jobs.extend(read_job_file(src, PRIVATE_JOBS, true)?);
+    }
+    Ok(jobs)
+}
+
+/// The gitignored job list for art that must stay out of the public repository.
+const PRIVATE_JOBS: &str = "assets.private.json";
+
+fn read_job_file(src: &Path, name: &str, private: bool) -> Result<Vec<Job>, String> {
+    let path = src.join(name);
     let text = std::fs::read_to_string(&path).map_err(|e| format!("{}: {e}", path.display()))?;
     let json: Value =
         serde_json::from_str(&text).map_err(|e| format!("{}: {e}", path.display()))?;
@@ -108,6 +126,12 @@ fn read_jobs(src: &Path) -> Result<Vec<Job>, String> {
                     path.display()
                 ));
             }
+            if private != out.starts_with("private/") {
+                return Err(format!(
+                    "{}: \"{out}\": private art goes under private/, and only private art does",
+                    path.display()
+                ));
+            }
             Ok(Job {
                 src: src.join(field("src")?),
                 out: out.to_string(),
@@ -122,6 +146,7 @@ fn read_jobs(src: &Path) -> Result<Vec<Job>, String> {
                             .map_err(|m| format!("{}: \"{out}\": {m}", path.display()))?,
                     ),
                 },
+                private,
             })
         })
         .collect()
@@ -313,6 +338,9 @@ fn build(src: &Path, out: &Path, max_texture_size: u32) -> Result<usize, String>
             let size = job.max_texture_size.unwrap_or(max_texture_size);
             any_ktx2 |= optimize(job, &dest, size)?;
         }
+        if job.private {
+            continue;
+        }
         let bytes = std::fs::metadata(&dest)
             .map_err(|e| format!("{}: {e}", dest.display()))?
             .len();
@@ -415,6 +443,41 @@ mod tests {
         assert!(read_jobs(&dir).is_err());
         write("\"big\"");
         assert!(read_jobs(&dir).is_err());
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
+    #[test]
+    fn private_jobs_stay_under_private() {
+        let dir = std::env::temp_dir().join(format!("lf-assets-private-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        std::fs::write(
+            dir.join("assets.json"),
+            r#"{"assets":[{"src":"a.glb","out":"actors/a.glb"}]}"#,
+        )
+        .unwrap();
+        std::fs::write(
+            dir.join(PRIVATE_JOBS),
+            r#"{"assets":[{"src":"b.glb","out":"private/b.glb"}]}"#,
+        )
+        .unwrap();
+        let jobs = read_jobs(&dir).unwrap();
+        assert_eq!(
+            jobs.iter().map(|j| j.private).collect::<Vec<_>>(),
+            [false, true]
+        );
+        std::fs::write(
+            dir.join(PRIVATE_JOBS),
+            r#"{"assets":[{"src":"b.glb","out":"actors/b.glb"}]}"#,
+        )
+        .unwrap();
+        assert!(read_jobs(&dir).is_err(), "private art outside private/");
+        std::fs::write(
+            dir.join("assets.json"),
+            r#"{"assets":[{"src":"a.glb","out":"private/a.glb"}]}"#,
+        )
+        .unwrap();
+        std::fs::remove_file(dir.join(PRIVATE_JOBS)).unwrap();
+        assert!(read_jobs(&dir).is_err(), "public art under private/");
         std::fs::remove_dir_all(&dir).ok();
     }
 

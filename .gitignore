@@ -33,3 +33,9 @@ game/python/**/*.pyd
 __pycache__/
 *.egg-info/
 .pytest_cache/
+
+# Private game art (Mixamo characters): built locally, served from the private R2 bucket,
+# never committed. See docs/game/tutorial-production-plan.md, "Private art".
+game/assets-src/assets.private.json
+game/assets-src/private/
+static/latticefall/private/

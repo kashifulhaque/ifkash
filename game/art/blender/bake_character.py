@@ -549,20 +549,30 @@ def grips(arm, cfg):
     return out
 
 
-def register_assets(name):
-    """Adds the character's jobs to `game/assets-src/assets.json` once."""
-    path = os.path.join(REPO, "game", "assets-src", "assets.json")
+def register_assets(name, private=False):
+    """Adds the character's jobs to the asset job list once.
+
+    A private character (Mixamo's own characters, whose license forbids a public repository)
+    goes to the gitignored `assets.private.json` instead of `assets.json`, with its sources
+    under `private/` and its outputs under `static/latticefall/private/`.
+    """
+    path = os.path.join(REPO, "game", "assets-src", "assets.private.json" if private else "assets.json")
+    if private and not os.path.exists(path):
+        with open(path, "w") as f:
+            f.write('{\n  "assets": [\n  ]\n}\n')
     with open(path) as f:
         text = f.read()
-    src = f"characters/{name}/{name}"
+    src = f"{'private/' if private else ''}characters/{name}/{name}"
+    out = f"private/{name}" if private else f"characters/{name}"
     if f'"{src}.glb"' in text:
         return False
     lines = (
-        f'    {{"src": "{src}.glb", "out": "characters/{name}.glb", "maxTextureSize": 1024}},\n'
-        f'    {{"src": "{src}.json", "out": "characters/{name}.json", "copy": true}}'
+        f'    {{"src": "{src}.glb", "out": "{out}.glb", "maxTextureSize": 1024}},\n'
+        f'    {{"src": "{src}.json", "out": "{out}.json", "copy": true}}'
     )
     end = text.rindex("\n  ]")
-    text = text[:end] + ",\n" + lines + text[end:]
+    first = text[:end].rstrip().endswith("[")
+    text = text[:end] + ("\n" if first else ",\n") + lines + text[end:]
     json.loads(text)
     with open(path, "w") as f:
         f.write(text)
@@ -627,7 +637,8 @@ def main():
         actions[clip_id] = act
         sidecar_clips[clip_id] = info
 
-    out_dir = os.path.join(REPO, "game", "assets-src", "characters", cfg["name"])
+    private = bool(cfg.get("private"))
+    out_dir = os.path.join(REPO, "game", "assets-src", *(["private"] if private else []), "characters", cfg["name"])
     os.makedirs(out_dir, exist_ok=True)
     glb = os.path.join(out_dir, f"{cfg['name']}.glb")
     export(arm, body, actions, glb)
@@ -649,8 +660,8 @@ def main():
     with open(os.path.join(out_dir, f"{cfg['name']}.json"), "w") as f:
         json.dump(sidecar, f, indent=2)
         f.write("\n")
-    if register_assets(cfg["name"]):
-        log("added the character to game/assets-src/assets.json")
+    if register_assets(cfg["name"], private):
+        log(f"added the character to game/assets-src/{'assets.private.json' if private else 'assets.json'}")
     log(f"wrote {os.path.relpath(glb, REPO)} ({os.path.getsize(glb) // 1024} KB) and its sidecar")
 
 

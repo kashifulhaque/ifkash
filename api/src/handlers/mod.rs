@@ -10,3 +10,4 @@ pub mod splitter;
 pub mod workout;
 pub mod profile;
 pub mod latticefall;
+pub mod art;

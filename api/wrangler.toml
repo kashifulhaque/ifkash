@@ -35,6 +35,12 @@ migrations_dir = "migrations"
 binding = "RESUME_BUCKET"
 bucket_name = "ifkash"
 
+# Private game art: baked Mixamo characters that ship inside the game but can't sit in the
+# public repository. Served by GET /api/art/private/:file (handlers/art.rs).
+[[r2_buckets]]
+binding = "ART_BUCKET"
+bucket_name = "ifkash-art"
+
 [vars]
 # Only this email (verified by Cloudflare Access) may write resume versions.
 OWNER_EMAIL = "haque.kashiful7@gmail.com"

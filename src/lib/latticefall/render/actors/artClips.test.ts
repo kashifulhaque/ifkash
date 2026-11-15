@@ -2,7 +2,7 @@
 
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
-import { artGuard, artSpecFor, artTwoHand, MIXAMO_BONE_MAP, type ArtClipInfo } from './artClips';
+import { artAssetBase, artGuard, artSpecFor, artTwoHand, MIXAMO_BONE_MAP, PLAYER_ART, playerArt, type ArtClipInfo } from './artClips';
 import { BONE_MAP } from './retarget';
 
 const clip = (contact: number | null): ArtClipInfo => ({ frames: 30, duration: 1, loop: false, contact, source: 'x.fbx' });
@@ -61,5 +61,19 @@ describe('art rig', () => {
   test('the two-handed stance is the two-handed idle, when there is one', () => {
     assert.deepEqual(artTwoHand((c) => c === 'twohand_idle'), { clip: 'twohand_idle' });
     assert.equal(artTwoHand(() => false), undefined);
+  });
+});
+
+describe('art assets', () => {
+  test('private art comes from the dev server locally and from the API in production', () => {
+    assert.equal(artAssetBase('paladin', true, 'https://ifkash.dev'), '/latticefall/private/');
+    assert.equal(artAssetBase('paladin', false, 'https://ifkash.dev'), 'https://ifkash.dev/api/art/private/');
+    assert.equal(artAssetBase('standin', false, 'https://ifkash.dev'), '/latticefall/characters/');
+  });
+
+  test('the player is PLAYER_ART unless &art= names another, or off for the Wayfarer', () => {
+    assert.equal(playerArt(null), PLAYER_ART);
+    assert.equal(playerArt('standin'), 'standin');
+    assert.equal(playerArt('off'), null);
   });
 });

@@ -1,0 +1,96 @@
+{
+  "name": "paladin",
+  "private": true,
+  "source": "~/cinderheart-art/paladin",
+  "character": "Paladin J Nordstrom.fbx",
+  "triangles": 20000,
+  "textureSize": 1024,
+  "credits": {
+    "title": "Paladin J Nordstrom (Mixamo test character)",
+    "author": "Mixamo character and Sword And Shield Pack",
+    "license": "Mixamo terms: baked into the game only; raw files stay private"
+  },
+  "clips": {
+    "idle": {
+      "file": "sword and shield idle.fbx",
+      "loop": true
+    },
+    "walk": {
+      "file": "sword and shield walk.fbx",
+      "loop": true
+    },
+    "run": {
+      "file": "sword and shield run.fbx",
+      "loop": true
+    },
+    "slash_a": {
+      "file": "sword and shield slash.fbx",
+      "contact": "auto"
+    },
+    "slash_b": {
+      "file": "sword and shield slash (2).fbx",
+      "contact": "auto"
+    },
+    "slash_c": {
+      "file": "sword and shield attack.fbx",
+      "contact": "auto"
+    },
+    "heavy": {
+      "file": "sword and shield attack (4).fbx",
+      "contact": "auto"
+    },
+    "block": {
+      "file": "sword and shield block.fbx"
+    },
+    "block_idle": {
+      "file": "sword and shield block idle.fbx",
+      "loop": true
+    },
+    "roll": {
+      "file": "roll.fbx",
+      "root": "lock"
+    },
+    "hit": {
+      "file": "sword and shield impact.fbx"
+    },
+    "death": {
+      "file": "sword and shield death.fbx"
+    },
+    "drink": {
+      "file": "drink.fbx"
+    },
+    "twohand_idle": {
+      "file": "twohand_idle.fbx",
+      "loop": true
+    },
+    "twohand_slash": {
+      "file": "twohand_slash.fbx",
+      "contact": "auto"
+    },
+    "twohand_heavy": {
+      "file": "twohand_heavy.fbx",
+      "contact": "auto"
+    }
+  },
+  "grips": {
+    "R": [
+      0.25252,
+      0.96705,
+      -0.03243,
+      -0.00773,
+      -0.96217,
+      0.24742,
+      -0.11408,
+      0.07918,
+      -0.1023,
+      0.06001,
+      0.99294,
+      0.03039,
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ]
+  },
+  "gripsFrom": "Paladin W/Prop J Nordstrom (Mixamo), measured with game/art/blender/measure_grip.py"
+}

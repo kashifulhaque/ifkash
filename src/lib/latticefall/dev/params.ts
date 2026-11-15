@@ -22,8 +22,9 @@
 //                           and reports its texture formats, sizes and load times in the console
 //                           and in `window.__lfKtx2Test` (ADR 0010)
 //   &art=NAME               (dev only) draws the player as the art character NAME, baked by
-//                           `mise run art:character -- NAME` into static/latticefall/characters/
-//                           (render/actors/artClips.ts). Falls back to the Wayfarer if it fails to load
+//                           `mise run art:character -- NAME` (render/actors/artClips.ts). Without
+//                           it the player is PLAYER_ART; `&art=off` draws the old Wayfarer. Any
+//                           character falls back to the Wayfarer if it fails to load
 //   &fakelock=X,Y,Z         frames a fixed point as if it were the locked-on actor's feet
 //
 //   &bench=1|AREA,AREA     (dev only) runs the performance benchmark (WP-081): flies a fixed camera path

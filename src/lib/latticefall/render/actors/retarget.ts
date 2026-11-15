@@ -33,6 +33,9 @@ export const BONE_MAP: ReadonlyArray<readonly [string, string]> = [
   ['foot_r', 'Foot.R']
 ];
 
+/** The UAL ankle bones, for measuring each walk and run clip's stride. */
+export const UAL_FEET: readonly [string, string] = ['foot_l', 'foot_r'];
+
 /** Baked sample rate in Hz. The library's clips are authored at 30 fps. */
 export const BAKE_FPS = 30;
 
@@ -73,17 +76,25 @@ function find(root: Object3D, name: string): Object3D {
  * @param srcClips The library's clips.
  * @param tgtScene The character's scene, at its rest pose, with no transform on it.
  * @param tgtMetersPerUnit Meters per unit of `tgtScene` once the renderer scales the model.
+ * @param map Source bone to target bone, parents first; the first pair is the hips.
+ * @param feet The source's ankle bones, left then right.
+ *
+ * A source in its own units (not meters) works too: `strideScale` then converts its units
+ * to meters, which is what the stride measurement needs. An art character passes a clone of
+ * its own scene as the source and an identity map, which bakes its clips unchanged.
  */
 export function retargetClips(
   srcScene: Object3D,
   srcClips: AnimationClip[],
   tgtScene: Object3D,
-  tgtMetersPerUnit: number
+  tgtMetersPerUnit: number,
+  map: ReadonlyArray<readonly [string, string]> = BONE_MAP,
+  feet: readonly [string, string] = UAL_FEET
 ): RetargetResult {
   srcScene.updateMatrixWorld(true);
   tgtScene.updateMatrixWorld(true);
 
-  const pairs = BONE_MAP.map(([s, t]) => ({ src: find(srcScene, s), tgt: find(tgtScene, t) as Bone }));
+  const pairs = map.map(([s, t]) => ({ src: find(srcScene, s), tgt: find(tgtScene, t) as Bone }));
   const boneNames = pairs.map((p) => p.tgt.name);
   const n = pairs.length;
 
@@ -112,7 +123,7 @@ export function retargetClips(
     return q;
   };
 
-  const srcFeet = [find(srcScene, 'foot_l'), find(srcScene, 'foot_r')];
+  const srcFeet = [find(srcScene, feet[0]), find(srcScene, feet[1])];
   const footPos = new Vector3();
   const mixer = new AnimationMixer(srcScene);
   const clips = new Map<string, BakedClip>();

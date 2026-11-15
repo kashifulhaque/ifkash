@@ -21,6 +21,9 @@
 //   &ktx2test=1             (dev only) draws the KTX2 test model 3 m in front of the start position
 //                           and reports its texture formats, sizes and load times in the console
 //                           and in `window.__lfKtx2Test` (ADR 0010)
+//   &art=NAME               (dev only) draws the player as the art character NAME, baked by
+//                           `mise run art:character -- NAME` into static/latticefall/characters/
+//                           (render/actors/artClips.ts). Falls back to the Wayfarer if it fails to load
 //   &fakelock=X,Y,Z         frames a fixed point as if it were the locked-on actor's feet
 //
 //   &bench=1|AREA,AREA     (dev only) runs the performance benchmark (WP-081): flies a fixed camera path
@@ -62,6 +65,8 @@ export interface DevParams {
   benchCrowd: number | null;
   /** `&ktx2test=1` with `&dev=1`: draw the KTX2 test model. */
   ktx2Test: boolean;
+  /** `&art=NAME` with `&dev=1`: the art character to draw as the player, or null. */
+  art: string | null;
   spawn: string | null;
   seed: bigint | null;
   freeze: boolean;
@@ -118,6 +123,13 @@ export function parseDevParams(search: string): DevParams {
     else warnings.push(`seed=${rawSeed}: expected an unsigned 64-bit integer`);
   }
 
+  let art: string | null = null;
+  const rawArt = p.get('art');
+  if (dev && rawArt !== null) {
+    if (/^[a-z0-9_]+$/.test(rawArt)) art = rawArt;
+    else warnings.push(`art=${rawArt}: expected a character name (lowercase letters, digits, underscores)`);
+  }
+
   const rawHit = p.get('freezeonhit');
   const hitMs = rawHit !== null && /^\d+$/.test(rawHit) ? Number(rawHit) : null;
 
@@ -139,6 +151,7 @@ export function parseDevParams(search: string): DevParams {
     benchStep: dev && Number(p.get('benchstep')) > 0 ? Number(p.get('benchstep')) : null,
     benchCrowd: dev && p.has('benchcrowd') && Number(p.get('benchcrowd')) >= 0 ? Number(p.get('benchcrowd')) : null,
     ktx2Test: dev && p.get('ktx2test') === '1',
+    art,
     spawn: dev ? p.get('spawn') || null : null,
     seed: dev ? seed : null,
     freeze: dev && ['1', 'true'].includes(p.get('freeze') ?? ''),

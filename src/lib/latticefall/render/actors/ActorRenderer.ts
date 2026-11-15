@@ -61,6 +61,16 @@ import {
 } from './moveClips';
 import { BAKE_FPS, BONE_MAP, type BakedClip, retargetClips, sampleClip } from './retarget';
 import {
+  ART_ASSET_BASE,
+  ART_LOOPS,
+  MIXAMO_BONE_MAP,
+  MIXAMO_FEET,
+  artGuard,
+  artSpecFor,
+  type ArtSidecar
+} from './artClips';
+import { parseDevParams } from '../../dev/params';
+import {
   ProceduralActor,
   findChoreo,
   modelForId,
@@ -118,9 +128,24 @@ const PREVIEW_AIR_LIFT_M = 0.6;
 const STANCE_CALIBRATION = 1.15;
 
 const LOOP_CLIPS = { idle: 'Idle_Loop', walk: 'Walk_Loop', run: 'Jog_Fwd_Loop', sprint: 'Sprint_Loop' } as const;
+type LoopClips = { idle: string; walk: string; run: string; sprint: string };
+
+/** An art character without a sprint clip runs this much faster instead. */
+const ART_SPRINT_RATE = 1.3;
+
+/** What an art character (`&art=NAME`, see `artClips.ts`) adds to the template. */
+interface ArtKit {
+  sidecar: ArtSidecar;
+  /** The guard stance clip, if the character has one. */
+  guard: StanceClip | undefined;
+}
 
 interface Template {
   gltf: GLTF;
+  /** The idle and locomotion clip names. */
+  loops: LoopClips;
+  /** Set when the player is an art character instead of the Wayfarer. */
+  art: ArtKit | null;
   boneNames: string[];
   clips: Map<string, BakedClip>;
   bands: LocoBands;
@@ -270,6 +295,8 @@ export class ActorRenderer {
   private gesture: number | null = null;
   private gestureT = 0;
   readonly spellFx = new SpellFx();
+  /** `&art=NAME` with `&dev=1`: the art character to draw as the player, or null. */
+  private artName: string | null = null;
 
   constructor(scene: Scene, renderer: WebGLRenderer, opts: { resolveMove?: MoveResolver } = {}) {
     this.scene = scene;
@@ -278,6 +305,7 @@ export class ActorRenderer {
     if (typeof location !== 'undefined') {
       this.preview = parsePreview(location.search);
       this.propPreview = parsePropPreview(location.search);
+      this.artName = parseDevParams(location.search).art;
     }
     this.scene.add(this.spellFx.points);
     if (this.preview || import.meta.env.DEV) (globalThis as Record<string, unknown>).__lfActors = this;
@@ -301,6 +329,14 @@ export class ActorRenderer {
   }
 
   private async doLoad(): Promise<void> {
+    if (this.artName) {
+      try {
+        await this.loadArt(this.artName);
+        return;
+      } catch (err) {
+        console.error(`[latticefall] art character "${this.artName}" failed to load; drawing the Wayfarer`, err);
+      }
+    }
     const loader = createGltfLoader(this.renderer);
     const [wayfarer, ual, ual2] = await Promise.all([
       loader.loadAsync(`${ACTOR_ASSET_BASE}wayfarer.glb`),
@@ -331,6 +367,8 @@ export class ActorRenderer {
     };
     this.tpl = {
       gltf: wayfarer,
+      loops: LOOP_CLIPS,
+      art: null,
       boneNames: rt.boneNames,
       clips: rt.clips,
       bands: { walk: band(LOOP_CLIPS.walk), run: band(LOOP_CLIPS.run), sprint: band(LOOP_CLIPS.sprint) },
@@ -341,6 +379,65 @@ export class ActorRenderer {
     for (const name of Object.values(LOOP_CLIPS)) {
       if (!rt.clips.has(name)) throw new Error(`animation library has no clip ${name}`);
     }
+  }
+
+  /**
+   * Loads an art character baked by the pipeline: the GLB's own clips on its own skeleton,
+   * so the bake is an identity retarget that only resamples them to 30 Hz arrays and
+   * measures the strides. Its bones are found by Mixamo name (`MIXAMO_BONE_MAP`).
+   */
+  private async loadArt(name: string): Promise<void> {
+    const loader = createGltfLoader(this.renderer);
+    const [gltf, sidecar] = await Promise.all([
+      loader.loadAsync(`${ART_ASSET_BASE}${name}.glb`),
+      fetch(`${ART_ASSET_BASE}${name}.json`).then((r) => {
+        if (!r.ok) throw new Error(`${name}.json: HTTP ${r.status}`);
+        return r.json() as Promise<ArtSidecar>;
+      })
+    ]);
+    capSceneTextures(gltf.scene, getQuality().name);
+    gltf.scene.updateMatrixWorld(true);
+    const box = new Box3().setFromObject(gltf.scene, true);
+    const scale = WAYFARER_HEIGHT_M / (box.max.y - box.min.y);
+
+    // Every bone plays its clip, the mapped ones first so `boneIndex` finds them.
+    const core = new Set(MIXAMO_BONE_MAP.map(([m]) => m));
+    const extra: string[] = [];
+    gltf.scene.traverse((o) => {
+      if ((o as Bone).isBone && !core.has(o.name)) extra.push(o.name);
+    });
+    const map = [...MIXAMO_BONE_MAP.map(([m]) => [m, m] as const), ...extra.map((n) => [n, n] as const)];
+    const source = cloneSkinned(gltf.scene) as Object3D;
+    const rt = retargetClips(source, gltf.animations, gltf.scene, scale, map, MIXAMO_FEET);
+    for (const id of [ART_LOOPS.idle, ART_LOOPS.walk, ART_LOOPS.run]) {
+      if (!rt.clips.has(id)) throw new Error(`${name}.glb has no clip ${id}`);
+    }
+    const band = (id: string) => {
+      const clip = rt.clips.get(id)!;
+      if (clip.stanceSpeed <= 0) throw new Error(`no measurable stride for clip ${id}`);
+      const speed = clip.stanceSpeed * STANCE_CALIBRATION * rt.strideScale;
+      return { metersPerCycle: speed * clip.duration, speed };
+    };
+    // A sidecar from another bake must not name clips the GLB lacks.
+    sidecar.clips = Object.fromEntries(Object.entries(sidecar.clips).filter(([id]) => rt.clips.has(id)));
+    const run = band(ART_LOOPS.run);
+    const hasSprint = rt.clips.has(ART_LOOPS.sprint);
+    this.tpl = {
+      gltf,
+      loops: { ...ART_LOOPS, sprint: hasSprint ? ART_LOOPS.sprint : ART_LOOPS.run },
+      art: { sidecar, guard: artGuard((c) => rt.clips.has(c)) },
+      boneNames: rt.boneNames,
+      clips: rt.clips,
+      bands: {
+        walk: band(ART_LOOPS.walk),
+        run,
+        sprint: hasSprint ? band(ART_LOOPS.sprint) : { metersPerCycle: run.metersPerCycle, speed: run.speed * ART_SPRINT_RATE }
+      },
+      scale,
+      footLift: -box.min.y,
+      boneIndex: new Map(MIXAMO_BONE_MAP.map(([, logical], i) => [logical, i]))
+    };
+    console.info(`[latticefall] art character ${name}: ${sidecar.triangles} triangles, clips ${[...rt.clips.keys()].join(', ')}`);
   }
 
   /** Draws one actor. Returns false (and draws nothing) until the assets are loaded. */
@@ -447,7 +544,8 @@ export class ActorRenderer {
       materials
     };
     tpl.gltf.scene.updateMatrixWorld(true);
-    g.apply(this.equipped!, frame);
+    // An art character wears its own armor: it carries the weapons only.
+    g.apply(tpl.art ? { ...this.equipped!, head: 0, body: 0 } : this.equipped!, frame);
   }
 
   /** Hitstop: freezes the actor's drawn animation for `seconds` (never longer than a quarter second). */
@@ -730,7 +828,7 @@ export class ActorRenderer {
     }
     if (info) {
       const sig = `move:${info.anim}:${inst.moveRun}`;
-      const choice = this.pickSpec(tpl, info.anim, !!pv);
+      const choice = this.pickSpec(tpl, info.anim, !!pv, info);
       if (choice) {
         const frames = (c: string) => tpl.clips.get(c)!.frames;
         const len = specLength(choice, frames);
@@ -739,7 +837,12 @@ export class ActorRenderer {
         return sig;
       }
       this.warnMissing(info.anim);
-      this.genericPose(out, tpl, info, frame);
+      if (tpl.art) {
+        // The generic pose's offsets are for the Wayfarer's bone axes: hold the idle instead.
+        sampleClip(tpl.clips.get(tpl.loops.idle)!, 0, true, out.q, out.hips);
+      } else {
+        this.genericPose(out, tpl, info, frame);
+      }
       return sig;
     }
 
@@ -808,6 +911,7 @@ export class ActorRenderer {
    * else the weapon guard, else the fitted offsets when the library lacks both clips.
    */
   private guardPose(inst: Instance, tpl: Template, a: DrawActor): Pose {
+    if (tpl.art?.guard) return this.clipPose(tpl, tpl.art.guard, inst.idleT);
     const left = a.id === this.playerId && this.equipped ? weaponByNum(this.equipped.left) : undefined;
     const shield = left?.class === 'Shield' && (a.flags & FLAG_TWO_HANDING) === 0;
     const pick = shield && tpl.clips.has(SHIELD_GUARD_CLIP.clip) ? SHIELD_GUARD_CLIP : WEAPON_GUARD_CLIP;
@@ -841,7 +945,7 @@ export class ActorRenderer {
     let p = this.stanceCache.get(key);
     if (p) return p;
     p = newPose(tpl.boneNames.length);
-    sampleClip(tpl.clips.get(LOOP_CLIPS.idle)!, 0, true, p.q, p.hips);
+    sampleClip(tpl.clips.get(tpl.loops.idle)!, 0, true, p.q, p.hips);
     const e = new Euler();
     for (const o of offsets) {
       const i = tpl.boneIndex.get(o.bone);
@@ -855,7 +959,7 @@ export class ActorRenderer {
 
   /** The idle pose with gesture `id`'s offsets laid over it (`ui/gestures/gesturePose.ts`). */
   private gestureFrame(inst: Instance, tpl: Template, out: Pose, id: number, t: number): void {
-    const idle = tpl.clips.get(LOOP_CLIPS.idle)!;
+    const idle = tpl.clips.get(tpl.loops.idle)!;
     sampleClip(idle, t % idle.duration, true, out.q, out.hips);
     const g = gesturePose(id, t);
     const e = new Euler();
@@ -876,18 +980,19 @@ export class ActorRenderer {
       inst.phase = (inst.phase + w.cyclesPerSec * dt) % 1;
       inst.idleT += dt;
     }
+    const loops = tpl.loops;
     const layers: Array<[string, number, number]> = [
-      [LOOP_CLIPS.idle, w.idle, inst.idleT],
-      [LOOP_CLIPS.walk, w.walk, 0],
-      [LOOP_CLIPS.run, w.run, 0],
-      [LOOP_CLIPS.sprint, w.sprint, 0]
+      [loops.idle, w.idle, inst.idleT],
+      [loops.walk, w.walk, 0],
+      [loops.run, w.run, 0],
+      [loops.sprint, w.sprint, 0]
     ];
     const scratch = (this.sample ??= newPose(inst.bones.length));
     let total = 0;
     for (const [name, weight, idleT] of layers) {
       if (weight <= 0) continue;
       const clip = tpl.clips.get(name)!;
-      const t = name === LOOP_CLIPS.idle ? idleT : inst.phase * clip.duration;
+      const t = name === loops.idle ? idleT : inst.phase * clip.duration;
       if (total === 0) {
         sampleClip(clip, t, true, out.q, out.hips);
       } else {
@@ -932,7 +1037,7 @@ export class ActorRenderer {
    * purpose; it keeps gameplay unblocked by art.
    */
   private genericPose(out: Pose, tpl: Template, info: MoveAnimInfo, frame: number): void {
-    const idle = tpl.clips.get(LOOP_CLIPS.idle)!;
+    const idle = tpl.clips.get(tpl.loops.idle)!;
     sampleClip(idle, 0, true, out.q, out.hips);
     const k = genericKeys(info);
     let a = GENERIC_KEYS[0];
@@ -960,7 +1065,8 @@ export class ActorRenderer {
    * The first clip choice for `anim` whose clips are all loaded. The dev preview also takes a
    * raw clip name (`&anim=move:Sword_Regular_A`).
    */
-  private pickSpec(tpl: Template, anim: string, preview: boolean): ClipSpec | undefined {
+  private pickSpec(tpl: Template, anim: string, preview: boolean, info?: MoveAnimInfo): ClipSpec | undefined {
+    if (tpl.art) return artSpecFor(anim, info?.strikeStart !== undefined, tpl.art.sidecar.clips);
     const found = clipsForAnim(anim)?.find((c) => c.segs.every((g) => tpl.clips.has(g.clip)));
     if (found || !preview || !tpl.clips.has(anim)) return found;
     return { segs: [{ clip: anim }], contact: 0 };
@@ -969,6 +1075,10 @@ export class ActorRenderer {
   private warnMissing(anim: string): void {
     if (!import.meta.env.DEV || this.warned.has(anim)) return;
     this.warned.add(anim);
+    if (this.tpl?.art) {
+      console.warn(`[latticefall] art character ${this.tpl.art.sidecar.name} has no clip for move anim "${anim}" (see ART_ANIMS in artClips.ts); holding the idle`);
+      return;
+    }
     const mapped = clipsForAnim(anim);
     const clips = mapped?.flatMap((c) => c.segs.map((g) => g.clip)).join(', ');
     console.warn(`[latticefall] no clip for move anim "${anim}"${clips ? ` (mapped to ${clips}, not all loaded)` : ''}; using the generic pose`);

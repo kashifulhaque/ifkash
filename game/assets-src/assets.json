@@ -26,6 +26,9 @@
     {"src": "kaykit-dungeon-remastered/chest.glb", "out": "kits/kaykit-dungeon-remastered/chest.glb", "copy": true},
     {"src": "procedural/lantern.glb", "out": "props/procedural/lantern.glb"},
     {"src": "art/hollowhearth.json", "out": "art/hollowhearth.json", "copy": true},
+    {"src": "waking-hollow-cave/cave.glb", "out": "kits/waking-hollow/cave.glb", "maxTextureSize": 1024},
+    {"src": "waking-hollow-cave/hollow_wall.glb", "out": "kits/waking-hollow/hollow_wall.glb", "maxTextureSize": 512},
+    {"src": "art/waking_hollow.json", "out": "art/waking_hollow.json", "copy": true},
     {"src": "polyhaven-stone-fire-pit/stone_fire_pit_2k.glb", "out": "dev/stone_fire_pit.glb", "maxTextureSize": 1024},
     {"src": "characters/standin/standin.glb", "out": "characters/standin.glb", "maxTextureSize": 1024},
     {"src": "characters/standin/standin.json", "out": "characters/standin.json", "copy": true}

@@ -1,0 +1,90 @@
+{
+  "comment": "Waking Hollow's cave kit, built by build_cave.py. Coordinates are game meters: Y up, the cave runs north along +Z. Rooms must cover exactly the open cells of layout.ron's floor blocks; the script stops if they don't. `grow` widens a room's carving box into a neighbor (x0, x1, z0, z1) so the rooms join; it may only grow into other open space. `ceiling` is the rock ceiling's height before the rock noise. Light intensities are Three.js candela with decay 1.6; the bake uses the same lights.",
+  "voxel_m": 0.32,
+  "seed": 20261115,
+  "rooms": [
+    {"name": "wake", "x": [-8, 8], "z": [-8, 10], "ceiling": 7.0},
+    {"name": "corr_1", "x": [-2, 2], "z": [10, 22], "ceiling": 5.0, "grow": [0, 0, 0.6, 0.6]},
+    {"name": "first_fight", "x": [-8, 8], "z": [22, 38], "ceiling": 7.5},
+    {"name": "alcove", "x": [8, 14], "z": [26, 34], "ceiling": 4.2, "grow": [0.6, 0, 0, 0]},
+    {"name": "corr_2", "x": [-2, 2], "z": [38, 44], "ceiling": 5.0, "grow": [0, 0, 0.6, 0.6]},
+    {"name": "hall", "x": [-10, 10], "z": [44, 62], "ceiling": 9.0},
+    {"name": "closet", "x": [-16, -10], "z": [50, 54], "ceiling": 2.95, "grow": [0, 0.6, 0, 0]},
+    {"name": "corr_3", "x": [-2, 2], "z": [62, 68], "ceiling": 3.9, "grow": [0, 0, 0.6, 0.6]},
+    {"name": "twist", "x": [-8, 8], "z": [68, 82], "ceiling": 7.0},
+    {"name": "corr_4", "x": [-2, 2], "z": [82, 86], "ceiling": 5.0, "grow": [0, 0, 0.6, 0.6]},
+    {"name": "antechamber", "x": [-8, 8], "z": [86, 96], "ceiling": 6.5},
+    {"name": "gate_neck", "x": [-4, 4], "z": [96, 98], "ceiling": 5.0, "grow": [0, 0, 0.6, 0.6]},
+    {"name": "arena", "x": [-10, 8], "z": [98, 116], "ceiling": 8.0, "corner_m": 0.8, "dome": {"rise_m": 4.5}}
+  ],
+  "sections": [
+    {"name": "s0_wake", "z": [-20, 13]},
+    {"name": "s1_fight", "z": [13, 39]},
+    {"name": "s2_hall", "z": [39, 63]},
+    {"name": "s3_twist", "z": [63, 84]},
+    {"name": "s4_ante", "z": [84, 96.3]},
+    {"name": "s5_arena", "z": [96.3, 130]}
+  ],
+  "look": {
+    "comment": "Runtime fog, light, and grade for the art manifest; see ArtLook and ArtGrade in src/lib/latticefall/render/kits/art.ts.",
+    "fog_color": [0.012, 0.013, 0.017],
+    "fog_near_m": 6.0,
+    "fog_far_m": 38.0,
+    "sun_color": [0.55, 0.62, 0.75],
+    "sun_intensity": 0.1,
+    "ambient_color": [0.45, 0.48, 0.56],
+    "ambient_intensity": 0.6,
+    "haze": 0.25
+  },
+  "grade": {"exposure": 1.7, "saturation": 0.72, "contrast": 1.08, "lift": [0.006, 0.008, 0.014], "gain": [1.04, 0.99, 0.92]},
+  "bake": {"dark_floor": 0.42},
+  "masonry": {
+    "comment": "Built stone instead of rock: the gate facade (z beyond facade_z) and the arena, below top_m.",
+    "facade_z": 95.6,
+    "top_m": 5.4
+  },
+  "collapse": {"room": "corr_3", "boulders": 9, "slab": {"from": [-2.4, 4.2, 63.6], "to": [2.4, 3.3, 66.8], "width_m": 2.6}},
+  "dressing": {
+    "stalactites_per_m2": 0.05,
+    "roots_per_m2": {"first_fight": 0.03, "hall": 0.05, "twist": 0.045, "antechamber": 0.02, "wake": 0.02},
+    "stalagmites_per_m": 0.12,
+    "rubble_per_m": 0.9,
+    "bones": [
+      [-7.0, 27.0], [7.2, 36.6], [8.6, 46.2], [-8.8, 60.5], [-7.0, 79.8], [6.9, 70.0],
+      [6.6, 94.5], [-9.0, 114.6], [7.0, 99.5], [6.8, 114.8], [-15.0, 50.7]
+    ]
+  },
+  "lantern_light": {"color": "#ffae5c", "intensity": 7.0, "distance": 15, "at": [0, 1.5, 0.44]},
+  "torches": [
+    {"name": "wake_exit", "from": [4.2, 8.0], "dir": [0, 1]},
+    {"name": "fight_west", "from": [-6.0, 29.0], "dir": [-1, 0]},
+    {"name": "fight_north", "from": [-4.5, 36.0], "dir": [0, 1]},
+    {"name": "hall_east", "from": [8.0, 49.0], "dir": [1, 0]},
+    {"name": "hall_west", "from": [-8.0, 59.0], "dir": [-1, 0]},
+    {"name": "hall_crack", "from": [-7.0, 55.4], "dir": [-1, 0]},
+    {"name": "twist_far", "from": [6.0, 79.0], "dir": [1, 0], "intensity": 6.5, "flicker": 0.5},
+    {"name": "ante_gate_w", "from": [-6.0, 94.0], "dir": [0, 1]},
+    {"name": "ante_gate_e", "from": [6.0, 94.0], "dir": [0, 1]},
+    {"name": "arena_west", "from": [-8.0, 107.0], "dir": [-1, 0]},
+    {"name": "arena_east", "from": [6.0, 107.0], "dir": [1, 0]},
+    {"name": "arena_nw", "from": [-6.0, 114.0], "dir": [0, 1]},
+    {"name": "arena_ne", "from": [4.0, 114.0], "dir": [0, 1]}
+  ],
+  "torch_light": {"color": "#ff9a4a", "intensity": 12.5, "distance": 11, "flicker": 0.22},
+  "candles": [
+    {"name": "ledge", "pos": [1.55, 0.0, 15.5], "count": 5},
+    {"name": "alcove_salts", "pos": [13.5, 0.0, 31.6], "count": 6},
+    {"name": "closet", "pos": [-15.4, 0.0, 53.4], "count": 4, "light": {"intensity": 3.0, "distance": 3.5}},
+    {"name": "crack", "pos": [-9.0, 0.0, 49.5], "count": 5},
+    {"name": "ante_corner", "pos": [-7.4, 0.0, 87.6], "count": 7},
+    {"name": "wake_shrine", "pos": [-2.2, 0.0, -7.4], "count": 5},
+    {"name": "pillar_nw", "pillar": "pillar_nw", "count": 4, "light": false},
+    {"name": "pillar_ne", "pillar": "pillar_ne", "count": 4, "light": false},
+    {"name": "pillar_sw", "pillar": "pillar_sw", "count": 4},
+    {"name": "pillar_se", "pillar": "pillar_se", "count": 4}
+  ],
+  "candle_light": {"color": "#ffb768", "intensity": 4.3, "distance": 5.5, "flicker": 0.15},
+  "extra_lights": [
+    {"name": "arena_oculus", "pos": [-1.0, 11.0, 107.0], "color": "#9cb2cf", "intensity": 30.0, "distance": 24, "flicker": 0}
+  ]
+}

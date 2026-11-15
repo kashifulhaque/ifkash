@@ -38,6 +38,10 @@
       {
         "bytes": 5480,
         "path": "hollowhearth.json"
+      },
+      {
+        "bytes": 7234,
+        "path": "waking_hollow.json"
       }
     ],
     "characters": [
@@ -120,6 +124,14 @@
       {
         "bytes": 81412,
         "path": "kaykit-dungeon-remastered/chest.glb"
+      },
+      {
+        "bytes": 11446368,
+        "path": "waking-hollow/cave.glb"
+      },
+      {
+        "bytes": 649008,
+        "path": "waking-hollow/hollow_wall.glb"
       }
     ],
     "props": [

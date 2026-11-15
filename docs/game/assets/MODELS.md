@@ -5,7 +5,7 @@ models staged for a later integration phase: where each comes from, its license,
 integration needs. It was written on 2026-11-14 on the branch
 `claude/game-models-staging-b685dc`.
 
-**One test area is wired into the game: Hollowhearth.** GitHub issue 84 added the engine
+**Two areas are wired into the game: Hollowhearth and Waking Hollow.** GitHub issue 84 added the engine
 path that loads model files, described in
 [Model files in the engine](#model-files-in-the-engine), and brought over only the files
 that area needs. Every other area draws its greybox, and the rest of the staged files stay
@@ -40,8 +40,15 @@ Data names a model in two places:
   - `instances` fills a named layout box with copies of a model. The copies are scaled to
     the box (`stretch`) or keep their proportions (`contain`), so the drawing follows the
     collider.
-  - `props` places models freely, with no collider.
-  - `entities` names the Lantern's model and each NPC's figure.
+  - `props` places models freely, with no collider. A prop with `covers` replaces those
+    layout instances' greybox, so one model built around the colliders can stand in for
+    many boxes.
+  - `entities` names the Lantern's model, each NPC's figure, and the hollow wall's model.
+  - `lights`, `look`, and `grade` give fixed light spots (lit by a small pool of point
+    lights), fog and ambient overrides, and a color grade. They're render data, like the
+    rest of the file.
+  - A model with `"nodes": true` keeps each mesh node as its own part, so the renderer can
+    cull a large world-space model piece by piece.
 
 The following rules apply to every model:
 
@@ -66,6 +73,11 @@ To add a model to an area, do the following:
    `static/latticefall/`.
 5. Run the benchmark for the area, `/game?dev=1&bench=AREA`, and check the draw calls and
    triangles against [the performance budgets](../01-architecture.md#performance-budgets).
+
+Waking Hollow draws a cave kit built by script in headless Blender from its collision
+layout, with five CC0 Poly Haven textures and light baked into vertex colors. For its
+sources, see `game/assets-src/waking-hollow-cave/SOURCE.md`; to rebuild it, run
+`mise run art:cave`.
 
 Hollowhearth uses 16 KayKit Dungeon Remastered models (15 baked to vertex colors and one
 chest that keeps its palette texture), the procedural Lantern, and the five Quaternius NPC

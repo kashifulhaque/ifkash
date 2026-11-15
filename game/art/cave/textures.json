@@ -1,0 +1,48 @@
+{
+  "comment": "CC0 scanned textures for Waking Hollow's cave kit, from Poly Haven (https://polyhaven.com/license). fetch_textures.sh downloads them to ~/cinderheart-art/cave-textures/ and checks each MD5. Sources and licenses: game/assets-src/waking-hollow-cave/SOURCE.md.",
+  "materials": {
+    "rock": {
+      "asset": "dark_rock_02",
+      "author": "Amal Kumar",
+      "tile_m": 3.0
+    },
+    "dirt": {
+      "asset": "brown_mud_03",
+      "author": "Rob Tuytel",
+      "tile_m": 3.0
+    },
+    "masonry": {
+      "asset": "stone_brick_wall_001",
+      "author": "Dimitrios Savva (photography), Rico Cilliers (processing)",
+      "tile_m": 2.5
+    },
+    "flagstone": {
+      "asset": "monastery_stone_floor",
+      "author": "Amal Kumar",
+      "tile_m": 3.0
+    },
+    "bark": {
+      "asset": "bark_brown_02",
+      "author": "Rob Tuytel",
+      "tile_m": 1.5,
+      "size_px": 512
+    }
+  },
+  "files": {
+    "dark_rock_02_diff_1k.jpg": "92e53acc3f9878b525d0234d8c51fadf",
+    "dark_rock_02_nor_gl_1k.jpg": "ddae04d066a75ff94b7dd34e8c0f9b74",
+    "dark_rock_02_arm_1k.jpg": "bfb86b730d4a917a55b7e98e843edaa1",
+    "brown_mud_03_diff_1k.jpg": "b99d14c26debf660457b9497f2facec6",
+    "brown_mud_03_nor_gl_1k.jpg": "97e4449786551a25c69587a864be6eb3",
+    "brown_mud_03_arm_1k.jpg": "7b38c1d97fc073b4128982314b27af27",
+    "stone_brick_wall_001_diff_1k.jpg": "fe05d5a4be3e01e7d922e7e935d8dfd9",
+    "stone_brick_wall_001_nor_gl_1k.jpg": "a389d00861e02eef39967dde975a8af4",
+    "stone_brick_wall_001_arm_1k.jpg": "431eade59e94c5900d52aed5898b0444",
+    "monastery_stone_floor_diff_1k.jpg": "8e748f767d8e478438ef748833365754",
+    "monastery_stone_floor_nor_gl_1k.jpg": "257ccdbbe1c2a23f74cece55b81861ac",
+    "monastery_stone_floor_arm_1k.jpg": "7ef459c183e5efb94b48e32042182e24",
+    "bark_brown_02_diff_1k.jpg": "6669cca520594bdca19f94084984ab72",
+    "bark_brown_02_nor_gl_1k.jpg": "1cad3fe0349a44df2d4d1c2859c79920",
+    "bark_brown_02_arm_1k.jpg": "6a566390a8930454c9ad4056273b08fb"
+  }
+}

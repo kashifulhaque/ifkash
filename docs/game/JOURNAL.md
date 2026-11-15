@@ -38,6 +38,39 @@ Copy this block to the top of the entries and fill it in as you go:
 
 ## Entries
 
+### 2026-11-15: tutorial-cave (tutorial plan, phase 4 environment)
+
+- **Orchestrator:** Opus 5.5, a side session of the tutorial planning session
+- **Branch:** `claude/tutorial-cave-4de6fd`, started from `main` at `9323653`
+- **Target:** Waking Hollow's finished cave environment in a 2010s souls look:
+  [The cave kit](tutorial-production-plan.md#the-cave-kit).
+- **Work:**
+  - `game/art/cave/build_cave.py` (`mise run art:cave`) builds the kit in headless
+    Blender from `layout.ron` and `cave.json`, bakes light into vertex colors with
+    Cycles, and writes the art manifest. It stops if the rooms don't match the floor
+    colliders. Five CC0 Poly Haven textures; sources in
+    `game/assets-src/waking-hollow-cave/SOURCE.md`.
+  - Renderer: art-manifest props can `covers` greybox instances; `"nodes": true` keeps a
+    model's mesh nodes as separate parts for culling; `lights` (a point-light pool sized by
+    the quality preset, `render/lighting/lightPool.ts`), `look` (fog and ambient
+    overrides), and `grade` (ACES and a grade through `CustomToneMapping`,
+    `render/lighting/grade.ts`); `entities.hollow_wall` model; a mist shader for every
+    boss fog gate.
+  - Fix: `modelCache.flatten` dequantizes meshopt positions before it applies the node
+    transform. Before, any model larger than its quantization box was crushed.
+  - The simulation, level data, and goldens are unchanged.
+- **Verified:** `bun run check`, `bun run build`, `mise run game:test`,
+  `mise run game:validate`, `mise run game:wasm` (WASM matches native replays).
+  `&bench=waking_hollow` passes: max 137 draw calls, 177K triangles, 18.9 MB textures.
+  Screenshots of every room from a headless Chrome on port 5182.
+- **Not verified:** frame time on the integrated-graphics target; a pad play-through (the
+  in-app browser pane was hidden, so the session took screenshots with fixed cameras).
+- **Waiting on the owner:** a pad check of brightness, the cracked wall, and the camera
+  in low corridors.
+- **Next steps:** keep the camera under the art ceilings (it collides only with the
+  simulation's colliders); add the enemies session's chest-lantern light to the arena
+  once it lands.
+
 ### 2026-11-15: phase1-pipeline (tutorial plan, phase 1 engineering)
 
 - **Orchestrator:** Opus 5.5, a side session of the tutorial planning session

@@ -116,6 +116,15 @@ env = { RUSTUP_TOOLCHAIN = "1.99.1" }
 description = "Bake a Mixamo character and its clips into the game (mise run art:character -- NAME)"
 run = "bash game/scripts/art-character.sh"
 
+[tasks."art:cave"]
+env = { RUSTUP_TOOLCHAIN = "1.99.1" }
+description = "Build Waking Hollow's cave kit in headless Blender and compress it (game/art/cave/)"
+run = """
+bash game/art/cave/fetch_textures.sh
+blender --background --factory-startup --python-exit-code 1 --python game/art/cave/build_cave.py
+cd game && cargo run -q -p lf-tools -- assets
+"""
+
 [tasks."art:standin"]
 description = "Write the pipeline's stand-in Mixamo files to ~/cinderheart-art/standin/"
 run = "blender --background --factory-startup --python-exit-code 1 --python game/art/blender/make_standin.py -- ~/cinderheart-art/standin"

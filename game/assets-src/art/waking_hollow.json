@@ -1,0 +1,416 @@
+{
+  "format": 1,
+  "comment": "Written by game/art/cave/build_cave.py from cave.json; edit those, not this file.",
+  "models": {
+    "cave": {
+      "file": "kits/waking-hollow/cave.glb",
+      "shadow": false,
+      "nodes": true
+    },
+    "hollow_wall": {
+      "file": "kits/waking-hollow/hollow_wall.glb",
+      "shadow": false
+    },
+    "lantern": {
+      "file": "props/procedural/lantern.glb"
+    }
+  },
+  "props": [
+    {
+      "model": "cave",
+      "pos": [
+        0,
+        0,
+        0
+      ],
+      "covers": [
+        "floor_-1_19",
+        "floor_-1_31",
+        "floor_-1_41",
+        "floor_-1_5",
+        "floor_-2_48",
+        "floor_-4_-4",
+        "floor_-4_11",
+        "floor_-4_13",
+        "floor_-4_17",
+        "floor_-4_34",
+        "floor_-4_43",
+        "floor_-5_22",
+        "floor_-5_27",
+        "floor_-5_49",
+        "floor_-8_25",
+        "jump_ledge",
+        "pillar_ne",
+        "pillar_nw",
+        "pillar_se",
+        "pillar_sw",
+        "wall_-2_20",
+        "wall_-2_32",
+        "wall_-2_6",
+        "wall_-5_-4",
+        "wall_-5_-5",
+        "wall_-5_10",
+        "wall_-5_11",
+        "wall_-5_19",
+        "wall_-5_33",
+        "wall_-5_34",
+        "wall_-5_41",
+        "wall_-5_43",
+        "wall_-5_5",
+        "wall_-6_21",
+        "wall_-6_22",
+        "wall_-6_28",
+        "wall_-6_31",
+        "wall_-6_48",
+        "wall_-6_49",
+        "wall_-6_58",
+        "wall_-9_24",
+        "wall_-9_25",
+        "wall_-9_27",
+        "wall_1_10",
+        "wall_1_19",
+        "wall_1_20",
+        "wall_1_21",
+        "wall_1_31",
+        "wall_1_32",
+        "wall_1_33",
+        "wall_1_41",
+        "wall_1_5",
+        "wall_1_6",
+        "wall_2_48",
+        "wall_4_-4",
+        "wall_4_11",
+        "wall_4_12",
+        "wall_4_17",
+        "wall_4_18",
+        "wall_4_34",
+        "wall_4_43",
+        "wall_4_49",
+        "wall_5_22",
+        "wall_7_13"
+      ]
+    }
+  ],
+  "entities": {
+    "lantern": {
+      "model": "lantern",
+      "sway": "cage",
+      "light": {
+        "color": "#ffae5c",
+        "intensity": 7.0,
+        "distance": 15,
+        "at": [
+          0,
+          1.5,
+          0.44
+        ]
+      }
+    },
+    "hollow_wall": {
+      "model": "hollow_wall"
+    }
+  },
+  "lights": [
+    {
+      "name": "wake_exit",
+      "pos": [
+        4.2,
+        2.89,
+        9.866
+      ],
+      "color": "#ff9a4a",
+      "intensity": 12.5,
+      "distance": 11,
+      "flicker": 0.22
+    },
+    {
+      "name": "fight_west",
+      "pos": [
+        -7.671,
+        2.89,
+        29.0
+      ],
+      "color": "#ff9a4a",
+      "intensity": 12.5,
+      "distance": 11,
+      "flicker": 0.22
+    },
+    {
+      "name": "fight_north",
+      "pos": [
+        -4.5,
+        2.89,
+        37.827
+      ],
+      "color": "#ff9a4a",
+      "intensity": 12.5,
+      "distance": 11,
+      "flicker": 0.22
+    },
+    {
+      "name": "hall_east",
+      "pos": [
+        9.523,
+        2.89,
+        49.0
+      ],
+      "color": "#ff9a4a",
+      "intensity": 12.5,
+      "distance": 11,
+      "flicker": 0.22
+    },
+    {
+      "name": "hall_west",
+      "pos": [
+        -9.933,
+        2.89,
+        59.0
+      ],
+      "color": "#ff9a4a",
+      "intensity": 12.5,
+      "distance": 11,
+      "flicker": 0.22
+    },
+    {
+      "name": "hall_crack",
+      "pos": [
+        -9.568,
+        2.89,
+        55.4
+      ],
+      "color": "#ff9a4a",
+      "intensity": 12.5,
+      "distance": 11,
+      "flicker": 0.22
+    },
+    {
+      "name": "twist_far",
+      "pos": [
+        7.737,
+        2.89,
+        79.0
+      ],
+      "color": "#ff9a4a",
+      "intensity": 6.5,
+      "distance": 11,
+      "flicker": 0.5
+    },
+    {
+      "name": "ante_gate_w",
+      "pos": [
+        -6.0,
+        2.89,
+        95.32
+      ],
+      "color": "#ff9a4a",
+      "intensity": 12.5,
+      "distance": 11,
+      "flicker": 0.22
+    },
+    {
+      "name": "ante_gate_e",
+      "pos": [
+        6.0,
+        2.89,
+        95.32
+      ],
+      "color": "#ff9a4a",
+      "intensity": 12.5,
+      "distance": 11,
+      "flicker": 0.22
+    },
+    {
+      "name": "arena_west",
+      "pos": [
+        -9.32,
+        2.89,
+        107.0
+      ],
+      "color": "#ff9a4a",
+      "intensity": 12.5,
+      "distance": 11,
+      "flicker": 0.22
+    },
+    {
+      "name": "arena_east",
+      "pos": [
+        7.32,
+        2.89,
+        107.0
+      ],
+      "color": "#ff9a4a",
+      "intensity": 12.5,
+      "distance": 11,
+      "flicker": 0.22
+    },
+    {
+      "name": "arena_nw",
+      "pos": [
+        -6.0,
+        2.89,
+        115.32
+      ],
+      "color": "#ff9a4a",
+      "intensity": 12.5,
+      "distance": 11,
+      "flicker": 0.22
+    },
+    {
+      "name": "arena_ne",
+      "pos": [
+        4.0,
+        2.89,
+        115.32
+      ],
+      "color": "#ff9a4a",
+      "intensity": 12.5,
+      "distance": 11,
+      "flicker": 0.22
+    },
+    {
+      "name": "ledge",
+      "pos": [
+        1.55,
+        0.685,
+        15.5
+      ],
+      "color": "#ffb768",
+      "intensity": 4.3,
+      "distance": 5.5,
+      "flicker": 0.15
+    },
+    {
+      "name": "alcove_salts",
+      "pos": [
+        13.5,
+        0.72,
+        31.6
+      ],
+      "color": "#ffb768",
+      "intensity": 4.3,
+      "distance": 5.5,
+      "flicker": 0.15
+    },
+    {
+      "name": "closet",
+      "pos": [
+        -15.4,
+        0.716,
+        53.4
+      ],
+      "color": "#ffb768",
+      "intensity": 3.0,
+      "distance": 3.5,
+      "flicker": 0.15
+    },
+    {
+      "name": "crack",
+      "pos": [
+        -9.0,
+        0.721,
+        49.5
+      ],
+      "color": "#ffb768",
+      "intensity": 4.3,
+      "distance": 5.5,
+      "flicker": 0.15
+    },
+    {
+      "name": "ante_corner",
+      "pos": [
+        -7.4,
+        0.731,
+        87.6
+      ],
+      "color": "#ffb768",
+      "intensity": 4.3,
+      "distance": 5.5,
+      "flicker": 0.15
+    },
+    {
+      "name": "wake_shrine",
+      "pos": [
+        -2.2,
+        0.732,
+        -7.4
+      ],
+      "color": "#ffb768",
+      "intensity": 4.3,
+      "distance": 5.5,
+      "flicker": 0.15
+    },
+    {
+      "name": "pillar_sw",
+      "pos": [
+        -5.0,
+        1.068,
+        103.0
+      ],
+      "color": "#ffb768",
+      "intensity": 4.3,
+      "distance": 5.5,
+      "flicker": 0.15
+    },
+    {
+      "name": "pillar_se",
+      "pos": [
+        5.0,
+        1.092,
+        103.0
+      ],
+      "color": "#ffb768",
+      "intensity": 4.3,
+      "distance": 5.5,
+      "flicker": 0.15
+    },
+    {
+      "name": "arena_oculus",
+      "pos": [
+        -1.0,
+        11.0,
+        107.0
+      ],
+      "color": "#9cb2cf",
+      "intensity": 30.0,
+      "distance": 24,
+      "flicker": 0
+    }
+  ],
+  "look": {
+    "fog_color": [
+      0.012,
+      0.013,
+      0.017
+    ],
+    "fog_near_m": 6.0,
+    "fog_far_m": 38.0,
+    "sun_color": [
+      0.55,
+      0.62,
+      0.75
+    ],
+    "sun_intensity": 0.1,
+    "ambient_color": [
+      0.45,
+      0.48,
+      0.56
+    ],
+    "ambient_intensity": 0.6,
+    "haze": 0.25
+  },
+  "grade": {
+    "exposure": 1.7,
+    "saturation": 0.72,
+    "contrast": 1.08,
+    "lift": [
+      0.006,
+      0.008,
+      0.014
+    ],
+    "gain": [
+      1.04,
+      0.99,
+      0.92
+    ]
+  }
+}

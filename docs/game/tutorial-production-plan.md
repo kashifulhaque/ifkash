@@ -284,6 +284,40 @@ texture, and 13 clips that travel and jitter. `mise run art:character -- standin
 and `&art=standin` draws it. The stand-in is made by script, so it carries no third-party
 license.
 
+## The cave kit
+
+Phase 4's environment is built: Waking Hollow draws a script-built cave in place of its
+greybox. The simulation is unchanged. The art lines up with the colliders, and the
+build script stops if the rooms in its config don't match the layout's floor blocks.
+
+- **Kit:** `game/art/cave/build_cave.py` carves the rooms with a voxel remesh in headless
+  Blender, pushes the rock outward with noise and strata, and adds the floors, the jump
+  ledge, a collapsed corridor, the gate facade and the arena in old masonry, four broken
+  pillars, a floor ring, stalactites, stalagmites, rubble, hanging roots, bones, torches,
+  and candles. Rock never stands more than 0.15 m in front of a wall collider, and
+  dressing in walkable space is low or above head height. The hollow wall is a bricked-up
+  plug that sinks into the floor when struck.
+- **Surfaces:** five CC0 Poly Haven materials (wet rock, mud, masonry, flagstones, bark)
+  at 1K, compressed to KTX2. Sources:
+  [`SOURCE.md`](../../game/assets-src/waking-hollow-cave/SOURCE.md).
+- **Light:** Cycles bakes occlusion and the torch, candle, and Lantern light into vertex
+  colors. In the game, a pool of point lights (3, 6, or 8 by quality preset) follows the
+  player between the 22 light spots. A darker fog, a cool ambient, ACES tone mapping, and
+  a desaturated grade come from the art manifest. A cool shaft of light falls from the
+  arena's dome. The boss's chest lantern is the enemies' work, not the kit's.
+- **Budgets:** the benchmark (`&bench=waking_hollow`, medium preset, 1920 x 1080, with
+  the bench's 39-actor crowd) passes: at most 137 draw calls and 177,000 triangles, and
+  18.9 MB of texture memory. The kit downloads 12.1 MB (`cave.glb` 11.4 MB and
+  `hollow_wall.glb` 0.6 MB). Frame time wasn't measured on the integrated-graphics
+  target.
+- **Rebuild:** `mise run art:cave` fetches the textures, runs the script, and compresses
+  the output. Light and fog values are in `game/art/cave/cave.json`.
+
+What needs a pad check: whether the cave is too dark on a real screen, whether the
+cracked wall reads as breakable, and the camera in the low corridors. The camera collides
+with the simulation's colliders, not the art, so at a steep angle it can rise above a
+corridor's ceiling and see over it.
+
 ## Decisions for the owner
 
 1. **NPC and new content.** Do you want the wounded knight at L01, a relic, and a

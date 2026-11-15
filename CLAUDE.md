@@ -61,6 +61,7 @@ mise run game:wasm        # build the WASM core into src/lib/latticefall/wasm/ (
 mise run game:test        # cargo test --workspace in game/
 mise run game:lint        # clippy and rustfmt in game/
 mise run game:validate    # validate game content data
+mise run game:ktx         # one time, for textured assets only: install the KTX2 encoder (ADR 0010)
 
 # Checks / builds
 bun run check             # svelte-check — the frontend typecheck (run before finishing FE work)

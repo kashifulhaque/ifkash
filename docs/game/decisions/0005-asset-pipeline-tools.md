@@ -1,6 +1,6 @@
 # 0005: Asset pipeline tools
 
-- **Status:** Accepted
+- **Status:** Accepted. [ADR 0010](0010-ktx2-textures.md) replaces the `toktx` decision.
 - **Date:** 2026-11-12
 - **WP:** WP-013
 
@@ -19,11 +19,11 @@ Use these tool dependencies:
   `lf-tools assets` runs `node_modules/.bin/gltf-transform optimize` (and falls back to
   `bunx @gltf-transform/cli@4.5.1`). Its `@gltf-transform/core` dependency is also used by
   `game/scripts/trim-glb.mjs`, which strips meshes and unused clips from a source library.
-- **KTX-Software's `toktx`**, a system tool needed only when a source file has textures.
-  `lf-tools assets` checks the GLB for images and passes `--texture-compress ktx2` only then,
-  and fails with a pointer to this ADR if `toktx` is missing. Install it from the official
-  KhronosGroup/KTX-Software release. It isn't in Homebrew core (`brew install ktx-software`
-  doesn't exist), and no current asset has textures, so it is not installed yet.
+- **KTX-Software's `ktx` tool**, needed only when a source file has textures.
+  `lf-tools assets` checks the GLB for images and passes `--texture-compress ktx2` only then.
+  This ADR first named `toktx`, which gltf-transform 4.5 doesn't run. For the tool, its
+  version, the install command, and the encoding rules, see
+  [ADR 0010](0010-ktx2-textures.md).
 - **Quaternius Universal Animation Library**, Standard edition (CC0), downloaded from
   `https://quaternius.itch.io/universal-animation-library`. Its license and source are
   recorded in `game/assets-src/universal-animation-library/`.
@@ -36,9 +36,8 @@ so armor tints can edit them. Meshopt compresses geometry and animation.
 
 - `bun install` provides the glTF tooling; contributors who don't touch art need nothing else.
 - Output in `static/latticefall/` is committed, so CI and deploys don't run the pipeline.
-- The first textured asset needs `toktx` installed, and the browser needs the Basis
-  transcoder in `static/latticefall/basis/` (the renderer's `KTX2Loader` already points
-  there). Neither is set up yet.
+- Textured assets need the `ktx` tool, and the browser needs the Basis transcoder in
+  `static/latticefall/basis/`. [ADR 0010](0010-ktx2-textures.md) sets up both.
 - Credits for the animation library come from `game/assets-src/universal-animation-library/`
   through `lf-tools credits` when that command exists.
 

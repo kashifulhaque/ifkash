@@ -17,8 +17,12 @@ export const BASIS_PATH = '/latticefall/basis/';
 
 const ktx2Loaders = new WeakMap<WebGLRenderer, KTX2Loader>();
 
+/** The renderer that last asked for a loader. Level models load through it. */
+let current: WebGLRenderer | null = null;
+
 /** The renderer's KTX2 loader, set up for the compressed formats its GPU supports. */
 export function sharedKtx2Loader(renderer: WebGLRenderer): KTX2Loader {
+  current = renderer;
   let ktx2 = ktx2Loaders.get(renderer);
   if (!ktx2) {
     ktx2 = new KTX2Loader().setTranscoderPath(BASIS_PATH).detectSupport(renderer);
@@ -27,13 +31,19 @@ export function sharedKtx2Loader(renderer: WebGLRenderer): KTX2Loader {
   return ktx2;
 }
 
-/** A GLTF loader that reads meshopt-compressed geometry and KTX2 textures. */
-export function createGltfLoader(renderer: WebGLRenderer): GLTFLoader {
-  return new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).setKTX2Loader(sharedKtx2Loader(renderer));
+/**
+ * A GLTF loader that reads meshopt-compressed geometry and KTX2 textures. Without a
+ * `renderer`, it uses the one that last asked for a loader (the scene registers its renderer
+ * when it starts). If there is none, the loader reads meshopt only.
+ */
+export function createGltfLoader(renderer: WebGLRenderer | null = current): GLTFLoader {
+  const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
+  return renderer ? loader.setKTX2Loader(sharedKtx2Loader(renderer)) : loader;
 }
 
 /** Stops the renderer's transcoder workers. Call it when the renderer is disposed. */
 export function disposeGltfLoaders(renderer: WebGLRenderer): void {
   ktx2Loaders.get(renderer)?.dispose();
   ktx2Loaders.delete(renderer);
+  if (current === renderer) current = null;
 }

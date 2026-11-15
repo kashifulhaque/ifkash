@@ -25,7 +25,7 @@ import { CombatVfx } from '../render/vfx';
 import { LevelRenderer } from '../render/terrain';
 import { PropsRenderer } from '../render/props';
 import { VossArena } from '../render/bosses/b07/arena';
-import { disposeGltfLoaders } from '../render/assets/gltfLoader';
+import { disposeGltfLoaders, sharedKtx2Loader } from '../render/assets/gltfLoader';
 import { getQuality, pixelRatioFor, subscribeQuality } from '../render/lighting';
 import {
   CameraRig,
@@ -104,6 +104,7 @@ export class SceneView {
     this.rig = new CameraRig(this.camera, raycast, loadCameraSettings());
     if (dev?.fakeLock) this.rig.fakeTarget = dev.fakeLock;
     this.renderer = new WebGLRenderer({ canvas, antialias: true });
+    sharedKtx2Loader(this.renderer); // Registers the renderer for every model loader.
     this.renderer.setPixelRatio(pixelRatioFor(getQuality(), window.devicePixelRatio));
     this.offQuality = subscribeQuality((p) => {
       this.renderer.setPixelRatio(pixelRatioFor(p, window.devicePixelRatio));

@@ -10,9 +10,9 @@
 //     figures. The caller owns it and frees it with `disposeScene`.
 
 import { Box3, type BufferGeometry, type Material, type Mesh, type Object3D, type SkinnedMesh } from 'three';
-import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
+import type { GLTFLoader, GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import { createGltfLoader } from '../assets/gltfLoader';
 import { applyHeightFog } from '../lighting/fogPatch';
 import { getQuality } from '../lighting/quality';
 import { capSceneTextures, sceneTextures } from '../perf/textures';
@@ -21,11 +21,11 @@ import { capSceneTextures, sceneTextures } from '../perf/textures';
 export const MODEL_ROOT = '/latticefall/';
 
 /**
- * The loader for level models. Meshopt only: no level model has compressed textures yet.
- * This is the one place to swap in a shared loader that also reads KTX2.
+ * The loader for level models: the shared loader, which reads meshopt geometry and KTX2
+ * textures (ADR 0010) through the scene's renderer.
  */
 export function createModelLoader(): GLTFLoader {
-  return new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
+  return createGltfLoader();
 }
 
 export interface ModelPart {

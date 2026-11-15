@@ -70,6 +70,7 @@ export function withinTextureBudget(a: TextureAudit): boolean {
  * small and cannot be redrawn) or that already fits. Returns true when it shrank.
  */
 export function capTextureEdge(t: Texture, maxEdge: number): boolean {
+  if ((t as Texture & { isCompressedTexture?: boolean }).isCompressedTexture) return false;
   const image = t.image as CanvasImageSource & { width: number; height: number };
   if (!image || !image.width || !image.height) return false;
   const edge = Math.max(image.width, image.height);

@@ -238,11 +238,18 @@ fn replay_scenario(data: PyBackedBytes) -> PyResult<String> {
     Ok(decode(&data)?.header.scenario)
 }
 
+/// How many commands (`Command::Rest`, a spell cast, a menu action) a replay sends. `Sim.step`
+/// takes action frames only, so it can reproduce a replay by stepping only when this is 0.
+#[pyfunction]
+fn replay_command_count(data: PyBackedBytes) -> PyResult<usize> {
+    Ok(decode(&data)?.commands.len())
+}
+
 #[pymodule]
 mod _latticefall {
     #[pymodule_export]
     use super::{
-        Sim, arena::BossArena, content_hash, embedded_content_hash, replay_final_expected,
-        replay_frames, replay_scenario, replay_seed, run_replay,
+        Sim, arena::BossArena, content_hash, embedded_content_hash, replay_command_count,
+        replay_final_expected, replay_frames, replay_scenario, replay_seed, run_replay,
     };
 }

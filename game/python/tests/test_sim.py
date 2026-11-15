@@ -9,6 +9,7 @@ from latticefall import (
     Sim,
     content_hash,
     embedded_content_hash,
+    replay_command_count,
     replay_final_expected,
     replay_frames,
     replay_scenario,
@@ -18,11 +19,11 @@ from latticefall import (
 
 REPLAY_DIR = Path(__file__).resolve().parents[2] / "tests" / "replays"
 REPLAYS = sorted(REPLAY_DIR.glob("*.lfr"))
-# These replays send `Command::Rest` at a Lantern, which changes the run. `Sim.step` takes
-# action frames only, so the Python host can't reproduce them by stepping (it still runs
-# them whole with `run_replay`). Drop this when lf-py can send commands.
-NEEDS_COMMANDS = {"m2_death_recover.lfr", "m2_death_lose_remnant.lfr"}
-STEPPABLE = [p for p in REPLAYS if p.name not in NEEDS_COMMANDS]
+# A replay that sends commands (a Lantern rest, a spell cast, a menu action) changes the
+# run in ways `Sim.step` can't, because it takes action frames only. The Python host
+# can't reproduce those by stepping; it still runs them whole with `run_replay`. Drop this
+# filter when lf-py can send commands.
+STEPPABLE = [p for p in REPLAYS if replay_command_count(p.read_bytes()) == 0]
 
 
 def test_replays_exist():

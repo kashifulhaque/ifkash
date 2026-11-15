@@ -10,8 +10,9 @@
 //! # Episode start and end
 //!
 //! `reset` builds the scenario's world and then walks the player forward through the fog
-//! gate (stick straight ahead while the fight is dormant, released during the intro) until
-//! the fight starts. The episode starts there, inside the arena with the fight on: the
+//! gate (stick straight ahead and Interact held while the fight is dormant, both released
+//! during the intro) until the fight starts. A dormant fog gate is a wall unless the player
+//! holds Interact (issue #82). The episode starts there, inside the arena with the fight on: the
 //! walk-in ticks aren't part of it. Walking in, rather than spawning past the gate, keeps
 //! the boss framework's own gate and intro logic in charge.
 //!
@@ -24,6 +25,7 @@ use std::sync::Arc;
 use lf_content::Content;
 use lf_core::ai::boss::Stage;
 use lf_core::events::{BossEvent, Event, LifeEvent};
+use lf_core::input::buttons::INTERACT;
 use lf_core::input::{ActionFrame, TickInput};
 use lf_core::obs::{self, ActionDecoder};
 use lf_core::tick::tick;
@@ -110,17 +112,17 @@ impl BossArena {
                     self.scenario
                 )));
             }
-            let move_z = if w.bosses[0].stage == Stage::Dormant {
-                127
+            let (move_z, buttons) = if w.bosses[0].stage == Stage::Dormant {
+                (127, INTERACT)
             } else {
-                0
+                (0, 0)
             };
             run(
                 w,
                 ActionFrame {
                     move_x: 0,
                     move_z,
-                    buttons: 0,
+                    buttons,
                 },
             );
             w.events.drain();

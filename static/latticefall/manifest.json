@@ -40,6 +40,22 @@
         "path": "hollowhearth.json"
       }
     ],
+    "characters": [
+      {
+        "bytes": 584248,
+        "path": "standin.glb"
+      },
+      {
+        "bytes": 2745,
+        "path": "standin.json"
+      }
+    ],
+    "dev": [
+      {
+        "bytes": 2294844,
+        "path": "stone_fire_pit.glb"
+      }
+    ],
     "kits": [
       {
         "bytes": 6372,
@@ -110,12 +126,6 @@
       {
         "bytes": 8576,
         "path": "procedural/lantern.glb"
-      }
-    ],
-    "dev": [
-      {
-        "bytes": 2294844,
-        "path": "stone_fire_pit.glb"
       }
     ]
   }

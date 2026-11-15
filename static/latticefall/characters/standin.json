@@ -1,0 +1,134 @@
+{
+  "name": "standin",
+  "fps": 30,
+  "triangles": 20000,
+  "bones": [
+    "Hips",
+    "Spine",
+    "Spine1",
+    "Spine2",
+    "Neck",
+    "Head",
+    "HeadTop_End",
+    "LeftShoulder",
+    "LeftArm",
+    "LeftForeArm",
+    "LeftHand",
+    "RightShoulder",
+    "RightArm",
+    "RightForeArm",
+    "RightHand",
+    "LeftUpLeg",
+    "LeftLeg",
+    "LeftFoot",
+    "LeftToeBase",
+    "LeftToe_End",
+    "RightUpLeg",
+    "RightLeg",
+    "RightFoot",
+    "RightToeBase",
+    "RightToe_End"
+  ],
+  "textures": [
+    "standin_albedo"
+  ],
+  "contactBone": "RightHand",
+  "clips": {
+    "idle": {
+      "frames": 61,
+      "duration": 2.0,
+      "loop": true,
+      "contact": null,
+      "source": "Sword And Shield Idle.fbx"
+    },
+    "walk": {
+      "frames": 31,
+      "duration": 1.0,
+      "loop": true,
+      "contact": null,
+      "source": "Sword And Shield Walk.fbx"
+    },
+    "run": {
+      "frames": 21,
+      "duration": 0.6667,
+      "loop": true,
+      "contact": null,
+      "source": "Sword And Shield Run.fbx"
+    },
+    "slash_a": {
+      "frames": 35,
+      "duration": 1.1333,
+      "loop": false,
+      "contact": 13,
+      "source": "Sword And Shield Slash.fbx"
+    },
+    "slash_b": {
+      "frames": 33,
+      "duration": 1.0667,
+      "loop": false,
+      "contact": 12,
+      "source": "Sword And Shield Slash (2).fbx"
+    },
+    "slash_c": {
+      "frames": 37,
+      "duration": 1.2,
+      "loop": false,
+      "contact": 14,
+      "source": "Sword And Shield Attack.fbx"
+    },
+    "heavy": {
+      "frames": 51,
+      "duration": 1.6667,
+      "loop": false,
+      "contact": 23,
+      "source": "Sword And Shield Power Up.fbx"
+    },
+    "block": {
+      "frames": 25,
+      "duration": 0.8,
+      "loop": false,
+      "contact": null,
+      "source": "Sword And Shield Block.fbx"
+    },
+    "block_idle": {
+      "frames": 41,
+      "duration": 1.3333,
+      "loop": true,
+      "contact": null,
+      "source": "Sword And Shield Block Idle.fbx"
+    },
+    "roll": {
+      "frames": 25,
+      "duration": 0.8,
+      "loop": false,
+      "contact": null,
+      "source": "Stand To Roll.fbx"
+    },
+    "hit": {
+      "frames": 21,
+      "duration": 0.6667,
+      "loop": false,
+      "contact": null,
+      "source": "Sword And Shield Impact.fbx"
+    },
+    "death": {
+      "frames": 61,
+      "duration": 2.0,
+      "loop": false,
+      "contact": null,
+      "source": "Sword And Shield Death.fbx"
+    },
+    "drink": {
+      "frames": 57,
+      "duration": 1.8667,
+      "loop": false,
+      "contact": null,
+      "source": "Drinking.fbx"
+    }
+  },
+  "credits": {
+    "title": "Pipeline stand-in",
+    "author": "Made by script (game/art/blender/make_standin.py)",
+    "license": "Same as the repository"
+  }
+}

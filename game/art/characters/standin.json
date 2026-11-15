@@ -1,0 +1,27 @@
+{
+  "name": "standin",
+  "source": "~/cinderheart-art/standin",
+  "character": "Standin.fbx",
+  "triangles": 20000,
+  "textureSize": 1024,
+  "credits": {
+    "title": "Pipeline stand-in",
+    "author": "Made by script (game/art/blender/make_standin.py)",
+    "license": "Same as the repository"
+  },
+  "clips": {
+    "idle": { "file": "Sword And Shield Idle.fbx", "loop": true },
+    "walk": { "file": "Sword And Shield Walk.fbx", "loop": true },
+    "run": { "file": "Sword And Shield Run.fbx", "loop": true },
+    "slash_a": { "file": "Sword And Shield Slash.fbx", "contact": "auto" },
+    "slash_b": { "file": "Sword And Shield Slash (2).fbx", "contact": "auto" },
+    "slash_c": { "file": "Sword And Shield Attack.fbx", "contact": "auto" },
+    "heavy": { "file": "Sword And Shield Power Up.fbx", "contact": "auto" },
+    "block": { "file": "Sword And Shield Block.fbx" },
+    "block_idle": { "file": "Sword And Shield Block Idle.fbx", "loop": true },
+    "roll": { "file": "Stand To Roll.fbx", "root": "lock" },
+    "hit": { "file": "Sword And Shield Impact.fbx" },
+    "death": { "file": "Sword And Shield Death.fbx" },
+    "drink": { "file": "Drinking.fbx" }
+  }
+}

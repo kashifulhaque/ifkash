@@ -111,6 +111,15 @@ mise exec -- node game/crates/wasm/tests/golden.mjs
 description = "Install the pinned KTX-Software `ktx` tool for textured assets, without sudo"
 run = "bash game/scripts/install-ktx.sh"
 
+[tasks."art:character"]
+env = { RUSTUP_TOOLCHAIN = "1.99.1" }
+description = "Bake a Mixamo character and its clips into the game (mise run art:character -- NAME)"
+run = "bash game/scripts/art-character.sh"
+
+[tasks."art:standin"]
+description = "Write the pipeline's stand-in Mixamo files to ~/cinderheart-art/standin/"
+run = "blender --background --factory-startup --python-exit-code 1 --python game/art/blender/make_standin.py -- ~/cinderheart-art/standin"
+
 [tasks."game:py"]
 dir = "game/python"
 env = { RUSTUP_TOOLCHAIN = "1.99.1" }

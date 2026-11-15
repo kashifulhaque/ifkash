@@ -1,0 +1,26 @@
+{
+  "name": "wayfarer",
+  "source": "~/cinderheart-art/wayfarer",
+  "triangles": 20000,
+  "textureSize": 1024,
+  "credits": {
+    "title": "The Wayfarer",
+    "author": "Generated with Meshy; rigged and animated with Mixamo",
+    "license": "CC BY 4.0 (Meshy free tier): credit \"Meshy\""
+  },
+  "clips": {
+    "idle": { "file": ["Sword And Shield Idle.fbx", "Idle.fbx"], "loop": true },
+    "walk": { "file": ["Sword And Shield Walk.fbx", "Walking.fbx", "Walk.fbx"], "loop": true },
+    "run": { "file": ["Sword And Shield Run.fbx", "Running.fbx", "Run.fbx"], "loop": true },
+    "slash_a": { "file": ["Sword And Shield Slash.fbx", "Slash.fbx"], "contact": "auto" },
+    "slash_b": { "file": ["Sword And Shield Slash (2).fbx", "Sword And Shield Slash (1).fbx", "Slash (2).fbx"], "contact": "auto" },
+    "slash_c": { "file": ["Sword And Shield Attack.fbx", "Sword And Shield Slash (3).fbx", "Attack.fbx"], "contact": "auto" },
+    "heavy": { "file": ["Sword And Shield Power Up.fbx", "Sword And Shield Attack (2).fbx", "Great Sword Slash.fbx"], "contact": "auto" },
+    "block": { "file": ["Sword And Shield Block.fbx", "Block.fbx"] },
+    "block_idle": { "file": ["Sword And Shield Block Idle.fbx", "Block Idle.fbx"], "loop": true },
+    "roll": { "file": ["Stand To Roll.fbx", "Sprinting Forward Roll.fbx", "Roll.fbx"], "root": "lock" },
+    "hit": { "file": ["Sword And Shield Impact.fbx", "Impact.fbx", "Hit Reaction.fbx"] },
+    "death": { "file": ["Sword And Shield Death.fbx", "Death.fbx", "Dying.fbx"] },
+    "drink": { "file": ["Drinking.fbx", "Drink.fbx"] }
+  }
+}

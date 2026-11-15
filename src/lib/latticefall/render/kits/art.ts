@@ -9,9 +9,18 @@
 //     stops a small model from casting shadows.
 //   - `instances`: layout instance name (from the level manifest) to a fill. The model
 //     replaces that instance's greybox once it loads.
-//   - `props`: models placed freely in world space, with no collider behind them.
+//   - `props`: models placed freely in world space, with no collider behind them. A prop
+//     with `covers` replaces those layout instances' greybox once it loads, so a model built
+//     in world space around the colliders (Waking Hollow's cave) can stand in for many boxes.
 //   - `entities.lantern`: the model for every Lantern in the area.
 //   - `entities.npcs`: NPC ID to the figure that replaces its greybox stand-in.
+//   - `entities.hollow_wall`: the model for every hollow wall, centered on its collider.
+//   - `lights`: fixed light spots. The renderer lights the nearest few with a small pool of
+//     point lights (`../lighting/lightPool.ts`); the quality preset sets the pool's size.
+//   - `look`: overrides of the level's `ambient` block (fog, sun, ambient light) and the
+//     height-fog strength, for art that needs a different mood than the greybox did. The
+//     level data, and so the content hash, stays as it is.
+//   - `grade`: tone mapping and a color grade for the area (`../lighting/grade.ts`).
 
 import { Matrix4, Quaternion, Vector3, type Box3 } from 'three';
 import type { ManifestInstance, V3 } from './manifest';
@@ -20,6 +29,12 @@ export interface ArtModel {
   file: string;
   /** Whether instances cast shadows. Defaults to true. */
   shadow?: boolean;
+  /**
+   * Keeps each mesh node of the file a separate part instead of merging the file into one
+   * part per material, so the renderer can cull and sort a large world-space model (a whole
+   * cave) piece by piece. Costs one draw call per node.
+   */
+  nodes?: boolean;
 }
 
 export interface ArtFill {
@@ -44,6 +59,8 @@ export interface ArtProp {
   /** Radians from +Z toward +X, like every yaw in the level manifest. */
   yaw?: number;
   scale?: number | V3;
+  /** Layout instance names whose greybox this prop replaces once it loads. */
+  covers?: string[];
 }
 
 export interface ArtLantern {
@@ -62,6 +79,43 @@ export interface ArtNpc {
   clip: string;
 }
 
+/** A fixed light spot. Intensity is in candela, with the renderer's decay of 1.6. */
+export interface ArtLight {
+  name?: string;
+  pos: V3;
+  color: string;
+  intensity: number;
+  distance: number;
+  /** How much the light flickers, 0 to 1. */
+  flicker?: number;
+}
+
+/** Overrides of the level's `ambient` block; see `Ambient` in `manifest.ts`. */
+export interface ArtLook {
+  fog_color?: V3;
+  fog_near_m?: number;
+  fog_far_m?: number;
+  sun_color?: V3;
+  sun_intensity?: number;
+  ambient_color?: V3;
+  ambient_intensity?: number;
+  /** Strength of the low-lying height fog, 0 to 1. */
+  haze?: number;
+}
+
+/** Tone mapping and a color grade, applied in every material's shader (no extra pass). */
+export interface ArtGrade {
+  exposure?: number;
+  /** 1 keeps the color, 0 is grey. */
+  saturation?: number;
+  /** Around mid grey; 1 keeps it. */
+  contrast?: number;
+  /** Added to the shadows, per channel. */
+  lift?: V3;
+  /** Multiplies the highlights, per channel. */
+  gain?: V3;
+}
+
 export interface AreaArt {
   format: number;
   models: Record<string, ArtModel>;
@@ -70,7 +124,11 @@ export interface AreaArt {
   entities?: {
     lantern?: ArtLantern;
     npcs?: Record<string, ArtNpc>;
+    hollow_wall?: { model: string };
   };
+  lights?: ArtLight[];
+  look?: ArtLook;
+  grade?: ArtGrade;
 }
 
 const ART_ROOT = '/latticefall/art/';

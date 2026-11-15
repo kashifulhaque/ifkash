@@ -9,7 +9,7 @@
 //   - `loadScene` returns the scene graph untouched, for props with moving parts and skinned
 //     figures. The caller owns it and frees it with `disposeScene`.
 
-import { Box3, type BufferGeometry, type Material, type Mesh, type Object3D, type SkinnedMesh } from 'three';
+import { Box3, BufferAttribute, type BufferGeometry, type Material, type Mesh, type Object3D, type SkinnedMesh } from 'three';
 import type { GLTFLoader, GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { createGltfLoader } from '../assets/gltfLoader';
@@ -54,29 +54,53 @@ export function disposeScene(root: Object3D): void {
   });
 }
 
-/** Flattens a loaded scene into one geometry per material. */
-function flatten(scene: Object3D): KitModel {
+/**
+ * Turns quantized (integer) positions, normals, and tangents into floats. Meshopt files store
+ * them as normalized integers with the scale in the node, so writing a transformed position
+ * back into the integer array would overflow for anything larger than the node's unit box.
+ */
+function dequantize(g: BufferGeometry): void {
+  for (const name of ['position', 'normal', 'tangent']) {
+    const a = g.getAttribute(name);
+    if (!a || a.array instanceof Float32Array) continue;
+    const out = new Float32Array(a.count * a.itemSize);
+    for (let i = 0; i < a.count; i++) {
+      for (let k = 0; k < a.itemSize; k++) out[i * a.itemSize + k] = a.getComponent(i, k);
+    }
+    g.setAttribute(name, new BufferAttribute(out, a.itemSize));
+  }
+}
+
+/**
+ * Flattens a loaded scene into one geometry per material, or with `nodes`, one per mesh node
+ * (each still in the model's frame), so a large model can be culled piece by piece.
+ */
+function flatten(scene: Object3D, nodes = false): KitModel {
   scene.updateMatrixWorld(true);
-  const byMaterial = new Map<Material, BufferGeometry[]>();
+  const groups = new Map<object, { material: Material; list: BufferGeometry[] }>();
   scene.traverse((o) => {
     const mesh = o as Mesh;
     if (!mesh.isMesh) return;
     const material = (Array.isArray(mesh.material) ? mesh.material[0] : mesh.material) as Material;
     const g = mesh.geometry.clone();
+    dequantize(g);
     g.applyMatrix4(mesh.matrixWorld);
-    let list = byMaterial.get(material);
-    if (!list) byMaterial.set(material, (list = []));
-    list.push(g);
+    const key = nodes ? mesh : material;
+    let group = groups.get(key);
+    if (!group) groups.set(key, (group = { material, list: [] }));
+    group.list.push(g);
     mesh.geometry.dispose();
   });
   const parts: ModelPart[] = [];
   const bounds = new Box3();
   let triangles = 0;
-  for (const [material, list] of byMaterial) {
+  const fogged = new Set<Material>();
+  for (const { material, list } of groups.values()) {
     // Geometries with different attribute sets can't merge; they stay separate parts.
     const merged = list.length > 1 ? mergeGeometries(list, false) : null;
     if (merged) list.forEach((g) => g.dispose());
-    applyHeightFog(material);
+    if (!fogged.has(material)) applyHeightFog(material);
+    fogged.add(material);
     for (const geometry of merged ? [merged] : list) {
       geometry.computeBoundingBox();
       geometry.computeBoundingSphere();
@@ -90,8 +114,11 @@ function flatten(scene: Object3D): KitModel {
 }
 
 function disposeModel(model: KitModel): void {
+  const done = new Set<Material>();
   for (const p of model.parts) {
     p.geometry.dispose();
+    if (done.has(p.material)) continue;
+    done.add(p.material);
     for (const k of Object.values(p.material) as unknown[]) {
       const t = k as { isTexture?: boolean; dispose?: () => void } | null;
       if (t && t.isTexture) t.dispose?.();
@@ -119,11 +146,14 @@ export class ModelCache {
     });
   }
 
-  /** Loads `path` once and counts the caller as a user. Rejects if the file fails to load. */
-  acquire(path: string): Promise<KitModel> {
+  /**
+   * Loads `path` once and counts the caller as a user. Rejects if the file fails to load.
+   * `nodes` keeps one part per mesh node (see `flatten`); a path is always loaded one way.
+   */
+  acquire(path: string, nodes = false): Promise<KitModel> {
     let e = this.entries.get(path);
     if (!e) {
-      e = { users: 0, model: this.load(path).then((gltf) => flatten(gltf.scene)) };
+      e = { users: 0, model: this.load(path).then((gltf) => flatten(gltf.scene, nodes)) };
       this.entries.set(path, e);
       // A failed file is forgotten, so nothing holds a rejected promise.
       e.model.catch(() => this.entries.delete(path));

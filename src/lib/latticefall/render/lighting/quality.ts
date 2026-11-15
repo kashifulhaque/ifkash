@@ -2,7 +2,8 @@
 // the menus can read and set the preset without pulling in the renderer. The renderer
 // subscribes and re-applies the numbers when the preset changes.
 //
-// The world renderer applies render scale, shadows, draw distance, and grass density.
+// The world renderer applies render scale, shadows, draw distance, grass density, and the
+// number of point lights for an area's torches and candles.
 // `postProcessing` and `reflections` are carried for the post-processing and Mirrormere
 // work; nothing here reads them.
 
@@ -20,6 +21,8 @@ export interface QualityPreset {
   drawDistance: number;
   /** Fraction of grass scatter drawn, 0 to 1. */
   grassDensity: number;
+  /** Point lights for an area's fixed light spots (torches, candles); see `lightPool.ts`. */
+  lights: number;
   postProcessing: 'fog' | 'fog-bloom' | 'fog-bloom-ao';
   reflections: 'environment-map' | 'planar';
 }
@@ -32,6 +35,7 @@ export const QUALITY_PRESETS: Readonly<Record<QualityName, QualityPreset>> = {
     shadowCascades: 0,
     drawDistance: 120,
     grassDensity: 0.25,
+    lights: 3,
     postProcessing: 'fog',
     reflections: 'environment-map'
   },
@@ -42,6 +46,7 @@ export const QUALITY_PRESETS: Readonly<Record<QualityName, QualityPreset>> = {
     shadowCascades: 1,
     drawDistance: 200,
     grassDensity: 0.6,
+    lights: 6,
     postProcessing: 'fog-bloom',
     reflections: 'environment-map'
   },
@@ -52,6 +57,7 @@ export const QUALITY_PRESETS: Readonly<Record<QualityName, QualityPreset>> = {
     shadowCascades: 2,
     drawDistance: 320,
     grassDensity: 1,
+    lights: 8,
     postProcessing: 'fog-bloom-ao',
     reflections: 'planar'
   }

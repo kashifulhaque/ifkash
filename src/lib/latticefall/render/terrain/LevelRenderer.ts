@@ -12,7 +12,9 @@ import { KitBatch } from '../kits/kitBatch';
 import { ScatterBatch } from '../kits/scatterBatch';
 import { PieceLibrary } from '../kits/library';
 import { fetchManifest, type LevelManifest } from '../kits/manifest';
-import { fetchAreaArt } from '../kits/art';
+import { fetchAreaArt, type AreaArt } from '../kits/art';
+import { applyGrade } from '../lighting/grade';
+import { LightPool } from '../lighting/lightPool';
 import { applyHeightFog, heightFogUniforms } from '../lighting/fogPatch';
 import { LevelLighting } from '../lighting/lighting';
 import { getQuality, subscribeQuality, type QualityPreset } from '../lighting/quality';
@@ -29,6 +31,9 @@ export class LevelRenderer {
   private scatter: ScatterBatch | null = null;
   private lighting: LevelLighting | null = null;
   private sky: Sky | null = null;
+  /** The art manifest's torches and candles, lit by a few point lights. */
+  private lights: LightPool | null = null;
+  private undoGrade: (() => void) | null = null;
   private quality: QualityPreset = getQuality();
   private unsubscribe: (() => void) | null = null;
   private disposed = false;
@@ -57,7 +62,10 @@ export class LevelRenderer {
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = PCFSoftShadowMap;
 
-    this.lighting = new LevelLighting(this.scene, a.ambient, a.regions);
+    // The art manifest may darken or thicken the level's look; the level data stays as it is.
+    this.lighting = new LevelLighting(this.scene, withLook(a.ambient, art), a.regions, art?.look?.haze ?? 0.4);
+    if (art?.lights?.length) this.lights = new LightPool(this.scene, art.lights, this.quality.lights);
+    if (art?.grade) this.undoGrade = applyGrade(this.renderer, art.grade);
     this.sky = new Sky(this.scene, a.ambient.sky, this.lighting.sunDirection);
     this.scene.background = this.lighting.fogColor;
 
@@ -80,6 +88,7 @@ export class LevelRenderer {
   private applyQuality(p: QualityPreset): void {
     this.quality = p;
     this.lighting?.setQuality(p);
+    this.lights?.setSize(p.lights);
     this.scatter?.setGrassDensity(p.grassDensity);
     this.instances?.setGrassDensity(p.grassDensity);
   }
@@ -93,6 +102,7 @@ export class LevelRenderer {
   update(camera: PerspectiveCamera, focus: { x: number; y: number; z: number }, frameMs: number): void {
     if (!this.lighting || !this.sky) return;
     this.lighting.update(focus.x, focus.y, focus.z, frameMs);
+    this.lights?.update(focus.x, focus.y + 1, focus.z, frameMs);
     camera.updateMatrixWorld();
     heightFogUniforms.lfViewInv.value.copy(camera.matrixWorld);
     this.sky.update(camera, this.lighting.fogColor, this.lighting.sunColor);
@@ -124,5 +134,23 @@ export class LevelRenderer {
     this.terrainMaterial?.dispose();
     this.sky?.dispose();
     this.lighting?.dispose();
+    this.lights?.dispose();
+    this.undoGrade?.();
   }
+}
+
+/** The level's ambient block with the art manifest's `look` laid over it. */
+function withLook(ambient: LevelManifest['area']['ambient'], art: AreaArt | null): LevelManifest['area']['ambient'] {
+  const look = art?.look;
+  if (!look) return ambient;
+  return {
+    ...ambient,
+    fog_color: look.fog_color ?? ambient.fog_color,
+    fog_near_m: look.fog_near_m ?? ambient.fog_near_m,
+    fog_far_m: look.fog_far_m ?? ambient.fog_far_m,
+    sun_color: look.sun_color ?? ambient.sun_color,
+    sun_intensity: look.sun_intensity ?? ambient.sun_intensity,
+    ambient_color: look.ambient_color ?? ambient.ambient_color,
+    ambient_intensity: look.ambient_intensity ?? ambient.ambient_intensity
+  };
 }

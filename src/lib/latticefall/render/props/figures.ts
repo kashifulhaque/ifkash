@@ -129,6 +129,25 @@ export class FigureProps {
   }
 
   /**
+   * Draws a static model in `holder` in place of `greybox`, which stays until the model
+   * loads (and for good if it fails). The model is authored in the holder's frame.
+   */
+  replace(holder: Object3D, greybox: Object3D, file: string): void {
+    this.track(
+      this.scene(file).then((scene) => {
+        if (this.disposed) return;
+        scene.traverse((o) => {
+          o.receiveShadow = true;
+        });
+        holder.add(scene);
+        greybox.visible = false;
+      }),
+      `model ${file}`,
+      'keeping the greybox'
+    );
+  }
+
+  /**
    * Draws an NPC from a model in place of `greybox`, which stays until the model and its clip
    * are ready. `holder` is the group at the NPC's feet, facing the NPC's way.
    */

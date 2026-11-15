@@ -134,8 +134,14 @@ export class InstanceLayer {
       for (const id of new Set([...fills.keys(), ...props.keys()])) {
         const f = fills.get(id) ?? [];
         const pr = props.get(id) ?? [];
+        // A prop's `covers` are layout instances its model replaces; they also give its extent.
+        const covered = pr.flatMap((x) => (x.covers ?? []).map((n) => byName.get(n)).filter((i): i is LevelManifest['instances'][number] => !!i));
         const spots: Array<[number, number, number]> = [
-          ...f.map(({ inst }): [number, number, number] => [inst.pos[0], inst.pos[2], Math.hypot(inst.scale[0], inst.scale[2]) / 2]),
+          ...[...f.map(({ inst }) => inst), ...covered].map((inst): [number, number, number] => [
+            inst.pos[0],
+            inst.pos[2],
+            Math.hypot(inst.scale[0], inst.scale[2]) / 2
+          ]),
           ...pr.map((x): [number, number, number] => [x.pos[0], x.pos[2], 0])
         ];
         this.chunks.push({
@@ -144,7 +150,7 @@ export class InstanceLayer {
           meshes: [],
           matrices: null,
           layout: (bounds) => [...f.flatMap(({ inst, fill }) => fillMatrices(inst, fill, bounds)), ...pr.map(propMatrix)],
-          covers: f.map(({ inst }) => inst.name),
+          covers: [...f.map(({ inst }) => inst.name), ...covered.map((inst) => inst.name)],
           total: 0,
           box: boxOf(spots),
           thins: false,

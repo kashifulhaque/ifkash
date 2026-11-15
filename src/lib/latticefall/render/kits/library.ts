@@ -110,8 +110,9 @@ export class PieceLibrary {
     const path = this.path(key);
     if (!path || !this.needsModel(key)) return;
     this.loading.add(key);
+    const nodes = key.startsWith('art:') && !!this.art?.models[key.slice(4)]?.nodes;
     this.cache
-      .acquire(path)
+      .acquire(path, nodes)
       .then((model) => {
         if (this.disposed) return;
         this.models.set(key, model);

@@ -17,6 +17,7 @@ import {
   MeshStandardMaterial,
   OctahedronGeometry,
   PlaneGeometry,
+  ShaderMaterial,
   type BufferGeometry,
   type Material,
   type Object3D,
@@ -36,6 +37,35 @@ type V3 = [number, number, number];
 interface Entity {
   [kind: string]: Record<string, unknown>;
 }
+
+const FOG_GATE_VERT = `varying vec2 vUv;
+varying float vDist;
+void main() {
+  vUv = uv;
+  vec4 mv = modelViewMatrix * vec4(position, 1.0);
+  vDist = length(mv.xyz);
+  gl_Position = projectionMatrix * mv;
+}`;
+
+// Value-noise mist rising slowly, brightest low and in the middle, gone at the edges. It
+// fades out with distance, as the scene fog doesn't reach a shader material.
+const FOG_GATE_FRAG = `varying vec2 vUv;
+varying float vDist;
+uniform float uTime;
+uniform float uSeed;
+float h(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7)) + uSeed) * 43758.5453); }
+float n(vec2 p) {
+  vec2 i = floor(p), f = fract(p);
+  vec2 u = f * f * (3.0 - 2.0 * f);
+  return mix(mix(h(i), h(i + vec2(1.0, 0.0)), u.x), mix(h(i + vec2(0.0, 1.0)), h(i + vec2(1.0, 1.0)), u.x), u.y);
+}
+void main() {
+  vec2 p = vUv * vec2(4.0, 2.5) + vec2(uTime * 0.05, -uTime * 0.18);
+  float m = 0.5 * n(p) + 0.3 * n(p * 2.1 + 3.7) + 0.2 * n(p * 4.3 - uTime * 0.3);
+  float edge = smoothstep(0.0, 0.12, vUv.x) * smoothstep(1.0, 0.88, vUv.x) * smoothstep(1.0, 0.7, vUv.y) * smoothstep(0.0, 0.04, vUv.y);
+  float a = (0.18 + 0.5 * m) * edge * (1.0 - 0.35 * vUv.y) * (1.0 - smoothstep(12.0, 28.0, vDist));
+  gl_FragColor = vec4(vec3(0.62, 0.68, 0.74) * (0.7 + 0.5 * m), a);
+}`;
 
 /** Entity kinds in the order of the core's state words. */
 const STATE_KINDS = ['Ladder', 'Lift', 'Door', 'Lever', 'HollowWall', 'Pickup', 'Chest', 'Message', 'Pool'] as const;
@@ -83,12 +113,16 @@ export class PropsRenderer {
   private visAt = -1;
   private geometries: BufferGeometry[] = [];
   private materials: Material[] = [];
+  /** Props that animate on their own, with no state word (the fog gate's mist). */
+  private animated: Array<(dt: number) => void> = [];
   private updaters: Array<{ kind: StateKind; index: number; update: Updater; value: number }> = [];
   private offsets = new Map<StateKind, number>();
   private counts = new Map<StateKind, number>();
   private state: ArrayLike<number> = [];
   private disposed = false;
   private clock = 0;
+  /** The area art manifest, for entity models (the hollow wall). */
+  private art: AreaArt | null = null;
   /** True once a level with mechanics is loaded; the engine skips the state read until then. */
   active = false;
 
@@ -117,6 +151,7 @@ export class PropsRenderer {
    * all. Exposed for tests.
    */
   build(entities: Entity[], art: AreaArt | null = null): boolean {
+    this.art = art;
     for (const k of STATE_KINDS) this.counts.set(k, 0);
     // Pass 1: counts, so the offsets into the state words are known.
     for (const e of entities) {
@@ -236,6 +271,7 @@ export class PropsRenderer {
     this.deep.update(frameMs, this.state, this.cartAt, this.hatchAt);
     this.glass.update(frameMs, this.state, this.mirrorAt, this.receptorAt, this.beamAt);
     this.rime.update(frameMs, this.state, this.brazierAt, this.sigilAt);
+    for (const a of this.animated) a(frameMs);
     for (const u of this.updaters) {
       const word = this.state[(this.offsets.get(u.kind) ?? 0) + u.index];
       if (word === undefined) continue;
@@ -256,6 +292,7 @@ export class PropsRenderer {
     this.geometries = [];
     this.materials = [];
     this.updaters = [];
+    this.animated = [];
   }
 
   // -------------------------------------------------------------------------------------
@@ -387,6 +424,10 @@ export class PropsRenderer {
     // A shade off the wall around it: a faint tell, as the hum is the audible one.
     const m = new Mesh(this.geo(new BoxGeometry(hx * 2, hy * 2, hz * 2)), this.mat(token('--ink-3', '#8a8373')));
     const g = this.add(m, d.center as V3);
+    // The art manifest's model, built around the collider, replaces the box once it loads.
+    const spec = this.art?.entities?.hollow_wall;
+    const file = spec ? this.art?.models[spec.model]?.file : undefined;
+    if (file) this.figures.replace(g, m, file);
     const y0 = g.position.y;
     let sunk = 0;
     return (v, dt) => {
@@ -475,13 +516,35 @@ export class PropsRenderer {
     this.add(g, d.pos as V3, d.yaw as number);
   }
 
+  /**
+   * The boss's fog gate: two layers of drifting mist across the gate, soft at the edges. Purely
+   * a look; the gate's rule lives in the core.
+   */
   private fogGate(g: Record<string, unknown>): void {
     const hw = (g.half_width_m as number) ?? 2;
     const pos = g.pos as V3 | undefined;
     if (!pos) return;
-    const m = this.mat('#d8e2ea', { transparent: true, opacity: 0.35, side: DoubleSide, emissive: new Color('#9fb6c6'), emissiveIntensity: 0.4 });
-    const plane = new Mesh(this.geo(new PlaneGeometry(hw * 2, 3.2)), m);
-    plane.position.y = 1.6;
-    this.add(plane, pos, g.yaw as number);
+    const height = 4.8;
+    const group = new Group();
+    const time = { value: 0 };
+    for (const [i, z] of [0, 0.25].entries()) {
+      const m = new ShaderMaterial({
+        uniforms: { uTime: time, uSeed: { value: i * 17.3 } },
+        vertexShader: FOG_GATE_VERT,
+        fragmentShader: FOG_GATE_FRAG,
+        transparent: true,
+        depthWrite: false,
+        side: DoubleSide
+      });
+      this.materials.push(m);
+      const plane = new Mesh(this.geo(new PlaneGeometry(hw * 2 + 0.4, height)), m);
+      plane.position.set(0, height / 2, z);
+      plane.renderOrder = 2;
+      group.add(plane);
+    }
+    this.add(group, pos, g.yaw as number);
+    this.animated.push((dt) => {
+      time.value += dt / 1000;
+    });
   }
 }

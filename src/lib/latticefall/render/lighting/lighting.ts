@@ -49,7 +49,9 @@ export class LevelLighting {
   constructor(
     private scene: Scene,
     private ambient: Ambient,
-    private regions: readonly Region[]
+    private regions: readonly Region[],
+    /** The height fog's strength outside any region look (the art manifest can change it). */
+    private baseHaze = 0.4
   ) {
     this.sunDir = new Vector3(...ambient.sun_dir).normalize();
     this.look = this.compute(NEUTRAL_LOOK);
@@ -89,7 +91,7 @@ export class LevelLighting {
       sunIntensity: a.sun_intensity * (look.sunScale ?? 1),
       ambientColor: new Color(...a.ambient_color),
       ambientIntensity: a.ambient_intensity * (look.ambientScale ?? 1),
-      haze: look.haze ?? 0.4
+      haze: look.haze ?? this.baseHaze
     };
   }
 

@@ -18,6 +18,9 @@
 //                           racks and mannequins, off to the side of the world (WP-058)
 //   &armory=SECTION         with scene=armory, where the camera starts: blades, heavy, hands,
 //                           catalysts or armor (default blades); `cam=fixed:` still overrides it
+//   &ktx2test=1             (dev only) draws the KTX2 test model 3 m in front of the start position
+//                           and reports its texture formats, sizes and load times in the console
+//                           and in `window.__lfKtx2Test` (ADR 0010)
 //   &fakelock=X,Y,Z         frames a fixed point as if it were the locked-on actor's feet
 //
 //   &bench=1|AREA,AREA     (dev only) runs the performance benchmark (WP-081): flies a fixed camera path
@@ -57,6 +60,8 @@ export interface DevParams {
   bench: string[] | null;
   benchStep: number | null;
   benchCrowd: number | null;
+  /** `&ktx2test=1` with `&dev=1`: draw the KTX2 test model. */
+  ktx2Test: boolean;
   spawn: string | null;
   seed: bigint | null;
   freeze: boolean;
@@ -133,6 +138,7 @@ export function parseDevParams(search: string): DevParams {
     bench: dev && p.has('bench') ? (p.get('bench') === '1' ? [] : (p.get('bench') ?? '').split(',').map((a) => a.trim()).filter(Boolean)) : null,
     benchStep: dev && Number(p.get('benchstep')) > 0 ? Number(p.get('benchstep')) : null,
     benchCrowd: dev && p.has('benchcrowd') && Number(p.get('benchcrowd')) >= 0 ? Number(p.get('benchcrowd')) : null,
+    ktx2Test: dev && p.get('ktx2test') === '1',
     spawn: dev ? p.get('spawn') || null : null,
     seed: dev ? seed : null,
     freeze: dev && ['1', 'true'].includes(p.get('freeze') ?? ''),

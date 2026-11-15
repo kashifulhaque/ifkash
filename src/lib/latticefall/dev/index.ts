@@ -87,6 +87,12 @@ export class DevTools {
       warnings,
       onOverlayChange: () => this.draw.update(this.actors)
     });
+    // `&ktx2test=1`: the textured test model (ADR 0010). Its code is a separate chunk.
+    if (params.ktx2Test) {
+      void import('./ktx2Test')
+        .then(({ spawnKtx2Test }) => spawnKtx2Test(deps.scene, deps.renderer, deps.start))
+        .catch((err) => console.error('[latticefall dev] ktx2test failed', err));
+    }
     // `&bench=...`: the performance benchmark (WP-081). Its code is a separate chunk.
     if (params.bench) {
       const { bench, benchStep, benchCrowd } = params;

@@ -22,9 +22,8 @@ import {
   Vector3,
   type WebGLRenderer
 } from 'three';
-import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { KTX2Loader } from 'three/examples/jsm/loaders/KTX2Loader.js';
-import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
+import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { createGltfLoader } from '../assets/gltfLoader';
 import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import type { DrawActor } from '../../engine/snapshot';
 import { PlayerGear, type Equipped, type RigFrame } from '../equipment/playerGear';
@@ -82,8 +81,6 @@ import { gesturePose } from '../../ui/gestures/gesturePose';
 
 /** Where the optimized assets live (`lf-tools assets` writes them). */
 export const ACTOR_ASSET_BASE = '/latticefall/actors/';
-/** Where KTX2 loading looks for the Basis transcoder. No current actor asset has textures. */
-const BASIS_PATH = '/latticefall/basis/';
 
 /** Standing height of the Wayfarer in meters. The sim capsule is 1.7 m; the model adds hair. */
 export const WAYFARER_HEIGHT_M = 1.75;
@@ -304,16 +301,12 @@ export class ActorRenderer {
   }
 
   private async doLoad(): Promise<void> {
-    const loader = new GLTFLoader();
-    loader.setMeshoptDecoder(MeshoptDecoder);
-    const ktx2 = new KTX2Loader().setTranscoderPath(BASIS_PATH).detectSupport(this.renderer);
-    loader.setKTX2Loader(ktx2);
+    const loader = createGltfLoader(this.renderer);
     const [wayfarer, ual, ual2] = await Promise.all([
       loader.loadAsync(`${ACTOR_ASSET_BASE}wayfarer.glb`),
       loader.loadAsync(`${ACTOR_ASSET_BASE}ual.glb`),
       loader.loadAsync(`${ACTOR_ASSET_BASE}ual2.glb`).catch(() => null)
     ]);
-    ktx2.dispose();
     // Texture budget (WP-081): nothing here is above the preset's longest edge today; this keeps it so.
     capSceneTextures(wayfarer.scene, getQuality().name);
 

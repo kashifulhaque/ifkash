@@ -25,6 +25,7 @@ import { CombatVfx } from '../render/vfx';
 import { LevelRenderer } from '../render/terrain';
 import { PropsRenderer } from '../render/props';
 import { VossArena } from '../render/bosses/b07/arena';
+import { disposeGltfLoaders } from '../render/assets/gltfLoader';
 import { getQuality, pixelRatioFor, subscribeQuality } from '../render/lighting';
 import {
   CameraRig,
@@ -361,6 +362,7 @@ export class SceneView {
     this.actors.dispose();
     for (const d of this.disposables) d.dispose();
     this.disposables = [];
+    disposeGltfLoaders(this.renderer);
     this.renderer.dispose();
   }
 }

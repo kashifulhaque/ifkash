@@ -1,8 +1,31 @@
 {
   "assets": [
-    { "src": "quaternius-modular-characters/Adventurer.glb", "out": "actors/wayfarer.glb" },
-    { "src": "universal-animation-library/ual1_standard_trimmed.glb", "out": "actors/ual.glb" },
-    { "src": "universal-animation-library-2/ual2_standard_trimmed.glb", "out": "actors/ual2.glb" },
-    { "src": "polyhaven-stone-fire-pit/stone_fire_pit_2k.glb", "out": "dev/stone_fire_pit.glb", "maxTextureSize": 1024 }
+    {"src": "quaternius-modular-characters/Adventurer.glb", "out": "actors/wayfarer.glb"},
+    {"src": "universal-animation-library/ual1_standard_trimmed.glb", "out": "actors/ual.glb"},
+    {"src": "universal-animation-library-2/ual2_standard_trimmed.glb", "out": "actors/ual2.glb"},
+    {"src": "quaternius-modular-characters/W_Medieval.glb", "out": "actors/npc_archivist.glb"},
+    {"src": "quaternius-modular-characters/Worker.glb", "out": "actors/npc_smith.glb"},
+    {"src": "quaternius-modular-characters/W_Adventurer.glb", "out": "actors/npc_cartographer.glb"},
+    {"src": "quaternius-modular-characters/Farmer.glb", "out": "actors/npc_courier.glb"},
+    {"src": "quaternius-modular-characters/W_Witch.glb", "out": "actors/npc_peddler.glb"},
+    {"src": "kaykit-dungeon-remastered/baked/floor_wood_large.glb", "out": "kits/kaykit-dungeon-remastered/floor_wood_large.glb"},
+    {"src": "kaykit-dungeon-remastered/baked/wall.glb", "out": "kits/kaykit-dungeon-remastered/wall.glb"},
+    {"src": "kaykit-dungeon-remastered/baked/wall_gated.glb", "out": "kits/kaykit-dungeon-remastered/wall_gated.glb"},
+    {"src": "kaykit-dungeon-remastered/baked/pillar.glb", "out": "kits/kaykit-dungeon-remastered/pillar.glb"},
+    {"src": "kaykit-dungeon-remastered/baked/wall_shelves.glb", "out": "kits/kaykit-dungeon-remastered/wall_shelves.glb"},
+    {"src": "kaykit-dungeon-remastered/baked/shelves.glb", "out": "kits/kaykit-dungeon-remastered/shelves.glb"},
+    {"src": "kaykit-dungeon-remastered/baked/table_long.glb", "out": "kits/kaykit-dungeon-remastered/table_long.glb"},
+    {"src": "kaykit-dungeon-remastered/baked/table_long_tablecloth.glb", "out": "kits/kaykit-dungeon-remastered/table_long_tablecloth.glb"},
+    {"src": "kaykit-dungeon-remastered/baked/table_small.glb", "out": "kits/kaykit-dungeon-remastered/table_small.glb"},
+    {"src": "kaykit-dungeon-remastered/baked/keg.glb", "out": "kits/kaykit-dungeon-remastered/keg.glb"},
+    {"src": "kaykit-dungeon-remastered/baked/crates_stacked.glb", "out": "kits/kaykit-dungeon-remastered/crates_stacked.glb"},
+    {"src": "kaykit-dungeon-remastered/baked/floor_foundation_allsides.glb", "out": "kits/kaykit-dungeon-remastered/floor_foundation_allsides.glb"},
+    {"src": "kaykit-dungeon-remastered/baked/torch_mounted.glb", "out": "kits/kaykit-dungeon-remastered/torch_mounted.glb"},
+    {"src": "kaykit-dungeon-remastered/baked/banner_red.glb", "out": "kits/kaykit-dungeon-remastered/banner_red.glb"},
+    {"src": "kaykit-dungeon-remastered/baked/barrel_small.glb", "out": "kits/kaykit-dungeon-remastered/barrel_small.glb"},
+    {"src": "kaykit-dungeon-remastered/chest.glb", "out": "kits/kaykit-dungeon-remastered/chest.glb", "copy": true},
+    {"src": "procedural/lantern.glb", "out": "props/procedural/lantern.glb"},
+    {"src": "art/hollowhearth.json", "out": "art/hollowhearth.json", "copy": true},
+    {"src": "polyhaven-stone-fire-pit/stone_fire_pit_2k.glb", "out": "dev/stone_fire_pit.glb", "maxTextureSize": 1024}
   ]
 }

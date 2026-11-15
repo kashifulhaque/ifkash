@@ -9,6 +9,22 @@
       "title": "Latticefall audio (generated in code)"
     },
     {
+      "author": "Kay Lousberg (https://www.kaylousberg.com)",
+      "folder": "kaykit-dungeon-remastered",
+      "license": "CC0 1.0 Universal (https://creativecommons.org/publicdomain/zero/1.0/). The author's `LICENSE.txt` in the repository, copied here, states it; checked 2026-11-14. Crediting Kay Lousberg is welcome but not required.",
+      "licenseFile": "LICENSE.txt",
+      "source": "https://github.com/KayKit-Game-Assets/KayKit-Dungeon-Remastered-1.0 (commit `b0ca9bd96a80`, files fetched one by one from `addons/kaykit_dungeon_remastered/Assets/gltf/` on 2026-11-14). Pack page: https://kaylousberg.itch.io/kaykit-dungeon-remastered",
+      "title": "KayKit Dungeon Remastered 1.0"
+    },
+    {
+      "author": "The Cinderheart project",
+      "folder": "procedural",
+      "license": "Original work of this repository. See `LICENSE.md` in this folder.",
+      "licenseFile": "LICENSE.md",
+      "source": "`build.mjs` in this folder, built with `@gltf-transform/core`. Rebuild with `bun game/assets-src/procedural/build.mjs`; the output is deterministic.",
+      "title": "Procedural models"
+    },
+    {
       "author": null,
       "folder": "quaternius-modular-characters",
       "license": "CC0 1.0 Universal (https://creativecommons.org/publicdomain/zero/1.0/). The pack ships no license file in this repo; the license is as stated on the author's pack pages and in `static/models/CREDITS.md`. No attribution is required.",
@@ -23,6 +39,14 @@
       "licenseFile": "LICENSE.txt",
       "source": "https://quaternius.itch.io/universal-animation-library (the Standard zip, 15,904,933 bytes, downloaded 2026-11-12). Pack page: https://quaternius.com/packs/universalanimationlibrary.html",
       "title": "Quaternius Universal Animation Library"
+    },
+    {
+      "author": "Quaternius",
+      "folder": "universal-animation-library-2",
+      "license": "CC0 1.0 Universal. The author's `License.txt` is `LICENSE.txt` here, and the upstream readme is `README.upstream.txt`. No attribution is required.",
+      "licenseFile": "LICENSE.txt",
+      "source": "https://quaternius.itch.io/universal-animation-library-2 (the Standard zip, `Universal Animation Library 2[Standard].zip`, 18,735,003 bytes, downloaded 2026-11-14). Pack page: https://quaternius.com/packs/universalanimationlibrary2.html",
+      "title": "Quaternius Universal Animation Library 2"
     }
   ]
 }

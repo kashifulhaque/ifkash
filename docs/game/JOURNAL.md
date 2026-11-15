@@ -38,6 +38,51 @@ Copy this block to the top of the entries and fill it in as you go:
 
 ## Entries
 
+### 2026-11-15: art-direction (issues 84, 85, and 86)
+
+- **Orchestrator:** Fable 5.2
+- **Branch:** `game/art-direction`, started from `origin/main` at `2416cd4c`
+- **Target:** the two prerequisites in
+  [the art direction research plan](art-direction-research.md) and the desk research.
+  These are GitHub issues, not roadmap WPs, so `STATUS.md` has no rows for them.
+- **Work:**
+  - Issue 85 (KTX2 textures): fable, worktree; `4cfe7e88`, `26aca47f`, `134285f0`; 213K.
+    `lf-tools assets` compresses textures with KTX-Software 4.4.2's `ktx`
+    (`mise run game:ktx` installs it with no password). ADR 0010. The dev parameter
+    `&ktx2test=1` draws a Poly Haven test model.
+  - Issue 84 (model files in levels): fable, worktree; `aae73751`, `7cbe0a08`,
+    `87df60f8`; 359K. Hollowhearth draws model files for its pieces, props, the Lantern,
+    and five NPCs through a render-only art manifest (`static/latticefall/art/`). Brought
+    over ADR 0008 and `assets/MODELS.md` from the staging branch.
+  - Merge: one conflict in `assets-src/assets.json` (kept both). The orchestrator added
+    `03af4e8b`, which loads level models through issue 85's shared loader.
+  - Issue 86 desk research: two fable agents, 220K and 239K, wrote
+    `art-research/01-characters-and-animation.md` and
+    `art-research/02-environments-and-renderer.md`. No code.
+- **Verified on the merged tree:** `bun run check`, `bun run build`, `cargo test
+  --workspace`, clippy, `lf-tools validate`, and the WASM golden check. In the browser,
+  Hollowhearth draws its models (49 draw calls, 87,747 triangles at the Lantern), the test
+  model's three textures are compressed, and the console has no errors.
+- **Measurements:** Hollowhearth went from 89 to 106 mean draw calls (budget 250) and from
+  26,011 to 112,198 mean triangles (budget 600,000). A 1K KTX2 texture set is about
+  2.3 MB to download and 3.5 MB on the GPU; KTX2 barely cuts the download, because a
+  UASTC normal map is as large as its JPEG.
+- **Not verified:** NPC idle motion; the 14 areas other than Hollowhearth, Waking Hollow,
+  and the test field after the change; the target laptop, phones, and touch mode; the
+  Linux branch of `install-ktx.sh`. No animation or generated model was seen by either
+  research agent, and several license quotes need a second reading before an ADR cites
+  them (each document lists them).
+- **Waiting on the owner:** the open questions at the end of both research documents. The
+  ones that shape the ADR: whether AI-generated models are acceptable, whether the Mixamo
+  license reading is acceptable, whether agents may install Blender, and whether art may
+  move to R2.
+- **Next steps:**
+  1. Owner answers the open questions.
+  2. Build the prototype from the plan (Waking Hollow's first rooms, the new Wayfarer, one
+     enemy, the terrain, one interior), off by default, and measure it.
+  3. Write the ADR and the migration WP cards.
+  4. Loose ends: `lf-tools validate` doesn't check the art manifest; quality presets can't
+     cap KTX2 textures at run time; `figures.ts` loads `ual.glb` a second time.
 ### 2026-11-13: latticefall-m8 (M8)
 
 - **Orchestrator:** Opus 5.5, low effort

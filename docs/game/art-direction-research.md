@@ -1,6 +1,9 @@
 # Art direction research plan: the 2010s souls look
 
-- **Status:** Planned, not started (GitHub issue 86). Start it once the [prerequisites](#prerequisites) are done (issues 84 and 85).
+- **Status:** In progress (GitHub issue 86). Both [prerequisites](#prerequisites) are done
+  (issues 84 and 85, 2026-11-15), and the desk research is written in
+  [art-research/](art-research/). The prototype, the ADR, and the migration cards wait for
+  the owner's answers to the open questions in those two documents.
 - **Raised:** 2026-11-15, by the owner
 - **Replaces, if adopted:** the low-poly art direction in
   [the presentation spec](07-presentation.md#art-direction), and parts of
@@ -69,9 +72,8 @@ reading here.
   post-processing (ambient occlusion, bloom, color grading). Decide between baked lighting
   (lightmaps) and real-time lighting for interiors. Check whether WebGPU is worth it.
 - **Textures:** the compressed-texture pipeline (KTX2), which the asset tool already
-  half-supports but which needs `toktx` installed (see
-  [ADR 0005](decisions/0005-asset-pipeline-tools.md)). Set the texture sizes per quality
-  preset.
+  supports since issue 85 (see [ADR 0010](decisions/0010-ktx2-textures.md)). Set the
+  texture sizes per quality preset.
 - **Budgets:** the draw-call, triangle, and memory budgets in
   [the architecture doc](01-architecture.md#performance-budgets) were set for low-poly
   art. The download budget (first region under 8 MB, the whole game under 60 MB) will
@@ -120,8 +122,12 @@ first:
    (`render/kits/`). The renderer needs to load model files for level pieces, props, the
    Lantern, and NPCs, and stream them per area. This is the engine work that
    [ADR 0008](decisions/0008-model-packs.md) left as "a separate work package".
-2. **The textured-asset pipeline.** Install `toktx`, compress textures to KTX2 in
-   `lf-tools assets`, and serve the Basis transcoder from `static/latticefall/basis/`.
+   Done on 2026-11-15 (issue 84): Hollowhearth is the test area. See
+   [Model files in the engine](assets/MODELS.md#model-files-in-the-engine).
+2. **The textured-asset pipeline.** Install the KTX-Software `ktx` tool, compress textures
+   to KTX2 in `lf-tools assets`, and serve the Basis transcoder from
+   `static/latticefall/basis/`. Done on 2026-11-15 (issue 85): see
+   [ADR 0010](decisions/0010-ktx2-textures.md).
 
 Don't do this, because the new look would throw it away:
 

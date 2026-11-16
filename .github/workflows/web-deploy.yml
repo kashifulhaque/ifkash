@@ -96,10 +96,15 @@ jobs:
       - name: Install frontend dependencies
         run: bun install --frozen-lockfile
 
+      # Node sizes its default heap from the machine's memory. On the Avrea runner that
+      # default (about 2 GB) is too small for the Vite build, so set it explicitly.
       - name: Build site
-        run: bun run build
+        run: |
+          free -m
+          bun run build
         env:
           PUBLIC_GOOGLE_CLIENT_ID: ${{ vars.PUBLIC_GOOGLE_CLIENT_ID }}
+          NODE_OPTIONS: --max-old-space-size=4096
 
       # adapter-cloudflare writes the Pages bundle to .svelte-kit/cloudflare.
       - name: Upload build output

@@ -38,6 +38,47 @@ Copy this block to the top of the entries and fill it in as you go:
 
 ## Entries
 
+### 2026-11-16: tutorial-hud-camera (owner playtest notes 4, 5, 6, 10, and 11)
+
+- **Orchestrator:** Opus 5.5, a side session of the tutorial planning session
+- **Branch:** `claude/tutorial-hud-camera-7e6088`, started from `main` at `6c05a41`
+- **Target:** the owner's pad playtest notes on the HUD, the controls strip, control
+  prompts, and the camera.
+- **Work:**
+  - HUD (note 4): `ui/hud/Hud.svelte` has its own souls-style palette instead of the site
+    tokens: thin bronze-framed bars with a damage trail on health, a cross of framed quick
+    slots without labels, flask counts as small flask marks, a bare Glimmer count, the boss
+    name over a thin bar at the bottom center, and text over dark fading bands. The ARIA
+    meters and labels, reduced motion, the status shapes, the bar textures, and the
+    color-blind remaps (through `--falu`, `--fjord`, and `--moss`) all stay. In touch mode,
+    Glimmer moves under the **Menu** button, since the touch buttons cover the bottom right.
+  - Controls strip (note 5): only shows with `?dev=1`.
+  - Adaptive prompts (note 6): tutorial messages use placeholders (`{interact}`, `{move}`,
+    `{look}`, any action name in `input/bindings.ts`). `input/prompts.ts` fills them from
+    the saved bindings for the last device: key caps for keyboard and mouse, Xbox glyphs
+    for a pad (colored round face buttons). The text switches as soon as the player
+    switches devices. Touch shows the keyboard words.
+  - Content: the Waking Hollow message text changed, so the content hash moved.
+    `lf-tools replay rehash` rewrote all 120 goldens, every final state hash unchanged
+    (A -> A). `the_messages_teach_every_control` checks for the placeholders.
+  - Camera ceiling (note 10): `render/camera/ceiling.ts` builds a ceiling map from the
+    down-facing triangles of the art manifest's world-space props once they load (the
+    cave: 9,254 cells in 27 ms). `CameraRig` walks the pivot-to-camera line under it and
+    pulls the camera in, like a wall hit. `LevelRenderer.ceiling` holds the map. Render-only.
+  - Lock-on (note 11): while locked on, the rig sets pitch as well as yaw, the engine
+    copies both into the input, and `InputController.updateLook` drops mouse, touch, and
+    right-stick look. A right-stick flick still switches targets.
+- **Checked:** `bun run check` (0 errors), `bun run build`, `mise run game:test`,
+  `mise run game:wasm` (122 WASM goldens OK), `cargo fmt --check`. Headless Chrome on port
+  5183: a message read with the keyboard and then with a pad (text switches live), corr_3 at
+  the steepest pitch with and without the ceiling map (without it the camera is above the
+  rock), B01 with the boss bar and lock-on (the lock marker holds still while the right
+  stick is held), and touch mode at 844 x 390.
+- **Not verified:** a real pad (a fake `navigator.getGamepads` stood in), and the camera in
+  every corner of the cave.
+- **Next steps:** the owner pad-tests the HUD, the message glyphs, the corridors, and
+  lock-on. The quick slots show names, not icons; item icons are a separate task.
+
 ### 2026-11-16: enemy-locomotion (husk and B01 walking fix)
 
 - **Orchestrator:** Opus 5.5, continuing the tutorial-enemies session

@@ -5,7 +5,12 @@
 // aim at the midpoint of the player and the target, turn behind the player along the line
 // to the target, and pull back until both actors fit on screen. Both modes then run a
 // conical collision cast from the pivot toward the camera, so the camera stops short of
-// walls instead of clipping into them.
+// walls instead of clipping into them, and a walk along the same line under the ceiling
+// map of the area's art, since the level's colliders have no ceilings.
+//
+// While locked on, look input does nothing (as in Elden Ring): the rig picks both yaw and
+// pitch, and the engine copies them back into the input so the camera picks up from there
+// when the lock ends.
 
 import { PerspectiveCamera, Vector3 } from 'three';
 import { FLAG_LOCKED, lerpAngle, type DrawActor } from '../../engine/snapshot';
@@ -20,6 +25,19 @@ import {
 
 /** Distance along `dir` (in units of its length) to the first level hit within `max`. */
 export type RaycastFn = (origin: Vector3, dir: Vector3, max: number) => number | undefined;
+
+/** The lowest ceiling over (x, z) higher than `above`, or Infinity. See `CeilingMap`. */
+export type CeilingFn = (x: number, z: number, above: number) => number;
+
+/** Samples along the pivot-to-camera line when checking it against the ceiling map. */
+const CEILING_STEPS = 24;
+/** Ceilings this far below the pivot still count, so a low roof over the player is seen. */
+const CEILING_BELOW_PIVOT = 0.3;
+/** Lock-on pitch: a little above the player, looking down at the pair. */
+const LOCK_PITCH = (18 * Math.PI) / 180;
+/** How much a target above or below the player tilts the lock-on pitch, 0 to 1. */
+const LOCK_PITCH_FOLLOW = 0.5;
+const TAU_LOCK_PITCH = 0.2;
 
 /** Radius of the camera's collision "sphere": larger than the near plane's corner distance. */
 const COLLISION_RADIUS = 0.3;
@@ -76,12 +94,15 @@ export class CameraRig {
   private pivot = new Vector3();
   private focus = new Vector3();
   private yaw = 0;
+  private pitch = 0;
   private lockDist = 0;
   private collisionFrac = 1;
   private init = false;
   private wasLocked = false;
   /** Dev screenshots set this to stand in for a locked-on actor. */
   fakeTarget: Vector3 | null = null;
+  /** The area art's ceilings. The scene sets it; without it only the colliders count. */
+  ceiling: CeilingFn | null = null;
 
   // Scratch values, reused every frame.
   private a = new Vector3();
@@ -135,7 +156,7 @@ export class CameraRig {
     const player = actors[0];
     if (!player) return { yaw: inYaw, pitch: inPitch, locked: false };
 
-    const pitch = Math.min(PITCH_MAX, Math.max(PITCH_MIN, inPitch));
+    let pitch = Math.min(PITCH_MAX, Math.max(PITCH_MIN, inPitch));
     this.lastPlayer.set(player.x, player.y, player.z);
     const lockedActor = actors.find((a) => a.id !== player.id && (a.flags & FLAG_LOCKED) !== 0);
     let target: Vector3 | null = null;
@@ -149,6 +170,7 @@ export class CameraRig {
       this.pivot.copy(this.pivotGoal);
       this.focus.copy(this.pivotGoal);
       this.yaw = inYaw;
+      this.pitch = pitch;
       this.collisionFrac = 1;
       this.lockDist = 0;
       this.init = true;
@@ -174,6 +196,12 @@ export class CameraRig {
       const from = this.wasLocked ? this.yaw : inYaw;
       this.yaw = lerpAngle(from, goalYaw, smooth(dt, TAU_LOCK_YAW));
       yaw = this.yaw;
+      // Pitch too: a fixed view down at the pair, tilted toward a target above or below.
+      const rise = target.y + TARGET_HEIGHT * 0.5 - (player.y + PLAYER_HEIGHT * 0.5);
+      const goalPitch = Math.min(PITCH_MAX, Math.max(PITCH_MIN, LOCK_PITCH - Math.atan2(rise, Math.max(sep, 1)) * LOCK_PITCH_FOLLOW));
+      const fromPitch = this.wasLocked ? this.pitch : pitch;
+      this.pitch = fromPitch + (goalPitch - fromPitch) * smooth(dt, TAU_LOCK_PITCH);
+      pitch = this.pitch;
       this.focusGoal.set(
         (player.x + target.x) / 2,
         (this.pivotGoal.y + target.y + TARGET_HEIGHT * 0.5) / 2,
@@ -182,6 +210,7 @@ export class CameraRig {
       lockPull = sep / 2;
     } else {
       this.yaw = inYaw;
+      this.pitch = pitch;
       this.focusGoal.copy(this.pivotGoal);
     }
     if (!locked) this.lockDist = 0;
@@ -205,7 +234,7 @@ export class CameraRig {
     // Collision: cast from the pivot toward the camera. Pull in at once, ease back out.
     const span = this.a.subVectors(this.desired, this.pivot).length();
     const minFrac = span > 1e-4 ? Math.min(1, MIN_DISTANCE / span) : 1;
-    const castFrac = Math.max(minFrac, this.collisionFraction(this.pivot, this.desired));
+    const castFrac = Math.max(minFrac, Math.min(this.collisionFraction(this.pivot, this.desired), this.ceilingFraction(this.pivot, this.desired)));
     const goalFrac = Math.max(minFrac, this.keepClear(this.pivot, this.desired, castFrac));
     if (goalFrac < this.collisionFrac) this.collisionFrac = goalFrac;
     else this.collisionFrac += (goalFrac - this.collisionFrac) * smooth(dt, TAU_COLLISION_OUT);
@@ -217,6 +246,32 @@ export class CameraRig {
     this.lastLocked = locked;
     this.lastDist = span * this.collisionFrac;
     return { yaw, pitch, locked };
+  }
+
+  /**
+   * The largest fraction of the way from `from` (the pivot) to `to` that stays `CLEARANCE`
+   * under the ceiling map, sampled along the line. 1 with no ceiling map.
+   */
+  private ceilingFraction(from: Vector3, to: Vector3): number {
+    const ceiling = this.ceiling;
+    if (!ceiling) return 1;
+    const above = from.y - CEILING_BELOW_PIVOT;
+    let safe = 0;
+    for (let i = 1; i <= CEILING_STEPS; i++) {
+      const f = i / CEILING_STEPS;
+      const x = from.x + (to.x - from.x) * f;
+      const y = from.y + (to.y - from.y) * f;
+      const z = from.z + (to.z - from.z) * f;
+      const roof = ceiling(x, z, above) - CLEARANCE;
+      if (y > roof) {
+        // Stop where the line crosses the roof's height, between the last safe sample and this one.
+        const y0 = from.y + (to.y - from.y) * safe;
+        const cross = y > y0 ? safe + ((f - safe) * Math.max(0, roof - y0)) / (y - y0) : safe;
+        return Math.max(0, Math.min(f, cross));
+      }
+      safe = f;
+    }
+    return 1;
   }
 
   /**

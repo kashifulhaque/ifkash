@@ -425,8 +425,14 @@ export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions
         opts.hud.lock(locked ? view.project(locked.x, locked.y + 1.0, locked.z) : null);
       }
       tools?.afterRender(frameMs, world.tick_count(), () => world.state_hash());
-      // Movement is camera-relative, so when lock-on turns the camera, input follows it.
-      if (view.yawDriven) input.cameraYaw = view.cameraYaw;
+      // Movement is camera-relative, so when lock-on turns the camera, input follows it. Lock-on
+      // also owns the view, as in Elden Ring: look input is ignored until the lock ends, and
+      // the camera then carries on from where lock-on left it.
+      if (view.yawDriven) {
+        input.cameraYaw = view.cameraYaw;
+        input.cameraPitch = view.cameraPitch;
+      }
+      input.lookLocked = view.yawDriven;
       if (frameMs > 0) fps += (1000 / frameMs - fps) * 0.1;
       sinceStats += frameMs;
       if (sinceStats >= 250 && opts.onStats) {

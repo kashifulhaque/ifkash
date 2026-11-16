@@ -7,12 +7,14 @@
 // `subscribeQuality` (see `../lighting/quality.ts`).
 
 import { MeshStandardMaterial, PerspectiveCamera, Scene, type WebGLRenderer, PCFSoftShadowMap } from 'three';
+import type { KitModel } from '../kits/modelCache';
 import { InstanceLayer } from '../kits/instances';
 import { KitBatch } from '../kits/kitBatch';
 import { ScatterBatch } from '../kits/scatterBatch';
-import { PieceLibrary } from '../kits/library';
+import { PieceLibrary, artKey } from '../kits/library';
 import { fetchManifest, type LevelManifest } from '../kits/manifest';
-import { fetchAreaArt, type AreaArt } from '../kits/art';
+import { fetchAreaArt, propMatrix, type AreaArt } from '../kits/art';
+import { CeilingMap } from '../camera/ceiling';
 import { applyGrade } from '../lighting/grade';
 import { LightPool } from '../lighting/lightPool';
 import { applyHeightFog, heightFogUniforms } from '../lighting/fogPatch';
@@ -36,7 +38,15 @@ export class LevelRenderer {
   private undoGrade: (() => void) | null = null;
   private quality: QualityPreset = getQuality();
   private unsubscribe: (() => void) | null = null;
+  private offCeiling: (() => void) | null = null;
   private disposed = false;
+  /**
+   * The ceilings of the art manifest's world-space props (Waking Hollow's cave), for the
+   * camera. Null until such a model loads; the level's colliders have no ceilings.
+   */
+  ceiling: CeilingMap | null = null;
+  /** Art models already in the ceiling map, so a streamed reload doesn't add them twice. */
+  private mapped = new Set<string>();
 
   constructor(
     private scene: Scene,
@@ -79,10 +89,25 @@ export class LevelRenderer {
     this.batch = new KitBatch(this.scene, manifest, this.library);
     this.scatter = new ScatterBatch(this.scene, manifest, this.library);
     this.instances = new InstanceLayer(this.scene, manifest, this.library, art, this.batch);
+    if (art?.props?.length) this.offCeiling = this.library.onModel((key, model) => this.mapCeiling(art, key, model));
 
     this.applyQuality(this.quality);
     this.unsubscribe = subscribeQuality((p) => this.applyQuality(p));
     return true;
+  }
+
+  /** Adds a loaded world-space art model to the ceiling map, once per model. */
+  private mapCeiling(art: AreaArt, key: string, model: KitModel | null): void {
+    if (!model || this.mapped.has(key)) return;
+    const props = (art.props ?? []).filter((p) => artKey(p.model) === key);
+    if (props.length === 0) return;
+    this.mapped.add(key);
+    const map = this.ceiling ?? new CeilingMap();
+    for (const p of props) {
+      const m = propMatrix(p);
+      for (const part of model.parts) map.add(part.geometry, m);
+    }
+    this.ceiling = map;
   }
 
   private applyQuality(p: QualityPreset): void {
@@ -126,6 +151,7 @@ export class LevelRenderer {
   dispose(): void {
     this.disposed = true;
     this.unsubscribe?.();
+    this.offCeiling?.();
     this.instances?.dispose();
     this.scatter?.dispose();
     this.batch?.dispose();

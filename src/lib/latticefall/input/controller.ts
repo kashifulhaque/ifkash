@@ -28,6 +28,8 @@ export class InputController {
   cameraYaw = 0;
   /** Camera elevation in radians above the pivot's horizon; positive looks down from higher up. */
   cameraPitch = PITCH_DEFAULT;
+  /** Set by the engine while lock-on drives the camera; look input is then dropped. */
+  lookLocked = false;
   /**
    * Decides what gamepad X does: true means Interact, false means Use item. The engine sets
    * it to "the core shows an interact prompt"; the default always interacts.
@@ -151,6 +153,12 @@ export class InputController {
 
   /** Applies mouse and right-stick look to the camera. Call once per rendered frame. */
   updateLook(frameMs: number): void {
+    if (this.lookLocked) {
+      // Lock-on owns the camera. A right-stick flick still switches targets (see `poll`).
+      this.lookDx = 0;
+      this.lookDy = 0;
+      return;
+    }
     const { mouseSensitivity, invertY } = this.settings.options;
     const dy = invertY ? -1 : 1;
     this.cameraYaw -= this.lookDx * mouseSensitivity + this.padLook[0] * STICK_CAMERA_RAD_PER_S * (frameMs / 1000);

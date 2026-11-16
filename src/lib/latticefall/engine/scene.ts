@@ -86,6 +86,8 @@ export class SceneView {
   cameraYaw = 0;
   /** True while the camera is driving yaw (lock-on), so input should follow `cameraYaw`. */
   yawDriven = false;
+  /** The pitch the camera used last frame; while `yawDriven` the input follows it too. */
+  cameraPitch = 0;
   private previewOffset = new Vector3();
   /** Photo mode's free camera (WP-088); null while the game camera drives. */
   private photoPose: { x: number; y: number; z: number; yaw: number; pitch: number } | null = null;
@@ -103,6 +105,7 @@ export class SceneView {
     this.dev = dev;
     this.rig = new CameraRig(this.camera, raycast, loadCameraSettings());
     if (dev?.fakeLock) this.rig.fakeTarget = dev.fakeLock;
+    this.rig.ceiling = (x, z, above) => this.level?.ceiling?.ceilingAt(x, z, above) ?? Infinity;
     this.renderer = new WebGLRenderer({ canvas, antialias: true });
     sharedKtx2Loader(this.renderer); // Registers the renderer for every model loader.
     this.renderer.setPixelRatio(pixelRatioFor(getQuality(), window.devicePixelRatio));
@@ -333,6 +336,7 @@ export class SceneView {
       } else {
         const pose = this.rig.update(actors, this.camYaw, this.camPitch, frameMs);
         this.cameraYaw = pose.yaw;
+        this.cameraPitch = pose.pitch;
         this.yawDriven = pose.locked;
       }
     }

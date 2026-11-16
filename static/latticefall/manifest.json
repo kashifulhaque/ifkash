@@ -40,7 +40,7 @@
         "path": "hollowhearth.json"
       },
       {
-        "bytes": 7234,
+        "bytes": 7607,
         "path": "waking_hollow.json"
       }
     ],
@@ -132,6 +132,22 @@
       {
         "bytes": 649008,
         "path": "waking-hollow/hollow_wall.glb"
+      },
+      {
+        "bytes": 1082908,
+        "path": "waking-hollow/lantern.glb"
+      },
+      {
+        "bytes": 940584,
+        "path": "waking-hollow/chest.glb"
+      },
+      {
+        "bytes": 7288,
+        "path": "waking-hollow/pickup.glb"
+      },
+      {
+        "bytes": 3244,
+        "path": "waking-hollow/message.glb"
       }
     ],
     "props": [

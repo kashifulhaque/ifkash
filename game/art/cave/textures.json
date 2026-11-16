@@ -1,5 +1,5 @@
 {
-  "comment": "CC0 scanned textures for Waking Hollow's cave kit, from Poly Haven (https://polyhaven.com/license). fetch_textures.sh downloads them to ~/cinderheart-art/cave-textures/ and checks each MD5. Sources and licenses: game/assets-src/waking-hollow-cave/SOURCE.md.",
+  "comment": "CC0 scanned textures for Waking Hollow's cave kit and props, from Poly Haven (https://polyhaven.com/license). fetch_textures.sh downloads them to ~/cinderheart-art/cave-textures/ and checks each MD5. Sources and licenses: game/assets-src/waking-hollow-cave/SOURCE.md.",
   "materials": {
     "rock": {
       "asset": "dark_rock_02",
@@ -26,6 +26,18 @@
       "author": "Rob Tuytel",
       "tile_m": 1.5,
       "size_px": 512
+    },
+    "wood": {
+      "asset": "dark_wooden_planks",
+      "author": "Amal Kumar",
+      "tile_m": 1.0,
+      "size_px": 512
+    },
+    "rusted_iron": {
+      "asset": "rusty_metal_02",
+      "author": "Rob Tuytel",
+      "tile_m": 0.8,
+      "size_px": 512
     }
   },
   "files": {
@@ -43,6 +55,12 @@
     "monastery_stone_floor_arm_1k.jpg": "7ef459c183e5efb94b48e32042182e24",
     "bark_brown_02_diff_1k.jpg": "6669cca520594bdca19f94084984ab72",
     "bark_brown_02_nor_gl_1k.jpg": "1cad3fe0349a44df2d4d1c2859c79920",
-    "bark_brown_02_arm_1k.jpg": "6a566390a8930454c9ad4056273b08fb"
+    "bark_brown_02_arm_1k.jpg": "6a566390a8930454c9ad4056273b08fb",
+    "dark_wooden_planks_diff_1k.jpg": "7ec8fe3e0b84289a4add3b10a54090bb",
+    "dark_wooden_planks_nor_gl_1k.jpg": "4093b4023a4270b3a06b762076106d58",
+    "dark_wooden_planks_arm_1k.jpg": "5e5911f2c6d4fbce78c995ec7591eaa9",
+    "rusty_metal_02_diff_1k.jpg": "476bff9959bc727bd4b83c0a9ac4aeaa",
+    "rusty_metal_02_nor_gl_1k.jpg": "8d6dc7e26f2708ec59e2a739711c612b",
+    "rusty_metal_02_arm_1k.jpg": "888da78afd9bfc9fd3dafbbf2a5b8134"
   }
 }

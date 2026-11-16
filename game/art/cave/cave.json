@@ -33,10 +33,10 @@
     "sun_color": [0.55, 0.62, 0.75],
     "sun_intensity": 0.1,
     "ambient_color": [0.45, 0.48, 0.56],
-    "ambient_intensity": 0.6,
+    "ambient_intensity": 1.5,
     "haze": 0.25
   },
-  "grade": {"exposure": 1.7, "saturation": 0.72, "contrast": 1.08, "lift": [0.006, 0.008, 0.014], "gain": [1.04, 0.99, 0.92]},
+  "grade": {"exposure": 1.7, "saturation": 0.72, "contrast": 1.08, "lift": [0.011, 0.013, 0.02], "gain": [1.04, 0.99, 0.92]},
   "bake": {"dark_floor": 0.42},
   "masonry": {
     "comment": "Built stone instead of rock: the gate facade (z beyond facade_z) and the arena, below top_m.",
@@ -54,7 +54,7 @@
       [6.6, 94.5], [-9.0, 114.6], [7.0, 99.5], [6.8, 114.8], [-15.0, 50.7]
     ]
   },
-  "lantern_light": {"color": "#ffae5c", "intensity": 7.0, "distance": 15, "at": [0, 1.5, 0.44]},
+  "lantern_light": {"color": "#ffae5c", "intensity": 7.0, "distance": 15, "at": [0, 1.62, 0.3]},
   "torches": [
     {"name": "wake_exit", "from": [4.2, 8.0], "dir": [0, 1]},
     {"name": "fight_west", "from": [-6.0, 29.0], "dir": [-1, 0]},

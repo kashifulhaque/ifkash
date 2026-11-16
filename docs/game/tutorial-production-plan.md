@@ -355,6 +355,15 @@ build script stops if the rooms in its config don't match the layout's floor blo
 - **Rebuild:** `mise run art:cave` fetches the textures, runs the script, and compresses
   the output. Light and fog values are in `game/art/cave/cave.json`.
 
+After the owner's first playtest (2026-11-16), the kit gained entity props built by
+`game/art/cave/build_props.py`: a stone grave-lantern with a lit iron chamber for the
+Lantern, an iron-bound wooden chest whose lid swings on its hinge, a small clay jar of
+salts with a soft glint for ground pickups, and a glowing scrawled inscription for message
+marks. The ambient light rose from 0.6 to 1.5 and the grade's shadow lift rose, so the
+dark areas read without washing out the warm pools. A boss's fog gate fades out over about
+1.5 seconds when the core reports the boss defeated, and never draws if the save says the
+boss is already beaten.
+
 What needs a pad check: whether the cave is too dark on a real screen, whether the
 cracked wall reads as breakable, and the camera in the low corridors. The camera collides
 with the simulation's colliders, not the art, so at a steep angle it can rise above a

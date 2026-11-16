@@ -130,9 +130,10 @@ export class FigureProps {
 
   /**
    * Draws a static model in `holder` in place of `greybox`, which stays until the model
-   * loads (and for good if it fails). The model is authored in the holder's frame.
+   * loads (and for good if it fails). The model is authored in the holder's frame. `ready`
+   * gets the loaded scene, for props that move a part of it (a chest's lid).
    */
-  replace(holder: Object3D, greybox: Object3D, file: string): void {
+  replace(holder: Object3D, greybox: Object3D | Object3D[], file: string, ready?: (scene: Object3D) => void): void {
     this.track(
       this.scene(file).then((scene) => {
         if (this.disposed) return;
@@ -140,7 +141,8 @@ export class FigureProps {
           o.receiveShadow = true;
         });
         holder.add(scene);
-        greybox.visible = false;
+        for (const g of Array.isArray(greybox) ? greybox : [greybox]) g.visible = false;
+        ready?.(scene);
       }),
       `model ${file}`,
       'keeping the greybox'

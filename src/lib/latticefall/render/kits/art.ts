@@ -15,6 +15,9 @@
 //   - `entities.lantern`: the model for every Lantern in the area.
 //   - `entities.npcs`: NPC ID to the figure that replaces its greybox stand-in.
 //   - `entities.hollow_wall`: the model for every hollow wall, centered on its collider.
+//   - `entities.chest`, `entities.pickup`, `entities.message`: models for chests (with a
+//     node named `lid` whose origin is the hinge), ground pickups, and message marks, each
+//     with its feet at the origin and its front toward +Z.
 //   - `lights`: fixed light spots. The renderer lights the nearest few with a small pool of
 //     point lights (`../lighting/lightPool.ts`); the quality preset sets the pool's size.
 //   - `look`: overrides of the level's `ambient` block (fog, sun, ambient light) and the
@@ -125,6 +128,9 @@ export interface AreaArt {
     lantern?: ArtLantern;
     npcs?: Record<string, ArtNpc>;
     hollow_wall?: { model: string };
+    chest?: { model: string };
+    pickup?: { model: string };
+    message?: { model: string };
   };
   lights?: ArtLight[];
   look?: ArtLook;

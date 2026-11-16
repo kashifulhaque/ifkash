@@ -16,7 +16,7 @@ import { digestMoveResolver } from '../render/actors/moveTable';
 import { parseSection, sectionCam } from '../render/equipment/layout';
 import { equippedFromMenuWords, type Equipped } from '../render/equipment/playerGear';
 import type { DevTools } from '../dev';
-import { decodeEvents } from './events';
+import { BOSS_DEFEATED, decodeEvents } from './events';
 import { loadWasm } from './loader';
 import { AUTOSAVE_SLOT, SaveManager, SaveStore, restedIn, type SaveRecord } from './save';
 import { FixedStepLoop } from './loop';
@@ -27,7 +27,7 @@ import { MESSAGE_MS, messageIndexesFromWords, type HudSink } from '../ui/hud/hud
 import { COMMAND, createMenuHost, type MenuHost, type MenuSink } from '../ui/menus/menuHost';
 import { createDialogueHost, type DialogueHost, type DialogueSink } from '../ui/dialogue/dialogueHost';
 import { dialogueEventsFromWords } from '../ui/dialogue/dialogueState';
-import { createMapHost, type MapHost } from '../ui/map/mapState';
+import { createMapHost, parseMapView, type MapHost } from '../ui/map/mapState';
 import { createMarksHost, type MarksHost } from '../ui/marks/marksHost';
 import { clampPose, composeImage, gradeFilter, type PhotoHost } from '../ui/photo/photoMath';
 
@@ -191,6 +191,8 @@ export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions
   view.frameHooks.push((_dt, camera) => hazards.applyCamera(camera));
   // Draws the area's baked level when it has a manifest; the flat scenarios keep the stand-in ground.
   void view.loadLevel(scenario);
+  // A boss already beaten in this save keeps its fog gate open.
+  view.props.setDefeatedBosses(parseMapView(world.map_json()).bosses);
   // The armory loads only for `&dev=1&scene=armory`; its code is a separate chunk.
   let armory: { dispose(): void } | null = null;
   if (params.scene === 'armory') {
@@ -298,6 +300,7 @@ export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions
     }
     const events = decodeEvents(words);
     if (events.length) {
+      for (const e of events) if (e.kind === 'boss' && e.what === BOSS_DEFEATED) view.props.bossDefeated(e.boss);
       audio?.handleEvents(events);
       view.vfx.handleEvents(events);
       briar.handleEvents(events);

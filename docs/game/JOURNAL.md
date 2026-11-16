@@ -78,6 +78,31 @@ Copy this block to the top of the entries and fill it in as you go:
 - **Next steps:** the owner's playtest notes, then the Thorn Hound's quadruped path if
   wanted.
 
+### 2026-11-16: tutorial-cave fixes (owner playtest of Waking Hollow)
+
+- **Orchestrator:** Opus 5.5, the tutorial-cave side session
+- **Branch:** `claude/tutorial-cave-fixes`, started from `main` at `6c05a41`
+- **Target:** six fixes from the owner's playtest: dark areas too dark, the Lantern model,
+  message marks, the chest, ground pickups, and the fog gate after B01.
+- **Work:**
+  - `game/art/cave/build_props.py` builds the Lantern (a stone grave-lantern), the chest
+    (with a hinged `lid` node), the pickup (a salts jar), and the message mark (a glowing
+    inscription). Two more CC0 Poly Haven textures: `dark_wooden_planks`, `rusty_metal_02`.
+  - Art manifest: `entities.chest`, `entities.pickup`, and `entities.message`. Props draw
+    them in place of the greybox; pickups get a camera-facing glint; message glyphs breathe
+    and dim once read.
+  - Fog gate: `PropsRenderer.bossDefeated` (from the core's boss-defeated event in
+    `engine/index.ts`) fades it out; `setDefeatedBosses` (from `map_json`, which lists
+    defeated bosses by gate position) keeps it hidden after a reload.
+    `render/props/fogGate.test.ts` covers both.
+  - Light: ambient 0.6 to 1.5, a larger grade lift.
+- **Verified:** `bun run check`, `bun run build`, `bun test` on `render/props/`,
+  `mise run game:test`; `&bench=waking_hollow` passes (max 144 draw calls, 178K triangles,
+  23.1 MB textures, nothing left after unload). Screenshots from a headless Chrome.
+- **Not verified:** the gate fading in a real B01 fight (covered by the unit test, not
+  played); frame time on the integrated-graphics target.
+- **Next steps:** the owner checks brightness and the props on a pad.
+
 ### 2026-11-15: tutorial-cave (tutorial plan, phase 4 environment)
 
 - **Orchestrator:** Opus 5.5, a side session of the tutorial planning session

@@ -12,7 +12,18 @@
       "shadow": false
     },
     "lantern": {
-      "file": "props/procedural/lantern.glb"
+      "file": "kits/waking-hollow/lantern.glb"
+    },
+    "chest": {
+      "file": "kits/waking-hollow/chest.glb"
+    },
+    "pickup": {
+      "file": "kits/waking-hollow/pickup.glb",
+      "shadow": false
+    },
+    "message": {
+      "file": "kits/waking-hollow/message.glb",
+      "shadow": false
     }
   },
   "props": [
@@ -94,20 +105,28 @@
   "entities": {
     "lantern": {
       "model": "lantern",
-      "sway": "cage",
       "light": {
         "color": "#ffae5c",
         "intensity": 7.0,
         "distance": 15,
         "at": [
           0,
-          1.5,
-          0.44
+          1.62,
+          0.3
         ]
       }
     },
     "hollow_wall": {
       "model": "hollow_wall"
+    },
+    "chest": {
+      "model": "chest"
+    },
+    "pickup": {
+      "model": "pickup"
+    },
+    "message": {
+      "model": "message"
     }
   },
   "lights": [
@@ -395,7 +414,7 @@
       0.48,
       0.56
     ],
-    "ambient_intensity": 0.6,
+    "ambient_intensity": 1.5,
     "haze": 0.25
   },
   "grade": {
@@ -403,9 +422,9 @@
     "saturation": 0.72,
     "contrast": 1.08,
     "lift": [
-      0.006,
-      0.008,
-      0.014
+      0.011,
+      0.013,
+      0.02
     ],
     "gain": [
       1.04,

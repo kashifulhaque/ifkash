@@ -118,10 +118,11 @@ run = "bash game/scripts/art-character.sh"
 
 [tasks."art:cave"]
 env = { RUSTUP_TOOLCHAIN = "1.99.1" }
-description = "Build Waking Hollow's cave kit in headless Blender and compress it (game/art/cave/)"
+description = "Build Waking Hollow's cave kit and props in headless Blender and compress it (game/art/cave/)"
 run = """
 bash game/art/cave/fetch_textures.sh
 blender --background --factory-startup --python-exit-code 1 --python game/art/cave/build_cave.py
+blender --background --factory-startup --python-exit-code 1 --python game/art/cave/build_props.py
 cd game && cargo run -q -p lf-tools -- assets
 """
 

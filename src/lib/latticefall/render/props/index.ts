@@ -18,6 +18,11 @@ import {
   OctahedronGeometry,
   PlaneGeometry,
   ShaderMaterial,
+  MeshBasicMaterial,
+  CanvasTexture,
+  SRGBColorSpace,
+  AdditiveBlending,
+  type Texture,
   type BufferGeometry,
   type Material,
   type Object3D,
@@ -53,6 +58,7 @@ const FOG_GATE_FRAG = `varying vec2 vUv;
 varying float vDist;
 uniform float uTime;
 uniform float uSeed;
+uniform float uFade;
 float h(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7)) + uSeed) * 43758.5453); }
 float n(vec2 p) {
   vec2 i = floor(p), f = fract(p);
@@ -63,7 +69,7 @@ void main() {
   vec2 p = vUv * vec2(4.0, 2.5) + vec2(uTime * 0.05, -uTime * 0.18);
   float m = 0.5 * n(p) + 0.3 * n(p * 2.1 + 3.7) + 0.2 * n(p * 4.3 - uTime * 0.3);
   float edge = smoothstep(0.0, 0.12, vUv.x) * smoothstep(1.0, 0.88, vUv.x) * smoothstep(1.0, 0.7, vUv.y) * smoothstep(0.0, 0.04, vUv.y);
-  float a = (0.18 + 0.5 * m) * edge * (1.0 - 0.35 * vUv.y) * (1.0 - smoothstep(12.0, 28.0, vDist));
+  float a = uFade * (0.18 + 0.5 * m) * edge * (1.0 - 0.35 * vUv.y) * (1.0 - smoothstep(12.0, 28.0, vDist));
   gl_FragColor = vec4(vec3(0.62, 0.68, 0.74) * (0.7 + 0.5 * m), a);
 }`;
 
@@ -83,6 +89,20 @@ function token(name: string, fallback: string): Color {
     // Fall through.
   }
   return new Color(fallback);
+}
+
+/** A boss's fog gate: its mist, how much of it shows, and where it stands. */
+interface FogGate {
+  group: Group | null;
+  fade: { value: number };
+  open: boolean;
+  at: V3 | null;
+}
+
+/** A fixed yaw per entity from its position, so props don't all face the same way. */
+function rngYaw(d: Record<string, unknown>): number {
+  const p = d.pos as V3;
+  return ((Math.sin(p[0] * 12.9898 + p[2] * 78.233) * 43758.5453) % 1) * Math.PI * 2;
 }
 
 /** Frame-rate independent smoothing of `cur` toward `goal`. */
@@ -289,6 +309,8 @@ export class PropsRenderer {
     this.scene.remove(this.root);
     for (const g of this.geometries) g.dispose();
     for (const m of this.materials) m.dispose();
+    for (const t of this.textures) t.dispose();
+    this.textures = [];
     this.geometries = [];
     this.materials = [];
     this.updaters = [];
@@ -436,6 +458,12 @@ export class PropsRenderer {
     };
   }
 
+  /** The art manifest's file for an entity model, or undefined. */
+  private entityFile(kind: 'chest' | 'pickup' | 'message'): string | undefined {
+    const spec = this.art?.entities?.[kind];
+    return spec ? this.art?.models[spec.model]?.file : undefined;
+  }
+
   private pickup(d: Record<string, unknown>): Updater {
     const gem = new Mesh(
       this.geo(new OctahedronGeometry(0.16)),
@@ -443,11 +471,66 @@ export class PropsRenderer {
     );
     const g = this.add(gem, d.pos as V3);
     const y0 = g.position.y + 0.5;
+    const file = this.entityFile('pickup');
+    if (file) {
+      // A small object on the ground with a soft glint above it, in place of the floating gem.
+      const holder = new Group();
+      const glint = new Mesh(this.glintQuad(), this.glintMaterial());
+      glint.position.y = 0.16;
+      // Always faces the camera, like a sprite.
+      glint.onBeforeRender = (_r, _s, camera) => {
+        glint.parent?.getWorldQuaternion(glint.quaternion).invert().multiply(camera.quaternion);
+      };
+      holder.add(glint);
+      const phase = (d.pos as V3)[0] * 1.3 + (d.pos as V3)[2] * 0.7;
+      this.add(holder, d.pos as V3, rngYaw(d));
+      this.figures.replace(holder, gem, file);
+      return (v) => {
+        holder.visible = v < 0.5;
+        const t = this.clock / 1000 + phase;
+        glint.material.opacity = 0.55 + 0.3 * Math.sin(t * 2.1) + 0.15 * Math.sin(t * 5.3);
+        glint.scale.setScalar(0.5 + 0.08 * Math.sin(t * 1.7));
+      };
+    }
     return (v) => {
       g.visible = v < 0.5;
       g.position.y = y0 + Math.sin(this.clock / 400) * 0.08;
       g.rotation.y = this.clock / 700;
     };
+  }
+
+  private glint: MeshBasicMaterial | null = null;
+  private glintGeometry: PlaneGeometry | null = null;
+  private textures: Texture[] = [];
+
+  private glintQuad(): PlaneGeometry {
+    return (this.glintGeometry ??= this.geo(new PlaneGeometry(1, 1)));
+  }
+
+  /** A soft, warm star of light for ground pickups: a radial gradient drawn once. */
+  private glintMaterial(): MeshBasicMaterial {
+    if (this.glint) return this.glint;
+    const c = document.createElement('canvas');
+    c.width = c.height = 64;
+    const g = c.getContext('2d');
+    if (g) {
+      const grad = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+      grad.addColorStop(0, 'rgba(255,240,205,1)');
+      grad.addColorStop(0.18, 'rgba(255,214,150,0.55)');
+      grad.addColorStop(1, 'rgba(255,190,110,0)');
+      g.fillStyle = grad;
+      g.fillRect(0, 0, 64, 64);
+      // Four thin rays.
+      g.fillStyle = 'rgba(255,236,200,0.5)';
+      g.fillRect(31, 4, 2, 56);
+      g.fillRect(4, 31, 56, 2);
+    }
+    const tex = new CanvasTexture(c);
+    tex.colorSpace = SRGBColorSpace;
+    this.textures.push(tex);
+    this.glint = new MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, blending: AdditiveBlending, fog: true });
+    this.materials.push(this.glint);
+    return this.glint;
   }
 
   private chest(d: Record<string, unknown>): Updater {
@@ -462,10 +545,26 @@ export class PropsRenderer {
     const g = new Group();
     g.add(body, lidPivot);
     this.add(g, d.pos as V3, d.yaw as number);
+    const file = this.entityFile('chest');
+    if (file) {
+      // The model's `lid` node hinges at its origin, the same hinge as the greybox lid.
+      this.figures.replace(g, [body, lid], file, (scene) => {
+        const node = scene.getObjectByName('lid');
+        if (!node) return;
+        // A hinge inside the loaded scene, so freeing the scene frees the lid too.
+        const pivot = new Group();
+        pivot.position.copy(node.position);
+        node.position.set(0, 0, 0);
+        pivot.add(node);
+        scene.add(pivot);
+        hinge = pivot;
+      });
+    }
+    let hinge: Object3D = lidPivot;
     let a = 0;
     return (v, dt) => {
       a = ease(a, v > 0.5 ? -1.1 : 0, dt, 100);
-      lidPivot.rotation.x = a;
+      hinge.rotation.x = a;
     };
   }
 
@@ -474,9 +573,23 @@ export class PropsRenderer {
     const sign = new Mesh(this.geo(new PlaneGeometry(0.5, 0.35)), m);
     sign.rotation.x = -Math.PI / 2 + 0.2;
     sign.position.y = 0.05;
-    this.add(sign, d.pos as V3);
+    const holder = this.add(sign, d.pos as V3, rngYaw(d));
+    const file = this.entityFile('message');
+    // A glowing inscription on the floor: its glyphs breathe, and dim once read.
+    const glows: Array<{ m: MeshStandardMaterial; base: number }> = [];
+    if (file) {
+      this.figures.replace(holder, sign, file, (scene) => {
+        scene.traverse((o) => {
+          const mat = (o as Mesh).material as MeshStandardMaterial | undefined;
+          if (mat?.emissive && mat.emissive.getHex() !== 0) glows.push({ m: mat, base: mat.emissiveIntensity });
+        });
+      });
+    }
+    const phase = (d.pos as V3)[2] * 0.37;
     return (v) => {
+      const pulse = 0.8 + 0.2 * Math.sin(this.clock / 700 + phase);
       m.emissiveIntensity = v > 0.5 ? 0.1 : 0.4 + Math.sin(this.clock / 500) * 0.15;
+      for (const g of glows) g.m.emissiveIntensity = g.base * (v > 0.5 ? 0.45 : pulse);
     };
   }
 
@@ -523,13 +636,17 @@ export class PropsRenderer {
   private fogGate(g: Record<string, unknown>): void {
     const hw = (g.half_width_m as number) ?? 2;
     const pos = g.pos as V3 | undefined;
+    // Gates go in boss order, so the core's boss index finds its gate.
+    const gate: FogGate = { group: null, fade: { value: 1 }, open: false, at: pos ?? null };
+    this.gates.push(gate);
     if (!pos) return;
     const height = 4.8;
     const group = new Group();
+    gate.group = group;
     const time = { value: 0 };
     for (const [i, z] of [0, 0.25].entries()) {
       const m = new ShaderMaterial({
-        uniforms: { uTime: time, uSeed: { value: i * 17.3 } },
+        uniforms: { uTime: time, uSeed: { value: i * 17.3 }, uFade: gate.fade },
         vertexShader: FOG_GATE_VERT,
         fragmentShader: FOG_GATE_FRAG,
         transparent: true,
@@ -545,6 +662,43 @@ export class PropsRenderer {
     this.add(group, pos, g.yaw as number);
     this.animated.push((dt) => {
       time.value += dt / 1000;
+      if (gate.open && gate.fade.value > 0) {
+        // The mist thins over about a second and a half, then stops drawing.
+        gate.fade.value = Math.max(0, gate.fade.value - dt / 1500);
+        if (gate.fade.value === 0) group.visible = false;
+      }
     });
+    if (this.defeatedAt.some((p) => this.sameGate(gate.at, p))) this.openGate(gate, true);
+  }
+
+  /** The boss gates in boss order, and the gates of bosses already defeated (from the save). */
+  private gates: FogGate[] = [];
+  private defeatedAt: Array<{ x: number; z: number }> = [];
+
+  private sameGate(at: V3 | null, p: { x: number; z: number }): boolean {
+    return !!at && Math.hypot(at[0] - p.x, at[2] - p.z) < 1.5;
+  }
+
+  private openGate(gate: FogGate, now: boolean): void {
+    gate.open = true;
+    if (now) {
+      gate.fade.value = 0;
+      if (gate.group) gate.group.visible = false;
+    }
+  }
+
+  /** The core's boss-defeated event: that boss's fog gate fades out and stops drawing. */
+  bossDefeated(index: number): void {
+    const gate = this.gates[index];
+    if (gate) this.openGate(gate, false);
+  }
+
+  /**
+   * Bosses already defeated when the area loads, by their gate's position (the map lists
+   * them that way): their gates never draw. Safe to call before or after the props load.
+   */
+  setDefeatedBosses(at: ReadonlyArray<{ x: number; z: number }>): void {
+    this.defeatedAt = [...at];
+    for (const gate of this.gates) if (at.some((p) => this.sameGate(gate.at, p))) this.openGate(gate, true);
   }
 }

@@ -38,6 +38,38 @@ Copy this block to the top of the entries and fill it in as you go:
 
 ## Entries
 
+### 2026-11-16: enemy-locomotion (husk and B01 walking fix)
+
+- **Orchestrator:** Opus 5.5, continuing the tutorial-enemies session
+- **Branch:** `claude/enemy-locomotion`, started from `main` at `6c05a41`
+- **Target:** the owner's playtest: the husks' and B01's movement looked "broken and
+  funny" when they chased, though idles and attacks looked right.
+- **Cause:** enemies used the player's locomotion blend, which mixes the walk and run
+  loops by speed with one shared phase. The husk's walk (a 4-second shamble, 0.39 m/s)
+  and run (one 0.8-second stride, 3.1 m/s) mixed at the same phase, so the legs fought;
+  B01 chases at 3.6 m/s, between its walk (1.48 m/s) and run (5.06 m/s), so it mixed two
+  loops that lead with different feet. Husks also circle sideways while facing the
+  player, and a forward walk slid sideways. A husk woke with a 2-second stand-up while
+  the simulation already had it chasing, so it slid along the floor getting up.
+- **Work:**
+  - `pickGait` (`render/actors/locomotion.ts`): one loop at a time, at the rate that
+    matches the ground speed, with hysteresis. The speed average follows a speed-up at once
+    and a slowdown gradually, and a switch to a slower loop waits 0.3 s, so the AI's
+    one-tick stops don't flip loops.
+  - `gaitFacing`: sideways travel turns the drawn body along the path; backing away plays
+    the loop in reverse. Moves, hits, and staggers turn back to the simulation's facing.
+  - A husk that wakes while moving lurches up in 0.8 s.
+  - The husk's walk is Zombie Walk with Stride and Overdrive at 100 (0.99 m/s, was 0.39).
+    Re-baked and re-uploaded to R2. The player's locomotion is unchanged.
+- **Verified:** `bun run check`, `bun run build`, `bun test` on `render/actors/` (28
+  tests). Real-time captures at 60 fps in headless Chrome (the Browser pane was hidden):
+  B01 running across the arena with an alternating stride, husks lurching up and running
+  in, and a husk circling with its body along its path. The live R2 copy of `husk.json`
+  has the new walk.
+- **Not verified:** the owner's pad feel. Players with the old `husk.glb` cached (up to the
+  route's cache time) see the old slow walk under the new code until it expires.
+- **Next steps:** the owner's pad playtest of husks and B01 chasing and circling.
+
 ### 2026-11-15: tutorial-enemies (husks and B01 as Mixamo characters)
 
 - **Orchestrator:** Opus 5.5, a side session of the tutorial planning session

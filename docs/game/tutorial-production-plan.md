@@ -307,6 +307,16 @@ To give another enemy kind an art character, do the following:
      `weapon` and its `weaponScale`, or a chest `lantern`.
 1. Upload both baked files to R2, as in [Private art](#private-art).
 
+An enemy walks differently from the player. It plays one loop at a time, `walk` or `run`,
+whichever loop's natural speed is nearest its ground speed, at the rate that keeps the
+feet planted (`pickGait` in `render/actors/locomotion.ts`). Mixamo loops differ in length
+and in which foot leads, so a blend of two of them makes the legs fight. When the
+simulation moves an enemy sideways while it faces its target, the body turns along the
+path; when it backs away, the loop plays in reverse (`gaitFacing`). For each loop, pick a
+Mixamo clip whose speed is near the speed the enemy moves at: the husk's walk is Zombie
+Walk with **Stride** and **Overdrive** at 100, about 1 m/s, for the 1.12 m/s it circles
+at.
+
 The renderer starts loading every enemy character with the player. For up to four
 seconds, an enemy whose character is still loading isn't drawn. After that, its
 procedural model draws until the character arrives. If the character fails to load, the

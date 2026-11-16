@@ -56,7 +56,7 @@ import { weaponByNum, weaponNumById } from '../equipment/catalog';
 import type { BoneOffset } from '../../ui/gestures/gesturePose';
 import { parsePreview, type PreviewRequest } from './devPreview';
 import { digestAnimInfo } from './moveTable';
-import { locomotionBlend, type LocoBands } from './locomotion';
+import { gaitFacing, locomotionBlend, pickGait, wrapAngle, type Gait, type LocoBands } from './locomotion';
 import {
   clipsForAnim,
   locateSpec,
@@ -155,6 +155,8 @@ const ART_RUN_RATE = 1.6;
 const RISE_SPEED = 0.3;
 /** The waking clip plays this much faster than authored: the sim has already sent it walking. */
 const RISE_RATE = 1.6;
+/** Seconds the whole waking clip takes when the enemy is already moving. */
+const RISE_MOVING_SECONDS = 0.8;
 /** Hit reactions play this much faster than authored, so they read as a flinch. */
 const HIT_RATE = 1.3;
 /** A hit reaction gives way to locomotion after this long if the enemy is already moving. */
@@ -166,6 +168,20 @@ const HIT_MOVING_SPEED = 1;
  * stands in, in milliseconds. Long enough for the art on a normal connection.
  */
 const ENEMY_ART_WAIT_MS = 4000;
+/** Crossfade between an enemy's locomotion loops, in seconds: long enough to hide the step change. */
+const GAIT_FADE_SECONDS = 0.25;
+/** Time constant for the slower speed average that picks an enemy's loop, in seconds. */
+const GAIT_SPEED_SMOOTH_SECONDS = 0.2;
+/** Seconds a slower loop must stay the better fit before an enemy switches down to it. */
+const GAIT_HOLD_SECONDS = 0.3;
+/** Speed (m/s) a moving loop's rate is figured from at the least, so a slowdown doesn't stall it. */
+const IDLE_GAIT_FLOOR = 0.3;
+/** Time constant for smoothing an enemy's travel direction, in seconds. */
+const HEADING_SMOOTH_SECONDS = 0.15;
+/** How fast (radians per second) an enemy's drawn body turns along its path while it walks. */
+const GAIT_TURN_RATE = 7;
+/** How fast it turns back to the simulation's facing for a move, a hit, or a stagger. */
+const ATTACK_TURN_RATE = 16;
 /** Seconds the lantern takes to go out after its bearer dies. */
 const LANTERN_DIE_SECONDS = 1.2;
 
@@ -254,6 +270,22 @@ interface Instance {
   lantern: { spec: ArtLantern; light: PointLight; flame: Mesh; material: MeshBasicMaterial; phase: number } | null;
   /** True once an enemy's weapon is attached. */
   armed: boolean;
+  /** An enemy's locomotion loop (`pickGait`) and how far into it, in seconds of clip time. */
+  gait: Gait;
+  gaitT: number;
+  /** Ground speed smoothed slowly, for choosing the loop and its rate. */
+  gaitSpeed: number;
+  /** A different loop `pickGait` wants, and for how many seconds it has wanted it. */
+  gaitWant: Gait;
+  gaitWantT: number;
+  /** Smoothed ground velocity (m/s), for the travel direction. */
+  vx: number;
+  vz: number;
+  /** The yaw an enemy is drawn at (`gaitFacing`), eased toward `faceYaw`; NaN until set. */
+  drawYaw: number;
+  faceYaw: number;
+  /** Radians per second `drawYaw` turns at this frame. */
+  faceRate: number;
 }
 
 const newPose = (n: number): Pose => ({ q: new Float32Array(n * 4), hips: new Float32Array(3) });
@@ -580,10 +612,17 @@ export class ActorRenderer {
 
     // Ground speed from position deltas (the snapshot has none).
     if (inst.lastPos && dt > 0) {
-      const d = Math.hypot(a.x - inst.lastPos[0], a.z - inst.lastPos[2]);
-      const raw = d > TELEPORT_METERS ? 0 : d / dt;
+      const dx = a.x - inst.lastPos[0];
+      const dz = a.z - inst.lastPos[2];
+      const far = Math.hypot(dx, dz) > TELEPORT_METERS;
+      const raw = far ? 0 : Math.hypot(dx, dz) / dt;
       const k = 1 - Math.exp(-dt / SPEED_SMOOTH_SECONDS);
       inst.speed += (raw - inst.speed) * k;
+      // The travel direction needs a steadier signal than the speed: the snapshot moves in
+      // 30 Hz steps, so per-frame deltas alternate between a step and nothing.
+      const kv = 1 - Math.exp(-dt / HEADING_SMOOTH_SECONDS);
+      inst.vx += ((far ? 0 : dx / dt) - inst.vx) * kv;
+      inst.vz += ((far ? 0 : dz / dt) - inst.vz) * kv;
     }
     inst.lastPos = [a.x, a.y, a.z];
 
@@ -618,6 +657,14 @@ export class ActorRenderer {
     const sig = inst.enemy ? this.composeEnemyPose(inst, a, dt, moveFrac) : this.composePose(inst, a, inst.tpl, dt, moveFrac);
     this.crossfade(inst, sig, dt);
     this.apply(inst);
+    if (inst.enemy) {
+      // Ease the drawn yaw toward where the pose wants to face (`composeEnemyPose`).
+      if (Number.isNaN(inst.drawYaw)) inst.drawYaw = a.yaw;
+      const turn = wrapAngle(inst.faceYaw - inst.drawYaw);
+      const most = inst.faceRate * dt;
+      inst.drawYaw = wrapAngle(inst.drawYaw + Math.max(-most, Math.min(most, turn)));
+      inst.holder.rotation.y = inst.drawYaw + MODEL_YAW_OFFSET;
+    }
     this.updateLantern(inst, a, dt);
     return true;
   }
@@ -992,7 +1039,17 @@ export class ActorRenderer {
       drawnMove: undefined,
       drawnFrame: 0,
       lantern: null,
-      armed: false
+      armed: false,
+      gait: 'idle',
+      gaitT: 0,
+      gaitSpeed: 0,
+      gaitWant: 'idle',
+      gaitWantT: 0,
+      vx: 0,
+      vz: 0,
+      drawYaw: NaN,
+      faceYaw: 0,
+      faceRate: ATTACK_TURN_RATE
     };
     if (tpl.look?.lantern) inst.lantern = this.makeLantern(tpl, root, tpl.look.lantern, id);
     this.instances.set(id, inst);
@@ -1147,6 +1204,46 @@ export class ActorRenderer {
   }
 
   /**
+   * An enemy's locomotion: one loop at a time, played at the rate that matches its ground
+   * speed (`pickGait`), with the body turned along a sideways path and the loop reversed
+   * when it backs away (`gaitFacing`). Each switch of loop crossfades by its signature.
+   */
+  private enemyGait(inst: Instance, tpl: Template, a: DrawActor, dt: number, out: Pose): string {
+    // The AI rethinks every few ticks and can stand still for one, which dips the measured
+    // speed. The average follows a speed-up at once but a slowdown only gradually, and a
+    // switch to a slower loop waits out a short hold, so such a dip doesn't flip the loop.
+    if (inst.speed > inst.gaitSpeed) inst.gaitSpeed = inst.speed;
+    else inst.gaitSpeed += (inst.speed - inst.gaitSpeed) * (1 - Math.exp(-dt / GAIT_SPEED_SMOOTH_SECONDS));
+    const pick = pickGait(inst.gaitSpeed, tpl.bands, inst.gait);
+    const order: Record<Gait, number> = { idle: 0, walk: 1, run: 2 };
+    if (pick.gait === inst.gait) inst.gaitWantT = 0;
+    else {
+      inst.gaitWantT = pick.gait === inst.gaitWant ? inst.gaitWantT + dt : 0;
+      inst.gaitWant = pick.gait;
+      if (order[pick.gait] > order[inst.gait] || inst.gaitWantT >= GAIT_HOLD_SECONDS) {
+        // A new loop starts where its first step lands, not part way through the old one's.
+        inst.gaitT = 0;
+        inst.gait = pick.gait;
+        inst.gaitWantT = 0;
+      }
+    }
+    const gait = inst.gait;
+    const rate = gait === 'idle' ? 1 : pickGait(Math.max(inst.gaitSpeed, IDLE_GAIT_FLOOR), tpl.bands, gait).rate;
+    if (gait === 'idle') {
+      inst.idleT += dt;
+      sampleClip(tpl.clips.get(tpl.loops.idle)!, inst.idleT, true, out.q, out.hips);
+      return 'loco:idle';
+    }
+    const heading = Math.atan2(inst.vx, inst.vz);
+    const face = gaitFacing(a.yaw, heading, Math.hypot(inst.vx, inst.vz));
+    inst.faceYaw = face.yaw;
+    inst.faceRate = GAIT_TURN_RATE;
+    inst.gaitT += dt * rate * (face.reverse ? -1 : 1);
+    sampleClip(tpl.clips.get(gait === 'walk' ? tpl.loops.walk : tpl.loops.run)!, inst.gaitT, true, out.q, out.hips);
+    return `loco:${gait}`;
+  }
+
+  /**
    * Fills `inst.tmp` with an art enemy's pose and returns its signature. In order: the death
    * (played once and held), waking (lying still until it first stirs, then the `rise` clip),
    * a move retimed to its frame data, a stagger while locked out, a hit reaction, and
@@ -1156,6 +1253,9 @@ export class ActorRenderer {
     const tpl = inst.tpl;
     const out = inst.tmp;
     const clip = (id: string) => tpl.clips.get(id);
+    // Every state but locomotion faces where the simulation faces.
+    inst.faceYaw = a.yaw;
+    inst.faceRate = ATTACK_TURN_RATE;
     const once = (id: string, t: number) => {
       const c = clip(id)!;
       sampleClip(c, Math.min(t, c.duration), false, out.q, out.hips);
@@ -1188,8 +1288,12 @@ export class ActorRenderer {
     }
     if (inst.rise === 'rising') {
       // A move cuts the waking short; the crossfade covers it.
-      inst.riseT += dt * RISE_RATE;
-      if (!info && inst.riseT < clip('rise')!.duration) {
+      // The simulation sends a waking enemy after its target at once, so while it moves the
+      // whole clip plays in RISE_MOVING_SECONDS: a lurch up rather than a slow slide.
+      const riseClip = clip('rise')!;
+      const moving = inst.speed > RISE_SPEED;
+      inst.riseT += dt * (moving ? Math.max(RISE_RATE, riseClip.duration / RISE_MOVING_SECONDS) : RISE_RATE);
+      if (!info && inst.riseT < riseClip.duration) {
         once('rise', inst.riseT);
         return 'rise';
       }
@@ -1235,8 +1339,7 @@ export class ActorRenderer {
       inst.hitT = null;
     }
 
-    this.locomotion(inst, tpl, dt, false, out);
-    return 'loco';
+    return this.enemyGait(inst, tpl, a, dt, out);
   }
 
   /**
@@ -1374,7 +1477,12 @@ export class ActorRenderer {
       if (inst.signature !== '') {
         copyPose(inst.from, inst.cur);
         inst.fadeT = 0;
-        inst.fadeLen = inst.signature.startsWith('move:') && !sig.startsWith('move:') ? MOVE_EXIT_FADE_SECONDS : FADE_SECONDS;
+        inst.fadeLen =
+          inst.signature.startsWith('move:') && !sig.startsWith('move:')
+            ? MOVE_EXIT_FADE_SECONDS
+            : inst.signature.startsWith('loco:') && sig.startsWith('loco:')
+              ? GAIT_FADE_SECONDS
+              : FADE_SECONDS;
       }
       inst.signature = sig;
     }

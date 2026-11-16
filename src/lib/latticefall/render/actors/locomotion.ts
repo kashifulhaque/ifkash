@@ -75,3 +75,61 @@ export function locomotionBlend(speed: number, bands: LocoBands): LocoBlend {
   out.cyclesPerSec = Math.max(speed / mpc, MIN_CYCLES_PER_SEC);
   return out;
 }
+
+/** The locomotion loop an enemy plays, one at a time (`pickGait`). */
+export type Gait = 'idle' | 'walk' | 'run';
+
+/** Playback rates `pickGait` keeps a loop within, so a stretched clip still reads as itself. */
+export const GAIT_MIN_RATE = 0.6;
+export const GAIT_MAX_RATE = 1.7;
+/** How much better the other loop must fit before `pickGait` switches, so it doesn't flicker. */
+const GAIT_HYSTERESIS = 1.2;
+
+/**
+ * One locomotion loop and its playback rate for a ground speed (m/s), for enemies. Unlike
+ * `locomotionBlend`, it never mixes two loops: Mixamo loops differ in length and in which
+ * foot leads, so a blend of them makes the legs fight. It plays the loop whose own speed is
+ * nearest (by ratio) at `speed / band.speed`, which keeps the feet planted, and holds the
+ * `current` loop unless the other fits clearly better.
+ */
+export function pickGait(speed: number, bands: LocoBands, current: Gait): { gait: Gait; rate: number } {
+  if (!(speed > IDLE_SPEED)) return { gait: 'idle', rate: 1 };
+  const misfit = (g: 'walk' | 'run') => Math.abs(Math.log(speed / bands[g].speed));
+  let gait: 'walk' | 'run' = misfit('walk') <= misfit('run') ? 'walk' : 'run';
+  if (current === 'walk' || current === 'run') {
+    const other = current === 'walk' ? 'run' : 'walk';
+    gait = misfit(current) - misfit(other) > Math.log(GAIT_HYSTERESIS) ? other : current;
+  }
+  const rate = Math.min(Math.max(speed / bands[gait].speed, GAIT_MIN_RATE), GAIT_MAX_RATE);
+  return { gait, rate };
+}
+
+/** Travel within this angle of the facing (radians) counts as forward. */
+const FORWARD_ARC = (35 * Math.PI) / 180;
+/** Travel beyond this angle of the facing counts as backing away. */
+const BACKWARD_ARC = (125 * Math.PI) / 180;
+/** Slower than this (m/s), an enemy faces where the simulation faces it. */
+const STEER_SPEED = 0.4;
+
+/** An angle wrapped to (-pi, pi]. */
+export function wrapAngle(a: number): number {
+  const t = a % (Math.PI * 2);
+  if (t > Math.PI) return t - Math.PI * 2;
+  if (t <= -Math.PI) return t + Math.PI * 2;
+  return t;
+}
+
+/**
+ * Where an enemy's body faces while it walks, and whether its loop plays backward. The
+ * simulation keeps an enemy facing its target while it circles or backs away, but a
+ * walk clip only walks forward. So: travel near the facing keeps the facing; sideways
+ * travel turns the body along the path; backing away keeps the facing and plays the loop in
+ * reverse. Yaw 0 faces +Z, as in the simulation; `heading` is the travel direction.
+ */
+export function gaitFacing(simYaw: number, heading: number, speed: number): { yaw: number; reverse: boolean } {
+  if (!(speed > STEER_SPEED)) return { yaw: simYaw, reverse: false };
+  const off = Math.abs(wrapAngle(heading - simYaw));
+  if (off <= FORWARD_ARC) return { yaw: simYaw, reverse: false };
+  if (off >= BACKWARD_ARC) return { yaw: wrapAngle(heading + Math.PI), reverse: true };
+  return { yaw: heading, reverse: false };
+}

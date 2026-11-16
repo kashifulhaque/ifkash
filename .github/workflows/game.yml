@@ -40,7 +40,7 @@ env:
 jobs:
   rust:
     name: Rust (test, lint, validate, bench)
-    runs-on: ubuntu-latest
+    runs-on: avrea-ubuntu-latest-2-vcpu
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v7
@@ -83,7 +83,7 @@ jobs:
 
   wasm:
     name: WASM (build and determinism)
-    runs-on: ubuntu-latest
+    runs-on: avrea-ubuntu-latest-2-vcpu
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v7
@@ -133,7 +133,7 @@ jobs:
 
   python:
     name: Python bindings
-    runs-on: ubuntu-latest
+    runs-on: avrea-ubuntu-latest-2-vcpu
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v7

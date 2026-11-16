@@ -508,20 +508,22 @@ fn the_messages_teach_every_control() {
         .map(|m| m.text.as_str())
         .collect::<Vec<_>>()
         .join(" ");
+    // Controls are placeholders that the HUD fills in for the device in use (keyboard or pad).
     for needle in [
-        "W, A, S, and D",
-        "mouse",
-        "sprint",
+        "Move with {move}",
+        "Look around with {look}",
+        "Hold {dodge} to sprint",
         "Lantern",
-        "press E",
-        "Press F to jump",
-        "Press Q to lock on",
-        "Left mouse",
-        "heavy",
+        "press {interact} to rest",
+        "Press {jump} to jump",
+        "Press {lock} to lock on",
+        "Press {light} to swing",
+        "{heavy} for a slow heavy blow",
         "stamina",
-        "Press R",
-        "Tap Space to roll",
-        "right mouse button to guard",
+        "Press {useItem}",
+        "{cycleItem}",
+        "Tap {dodge} to roll",
+        "Hold {guard} to guard",
         "parry",
         "flask",
     ] {

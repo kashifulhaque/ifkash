@@ -1,7 +1,9 @@
 <script lang="ts">
-  // The Latticefall HUD: DOM over the canvas, drawn with the site's tokens so it follows the
-  // design and theme (docs/game/07-presentation.md, "HUD"). It only reads: the engine pushes
-  // state into the controller's stores and nothing here writes simulation state.
+  // The Latticefall HUD: DOM over the canvas (docs/game/07-presentation.md, "HUD"), drawn in
+  // the style of a 2010s action RPG: thin framed bars, a cross of quick slots, and text over
+  // dark bands, in its own colors rather than the site's. Color-blind modes still remap the
+  // bar colors through the site tokens. It only reads: the engine pushes state into the
+  // controller's stores and nothing here writes simulation state.
   import type { Readable } from 'svelte/store';
   import { barLength, isQuiet, STATUS_NAMES, type HudState, type QuickSlot } from './hudState';
   import type { HudSettings } from './hudSettings';
@@ -10,6 +12,7 @@
   import TutorialEnd from '../ending/TutorialEnd.svelte';
   import { loadSettings } from '../../input/bindings';
   import { actionGlyph, lastDevice } from '../../input/device';
+  import { promptParts } from '../../input/prompts';
 
   export let hud: HudController;
   export let settings: Readable<HudSettings>;
@@ -46,6 +49,21 @@
   // The Interact glyph for the device used last: Y on a pad, E on the keyboard by default.
   // Read from the saved bindings when the prompt or the device changes, so a remap shows.
   $: interactKey = s.prompt > 0 ? actionGlyph(loadSettings().bindings, 'interact', $lastDevice) || 'E' : 'E';
+  // Authored messages name controls as placeholders (`{interact}`), filled in from the saved
+  // bindings for the device used last, so the text switches the moment the player does.
+  $: bindings = readBindings($notices.length, $lastDevice);
+  $: pad = $lastDevice === 'pad';
+
+  // The arguments only make Svelte read the bindings again when a notice or the device changes.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  function readBindings(..._deps: unknown[]) {
+    return loadSettings().bindings;
+  }
+
+  /** Xbox face buttons get their own round, colored cap; everything else is a key cap or pill. */
+  function faceButton(glyph: string): string | null {
+    return /^[ABXY]$/.test(glyph) ? glyph : null;
+  }
 
   $: s = $state as HudState;
   $: scale = $settings.scale / 100;
@@ -55,9 +73,9 @@
     (m) => m.value > 0
   );
   $: bars = [
-    { key: 'hp', label: 'Health', bar: s.hp, color: '--falu' },
-    { key: 'fp', label: 'Focus', bar: s.fp, color: '--fjord' },
-    { key: 'st', label: 'Stamina', bar: s.stamina, color: '--moss' }
+    { key: 'hp', label: 'Health', bar: s.hp },
+    { key: 'fp', label: 'Focus', bar: s.fp },
+    { key: 'st', label: 'Stamina', bar: s.stamina }
   ];
 
   // The boss bar centers between the bottom corner groups when it fits, at its own width.
@@ -65,9 +83,9 @@
   const EDGE = 24;
   const BOSS_MAX = 560;
   const BOSS_MIN = 300;
-  const LEFT_REACH = 270;
-  const RIGHT_REACH = 190;
-  const CORNER_HEIGHT = 200;
+  const LEFT_REACH = 200;
+  const RIGHT_REACH = 170;
+  const CORNER_HEIGHT = 210;
   $: free = innerWidth - 2 * (EDGE + Math.max(LEFT_REACH, RIGHT_REACH) * scale + 8);
   $: lifted = free < BOSS_MIN * scale;
   // Width and bottom are in unscaled units: the boss block is scaled by `--hs` about its bottom center.
@@ -83,6 +101,7 @@
     return q.count === null ? q.name : `${q.name}, ${q.count}`;
   }
 </script>
+
 
 <svelte:window bind:innerWidth />
 
@@ -115,8 +134,9 @@
           aria-valuemin="0"
           aria-valuemax={Math.round(b.bar.max)}
           aria-valuenow={Math.round(b.bar.value)}
-          style="width: {barLength(b.bar.max)}px; --fill: var({b.color})"
+          style="width: {barLength(b.bar.max)}px"
         >
+          <span class="bar-trail" style="width: {pct(b.bar.value, b.bar.max)}%"></span>
           <span class="bar-fill" style="width: {pct(b.bar.value, b.bar.max)}%"></span>
         </div>
       {/each}
@@ -124,39 +144,37 @@
 
     <section class="bl" aria-label="Quick slots">
       <div class="cross">
-        <div class="slot spell" aria-label={`Spell: ${slotLabel(s.spell, 'none')}`}>
-          <span class="slot-key">Spell</span>
-          <span class="slot-name">{s.spell.name || '—'}</span>
+        <div class="slot spell" class:empty={!s.spell.num} aria-label={`Spell: ${slotLabel(s.spell, 'none')}`}>
+          <span class="slot-name" aria-hidden="true">{s.spell.name}</span>
         </div>
-        <div class="slot left" aria-label={`Left hand: ${slotLabel(s.left, 'empty')}`}>
-          <span class="slot-key">Left</span>
-          <span class="slot-name">{s.left.name || '—'}</span>
+        <div class="slot left" class:empty={!s.left.num} aria-label={`Left hand: ${slotLabel(s.left, 'empty')}`}>
+          <span class="slot-name" aria-hidden="true">{s.left.name}</span>
         </div>
         <div
           class="slot right"
+          class:empty={!s.right.num}
           class:two-handing={s.twoHanding}
           aria-label={`Right hand: ${slotLabel(s.right, 'empty')}${s.twoHanding ? ', two-handed' : ''}`}
         >
-          <span class="slot-key">{s.twoHanding ? 'Both hands' : 'Right'}</span>
-          <span class="slot-name">{s.right.name || '—'}</span>
+          <span class="slot-name" aria-hidden="true">{s.right.name}</span>
+          {#if s.twoHanding}<span class="slot-mark" aria-hidden="true">2H</span>{/if}
         </div>
-        <div class="slot item" aria-label={`Item: ${slotLabel(s.item, 'none')}`}>
-          <span class="slot-key">Item</span>
-          <span class="slot-name">{s.item.name || '—'}</span>
-          {#if s.item.count !== null}<span class="slot-count">{s.item.count}</span>{/if}
+        <div class="slot item" class:empty={!s.item.num} aria-label={`Item: ${slotLabel(s.item, 'none')}`}>
+          <span class="slot-name" aria-hidden="true">{s.item.name}</span>
+          {#if s.item.count !== null}<span class="slot-count" aria-hidden="true">{s.item.count}</span>{/if}
         </div>
       </div>
       {#if s.vigil.max + s.lucid.max > 0}
-        <p class="flasks" aria-label="Flasks">
-          <span>Vigil <b>{s.vigil.value}</b>/{s.vigil.max}</span>
-          <span>Lucid <b>{s.lucid.value}</b>/{s.lucid.max}</span>
+        <p class="flasks" aria-label={`Flasks: Vigil ${s.vigil.value} of ${s.vigil.max}, Lucid ${s.lucid.value} of ${s.lucid.max}`}>
+          <span class="flask vigil" aria-hidden="true"><i></i><b>{s.vigil.value}</b></span>
+          <span class="flask lucid" aria-hidden="true"><i></i><b>{s.lucid.value}</b></span>
         </p>
       {/if}
     </section>
 
-    <section class="br" aria-label="Glimmer">
-      <span class="glimmer-label">Glimmer</span>
-      <span class="glimmer-value">{Math.round(s.glimmer).toLocaleString('en-US')}</span>
+    <section class="br" aria-label={`Glimmer: ${Math.round(s.glimmer)}`}>
+      <span class="glimmer-mark" aria-hidden="true"></span>
+      <span class="glimmer-value" aria-hidden="true">{Math.round(s.glimmer).toLocaleString('en-US')}</span>
     </section>
 
     {#if s.boss}
@@ -174,6 +192,7 @@
           aria-valuemax="100"
           aria-valuenow={Math.round(s.boss.frac * 100)}
         >
+          <span class="bar-trail" style="width: {s.boss.frac * 100}%"></span>
           <span class="boss-fill" style="width: {s.boss.frac * 100}%"></span>
         </div>
       </section>
@@ -190,13 +209,20 @@
       >
         <div class="notices" aria-live="polite">
           {#each $notices as n (n.id)}
-            <p class="notice" class:message={n.message}>{n.text}</p>
+            <p class="band notice" class:message={n.message}>
+              {#each promptParts(n.text, bindings, $lastDevice) as part}{#if 'text' in part}{part.text}{:else}<kbd
+                    class:pad
+                    class:face={faceButton(part.control)}
+                    data-btn={faceButton(part.control)}>{part.control}</kbd
+                  >{/if}{/each}
+            </p>
           {/each}
         </div>
-        {#if s.prompt === 1}
-          <p class="prompt"><kbd class:pad={$lastDevice === 'pad'}>{interactKey}</kbd> Rest at the Lantern</p>
-        {:else if s.prompt > 1 && PROMPTS[s.prompt]}
-          <p class="prompt"><kbd class:pad={$lastDevice === 'pad'}>{interactKey}</kbd> {PROMPTS[s.prompt]}</p>
+        {#if s.prompt === 1 || (s.prompt > 1 && PROMPTS[s.prompt])}
+          <p class="band prompt">
+            <kbd class:pad class:face={faceButton(interactKey)} data-btn={faceButton(interactKey)}>{interactKey}</kbd>
+            {s.prompt === 1 ? 'Rest at the Lantern' : PROMPTS[s.prompt]}
+          </p>
         {/if}
       </div>
     </section>
@@ -210,13 +236,31 @@
 
 <style>
   .hud {
+    /* The HUD's own palette: pale parchment text and bronze frames over dark washes. */
+    --hud-ink: #ece5d3;
+    --hud-dim: rgb(236 229 211 / 0.66);
+    --hud-frame: rgb(196 170 118 / 0.62);
+    --hud-frame-dim: rgb(196 170 118 / 0.3);
+    --hud-back: rgb(10 8 6 / 0.62);
+    --hud-shadow: 0 1px 2px rgb(0 0 0 / 0.9), 0 0 6px rgb(0 0 0 / 0.6);
+    --hud-hp: #a8231e;
+    --hud-fp: #2f56b8;
+    --hud-st: #3f8a3c;
+    --hud-trail: #d9c27a;
     position: absolute;
     inset: 0;
     pointer-events: none;
     user-select: none;
     font-family: var(--font-sans);
-    color: var(--ink);
+    color: var(--hud-ink);
     transition: opacity 0.4s ease;
+  }
+
+  /* Color-blind modes (WP-082) remap these site tokens; the bars follow them there. */
+  :global(.lf-root[data-cb]) .hud {
+    --hud-hp: var(--falu);
+    --hud-fp: var(--fjord);
+    --hud-st: var(--moss);
   }
 
   .hud.faded {
@@ -233,12 +277,12 @@
   }
 
   .tl {
-    top: calc(var(--s-6) + 28px);
+    top: var(--s-5);
     left: var(--s-5);
     transform-origin: top left;
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 5px;
   }
 
   .bl {
@@ -252,40 +296,91 @@
     right: var(--s-5);
     transform-origin: bottom right;
     display: flex;
-    align-items: baseline;
-    gap: var(--s-3);
-    padding: var(--s-2) var(--s-4);
-    background: color-mix(in srgb, var(--surface) 80%, transparent);
-    border: 1px solid var(--line-strong);
-    border-radius: 3px;
+    align-items: center;
+    gap: 10px;
+    min-width: 120px;
+    justify-content: flex-end;
+    padding: 5px 4px 5px 28px;
+    /* A hairline above and below that fades out toward the middle of the screen. */
+    border-top: 1px solid;
+    border-bottom: 1px solid;
+    border-image: linear-gradient(90deg, transparent, var(--hud-frame) 40%) 1;
+    background: linear-gradient(90deg, transparent, rgb(0 0 0 / 0.45) 40%);
   }
 
-  /* Bars: thin, hairline-bordered, over a wash so they read on any scene. */
-  .bar {
-    height: 12px;
+  /* Touch mode's buttons fill the bottom right, so Glimmer moves under the Menu button. */
+  :global(.lf-root[data-touch]) .br {
+    top: calc(var(--s-3) + 52px + env(safe-area-inset-top, 0px));
+    bottom: auto;
+    transform-origin: top right;
+  }
+
+  /* Bars: thin, framed in bronze over a dark wash, with no panel behind them. */
+  .bar,
+  .boss-bar {
+    position: relative;
     box-sizing: border-box;
-    border: 1px solid var(--line-strong);
-    border-radius: 2px;
-    background: color-mix(in srgb, var(--surface) 72%, transparent);
+    border: 1px solid var(--hud-frame);
+    background: var(--hud-back);
+    box-shadow: 0 0 0 1px rgb(0 0 0 / 0.55);
     overflow: hidden;
   }
 
-  .bar-fill {
+  .bar {
+    height: 8px;
+  }
+
+  .bar.hp {
+    height: 10px;
+  }
+
+  .bar-fill,
+  .bar-trail,
+  .boss-fill {
+    position: absolute;
+    inset: 0 auto 0 0;
     display: block;
-    height: 100%;
-    background: var(--fill);
+  }
+
+  .bar-fill {
+    background: linear-gradient(180deg, rgb(255 255 255 / 0.18), transparent 55%, rgb(0 0 0 / 0.25)), var(--fill);
     transition: width 0.12s linear;
+  }
+
+  /* Damage leaves a pale trail that catches up a moment later. */
+  .bar-trail {
+    background: var(--hud-trail);
+    opacity: 0.75;
+    transition: width 0.5s ease-in 0.5s;
+  }
+
+  .bar.hp {
+    --fill: var(--hud-hp);
+  }
+
+  .bar.fp {
+    --fill: var(--hud-fp);
+  }
+
+  .bar.st {
+    --fill: var(--hud-st);
+  }
+
+  /* Focus and stamina never trail; only health and the boss do. */
+  .bar.fp .bar-trail,
+  .bar.st .bar-trail {
+    display: none;
   }
 
   /* Status meters sit above the bars and only exist while a status builds. */
   .statuses {
     position: absolute;
-    bottom: 100%;
+    top: 100%;
     left: 0;
-    margin-bottom: 8px;
+    margin-top: 10px;
     display: flex;
     flex-wrap: wrap;
-    gap: 4px var(--s-3);
+    gap: 6px var(--s-3);
     width: max-content;
     max-width: 420px;
   }
@@ -297,22 +392,19 @@
   .status-name {
     display: block;
     width: max-content;
-    padding: 0 4px;
-    margin-bottom: 2px;
+    margin-bottom: 3px;
     font-size: calc(11px * var(--lf-text, 1));
     line-height: 1.3;
-    color: var(--ink);
-    background: color-mix(in srgb, var(--surface) 84%, transparent);
-    border-radius: 2px;
+    color: var(--hud-ink);
+    text-shadow: var(--hud-shadow);
   }
 
   .status-track {
     display: block;
-    height: 5px;
+    height: 4px;
     box-sizing: border-box;
-    border: 1px solid var(--line-strong);
-    border-radius: 2px;
-    background: color-mix(in srgb, var(--surface) 72%, transparent);
+    border: 1px solid var(--hud-frame-dim);
+    background: var(--hud-back);
     overflow: hidden;
   }
 
@@ -352,38 +444,48 @@
     clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%);
   }
 
-  /* The bars differ by fill pattern as well as color: health is solid, focus is hatched, stamina
-     is dotted (WP-082). */
+  /* The bars differ by fill texture as well as color (WP-082): health is solid, focus is
+     faintly hatched, stamina faintly dotted. */
   .bar.fp .bar-fill {
-    background-image: repeating-linear-gradient(135deg, rgb(0 0 0 / 0.3) 0 2px, transparent 2px 5px);
-    background-color: var(--fill);
+    background:
+      repeating-linear-gradient(135deg, rgb(0 0 0 / 0.22) 0 2px, transparent 2px 5px),
+      linear-gradient(180deg, rgb(255 255 255 / 0.18), transparent 55%, rgb(0 0 0 / 0.25)),
+      var(--fill);
   }
 
   .bar.st .bar-fill {
-    background-image: radial-gradient(circle, rgb(0 0 0 / 0.38) 1px, transparent 1.5px);
-    background-size: 5px 5px;
-    background-color: var(--fill);
+    background:
+      radial-gradient(circle, rgb(0 0 0 / 0.3) 1px, transparent 1.5px) 0 0 / 5px 5px,
+      linear-gradient(180deg, rgb(255 255 255 / 0.18), transparent 55%, rgb(0 0 0 / 0.25)),
+      var(--fill);
   }
 
   /* Quick slots in a cross: spell above, hands left and right, item below. */
   .cross {
     display: grid;
-    grid-template-columns: repeat(3, 84px);
-    grid-template-rows: repeat(3, 52px);
-    gap: 4px;
+    grid-template-columns: repeat(3, 58px);
+    grid-template-rows: repeat(3, 58px);
+    gap: 3px;
   }
 
   .slot {
     position: relative;
     box-sizing: border-box;
-    padding: 4px 6px;
     display: flex;
-    flex-direction: column;
-    justify-content: space-between;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
     overflow: hidden;
-    background: color-mix(in srgb, var(--surface) 80%, transparent);
-    border: 1px solid var(--line-strong);
-    border-radius: 3px;
+    background: radial-gradient(circle at 50% 40%, rgb(40 34 26 / 0.7), rgb(6 5 4 / 0.78));
+    border: 1px solid var(--hud-frame);
+    box-shadow:
+      inset 0 0 0 1px rgb(0 0 0 / 0.6),
+      inset 0 0 10px rgb(0 0 0 / 0.7);
+  }
+
+  .slot.empty {
+    background: rgb(6 5 4 / 0.35);
+    border-color: var(--hud-frame-dim);
   }
 
   .spell {
@@ -408,107 +510,116 @@
 
   /* Two-handing: the right weapon is held in both hands. */
   .right.two-handing {
-    border-color: var(--fjord);
-  }
-
-  .right.two-handing .slot-key {
-    color: var(--fjord);
-  }
-
-  .slot-key {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--ink-3);
+    border-color: var(--hud-trail);
   }
 
   .slot-name {
-    font-size: var(--text-xs);
-    line-height: 1.15;
-    color: var(--ink);
+    font-family: var(--font-serif);
+    font-size: 11px;
+    line-height: 1.1;
+    text-align: center;
+    color: var(--hud-ink);
+    text-shadow: var(--hud-shadow);
     display: -webkit-box;
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
 
-  .slot-count {
+  .slot-count,
+  .slot-mark {
     position: absolute;
-    top: 3px;
-    right: 6px;
+    right: 4px;
+    bottom: 2px;
     font-family: var(--font-mono);
-    font-size: var(--text-sm);
+    font-size: 12px;
+    font-weight: 600;
     font-variant-numeric: tabular-nums;
-    color: var(--ink);
+    color: var(--hud-ink);
+    text-shadow: var(--hud-shadow);
+  }
+
+  .slot-mark {
+    top: 2px;
+    bottom: auto;
+    font-size: 9px;
+    color: var(--hud-trail);
   }
 
   .flasks {
     margin: 6px 0 0;
-    padding: 2px var(--s-2);
-    width: max-content;
     display: flex;
     gap: var(--s-3);
-    font-size: var(--text-xs);
-    color: var(--ink-2);
-    background: color-mix(in srgb, var(--surface) 84%, transparent);
-    border-radius: 3px;
+    font-size: 13px;
   }
 
-  .flasks b {
+  .flask {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  /* A small flask shape in the flask's color: Vigil heals (red), Lucid restores focus (blue). */
+  .flask i {
+    width: 8px;
+    height: 12px;
+    background: var(--hud-hp);
+    border: 1px solid var(--hud-frame);
+    border-radius: 2px 2px 4px 4px;
+    box-shadow: 0 0 4px rgb(0 0 0 / 0.8);
+  }
+
+  .flask.lucid i {
+    background: var(--hud-fp);
+  }
+
+  .flask b {
     font-family: var(--font-mono);
-    font-weight: 500;
-    color: var(--ink);
+    font-weight: 600;
+    color: var(--hud-ink);
+    text-shadow: var(--hud-shadow);
   }
 
-  .glimmer-label {
-    font-size: var(--text-xs);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--ink-3);
+  /* Glimmer: a pale diamond and the count, nothing else. */
+  .glimmer-mark {
+    width: 9px;
+    height: 9px;
+    transform: rotate(45deg);
+    background: radial-gradient(circle, #fff6d8, var(--hud-trail));
+    box-shadow: 0 0 6px rgb(217 194 122 / 0.7);
   }
 
   .glimmer-value {
-    font-family: var(--font-mono);
-    font-size: var(--text-lg);
-    font-variant-numeric: tabular-nums;
-    color: var(--ink);
+    font-family: var(--font-serif);
+    font-size: 19px;
+    font-variant-numeric: tabular-nums lining-nums;
+    letter-spacing: 0.02em;
+    color: var(--hud-ink);
+    text-shadow: var(--hud-shadow);
   }
 
-  /* Boss bar: bottom center, with the boss's name in the display font. */
+  /* Boss bar: bottom center, the boss's name above it on the left. */
   .boss {
     left: 50%;
     transform-origin: bottom center;
   }
 
   .boss-name {
-    margin: 0 auto 6px;
-    width: max-content;
-    max-width: 100%;
-    padding: 2px var(--s-3);
-    font-family: var(--font-display);
-    font-size: var(--text-md);
-    text-align: center;
-    color: var(--ink);
-    background: color-mix(in srgb, var(--surface) 84%, transparent);
-    border: 1px solid var(--line);
-    border-radius: 3px;
+    margin: 0 0 4px 2px;
+    font-family: var(--font-serif);
+    font-size: 17px;
+    letter-spacing: 0.02em;
+    color: var(--hud-ink);
+    text-shadow: var(--hud-shadow);
   }
 
   .boss-bar {
-    height: 10px;
-    box-sizing: border-box;
-    border: 1px solid var(--line-strong);
-    border-radius: 2px;
-    background: color-mix(in srgb, var(--surface) 72%, transparent);
-    overflow: hidden;
+    height: 9px;
   }
 
   .boss-fill {
-    display: block;
-    height: 100%;
-    background: var(--falu);
+    background: linear-gradient(180deg, rgb(255 255 255 / 0.16), transparent 55%, rgb(0 0 0 / 0.3)), var(--hud-hp);
     transition: width 0.15s linear;
   }
 
@@ -517,23 +628,24 @@
     inset: 0;
   }
 
+  /* The lock-on mark: a small bright point with a soft ring, over the target. */
   .lock {
     position: absolute;
-    width: 18px;
-    height: 18px;
-    margin: -9px 0 0 -9px;
-    box-sizing: border-box;
-    border: 2px solid var(--falu);
-    border-radius: 2px;
-    transform: rotate(45deg);
-    background: color-mix(in srgb, var(--surface) 30%, transparent);
+    width: 9px;
+    height: 9px;
+    margin: -4.5px 0 0 -4.5px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #fff 0 35%, rgb(255 246 220 / 0.85) 55%, transparent 72%);
+    box-shadow:
+      0 0 0 2px rgb(0 0 0 / 0.35),
+      0 0 8px 2px rgb(255 240 200 / 0.55);
   }
 
   /* Prompts and notifications sit just below the middle of the screen. */
   .stack {
     position: absolute;
     left: 50%;
-    top: 48%;
+    top: 56%;
     transform: translateX(-50%) scale(var(--hs));
     transform-origin: top center;
     display: flex;
@@ -556,16 +668,34 @@
     min-height: 0;
   }
 
-  .notice,
-  .prompt {
+  /* Text over a dark band that fades out at both ends, with bronze hairlines above and below. */
+  .band {
+    position: relative;
     margin: 0;
-    padding: 4px var(--s-3);
+    padding: 6px 56px;
     font-size: calc(var(--text-sm) * var(--lf-text, 1));
-    color: var(--ink);
-    background: color-mix(in srgb, var(--surface) 84%, transparent);
-    border: 1px solid var(--line-strong);
-    border-radius: 3px;
+    color: var(--hud-ink);
+    text-shadow: var(--hud-shadow);
     white-space: nowrap;
+    background: linear-gradient(90deg, transparent, rgb(0 0 0 / 0.72) 22%, rgb(0 0 0 / 0.72) 78%, transparent);
+  }
+
+  .band::before,
+  .band::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--hud-frame) 30%, var(--hud-frame) 70%, transparent);
+  }
+
+  .band::before {
+    top: 0;
+  }
+
+  .band::after {
+    bottom: 0;
   }
 
   .notice {
@@ -574,29 +704,76 @@
 
   /* An authored message: a few sentences, so it wraps instead of running off the screen. */
   .notice.message {
-    max-width: min(34rem, 92vw);
+    max-width: min(36rem, 92vw);
     white-space: normal;
     text-align: center;
-    line-height: 1.45;
-    padding: var(--s-2) var(--s-4);
+    font-family: var(--font-serif);
+    font-size: calc(16px * var(--lf-text, 1));
+    line-height: 1.55;
+    padding: var(--s-3) 64px;
   }
 
+  .prompt {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: calc(15px * var(--lf-text, 1));
+  }
+
+  /* A key cap. */
   kbd {
+    display: inline-block;
+    min-width: 1.6em;
+    box-sizing: border-box;
+    margin: 0 2px;
+    padding: 0 5px;
     font-family: var(--font-mono);
-    font-size: var(--text-xs);
-    padding: 0 6px;
-    margin-right: 6px;
-    border: 1px solid var(--ink-3);
-    border-radius: 2px;
+    font-size: 0.78em;
+    font-weight: 600;
+    line-height: 1.55;
+    text-align: center;
+    text-shadow: none;
+    color: var(--hud-ink);
+    background: rgb(255 255 255 / 0.08);
+    border: 1px solid rgb(236 229 211 / 0.7);
+    border-bottom-width: 2px;
+    border-radius: 3px;
+    vertical-align: 0.08em;
   }
 
-  /* A pad face button is round, so the prompt reads as a controller glyph, not a key. */
+  /* A pad button: shoulders, triggers, and sticks are pills; face buttons are round. */
   kbd.pad {
-    display: inline-block;
-    min-width: 1.5em;
-    padding: 0 4px;
-    text-align: center;
+    border-width: 1px;
     border-radius: 999px;
+    padding: 0 7px;
+    background: rgb(0 0 0 / 0.55);
+  }
+
+  kbd.pad.face {
+    width: 1.75em;
+    height: 1.75em;
+    padding: 0;
+    line-height: calc(1.75em - 2px);
+    font-family: var(--font-sans);
+    font-weight: 700;
+    border: 1px solid var(--btn);
+    color: var(--btn);
+  }
+
+  kbd[data-btn='A'] {
+    --btn: #7fcf6a;
+  }
+
+  kbd[data-btn='B'] {
+    --btn: #f0716a;
+  }
+
+  kbd[data-btn='X'] {
+    --btn: #6aa8f0;
+  }
+
+  kbd[data-btn='Y'] {
+    --btn: #f0d060;
   }
 
   @keyframes rise {
@@ -609,6 +786,7 @@
   @media (prefers-reduced-motion: reduce) {
     .hud,
     .bar-fill,
+    .bar-trail,
     .boss-fill {
       transition: none;
     }

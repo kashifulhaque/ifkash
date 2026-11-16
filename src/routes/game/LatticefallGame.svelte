@@ -31,7 +31,7 @@
 
   /** Show the dev readout (tick, fps, state hash). Set with `&dev=1`. */
   export let showDev = false;
-  /** Touch mode (WP-083): the touch overlay, the low preset, and no keyboard hint. */
+  /** Touch mode (WP-083): the touch overlay and the low preset. */
   export let touch = false;
   // Set before the engine starts so the first frame already draws at the low preset.
   const restoreQuality = touch ? enterTouchQuality() : null;
@@ -194,7 +194,7 @@
 
 <AccessStyles />
 
-<div class="lf-root" data-cb={access.cb} data-calm={access.calm} style="--lf-text: {access.text}">
+<div class="lf-root" data-cb={access.cb} data-calm={access.calm} data-touch={touch || undefined} style="--lf-text: {access.text}">
   {#key generation}
     <canvas bind:this={canvas} class="lf-canvas"></canvas>
   {/key}
@@ -203,7 +203,8 @@
     <p class="lf-note" aria-live="polite">Loading Cinderheart…</p>
   {:else if status === 'failed'}
     <p class="lf-note" role="alert">Cinderheart could not start: {failure}</p>
-  {:else if !touch && !photoOpen}
+  {:else if showDev && !touch && !photoOpen}
+    <!-- A key reminder for developers only (`?dev=1`); players learn controls from the tutorial. -->
     <p class="lf-hint"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> move · click to capture the mouse · <kbd>P</kbd> pause · <kbd>L</kbd> Ledger · <kbd>G</kbd> gestures · <kbd>K</kbd> Marks · <kbd>O</kbd> photo</p>
   {/if}
 
@@ -313,7 +314,8 @@
 
   .lf-dev {
     position: absolute;
-    top: var(--s-4);
+    /* Below the HUD's bars, which hold the top-left corner. */
+    top: calc(var(--s-5) + 72px);
     left: var(--s-4);
     display: grid;
     grid-template-columns: auto auto;

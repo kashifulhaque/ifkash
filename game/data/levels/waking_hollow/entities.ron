@@ -20,27 +20,27 @@
 
     // --- Wake (safe room): movement and the Lantern ---------------------------------------
     Message(id: "msg_move", pos: (0.0, 0.0, 3.0),
-      text: "Move with W, A, S, and D. Look around with the mouse. Hold Space to sprint. Press E to read a message like this one."),
+      text: "Move with {move}. Look around with {look}. Hold {dodge} to sprint. Press {interact} to read a message like this one."),
     Message(id: "msg_lantern", pos: (3.0, 0.0, -4.0),
-      text: "A Lantern. Stand beside it and press E to rest: you heal, your flasks refill, and the cave's husks wake again. Rest here to level up, and wake here if you fall."),
+      text: "A Lantern. Stand beside it and press {interact} to rest: you heal, your flasks refill, and the cave's husks wake again. Rest here to level up, and wake here if you fall."),
 
     // --- Corridor 1: the jump -------------------------------------------------------------
     Message(id: "msg_jump", pos: (0.0, 0.0, 13.0),
-      text: "A ledge blocks the way. Press F to jump. Run at the ledge and jump just before it."),
+      text: "A ledge blocks the way. Press {jump} to jump. Run at the ledge and jump just before it."),
 
     // --- First fight: one husk, then the alcove -------------------------------------------
     Message(id: "msg_attack", pos: (0.0, 0.0, 25.0),
-      text: "A husk stirs ahead. Press Q to lock on, and press Q again to let go. Left mouse swings your blade; hold Shift with it for a slow heavy blow. Every swing spends stamina, the green bar. Wait for it to refill."),
+      text: "A husk stirs ahead. Press {lock} to lock on, and press it again to let go. Press {light} to swing your blade, and {heavy} for a slow heavy blow. Every swing spends stamina, the green bar. Wait for it to refill."),
     Enemy(name: "husk_first", enemy: "husk", pos: (0.0, 0.0, 32.0), yaw: 3.1415927),
     Message(id: "msg_items", pos: (11.0, 0.0, 30.0),
-      text: "Salts lie on the ground. Press E to take what you find. Press R to use the item in your quick slot, and the arrow keys to change which one is ready."),
+      text: "Salts lie on the ground. Press {interact} to take what you find. Press {useItem} to use the item in your quick slot, and {cycleItem} to change which one is ready."),
     Pickup(id: "salts_alcove", item: "itm_waking_salts", pos: (12.5, 0.0, 30.0), count: 2, interact: true),
 
     // --- Hall: dodge, guard, and a cracked wall -------------------------------------------
     Message(id: "msg_dodge", pos: (0.0, 0.0, 47.0),
-      text: "Two husks hunt here. Tap Space to roll. You cannot be struck early in the roll, so roll into a swing, not away from it. Rolling costs stamina."),
+      text: "Two husks hunt here. Tap {dodge} to roll. You cannot be struck early in the roll, so roll into a swing, not away from it. Rolling costs stamina."),
     Message(id: "msg_guard", pos: (0.0, 0.0, 51.0),
-      text: "Hold the right mouse button to guard. A guard takes most of a blow but drains stamina. Guard just as a blow lands to parry it, then strike back."),
+      text: "Hold {guard} to guard. A guard takes most of a blow but drains stamina. Guard just as a blow lands to parry it, then strike back."),
     Enemy(name: "husk_hall_a", enemy: "husk", pos: (-3.0, 0.0, 57.0), yaw: 3.1415927),
     Enemy(name: "husk_hall_b", enemy: "husk", pos: (3.5, 0.0, 59.0), yaw: 3.1415927),
     Message(id: "msg_crack", pos: (-7.0, 0.0, 52.0),
@@ -50,7 +50,7 @@
 
     // --- Twist: an ambush ------------------------------------------------------------------
     Message(id: "msg_flask", pos: (0.0, 0.0, 70.0),
-      text: "Something fast waits in the dark. Press R to drink the flask in your quick slot and heal. Drinking is slow: do it when no one is close."),
+      text: "Something fast waits in the dark. Press {useItem} to drink the flask in your quick slot and heal. Drinking is slow: do it when no one is close."),
     Enemy(name: "husk_twist", enemy: "husk", pos: (-4.0, 0.0, 76.0), yaw: 3.1415927),
     Enemy(name: "hound_twist", enemy: "thorn_hound", pos: (5.0, 0.0, 79.0), yaw: 3.1415927),
 

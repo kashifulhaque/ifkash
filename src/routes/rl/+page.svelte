@@ -15,6 +15,15 @@
 
   const experiments: Experiment[] = [
     {
+      name: 'RL Computer Use',
+      desc: 'GRPO post-training of Qwen3-VL-4B to operate web UIs on MiniWoB++. From-scratch trainer with colocated vLLM rollouts, LoRA, and an RFT warm start on one H100. Task success rose from 47% (base) to 73%; held-out success rose from 63% to 67%.',
+      status: 'shipped',
+      links: [
+        { label: 'Project', url: 'https://rl.ifkash.dev/projects/rl-computer-use' },
+        { label: 'Code', url: 'https://github.com/weights-and-wires/RL-ComputerUse' }
+      ]
+    },
+    {
       name: 'Snake RL',
       desc: 'A snake agent trained from scratch with Dueling Double DQN. PyTorch, 28-dim egocentric state, target network, 256-unit network. Greedy eval mean: 102.',
       page: '/rl/snake-dqn',

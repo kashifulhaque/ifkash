@@ -41,12 +41,6 @@ this in `src/lib/latticefall/tutorialLock.ts`. The lock covers the start area, a
 from other areas, and Lantern travel, and beating B01 shows an end card. The simulation
 core has no lock, and `?dev=1` opens every area.
 
-A third, smaller piece lives in `/vm`: the **VM agent**, a dependency-free Node server
-that runs on the owner's VM behind a Cloudflare Tunnel at `claude.ifkash.dev` and backs
-the `/vm` console (chat with headless Claude Code, tmux sessions, a ttyd web terminal,
-system stats, and files). Its API contract is `vm/API.md`; deploy it with
-`vm/deploy.sh`, not CI. See `vm/README.md`.
-
 ## Toolchain & commands
 
 Tool versions are pinned by [mise](https://mise.jdx.dev) (`mise.toml`): Rust, Bun, Node

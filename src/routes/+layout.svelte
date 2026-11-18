@@ -25,7 +25,6 @@
     currentPath === "/game" ||
     currentPath === "/editor" ||
     currentPath === "/admin/notes" ||
-    currentPath === "/vm" ||
     (currentPath.startsWith("/tools/") && currentPath !== "/tools");
 
   const navItems = [
@@ -279,7 +278,6 @@
             <li><a href="/game">Tiny planet</a></li>
             <li><a href="/fitness">Fitness</a></li>
             <li><a href="/admin">Admin</a></li>
-            <li><a href="/vm">VM console</a></li>
           </ul>
         </div>
       </nav>

@@ -4,24 +4,19 @@
 @import "@fontsource-variable/fraunces/full.css";
 @import "@fontsource-variable/fraunces/full-italic.css";
 @import "@fontsource-variable/jetbrains-mono";
+@import "@fontsource-variable/hanken-grotesk";
+@import "@fontsource/ibm-plex-mono/400.css";
+@import "@fontsource/ibm-plex-mono/500.css";
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
-/* Nerd Font icon glyphs (prompt, tmux, and tool icons) as a fallback in the
-   mono stack. The unicode-range keeps browsers from fetching it unless a page
-   actually shows one of these glyphs, which in practice is the VM console.
-   Symbols Nerd Font Mono v3.4.0 (MIT), converted to woff2. */
-@font-face {
-  font-family: "Symbols Nerd Font Mono";
-  src: url("/fonts/SymbolsNerdFontMono-Regular.woff2") format("woff2");
-  font-display: swap;
-  unicode-range: U+23FB-23FE, U+2665, U+26A1, U+2B58, U+E000-F8FF, U+F0000-F1AF0;
-}
-
 /* ────────────────────────────────────────────────────────────────
-   ifkash.dev design system. Three designs, one token set.
+   ifkash.dev design system. Four designs, one token set.
 
-   Nordisk (default): birch-paper ground, charcoal ink, one fjord-blue
+   Almanac (default): ink on warm paper, oxblood accent, Fraunces
+   headlines, Hanken Grotesk body, IBM Plex Mono marginalia. Lamplight
+   is the dark theme.
+   Nordisk: birch-paper ground, charcoal ink, one fjord-blue
    accent, and a single Falu-red dot. Polar night is the same system
    at dusk — slate ground, snow ink, glacier accent, ember dot.
    Broadsheet: newsprint, crimson accent, square corners, serif headlines.
@@ -72,7 +67,7 @@
      change face without restyling buttons and body copy. */
   --font-sans: "Schibsted Grotesk Variable", "Schibsted Grotesk", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-serif: "Newsreader Variable", "Newsreader", "Iowan Old Style", Georgia, serif;
-  --font-mono: "JetBrains Mono Variable", "JetBrains Mono", "Symbols Nerd Font Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --font-mono: "JetBrains Mono Variable", "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
   --font-display: var(--font-sans);
 
   --text-xs: 0.75rem;   /* 12 */
@@ -303,10 +298,90 @@
   --shadow-color: rgb(0 0 0 / 45%);
 }
 
+/* Almanac — paper. Ink on warm paper, one oxblood accent, Fraunces
+   headlines, Hanken Grotesk body, and IBM Plex Mono marginalia.
+   Hairlines instead of boxes, small radii, calm ease-out motion. */
+[data-design="almanac"] {
+  --bg: #f6f1e7;
+  --surface: #fbf8f2;
+  --surface-2: #efe8db;
+  --surface-ink: #2a2420;
+
+  --ink: #2a2420;
+  --ink-2: #4f463e;
+  --ink-3: #6e645a;
+  --ink-inverse: #f6f1e7;
+
+  --line: #e2d9c8;
+  --line-strong: #b3a693;
+
+  --fjord: #a23b2a;
+  --fjord-strong: #7c2b1e;
+  --fjord-wash: rgb(162 59 42 / 9%);
+  --falu: #a23b2a;
+  --moss: #4f6b5a;
+  --moss-wash: rgb(79 107 90 / 12%);
+  --clay: #86621f;
+  --danger: #9e2b25;
+  --success: #3e6b4e;
+
+  --hover-wash: rgb(42 36 32 / 4%);
+  --press-wash: rgb(42 36 32 / 8%);
+  --scrim: rgb(42 36 32 / 28%);
+  --code-surface: #efe8db;
+  --shadow-color: rgb(42 36 32 / 12%);
+
+  --font-sans: "Hanken Grotesk Variable", "Hanken Grotesk", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --font-display: "Fraunces Variable", Fraunces, "Iowan Old Style", Georgia, serif;
+
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+
+  --ease: cubic-bezier(0.33, 1, 0.68, 1);
+  --ease-out: cubic-bezier(0.25, 1, 0.5, 1);
+  --dur-fast: 150ms;
+  --dur: 300ms;
+  --dur-slow: 600ms;
+}
+
+/* Almanac — lamplight. Lamplight on dark walnut. */
+[data-design="almanac"][data-theme="dark"] {
+  --bg: #1a1714;
+  --surface: #23201c;
+  --surface-2: #141210;
+  --surface-ink: #efe7da;
+
+  --ink: #efe7da;
+  --ink-2: #c9bfb0;
+  --ink-3: #a79c8d;
+  --ink-inverse: #1a1714;
+
+  --line: #3a342d;
+  --line-strong: #6b6157;
+
+  --fjord: #e07a63;
+  --fjord-strong: #f09a85;
+  --fjord-wash: rgb(224 122 99 / 13%);
+  --falu: #e07a63;
+  --moss: #8db09a;
+  --moss-wash: rgb(141 176 154 / 13%);
+  --clay: #e0be7a;
+  --danger: #f08a7a;
+  --success: #8db09a;
+
+  --hover-wash: rgb(239 231 218 / 5%);
+  --press-wash: rgb(239 231 218 / 9%);
+  --scrim: rgb(0 0 0 / 55%);
+  --code-surface: #141210;
+  --shadow-color: rgb(0 0 0 / 45%);
+}
+
 @theme {
   --font-sans: "Schibsted Grotesk Variable", "Schibsted Grotesk", ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-serif: "Newsreader Variable", "Newsreader", Georgia, serif;
-  --font-mono: "JetBrains Mono Variable", "JetBrains Mono", "Symbols Nerd Font Mono", ui-monospace, monospace;
+  --font-mono: "JetBrains Mono Variable", "JetBrains Mono", ui-monospace, monospace;
 }
 
 /* ── Base ────────────────────────────────────────────────────────── */
@@ -1013,4 +1088,100 @@ html[data-design="atelier"][data-theme="dark"] body::after {
   opacity: 0.05;
   mix-blend-mode: screen;
   filter: invert(1);
+}
+
+/* ── Almanac structure ─────────────────────────────────────────────
+   Same markup as Nordisk. Light Fraunces headlines, mono marginalia
+   in tracked uppercase, a solid paper top bar with a hairline, and a
+   faint grain. The selectors carry `html[data-design]` so they outrank
+   the scoped component styles in +layout.svelte and +page.svelte. */
+
+html[data-design="almanac"] :is(
+  h1,
+  h2,
+  h3,
+  .page-title,
+  .section-title,
+  .display,
+  .footer-name
+) {
+  font-family: var(--font-display);
+  font-weight: 380;
+  letter-spacing: -0.012em;
+  font-optical-sizing: none;
+  font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 72, "wght" 380;
+}
+
+html[data-design="almanac"] :is(h1, .page-title, .section-title, .display) {
+  font-weight: 350;
+  font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 144, "wght" 350;
+}
+
+html[data-design="almanac"] .display {
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-weight: 300;
+  font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 144, "wght" 300;
+}
+
+html[data-design="almanac"] .wordmark {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  font-optical-sizing: none;
+  font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 48, "wght" 400;
+}
+
+html[data-design="almanac"] :is(em.serif, .serif) {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 300;
+  font-optical-sizing: none;
+  font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 36, "wght" 300;
+}
+
+html[data-design="almanac"] :is(.eyebrow, .label) {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+html[data-design="almanac"] .index-row .name {
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: -0.012em;
+  font-optical-sizing: none;
+  font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 72, "wght" 400;
+}
+
+html[data-design="almanac"] .topbar {
+  background: var(--bg);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-bottom: 1px solid var(--line);
+}
+
+html[data-design="almanac"] .footer {
+  background: var(--bg);
+  border-top: 1px solid var(--line);
+}
+
+html[data-design="almanac"] .card {
+  box-shadow: none;
+}
+
+html[data-design="almanac"] ::selection {
+  background: color-mix(in srgb, var(--fjord) 22%, transparent);
+}
+
+html[data-design="almanac"] body::after {
+  opacity: 0.04;
+}
+
+html[data-design="almanac"][data-theme="dark"] body::after {
+  opacity: 0.025;
+  mix-blend-mode: screen;
+  filter: invert(1) sepia(0.4);
 }

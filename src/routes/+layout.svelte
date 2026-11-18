@@ -123,6 +123,12 @@
     Design,
     { toLight: string; toDark: string; light: string; dark: string }
   > = {
+    almanac: {
+      toLight: "Switch to paper",
+      toDark: "Switch to lamplight",
+      light: "Paper",
+      dark: "Lamplight",
+    },
     nordisk: {
       toLight: "Switch to daylight",
       toDark: "Switch to polar night",

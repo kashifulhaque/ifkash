@@ -132,9 +132,10 @@ cd api && npx wrangler d1 migrations apply ifkash --local
   file; never edit an applied one. CI applies pending migrations to the remote D1 before
   each Worker deploy, so a migration ships with the `api/**` push that needs it.
 - **Design system** is documented in `DESIGN.md` and defined as CSS variables at the
-  top of `src/app.css`. Three designs share those tokens: **Nordisk** (default,
-  Scandinavian), **Broadsheet** (newsprint, serif headlines), and **Atelier**
-  (sage plaster, Fraunces headlines), selected with
+  top of `src/app.css`. Four designs share those tokens: **Almanac** (default,
+  ink on warm paper, Fraunces headlines, mono marginalia), **Nordisk**
+  (Scandinavian), **Broadsheet** (newsprint, serif headlines), and **Atelier**
+  (sage plaster, Fraunces headlines), selected from a dropdown and stored as
   `data-design` on `<html>` (`src/lib/stores/design.ts`, saved as `ifkash-design`).
   Each design has a light theme and a dark theme under `[data-theme="dark"]`
   (`src/lib/stores/theme.ts`, defaulting to the system preference). Use the canonical

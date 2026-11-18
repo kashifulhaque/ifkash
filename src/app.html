@@ -4,24 +4,25 @@
     <meta charset="utf-8" />
     <link rel="icon" href="%sveltekit.assets%/favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#f4f1ea" />
+    <meta name="theme-color" content="#f6f1e7" />
     <script>
       (function () {
         // Keep the color table in sync with THEME_COLORS in src/lib/stores/appearance.ts.
         var colors = {
+          almanac: { light: "#f6f1e7", dark: "#1a1714" },
           nordisk: { light: "#f4f1ea", dark: "#15181b" },
           broadsheet: { light: "#f3ecdf", dark: "#14110e" },
           atelier: { light: "#eef2ea", dark: "#121614" }
         };
         var theme = "light";
-        var design = "nordisk";
+        var design = "almanac";
         try {
           var savedTheme = localStorage.getItem("ifkash-theme");
           // "light" and "dark" are explicit. Anything else follows the system theme.
           if (savedTheme === "light" || savedTheme === "dark") theme = savedTheme;
           else if (matchMedia("(prefers-color-scheme: dark)").matches) theme = "dark";
           var savedDesign = localStorage.getItem("ifkash-design");
-          if (savedDesign === "nordisk" || savedDesign === "broadsheet" || savedDesign === "atelier") design = savedDesign;
+          if (savedDesign === "almanac" || savedDesign === "nordisk" || savedDesign === "broadsheet" || savedDesign === "atelier") design = savedDesign;
         } catch (e) {}
         var root = document.documentElement;
         root.setAttribute("data-theme", theme);

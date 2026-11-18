@@ -1,16 +1,17 @@
 # ifkash.dev design system
 
-The site has three designs. All three read the tokens in `src/app.css`.
+The site has four designs. All four read the tokens in `src/app.css`.
 Edit the tokens to restyle a design; don't hardcode colors in pages.
 
-The **Design** control in the top bar saves the choice in `localStorage`
+The **Design** dropdown in the top bar saves the choice in `localStorage`
 under `ifkash-design`. An inline script in `app.html` applies it before
-paint as `data-design` on `<html>` (`nordisk`, `broadsheet`, or `atelier`).
+paint as `data-design` on `<html>` (`almanac`, `nordisk`, `broadsheet`, or `atelier`). Without a saved
+choice, the site uses Almanac.
 Light and dark are a separate choice (`ifkash-theme`, `data-theme`).
 
 ## Nordisk
 
-Nordisk is the default. It is a Scandinavian design language: functional,
+Nordisk is the original design and the base token set in `:root`. It is a Scandinavian design language: functional,
 light, warm, and restrained.
 
 ## Principles
@@ -154,6 +155,24 @@ Lamp light and kiln override the same color tokens under
 The top bar and the footer rules live in `+layout.svelte`, because scoped
 styles there would otherwise win. Page templates stay the same in every
 design.
+
+## Almanac
+
+Almanac is the default. It reads like a printed almanac or a field guide:
+ink on warm paper, light Fraunces headlines, Hanken Grotesk body text, and
+IBM Plex Mono marginalia. Eyebrows and labels are mono, uppercase, and
+tracked at `0.09em`. The wordmark and emphasized phrases are Fraunces
+italic. The accent (the `--fjord` slot) and the signature dot are oxblood.
+Sage fills `--moss`, and ochre ink fills `--clay`.
+
+Paper and lamplight override the color, font, radius, and motion tokens
+under `[data-design="almanac"]` and
+`[data-design="almanac"][data-theme="dark"]`. Radii are `2`, `4`, and `6`,
+and motion uses an ease-out cubic at `150`, `300`, and `600` ms. Rules at
+the end of `app.css` restyle headlines, kickers, the top bar, the footer,
+and the grain. Those rules carry `html[data-design="almanac"]`, which
+outranks the scoped styles in `+layout.svelte` and `+page.svelte`, so
+Almanac needs no rules in component files.
 
 ## Don'ts
 

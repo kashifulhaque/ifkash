@@ -6,6 +6,7 @@ export type { Design };
 export { isDesign };
 
 export const DESIGNS: { id: Design; label: string; short: string }[] = [
+	{ id: 'almanac', label: 'Almanac', short: 'Al' },
 	{ id: 'nordisk', label: 'Nordisk', short: 'N' },
 	{ id: 'broadsheet', label: 'Broadsheet', short: 'B' },
 	{ id: 'atelier', label: 'Atelier', short: 'A' },
@@ -14,11 +15,11 @@ export const DESIGNS: { id: Design; label: string; short: string }[] = [
 const KEY = 'ifkash-design';
 
 function initial(): Design {
-	if (!browser) return 'nordisk';
+	if (!browser) return 'almanac';
 	// The inline script in app.html has already resolved the saved choice
 	// onto <html data-design>, so read it back from there.
 	const saved = document.documentElement.getAttribute('data-design');
-	return isDesign(saved) ? saved : 'nordisk';
+	return isDesign(saved) ? saved : 'almanac';
 }
 
 function apply(design: Design): void {

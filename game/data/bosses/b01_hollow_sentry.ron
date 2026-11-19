@@ -1,5 +1,5 @@
 // B01, the Hollow Sentry (registry 9010-9019): the tutorial knight. Source:
-// docs/game/05-enemies-and-bosses.md, "B01 Hollow Sentry" (HP 1,200, one phase, Blunt
+// docs/game/05-enemies-and-bosses.md, "B01 Hollow Sentry" (HP 2,200, one phase, Blunt
 // weakness 1.2x, immune to Poison and Blight, a Wick Bead reward, no Echo Stone). Defense,
 // poise, resist, attack, stamina, option weights, and cooldowns are tuning: the numbers
 // make a fight a player can win by rolling through each telegraphed swing and punishing.
@@ -10,13 +10,14 @@
   body: (
     id: "b01_hollow_sentry_body",
     model: "boss_hollow_sentry",
-    hp: 1500, // WP-089 balance pass (spec: 1,200)
+    hp: 2200, // tutorial tuning pass (WP-089 had 1,500)
     poise: 200,
+    stance: 160, // tuning: charged heavies, jump heavies, guard counters, and Rising Cleave break it
     defense: (flat: 20, weakness: [(Blunt, 120)]),
     resist: (immunity: 400, robustness: 400, composure: 400),
     immune: [Poison, Blight],
     glimmer: 0,
-    attack: 100,
+    attack: 130,
     stamina: 200,
     speed_percent: 90,
     leash_m: 80.0,
@@ -28,7 +29,7 @@
       (move: "b01_bash", when: [DistBelow(1.8), FacingWithin(40.0)], weight: 5, cooldown: 90),
       (move: "b01_combo_1", when: [DistBelow(3.0), FacingWithin(40.0)], weight: 3, cooldown: 150),
       (behavior: Approach(dur: 20), when: [DistAbove(2.4)], weight: 4),
-      (behavior: Wait(dur: 20), when: [DistBelow(4.0)], weight: 1),
+      (behavior: Wait(dur: 20), when: [DistBelow(4.0)], weight: 3),
     ],
   ),
   parts: [],

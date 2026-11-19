@@ -23,7 +23,7 @@
     hitboxes: [
       (
         frames: (18, 21),
-        shape: Capsule(a: (0.0, 1.2, 0.3), b: (0.0, 1.2, 1.7), radius: 0.35),
+        shape: Capsule(a: (0.0, 1.2, 0.3), b: (0.0, 1.2, 1.45), radius: 0.35),
         motion_value: 1.0,
         phys: Slash,
         element: None,
@@ -55,7 +55,7 @@
     hitboxes: [
       (
         frames: (20, 24),
-        shape: Capsule(a: (0.0, 1.2, 0.3), b: (0.0, 1.2, 1.8), radius: 0.4),
+        shape: Capsule(a: (0.0, 1.2, 0.3), b: (0.0, 1.2, 1.55), radius: 0.4),
         motion_value: 1.2,
         phys: Blunt,
         element: None,

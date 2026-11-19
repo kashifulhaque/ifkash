@@ -29,8 +29,12 @@ const SEED: u64 = 43;
 const MAX_TICKS: u64 = 20_000;
 /// How close an enemy has to be before the bot stops walking and fights, in meters.
 const ENGAGE_M: f32 = 8.5;
+/// How far above or below the player an enemy can stand and still be fought, in meters.
+const REACH_UP_M: f32 = 2.5;
+/// How many ticks the bot presses the lock button before it gives up for as many ticks.
+const LOCK_TRIES: u16 = 30;
 /// Every message the cave teaches a control with, in the order of the route.
-const MESSAGES: [&str; 10] = [
+const MESSAGES: [&str; 11] = [
     "msg_move",
     "msg_lantern",
     "msg_jump",
@@ -39,6 +43,7 @@ const MESSAGES: [&str; 10] = [
     "msg_dodge",
     "msg_guard",
     "msg_crack",
+    "msg_art",
     "msg_flask",
     "msg_sentry",
 ];
@@ -75,8 +80,8 @@ fn route() -> Vec<Leg> {
         Goto(0.0, 14.2),
         Jump,
         Goto(0.0, 21.0),
-        // First fight: the husk, then the alcove's salts.
-        Goto(0.0, 25.0),
+        // First fight: the husk, then the alcove's Clotweed.
+        Goto(0.0, 24.0),
         Interact,
         Goto(0.0, 29.0),
         Goto(11.0, 30.0),
@@ -84,12 +89,13 @@ fn route() -> Vec<Leg> {
         Goto(12.4, 30.0),
         Interact,
         Goto(0.0, 36.0),
-        Goto(0.0, 41.0),
+        // Corridor 2: the roll and guard messages.
+        Goto(0.0, 39.0),
+        Interact,
+        Goto(0.0, 41.5),
+        Interact,
         // Hall: the two husks, then the hollow wall and its chest.
         Goto(0.0, 47.0),
-        Interact,
-        Goto(0.0, 51.0),
-        Interact,
         Goto(0.0, 54.0),
         Goto(-6.0, 52.0),
         Interact,
@@ -100,13 +106,18 @@ fn route() -> Vec<Leg> {
         Interact,
         Wait(5),
         Goto(0.0, 56.0),
-        Goto(0.0, 65.0),
-        // Twist: the husk and the hound.
-        Goto(0.0, 70.0),
+        // The hall's exit and corridor 3: the Art and flask messages.
+        Goto(0.0, 61.0),
         Interact,
+        Goto(0.0, 63.5),
+        Interact,
+        // Twist: the hound from the side, then the husk.
+        Goto(0.0, 70.0),
         Goto(0.0, 80.0),
         Goto(0.0, 85.0),
-        // Antechamber and the fog gate.
+        // Antechamber: the second Lantern, the Sentry message, and the fog gate.
+        Goto(3.6, 89.0),
+        Rest,
         Goto(0.0, 91.0),
         Interact,
         Goto(0.0, 96.5),
@@ -122,9 +133,10 @@ pub(super) struct Bot {
     wait: u16,
     /// Buttons sent last tick, because every button is a press edge.
     last: u16,
-    /// The enemy move and frame last seen, to tell when a new move starts.
-    seen: Option<(crate::combat::moves::MoveNum, u16)>,
-    rolled: bool,
+    /// Ticks spent pressing the lock button without getting a lock on the enemy the bot
+    /// means to fight. A lock needs a line of sight, so an enemy behind a wall can't be
+    /// locked: the bot gives up for a while and walks on.
+    lock_tries: u16,
     /// The jump leg's phase: 0 not started, then ticks since the press.
     jump_at: Option<u32>,
     /// Walk toward an enemy that is in range but not yet lockable, instead of pressing the
@@ -144,8 +156,7 @@ impl Bot {
             legs,
             wait: 0,
             last: 0,
-            seen: None,
-            rolled: false,
+            lock_tries: 0,
             jump_at: None,
             approach: false,
         }
@@ -155,8 +166,8 @@ impl Bot {
         self.leg >= self.legs.len()
     }
 
-    /// The nearest living enemy within `ENGAGE_M`, not counting the boss.
-    fn target<'a>(w: &'a World, p: &Actor) -> Option<(&'a Actor, f32)> {
+    /// The nearest living enemy within `ENGAGE_M` on the player's level, not counting the boss.
+    fn target<'a>(w: &'a World, p: &Actor) -> Option<(crate::arena::Id, &'a Actor, f32)> {
         let boss: Vec<_> = w
             .layout
             .bosses
@@ -171,14 +182,16 @@ impl Bot {
             .ai_enemies
             .iter()
             .filter(|id| !boss.contains(id))
-            .filter_map(|&id| w.actors.get(id))
-            .filter(|a| a.hp > 0 && !a.dead)
-            .map(|a| {
+            .filter_map(|&id| w.actors.get(id).map(|a| (id, a)))
+            .filter(|(_, a)| a.hp > 0 && !a.dead)
+            // An enemy on a roof or a ledge overhead is out of the blade's reach.
+            .filter(|(_, a)| (a.pos[1] - p.pos[1]).abs() < REACH_UP_M)
+            .map(|(id, a)| {
                 let (dx, dz) = (a.pos[0] - p.pos[0], a.pos[2] - p.pos[2]);
-                (a, sqrt(dx * dx + dz * dz))
+                (id, a, sqrt(dx * dx + dz * dz))
             })
-            .filter(|&(_, d)| d <= ENGAGE_M)
-            .min_by(|a, b| a.1.total_cmp(&b.1))
+            .filter(|&(_, _, d)| d <= ENGAGE_M)
+            .min_by(|a, b| a.2.total_cmp(&b.2))
     }
 
     pub(super) fn act(&mut self, w: &World) -> TickInput {
@@ -211,12 +224,20 @@ impl Bot {
         if p.dead || p.hp == 0 {
             return (none, vec![]);
         }
-        // A fight takes priority over the route.
-        if let Some((e, dist)) = Self::target(w, p) {
-            return self.fight(w, p, e, dist);
+        // A fight takes priority over the route, unless the enemy can't be locked on to
+        // (it is behind a wall): then the bot walks the route for a second and tries again.
+        match Self::target(w, p) {
+            Some((id, e, dist)) => {
+                if p.lock_target == Some(id) {
+                    self.lock_tries = 0;
+                }
+                if self.lock_tries < LOCK_TRIES {
+                    return self.fight(w, p, id, e, dist);
+                }
+                self.lock_tries = (self.lock_tries + 1) % (2 * LOCK_TRIES);
+            }
+            None => self.lock_tries = 0,
         }
-        self.seen = None;
-        self.rolled = false;
         if self.done() {
             return (none, vec![]);
         }
@@ -293,7 +314,14 @@ impl Bot {
         }
     }
 
-    fn fight(&mut self, w: &World, p: &Actor, e: &Actor, dist: f32) -> (ActionFrame, Vec<Command>) {
+    fn fight(
+        &mut self,
+        w: &World,
+        p: &Actor,
+        id: crate::arena::Id,
+        e: &Actor,
+        dist: f32,
+    ) -> (ActionFrame, Vec<Command>) {
         let toward = {
             let (dx, dz) = (e.pos[0] - p.pos[0], e.pos[2] - p.pos[2]);
             let d = dist.max(0.001);
@@ -309,6 +337,47 @@ impl Bot {
                 vec![],
             )
         };
+        // What the bot can start this tick. It never presses a button that would only be
+        // buffered: a buffered swing or roll fires late, when the fight has moved on.
+        let current = p
+            .moves
+            .current
+            .and_then(|c| w.moves.get(c.num).map(|d| (c.frame, d)));
+        let can = |from: fn(&crate::combat::moves::MoveDef) -> Option<u16>| {
+            p.moves.guard.can_act()
+                && current.is_none_or(|(frame, d)| from(d).is_some_and(|f| frame >= f))
+        };
+        let can_roll = can(|d| d.data.cancel_dodge_from);
+        let can_swing = can(|d| d.data.cancel_attack_from);
+        // Roll through a hit that is about to land, from any enemy in reach.
+        let threat = w
+            .state
+            .ai_enemies
+            .iter()
+            .filter_map(|&id| w.actors.get(id))
+            .filter(|a| a.hp > 0 && !a.dead)
+            .any(|a| {
+                let (dx, dz) = (a.pos[0] - p.pos[0], a.pos[2] - p.pos[2]);
+                sqrt(dx * dx + dz * dz) < 4.0
+                    && a.moves.current.is_some_and(|m| {
+                        w.moves
+                            .get(m.num)
+                            .and_then(|d| d.data.hitboxes.iter().map(|h| h.frames.0).min())
+                            .is_some_and(|first| m.frame < first && first - m.frame <= 7)
+                    })
+            });
+        if threat {
+            if can_roll {
+                return go(toward.0, toward.1, buttons::DODGE);
+            }
+            return go(toward.0, toward.1, 0);
+        }
+        // Locked on to another enemy than the nearest (it died, or a nearer one walked up):
+        // let go, so the next lock takes the one the bot fights.
+        if p.lock_target.is_some_and(|l| l != id) {
+            self.lock_tries += 1;
+            return go(0, 0, buttons::LOCK);
+        }
         if p.lock_target.is_none() {
             if self.approach && dist > 6.0 {
                 return go(toward.0, toward.1, 0);
@@ -321,46 +390,33 @@ impl Bot {
             if off.abs() > 0.5 {
                 return go(toward.0 / 8, toward.1 / 8, 0);
             }
+            self.lock_tries += 1;
             return go(0, 0, buttons::LOCK);
         }
-        // Read the enemy's move: its first hit frame decides when to roll.
-        let mut hit: Option<u16> = None;
-        let mut frame = 0u16;
-        let mut attacking = false;
-        if let Some(m) = e.moves.current {
-            attacking = true;
-            if let Some(def) = w.moves.get(m.num) {
-                hit = def.data.hitboxes.iter().map(|h| h.frames.0).min();
-                frame = m.frame;
-            }
-            if self.seen.is_none_or(|(n, f)| n != m.num || f > m.frame) {
-                self.rolled = false;
-            }
-            self.seen = Some((m.num, m.frame));
-        } else {
-            self.seen = None;
-            self.rolled = false;
-        }
-        if p.moves
-            .current
-            .and_then(|c| w.moves.player_moveset.as_ref().map(|s| (c.num, s)))
-            .is_some_and(|(n, s)| n == s.roll_light || n == s.roll_medium || n == s.roll_heavy)
+        // Drink a flask when hurt and the enemy is out of reach.
+        if p.hp * 100 < p.max_hp * 40
+            && p.inventory.flasks.vigil > 0
+            && p.motor.grounded
+            && current.is_none()
+            && dist > 4.5
+            && e.moves.current.is_none()
         {
-            self.rolled = true;
-        }
-        // Roll through a hit that is about to land.
-        if let Some(first) = hit
-            && !self.rolled
-            && frame < first
-            && first - frame <= 7
-            && dist < 4.0
-        {
-            return go(toward.0, toward.1, buttons::DODGE);
+            return go(0, 0, buttons::USE_ITEM);
         }
         if dist > 2.0 {
             return go(toward.0, toward.1, 0);
         }
-        if !attacking && p.stamina >= 25.0 {
+        // Swing while the enemy stands idle or recovers from its last hit.
+        let open = match e.moves.current {
+            None => true,
+            Some(m) => w.moves.get(m.num).is_some_and(|d| {
+                let last = d.data.hitboxes.iter().map(|h| h.frames.1).max();
+                d.next_chain.is_none()
+                    && last.is_some_and(|l| m.frame > l)
+                    && d.data.total_frames.saturating_sub(m.frame) >= 12
+            }),
+        };
+        if open && can_swing && p.stamina >= 25.0 {
             return go(0, 0, buttons::LIGHT);
         }
         go(0, 0, 0)
@@ -425,8 +481,10 @@ fn the_critical_path_reaches_the_lantern_and_the_arena() {
         w.tick,
         player(w).pos
     );
-    // The Lantern was lit.
+    // Both Lanterns were lit, and the one in the antechamber is where the player wakes.
     assert!(w.state.flags.is_set(&flags::lantern_lit("lantern_l01")));
+    assert!(w.state.flags.is_set(&flags::lantern_lit("lantern_l01b")));
+    assert_eq!(w.state.respawn_lantern.as_deref(), Some("lantern_l01b"));
     // The player walked through the fog gate: the boss fight began.
     assert_ne!(
         w.bosses[0].stage,
@@ -456,7 +514,7 @@ fn the_critical_path_reaches_the_lantern_and_the_arena() {
 fn every_tutorial_message_can_be_read() {
     let content = Content::load_embedded().unwrap();
     let w = World::new(SEED, &content, SCENARIO).unwrap();
-    assert!(w.layout.messages.len() >= 10);
+    assert!(w.layout.messages.len() >= MESSAGES.len());
     for (i, m) in w.layout.messages.iter().enumerate() {
         let mut v = World::new(SEED, &content, SCENARIO).unwrap();
         let id = v.player;
@@ -524,11 +582,71 @@ fn the_messages_teach_every_control() {
         "{cycleItem}",
         "Tap {dodge} to roll",
         "Hold {guard} to guard",
-        "parry",
+        "Press {art}",
+        "Lucid Flask",
         "flask",
     ] {
         assert!(all.contains(needle), "no message teaches: {needle}");
     }
+}
+
+/// The first husk faces away, and neither the landing off the ledge nor the run up to the
+/// message wakes it: the player reads how to attack with the husk still idle, 8 m ahead.
+#[test]
+fn the_first_husk_is_idle_while_the_attack_message_is_read() {
+    let content = Content::load_embedded().expect("embedded content");
+    let mut w = World::new(SEED, &content, SCENARIO).expect("waking_hollow exists");
+    let husk = {
+        let i = w
+            .layout
+            .enemies
+            .iter()
+            .position(|s| s.name == "husk_first")
+            .expect("husk_first");
+        w.state.ai_enemies[i]
+    };
+    // The route bot goes over the ledge. It would fight the husk on sight, so from the
+    // landing the test runs the player straight to the message, as a new player would.
+    let mut bot = Bot::new();
+    while player(&w).pos[2] < 20.5 {
+        let input = bot.act(&w);
+        tick(&mut w, &input);
+        assert!(w.tick < 2_000, "the bot never crossed the ledge");
+    }
+    let msg = w
+        .layout
+        .messages
+        .iter()
+        .find(|m| m.id == "msg_attack")
+        .expect("msg_attack")
+        .pos;
+    let step = |w: &mut World, move_z: i8, buttons: u16| {
+        let frame = ActionFrame {
+            move_x: 0,
+            move_z,
+            buttons,
+        };
+        tick(
+            w,
+            &TickInput {
+                frame,
+                commands: vec![],
+            },
+        );
+    };
+    // Run until the message is in reach from as far up the room as it can be read from.
+    while player(&w).pos[2] < msg[2] + 1.4 {
+        step(&mut w, 127, 0);
+    }
+    step(&mut w, 0, 0);
+    step(&mut w, 0, buttons::INTERACT);
+    assert!(w.state.flags.is_set(&flags::message_read("msg_attack")));
+    let a = w.actors.get(husk).unwrap();
+    assert_eq!(
+        a.ai.as_ref().map(|b| b.awareness),
+        Some(crate::ai::Awareness::Idle)
+    );
+    assert!(a.poise.unaware, "a backstab is on offer");
 }
 
 #[test]

@@ -81,7 +81,8 @@ lf-tools replay record-script tests/replays/m1_movement.script --out tests/repla
   awareness events and the hits; `game/crates/core/src/ai/tests.rs` tests the rules.
 
 - `m3_husk.lfr`: the WP-032 golden on `fight_husk`, from `m3_husk.script`. A Husk walks up
-  and lands both swings of its combo (62 and 79 damage), and the player's light kills it.
+  and lands both swings of its combo (71 and 90 damage), and the player's three-hit light
+  chain kills it.
   `m3_husk_lands_its_two_hit_combo_and_dies` checks it.
 - `m3_husk_variants.lfr`: the WP-032 golden on `fight_husk_variants`, from
   `m3_husk_variants.script`. The Servant, Miner (pickaxe), and Frost Husk (Rime) each

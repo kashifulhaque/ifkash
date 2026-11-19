@@ -30,6 +30,7 @@
   turn_deg_per_tick: 12.0, // tuning
   arrive_m: 0.6, // tuning
   approach_stop_m: 1.6, // tuning: just inside te_slash's reach
+  overlap_m: 0.6, // tuning: a target this close is inside the actor, so FacingWithin holds
   fallback_ticks: 30, // tuning
   probe_m: 0.8, // tuning: one step and a bit
   repath_m: 2.0, // tuning: replan when the goal has moved this far (WP-032)

@@ -84,6 +84,8 @@ pub struct Bot {
     pending_hit: Option<(MoveNum, u16)>,
     /// Where the bot goes to be off the loom lines, while they are out.
     refuge: Option<[f32; 3]>,
+    /// Swings in bursts and rests in between.
+    pace: crate::ai::b01_tests::Pace,
     /// Buttons sent last tick, because every button is a press edge.
     last: u16,
 }
@@ -95,6 +97,7 @@ impl Default for Bot {
             rolled_for: None,
             pending_hit: None,
             refuge: None,
+            pace: Default::default(),
             last: 0,
         }
     }
@@ -128,6 +131,7 @@ impl Bot {
             return ((0, 0), 0);
         };
         let pp = player.pos;
+        let rested = self.pace.ready(player.stamina, player.max_stamina);
         let rolling = player
             .moves
             .current
@@ -170,7 +174,7 @@ impl Bot {
                 })
                 .any(|l| l.beam > 0 || l.warn <= 5);
             // A beam about to fire under the bot: roll through it.
-            if soon && !rolling && player.stamina >= 25.0 {
+            if soon && !rolling && player.stamina > 0.0 {
                 return (roll_toward(w, pp, refuge), buttons::DODGE);
             }
             if dist(pp, refuge) > 0.3 {
@@ -201,7 +205,16 @@ impl Bot {
             return (toward(pp, post, 1.0), 0);
         }
         let hit = threat(w, body, pp);
-        if hit.is_none() && player.stamina >= 30.0 && player.moves.current.is_none() {
+        // Free to swing: not in a move, or at the cancel into the next swing of the chain.
+        let free = match player.moves.current {
+            None => true,
+            Some(c) => w
+                .moves
+                .get(c.num)
+                .and_then(|d| d.data.cancel_attack_from)
+                .is_some_and(|from| c.frame >= from && !rolling),
+        };
+        if hit.is_none() && rested && free {
             return (toward(pp, body.pos, 0.1), buttons::LIGHT);
         }
         ((0, 0), 0)
@@ -229,7 +242,7 @@ impl Bot {
             && self.rolled_for != Some((m.num, first))
             && m.frame < first
             && first - m.frame <= self.lead
-            && player.stamina >= 25.0
+            && player.stamina > 0.0
         {
             self.pending_hit = Some((m.num, first));
             // A long spell of hits (the spin) outlasts a roll's i-frames: roll out of its reach.

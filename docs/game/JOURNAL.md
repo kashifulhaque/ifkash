@@ -38,6 +38,63 @@ Copy this block to the top of the entries and fill it in as you go:
 
 ## Entries
 
+### 2026-11-19: tutorial-tuning (Waking Hollow and B01 balance pass)
+
+- **Orchestrator:** a worker of the tutorial tuning session; Fable 5.2
+- **Branch:** none. The changes are in the working tree of `main` at `5f16089`, not
+  committed.
+- **Target:** five read-only audits of the tutorial said the fights were too easy to
+  face-tank (mash light beat B01 on 7 of 8 seeds in about 30 s) and that a player who
+  stands inside B01 is never attacked.
+- **Work:**
+  - Player (`locomotion.ron`, `moves/straight_sword.ron`, `moves/arts.ron`,
+    `weapons/straight_sword.ron`, `consumables.ron`, `moves/common.ron`): input buffer 8 to
+    12 ticks; lights 1 and 2 chain from frame 19 (was 21); light 3 is a finisher (motion
+    value 1.2, poise damage 20); `stub_poise` 40 to 15, so a Husk swing staggers; the
+    charged heavy has the heavy's hyperarmor (6 to 21); Rising Cleave motion value 2.0 and
+    dodge cancel 26; earlier dodge cancels on the heavy (30), running attack (22), and
+    guard counter (22); Wayfarer's Blade guard boost 50; sprint 6.5 m/s (the hound stays
+    at 6.0: enemy speeds come from `ai.ron`); the flask heals on frame 20 of 36.
+  - Stamina (`combat/stamina.rs`): the committed part of a move (before `cancel_any_from`)
+    regenerates nothing and doesn't count toward the regeneration delay. A heavy no longer
+    ends with more stamina than it started with.
+  - Enemies: Husk HP 230, attack 100, Glimmer 40, reach 0.25 m shorter; Thorn Hound HP 150,
+    poise 10, attack 95, Glimmer 40, lunge and snap telegraphs 18 and 16 frames.
+  - B01: HP 2,200, attack 130, stance 160, `Wait` weight 3, bash and combo 1 land on frame
+    18 (600 ms), combo 3 is 62 frames. `ai.ron` `overlap_m` (0.6): a target that close
+    counts as faced, which fixes the stall when the player stands inside an enemy.
+  - Level (`levels/waking_hollow/entities.ron`): a second Lantern, `lantern_l01b`, in the
+    antechamber; the first husk faces away, and `msg_attack` moved 1 m back so that reading
+    it doesn't wake the husk; the roll and guard messages moved to corridor 2;
+    `msg_guard` no longer teaches a parry the starting kit can't do; a new `msg_art`; the
+    alcove holds Clotweed; the twist room's hound waits beside the door; the chest pays
+    220 Glimmer.
+  - Bots: the stamina rule halves the sustained damage of a bot that swings whenever it
+    has stamina. `Pace` (`ai/b01_tests.rs`) makes the B04, B05, B10, and B12 bots swing in
+    bursts and rest; their rolls no longer wait for 25 stamina; the B05 bot stops rolling
+    through the adds' chip hits. The route bot (`hollow_tests.rs`, shared by every area)
+    presses nothing that would only be buffered, rolls for any enemy in reach, skips
+    enemies it can't lock on to or reach, and re-locks when the lock is on another enemy.
+  - Goldens: all 120 changed. 118 were re-recorded from their scripts (the bots' scripts
+    regenerated first), `m5_echo_helps_beat_test_boss` by its recorder, and
+    `m0_random_3000` rehashed. The `m3_husk`, `m3_thorn_hounds`, `m3_acolyte`, and
+    `m3_gray_captain` scripts changed for the new HP and poise.
+- **Checked:** `lf-tools validate` (0 errors), `cargo test --workspace`, clippy with
+  `-D warnings`, `cargo fmt --check`, `lf-tools bake waking_hollow`, `lf-tools gen-ts`,
+  `game/scripts/build-wasm.sh`, and the WASM goldens. A scripted-player harness over seeds
+  1 to 8 on `boss_b01`: mash light wins 3 of 8 (was 7), mash heavy 2 of 8 (was 7), a clean
+  roll-and-one-light player wins 8 of 8 in 88 to 130 s, with Rising Cleave 54 to 87 s.
+- **Not verified:** nothing was played in the browser. The procedural models' strike
+  frames for the hound and B01 (`render/procedural/models/`) still hold the old numbers.
+  `ui/map/places.ts` has no name for `lantern_l01b`.
+- **Waiting on the owner:** holding guard still loses to B01 (0 of 8): a weapon guard
+  takes half of each blow, and chip damage outlasts three flasks. B01's stance breaks
+  rarely (hits more than 4 s apart decay). `lf-tools balance --boss B01` has 4 of 9 builds
+  in its 3-minute band. The stamina rule and the lower poise are global: the later bosses
+  were balanced with the old rules and only their bots were retuned, not their numbers.
+- **Next steps:** the renderer lane updates the strike frames and the Lantern name; the
+  owner plays the tutorial on a pad.
+
 ### 2026-11-16: tutorial-hud-camera (owner playtest notes 4, 5, 6, 10, and 11)
 
 - **Orchestrator:** Opus 5.5, a side session of the tutorial planning session

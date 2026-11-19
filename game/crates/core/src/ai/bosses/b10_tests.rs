@@ -118,6 +118,8 @@ pub struct Bot {
     /// the bot's own is ignored, and then it presses again).
     pending_toll: Option<u64>,
     pending_hit: Option<(MoveNum, u16)>,
+    /// Swings in bursts and rests in between.
+    pace: crate::ai::b01_tests::Pace,
     /// Buttons sent last tick, because every button is a press edge.
     last: u16,
 }
@@ -132,6 +134,7 @@ impl Default for Bot {
             rolled_toll: 0,
             pending_toll: None,
             pending_hit: None,
+            pace: Default::default(),
             last: 0,
         }
     }
@@ -165,6 +168,7 @@ impl Bot {
             return ((0, 0), 0);
         };
         let pp = player.pos;
+        let rested = self.pace.ready(player.stamina, player.max_stamina);
         let rolling = player
             .moves
             .current
@@ -195,7 +199,7 @@ impl Bot {
             && key != self.rolled_toll
             && arrives > 0.0
             && arrives <= f32::from(self.toll_lead)
-            && player.stamina >= 25.0
+            && player.stamina > 0.0
         {
             self.pending_toll = Some(key);
             return (toward(pp, goal, 1.0), buttons::DODGE);
@@ -216,7 +220,7 @@ impl Bot {
             && self.rolled_for != Some((m.num, first))
             && frame < first
             && first - frame <= self.lead
-            && player.stamina >= 25.0
+            && player.stamina > 0.0
         {
             self.pending_hit = Some((m.num, first));
             return (toward(pp, goal, 1.0), buttons::DODGE);
@@ -242,7 +246,16 @@ impl Bot {
         // A swing of the bot's own can't be rolled out of at once, so none starts just before the
         // toll (nor while a hit is coming).
         let toll_near = toll.is_some_and(|(_, t)| t > -4.0 && t < f32::from(self.swing_ticks));
-        if hit.is_none() && !toll_near && player.stamina >= 30.0 && player.moves.current.is_none() {
+        // Free to swing: not in a move, or at the cancel into the next swing of the chain.
+        let free = match player.moves.current {
+            None => true,
+            Some(c) => w
+                .moves
+                .get(c.num)
+                .and_then(|d| d.data.cancel_attack_from)
+                .is_some_and(|from| c.frame >= from && !rolling),
+        };
+        if hit.is_none() && !toll_near && rested && free {
             return (toward(pp, body.pos, 0.1), buttons::LIGHT);
         }
         ((0, 0), 0)

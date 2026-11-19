@@ -88,7 +88,7 @@ mod tests {
         w.actors.get(w.player).unwrap().inventory.glimmer
     }
 
-    /// A Husk that dies in a tick, here off the kill plane, pays its 15 Glimmer once.
+    /// A Husk that dies in a tick, here off the kill plane, pays its 40 Glimmer once.
     #[test]
     fn a_dying_enemy_pays_its_glimmer_once() {
         let (mut w, husk) = fight_husk();
@@ -98,7 +98,7 @@ mod tests {
                 .unwrap()
                 .data
                 .glimmer;
-        assert_eq!(pay, 15);
+        assert_eq!(pay, 40);
         w.actors.get_mut(husk).unwrap().pos[1] = w.physics.kill_y - 10.0;
         tick(&mut w, &TickInput::default());
         assert!(w.actors.get(husk).unwrap().dead);

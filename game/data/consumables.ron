@@ -18,7 +18,7 @@
     heal_per_level: 50, // +50 per upgrade
     fp_base: 60, // Consumables, Lucid Flask: restore 60 FP at +0
     fp_per_level: 10, // +10 per upgrade
-    effect_frame: 16, // Combat verbs, Drink a flask: 16 (heal lands)
+    effect_frame: 20, // Combat verbs, Drink a flask: 20 (heal lands)
     walk_percent: 40, // Combat verbs, Drink a flask: walk speed 40%
   ),
   items: [

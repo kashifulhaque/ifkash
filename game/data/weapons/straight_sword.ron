@@ -13,7 +13,7 @@
     weight_tenths: 40,
     unique: false,
     // Guard, Guard and guard counter: weapons guard at about 50 percent physical.
-    guard: (absorb_phys_percent: 50, absorb_elem_percent: 0, guard_boost: 40), // elem and boost: tuning
+    guard: (absorb_phys_percent: 50, absorb_elem_percent: 0, guard_boost: 50), // elem and boost: tuning
     moveset: (
       light_chain: ["ss_light_1", "ss_light_2", "ss_light_3"],
       heavy: "ss_heavy",

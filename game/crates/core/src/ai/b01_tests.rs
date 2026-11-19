@@ -35,6 +35,49 @@ const SEED: u64 = 34;
 /// 60 Hz is far more than the bot needs; this only stops a stuck run).
 const MAX_TICKS: u64 = 9000;
 
+/// Stamina pacing for a scripted bot: swing in a burst, then rest until the bar is back.
+///
+/// Stamina doesn't regenerate during the committed part of a move, and regeneration starts
+/// only after a delay (docs/game/03-combat.md, "Regeneration"). A bot that swings whenever
+/// it has just enough stamina pays that delay for every swing. Resting for one long spell
+/// pays it once per burst, which is what a player does.
+#[derive(Clone, Copy, Debug)]
+pub struct Pace {
+    /// Below this much stamina the bot rests. The default leaves two rolls' worth after a
+    /// swing.
+    low: f32,
+    /// The share of the bar the bot rests up to.
+    rested: f32,
+    resting: bool,
+}
+
+impl Default for Pace {
+    fn default() -> Self {
+        Self::new(40.0, 0.9)
+    }
+}
+
+impl Pace {
+    /// A pace that rests below `low` stamina, up to the share `rested` of the bar.
+    pub fn new(low: f32, rested: f32) -> Self {
+        Self {
+            low,
+            rested,
+            resting: false,
+        }
+    }
+
+    /// True if the bot may swing now. Call it every tick with the player's stamina.
+    pub fn ready(&mut self, stamina: f32, max: f32) -> bool {
+        if stamina < self.low {
+            self.resting = true;
+        } else if stamina >= max * self.rested {
+            self.resting = false;
+        }
+        !self.resting
+    }
+}
+
 /// Where the player stands relative to the boss.
 struct Geometry {
     /// Planar distance, in meters.
@@ -358,6 +401,202 @@ fn a_hurt_bot_drinks_a_flask_in_a_long_window_and_still_wins() {
     assert!(f.boss_defeated() && !f.player_died());
     assert!(lowest < before, "no flask was drunk");
     assert!(hp < max);
+}
+
+/// A world in which the fight with B01 has just begun.
+#[cfg(test)]
+fn fight_world(seed: u64) -> World {
+    let content = Content::load_embedded().unwrap();
+    let mut w = World::new(seed, &content, SCENARIO).unwrap();
+    while w.bosses[0].stage != Stage::Fight {
+        let frame = ActionFrame {
+            move_x: 0,
+            move_z: if w.bosses[0].stage == Stage::Dormant {
+                127
+            } else {
+                0
+            },
+            buttons: crate::ai::boss::fog_buttons(&w),
+        };
+        tick(
+            &mut w,
+            &TickInput {
+                frame,
+                commands: Vec::new(),
+            },
+        );
+        assert!(w.tick < 600, "the fight never started");
+    }
+    w.events.drain();
+    w
+}
+
+/// Plays `ticks` ticks with a player who only pushes the stick into the boss. Returns how
+/// many attacks the boss started and how many hits it landed.
+#[cfg(test)]
+fn push_into_the_boss(w: &mut World, ticks: u32) -> (u32, u32) {
+    let (mut attacks, mut hits) = (0, 0);
+    let mut last = None;
+    for _ in 0..ticks {
+        let (player, boss) = (
+            w.actors.get(w.player).unwrap(),
+            w.actors.get(boss_body(w)).unwrap(),
+        );
+        let g = geometry(player, boss);
+        let frame = ActionFrame {
+            move_x: g.toward.0,
+            move_z: g.toward.1,
+            buttons: 0,
+        };
+        tick(
+            w,
+            &TickInput {
+                frame,
+                commands: Vec::new(),
+            },
+        );
+        let now = w
+            .actors
+            .get(boss_body(w))
+            .and_then(|b| b.moves.current)
+            .map(|m| m.num);
+        if now != last && now.is_some() {
+            attacks += 1;
+        }
+        last = now;
+        let player = w.player;
+        hits += w
+            .events
+            .drain()
+            .iter()
+            .filter(|e| matches!(e, Event::Hit(h) if h.target == player))
+            .count() as u32;
+        if w.actors.get(player).unwrap().hp == 0 {
+            break;
+        }
+    }
+    (attacks, hits)
+}
+
+/// Actors don't collide, so a player can walk into the boss and stand inside it. The bearing
+/// to a target on the same spot swings wildly, the boss can't turn to face it, and
+/// `FacingWithin` used to fail forever: the boss never attacked. `ai.ron`'s `overlap_m`
+/// counts a target that close as faced.
+#[test]
+fn a_player_who_stands_inside_b01_is_still_attacked() {
+    // Without the rule, the stall: the boss starts next to nothing in 20 seconds.
+    let mut stalled = fight_world(SEED);
+    stalled.ai.tuning.as_mut().unwrap().overlap_m = 0.0;
+    let (attacks_without, _) = push_into_the_boss(&mut stalled, 600);
+    // With it, the boss keeps attacking and its hits land.
+    let mut w = fight_world(SEED);
+    assert!(w.ai.tuning.unwrap().overlap_m > 0.0);
+    let (attacks, hits) = push_into_the_boss(&mut w, 600);
+    assert!(
+        attacks >= 4 && attacks > attacks_without * 2,
+        "{attacks} attacks with the rule, {attacks_without} without"
+    );
+    assert!(
+        hits >= 2,
+        "{hits} hits on a player who stands inside the boss"
+    );
+}
+
+/// B01 has a stance meter: breaking it makes the Sentry kneel, a light attack from the front
+/// is then a riposte, and the Sentry gets back up and attacks again.
+#[test]
+fn breaking_b01s_stance_opens_a_riposte_and_the_boss_recovers() {
+    let mut w = fight_world(SEED);
+    let boss = boss_body(&w);
+    let stance = w.actors.get(boss).unwrap().poise.stance;
+    assert_eq!(stance, 160);
+    // Stand in front of the Sentry, one hit short of breaking its stance.
+    let (pos, yaw) = {
+        let b = w.actors.get_mut(boss).unwrap();
+        b.poise.stance_dmg = u32::from(stance) - 1;
+        b.poise.stance_since = 0;
+        (b.pos, b.yaw)
+    };
+    {
+        let id = w.player;
+        let p = w.actors.get_mut(id).unwrap();
+        p.pos = [
+            pos[0] + crate::math::dmath::sin(yaw) * 1.3,
+            pos[1],
+            pos[2] + crate::math::dmath::cos(yaw) * 1.3,
+        ];
+        p.yaw = yaw + core::f32::consts::PI;
+        p.hit.prev = None;
+    }
+    let step = |w: &mut World, buttons: u16| -> Vec<Event> {
+        tick(
+            w,
+            &TickInput {
+                frame: ActionFrame {
+                    move_x: 0,
+                    move_z: 0,
+                    buttons,
+                },
+                commands: Vec::new(),
+            },
+        );
+        w.events.drain()
+    };
+    // Lock on, then swing until the stance breaks.
+    step(&mut w, buttons::LOCK);
+    step(&mut w, 0);
+    let mut broke = false;
+    for i in 0..40 {
+        let events = step(&mut w, if i == 0 { buttons::LIGHT } else { 0 });
+        broke |= events
+            .iter()
+            .any(|e| matches!(e, Event::StanceBreak(b) if b.target == boss));
+        if broke {
+            break;
+        }
+    }
+    assert!(broke, "the light didn't break the stance");
+    assert!(w.actors.get(boss).unwrap().poise.kneel > 0);
+    assert!(w.actors.get(boss).unwrap().moves.current.is_none());
+    // Wait out the swing, then a light is a riposte: a critical hit worth three lights.
+    let hp = w.actors.get(boss).unwrap().hp;
+    let (mut crit, mut crit_damage) = (false, 0);
+    let mut pressed = false;
+    for _ in 0..70 {
+        let free = w.actors.get(w.player).unwrap().moves.current.is_none();
+        let press = free && !pressed && !crit;
+        pressed = press;
+        for e in step(&mut w, if press { buttons::LIGHT } else { 0 }) {
+            match e {
+                Event::Critical(c) if c.target == boss => crit = true,
+                Event::Hit(h) if h.target == boss && crit => crit_damage += h.damage,
+                _ => {}
+            }
+        }
+        if crit_damage > 0 {
+            break;
+        }
+    }
+    assert!(crit, "no riposte started on the kneeling Sentry");
+    assert!(
+        crit_damage > 300,
+        "the riposte dealt {crit_damage} (a light deals about 118)"
+    );
+    assert_eq!(w.actors.get(boss).unwrap().hp, hp - crit_damage);
+    // The Sentry gets back up: the kneel runs out, the meter is empty, and it attacks again.
+    let mut attacked = false;
+    for _ in 0..300 {
+        step(&mut w, 0);
+        let b = w.actors.get(boss).unwrap();
+        if b.poise.kneel == 0 && b.moves.current.is_some() {
+            attacked = true;
+            break;
+        }
+    }
+    assert!(attacked, "the Sentry never attacked again after the kneel");
+    let b = w.actors.get(boss).unwrap();
+    assert!(b.poise.stance_dmg < u32::from(stance) / 2);
+    assert_eq!(w.bosses[0].stage, Stage::Fight);
 }
 
 /// Writes the two `.script` files the goldens are recorded from. Run it with

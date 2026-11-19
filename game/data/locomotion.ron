@@ -8,7 +8,7 @@
 (
   walk_speed: 1.6, // tuning (carried over from the WP-004 placeholder)
   run_speed: 4.5, // tuning (carried over from the WP-004 placeholder)
-  sprint_speed: 6.0, // tuning
+  sprint_speed: 6.5, // tuning
   walk_below: 40.0, // ActionFrame: magnitude below 40 is a walk
   run_above: 90.0, // ActionFrame: magnitude above 90 is a run
   sprint_delay_ticks: 8, // Combat verbs, Sprint: starts after 8 ticks held
@@ -35,7 +35,7 @@
   // Armor weight until equipment exists: with the 4.0 weapon this is 24.0 of 50.8 max load
   // (47 percent, the Medium roll tier).
   stub_armor_weight_tenths: 200, // stub
-  input_buffer_ticks: 8, // Input buffer: buffered for up to 8 ticks
+  input_buffer_ticks: 12, // Input buffer: buffered for up to 12 ticks
   fall_damage_from_m: 8.0, // Traversal, Fall damage: over 8 m
   fall_damage_per_m: 0.04, // Traversal, Fall damage: 4% of max HP per meter above 8
   fall_death_over_m: 20.0, // Traversal, Fall damage: over 20 m, death
@@ -80,7 +80,7 @@
   // Poise, stance, parry, and critical hits (docs/game/03-combat.md, "Poise and stance"
   // and "Parry and critical hits")
   poise: (
-    stub_poise: 40, // stub until armor exists (tuning)
+    stub_poise: 15, // stub until armor exists (tuning): a Husk swing (18) staggers, a hound bite (10, 14) does not
     light_stagger_ticks: 12, // Poise: a margin under 50 percent is a light stagger of 12 ticks
     heavy_stagger_ticks: 24, // Poise: over 50 percent is a heavy stagger of 24 ticks
     heavy_margin_percent: 50, // Poise: the 50 percent split

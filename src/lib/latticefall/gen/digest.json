@@ -283,8 +283,8 @@
     "start_max": 16,
     "start_min": 4
   },
-  "contentHash": "14386610841667957819",
-  "contentHashHex": "c7a782564366f43b",
+  "contentHash": "4096214383713619785",
+  "contentHashHex": "38d8ad4781188f49",
   "moves": [
     {
       "anim": "ep_sentinel_thrust",
@@ -760,11 +760,11 @@
       "fp": 0,
       "id": "b01_bash",
       "num": 9102,
-      "recoveryStart": 18,
+      "recoveryStart": 22,
       "stamina": 0,
-      "strikeStart": 14,
+      "strikeStart": 18,
       "stub": false,
-      "totalFrames": 46
+      "totalFrames": 50
     },
     {
       "anim": "sentry_combo_1",
@@ -772,11 +772,11 @@
       "fp": 0,
       "id": "b01_combo_1",
       "num": 9103,
-      "recoveryStart": 20,
+      "recoveryStart": 22,
       "stamina": 0,
-      "strikeStart": 16,
+      "strikeStart": 18,
       "stub": false,
-      "totalFrames": 40
+      "totalFrames": 42
     },
     {
       "anim": "sentry_combo_2",
@@ -800,7 +800,7 @@
       "stamina": 0,
       "strikeStart": 18,
       "stub": false,
-      "totalFrames": 60
+      "totalFrames": 62
     },
     {
       "anim": "stag_charge",
@@ -2648,7 +2648,7 @@
       "stamina": 0,
       "strikeStart": null,
       "stub": false,
-      "totalFrames": 30
+      "totalFrames": 36
     },
     {
       "anim": "dummy_slash",
@@ -3628,11 +3628,11 @@
       "fp": 0,
       "id": "th_lunge",
       "num": 8010,
-      "recoveryStart": 19,
+      "recoveryStart": 23,
       "stamina": 0,
-      "strikeStart": 14,
+      "strikeStart": 18,
       "stub": false,
-      "totalFrames": 46
+      "totalFrames": 50
     },
     {
       "anim": "th_snap",
@@ -3640,11 +3640,11 @@
       "fp": 0,
       "id": "th_snap",
       "num": 8011,
-      "recoveryStart": 16,
+      "recoveryStart": 19,
       "stamina": 0,
-      "strikeStart": 13,
+      "strikeStart": 16,
       "stub": false,
-      "totalFrames": 40
+      "totalFrames": 43
     },
     {
       "anim": "ws_slash",

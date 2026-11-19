@@ -121,7 +121,13 @@ pub fn eligible(world: &World, me: Id, target: Id, t: &AiTuning) -> Vec<usize> {
         return Vec::new();
     };
     let def = &world.ai.def(b.def);
-    let x = Context::new(a, tg, &world.moves);
+    let mut x = Context::new(a, tg, &world.moves);
+    // A target that stands inside the actor counts as faced. Actors don't collide, and the
+    // bearing to an overlapping target swings too fast to turn toward, so without this a
+    // player who pushes into an enemy is never attacked.
+    if x.dist < t.overlap_m {
+        x.facing_deg = 0.0;
+    }
     let free = can_start_move(a);
     def.options
         .iter()

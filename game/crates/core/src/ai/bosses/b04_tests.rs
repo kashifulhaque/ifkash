@@ -68,6 +68,8 @@ pub(crate) struct Bot {
     lead: u16,
     /// Ticks until the bot may roll again.
     roll_cooldown: u16,
+    /// Swings in bursts and rests in between.
+    pace: crate::ai::b01_tests::Pace,
     /// Buttons sent last tick, because every button is a press edge.
     last: u16,
 }
@@ -77,6 +79,7 @@ impl Default for Bot {
         Self {
             lead: 7,
             roll_cooldown: 0,
+            pace: Default::default(),
             last: 0,
         }
     }
@@ -143,6 +146,7 @@ impl Bot {
         if down(player) {
             return ((0, 0), 0);
         }
+        let rested = self.pace.ready(player.stamina, player.max_stamina);
         let Some(mother) = w.actors.get(body(w)) else {
             return ((0, 0), 0);
         };
@@ -205,7 +209,7 @@ impl Bot {
             (None, None) => (mother.pos, 2.4),
         };
         let (dist, stick) = toward(player.pos, goal);
-        if dist <= reach && player.stamina >= 25.0 {
+        if dist <= reach && rested {
             // Face it and swing (the stick turns the swing toward the target).
             return (stick, buttons::LIGHT);
         }

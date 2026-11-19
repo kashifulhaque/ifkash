@@ -9,11 +9,11 @@
     // A leaping bite that closes about 2.8 m. 30 Rupture buildup.
     id: "th_lunge",
     anim: "th_lunge",
-    total_frames: 46,
+    total_frames: 50,
     stamina: 0,
     fp: 0,
-    root_motion: [(0, 0.0), (12, 0.0), (16, 2.6), (46, 2.8)],
-    track_deg_per_tick: 8.0,
+    root_motion: [(0, 0.0), (16, 0.0), (20, 2.6), (50, 2.8)],
+    track_deg_per_tick: 6.0,
     hyperarmor: None,
     iframes: None,
     cancel_attack_from: None,
@@ -22,7 +22,7 @@
     next_chain: None,
     hitboxes: [
       (
-        frames: (14, 18),
+        frames: (18, 22),
         shape: Capsule(a: (0.0, 0.8, 0.2), b: (0.0, 0.8, 1.2), radius: 0.35),
         motion_value: 0.9,
         phys: Pierce,
@@ -34,18 +34,18 @@
         tags: [],
       ),
     ],
-    sfx: [(12, "hound_snarl")],
-    vfx: [(14, "trail_dull")],
+    sfx: [(2, "hound_snarl")],
+    vfx: [(18, "trail_dull")],
   ),
   (
     // A close snap. 15 Rupture buildup.
     id: "th_snap",
     anim: "th_snap",
-    total_frames: 40,
+    total_frames: 43,
     stamina: 0,
     fp: 0,
-    root_motion: [(0, 0.0), (12, 0.0), (15, 0.4), (40, 0.4)],
-    track_deg_per_tick: 8.0,
+    root_motion: [(0, 0.0), (15, 0.0), (18, 0.4), (43, 0.4)],
+    track_deg_per_tick: 6.0,
     hyperarmor: None,
     iframes: None,
     cancel_attack_from: None,
@@ -54,7 +54,7 @@
     next_chain: None,
     hitboxes: [
       (
-        frames: (13, 15),
+        frames: (16, 18),
         shape: Capsule(a: (0.0, 0.8, 0.2), b: (0.0, 0.8, 1.0), radius: 0.35),
         motion_value: 0.7,
         phys: Pierce,
@@ -66,7 +66,7 @@
         tags: [],
       ),
     ],
-    sfx: [(12, "hound_snarl")],
+    sfx: [(2, "hound_snarl")],
     vfx: [],
   ),
 ]

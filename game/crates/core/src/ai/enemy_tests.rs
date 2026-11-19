@@ -204,9 +204,9 @@ fn an_enemy_hit_deals_its_attack_rating_through_the_damage_formula() {
             _ => None,
         })
         .expect("the husk landed a swing");
-    // AR 90, motion value 1.0, against the player's flat 40: 90^2 / 130 = 62.3.
-    assert_eq!(hit.damage, 62);
-    assert_eq!(w.actors.get(w.player).unwrap().hp, hp0 - 62);
+    // AR 100, motion value 1.0, against the player's flat 40: 100^2 / 140 = 71.4.
+    assert_eq!(hit.damage, 71);
+    assert_eq!(w.actors.get(w.player).unwrap().hp, hp0 - 71);
 }
 
 #[test]
@@ -228,7 +228,7 @@ fn enemies_do_not_hurt_each_other() {
             assert!(!ids.contains(&h.target), "{h:?}");
         }
     }
-    assert!(ids.iter().all(|&id| w.actors.get(id).unwrap().hp == 90));
+    assert!(ids.iter().all(|&id| w.actors.get(id).unwrap().hp == 150));
 }
 
 #[test]

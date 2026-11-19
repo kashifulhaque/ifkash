@@ -109,14 +109,14 @@
     hyperarmor: (from: 6, to: 20),
     iframes: None,
     cancel_attack_from: None,
-    cancel_dodge_from: 30,
+    cancel_dodge_from: 26,
     cancel_any_from: 36,
     next_chain: None,
     hitboxes: [
       (
         frames: (12, 15),
         shape: Capsule(a: (0.0, 0.3, 0.3), b: (0.0, 2.3, 1.5), radius: 0.3),
-        motion_value: 1.6,
+        motion_value: 2.0,
         phys: Slash,
         element: None,
         poise_damage: 30,

@@ -2,7 +2,8 @@
 //! verbs" (the Stamina column and Sprint) and "Regeneration".
 //!
 //! Stamina is an `f32` on the actor. Spending resets `Motor::stamina_idle`; regeneration
-//! starts once it reaches `stamina_regen_delay_ticks`. Sprint drain (0.2 a tick) and the
+//! starts once it reaches `stamina_regen_delay_ticks`. The counter doesn't advance during
+//! the committed part of a move (see [`regen`]). Sprint drain (0.2 a tick) and the
 //! jump cost are spent inline by `actor::controller::intent`, with the same reset; its
 //! sprint check needs stamina above 0 and stops at 0.
 
@@ -45,8 +46,15 @@ pub fn try_spend(a: &mut Actor, d: &Move) -> bool {
 /// `stamina_regen_delay_ticks` have passed without spending. While guarding the rate is
 /// `guard.regen_percent` of that, and at Heavy equip load `equip_load.heavy_regen_percent`
 /// of it (both apply together when both hold).
+///
+/// The committed part of a move (every frame before its `cancel_any_from`) doesn't count
+/// toward the delay and regenerates nothing, so a long move can't end with more stamina
+/// than it started with.
 pub fn regen(a: &mut Actor, t: &Locomotion, tier: LoadTier) {
     if a.dead {
+        return;
+    }
+    if a.moves.current.is_some_and(|c| c.frame < c.free_from) {
         return;
     }
     if a.motor.stamina_idle < t.stamina_regen_delay_ticks {
@@ -147,6 +155,46 @@ mod tests {
         assert_eq!(stamina(&w), 0.0);
         tick_with(&mut w, buttons::DODGE, 127);
         assert!(!w.actors.get(w.player).unwrap().motor.sprinting);
+    }
+
+    #[test]
+    fn a_move_regenerates_nothing_until_it_can_be_cancelled() {
+        // The heavy is 42 frames and costs 22: before this rule, the delay ran out during
+        // the swing and it ended with more stamina than it started with.
+        let mut w = flat();
+        let full = stamina(&w);
+        tick_with(&mut w, buttons::HEAVY, 0);
+        let spent = stamina(&w);
+        assert!(spent < full);
+        let mut committed = 0;
+        while w
+            .actors
+            .get(w.player)
+            .unwrap()
+            .moves
+            .current
+            .is_some_and(|c| c.frame.saturating_add(1) < c.free_from)
+        {
+            tick_with(&mut w, 0, 0);
+            assert_eq!(
+                stamina(&w),
+                spent,
+                "regenerated on committed tick {committed}"
+            );
+            assert_eq!(w.actors.get(w.player).unwrap().motor.stamina_idle, 0);
+            committed += 1;
+        }
+        assert!(
+            committed > 30,
+            "the heavy stayed committed for {committed} ticks"
+        );
+        // Once the move is free, the usual delay runs and regeneration starts.
+        let delay = w.locomotion.stamina_regen_delay_ticks;
+        for _ in 0..delay + 3 {
+            tick_with(&mut w, 0, 0);
+        }
+        assert!(stamina(&w) > spent);
+        assert!(stamina(&w) < full, "the heavy cost stamina overall");
     }
 
     #[test]

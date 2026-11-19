@@ -2,10 +2,11 @@
 //!
 //! The bot reads the world each tick and returns the player's input. Every attack in the
 //! fight (the Keeper's, a thrall's, a Drowned's) is a hitbox on a frame window, so the bot
-//! looks at each hostile actor's move (and the moves it chains into), works out when a hitbox
-//! will next overlap the player, and rolls so that the roll's i-frames cover that frame. It
-//! punishes in the long recovery after the Keeper's finishers and cuts down an add that
-//! stands close. It is deterministic (no randomness, no clock): [`run_bot`] and [`run_idle`]
+//! looks at each hostile actor's move (and the moves it chains into) and works out when a
+//! hitbox will next overlap the player. It rolls so that the roll's i-frames cover the
+//! Keeper's hits, and takes the adds' chip hits: stamina doesn't come back during a roll, so
+//! rolling through every one leaves nothing to swing with. It punishes in the long recovery
+//! after the Keeper's finishers and cuts down an add that stands close. It is deterministic (no randomness, no clock): [`run_bot`] and [`run_idle`]
 //! play a whole fight from any seed.
 //!
 //! The goldens `m7_b05_bot_win.lfr` and `m7_b05_idle_dies.lfr` come from the bot's inputs:
@@ -72,9 +73,6 @@ const ADD_MARGIN_M: f32 = 0.9;
 const KEEPER_MARGIN_M: f32 = 2.0;
 /// How many ticks the bot holds the stick after pressing DODGE.
 const ROLL_HOLD_TICKS: u64 = 6;
-/// A hit from an add is only rolled for when the Keeper has none within this many ticks, so
-/// that the roll is over before the Keeper's next.
-const KEEPER_CLEAR_TICKS: u16 = 30;
 /// The bot starts or chains a swing only if no hit is due within this many ticks: the swing's
 /// dodge cancel (frame 17) plus the lead (7) plus a margin.
 const SWING_CLEAR_TICKS: u16 = 26;
@@ -127,6 +125,12 @@ pub(crate) struct Bot {
     last: u16,
     /// The tick the bot last pressed DODGE.
     rolled_at: u64,
+    /// Swings in bursts and rests in between.
+    pace: crate::ai::b01_tests::Pace,
+    /// The Keeper's next hit as of the last tick: the tick and the ticks it was away. A
+    /// chained move starts a tick after the last one ends, and for that tick the Keeper has
+    /// no move to read.
+    keeper_was: Option<(u64, u16)>,
 }
 
 impl Default for Bot {
@@ -135,6 +139,8 @@ impl Default for Bot {
             lead: 7,
             last: 0,
             rolled_at: 0,
+            keeper_was: None,
+            pace: crate::ai::b01_tests::Pace::new(26.0, 0.3),
         }
     }
 }
@@ -185,6 +191,7 @@ impl Bot {
         if w.tick < self.rolled_at + ROLL_HOLD_TICKS {
             return (toward, 0);
         }
+        let rested = self.pace.ready(player.stamina, player.max_stamina);
         let rolling = player
             .moves
             .current
@@ -209,16 +216,18 @@ impl Bot {
                 },
             )
         };
-        let keeper_ahead = threat(0);
+        let keeper_ahead = threat(0).or_else(|| {
+            self.keeper_was
+                .filter(|&(at, t)| at + 1 == w.tick && t > 1 && keeper.moves.current.is_none())
+                .map(|(_, t)| t - 1)
+        });
+        self.keeper_was = keeper_ahead.map(|t| (w.tick, t));
         let adds_ahead = (1..n).filter_map(threat).min();
-        // The Keeper's hit is rolled for when it is close; an add's only when the Keeper has
-        // none soon after, so the roll is over in time.
-        let want_roll = match (keeper_ahead, adds_ahead) {
-            (Some(k), _) if k <= self.lead => true,
-            (k, Some(a)) => a <= self.lead && k.is_none_or(|k| k > KEEPER_CLEAR_TICKS),
-            _ => false,
-        };
-        if want_roll && !rolling && w.tick >= self.rolled_at + 12 && player.stamina >= 14.0 {
+        // Only the Keeper's hits are rolled for. A roll costs more stamina than it gives back
+        // while it plays, so rolling through every add's chip hit leaves nothing to punish
+        // the Keeper with: the bot takes those hits and cuts the adds down instead.
+        let want_roll = keeper_ahead.is_some_and(|k| k <= self.lead);
+        if want_roll && !rolling && w.tick >= self.rolled_at + 12 && player.stamina > 0.0 {
             return (toward, buttons::DODGE);
         }
         let any_ahead = keeper_ahead.is_some() || adds_ahead.is_some();
@@ -236,7 +245,7 @@ impl Bot {
                 .is_some_and(|from| c.frame >= from && !rolling),
         };
         let swing = |stick| {
-            if free && player.stamina >= 30.0 && soonest.is_none_or(|t| t >= SWING_CLEAR_TICKS) {
+            if free && rested && soonest.is_none_or(|t| t >= SWING_CLEAR_TICKS) {
                 (stick, buttons::LIGHT)
             } else {
                 (stick, 0)
@@ -264,7 +273,7 @@ impl Bot {
             }
             return swing((0, 0));
         }
-        if any_ahead {
+        if soonest.is_some_and(|t| t < SWING_CLEAR_TICKS) {
             return ((0, 0), 0);
         }
         // Quiet and hurt: drink a flask if nothing is close.

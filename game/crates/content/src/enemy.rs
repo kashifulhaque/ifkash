@@ -373,6 +373,10 @@ pub struct AiTuning {
     pub arrive_m: f32,
     /// Approach stops this close to the target.
     pub approach_stop_m: f32,
+    /// A target closer than this stands inside the actor, so `FacingWithin` counts as met:
+    /// actors have no body collision, and the bearing to an overlapping target is too
+    /// unstable to turn toward.
+    pub overlap_m: f32,
     /// When no option fits, the actor strafes (no token) or approaches for this long.
     pub fallback_ticks: u16,
     /// How far ahead `desired_move` checks for a wall in the way.

@@ -961,11 +961,11 @@ mod tests {
     }
 
     #[test]
-    fn buffer_holds_a_press_for_eight_ticks() {
-        for (press_at, chains) in [(13, true), (12, false)] {
+    fn buffer_holds_a_press_for_twelve_ticks() {
+        for (press_at, chains) in [(7, true), (6, false)] {
             let mut w = flat();
             let chain_from = data(&w, "ss_light_1").cancel_attack_from.unwrap();
-            assert_eq!(chain_from - 8, 13);
+            assert_eq!(chain_from - 12, 7);
             step(&mut w, buttons::LIGHT, 0, 0);
             idle(&mut w, u32::from(press_at) - 1);
             step(&mut w, buttons::LIGHT, 0, 0);

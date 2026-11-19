@@ -76,23 +76,23 @@ fn the_starting_loadout() {
 }
 
 #[test]
-fn drinking_heals_on_frame_16_and_spends_the_charge_then() {
+fn drinking_heals_on_frame_20_and_spends_the_charge_then() {
     let mut w = flat();
     player_mut(&mut w).hp = 1;
     start_drink(&mut w);
-    // Frames 1 to 15: nothing yet.
-    for f in 1..16 {
+    // Frames 1 to 19: nothing yet.
+    for f in 1..20 {
         idle(&mut w, 1);
         assert_eq!(player(&w).moves.current.unwrap().frame, f);
         assert_eq!(player(&w).hp, 1, "no heal on frame {f}");
         assert_eq!(player(&w).inventory.flasks.vigil, 3, "no charge spent yet");
     }
-    // Frame 16: +300 HP at +0, and the charge goes.
+    // Frame 20: +300 HP at +0, and the charge goes.
     idle(&mut w, 1);
-    assert_eq!(player(&w).moves.current.unwrap().frame, 16);
+    assert_eq!(player(&w).moves.current.unwrap().frame, 20);
     assert_eq!(player(&w).hp, 301.min(player(&w).max_hp));
     assert_eq!(player(&w).inventory.flasks.vigil, 2);
-    // Recovery to frame 30 doesn't heal again.
+    // Recovery to frame 36 doesn't heal again.
     let hp = player(&w).hp;
     idle(&mut w, 20);
     assert!(player(&w).moves.current.is_none());
@@ -101,13 +101,13 @@ fn drinking_heals_on_frame_16_and_spends_the_charge_then() {
 }
 
 #[test]
-fn a_stagger_before_frame_16_means_no_heal_and_no_charge() {
+fn a_stagger_before_frame_20_means_no_heal_and_no_charge() {
     let mut w = flat();
     player_mut(&mut w).hp = 1;
     start_drink(&mut w);
-    idle(&mut w, 14); // frame 14
-    idle(&mut w, 1); // frame 15
-    assert_eq!(player(&w).moves.current.unwrap().frame, 15);
+    idle(&mut w, 18); // frame 18
+    idle(&mut w, 1); // frame 19
+    assert_eq!(player(&w).moves.current.unwrap().frame, 19);
     // A guard break (or any stagger) calls `interrupt`; the stagger blocks new moves.
     player_mut(&mut w).moves.interrupt();
     player_mut(&mut w).moves.guard.stagger = 30;
@@ -118,11 +118,11 @@ fn a_stagger_before_frame_16_means_no_heal_and_no_charge() {
 }
 
 #[test]
-fn a_stagger_after_frame_16_keeps_the_heal() {
+fn a_stagger_after_frame_20_keeps_the_heal() {
     let mut w = flat();
     player_mut(&mut w).hp = 1;
     start_drink(&mut w);
-    idle(&mut w, 16);
+    idle(&mut w, 20);
     player_mut(&mut w).moves.interrupt();
     idle(&mut w, 5);
     assert_eq!(player(&w).hp, 301.min(player(&w).max_hp));
@@ -135,7 +135,7 @@ fn a_flask_heals_no_more_than_max_hp() {
     let max = player(&w).max_hp;
     player_mut(&mut w).hp = max - 5;
     start_drink(&mut w);
-    idle(&mut w, 16);
+    idle(&mut w, 20);
     assert_eq!(player(&w).hp, max);
 }
 
@@ -150,7 +150,7 @@ fn cycling_to_the_lucid_flask_restores_fp() {
     assert_eq!(player(&w).inventory.equipment.quick_active, 1);
     idle(&mut w, 1);
     start_drink(&mut w);
-    idle(&mut w, 15);
+    idle(&mut w, 19);
     assert_eq!(player(&w).fp, 0.0);
     idle(&mut w, 1);
     assert_eq!(player(&w).fp, 60.0f32.min(player(&w).max_fp));
@@ -216,7 +216,7 @@ fn use_item_command_selects_the_slot_and_drinks() {
     tick_with(&mut w, 0, vec![Command::UseItem { slot: 1 }]);
     assert_eq!(player(&w).moves.current.unwrap().num, rules(&w).drink_move);
     assert_eq!(player(&w).inventory.equipment.quick_active, 1);
-    idle(&mut w, 16);
+    idle(&mut w, 20);
     assert!(player(&w).fp > 0.0);
     // An empty or missing slot does nothing.
     let mut w = flat();

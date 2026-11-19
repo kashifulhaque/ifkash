@@ -6,6 +6,10 @@ scenario fight_acolyte
 1   0 0  LOCK
 100 0 127            # run at it: it retreats and swats
 1   0 0  LIGHT
-40  0 0
+20  0 0
+1   0 0  LIGHT
+20  0 0
 1   0 0  LIGHT
 60  0 0
+1   0 0  LIGHT
+40  0 0

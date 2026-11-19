@@ -620,8 +620,8 @@ fn hits(events: &[lf_core::events::Event]) -> Vec<&lf_core::events::Hit> {
         .collect()
 }
 
-/// The WP-032 Husk golden: the husk walks up and lands both swings of its combo (62 and 79
-/// damage from its attack rating of 90), then dies to the player's light.
+/// The WP-032 Husk golden: the husk walks up and lands both swings of its combo (71 and 90
+/// damage from its attack rating of 100), then dies to the player's light chain.
 #[test]
 fn m3_husk_lands_its_two_hit_combo_and_dies() {
     let (w, events) = run_duel("m3_husk", "fight_husk");
@@ -633,9 +633,9 @@ fn m3_husk_lands_its_two_hit_combo_and_dies() {
         .collect();
     let swipe = |id: &str| w.moves.num_of(id).unwrap();
     assert_eq!(on_player[0].move_num, swipe("husk_swipe_1"));
-    assert_eq!(on_player[0].damage, 62);
+    assert_eq!(on_player[0].damage, 71);
     assert_eq!(on_player[1].move_num, swipe("husk_swipe_2"));
-    assert_eq!(on_player[1].damage, 79);
+    assert_eq!(on_player[1].damage, 90);
     assert!(hs.iter().any(|h| h.target == husk && h.killed), "{hs:?}");
     assert!(w.actors.get(husk).unwrap().dead);
 }

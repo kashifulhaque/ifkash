@@ -186,10 +186,10 @@ fn m5_spell_aether_wave_hits_what_stands_close_in_front() {
 #[test]
 fn m5_spell_mirror_ward_absorbs_40_percent_of_three_hits() {
     let r = run("m5_spell_mirror_ward", "spell_ward");
-    // The Husk's combo is 62 then 79; the ward takes 40 percent off the first three hits
-    // (62, 79, 62 become 37, 47, 37), and the fourth lands in full.
+    // The Husk's combo is 71 then 90; the ward takes 40 percent off the first three hits
+    // (71, 90, 71 become 42, 54, 42), and the fourth lands in full.
     let taken: Vec<u32> = r.hits_taken().iter().map(|h| h.damage).collect();
-    assert_eq!(taken, vec![37, 47, 37, 79]);
+    assert_eq!(taken, vec![42, 54, 42, 90]);
     let p = r.world.actors.get(r.world.player).unwrap();
     assert!(
         p.status.body_buff.is_none(),

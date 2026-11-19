@@ -187,7 +187,7 @@ fn player_staggers(r: &Run) -> usize {
 fn m5_litany_mend_heals_35_percent_of_max_hp_once() {
     let r = run("m5_litany_mend", "litany_ward");
     let max = r.world.actors.get(r.world.player).unwrap().max_hp;
-    // The Husk's three hits (62, 79, 62) take the player to 367, 203 below max. The heal is
+    // The Husk's three hits (71, 90, 71) take the player to 338, 232 below max. The heal is
     // 35 percent of max (199), so it is not capped and lands in one tick.
     let rises: Vec<(u64, u32, u32)> =
         r.hp.windows(2)
@@ -196,7 +196,7 @@ fn m5_litany_mend_heals_35_percent_of_max_hp_once() {
             .collect();
     assert_eq!(rises.len(), 1, "one heal: {rises:?}");
     let (_, before, after) = rises[0];
-    assert_eq!(before, 367);
+    assert_eq!(before, 338);
     assert_eq!(after - before, max * 35 / 100);
 }
 
@@ -327,13 +327,15 @@ fn m5_litany_purge_cures_rupture_and_resets_its_meter() {
 }
 
 #[test]
-fn m5_litany_steadfast_keeps_the_husks_combo_from_staggering_the_player() {
+fn m5_litany_steadfast_keeps_the_husks_first_swing_from_staggering_the_player() {
     let r = run("m5_litany_steadfast", "litany_ward");
-    // The combo lands in full (62, 79, 62), and none of it staggers the player.
+    // The combo lands in full (71, 90, 71). With +50% poise (15 becomes 22) the first swing
+    // of a combo (18 poise damage) no longer staggers; the second (18 + 24) still does.
     let taken: Vec<u32> = r.hits_taken().iter().map(|h| h.damage).collect();
-    assert_eq!(taken, vec![62, 79, 62]);
-    assert_eq!(player_staggers(&r), 0, "+50% poise holds");
-    // The same replay with the buff's poise at 100 percent: the combo staggers the player.
+    assert_eq!(taken, vec![71, 90, 71]);
+    let with = player_staggers(&r);
+    assert_eq!(with, 1, "only the second swing staggers");
+    // The same replay with the buff's poise at 100 percent: every swing staggers the player.
     let plain = run_with(
         &edited(|c| {
             if let Some(s) = c.status.as_mut() {
@@ -346,7 +348,7 @@ fn m5_litany_steadfast_keeps_the_husks_combo_from_staggering_the_player() {
         "litany_ward",
     );
     assert!(
-        player_staggers(&plain) >= 1,
-        "without Steadfast the combo staggers"
+        player_staggers(&plain) > with,
+        "without Steadfast more of the combo staggers"
     );
 }

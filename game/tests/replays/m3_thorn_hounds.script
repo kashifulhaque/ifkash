@@ -5,9 +5,21 @@ scenario fight_thorn_hounds
 200 0 0             # stand: the pack closes in and attacks two at a time
 1   0 0  LOCK
 5   0 0
+1   0 0  LIGHT        # two lights kill a hound (150 HP); the chain's swings reach the pack
+20  0 0
+1   0 0  LIGHT
+20  0 0
 1   0 0  LIGHT
 40  0 0
 1   0 0  LIGHT
+20  0 0
+1   0 0  LIGHT
+20  0 0
+1   0 0  LIGHT
 40  0 0
+1   0 0  LIGHT
+20  0 0
+1   0 0  LIGHT
+20  0 0
 1   0 0  LIGHT
 60  0 0

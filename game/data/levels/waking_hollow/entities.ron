@@ -8,9 +8,11 @@
 //   wake        move, camera, sprint, interact; the Lantern
 //   corridor 1  jump
 //   first fight lock-on, light and heavy attacks, stamina; an alcove with the use-item control
-//   hall        roll (dodge), guard and parry; a cracked wall (hollow wall) and a chest
-//   twist       drinking a flask
-//   antechamber the Sentry's telegraphs, and the fog gate
+//   corridor 2  roll (dodge) and guard, read before the hall's husks can see the player
+//   hall        a cracked wall (hollow wall) and a chest; the weapon Art at the exit
+//   corridor 3  drinking a flask
+//   twist       an ambush: a husk ahead and a hound from the side
+//   antechamber a second Lantern, the Sentry's telegraphs, and the fog gate
 // Doc: docs/game/02-world.md, "Dungeon layout template".
 (
   spawn: (pos: (0.0, 0.0, 0.0), yaw: 0.0),
@@ -29,32 +31,46 @@
       text: "A ledge blocks the way. Press {jump} to jump. Run at the ledge and jump just before it."),
 
     // --- First fight: one husk, then the alcove -------------------------------------------
-    Message(id: "msg_attack", pos: (0.0, 0.0, 25.0),
+    // 8 m short of the husk: a player who runs up and reads from anywhere in reach stays
+    // outside the 6 m a run is heard from (ai.ron, `noise.run_m`).
+    Message(id: "msg_attack", pos: (0.0, 0.0, 24.0),
       text: "A husk stirs ahead. Press {lock} to lock on, and press it again to let go. Press {light} to swing your blade, and {heavy} for a slow heavy blow. Every swing spends stamina, the green bar. Wait for it to refill."),
-    Enemy(name: "husk_first", enemy: "husk", pos: (0.0, 0.0, 32.0), yaw: 3.1415927),
+    // The first husk faces away (+Z), so the player can read the message and land the
+    // first hit.
+    Enemy(name: "husk_first", enemy: "husk", pos: (0.0, 0.0, 32.0), yaw: 0.0),
+    // Clotweed cures Rupture, the bleed the twist room's hound builds. A pickup goes to the
+    // pack, not to a quick slot, so the message sends the player to the menu.
     Message(id: "msg_items", pos: (11.0, 0.0, 30.0),
-      text: "Salts lie on the ground. Press {interact} to take what you find. Press {useItem} to use the item in your quick slot, and {cycleItem} to change which one is ready."),
-    Pickup(id: "salts_alcove", item: "itm_waking_salts", pos: (12.5, 0.0, 30.0), count: 2, interact: true),
+      text: "Clotweed lies on the ground. Press {interact} to take what you find. It stops Rupture, the bleeding a hound's bite builds. Set it in a quick slot from the menu. Press {cycleItem} to change which quick item is ready, and {useItem} to use it."),
+    Pickup(id: "salts_alcove", item: "itm_clotweed", pos: (12.5, 0.0, 30.0), count: 2, interact: true),
 
-    // --- Hall: dodge, guard, and a cracked wall -------------------------------------------
-    Message(id: "msg_dodge", pos: (0.0, 0.0, 47.0),
-      text: "Two husks hunt here. Tap {dodge} to roll. You cannot be struck early in the roll, so roll into a swing, not away from it. Rolling costs stamina."),
-    Message(id: "msg_guard", pos: (0.0, 0.0, 51.0),
-      text: "Hold {guard} to guard. A guard takes most of a blow but drains stamina. Guard just as a blow lands to parry it, then strike back."),
+    // --- Corridor 2: dodge and guard, out of the hall husks' sight -------------------------
+    Message(id: "msg_dodge", pos: (0.0, 0.0, 39.0),
+      text: "Two husks hunt in the hall ahead. Tap {dodge} to roll. You cannot be struck early in the roll, so roll into a swing, not away from it. Rolling costs stamina."),
+    Message(id: "msg_guard", pos: (0.0, 0.0, 41.5),
+      text: "Hold {guard} to guard. A guard takes half of a blow, and each blow it takes costs stamina. When your stamina runs out, the guard breaks."),
+
+    // --- Hall: two husks, a cracked wall, and the weapon Art -------------------------------
     Enemy(name: "husk_hall_a", enemy: "husk", pos: (-3.0, 0.0, 57.0), yaw: 3.1415927),
     Enemy(name: "husk_hall_b", enemy: "husk", pos: (3.5, 0.0, 59.0), yaw: 3.1415927),
     Message(id: "msg_crack", pos: (-7.0, 0.0, 52.0),
       text: "This wall is cracked and sounds hollow. Strike it with a swing to open it."),
     HollowWall(id: "wall_closet", center: (-10.0, 1.5, 52.0), half_extents: (0.25, 1.5, 2.0)),
-    Chest(id: "chest_closet", pos: (-14.0, 0.0, 52.0), yaw: 1.5707964, loot: (item: "itm_clotweed", count: 3, glimmer: 150)),
+    Chest(id: "chest_closet", pos: (-14.0, 0.0, 52.0), yaw: 1.5707964, loot: (item: "itm_clotweed", count: 3, glimmer: 220)),
 
-    // --- Twist: an ambush ------------------------------------------------------------------
-    Message(id: "msg_flask", pos: (0.0, 0.0, 70.0),
+    Message(id: "msg_art", pos: (0.0, 0.0, 61.0),
+      text: "Press {art} for your blade's Art, a rising cut that shrugs off light blows. It spends focus, the blue bar. Press {cycleItem} to ready the Lucid Flask, and drink it to restore focus."),
+
+    // --- Corridor 3 and the twist: a flask, then an ambush ---------------------------------
+    Message(id: "msg_flask", pos: (0.0, 0.0, 63.5),
       text: "Something fast waits in the dark. Press {useItem} to drink the flask in your quick slot and heal. Drinking is slow: do it when no one is close."),
-    Enemy(name: "husk_twist", enemy: "husk", pos: (-4.0, 0.0, 76.0), yaw: 3.1415927),
-    Enemy(name: "hound_twist", enemy: "thorn_hound", pos: (5.0, 0.0, 79.0), yaw: 3.1415927),
+    // The husk draws the eye ahead; the hound waits beside the door and comes from the side.
+    Enemy(name: "husk_twist", enemy: "husk", pos: (-5.0, 0.0, 79.0), yaw: 3.1415927),
+    Enemy(name: "hound_twist", enemy: "thorn_hound", pos: (7.0, 0.0, 70.0), yaw: -1.5707964),
 
     // --- Antechamber (safe room) and the fog gate -----------------------------------------
+    // A second Lantern, so a fall to the Sentry doesn't mean the whole cave again.
+    Lantern(id: "lantern_l01b", pos: (5.0, 0.0, 89.0), yaw: 0.0),
     Message(id: "msg_sentry", pos: (0.0, 0.0, 91.0),
       text: "The Hollow Sentry waits beyond the fog. Its lantern flares before it swings: roll through the slam and the sweep, then strike while it recovers. If you fall, you wake at the Lantern. Step into the fog when you are ready."),
 

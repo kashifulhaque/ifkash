@@ -33,9 +33,9 @@ straight sword. Other weapon classes override these in their moveset files.
 
 | Verb | Input | Startup | Active | Recovery | Stamina | Notes |
 |---|---|---|---|---|---|---|
-| Light attack 1-3 | `LIGHT` | 10 | 3 | 14 | 12 | Chains to the next light if pressed from frame 8 of recovery |
+| Light attack 1-3 | `LIGHT` | 10 | 3 | 14 | 12 | Chains to the next light if pressed from frame 6 of recovery |
 | Heavy attack | `HEAVY` tap | 18 | 4 | 20 | 22 | Hyperarmor from startup frame 6 |
-| Charged heavy | `HEAVY` hold | 18 + up to 24 charge | 4 | 22 | 28 | Charge scales motion value from 1.3 to 1.8 |
+| Charged heavy | `HEAVY` hold | 18 + up to 24 charge | 4 | 22 | 28 | Charge scales motion value from 1.3 to 1.8. Hyperarmor from startup frame 6 |
 | Running attack | `LIGHT` while sprinting | 8 | 4 | 18 | 14 | Lunges 2 m |
 | Rolling attack | `LIGHT` during roll recovery | 7 | 3 | 15 | 12 | |
 | Backstep attack | `LIGHT` during backstep recovery | 6 | 3 | 15 | 12 | |
@@ -50,7 +50,7 @@ straight sword. Other weapon classes override these in their moveset files.
 | Jump | `JUMP` | 4 | n/a | 6 landing | 10 | |
 | Art | `ART` | per Art | per Art | per Art | per Art | Costs FP |
 | Use item | `USE_ITEM` | per item | n/a | per item | 0 | Movement slowed to a walk |
-| Drink a flask | `USE_ITEM` with a flask selected | 16 (heal lands) | n/a | 14 | 0 | Walk speed 40% |
+| Drink a flask | `USE_ITEM` with a flask selected | 20 (heal lands) | n/a | 16 | 0 | Walk speed 40% |
 
 ### Equip load and roll tiers
 
@@ -69,7 +69,7 @@ At heavy load, stamina regeneration is reduced by 20 percent.
 ### Input buffer
 
 An action pressed while the current move can't be canceled is **buffered** for up to
-8 ticks. It fires on the first frame the move allows that kind of cancel. Only the most
+12 ticks. It fires on the first frame the move allows that kind of cancel. Only the most
 recent buffered action is kept. Moves declare these cancel windows:
 
 - `cancel_attack_from`: the frame from which a chained attack can start.
@@ -115,6 +115,9 @@ at attribute 1; each point above 1 adds the listed increment.
 
 - Stamina regenerates at 1.5 per tick after 15 ticks without spending stamina.
   While guarding, it regenerates at 40 percent of that rate.
+- The committed part of a move (every frame before its `cancel_any_from`) regenerates
+  nothing and doesn't count toward the 15 ticks, so an attack or a roll never ends with
+  more stamina than it started with.
 - FP doesn't regenerate on its own. Lucid Flasks, some Charms, and resting restore it.
 - HP doesn't regenerate on its own. Vigil Flasks, Litanies, and some Charms restore it.
 
@@ -330,7 +333,7 @@ The following code sample shows a complete move in RON. The schema is defined in
   track_deg_per_tick: 12.0,           // turn toward lock target, startup only
   hyperarmor: None,                   // or Some((from: 6, to: 14))
   iframes: None,
-  cancel_attack_from: 21,
+  cancel_attack_from: 19,
   cancel_dodge_from: 17,
   cancel_any_from: 24,
   next_chain: Some("ss_light_2"),

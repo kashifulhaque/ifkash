@@ -1,6 +1,6 @@
 // Moves for B01, the Hollow Sentry (registry 9100-9199). Source:
 // docs/game/05-enemies-and-bosses.md, "B01 Hollow Sentry" (overhead slam with a 30-tick
-// wind-up, a horizontal sweep, a shield bash with a 14-tick wind-up, and a 3-hit combo that
+// wind-up, a horizontal sweep, a shield bash with an 18-tick wind-up, and a 3-hit combo that
 // ends in a 40-tick punish window). Damage comes from the body's `attack`, so
 // `motion_value` is the only multiplier. Every attack telegraphs for at least 12 frames and
 // every combo ends in at least 20 frames of recovery (checked by `lf_content::boss::check`).
@@ -72,13 +72,13 @@
     vfx: [(4, "lantern_flare"), (24, "trail_steel")],
   ),
   (
-    // Shield bash at close range: a 14-frame wind-up.
+    // Shield bash at close range: an 18-frame wind-up.
     id: "b01_bash",
     anim: "sentry_bash",
-    total_frames: 46,
+    total_frames: 50,
     stamina: 0,
     fp: 0,
-    root_motion: [(0, 0.0), (10, 0.0), (14, 0.5), (46, 0.5)],
+    root_motion: [(0, 0.0), (14, 0.0), (18, 0.5), (50, 0.5)],
     track_deg_per_tick: 5.0,
     hyperarmor: None,
     iframes: None,
@@ -88,7 +88,7 @@
     next_chain: None,
     hitboxes: [
       (
-        frames: (14, 17),
+        frames: (18, 21),
         shape: Capsule(a: (0.0, 1.1, 0.4), b: (0.0, 1.1, 1.5), radius: 0.55),
         motion_value: 0.7,
         phys: Blunt,
@@ -100,17 +100,17 @@
         tags: [],
       ),
     ],
-    sfx: [(10, "shield_scrape")],
+    sfx: [(14, "shield_scrape")],
     vfx: [(2, "lantern_flare")],
   ),
   (
     // The 3-hit combo, first cut.
     id: "b01_combo_1",
     anim: "sentry_combo_1",
-    total_frames: 40,
+    total_frames: 42,
     stamina: 0,
     fp: 0,
-    root_motion: [(0, 0.0), (12, 0.0), (16, 0.4), (40, 0.4)],
+    root_motion: [(0, 0.0), (14, 0.0), (18, 0.4), (42, 0.4)],
     track_deg_per_tick: 5.0,
     hyperarmor: None,
     iframes: None,
@@ -120,7 +120,7 @@
     next_chain: "b01_combo_2",
     hitboxes: [
       (
-        frames: (16, 19),
+        frames: (18, 21),
         shape: Capsule(a: (-0.8, 1.2, 0.5), b: (0.8, 1.2, 1.9), radius: 0.4),
         motion_value: 0.9,
         phys: Slash,
@@ -132,8 +132,8 @@
         tags: [],
       ),
     ],
-    sfx: [(12, "swing_light")],
-    vfx: [(2, "lantern_flare"), (16, "trail_steel")],
+    sfx: [(14, "swing_light")],
+    vfx: [(2, "lantern_flare"), (18, "trail_steel")],
   ),
   (
     // Second cut, back the other way.
@@ -168,13 +168,13 @@
     vfx: [(14, "trail_steel")],
   ),
   (
-    // The finisher: a heavy overhead, then the 40-tick punish window (frames 22-59).
+    // The finisher: a heavy overhead, then the 40-tick punish window (frames 22-61).
     id: "b01_combo_3",
     anim: "sentry_combo_3",
-    total_frames: 60,
+    total_frames: 62,
     stamina: 0,
     fp: 0,
-    root_motion: [(0, 0.0), (14, 0.0), (18, 0.5), (60, 0.5)],
+    root_motion: [(0, 0.0), (14, 0.0), (18, 0.5), (62, 0.5)],
     track_deg_per_tick: 3.0,
     hyperarmor: None,
     iframes: None,

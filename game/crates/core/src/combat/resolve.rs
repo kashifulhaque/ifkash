@@ -806,7 +806,7 @@ mod tests {
         assert_eq!((h.damage, h.result), (52, HitResult::Guarded));
         assert_eq!(player_hp(&w), hp - 52);
         let cost = light_block_cost(&w);
-        assert_eq!(cost, 30.0);
+        assert_eq!(cost, 24.0);
         assert_eq!(w.actors.get(w.player).unwrap().stamina, max_stamina - cost);
     }
 
@@ -821,10 +821,10 @@ mod tests {
         attacker_at_player(&mut w, 0);
         let hp = player_hp(&w);
         let h = first_hit_on(&mut w, player, buttons::GUARD);
-        // Stamina covers 10 / 30 of the block: 35 of the 104 is blocked at 50 percent
-        // (18, halves up) and the other 69 lands in full.
-        assert_eq!((h.damage, h.result), (87, HitResult::GuardBroken));
-        assert_eq!(player_hp(&w), hp - 87);
+        // Stamina covers 10 / 24 of the block: 43 of the 104 is blocked at 50 percent
+        // (22, halves up) and the other 61 lands in full.
+        assert_eq!((h.damage, h.result), (83, HitResult::GuardBroken));
+        assert_eq!(player_hp(&w), hp - 83);
         let p = w.actors.get(w.player).unwrap();
         assert_eq!(p.stamina, 0.0);
         assert!(p.moves.guard.stagger > 0 && !p.moves.guard.active);

@@ -249,13 +249,14 @@ mini-dungeon has 5-9 rooms.
 
 ## Checkpoints
 
-There are 24 Lanterns. Each one is a rest point, a respawn point, a level-up point, and
+There are 25 Lanterns. Each one is a rest point, a respawn point, a level-up point, and
 a fast-travel node once lit. The following table lists them all:
 
 | ID | Name | Region | Notes |
 |---|---|---|---|
 | L00 | The Hearth | Hollowhearth | Hub |
 | L01 | Waking Hollow | Verge | Start point |
+| L01b | Sentry's Antechamber | Verge | Waking Hollow, before B01's fog gate |
 | L02 | Verge Crossroads | Verge | First outdoor Lantern |
 | L03 | Aqueduct Steps | Verge | |
 | L04 | Ninefold Chapel | Verge | |

@@ -244,15 +244,15 @@ mod tests {
         let mut w = flat();
         raise(&mut w);
         let before = player(&mut w).stamina;
-        // 50 percent physical absorption; cost = 12 * 100 / 40 = 30.
+        // 50 percent physical absorption; cost = 12 * 100 / 50 = 24.
         assert_eq!(
             hit(&mut w, HIT),
             HitOutcome::Guarded {
                 damage: 50,
-                stamina_cost: 30.0
+                stamina_cost: 24.0
             }
         );
-        assert_eq!(player(&mut w).stamina, before - 30.0);
+        assert_eq!(player(&mut w).stamina, before - 24.0);
         assert_eq!(player(&mut w).moves.guard.counter, 12);
         assert_eq!(player(&mut w).motor.stamina_idle, 0);
         // Elemental damage: the weapon absorbs none.
@@ -287,7 +287,7 @@ mod tests {
         // Exactly enough stamina holds; a little less breaks.
         let mut w = flat();
         raise(&mut w);
-        player(&mut w).stamina = 30.0;
+        player(&mut w).stamina = 24.0;
         assert!(matches!(hit(&mut w, HIT), HitOutcome::Guarded { .. }));
         assert_eq!(player(&mut w).stamina, 0.0);
         assert!(player(&mut w).moves.guard.active);
@@ -298,10 +298,10 @@ mod tests {
     fn a_broken_guard_pays_the_covered_share_and_takes_the_rest_unblocked() {
         let mut w = flat();
         raise(&mut w);
-        // Cost 30, stamina 6: stamina covers a fifth, 20 damage, absorbed to 10; the
-        // other 80 lands in full.
-        player(&mut w).stamina = 6.0;
-        assert_eq!(hit(&mut w, HIT), HitOutcome::GuardBroken { damage: 90 });
+        // Cost 24, stamina 12: stamina covers a half, 50 damage, absorbed to 25; the
+        // other 50 lands in full.
+        player(&mut w).stamina = 12.0;
+        assert_eq!(hit(&mut w, HIT), HitOutcome::GuardBroken { damage: 75 });
         assert_eq!(player(&mut w).stamina, 0.0);
     }
 

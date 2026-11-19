@@ -8,4 +8,4 @@ scenario fight_gray_captain
 1   0 0  LIGHT
 60  0 0
 1   0 0  LIGHT
-80  0 0
+40  0 0              # stop here: a player who keeps standing dies to the next swing

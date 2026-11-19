@@ -453,7 +453,9 @@ fn bulwark_charm_cuts_the_guard_stamina_cost_15_percent() {
     wear(&mut w, slot::CHARM_1, "chm_bulwark");
     let with = block_cost(&mut w);
     let ratio = with / plain;
-    assert!((0.84..=0.86).contains(&ratio), "{with} / {plain} = {ratio}");
+    // The charm raises the whole-number guard boost (50 becomes 58, not 58.8), so the cut
+    // is 15 percent to within a point or two.
+    assert!((0.84..=0.87).contains(&ratio), "{with} / {plain} = {ratio}");
 }
 
 #[test]

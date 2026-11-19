@@ -89,8 +89,8 @@ The game has 16 enemy types and 5 elites. Each type is one data file and one mov
 
 | ID | Enemy | Region | Role | HP | Notes |
 |---|---|---|---|---|---|
-| `husk` | Husk | Everywhere | Fodder | 120 | Slow two-hit combo. Variants: Servant (castle), Miner (Hollowdeep, carries a lantern, can't be backstabbed while lit), Frost Husk (Rimeshelf, Rime buildup) |
-| `thorn_hound` | Thorn Hound | Verge, castle kennel | Fast pack | 90 | Packs of 3; lunges, retreats; Rupture buildup |
+| `husk` | Husk | Everywhere | Fodder | 230 | Slow two-hit combo. Variants: Servant (castle), Miner (Hollowdeep, carries a lantern, can't be backstabbed while lit), Frost Husk (Rimeshelf, Rime buildup) |
+| `thorn_hound` | Thorn Hound | Verge, castle kennel | Fast pack | 150 | Packs of 3; lunges, retreats; Rupture buildup |
 | `lantern_thief` | Lantern Thief | Verge | Ambusher and thrower | 140 | Hides on roofs and in ruins; throws pitch bombs, flees when approached |
 | `acolyte` | Acolyte | Verge chapel, castle chapel, Belfry | Caster | 160 | Casts a slow Radiance bolt with a visible 30-tick glow; Bell variant casts Rime |
 | `drowned` | Drowned | Mirrormere | Grab | 220 | Water only; slow; a grab costs 20% HP unless dodged; weak to Storm |
@@ -157,7 +157,7 @@ The game has 12 bosses. Four are required: B01, two of the four Great Sigil boss
 
 | ID | Boss | Location | Archetype | Required | HP | Phases |
 |---|---|---|---|---|---|---|
-| B01 | Hollow Sentry | Waking Hollow | Tutorial knight | Yes | 1,200 | 1 |
+| B01 | Hollow Sentry | Waking Hollow | Tutorial knight | Yes | 2,200 | 1 |
 | B02 | The Briar Stag | Verge, Briar Thicket | Tethered beast | No | 2,600 | 2 |
 | B03 | Bridgewarden Corvane | Graymantle Bridge | Duelist | No | 2,200 | 1 |
 | B04 | Mossgut Brood | D1 Mossgut Cave | Swarm nest | No | 2,400 | 2 |
@@ -177,8 +177,11 @@ read the telegraph, roll through, punish.
 
 - **Arena:** A round chamber, 18 m across, with four pillars.
 - **Moves:** Overhead slam (30-tick wind-up, lantern flares), horizontal sweep (roll
-  through it, not away), shield bash at close range (14-tick wind-up), and a 3-hit
-  combo ending in a 40-tick punish window.
+  through it, not away), shield bash at close range (18-tick wind-up), and a 3-hit
+  combo (18-tick wind-up) ending in a 40-tick punish window. No attack lands sooner
+  than 18 ticks (600 ms) after it starts.
+- **Stance:** 160. Charged heavies, jump heavies, guard counters, and Rising Cleave
+  break it for a riposte.
 - **Weakness:** Blunt 1.2x. **Immunities:** Poison, Blight (it's empty).
 - **Reward:** A Wick Bead; opens the root-door to the hub.
 

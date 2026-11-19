@@ -23,21 +23,90 @@
       "file": "sword and shield run.fbx",
       "loop": true
     },
+    "walk_back": {
+      "file": "sword and shield walk (2).fbx",
+      "loop": true
+    },
+    "run_back": {
+      "file": "sword and shield run (2).fbx",
+      "loop": true
+    },
+    "strafe_l": {
+      "file": "sword and shield strafe (2).fbx",
+      "loop": true
+    },
+    "strafe_r": {
+      "file": "sword and shield strafe.fbx",
+      "loop": true
+    },
+    "strafe_run_l": {
+      "file": "sword and shield strafe (3).fbx",
+      "loop": true
+    },
+    "strafe_run_r": {
+      "file": "sword and shield strafe (4).fbx",
+      "loop": true
+    },
     "slash_a": {
       "file": "sword and shield slash.fbx",
       "contact": "auto"
     },
     "slash_b": {
       "file": "sword and shield slash (2).fbx",
-      "contact": "auto"
+      "trim": [
+        2,
+        29
+      ],
+      "contact": "auto",
+      "contactWindow": [
+        0.4,
+        0.85
+      ]
     },
     "slash_c": {
-      "file": "sword and shield attack.fbx",
+      "file": "sword and shield attack (2).fbx",
+      "trim": [
+        3,
+        39
+      ],
       "contact": "auto"
     },
-    "heavy": {
-      "file": "sword and shield attack (4).fbx",
+    "lunge": {
+      "file": "sword and shield attack (3).fbx",
+      "trim": [
+        7,
+        52
+      ],
       "contact": "auto"
+    },
+    "spin": {
+      "file": "sword and shield slash (3).fbx",
+      "trim": [
+        6,
+        47
+      ],
+      "contact": "auto"
+    },
+    "leap": {
+      "file": "sword and shield attack.fbx",
+      "trim": [
+        14,
+        60
+      ],
+      "contact": "auto",
+      "root": "lock"
+    },
+    "heavy": {
+      "file": "sword and shield slash (4).fbx",
+      "trim": [
+        10,
+        66
+      ],
+      "contact": "auto",
+      "contactWindow": [
+        0.3,
+        0.85
+      ]
     },
     "block": {
       "file": "sword and shield block.fbx"
@@ -48,16 +117,48 @@
     },
     "roll": {
       "file": "roll.fbx",
-      "root": "lock"
+      "root": "lock",
+      "trim": [
+        27,
+        62
+      ]
     },
     "hit": {
       "file": "sword and shield impact.fbx"
+    },
+    "stagger": {
+      "file": "sword and shield impact (2).fbx"
     },
     "death": {
       "file": "sword and shield death.fbx"
     },
     "drink": {
-      "file": "drink.fbx"
+      "file": "drink.fbx",
+      "trim": [
+        57,
+        84
+      ]
+    },
+    "drink_end": {
+      "file": "drink.fbx",
+      "trim": [
+        144,
+        171
+      ]
+    },
+    "jump": {
+      "file": "sword and shield jump (2).fbx",
+      "trim": [
+        4,
+        29
+      ]
+    },
+    "jump_run": {
+      "file": "sword and shield jump.fbx",
+      "trim": [
+        1,
+        25
+      ]
     },
     "twohand_idle": {
       "file": "twohand_idle.fbx",

@@ -89,9 +89,9 @@ export const houndWalk = (phase: number, amp: number): Pose => {
 };
 
 const lunge: Choreo = {
-  total: 46,
+  total: 50,
   keys: (total) =>
-    attack(14, 18, total, {
+    attack(18, 22, total, {
       // Coil: front low, haunches loaded, head up and eyes on the target.
       wind: {
         body: [0.22, 0, 0, 0, -0.2, -0.1],
@@ -129,9 +129,9 @@ const lunge: Choreo = {
 };
 
 const snap: Choreo = {
-  total: 40,
+  total: 43,
   keys: (total) =>
-    attack(13, 15, total, {
+    attack(16, 18, total, {
       wind: { body: [0.1, 0, 0, 0, -0.08, -0.12], head: [-0.35], jaw: [0.5], chest: [-0.15], tail: [0, 0.5, 0] },
       strike: { body: [0.12, 0, 0, 0, -0.04, 0.22], head: [0.35], jaw: [-0.02], chest: [0.2], flegL: [-0.4], flegR: [-0.4] }
     })

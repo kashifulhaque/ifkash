@@ -23,6 +23,8 @@ export interface VfxActorHooks {
   isHeld(id: number): boolean;
   /** Plays a hit reaction on an actor that took an unguarded hit, if its model has one. */
   hitReact?(id: number): void;
+  /** Tells the actor's model how long its stagger lasts, so the stagger clip fits it. */
+  staggerFor?(id: number, seconds: number): void;
   /** World positions of the weapon's tip and base (hand). False if the actor isn't drawn yet. */
   weaponTip(id: number, tip: Vector3, base: Vector3): boolean;
 }
@@ -114,7 +116,10 @@ export class CombatVfx {
 
   /** Spawns the effects for this tick's events. Call once per core tick. */
   handleEvents(events: GameEvent[]): void {
-    for (const e of events) if (e.kind === 'hit') this.onHit(e);
+    for (const e of events) {
+      if (e.kind === 'hit') this.onHit(e);
+      else if (e.kind === 'stagger') this.hooks.staggerFor?.(e.target, e.ticks * TICK_SECONDS);
+    }
   }
 
   private rand(): number {

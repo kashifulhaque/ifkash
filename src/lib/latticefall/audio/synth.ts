@@ -122,7 +122,21 @@ export function lanternIgnite(ctx: BaseAudioContext, dest: AudioNode, noise: Aud
   tone(ctx, dest, t + 0.1, { freq: 784, dur: 0.9, gain: 0.14, attack: 0.08 });
 }
 
-export function swing(ctx: BaseAudioContext, dest: AudioNode, noise: AudioBuffer, t: number, heavy: boolean): void {
+/** How a swing sounds: a light cut, a heavy one, or a boss's slow, low blade. */
+export type SwingWeight = 'light' | 'heavy' | 'boss';
+
+/**
+ * A weapon cutting the air: a band of noise that sweeps upward. A heavier swing is longer,
+ * louder, and lower; a boss's adds a low rumble under it.
+ */
+export function swing(ctx: BaseAudioContext, dest: AudioNode, noise: AudioBuffer, t: number, weight: SwingWeight | boolean): void {
+  const w: SwingWeight = weight === true ? 'heavy' : weight === false ? 'light' : weight;
+  if (w === 'boss') {
+    noiseBurst(ctx, dest, noise, t, { dur: 0.46, gain: 0.5, type: 'bandpass', freq: 260, q: 0.8, sweepTo: 1100 });
+    noiseBurst(ctx, dest, noise, t, { dur: 0.5, gain: 0.3, type: 'lowpass', freq: 220, sweepTo: 90 });
+    return;
+  }
+  const heavy = w === 'heavy';
   noiseBurst(ctx, dest, noise, t, {
     dur: heavy ? 0.32 : 0.18,
     gain: heavy ? 0.4 : 0.28,
@@ -131,6 +145,13 @@ export function swing(ctx: BaseAudioContext, dest: AudioNode, noise: AudioBuffer
     q: 0.9,
     sweepTo: heavy ? 1800 : 2600
   });
+}
+
+/** A husk's grunt as it starts an attack: a short, low growl that drops in pitch. */
+export function grunt(ctx: BaseAudioContext, dest: AudioNode, noise: AudioBuffer, t: number): void {
+  const jitter = 0.9 + Math.random() * 0.2;
+  tone(ctx, dest, t, { type: 'sawtooth', freq: 118 * jitter, to: 74 * jitter, dur: 0.26, gain: 0.11, attack: 0.03 });
+  noiseBurst(ctx, dest, noise, t, { dur: 0.22, gain: 0.12, type: 'bandpass', freq: 420, q: 1.4, sweepTo: 260 });
 }
 
 export function midiHz(note: number): number {

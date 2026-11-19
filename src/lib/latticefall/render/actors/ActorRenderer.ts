@@ -2,10 +2,11 @@
 // Wayfarer or an art character, and enemies as art characters (`ENEMY_ART`) or procedural
 // models. Render-only: it reads snapshot fields and never writes simulation state.
 //
-// Player pose priority each frame: a move (by `move_id`, scrubbed by `move_frame`), then
-// airborne states from the snapshot's `AIRBORNE` flag, then locomotion blended by ground
-// speed. An art enemy's: death, waking (`rise`), a move, a stagger, a hit reaction, then
-// locomotion. A short crossfade hides every switch between those.
+// Player pose priority each frame: death, a move (by `move_id`, scrubbed by `move_frame`), a
+// stagger, a hit reaction, airborne states from the snapshot's `AIRBORNE` flag, then
+// locomotion blended by ground speed (or, locked on, one strafe loop by travel direction).
+// An art enemy's: death, waking (`rise`), a move, a stagger, a hit reaction, then locomotion.
+// A short crossfade hides every switch between those.
 
 import {
   Box3,
@@ -56,11 +57,23 @@ import { weaponByNum, weaponNumById } from '../equipment/catalog';
 import type { BoneOffset } from '../../ui/gestures/gesturePose';
 import { parsePreview, type PreviewRequest } from './devPreview';
 import { digestAnimInfo } from './moveTable';
-import { gaitFacing, locomotionBlend, pickGait, wrapAngle, type Gait, type LocoBands } from './locomotion';
+import {
+  gaitFacing,
+  IDLE_SPEED,
+  locomotionBlend,
+  pickGait,
+  strafeDirection,
+  wrapAngle,
+  type Gait,
+  type LocoBand,
+  type LocoBands,
+  type StrafeDir
+} from './locomotion';
 import {
   clipsForAnim,
   locateSpec,
-  moveClipFrame,
+  moveClipAt,
+  reactClipTime,
   specLength,
   type ClipSpec,
   type MoveAnimInfo,
@@ -74,7 +87,13 @@ import {
   lanternGlow,
   playerArt,
   ART_CHARACTERS,
+  ART_JUMP,
+  ART_JUMP_RUN,
+  ART_JUMP_RUN_SPEED,
   ART_LOOPS,
+  ART_REACTIONS,
+  ART_STRAFE,
+  artFirst,
   DEFAULT_ART_HEIGHT_M,
   MIXAMO_BONE_MAP,
   MIXAMO_FEET,
@@ -82,6 +101,7 @@ import {
   artTwoHand,
   artSpecFor,
   type ArtCharacter,
+  type ArtJump,
   type ArtLantern,
   type ArtSidecar
 } from './artClips';
@@ -182,6 +202,12 @@ const HEADING_SMOOTH_SECONDS = 0.15;
 const GAIT_TURN_RATE = 7;
 /** How fast it turns back to the simulation's facing for a move, a hit, or a stagger. */
 const ATTACK_TURN_RATE = 16;
+/** The jump clip's takeoff plays this much faster than authored: the sim is already rising. */
+const ART_JUMP_RISE_RATE = 1.25;
+/** The falling pose stops this many clip frames short of the landing frame, legs reaching down. */
+const ART_JUMP_REACH_FRAMES = 2;
+/** The Wayfarer's reaction clips in the animation library (the art characters' are `ART_REACTIONS`). */
+const UAL_REACTIONS = { hit: ['Hit_Chest'], stagger: ['Hit_Chest'], death: ['Death01'] } as const;
 /** Seconds the lantern takes to go out after its bearer dies. */
 const LANTERN_DIE_SECONDS = 1.2;
 
@@ -204,6 +230,12 @@ interface Template {
   loops: LoopClips;
   /** Set when the player is an art character instead of the Wayfarer. */
   art: ArtKit | null;
+  /** The clips for a hit, a stagger, and a death, when the model has them. */
+  react: { hit?: string; stagger?: string; death?: string };
+  /** Loops for moving sideways and backward while locked on, per direction that has them. */
+  strafe: Partial<Record<Exclude<StrafeDir, 'forward'>, StrafeLoops>>;
+  /** Jump clips with their key frames: standing, and running when the model has one. */
+  jumps: { stand?: ArtJump; run?: ArtJump };
   boneNames: string[];
   clips: Map<string, BakedClip>;
   bands: LocoBands;
@@ -212,6 +244,12 @@ interface Template {
   /** Lift in model units so the feet rest on y = 0. */
   footLift: number;
   boneIndex: Map<string, number>;
+}
+
+/** One direction's strafe loops and the ground speed each one's feet match. */
+interface StrafeLoops {
+  walk: { clip: string; band: LocoBand };
+  run: { clip: string; band: LocoBand };
 }
 
 interface Pose {
@@ -262,6 +300,19 @@ interface Instance {
   hitRun: number;
   /** Seconds staggered, or -1 when not. */
   staggerT: number;
+  /** How long the current stagger lasts in seconds, from its event; 0 when unknown. */
+  staggerLen: number;
+  /** The strafe loop a locked-on player plays, how far into it, and its direction. */
+  strafe: StrafeDir | null;
+  strafeClip: string;
+  strafeT: number;
+  /** The jump clip chosen at takeoff, kept through the landing. */
+  jump: ArtJump | null;
+  /**
+   * One meter straight up, in the units and axes of the hips' parent. An art character's
+   * armature is turned and scaled, so "up" there is neither +Y nor a meter long.
+   */
+  up: Vector3;
   /** Seconds dead, or -1 while alive. */
   deathT: number;
   /** The move being drawn and its fractional frame, for the lantern. Undefined between moves. */
@@ -296,7 +347,6 @@ function copyPose(dst: Pose, src: Pose): void {
 }
 
 const qa = new Quaternion();
-const gestureScale = new Vector3();
 const qb = new Quaternion();
 
 /** dst = slerp(dst, src, w). */
@@ -312,10 +362,27 @@ function blendPose(dst: Pose, src: Pose, w: number): void {
   for (let k = 0; k < 3; k++) dst.hips[k] += (src.hips[k] - dst.hips[k]) * w;
 }
 
+/** Raises a pose's hips by `meters` (lowers them when negative) along `up` (`Instance.up`). */
+function liftHips(pose: Pose, up: Vector3, meters: number): void {
+  pose.hips[0] += up.x * meters;
+  pose.hips[1] += up.y * meters;
+  pose.hips[2] += up.z * meters;
+}
+
 const smooth = (x: number) => {
   const t = Math.min(Math.max(x, 0), 1);
   return t * t * (3 - 2 * t);
 };
+
+/** One meter of world up as a vector in the hips' parent space (`Instance.up`). */
+function hipsUp(root: Object3D, hips: Object3D): Vector3 {
+  root.updateMatrixWorld(true);
+  const parent = hips.parent;
+  if (!parent) return new Vector3(0, 1, 0);
+  const inv = new Matrix4().copy(parent.matrixWorld).invert();
+  // `transformDirection` normalizes, so the length is put back from the parent's scale.
+  return new Vector3(0, 1, 0).transformDirection(inv).divideScalar(parent.getWorldScale(new Vector3()).y);
+}
 
 /** Frees the bone-matrix textures of a cloned model's skeletons (WP-081: they leaked on every despawn). */
 function disposeSkeletons(root: Object3D): void {
@@ -414,13 +481,41 @@ async function loadArtTemplate(renderer: WebGLRenderer, name: string): Promise<T
   const run = hasRun ? band(ART_LOOPS.run) : { metersPerCycle: walk.metersPerCycle, speed: walk.speed * ART_RUN_RATE };
   const runClip = hasRun ? ART_LOOPS.run : ART_LOOPS.walk;
   const hasSprint = rt.clips.has(ART_LOOPS.sprint);
+  const has = (c: string) => rt.clips.has(c);
+  // A strafe loop's speed comes from its planted foot, whichever way that foot travels.
+  const drift = (id: string): LocoBand | undefined => {
+    const clip = rt.clips.get(id);
+    if (!clip || clip.stanceDrift <= 0) return undefined;
+    const speed = clip.stanceDrift * STANCE_CALIBRATION * rt.strideScale;
+    return { metersPerCycle: speed * clip.duration, speed };
+  };
+  const strafe: Template['strafe'] = {};
+  for (const dir of ['left', 'right', 'back'] as const) {
+    const ids = ART_STRAFE[dir];
+    const walkBand = drift(ids.walk);
+    if (!walkBand) continue;
+    const runBand = drift(ids.run);
+    strafe[dir] = {
+      walk: { clip: ids.walk, band: walkBand },
+      run: runBand
+        ? { clip: ids.run, band: runBand }
+        : { clip: ids.walk, band: { metersPerCycle: walkBand.metersPerCycle, speed: walkBand.speed * ART_RUN_RATE } }
+    };
+  }
   console.info(`[latticefall] art character ${name}: ${sidecar.triangles} triangles, clips ${[...rt.clips.keys()].join(', ')}`);
   return {
     gltf,
     look,
     weaponLength: look?.weaponLength ?? WEAPON_LENGTH_M,
     loops: { ...ART_LOOPS, run: runClip, sprint: hasSprint ? ART_LOOPS.sprint : runClip },
-    art: { sidecar, guard: artGuard((c) => rt.clips.has(c)), twoHand: artTwoHand((c) => rt.clips.has(c)) },
+    art: { sidecar, guard: artGuard(has), twoHand: artTwoHand(has) },
+    react: {
+      hit: artFirst(ART_REACTIONS.hit, has),
+      stagger: artFirst(ART_REACTIONS.stagger, has),
+      death: artFirst(ART_REACTIONS.death, has)
+    },
+    strafe,
+    jumps: { stand: has(ART_JUMP.clip) ? ART_JUMP : undefined, run: has(ART_JUMP_RUN.clip) ? ART_JUMP_RUN : undefined },
     boneNames: rt.boneNames,
     clips: rt.clips,
     bands: {
@@ -554,6 +649,13 @@ export class ActorRenderer {
       weaponLength: WEAPON_LENGTH_M,
       loops: LOOP_CLIPS,
       art: null,
+      react: {
+        hit: artFirst(UAL_REACTIONS.hit, (c) => rt.clips.has(c)),
+        stagger: artFirst(UAL_REACTIONS.stagger, (c) => rt.clips.has(c)),
+        death: artFirst(UAL_REACTIONS.death, (c) => rt.clips.has(c))
+      },
+      strafe: {},
+      jumps: {},
       boneNames: rt.boneNames,
       clips: rt.clips,
       bands: { walk: band(LOOP_CLIPS.walk), run: band(LOOP_CLIPS.run), sprint: band(LOOP_CLIPS.sprint) },
@@ -744,12 +846,43 @@ export class ActorRenderer {
     }
   }
 
-  /** Plays a hit reaction on an art enemy (from a hit event). The pose path decides if it shows. */
+  /**
+   * Plays a hit reaction on the player or an art enemy (from a hit event). The pose path
+   * decides if it shows: a move, a stagger, or a death wins.
+   */
   hitReact(id: number): void {
     const inst = this.instances.get(id);
-    if (!inst?.enemy || (inst.deathT >= 0)) return;
+    if (!inst || inst.deathT >= 0) return;
     inst.hitT = 0;
     inst.hitRun++;
+  }
+
+  /**
+   * Tells the renderer how long a stagger lasts (from a stagger or stance-break event), so
+   * the stagger clip is fitted to it (`reactClipTime`). The snapshot's flag still decides
+   * when the stagger shows.
+   */
+  staggerFor(id: number, seconds: number): void {
+    const inst = this.instances.get(id);
+    if (!inst) return;
+    inst.staggerLen = Math.max(seconds, 0);
+    // A new stagger on top of an old one starts the clip again.
+    inst.staggerT = -1;
+    inst.hitRun++;
+  }
+
+  /** True while another actor is the player's lock-on target. Set once per frame, before `update`. */
+  lockedOn = false;
+
+  /**
+   * Standing height in meters of the model drawn for an actor kind (0 is the player): the
+   * art character's, else the procedural model's. The lock-on camera and marker aim by it.
+   */
+  actorHeight(kind: number): number {
+    if (kind === 0) return this.tpl?.look?.height ?? WAYFARER_HEIGHT_M;
+    const art = enemyArt(kind, this.enemyArtParam);
+    const look = art ? ART_CHARACTERS[art] : undefined;
+    return look?.height ?? modelForKind(kind)?.height ?? WAYFARER_HEIGHT_M;
   }
 
   /** Sets what the player wears (registry numbers from the menu state). Drawn on the next frame. */
@@ -813,15 +946,23 @@ export class ActorRenderer {
   }
 
   /**
-   * World positions of the weapon's base (the right hand) and tip: the forearm's direction
-   * carried on by `WEAPON_LENGTH_M`. The model has no weapon mesh yet, so this stands in for
-   * the blade. Returns false until the actor is drawn.
+   * World positions of the weapon's base and tip. With a drawn weapon in the right hand
+   * these are its grip and the end of its blade, from the weapon's own matrix (the blade
+   * runs along its +Y) and its real length. An unarmed actor (a husk's claws) gets the
+   * forearm's direction carried on past the hand by its `weaponLength`. Returns false until
+   * the actor is drawn.
    */
   weaponTip(id: number, tip: Vector3, base: Vector3): boolean {
     const inst = this.instances.get(id);
     if (!inst || !inst.holder.visible) return false;
     const tpl = inst.tpl;
     inst.holder.updateMatrixWorld(true);
+    const held = this.gear.get(id)?.rightWeapon();
+    if (held) {
+      held.model.group.getWorldPosition(base);
+      held.model.group.localToWorld(tip.set(0, held.model.length, 0));
+      return true;
+    }
     const hand = inst.bones[tpl.boneIndex.get('Hand.R')!];
     const fore = inst.bones[tpl.boneIndex.get('LowerArm.R')!];
     hand.getWorldPosition(base);
@@ -830,20 +971,35 @@ export class ActorRenderer {
     return true;
   }
 
-  /** Camera offset from the followed actor for `&animcam=`, or null when not previewing. */
+  /**
+   * Camera offset from the followed actor for `&animcam=`, or null when not previewing. The
+   * offsets frame a character of the player's height; a taller one (`&art=sentry`) moves
+   * the camera back in proportion, so it still fits.
+   */
   previewCameraOffset(): [number, number, number] | null {
+    const k = this.previewScale();
     switch (this.preview?.cam) {
       case 'front':
-        return [0, 1.3, 4.2];
+        return [0, 1.3 * k, 4.2 * k];
       case 'back':
-        return [0, 1.3, -4.2];
+        return [0, 1.3 * k, -4.2 * k];
       case 'side':
-        return [4.2, 1.0, 0];
+        return [4.2 * k, 1.0 * k, 0];
       case 'three':
-        return [3, 1.8, 3.4];
+        return [3 * k, 1.8 * k, 3.4 * k];
       default:
         return null;
     }
+  }
+
+  /** The height above the actor's feet the `&animcam=` camera looks at, in meters. */
+  previewLookHeight(): number {
+    return 0.8 * this.previewScale();
+  }
+
+  /** The drawn player's height as a multiple of the height the preview offsets frame. */
+  private previewScale(): number {
+    return this.actorHeight(0) / DEFAULT_ART_HEIGHT_M;
   }
 
   /** Removes instances for actors no longer in the snapshot. */
@@ -1035,6 +1191,12 @@ export class ActorRenderer {
       hitT: null,
       hitRun: 0,
       staggerT: -1,
+      staggerLen: 0,
+      strafe: null,
+      strafeClip: '',
+      strafeT: 0,
+      jump: null,
+      up: hipsUp(outer, hips),
       deathT: -1,
       drawnMove: undefined,
       drawnFrame: 0,
@@ -1127,20 +1289,60 @@ export class ActorRenderer {
     }
   }
 
+  /**
+   * Samples a move's clip at `frame` into `out`, fitted to the move's frame data
+   * (`moveClipAt`). A clip that ends before the move does settles into the idle pose.
+   * Returns a suffix for the pose signature: it changes at each join of a spec whose
+   * stretches don't meet on one pose, so the crossfade covers the join.
+   */
+  private sampleMove(inst: Instance, tpl: Template, choice: ClipSpec, info: MoveAnimInfo, frame: number, out: Pose): string {
+    const frames = (c: string) => tpl.clips.get(c)!.frames;
+    const len = specLength(choice, frames);
+    const fit = moveClipAt(len, choice.contact, info, frame, choice.anticipation);
+    const at = locateSpec(choice, fit.frame, frames, BAKE_FPS);
+    sampleClip(tpl.clips.get(at.clip)!, at.time, false, out.q, out.hips);
+    if (fit.settle > 0) {
+      const idle = (this.sample ??= newPose(inst.bones.length));
+      sampleClip(tpl.clips.get(tpl.loops.idle)!, inst.idleT, true, idle.q, idle.hips);
+      blendPose(out, idle, smooth(fit.settle));
+    }
+    return choice.blend ? `:${at.seg}` : '';
+  }
+
   /** Fills `inst.tmp` with this frame's target pose and returns its signature. */
   private composePose(inst: Instance, a: DrawActor, tpl: Template, dt: number, moveFrac: number): string {
     const out = inst.tmp;
     const pv = this.preview;
     const frozen = pv?.t !== undefined;
+    const clip = (id: string | undefined) => (id === undefined ? undefined : tpl.clips.get(id));
 
-    // 0. A gesture (WP-088): the idle clip with bone offsets. A move always wins.
+    // 0. Death: the clip plays once and holds on its last frame until the player is back.
+    if ((a.flags & FLAG_DEAD) !== 0 && !pv) {
+      inst.deathT = inst.deathT < 0 ? 0 : inst.deathT + dt;
+      const death = clip(tpl.react.death);
+      if (death) {
+        sampleClip(death, Math.min(inst.deathT, death.duration), false, out.q, out.hips);
+        return 'death';
+      }
+    } else if (inst.deathT >= 0) {
+      // Respawned: drop every reaction, so the pose starts again from the idle.
+      inst.deathT = -1;
+      inst.hitT = null;
+      inst.staggerT = -1;
+      inst.staggerLen = 0;
+      inst.guardW = 0;
+      inst.strafe = null;
+      inst.jump = null;
+    }
+
+    // 1. A gesture (WP-088): the idle clip with bone offsets. A move always wins.
     if (this.gesture !== null && a.id === this.playerId && a.moveId === 0 && !pv) {
       this.gestureT += dt;
       this.gestureFrame(inst, tpl, out, this.gesture, this.gestureT);
       return `gesture:${this.gesture}`;
     }
 
-    // 1. A move, from move_id and move_frame.
+    // 2. A move, from move_id and move_frame.
     let info = a.moveId !== 0 ? this.resolveMove(a.moveId) : undefined;
     let frame = Math.max(0, a.moveFrame + moveFrac - inst.lagFrames);
     if (pv && typeof pv.state === 'object') {
@@ -1150,16 +1352,13 @@ export class ActorRenderer {
       frame = (pv.t ?? ((performance.now() / 1000 / (total * TICK_SECONDS)) % 1)) * total;
     }
     if (info) {
+      inst.hitT = null;
       const sig = `move:${info.anim}:${inst.moveRun}`;
       const choice = this.pickSpec(tpl, info.anim, !!pv, info, (a.flags & FLAG_TWO_HANDING) !== 0);
       if (choice) {
-        const frames = (c: string) => tpl.clips.get(c)!.frames;
-        const len = specLength(choice, frames);
-        const at = locateSpec(choice, moveClipFrame(len, choice.contact, info, frame), frames, BAKE_FPS);
-        sampleClip(tpl.clips.get(at.clip)!, at.time, false, out.q, out.hips);
         inst.drawnMove = info;
         inst.drawnFrame = frame;
-        return sig;
+        return sig + this.sampleMove(inst, tpl, choice, info, frame, out);
       }
       this.warnMissing(info.anim, tpl);
       if (tpl.art) {
@@ -1171,9 +1370,34 @@ export class ActorRenderer {
       return sig;
     }
 
-    // 2. Airborne.
+    // 3. A stagger while locked out, then a hit reaction.
+    const react = pv ? null : this.reactPose(inst, tpl, a, dt, out);
+    if (react) return react;
+
+    // 4. Airborne.
     const air = inst.air;
-    if (air.phase === 'rising' || air.phase === 'falling') {
+    const flying = air.phase === 'rising' || air.phase === 'falling';
+    if (air.phase === 'ground') inst.jump = null;
+    else if (!inst.jump && tpl.jumps.stand) {
+      inst.jump = inst.speed > ART_JUMP_RUN_SPEED && tpl.jumps.run ? tpl.jumps.run : tpl.jumps.stand;
+    }
+    const jump = inst.jump;
+    if (flying && jump) {
+      // The clip's own rise would add to the sim's, so the hips keep their takeoff height.
+      const c = tpl.clips.get(jump.clip)!;
+      const reach = Math.max(jump.land - ART_JUMP_REACH_FRAMES, jump.apex);
+      const f =
+        air.phase === 'rising'
+          ? Math.min(jump.takeoff + air.t * BAKE_FPS * ART_JUMP_RISE_RATE, jump.apex)
+          : Math.min(jump.apex + air.t * BAKE_FPS, reach);
+      sampleClip(c, f / BAKE_FPS, false, out.q, out.hips);
+      const k = Math.min(jump.takeoff, c.frames - 1) * 3;
+      const up = inst.up;
+      const rise = ((out.hips[0] - c.hips[k]) * up.x + (out.hips[1] - c.hips[k + 1]) * up.y + (out.hips[2] - c.hips[k + 2]) * up.z) / up.lengthSq();
+      liftHips(out, up, -rise);
+      return `air:${air.phase}:${jump.clip}`;
+    }
+    if (flying) {
       const start = tpl.clips.get('Jump_Start');
       const loop = tpl.clips.get('Jump_Loop');
       if (air.phase === 'rising' && start && air.t * JUMP_START_RATE < start.duration) {
@@ -1185,22 +1409,93 @@ export class ActorRenderer {
         return 'air:loop';
       }
     }
-    // 3. Locomotion, with the landing blended into it, and the guard or two-hand stance on top.
-    this.locomotion(inst, tpl, dt, frozen, out);
-    let sig = 'loco';
+    // 5. Locomotion, with the landing blended into it, and the guard or two-hand stance on top.
+    let sig = this.strafePose(inst, tpl, a, dt, frozen, out);
+    if (sig === null) {
+      this.locomotion(inst, tpl, dt, frozen, out);
+      sig = 'loco';
+    }
     if (air.phase === 'landing') {
-      const land = tpl.clips.get('Jump_Land');
+      const sample = (this.sample ??= newPose(inst.bones.length));
+      const u = air.t / LAND_SECONDS;
+      const land = jump ? tpl.clips.get(jump.clip) : tpl.clips.get('Jump_Land');
       if (land) {
-        const sample = (this.sample ??= newPose(inst.bones.length));
-        sampleClip(land, (air.t / LAND_SECONDS) * land.duration * 0.5, false, sample.q, sample.hips);
+        const t = jump ? (jump.land + u * (land.frames - 1 - jump.land)) / BAKE_FPS : u * land.duration * 0.5;
+        sampleClip(land, t, false, sample.q, sample.hips);
         // Full landing pose at touchdown, easing into locomotion over LAND_SECONDS.
-        blendPose(sample, out, smooth(air.t / LAND_SECONDS));
+        blendPose(sample, out, smooth(u));
         copyPose(out, sample);
         sig = 'air:land';
       }
     }
     this.layStance(inst, tpl, a, dt, out);
     return sig;
+  }
+
+  /**
+   * A stagger or a hit reaction for a skinned actor, into `out`, or null when neither plays.
+   * The stagger shows while the snapshot's flag is set, fitted to its length when an event
+   * gave one (`staggerFor`); a hit reaction is a quick flinch that gives way once the actor
+   * moves off.
+   */
+  private reactPose(inst: Instance, tpl: Template, a: DrawActor, dt: number, out: Pose): string | null {
+    if ((a.flags & FLAG_STAGGERED) !== 0) {
+      inst.staggerT = inst.staggerT < 0 ? 0 : inst.staggerT + dt;
+      const c = tpl.react.stagger === undefined ? undefined : tpl.clips.get(tpl.react.stagger);
+      if (c) {
+        inst.hitT = null;
+        const at = reactClipTime(c.duration, inst.staggerLen, inst.staggerT);
+        sampleClip(c, at.time, false, out.q, out.hips);
+        return `stagger:${inst.hitRun}${at.tail ? ':tail' : ''}`;
+      }
+    } else if (inst.staggerT >= 0) {
+      inst.staggerT = -1;
+      inst.staggerLen = 0;
+    }
+    if (inst.hitT !== null) {
+      const hit = tpl.react.hit === undefined ? undefined : tpl.clips.get(tpl.react.hit);
+      inst.hitT += dt * HIT_RATE;
+      const moving = inst.hitT > HIT_MIN_SECONDS && inst.speed > HIT_MOVING_SPEED;
+      if (hit && inst.hitT < hit.duration && !moving) {
+        sampleClip(hit, inst.hitT, false, out.q, out.hips);
+        return `hit:${inst.hitRun}`;
+      }
+      inst.hitT = null;
+    }
+    return null;
+  }
+
+  /**
+   * The player's locomotion while locked on and traveling sideways or backward: one strafe
+   * loop for the travel direction relative to the facing (`strafeDirection`), at the rate
+   * that matches the ground speed, so the feet stay planted. Returns the pose's signature,
+   * or null when the normal blend applies (not locked on, standing, traveling forward, or
+   * no loop for the direction).
+   */
+  private strafePose(inst: Instance, tpl: Template, a: DrawActor, dt: number, frozen: boolean, out: Pose): string | null {
+    const travel = Math.hypot(inst.vx, inst.vz);
+    if (!this.lockedOn || a.id !== this.playerId || this.preview || !(inst.speed > IDLE_SPEED) || !(travel > IDLE_SPEED)) {
+      inst.strafe = null;
+      return null;
+    }
+    const dir = strafeDirection(a.yaw, Math.atan2(inst.vx, inst.vz), inst.strafe ?? undefined);
+    inst.strafe = dir;
+    const loops = dir === 'forward' ? undefined : tpl.strafe[dir];
+    if (!loops) return null;
+    const bands = { walk: loops.walk.band, run: loops.run.band, sprint: loops.run.band };
+    const pick = pickGait(inst.speed, bands, inst.strafeClip === loops.run.clip ? 'run' : 'walk');
+    const id = pick.gait === 'run' ? loops.run.clip : loops.walk.clip;
+    if (id !== inst.strafeClip) {
+      // A new loop starts where its first step lands; the crossfade covers the change.
+      inst.strafeClip = id;
+      inst.strafeT = 0;
+    }
+    if (!frozen) {
+      inst.strafeT += dt * pick.rate;
+      inst.idleT += dt;
+    }
+    sampleClip(tpl.clips.get(id)!, inst.strafeT, true, out.q, out.hips);
+    return `loco:${id}`;
   }
 
   /**
@@ -1271,6 +1566,8 @@ export class ActorRenderer {
       // Back from the dead (the Lantern woke the cave): lie down again until stirred.
       inst.deathT = -1;
       inst.hitT = null;
+      inst.staggerT = -1;
+      inst.staggerLen = 0;
       inst.rise = clip('rise') ? 'dormant' : 'up';
     }
 
@@ -1306,40 +1603,16 @@ export class ActorRenderer {
       const choice = artSpecFor(info.anim, info.strikeStart !== undefined, tpl.art!.sidecar.clips);
       inst.drawnMove = info;
       inst.drawnFrame = frame;
-      if (choice) {
-        const frames = (c: string) => tpl.clips.get(c)!.frames;
-        const len = specLength(choice, frames);
-        const at = locateSpec(choice, moveClipFrame(len, choice.contact, info, frame), frames, BAKE_FPS);
-        sampleClip(tpl.clips.get(at.clip)!, at.time, false, out.q, out.hips);
-      } else {
+      let join = '';
+      if (choice) join = this.sampleMove(inst, tpl, choice, info, frame, out);
+      else {
         this.warnMissing(info.anim, tpl);
         sampleClip(tpl.clips.get(tpl.loops.idle)!, inst.idleT, true, out.q, out.hips);
       }
-      return `move:${info.anim}:${inst.moveRun}`;
+      return `move:${info.anim}:${inst.moveRun}${join}`;
     }
 
-    if (staggered) {
-      inst.staggerT = inst.staggerT < 0 ? 0 : inst.staggerT + dt;
-      const id = clip('stagger') ? 'stagger' : clip('hit') ? 'hit' : null;
-      if (id) {
-        inst.hitT = null;
-        once(id, inst.staggerT);
-        return 'stagger';
-      }
-    } else inst.staggerT = -1;
-
-    if (inst.hitT !== null) {
-      const hit = clip('hit');
-      inst.hitT += dt * HIT_RATE;
-      const moving = inst.hitT > HIT_MIN_SECONDS && inst.speed > HIT_MOVING_SPEED;
-      if (hit && inst.hitT < hit.duration && !moving) {
-        once('hit', inst.hitT);
-        return `hit:${inst.hitRun}`;
-      }
-      inst.hitT = null;
-    }
-
-    return this.enemyGait(inst, tpl, a, dt, out);
+    return this.reactPose(inst, tpl, a, dt, out) ?? this.enemyGait(inst, tpl, a, dt, out);
   }
 
   /**
@@ -1358,9 +1631,7 @@ export class ActorRenderer {
       this.blendBones(out, target, tpl, ARM_BONES, w.twoHand);
     }
     if (w.guard > 0) this.blendBones(out, this.guardPose(inst, tpl, a), tpl, GUARD_BONES, w.guard);
-    if (inst.hips.parent) {
-      out.hips[1] -= (GUARD_HIPS_DROP * w.guard) / inst.hips.parent.getWorldScale(gestureScale).y;
-    }
+    liftHips(out, inst.up, -GUARD_HIPS_DROP * w.guard);
   }
 
   /** Slerps the named bones of `out` toward `target` by `w`. */
@@ -1437,9 +1708,8 @@ export class ActorRenderer {
       qa.fromArray(out.q, i * 4).multiply(qb.setFromEuler(e.set(o.x, o.y, o.z)));
       qa.toArray(out.q, i * 4);
     }
-    // The hips position is local to a scaled parent, so a drop in meters is divided by the
-    // parent's world scale to land in the pose's units.
-    if (g.hipsDrop > 0 && inst.hips.parent) out.hips[1] -= g.hipsDrop / inst.hips.parent.getWorldScale(gestureScale).y;
+    // The hips position is local to a turned and scaled parent: `inst.up` is a meter up there.
+    if (g.hipsDrop > 0) liftHips(out, inst.up, -g.hipsDrop);
   }
 
   private locomotion(inst: Instance, tpl: Template, dt: number, frozen: boolean, out: Pose): void {

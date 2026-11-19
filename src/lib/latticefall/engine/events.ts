@@ -38,7 +38,7 @@ export const EVENT_WORDS: Readonly<Record<number, number>> = {
   // Kinds 51-56 are reserved for other work packages.
   57: 3, // Mark: the Mark's index, the in-game tick it was earned on (WP-088)
   58: 3 // Gesture: started (0) or ended (1), the gesture's number (WP-088)
-  // Kinds 2-9, 11, and 13 aren't decoded into events yet; the decoder skips them by length.
+  // Kinds 2, 5-9, and 13 aren't decoded into events yet; the decoder skips them by length.
 };
 
 export const EVENT_HIT = 1;
@@ -175,10 +175,39 @@ export interface GestureEvent {
   gesture: number;
 }
 
+export const EVENT_STAGGER = 3;
+export const EVENT_STANCE_BREAK = 4;
+
+/**
+ * An actor was staggered, or its stance broke (WP-024). The snapshot's `STAGGERED` flag says
+ * when the lockout shows; this says how long it lasts, so the renderer can fit the reaction
+ * clip to it.
+ */
+export interface StaggerEvent {
+  kind: 'stagger';
+  /** `pack_id` of the staggered actor; equal to `ActorSnap.id`. */
+  target: number;
+  /** A heavy stagger, or a stance break. */
+  heavy: boolean;
+  /** True for a stance break (the actor kneels, open to a critical hit). */
+  stanceBreak: boolean;
+  /** How long the lockout lasts, in ticks. */
+  ticks: number;
+}
+
 export const EVENT_MARK = 57;
 export const EVENT_GESTURE = 58;
 
-export type GameEvent = HitEvent | PickupEvent | MechanicEvent | BriarEvent | LoomEvent | BossEvent | MarkEvent | GestureEvent;
+export type GameEvent =
+  | HitEvent
+  | StaggerEvent
+  | PickupEvent
+  | MechanicEvent
+  | BriarEvent
+  | LoomEvent
+  | BossEvent
+  | MarkEvent
+  | GestureEvent;
 
 const scratch = new DataView(new ArrayBuffer(4));
 function f32(bits: number): number {
@@ -210,6 +239,10 @@ export function decodeEvents(words: ArrayLike<number>): GameEvent[] {
         flags: words[i + 15] >>> 0,
         hpAfter: words[i + 16] >>> 0
       });
+    } else if (kind === EVENT_STAGGER) {
+      out.push({ kind: 'stagger', target: words[i + 1] >>> 0, heavy: words[i + 2] !== 0, stanceBreak: false, ticks: words[i + 3] >>> 0 });
+    } else if (kind === EVENT_STANCE_BREAK) {
+      out.push({ kind: 'stagger', target: words[i + 1] >>> 0, heavy: true, stanceBreak: true, ticks: words[i + 2] >>> 0 });
     } else if (kind === EVENT_PICKUP) {
       out.push({ kind: 'pickup', index: words[i + 1] >>> 0, item: words[i + 2] >>> 0 });
     } else if (kind === EVENT_MECHANIC) {

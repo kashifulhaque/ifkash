@@ -58,6 +58,25 @@ describe('artSpecFor', () => {
   });
 });
 
+describe('art clip stretches', () => {
+  test('a chain of clips plays back to back and asks for a crossfade at each join', () => {
+    const clips = { idle: clip(null), drink: clip(null), drink_end: clip(null) };
+    assert.deepEqual(artSpecFor('flask_drink', false, clips), { segs: [{ clip: 'drink' }, { clip: 'drink_end' }], contact: 0, blend: true });
+    // Without the second clip the first plays alone.
+    assert.deepEqual(artSpecFor('flask_drink', false, { idle: clip(null), drink: clip(null) }), { segs: [{ clip: 'drink' }], contact: 0 });
+  });
+
+  test('the light chain plays three different clips', () => {
+    const clips = { slash_a: clip(18), slash_b: clip(18), slash_c: clip(16) };
+    const ids = ['sword_slash_r', 'sword_slash_l', 'sword_thrust'].map((a) => artSpecFor(a, true, clips)?.segs[0].clip);
+    assert.deepEqual(ids, ['slash_a', 'slash_b', 'slash_c']);
+  });
+
+  test('the backstep has a stand-in instead of holding the idle', () => {
+    assert.equal(artSpecFor('backstep', false, { idle: clip(null), run_back: clip(null) })?.segs[0].clip, 'run_back');
+  });
+});
+
 describe('art rig', () => {
   test('the Mixamo map names every bone the renderer looks up, in the same order', () => {
     assert.deepEqual(

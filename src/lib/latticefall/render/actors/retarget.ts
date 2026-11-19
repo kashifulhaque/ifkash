@@ -38,6 +38,8 @@ export const UAL_FEET: readonly [string, string] = ['foot_l', 'foot_r'];
 
 /** Baked sample rate in Hz. The library's clips are authored at 30 fps. */
 export const BAKE_FPS = 30;
+/** How far before a clip's end its last frame is sampled, in seconds. */
+const END_EPSILON_SECONDS = 1e-4;
 
 export interface BakedClip {
   name: string;
@@ -53,6 +55,12 @@ export interface BakedClip {
    * Measured, not authored: the library's root-motion variant doesn't match its feet.
    */
   stanceSpeed: number;
+  /**
+   * Ground speed in m/s the planted foot implies in any direction: its median speed across
+   * the ground while it is low. For loops that travel sideways or backward, which
+   * `stanceSpeed` (backward travel of the foot only) reads as 0.
+   */
+  stanceDrift: number;
 }
 
 export interface RetargetResult {
@@ -137,10 +145,13 @@ export function retargetClips(
     const hips = new Float32Array(frames * 3);
     const feetY: [number[], number[]] = [[], []];
     const feetZ: [number[], number[]] = [[], []];
+    const feetX: [number[], number[]] = [[], []];
     const action = mixer.clipAction(clip);
     action.play();
     for (let f = 0; f < frames; f++) {
-      mixer.setTime(Math.min(f / BAKE_FPS, clip.duration));
+      // A looping action wraps to its first frame at exactly `duration`, and rounding puts the
+      // last sample there for some clips. Stop a hair short, so a clip's last frame is its own.
+      mixer.setTime(Math.min(f / BAKE_FPS, clip.duration - END_EPSILON_SECONDS));
       srcScene.updateMatrixWorld(true);
       plainCache.clear();
       for (let i = 0; i < n; i++) {
@@ -158,6 +169,7 @@ export function retargetClips(
         foot.getWorldPosition(footPos);
         feetY[k].push(footPos.y);
         feetZ[k].push(footPos.z);
+        feetX[k].push(footPos.x);
       });
       // World-space hip travel in meters, scaled by leg length, into the hip bone's parent frame.
       local.copy(srcPos).sub(srcHipsRest).multiplyScalar(strideScale / tgtMetersPerUnit);
@@ -165,8 +177,10 @@ export function retargetClips(
       hips.set([local.x, local.y, local.z], f * 3);
     }
     action.stop();
-    const stanceSpeed = measureStanceSpeed(feetY, feetZ, clip.duration / (frames - 1));
-    clips.set(clip.name, { name: clip.name, duration: clip.duration, frames, q, hips, stanceSpeed });
+    const dt = clip.duration / (frames - 1);
+    const stanceSpeed = measureStanceSpeed(feetY, feetZ, dt);
+    const stanceDrift = measureStanceDrift(feetY, feetX, feetZ, dt);
+    clips.set(clip.name, { name: clip.name, duration: clip.duration, frames, q, hips, stanceSpeed, stanceDrift });
   }
   mixer.stopAllAction();
   return { boneNames, clips, strideScale };
@@ -193,6 +207,27 @@ function measureStanceSpeed(y: [number[], number[]], z: [number[], number[]], dt
   if (v.length < 3) return 0;
   v.sort((a, b) => a - b);
   return v[Math.floor(v.length / 2)];
+}
+
+/**
+ * Speed of the planted ankle across the ground in m/s, whichever way it travels: the length
+ * of the median velocity of each low ankle. An in-place clip that stands still measures 0.
+ */
+function measureStanceDrift(y: [number[], number[]], x: [number[], number[]], z: [number[], number[]], dt: number): number {
+  const vx: number[] = [];
+  const vz: number[] = [];
+  for (let k = 0; k < 2; k++) {
+    const lo = Math.min(...y[k]);
+    const low = lo + (Math.max(...y[k]) - lo) * STANCE_FRACTION;
+    for (let i = 1; i < y[k].length; i++) {
+      if (y[k][i] >= low || y[k][i - 1] >= low) continue;
+      vx.push((x[k][i] - x[k][i - 1]) / dt);
+      vz.push((z[k][i] - z[k][i - 1]) / dt);
+    }
+  }
+  if (vx.length < 3) return 0;
+  const median = (v: number[]) => v.sort((a, b) => a - b)[Math.floor(v.length / 2)];
+  return Math.hypot(median(vx), median(vz));
 }
 
 const qa = new Quaternion();

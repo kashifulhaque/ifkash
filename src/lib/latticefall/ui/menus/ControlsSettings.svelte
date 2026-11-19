@@ -13,6 +13,7 @@
   } from '../../input/bindings';
   import type { InputController } from '../../input';
   import { createPadReader } from '../../input/gamepad';
+  import { rumble, rumbleEnabled, setRumbleEnabled } from '../../input/rumble';
   import { navState } from './nav';
 
   export let input: InputController;
@@ -54,6 +55,7 @@
 
   let bindings = { ...input.settings.bindings };
   let options = { ...input.settings.options, toggle: { ...input.settings.options.toggle } };
+  let rumbleOn = rumbleEnabled();
   let capturing: { action: Action; device: 'kb' | 'pad' } | null = null;
   let stopCapture: (() => void) | null = null;
 
@@ -261,6 +263,22 @@
           }}
         />
         Invert camera Y
+      </label>
+    </li>
+    <li>
+      <label>
+        <input
+          type="checkbox"
+          data-nav="body"
+          checked={rumbleOn}
+          on:change={(e) => {
+            rumbleOn = e.currentTarget.checked;
+            setRumbleEnabled(rumbleOn);
+            // A short pulse confirms the switch on a pad that can rumble.
+            if (rumbleOn) rumble('hitLanded');
+          }}
+        />
+        Controller rumble
       </label>
     </li>
     <li class="slider">

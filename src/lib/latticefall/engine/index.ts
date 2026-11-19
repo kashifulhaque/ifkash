@@ -4,6 +4,9 @@
 import { InputController, ReplayRecorder, downloadBytes, encodeReplay } from '../input';
 import { parseDevParams } from '../dev/params';
 import { AudioEngine } from '../audio/engine';
+import { HEAVY_WINDUP_FRAMES, SwingCues } from '../audio/swings';
+import { rumble, rumbleForHit } from '../input/rumble';
+import { ENEMY_ART } from '../render/actors/artClips';
 import { cameraOptions } from '../render/camera';
 import { setRenderAccess, type ColorBlindMode } from '../render/access';
 import { BriarFx } from '../render/bosses/b02';
@@ -21,7 +24,7 @@ import { loadWasm } from './loader';
 import { AUTOSAVE_SLOT, SaveManager, SaveStore, restedIn, type SaveRecord } from './save';
 import { FixedStepLoop } from './loop';
 import { SceneView } from './scene';
-import { FLAG_LOCKED, SnapshotBuffer } from './snapshot';
+import { FLAG_DEAD, FLAG_LOCKED, SnapshotBuffer } from './snapshot';
 import { parseHud, type NameLookup } from '../ui/hud/hudState';
 import { MESSAGE_MS, messageIndexesFromWords, type HudSink } from '../ui/hud/hudStore';
 import { COMMAND, createMenuHost, type MenuHost, type MenuSink } from '../ui/menus/menuHost';
@@ -257,6 +260,33 @@ export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions
     commandLog.push(world.tick_count(), kind, a, b);
     return true;
   }
+  // Swing sounds, husk grunts, and rumble read the tick's snapshot and events, never the
+  // interpolated frames, so each fires once however many frames are drawn between ticks.
+  const swings = new SwingCues();
+  const moveInfo = digestMoveResolver();
+  /** Models at least this tall (meters) swing with the boss's low, slow sound. */
+  const BOSS_SWING_HEIGHT_M = 2.5;
+  let playerWasDead = false;
+  function cueSwings(): void {
+    const actors = snapshots.curr;
+    const player = actors[0];
+    const dead = !!player && (player.flags & FLAG_DEAD) !== 0;
+    if (dead && !playerWasDead) rumble('death');
+    playerWasDead = dead;
+    if (!audio) return;
+    for (const cue of swings.step(actors, moveInfo)) {
+      const a = actors.find((x) => x.id === cue.id);
+      if (!a) continue;
+      const at: [number, number, number] = [a.x, a.y + view.actorHeight(a.kind) * 0.6, a.z];
+      if (cue.what === 'start') {
+        // A husk grunts as it starts to swing: one more cue to read its wind-up by.
+        if (ENEMY_ART.get(a.kind) === 'husk') audio.gruntAt(at);
+        continue;
+      }
+      const boss = a.kind !== 0 && view.actorHeight(a.kind) >= BOSS_SWING_HEIGHT_M;
+      audio.swingAt(at, boss ? 'boss' : cue.windup >= HEAVY_WINDUP_FRAMES ? 'heavy' : 'light');
+    }
+  }
   function runTick(frame: Uint8Array): void {
     recorder.record(frame); // Every tick's input goes into the replay.
     if (tools) {
@@ -265,6 +295,7 @@ export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions
       tools.recordTick(performance.now() - t0);
     } else world.tick(frame);
     snapshots.push();
+    cueSwings();
     marks.refresh();
     if (world.tick_count() % 6 === 0) syncEquipment();
     if (view.props.active) view.props.setState(world.mechanics_state());
@@ -302,6 +333,11 @@ export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions
     if (events.length) {
       for (const e of events) if (e.kind === 'boss' && e.what === BOSS_DEFEATED) view.props.bossDefeated(e.boss);
       audio?.handleEvents(events);
+      const playerId = snapshots.curr[0]?.id ?? -1;
+      for (const e of events) {
+        const pulse = e.kind === 'hit' ? rumbleForHit(e, playerId) : null;
+        if (pulse) rumble(pulse);
+      }
       view.vfx.handleEvents(events);
       briar.handleEvents(events);
       loom.handleEvents(events);
@@ -422,7 +458,8 @@ export async function startEngine(canvas: HTMLCanvasElement, opts: EngineOptions
       }
       if (opts.hud) {
         const locked = drawn.find((a) => a.flags & FLAG_LOCKED);
-        opts.hud.lock(locked ? view.project(locked.x, locked.y + 1.0, locked.z) : null);
+        // The marker sits on the target's chest, by its model's height.
+        opts.hud.lock(locked ? view.project(locked.x, locked.y + view.actorHeight(locked.kind) * 0.58, locked.z) : null);
       }
       tools?.afterRender(frameMs, world.tick_count(), () => world.state_hash());
       // Movement is camera-relative, so when lock-on turns the camera, input follows it. Lock-on

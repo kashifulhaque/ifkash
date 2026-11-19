@@ -95,7 +95,7 @@ function attachAtRest(object: Object3D, bone: Object3D, restBone: Object3D, temp
 }
 
 export class PlayerGear {
-  private weapons: Array<{ spec: WeaponSpec; model: WeaponModel }> = [];
+  private weapons: Array<{ spec: WeaponSpec; model: WeaponModel; side: 'L' | 'R' }> = [];
   private armor: ArmorPieceModel[] = [];
   private attached: Object3D[] = [];
   private tinted = new Map<Material, { color: Color }>();
@@ -135,7 +135,7 @@ export class PlayerGear {
         this.offHand = holder;
         holder.visible = !this.offHandStowed;
       }
-      this.weapons.push({ spec, model });
+      this.weapons.push({ spec, model, side });
       if (model.castPoint && spec.school) this.fx?.track(model.group, model.castPoint, spec.school);
     }
 
@@ -194,6 +194,11 @@ export class PlayerGear {
   /** The player's weapon models, for effects that need a tip (muzzles, trails). */
   heldWeapons(): ReadonlyArray<{ spec: WeaponSpec; model: WeaponModel }> {
     return this.weapons;
+  }
+
+  /** The weapon drawn in the right hand, for weapon trails, or undefined when the hand is empty. */
+  rightWeapon(): { spec: WeaponSpec; model: WeaponModel } | undefined {
+    return this.weapons.find((w) => w.side === 'R');
   }
 
   dispose(): void {

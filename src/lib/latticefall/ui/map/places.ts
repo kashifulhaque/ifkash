@@ -5,6 +5,7 @@
 const LANTERNS: Record<string, string> = {
   lantern_l00: 'The Hearth',
   lantern_l01: 'Waking Hollow',
+  lantern_l01b: "Sentry's Antechamber",
   lantern_l02: 'Verge Crossroads',
   lantern_l03: 'Aqueduct Steps',
   lantern_l04: 'Ninefold Chapel',

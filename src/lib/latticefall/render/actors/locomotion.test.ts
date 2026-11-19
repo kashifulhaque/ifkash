@@ -2,7 +2,7 @@
 
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
-import { gaitFacing, GAIT_MAX_RATE, pickGait, type LocoBands } from './locomotion';
+import { gaitFacing, GAIT_MAX_RATE, pickGait, strafeDirection, type LocoBands } from './locomotion';
 
 // The husk's measured bands: a slow shamble and a fast run, far apart.
 const HUSK: LocoBands = {
@@ -51,5 +51,30 @@ describe('gaitFacing', () => {
     const back = gaitFacing(0, deg(180), 1.1);
     assert.equal(back.reverse, true);
     assert.ok(Math.abs(back.yaw) < 1e-9);
+  });
+});
+
+describe('strafeDirection', () => {
+  const deg = (d: number) => (d * Math.PI) / 180;
+
+  test('names the travel direction relative to the facing', () => {
+    assert.equal(strafeDirection(0, 0), 'forward');
+    // Yaw 0 faces +Z and +X is the actor's left.
+    assert.equal(strafeDirection(0, deg(90)), 'left');
+    assert.equal(strafeDirection(0, deg(-90)), 'right');
+    assert.equal(strafeDirection(0, deg(180)), 'back');
+    // The same travel reads differently once the actor has turned.
+    assert.equal(strafeDirection(deg(90), deg(90)), 'forward');
+    assert.equal(strafeDirection(deg(170), deg(-100)), 'left');
+  });
+
+  test('holds the current direction a little past the diagonal, so it does not flicker', () => {
+    assert.equal(strafeDirection(0, deg(50)), 'left');
+    assert.equal(strafeDirection(0, deg(50), 'forward'), 'forward');
+    assert.equal(strafeDirection(0, deg(40), 'left'), 'left');
+    assert.equal(strafeDirection(0, deg(60), 'forward'), 'left');
+    assert.equal(strafeDirection(0, deg(30), 'left'), 'forward');
+    assert.equal(strafeDirection(0, deg(-140), 'right'), 'right');
+    assert.equal(strafeDirection(0, deg(-150), 'right'), 'back');
   });
 });

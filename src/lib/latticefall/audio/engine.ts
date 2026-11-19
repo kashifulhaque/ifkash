@@ -191,6 +191,16 @@ export class AudioEngine {
     }
   }
 
+  /** A weapon swing at a world position (`SwingCues` decides when), heard from where it happens. */
+  swingAt(at: [number, number, number], weight: synth.SwingWeight): void {
+    this.positional(at, (dest, t) => synth.swing(this.ctx, dest, this.noise, t, weight));
+  }
+
+  /** A husk's grunt at a world position, as its attack starts. */
+  gruntAt(at: [number, number, number]): void {
+    this.positional(at, (dest, t) => synth.grunt(this.ctx, dest, this.noise, t));
+  }
+
   /**
    * The Bellwright's events drive his beat and his bell. The beat follows the core's events,
    * never the audio clock, so the music can't drift from the fight.

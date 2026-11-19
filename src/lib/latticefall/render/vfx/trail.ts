@@ -19,8 +19,16 @@ export interface TrailStyle {
   alpha: number;
 }
 
-/** Move `anim` prefix to trail style. Only straight-sword moves exist so far. */
-const TRAIL_STYLES: ReadonlyArray<readonly [string, TrailStyle]> = [['sword_', { color: [0.5, 0.76, 0.92], alpha: 0.9 }]];
+/**
+ * Move `anim` prefix to trail style: the player's straight sword, a husk's claws (a short,
+ * pale smear), and B01's greatsword (the ember color of its lantern).
+ */
+const TRAIL_STYLES: ReadonlyArray<readonly [string, TrailStyle]> = [
+  ['sword_', { color: [0.5, 0.76, 0.92], alpha: 0.9 }],
+  ['spin_slash', { color: [0.5, 0.76, 0.92], alpha: 0.9 }],
+  ['husk_', { color: [0.72, 0.7, 0.62], alpha: 0.45 }],
+  ['sentry_', { color: [1.0, 0.56, 0.2], alpha: 0.85 }]
+];
 
 /** The trail style for a move `anim`, or null when that move leaves no trail (rolls, flasks). */
 export function trailStyleForAnim(anim: string): TrailStyle | null {

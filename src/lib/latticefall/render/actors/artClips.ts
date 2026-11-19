@@ -47,6 +47,11 @@ export interface ArtClipInfo {
   duration: number;
   loop: boolean;
   contact: number | null;
+  /**
+   * The frame of the wound-up pose right before the swing, when a bake records one. Without
+   * it the renderer takes two thirds of the way to the contact (`anticipationFrame`).
+   */
+  anticipation?: number | null;
   source: string;
 }
 
@@ -105,21 +110,36 @@ export const ART_CLIP_IDS = [
   'walk',
   'run',
   'sprint',
+  // Lock-on movement (`ART_STRAFE`): sideways and backward loops at a walk and at a run.
+  'walk_back',
+  'run_back',
+  'strafe_l',
+  'strafe_r',
+  'strafe_run_l',
+  'strafe_run_r',
+  // The light chain's three swings, then the attacks named for what they do.
   'slash_a',
   'slash_b',
   'slash_c',
+  'lunge',
+  'spin',
+  'leap',
   'heavy',
   'block',
   'block_idle',
   'roll',
   'hit',
   'death',
+  // The flask: the hand to the mouth, then back down (`drink` alone is the whole motion).
   'drink',
+  'drink_end',
+  'jump',
+  'jump_run',
   'twohand_idle',
   'twohand_slash',
   'twohand_heavy',
   // Enemies and bosses (see `ART_ANIMS`): a husk wakes with `rise`, and `stagger` plays while
-  // an enemy is locked out. The attacks are named for what they do, not for one enemy.
+  // an actor is locked out. The attacks are named for what they do, not for one enemy.
   'rise',
   'stagger',
   'attack_a',
@@ -141,33 +161,86 @@ export const ART_GUARD: readonly StanceClip[] = [{ clip: 'block_idle' }, { clip:
 /** The two-handed stance: a two-handed idle that loops, with both hands on the grip. */
 export const ART_TWO_HAND: readonly StanceClip[] = [{ clip: 'twohand_idle' }];
 
-/** The clips an attack with no listed mapping plays, best first. */
-const ATTACK_FALLBACK = ['slash_a', 'slash_b', 'slash_c', 'heavy', 'attack_a', 'slam'] as const;
+/** The reactions a character plays when struck, locked out, and killed, best first. */
+export const ART_REACTIONS = {
+  hit: ['hit'],
+  stagger: ['stagger', 'hit'],
+  death: ['death']
+} as const;
 
-/** Move `anim` names to art clip ids, best first. Today: the starting sword and shield. */
-export const ART_ANIMS: Readonly<Record<string, readonly string[]>> = {
-  // Light chain: forehand, backhand, then the thrust-like third swing.
+/**
+ * The loops for moving while locked on, by travel direction relative to the facing
+ * (`strafeDirection` in `locomotion.ts`). Forward travel keeps the normal loops. A direction
+ * needs its walk loop; without a run loop the walk plays faster.
+ */
+export const ART_STRAFE = {
+  left: { walk: 'strafe_l', run: 'strafe_run_l' },
+  right: { walk: 'strafe_r', run: 'strafe_run_r' },
+  back: { walk: 'walk_back', run: 'run_back' }
+} as const;
+
+/**
+ * A jump clip and its key frames (30 Hz clip frames): the last frame on the ground, the top
+ * of the jump, and the first frame back on the ground. The renderer plays takeoff to apex
+ * while the actor rises, apex toward landing while it falls, and the rest as the landing.
+ */
+export interface ArtJump {
+  clip: string;
+  takeoff: number;
+  apex: number;
+  land: number;
+}
+
+/** The standing jump, and the running jump a character moving faster than `ART_JUMP_RUN_SPEED` plays. */
+export const ART_JUMP: ArtJump = { clip: 'jump', takeoff: 1, apex: 9, land: 20 };
+export const ART_JUMP_RUN: ArtJump = { clip: 'jump_run', takeoff: 1, apex: 11, land: 22 };
+/** Ground speed (m/s) at takeoff above which the running jump plays. */
+export const ART_JUMP_RUN_SPEED = 2;
+
+/** A stretch of one art clip, in 30 Hz clip frames (`to` is exclusive), as in `ClipSeg`. */
+export interface ArtPart {
+  clip: string;
+  from?: number;
+  to?: number;
+}
+
+/**
+ * One way to draw a move: a clip id, a stretch of a clip, or stretches played back to back
+ * (the renderer crossfades each join, because separate clips don't meet on one pose).
+ */
+export type ArtChoice = string | ArtPart | readonly ArtPart[];
+
+/** The clips an attack with no listed mapping plays, best first. */
+const ATTACK_FALLBACK: readonly ArtChoice[] = ['slash_a', 'slash_b', 'slash_c', 'heavy', 'attack_a', 'slam'];
+
+/** Move `anim` names to art clips, best first. Today: the starting sword and shield. */
+export const ART_ANIMS: Readonly<Record<string, readonly ArtChoice[]>> = {
+  // Light chain: a forehand cut, a downward diagonal, then a thrust.
   sword_slash_r: ['slash_a'],
-  sword_backstep_slash: ['slash_a'],
-  sword_jump_slash: ['slash_a'],
   sword_slash_l: ['slash_b', 'slash_a'],
-  sword_roll_slash: ['slash_b', 'slash_a'],
   sword_thrust: ['slash_c', 'slash_a'],
+  // The running attack is the same thrust; the clip starts at a run.
   sword_lunge_run: ['slash_c', 'slash_a'],
-  sword_counter: ['slash_c', 'slash_b'],
+  sword_backstep_slash: ['slash_a'],
+  // Out of a roll and for Rending Sweep: a turning backhand.
+  sword_roll_slash: ['spin', 'slash_a'],
+  spin_slash: ['spin', 'slash_b', 'slash_a'],
+  // The guard counter steps in with a low horizontal cut.
+  sword_counter: ['lunge', 'slash_c', 'slash_b'],
   sword_rising: ['slash_c', 'heavy'],
-  spin_slash: ['slash_b', 'slash_a'],
   // Heavies and criticals.
   sword_overhead: ['heavy', 'slash_a'],
   sword_overhead_charged: ['heavy', 'slash_a'],
-  sword_jump_overhead: ['heavy', 'slash_a'],
-  sword_plunge: ['heavy', 'slash_a'],
   sword_riposte: ['heavy', 'slash_c'],
   sword_backstab: ['heavy', 'slash_c'],
+  // In the air: a leaping overhead cut.
+  sword_jump_slash: ['leap', 'slash_a'],
+  sword_jump_overhead: ['leap', 'heavy', 'slash_a'],
+  sword_plunge: ['leap', 'heavy', 'slash_a'],
   // The shield: bashes push the guard out, parries and braces raise it.
-  shield_bash_r: ['slash_c', 'block'],
-  shield_bash_l: ['slash_c', 'block'],
-  shield_guard_bash: ['slash_c', 'block'],
+  shield_bash_r: ['lunge', 'slash_c', 'block'],
+  shield_bash_l: ['lunge', 'slash_c', 'block'],
+  shield_guard_bash: ['lunge', 'slash_c', 'block'],
   parry_raise: ['block'],
   guard_brace: ['block'],
   // Everything else the player does.
@@ -175,11 +248,13 @@ export const ART_ANIMS: Readonly<Record<string, readonly string[]>> = {
   roll_quick: ['roll'],
   roll_heavy: ['roll'],
   dash_feint: ['roll'],
+  // No backstep clip exists yet: one stride of the backward run stands in.
+  backstep: ['run_back'],
   hit_chest: ['hit'],
   receive_riposte: ['hit', 'death'],
   receive_backstab: ['hit', 'death'],
   death: ['death'],
-  flask_drink: ['drink'],
+  flask_drink: [[{ clip: 'drink' }, { clip: 'drink_end' }], 'drink'],
   // The Husk (game/data/moves/enemies/husk.ron): a slow two-hit combo.
   husk_swipe_1: ['attack_a'],
   husk_swipe_2: ['attack_b', 'attack_a'],
@@ -280,10 +355,17 @@ export function lanternGlow(info: GlowTiming | undefined, frame: number): number
   return Math.max(1, LANTERN_PEAK - ((LANTERN_PEAK - 1) * after) / LANTERN_SETTLE_FRAMES);
 }
 
+/** The stretches of an `ArtChoice`. */
+function artParts(choice: ArtChoice): readonly ArtPart[] {
+  if (typeof choice === 'string') return [{ clip: choice }];
+  return 'clip' in choice ? [choice] : choice;
+}
+
 /**
- * The clip a move plays on an art character: the first listed clip the character has, or
- * for an attack without a listing, its first slash. `contact` comes from the sidecar; a
- * clip without one is scaled to the move. Undefined means "hold the idle pose".
+ * The clip a move plays on an art character: the first listed choice whose clips the
+ * character has, or for an attack without a listing, its first slash. `contact` comes from
+ * the first clip's sidecar entry, counted from the stretch's start; a clip without one is
+ * scaled to the move. Undefined means "hold the idle pose".
  */
 export function artSpecFor(
   anim: string,
@@ -291,16 +373,29 @@ export function artSpecFor(
   clips: Readonly<Record<string, ArtClipInfo>>,
   twoHanded = false
 ): ClipSpec | undefined {
-  let choices = ART_ANIMS[anim] ?? (isAttack ? ATTACK_FALLBACK : []);
+  let choices: readonly ArtChoice[] = ART_ANIMS[anim] ?? (isAttack ? ATTACK_FALLBACK : []);
   // Two-handed, an attack swings with both hands: heavies take the two-handed heavy, the
   // rest the two-handed slash. A character without them keeps its one-handed clips.
   if (twoHanded && isAttack) {
     const own = choices[0] === 'heavy' ? ['twohand_heavy', 'twohand_slash'] : ['twohand_slash'];
     choices = [...own, ...choices];
   }
-  const id = choices.find((c) => c in clips) ?? (anim in clips ? anim : undefined);
-  if (id === undefined) return undefined;
-  return { segs: [{ clip: id }], contact: clips[id].contact ?? 0 };
+  const pick = choices.find((c) => artParts(c).every((p) => p.clip in clips)) ?? (anim in clips ? anim : undefined);
+  if (pick === undefined) return undefined;
+  const parts = artParts(pick);
+  const first = parts[0];
+  const from = first.from ?? 0;
+  const contact = Math.max((clips[first.clip].contact ?? 0) - from, 0);
+  const spec: ClipSpec = { segs: typeof pick === 'string' ? [{ clip: pick }] : parts, contact };
+  const pose = clips[first.clip].anticipation;
+  if (typeof pose === 'number' && pose - from > 0) spec.anticipation = pose - from;
+  if (parts.length > 1) spec.blend = true;
+  return spec;
+}
+
+/** The first of `ids` the character has, or undefined. */
+export function artFirst(ids: readonly string[], has: (clip: string) => boolean): string | undefined {
+  return ids.find(has);
 }
 
 /** The two-handed stance clip for a character with these clips, or undefined. */

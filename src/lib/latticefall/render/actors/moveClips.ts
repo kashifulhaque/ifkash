@@ -32,6 +32,10 @@ export interface ClipSpec {
   segs: readonly ClipSeg[];
   /** Contact frame, counted from the start of the first stretch. */
   contact: number;
+  /** The anticipation pose's frame, when the clip's bake gives one (see `anticipationFrame`). */
+  anticipation?: number;
+  /** Set when the stretches don't meet on the same pose, so the renderer crossfades each join. */
+  blend?: boolean;
 }
 
 const spec = (contact: number, ...segs: ClipSeg[]): ClipSpec => ({ segs, contact });
@@ -300,26 +304,26 @@ function segLength(g: ClipSeg, frames: number): number {
 }
 
 /**
- * Which stretch frame `f` (0 to the spec's length) falls in, and the clip time in seconds
- * there. The last frame of one stretch is the first of the next.
+ * Which stretch frame `f` (0 to the spec's length) falls in (`seg`), and the clip time in
+ * seconds there. The last frame of one stretch is the first of the next.
  */
 export function locateSpec(
   s: ClipSpec,
   f: number,
   clipFrames: (clip: string) => number,
   fps: number
-): { clip: string; time: number } {
+): { clip: string; time: number; seg: number } {
   let rest = Math.max(f, 0);
   for (let i = 0; i < s.segs.length; i++) {
     const g = s.segs[i];
     const len = segLength(g, clipFrames(g.clip));
     if (rest <= len || i === s.segs.length - 1) {
       const from = g.from ?? 0;
-      return { clip: g.clip, time: (from + Math.min(rest, len)) / fps };
+      return { clip: g.clip, time: (from + Math.min(rest, len)) / fps, seg: i };
     }
     rest -= len;
   }
-  return { clip: s.segs[0].clip, time: 0 };
+  return { clip: s.segs[0].clip, time: 0, seg: 0 };
 }
 
 export type MovePhase = 'windup' | 'strike' | 'recovery';
@@ -335,6 +339,17 @@ export function movePhase(info: MoveAnimInfo, frame: number): MovePhase {
 
 /** The fastest the recovery may play, as a multiple of the clip's authored rate. */
 export const MAX_RECOVERY_RATE = 2.5;
+/** The slowest the recovery may play. A clip that ends early settles into the idle instead. */
+export const MIN_RECOVERY_RATE = 0.85;
+/** A wind-up that would play slower than this plays at its authored rate and holds instead. */
+export const MIN_WINDUP_RATE = 0.75;
+/** The fastest the wind-up may play. A longer clip skips its start; the crossfade covers it. */
+export const MAX_WINDUP_RATE = 1.8;
+/** The same bounds for a move without a hitbox, which is scaled as one piece. */
+export const MIN_WHOLE_RATE = 0.85;
+export const MAX_WHOLE_RATE = 2.5;
+/** Sim frames a clip that ended early takes to settle into the idle pose. */
+export const SETTLE_FRAMES = 8;
 
 /**
  * The sim frame where a move's contact should land: the middle of its hitbox window, or
@@ -347,22 +362,123 @@ export function hitFrame(info: MoveAnimInfo): number | undefined {
 }
 
 /**
- * Clip frame (0 to `length`) for a move frame. The clip is retimed to fit the move: the frame
- * data never changes to fit the animation. A move with a hitbox is warped in two pieces so the
- * clip's contact frame lands in the middle of the hitbox window: the wind-up stretches or
- * squeezes to reach it, and the recovery plays from there at no more than
- * `MAX_RECOVERY_RATE`, so a short move cuts its follow-through (the crossfade into the next
- * pose covers the rest) rather than rushing it. Without a hitbox the clip is scaled to the
- * move. `frame` may be fractional (interpolated between ticks).
+ * The clip frame of the anticipation pose: the wound-up pose right before the swing
+ * accelerates. In the baked clips the swing takes about the last third of the wind-up.
  */
-export function moveClipFrame(length: number, contact: number, info: MoveAnimInfo, frame: number): number {
+export function anticipationFrame(contact: number): number {
+  return Math.round((contact * 2) / 3);
+}
+
+/** How a clip is fitted to a move's frame data. Rates are clip frames per sim frame. */
+export interface MoveFit {
+  /** The clip frame the move starts on: above 0 when the wind-up is too long to play. */
+  start: number;
+  /** The wind-up's rate. 1 while `hold` is above 0. */
+  windup: number;
+  /** Sim frames the anticipation pose is held for, when the wind-up is shorter than the move's. */
+  hold: number;
+  /** The clip frame held during `hold`. */
+  anticipation: number;
+  /** The sim frame the contact lands on, or undefined without a hitbox. */
+  hit: number | undefined;
+  /** The recovery's rate (or the whole clip's rate, without a hitbox). */
+  recovery: number;
+  /** The sim frame the clip ends on, when that is before the move ends; otherwise the move's length. */
+  clipEnd: number;
+}
+
+/**
+ * Fits a clip of `length` frames with its contact on `contact` to a move. The frame data
+ * never changes to fit the animation, so the clip is retimed in two pieces around the middle
+ * of the hitbox window:
+ *
+ * - The wind-up stretches or squeezes to put the contact there. If it would play slower
+ *   than `MIN_WINDUP_RATE`, it plays at its authored rate and holds the anticipation pose
+ *   for the rest of the time, which also reads as a telegraph. If it would play faster than
+ *   `MAX_WINDUP_RATE`, the clip starts part way in.
+ * - The recovery plays at `MIN_RECOVERY_RATE` to `MAX_RECOVERY_RATE`. A long follow-through
+ *   is cut (the crossfade into the next pose covers the rest), and a short one ends before
+ *   the move does, after which the pose settles into the idle (`moveClipAt`'s `settle`).
+ *
+ * Without a hitbox the clip is scaled to the move as one piece, within the same bounds.
+ */
+export function fitMove(length: number, contact: number, info: MoveAnimInfo, anticipation?: number): MoveFit {
   const total = info.totalFrames;
-  const f = Math.min(Math.max(frame, 0), total);
   const hit = hitFrame(info);
   if (hit === undefined || contact <= 0 || hit <= 0 || hit >= total) {
-    return total > 0 ? (f / total) * length : 0;
+    const raw = total > 0 ? length / total : 0;
+    const rate = Math.min(Math.max(raw, MIN_WHOLE_RATE), MAX_WHOLE_RATE);
+    const clipEnd = rate > 0 ? Math.min(total, length / rate) : total;
+    return { start: 0, windup: rate, hold: 0, anticipation: 0, hit: undefined, recovery: rate, clipEnd };
   }
-  if (f <= hit) return (f / hit) * contact;
-  const rate = Math.min((length - contact) / (total - hit), MAX_RECOVERY_RATE);
-  return Math.min(contact + (f - hit) * Math.max(rate, 0), length);
+  let start = 0;
+  let windup = contact / hit;
+  let hold = 0;
+  let pose = 0;
+  if (windup < MIN_WINDUP_RATE) {
+    windup = 1;
+    hold = hit - contact;
+    pose = Math.min(Math.max(anticipation ?? anticipationFrame(contact), 0), contact);
+  } else if (windup > MAX_WINDUP_RATE) {
+    windup = MAX_WINDUP_RATE;
+    start = contact - hit * MAX_WINDUP_RATE;
+  }
+  const rest = Math.max(length - contact, 0);
+  const recovery = Math.min(Math.max(rest / (total - hit), MIN_RECOVERY_RATE), MAX_RECOVERY_RATE);
+  const clipEnd = Math.min(total, hit + rest / recovery);
+  return { start, windup, hold, anticipation: pose, hit, recovery, clipEnd };
+}
+
+/** Where a move frame falls in its clip, and how far the pose has settled into the idle. */
+export interface MoveClipAt {
+  /** Clip frame, 0 to the clip's length. */
+  frame: number;
+  /** 0 while the clip plays; rises to 1 over `SETTLE_FRAMES` once it has ended early. */
+  settle: number;
+}
+
+/** The clip frame for a move frame under `fitMove`. `frame` may be fractional. */
+export function moveClipAt(length: number, contact: number, info: MoveAnimInfo, frame: number, anticipation?: number): MoveClipAt {
+  const total = info.totalFrames;
+  const f = Math.min(Math.max(frame, 0), total);
+  const fit = fitMove(length, contact, info, anticipation);
+  const settle = f > fit.clipEnd ? Math.min((f - fit.clipEnd) / SETTLE_FRAMES, 1) : 0;
+  if (fit.hit === undefined) return { frame: Math.min(f * fit.recovery, length), settle };
+  if (f > fit.hit) return { frame: Math.min(contact + (f - fit.hit) * fit.recovery, length), settle };
+  if (fit.hold <= 0) return { frame: fit.start + f * fit.windup, settle };
+  // Authored rate up to the anticipation pose, the hold, then the swing at its authored rate.
+  if (f <= fit.anticipation) return { frame: f, settle };
+  if (f <= fit.anticipation + fit.hold) return { frame: fit.anticipation, settle };
+  return { frame: f - fit.hold, settle };
+}
+
+/** The clip frame alone: `moveClipAt` for callers that don't blend the settle. */
+export function moveClipFrame(length: number, contact: number, info: MoveAnimInfo, frame: number): number {
+  return moveClipAt(length, contact, info, frame).frame;
+}
+
+/** The slowest and fastest a stagger or hit reaction plays, as multiples of its authored rate. */
+export const MIN_REACT_RATE = 0.75;
+export const MAX_REACT_RATE = 1.75;
+/** The share of a short stagger spent on the clip's start (the flinch); the rest shows its end. */
+export const REACT_HEAD_SHARE = 0.6;
+
+/**
+ * Clip time for a reaction clip of `duration` seconds `t` seconds into a lockout that lasts
+ * `lockout` seconds. The clip plays at `MIN_REACT_RATE` to `MAX_REACT_RATE` to span the
+ * lockout. When it is too long even at the fastest rate, the lockout shows the clip's start
+ * (the flinch) and then jumps to its end (the recovery); `tail` is true from the jump on, so
+ * the caller can crossfade over it. A lockout of unknown length (0 or less) plays the clip
+ * once at its authored rate.
+ */
+export function reactClipTime(duration: number, lockout: number, t: number): { time: number; tail: boolean } {
+  const at = Math.max(t, 0);
+  if (!(lockout > 0)) return { time: Math.min(at, duration), tail: false };
+  const rate = Math.min(Math.max(duration / lockout, MIN_REACT_RATE), MAX_REACT_RATE);
+  const shown = rate * lockout;
+  if (shown >= duration - 1e-6) return { time: Math.min(at * rate, duration), tail: false };
+  const headEnd = lockout * REACT_HEAD_SHARE;
+  if (at <= headEnd) return { time: at * rate, tail: false };
+  // The tail ends with the lockout on the clip's last frame.
+  return { time: Math.max(Math.min(duration - (lockout - at) * rate, duration), 0), tail: true };
 }

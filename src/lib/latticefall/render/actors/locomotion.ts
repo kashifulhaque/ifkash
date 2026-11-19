@@ -133,3 +133,29 @@ export function gaitFacing(simYaw: number, heading: number, speed: number): { ya
   if (off >= BACKWARD_ARC) return { yaw: wrapAngle(heading + Math.PI), reverse: true };
   return { yaw: heading, reverse: false };
 }
+
+/** The way a locked-on actor travels relative to where it faces. */
+export type StrafeDir = 'forward' | 'left' | 'right' | 'back';
+
+/** Half the forward and backward sectors (radians); the sideways sectors fill the rest. */
+const STRAFE_SECTOR = Math.PI / 4;
+/** How far past its sector's edge the travel must turn before the direction changes. */
+const STRAFE_HYSTERESIS = (12 * Math.PI) / 180;
+
+/** The middle of each direction's sector, as travel direction minus facing. Left is +X at yaw 0. */
+const STRAFE_CENTER: Readonly<Record<StrafeDir, number>> = { forward: 0, left: Math.PI / 2, right: -Math.PI / 2, back: Math.PI };
+
+/**
+ * The strafe direction for travel along `heading` by an actor that faces `faceYaw` (both
+ * radians, yaw 0 facing +Z and turning toward +X). Each direction owns a quarter turn, and
+ * `current` keeps the travel until it is `STRAFE_HYSTERESIS` past that quarter's edge, so a
+ * diagonal doesn't flicker between two loops.
+ */
+export function strafeDirection(faceYaw: number, heading: number, current?: StrafeDir): StrafeDir {
+  const off = wrapAngle(heading - faceYaw);
+  if (current && Math.abs(wrapAngle(off - STRAFE_CENTER[current])) <= STRAFE_SECTOR + STRAFE_HYSTERESIS) return current;
+  const mag = Math.abs(off);
+  if (mag <= STRAFE_SECTOR) return 'forward';
+  if (mag >= Math.PI - STRAFE_SECTOR) return 'back';
+  return off > 0 ? 'left' : 'right';
+}

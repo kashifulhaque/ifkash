@@ -124,9 +124,9 @@ const sweep: Choreo = {
 };
 
 const bash: Choreo = {
-  total: 46,
+  total: 50,
   keys: (total) =>
-    attack(14, 17, total, {
+    attack(18, 21, total, {
       wind: { shoulderL: [-0.9, 0, 0.7], elbowL: [-1.7], spine: [-0.1, 0.5, 0], hips: [0, 0, 0, 0, -0.06, -0.05] },
       strike: { shoulderL: [-1.75, 0, 0.0], elbowL: [-0.4], spine: [0.35, -0.35, 0], hips: [0, 0, 0, 0, -0.1, 0.3], hipL: [-0.5], hipR: [0.4] }
     }),

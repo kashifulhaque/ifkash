@@ -58,8 +58,9 @@ const LOCK_SHOULDER = 0.6;
 /** Both actors must land inside this fraction of the screen's half-extent. */
 const FRAME_MARGIN = 0.75;
 const PLAYER_HEIGHT = 1.8;
-/** Assumed target size until the core exposes `camera_radius`. */
-const TARGET_HEIGHT = 2.2;
+/** A lock target's height when nothing reports its real one (the dev camera's stand-in target). */
+const DEFAULT_TARGET_HEIGHT = 2.2;
+/** Assumed target radius until the core exposes `camera_radius`. */
 const TARGET_RADIUS = 0.8;
 /** Never pull back further than this multiple of the base distance when framing. */
 const MAX_PULL_BACK = 3.5;
@@ -101,6 +102,13 @@ export class CameraRig {
   private wasLocked = false;
   /** Dev screenshots set this to stand in for a locked-on actor. */
   fakeTarget: Vector3 | null = null;
+  /**
+   * The standing height in meters of a lock target, from its model. The scene sets it;
+   * without it every target counts as `DEFAULT_TARGET_HEIGHT` tall. The camera aims at the
+   * middle of that height, so it looks at a husk's chest and at B01's, not over a husk's head.
+   */
+  targetHeight: ((a: DrawActor) => number) | null = null;
+  private lockHeight = DEFAULT_TARGET_HEIGHT;
   /** The area art's ceilings. The scene sets it; without it only the colliders count. */
   ceiling: CeilingFn | null = null;
 
@@ -160,8 +168,13 @@ export class CameraRig {
     this.lastPlayer.set(player.x, player.y, player.z);
     const lockedActor = actors.find((a) => a.id !== player.id && (a.flags & FLAG_LOCKED) !== 0);
     let target: Vector3 | null = null;
-    if (lockedActor) target = this.lastTarget.set(lockedActor.x, lockedActor.y, lockedActor.z);
-    else if (this.fakeTarget) target = this.lastTarget.copy(this.fakeTarget);
+    if (lockedActor) {
+      target = this.lastTarget.set(lockedActor.x, lockedActor.y, lockedActor.z);
+      this.lockHeight = this.targetHeight?.(lockedActor) ?? DEFAULT_TARGET_HEIGHT;
+    } else if (this.fakeTarget) {
+      target = this.lastTarget.copy(this.fakeTarget);
+      this.lockHeight = DEFAULT_TARGET_HEIGHT;
+    }
     const locked = target !== null && !pivotOverride;
 
     // Smoothed pivot, with a safety cast so the lag can't carry it through a wall.
@@ -197,14 +210,14 @@ export class CameraRig {
       this.yaw = lerpAngle(from, goalYaw, smooth(dt, TAU_LOCK_YAW));
       yaw = this.yaw;
       // Pitch too: a fixed view down at the pair, tilted toward a target above or below.
-      const rise = target.y + TARGET_HEIGHT * 0.5 - (player.y + PLAYER_HEIGHT * 0.5);
+      const rise = target.y + this.lockHeight * 0.5 - (player.y + PLAYER_HEIGHT * 0.5);
       const goalPitch = Math.min(PITCH_MAX, Math.max(PITCH_MIN, LOCK_PITCH - Math.atan2(rise, Math.max(sep, 1)) * LOCK_PITCH_FOLLOW));
       const fromPitch = this.wasLocked ? this.pitch : pitch;
       this.pitch = fromPitch + (goalPitch - fromPitch) * smooth(dt, TAU_LOCK_PITCH);
       pitch = this.pitch;
       this.focusGoal.set(
         (player.x + target.x) / 2,
-        (this.pivotGoal.y + target.y + TARGET_HEIGHT * 0.5) / 2,
+        (this.pivotGoal.y + target.y + this.lockHeight * 0.5) / 2,
         (player.z + target.z) / 2
       );
       lockPull = sep / 2;
@@ -342,12 +355,12 @@ export class CameraRig {
     const tanV = Math.tan((this.settings.fov * Math.PI) / 360) * FRAME_MARGIN;
     const tanH = tanV * this.camera.aspect;
     const right = this.c;
-    const mid = target.y + TARGET_HEIGHT / 2;
+    const mid = target.y + this.lockHeight / 2;
     const pts: Array<[number, number, number]> = [
       [player.x, player.y, player.z],
       [player.x, player.y + PLAYER_HEIGHT, player.z],
       [target.x, target.y, target.z],
-      [target.x, target.y + TARGET_HEIGHT, target.z],
+      [target.x, target.y + this.lockHeight, target.z],
       [target.x + right.x * TARGET_RADIUS, mid, target.z + right.z * TARGET_RADIUS],
       [target.x - right.x * TARGET_RADIUS, mid, target.z - right.z * TARGET_RADIUS]
     ];
@@ -401,7 +414,7 @@ export class CameraRig {
     p.y += PIVOT_HEIGHT * 0.6;
     const playerOnScreen = onScreen(p);
     const t = this.c.copy(this.lastTarget);
-    t.y += TARGET_HEIGHT / 2;
+    t.y += this.lockHeight / 2;
     return {
       clearance,
       distance: this.lastDist,

@@ -39,7 +39,7 @@ import {
   type RaycastFn
 } from '../render/camera';
 import type { Equipped } from '../render/equipment/playerGear';
-import type { DrawActor } from './snapshot';
+import { FLAG_LOCKED, type DrawActor } from './snapshot';
 
 /** Reads a CSS custom property from `<html>` and falls back if it is missing or unparsable. */
 function token(name: string, fallback: string): Color {
@@ -106,6 +106,7 @@ export class SceneView {
     this.rig = new CameraRig(this.camera, raycast, loadCameraSettings());
     if (dev?.fakeLock) this.rig.fakeTarget = dev.fakeLock;
     this.rig.ceiling = (x, z, above) => this.level?.ceiling?.ceilingAt(x, z, above) ?? Infinity;
+    this.rig.targetHeight = (a) => this.actors.actorHeight(a.kind);
     this.renderer = new WebGLRenderer({ canvas, antialias: true });
     sharedKtx2Loader(this.renderer); // Registers the renderer for every model loader.
     this.renderer.setPixelRatio(pixelRatioFor(getQuality(), window.devicePixelRatio));
@@ -226,6 +227,11 @@ export class SceneView {
     this.actors.setEquipment(eq);
   }
 
+  /** Standing height in meters of the model drawn for an actor kind (0 is the player). */
+  actorHeight(kind: number): number {
+    return this.actors.actorHeight(kind);
+  }
+
   /** Draws the player's gesture (WP-088): the core's gesture number, or null for none. */
   setGesture(gesture: number | null): void {
     this.actors.setGesture(gesture);
@@ -269,6 +275,9 @@ export class SceneView {
   render(actors: DrawActor[], frameMs: number, simPaused = false): void {
     const live = new Set<number>();
     const modelsReady = this.actors.ready;
+    const playerId = actors[0]?.id ?? -1;
+    this.actors.playerId = playerId;
+    this.actors.lockedOn = actors.some((a) => a.id !== playerId && (a.flags & FLAG_LOCKED) !== 0);
     for (const a of actors) {
       live.add(a.id);
       if (this.actors.update(a, frameMs)) continue;
@@ -285,7 +294,6 @@ export class SceneView {
       mesh.position.set(a.x, a.y + CAPSULE_HEIGHT / 2, a.z);
       mesh.rotation.y = a.yaw;
     }
-    this.actors.playerId = actors[0]?.id ?? -1;
     this.actors.prune(live);
     this.actors.tickPreview(frameMs);
     for (const [id, mesh] of this.meshes) {
@@ -321,7 +329,7 @@ export class SceneView {
         this.camTarget.lerp(goal, k);
         this.camInit = true;
         this.camera.position.set(this.camTarget.x + off[0], this.camTarget.y + off[1], this.camTarget.z + off[2]);
-        this.camera.lookAt(this.camTarget.x, this.camTarget.y + 0.8, this.camTarget.z);
+        this.camera.lookAt(this.camTarget.x, this.camTarget.y + this.actors.previewLookHeight(), this.camTarget.z);
         this.yawDriven = false;
       } else if (this.dev?.script) {
         // The dev orbit script ignores input and the player; it sweeps pivots around the ledge.

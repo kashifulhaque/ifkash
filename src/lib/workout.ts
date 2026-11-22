@@ -50,214 +50,76 @@ export const EQUIPMENT_OPTIONS: Equipment[] = [
   'Bodyweight'
 ];
 
-// Four lifting days a week (Upper A / Lower A / Upper B / Lower B) plus a
-// light fifth day of conditioning and pump work, laid out so no more than two
-// lifting days ever run back to back:
+// Four compact lifting days per week, with an optional fifth day for easy
+// cardio and core. Leave a rest / walking day between the two pairs:
 //
-//   Mon Upper A · Tue Lower A · Wed rest (walk) · Thu Upper B · Fri Lower B
-//   Sat Conditioning + pump · Sun rest
+//   Mon Upper A · Tue Lower A · Wed rest · Thu Upper B · Fri Lower B
+//   Sat optional cardio + core · Sun rest
 //
-// A missed lifting day moves to Wednesday or Saturday rather than doubling
-// up; Saturday's own work is the part to drop when it does.
+// The lifting sessions stay at four trackable exercise slots. After a recent
+// training break, consistency and adding reps matter more than crushing volume.
+// The optional day never makes up a missed lift; just resume the next session.
+// missed lift; just resume the next planned session.
 //
-// Why: a six-day push / pull / legs split run back to back was too much to
-// recover from, and the first four-day version left gaps: chest, arms, calves
-// and core under target, the only two hinges 48 hours apart, a squat stacked
-// behind leg press, and no single-leg or glute work. Fat loss has also slowed
-// after the first 10 kg (95 kg to 85 kg in three months), which is mostly a
-// food and daily-steps question, so the fifth day adds 35-40 minutes of easy
-// cardio and some pump work rather than another heavy session, and the plan
-// asks for 8-10k steps a day outside the gym.
-//
-// Each lifting day is one heavy compound per pattern, then a second compound
-// or a single-leg lift, then isolation, so one hinge (Friday) and one squat
-// (Tuesday) a week. Counted the way the report counts them (full sets for
-// the target muscle, half for helpers, Saturday included), chest, triceps,
-// quads, hamstrings and biceps land at 10-13 weekly sets, calves at 8 and
-// glutes at 9; back (17) and shoulders (20.5) run higher because the side
-// and rear delt work lands there. That holds muscle in a deficit without
-// costing more recovery than a cut can afford. Every weighted slot names one implement and
-// keeps it for the block so the loads stay comparable; the `alt` names the
-// substitute when that implement is taken, on the same scheme. An exercise
-// that appears on two days has the same scheme on both, or is a separate
-// entry, so the load suggestions never read a 4-set day against a 3-set one.
-//
-// The gym: shoulder press machine (also an incline press, not flat), lat
-// pulldown station with a seated cable row, pec fly / rear delt machine, leg
-// extension / leg curl machine, leg press (also the calf raise), cable
-// stack, Smith machine, back extension, benches, dumbbells, barbells, bands,
-// mats, and a crosstrainer, cycle and treadmill. No hanging bar, no flat chest
-// machine, no separate row or calf machine.
+// The gym: crosstrainer, cycle, treadmill, incline/shoulder-press machine,
+// lat pulldown, cable row, pec fly / reverse pec deck, leg raise, leg curl,
+// leg press, cable stack, Smith machine, barbell, back extension, benches,
+// dumbbells, kettlebell, and mat.
 
 /**
- * How to run every session, shown with the plan. Kept as plain text: the
- * load suggestions in `workoutTargets.ts` apply the progression rule, and
- * the rest is on you.
+ * How to run every session, shown with the plan. The weekly minimum is four
+ * short lifting sessions; the fifth day is optional.
  */
 export const PLAN_RULES: string[] = [
-  'Warm up: 5 min easy cardio, then band pull-aparts and hip / shoulder mobility. Ramp-up sets on key lifts are not logged.',
-  'Rest 2-3 min on compounds, 60-90 s on isolation.',
-  'Compounds: stop 1-2 reps short of failure. Isolation: the last set can go to 0-1 reps in reserve.',
-  'Double progression: stay at a load until every set hits the top of the range, then add the smallest step (2 kg on dumbbells, 2.5 kg elsewhere).',
-  'Timed and bodyweight moves: add 5-10 s or 1-2 reps a session up to the top of the range, then move to a harder variant.',
-  'Deload every 6-8 weeks, or sooner if most key lifts stall two sessions running: half the sets, same loads, for one week.',
-  'After 21+ days away from a lift, start 10 % lighter.',
-  'Outside the gym: 8-10k steps a day. Slow fat loss is fixed in the kitchen and in daily steps, not with more sets.'
+  'Keep lifting sessions to about 40–50 min. Warm up with 5 min easy movement and 1–2 lighter ramp-up sets for the first lift.',
+  'After a break of 2+ weeks, do 2 working sets per exercise for your first two weeks back; use easy loads and finish each set with 3 good reps left. Then build to the listed sets and leave 1–2 reps in reserve.',
+  'Rest about 2 min after presses, rows, squats and hinges; 60–90 sec on accessories. Keep transitions simple and leave the gym on time.',
+  'Use the rep range shown. When every set reaches its top number with clean form, add the smallest available weight and build reps again.',
+  'If you miss a day, do the next session in order; do not double up or cram. The optional fifth day is a bonus, never a make-up day.',
+  'Aim for a repeatable daily step target (start at 7,000; build toward 8,000–10,000). Sleep and a manageable food deficit matter more for fat loss than extra gym time.'
 ];
 
-/** Day 1 (Mon): horizontal press and horizontal pull lead. */
+/** Day 1 (Mon): balanced upper, with a small shoulder accessory. */
 export const UPPER_A: Exercise[] = [
-  {
-    name: 'Bench press',
-    scheme: '3×10-12',
-    kind: 'weighted',
-    equipment: 'Dumbbell',
-    priority: true
-  },
-  {
-    name: 'Seated cable row',
-    scheme: '3×10-12',
-    kind: 'weighted',
-    equipment: 'Machine',
-    priority: true
-  },
-  {
-    name: 'Shoulder press',
-    scheme: '3×8-10',
-    kind: 'weighted',
-    equipment: 'Machine',
-    priority: true
-  },
-  { name: 'Lat pulldown', scheme: '3×10-12', kind: 'weighted', equipment: 'Machine', note: 'wide grip' },
-  // Side delts widen the shoulder line; the V-taper does more for a lean read
-  // than arm size does, so they show up three times a week.
-  { name: 'Lateral raises', scheme: '3×10-12', kind: 'weighted', equipment: 'Dumbbell' },
-  {
-    name: 'Cable tricep pushdown',
-    scheme: '2×10-12',
-    kind: 'weighted',
-    equipment: 'Cable',
-    note: 'rope; superset with bicep curls'
-  },
-  {
-    name: 'Bicep curls',
-    scheme: '2×10-12',
-    kind: 'weighted',
-    equipment: 'Dumbbell',
-    note: 'superset with pushdowns'
-  }
+  { name: 'Dumbbell bench press', scheme: '3×8-12', kind: 'weighted', equipment: 'Dumbbell', priority: true },
+  { name: 'Lat pulldown', scheme: '3×8-12', kind: 'weighted', equipment: 'Machine', priority: true, note: 'comfortable shoulder-width grip' },
+  { name: 'Seated cable row', scheme: '2×10-12', kind: 'weighted', equipment: 'Machine' },
+  { name: 'Dumbbell lateral raise', scheme: '2×12-15', kind: 'weighted', equipment: 'Dumbbell' }
 ];
 
-/** Day 2 (Tue): quad emphasis. The Smith squat leads while it is fresh; the
- *  split squat adds the single-leg and glute work the plan had none of. */
+/** Day 2 (Tue): leg press and hamstring focus. */
 export const LOWER_A: Exercise[] = [
-  {
-    name: 'Squat',
-    scheme: '3×10-12',
-    kind: 'weighted',
-    equipment: 'Smith',
-    priority: true
-  },
-  { name: 'Leg extension', scheme: '3×10-12', kind: 'weighted', equipment: 'Machine' },
-  // Same entry and scheme on both lower days, so progression reads cleanly.
-  { name: 'Leg curls', scheme: '3×8-10', kind: 'weighted', equipment: 'Machine' },
-  { name: 'Calf raises', scheme: '3×12-15', kind: 'weighted', equipment: 'Machine' },
-  // No hanging bar here; lying on a mat is the version that fits.
-  { name: 'Lying leg raise', scheme: '3×10-12', kind: 'bodyweight', equipment: 'Bodyweight' }
+  { name: 'Leg press', scheme: '3×8-12', kind: 'weighted', equipment: 'Machine', priority: true, note: 'controlled depth; keep lower back on pad' },
+  { name: 'Dumbbell Romanian deadlift', scheme: '3×8-12', kind: 'weighted', equipment: 'Dumbbell', priority: true },
+  { name: 'Leg curls', scheme: '2×10-15', kind: 'weighted', equipment: 'Machine' },
+  { name: 'Dumbbell calf raise', scheme: '2×10-15', kind: 'weighted', equipment: 'Dumbbell' }
 ];
 
-/** Day 3 (Thu): incline press and vertical pull lead. */
+/** Day 3 (Thu): incline press and upper-back work. */
 export const UPPER_B: Exercise[] = [
-  {
-    name: 'Incline press',
-    scheme: '3×10-12',
-    kind: 'weighted',
-    equipment: 'Machine',
-    priority: true
-  },
-  // A separate entry from Upper A's wide-grip pulldown: different grip,
-  // different loads, different scheme.
-  {
-    name: 'Close-grip lat pulldown',
-    scheme: '3×10-12',
-    kind: 'weighted',
-    equipment: 'Machine',
-    priority: true,
-    note: 'neutral (V-handle) or close grip'
-  },
-  { name: 'Pec fly', scheme: '3×8-10', kind: 'weighted', equipment: 'Machine' },
-  // Rear delts and posture. Cheap to do, and it changes how the upper body
-  // reads standing still.
-  {
-    name: 'Reverse pec deck',
-    scheme: '3×8-10',
-    kind: 'weighted',
-    equipment: 'Machine'
-  },
-  { name: 'Lateral raise', scheme: '2×10-12', kind: 'weighted', equipment: 'Cable' },
-  {
-    name: 'Incline dumbbell curl',
-    scheme: '2×10-12',
-    kind: 'weighted',
-    equipment: 'Dumbbell'
-  },
-  {
-    name: 'Overhead cable tricep extension',
-    scheme: '2×10-12',
-    kind: 'weighted',
-    equipment: 'Cable'
-  }
+  { name: 'Incline chest press', scheme: '3×8-12', kind: 'weighted', equipment: 'Machine', priority: true },
+  { name: 'Cable row', scheme: '3×8-12', kind: 'weighted', equipment: 'Machine' },
+  { name: 'Reverse pec deck', scheme: '2×12-15', kind: 'weighted', equipment: 'Machine' },
+  { name: 'Dumbbell bicep curl', scheme: '2×10-15', kind: 'weighted', equipment: 'Dumbbell' }
 ];
 
-/** Day 4 (Fri): the week's one hinge, then hamstrings and glutes. */
+/** Day 4 (Fri): squat pattern, hinge, and a little core. */
 export const LOWER_B: Exercise[] = [
-  // Straight sets in a rep range, not a pyramid to a single. The one slot that
-  // wants a bar: do it first, while one is free.
-  {
-    name: 'Romanian deadlift',
-    scheme: '3×8-10',
-    kind: 'weighted',
-    equipment: 'Barbell',
-    priority: true
-  },
-  { name: 'Leg press', scheme: '3×10-12', kind: 'weighted', equipment: 'Machine', priority: true },
-  {
-    name: 'Back extension',
-    scheme: '3×8-10',
-    kind: 'weighted',
-    equipment: 'Machine'
-  },
-  { name: 'Leg curls', scheme: '3×8-10', kind: 'weighted', equipment: 'Machine' },
-  { name: 'Calf raises', scheme: '3×12-15', kind: 'weighted', equipment: 'Machine' },
-  { name: 'Plank', scheme: '2×30-45s', kind: 'time', equipment: 'Bodyweight' }
+  { name: 'Smith machine squat', scheme: '3×8-12', kind: 'weighted', equipment: 'Smith', priority: true, note: 'comfortable depth; stop before form changes' },
+  { name: 'Barbell Romanian deadlift', scheme: '3×8-10', kind: 'weighted', equipment: 'Barbell', priority: true },
+  { name: 'Leg curls', scheme: '2×10-15', kind: 'weighted', equipment: 'Machine' },
+  { name: 'Lying leg raise', scheme: '2×8-12', kind: 'bodyweight', equipment: 'Bodyweight', note: 'bend knees if needed; move without swinging' }
 ];
 
-/**
- * Day 5 (Sat): conditioning and pump. Zone 2 cardio first (35-40 min at a
- * pace you could talk through), then light shoulder, arm and core work. No
- * legs and no heavy presses or pulls, so Monday's Upper A starts fresh, and
- * nothing here is a key lift. Its sets count toward the weekly volume, but it
- * doesn't count toward a complete week of lifting, and it is the slot to give
- * up when a missed lifting day needs it. The label stays 'Cardio' because
- * logged sessions are stored under it.
- */
+/** Day 5 (Sat): optional easy cardio, then two brief core exercises. */
 export const CARDIO_DAY: Exercise[] = [
-  // A separate entry from Upper B's 2×12-15: lighter, higher reps.
-  { name: 'Cable lateral raise', scheme: '3×10-12', kind: 'weighted', equipment: 'Cable' },
-  { name: 'Face pulls', scheme: '3×15-18', kind: 'weighted', equipment: 'Cable' },
-  { name: 'Cable curl', scheme: '2×10-12', kind: 'weighted', equipment: 'Cable' },
-  {
-    name: 'Single-arm cable tricep extension',
-    scheme: '2×12-15',
-    kind: 'weighted',
-    equipment: 'Cable'
-  },
-  { name: 'Plank', scheme: '3×30-60s', kind: 'time', equipment: 'Bodyweight' }
+  { name: 'Lying leg raise', scheme: '2×8-12', kind: 'bodyweight', equipment: 'Bodyweight' },
+  { name: 'Plank', scheme: '2×20-40s', kind: 'time', equipment: 'Bodyweight' }
 ];
 
 export type DayLabel = 'Upper A' | 'Lower A' | 'Upper B' | 'Lower B' | 'Cardio';
 
-/** Every day in week order, including the conditioning day. */
+/** Every day in week order, including the optional conditioning day. */
 export const DAY_LABELS: DayLabel[] = ['Upper A', 'Lower A', 'Upper B', 'Lower B', 'Cardio'];
 
 /** The four lifting days that make a complete week. */
@@ -283,30 +145,14 @@ export type DayInfo = {
 };
 
 export const DAY_INFO: Record<DayLabel, DayInfo> = {
-  'Upper A': {
-    day: 'Mon',
-    detail: 'chest / back / shoulders / arms',
-    cardio: '15-min crosstrainer'
-  },
-  'Lower A': {
-    day: 'Tue',
-    detail: 'quads / glutes / hamstrings / calves / core',
-    cardio: '10-min crosstrainer'
-  },
-  'Upper B': {
-    day: 'Thu',
-    detail: 'chest / back / rear delts / shoulders / arms',
-    cardio: '15-min crosstrainer'
-  },
-  'Lower B': {
-    day: 'Fri',
-    detail: 'hamstrings / glutes / quads / calves / core',
-    cardio: '10-min crosstrainer'
-  },
+  'Upper A': { day: 'Mon', detail: 'chest / back / shoulders', cardio: 'Optional: 5–10 min easy cooldown' },
+  'Lower A': { day: 'Tue', detail: 'quads / hamstrings / calves', cardio: 'Optional: 5 min easy cooldown' },
+  'Upper B': { day: 'Thu', detail: 'chest / back / rear delts / triceps', cardio: 'Optional: 5–10 min easy cooldown' },
+  'Lower B': { day: 'Fri', detail: 'quads / hamstrings / core', cardio: 'Optional: 5 min easy cooldown' },
   Cardio: {
     day: 'Sat',
-    detail: 'conditioning + pump: zone 2 cardio, then shoulders, arms and core; or a missed lifting day',
-    cardio: '15-20 min crosstrainer',
+    detail: 'optional easy cardio + core',
+    cardio: '25–35 min easy conversational pace',
     optional: true
   }
 };
@@ -402,17 +248,14 @@ export function cardioMet(kind: string): number {
   return CARDIO_OPTIONS.find((o) => o.value === kind)?.met ?? 6.0;
 }
 
-// The day's suggested cardio bout, matching `DAY_INFO[...].cardio`. Upper days
-// carry the harder work (intervals on Monday, an incline walk on Thursday);
-// lower days get a short easy spin because the legs have just been trained.
-// Saturday is the long, easy zone 2 bout. Daily steps happen outside the gym
-// and aren't logged here.
+// Suggested short cooldowns on lifting days; the optional fifth day is the
+// only dedicated cardio session. Steps happen outside the gym.
 export const CARDIO_DEFAULTS: Record<DayLabel, { kind: string; minutes: number }> = {
-  'Upper A': { kind: 'Crosstrainer', minutes: 15 },
-  'Lower A': { kind: 'Crosstrainer', minutes: 10 },
-  'Upper B': { kind: 'Crosstrainer', minutes: 15 },
-  'Lower B': { kind: 'Crosstrainer', minutes: 10 },
-  Cardio: { kind: 'Crosstrainer', minutes: 15 }
+  'Upper A': { kind: 'Crosstrainer', minutes: 8 },
+  'Lower A': { kind: 'Crosstrainer', minutes: 5 },
+  'Upper B': { kind: 'Crosstrainer', minutes: 8 },
+  'Lower B': { kind: 'Crosstrainer', minutes: 5 },
+  Cardio: { kind: 'Crosstrainer', minutes: 30 }
 };
 
 // ---- API types -------------------------------------------------------------

@@ -1,6 +1,6 @@
 <svelte:head>
   <title>Workout — Kashif</title>
-  <meta name="description" content="A four-day upper/lower program with short cardio bouts — built to hold muscle while cutting." />
+  <meta name="description" content="A short four-day upper/lower strength plan, optional cardio and core, and practical fat-loss meal guidance." />
 </svelte:head>
 
 <script lang="ts">
@@ -1026,8 +1026,8 @@
       </div>
     </div>
     <p class="page-desc">
-      Four lifts a week, upper/lower. Pick a day, then {signedIn ? 'tap an exercise and log your sets — it saves as you type, on this device if the connection drops.' : 'sign in to log your sets right here.'}
-      {#if signedIn}The trend, report and history are on the <a href="/fitness/workout/insights">insights page</a>.{/if}
+      Four short upper/lower lifts each week; Saturday cardio + core is optional. Each lifting day has four exercises and should take about 40–50 minutes. {signedIn ? 'Tap a move to log it — it saves as you type, on this device if the connection drops.' : 'Sign in to log your sets here.'}
+    {#if signedIn} Trends and history are on the <a href="/fitness/workout/insights">insights page</a>.{/if}
     </p>
   </header>
 
@@ -1116,14 +1116,12 @@
 
         {#if DAY_INFO[active].optional && exercises.length}
           <p class="empty-day">
-            Zone 2 cardio first, then the pump work: light, high reps, nothing to failure. If a lifting
-            day was missed this week, do that here instead.
+            Take 25–35 minutes at a pace where you can speak in full sentences, then do the two core moves. This day is a bonus; skip it freely.
           </p>
         {/if}
         {#if exercises.length === 0}
           <p class="empty-day">
-            No lifting today. Log the cardio bout below{signedIn ? '' : ' once signed in'}, or add an
-            exercise if you end up doing one.
+            No lifting exercises today. Log the cardio bout below{signedIn ? '' : ' once signed in'}.
           </p>
         {/if}
 
@@ -1325,7 +1323,7 @@
       <details class="fold">
         <summary>
           <span class="fold-title">Week overview</span>
-          <span class="fold-meta">{LIFT_DAYS.length} lifts + conditioning</span>
+          <span class="fold-meta">{LIFT_DAYS.length} lifts + optional cardio/core</span>
         </summary>
         <div class="fold-body overview">
           {#each DAY_LABELS as label}
@@ -1363,6 +1361,31 @@
           </ul>
         </div>
       </details>
+
+      <section class="day-card nutrition-plan">
+        <div class="day-card-head">
+          <h2>Simple fat-loss meal plan</h2>
+          <span class="cardio-pill">Starting point for 85–86 kg · adjust from your trend, not one weigh-in</span>
+        </div>
+        <p class="empty-day">
+          BMR around 1,800 kcal is your estimated resting burn, not your daily calorie target. Start near
+          <strong>1,950–2,100 kcal/day</strong> and aim for <strong>140–170 g protein</strong>. Your actual
+          maintenance depends on daily movement; the profile estimate is only a starting estimate.
+        </p>
+        <ul class="plan-rules meal-rules">
+          <li><strong>Breakfast:</strong> oats (50–60 g) with 250 ml milk, 1 scoop whey and fruit; or 2–3 eggs with high-protein curd and whole-wheat roti.</li>
+          <li><strong>Lunch:</strong> 150–180 g cooked chicken/fish, or tofu/soy; 1 cooked cup rice or 2 rotis, vegetables and curd.</li>
+          <li><strong>Snack:</strong> 1 scoop whey or 200 g thick high-protein curd plus a fruit. Keep this easy to grab on busy days.</li>
+          <li><strong>Dinner:</strong> 150–180 g lean chicken/fish or tofu/soy, plenty of vegetables and 1–2 rotis or a moderate rice portion. Measure oil rather than pouring freely.</li>
+          <li><strong>Vegetarian protein:</strong> use whey, high-protein curd, tofu, soy chunks, or low-fat paneer; match protein portions and pair dal with another protein source.</li>
+        </ul>
+        <p class="empty-day">
+          Weigh most mornings and compare weekly averages; measure waist once a week in the same conditions.
+          A sensible pace is about 0.2–0.6 kg/week. If both weight average and waist are unchanged for 3
+          consistent weeks, reduce intake by about 100–150 kcal or add a little walking. If energy, sleep
+          or gym performance tanks, eat more and/or ease the deficit. A few flat scale days are normal.
+        </p>
+      </section>
     </div>
 
     {#if signedIn}
@@ -2177,6 +2200,16 @@
     line-height: 1.5;
     color: var(--ink-2);
   }
+
+  .meal-rules {
+    margin: 0;
+    padding: var(--s-4) var(--s-5) var(--s-4) calc(var(--s-5) + 18px);
+    border-bottom: 1px solid var(--line);
+    color: var(--ink-2);
+    font-size: 13px;
+    line-height: 1.55;
+  }
+  .meal-rules li + li { margin-top: 8px; }
   .ov-lifts {
     display: flex;
     flex-wrap: wrap;

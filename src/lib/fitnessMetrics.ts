@@ -19,16 +19,17 @@ export type Profile = {
 export const DEFAULT_PROFILE: Profile = {
   height_cm: 179,
   sex: 'male',
-  age_years: 28,
-  activity: 1.375, // Light — lifts daily but otherwise desk/sedentary (low NEAT)
+  age_years: 29,
+  activity: 1.375, // Light — lifts regularly but otherwise desk/sedentary (low NEAT)
   goal: 'cut_moderate',
   latest_weight_g: null
 };
 
-// kcal/day removed from (or added to) TDEE per goal.
+// kcal/day removed from (or added to) TDEE per goal. Moderate is deliberately
+// modest so the target remains compatible with lifting adherence and recovery.
 const GOAL_DEFICIT: Record<Goal, number> = {
-  cut_moderate: 750,
-  cut_aggressive: 1000,
+  cut_moderate: 400,
+  cut_aggressive: 750,
   maintain: 0
 };
 
@@ -38,8 +39,8 @@ export function goalDeficit(goal: Goal): number {
 }
 
 export const GOAL_LABELS: Record<Goal, string> = {
-  cut_moderate: 'Moderate cut (−750 kcal)',
-  cut_aggressive: 'Aggressive cut (−1000 kcal)',
+  cut_moderate: 'Moderate cut (−400 kcal)',
+  cut_aggressive: 'Aggressive cut (−750 kcal)',
   maintain: 'Maintain'
 };
 

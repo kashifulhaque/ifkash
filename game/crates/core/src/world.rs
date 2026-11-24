@@ -420,8 +420,29 @@ impl World {
             // The Art the weapon has now, which an Art Scroll may have changed (WP-054). An
             // empty hand has none.
             set.art = weapon.and_then(|w| crate::combat::arts::player_art_move(self, w));
+            set.left_chain = self.left_chain(weapon);
             self.moves.player_moveset = Some(set);
         }
+    }
+
+    /// The light chain the player's `GUARD` swings with the left hand
+    /// (docs/game/03-combat.md, "Left-hand attacks"): the left weapon's own chain, or the
+    /// fists' when both hands are empty. Empty when the left hand guards, casts, or shoots:
+    /// a shield, a catalyst, a bow, or an empty left hand beside a right weapon.
+    fn left_chain(&self, right: Option<lf_content::NumId>) -> Vec<crate::combat::moves::MoveNum> {
+        use lf_content::weapons::WeaponClass;
+        let Some(p) = self.actors.get(self.player) else {
+            return Vec::new();
+        };
+        let set = match p.inventory.equipment.left_weapon() {
+            Some(w) => match self.moves.arts.class_of(w) {
+                Some(WeaponClass::Shield | WeaponClass::Catalyst | WeaponClass::Bow) | None => None,
+                Some(_) => self.moves.moveset_of(w),
+            },
+            None if right.is_none() => self.moves.unarmed.as_ref(),
+            None => None,
+        };
+        set.map(|s| s.light_chain.clone()).unwrap_or_default()
     }
 
     /// 64-bit xxh3 of the canonical postcard serialization, excluding events.

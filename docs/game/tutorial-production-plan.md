@@ -197,12 +197,24 @@ ids. Mixamo names its downloads after the animation, so edit the `file` entries 
 what you downloaded. A `file` can list several names; the first one found wins. Case,
 extensions, and repeated spaces don't matter.
 
-The clip ids are `idle`, `walk`, `run`, `sprint`, `slash_a`, `slash_b`, `slash_c`, `heavy`,
-`block`, `block_idle`, `roll`, `hit`, `death`, `drink`, `twohand_idle`, `twohand_slash`, and
-`twohand_heavy`. Only `idle`, `walk`, and `run` are required. While the player two-hands the
-weapon, `twohand_idle` is the arms' stance, and attacks play `twohand_slash`, or
-`twohand_heavy` for heavies. Mixamo's Great Sword Pack has clips for all three. `ART_ANIMS` in `src/lib/latticefall/render/actors/artClips.ts` lists which
-moves play which clip, and the fallbacks for a missing clip.
+`ART_CLIP_IDS` in `src/lib/latticefall/render/actors/artClips.ts` lists the clip ids. Only
+`idle`, `walk`, and `run` are required. The same file says which moves play which clip:
+
+- `ART_ANIMS` maps the sword, shield, and fist moves by their `anim` name, with fallbacks
+  for a missing clip.
+- A weapon class without a listing plays the one-handed clips for the move's role in its
+  moveset (`light_2`, `heavy`, `rolling`), read from the move's id.
+- While the player two-hands a weapon, `twohand_idle` is the arms' stance, `twohand_guard`
+  the guard, and attacks play the two-handed clip for their role (`twohand_slash`,
+  `twohand_slash_b`, `twohand_slam`, and so on). Mixamo's Great Sword Pack has all of them.
+  A shield and fists keep their own strikes.
+- A left-hand swing plays the clip's mirrored bake, named with the suffix `_lh`. With a
+  shield in the right hand, the guard is `block_idle_lh`.
+
+The Paladin's fist clips (`punch_jab`, `punch_cross`, `punch_hook`, `punch_uppercut`, and
+`punch_heavy`) come from Mixamo's boxing animations. Download each one "Without Skin" at
+30 fps into the source folder, saved under the clip id (for example, `punch_jab.fbx`), and
+rebake. Until then, fists swing the sword clips.
 
 Each clip takes these options:
 
@@ -216,6 +228,8 @@ Each clip takes these options:
 - `trim`: `[FIRST, LAST]` frames to keep.
 - `contactBone` and `contactWindow`: which bone and which part of the clip (default
   `[0.1, 0.85]`) the contact search uses.
+- `mirror`: `true` bakes the clip left for right, for the left hand. Give the mirrored
+  clip the right-hand clip's id plus `_lh`. Its contact bone flips too.
 
 The config also sets `triangles`, `textureSize`, and `character`, the character file's
 name. Without `character`, the one FBX that no clip uses is the character.
@@ -234,6 +248,8 @@ Copy the printed list into the config as `"grips": {"R": [...]}`. The bake place
 on the character's own hand, and the game attaches every held weapon there, except shields
 and bows. Every Mixamo skeleton shares the same hand bones, so one measurement serves any
 character that uses Mixamo's sword clips. A config without `grips` keeps the computed grip.
+With `"mirrorGrips": true`, the bake reflects the right grip onto the left hand, so a weapon
+held in the left hand sits as the mirrored clips expect.
 
 ### Check it in the game
 

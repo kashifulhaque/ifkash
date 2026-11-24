@@ -201,6 +201,11 @@ export class PlayerGear {
     return this.weapons.find((w) => w.side === 'R');
   }
 
+  /** The weapon drawn in the left hand, for a left-hand swing's trail. */
+  leftWeapon(): { spec: WeaponSpec; model: WeaponModel } | undefined {
+    return this.weapons.find((w) => w.side === 'L');
+  }
+
   dispose(): void {
     this.clear();
     this.sig = '';

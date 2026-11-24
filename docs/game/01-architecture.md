@@ -283,7 +283,9 @@ The following list defines the `buttons` bits:
 
 - `LIGHT`, `HEAVY`: Right-hand attacks. Holding `HEAVY` charges.
 - `GUARD`: Hold to guard with the left hand, or to parry if the left hand holds a
-  parry tool and `HEAVY` is not held.
+  parry tool and `HEAVY` is not held. With a weapon in the left hand (or both hands
+  empty) and the right weapon not two-handed, a press swings the left hand instead; see
+  [left-hand attacks](03-combat.md#left-hand-attacks).
 - `DODGE`: Tap to roll toward the move direction, or backstep with no direction; hold
   to sprint.
 - `ART`: Use the equipped weapon's Art.

@@ -11,6 +11,9 @@ Steps:
 2. Textures: scales any image larger than the config's `textureSize` down to it.
 3. Bones: strips the `mixamorig:` prefix (any `mixamorigN:` variant too).
 4. Clips, each at 30 fps from frame 0:
+   - `"mirror": true` bakes the clip left for right: each bone takes its opposite bone's
+     pose reflected across the character's center plane, so a right-hand swing becomes the
+     left hand's. Its contact bone flips too.
    - Removes horizontal root travel: the hips' drift from the first to the last frame,
      so the clip stays in place and a loop's ends meet (`"root": "lock"` pins the hips
      instead).
@@ -21,6 +24,8 @@ Steps:
 6. Grips: places each hand's grip from the config's `grips` (measured once from a Mixamo
    "W/Prop" character with `measure_grip.py`) on this character's hand, and writes it to
    the sidecar in the GLB's coordinates, so the game holds weapons the way the clips expect.
+   With `"mirrorGrips": true`, a hand without a measured grip takes the other hand's,
+   reflected, so a weapon in the left hand sits as the mirrored clips expect.
 
 Run:
     blender --background --factory-startup --python bake_character.py -- CONFIG [--source DIR]
@@ -241,6 +246,28 @@ def shrink_textures(cfg):
 
 # -- clips --------------------------------------------------------------------------------
 
+def flip_side(name):
+    """The opposite bone's name: `LeftHand` is `RightHand`; a center bone is itself."""
+    for a, b in (("Left", "Right"), ("Right", "Left")):
+        if name.startswith(a):
+            return b + name[len(a):]
+    return name
+
+
+def mirror_matrix(arm):
+    """The reflection across the character's center plane, in armature space.
+
+    The lateral axis is the one along which the rest shoulders lie furthest apart.
+    """
+    left = arm.data.bones["LeftArm"].head_local
+    right = arm.data.bones["RightArm"].head_local
+    diff = [abs(left[i] - right[i]) for i in range(3)]
+    axis = diff.index(max(diff))
+    m = Matrix.Identity(4)
+    m[axis][axis] = -1.0
+    return m
+
+
 def depth_order(arm):
     """The character's pose bones, parents before children."""
     def depth(b):
@@ -248,13 +275,18 @@ def depth_order(arm):
     return sorted(arm.pose.bones, key=depth)
 
 
-def take_action(path, arm, clip_id):
+def take_action(path, arm, clip_id, mirror=False):
     """Imports a clip FBX and moves its motion onto `arm` as a new action.
 
     The pose moves over in armature space, bone by bone, by Mixamo name. A clip file
     without a mesh can have another rest pose than the character (Blender's FBX importer
     builds the rest from the file's bone nodes), so copying the action by bone name would
     play it against the wrong rest. Returns the action and its samples, frame 0 first.
+
+    Mirrored, each bone B takes its opposite B' reflected: with S the center-plane
+    reflection and R the rest matrices, B's armature pose is S P(B') R(B')^-1 S R(B). That
+    keeps the rest-relative motion even where a bone's roll isn't the mirror of its
+    opposite's, and leaves the rest pose unchanged.
     """
     src, _, new = import_fbx(path)
     src_act = src.animation_data.action if src.animation_data else None
@@ -264,7 +296,8 @@ def take_action(path, arm, clip_id):
     frames = list(range(math.floor(start + 1e-4), math.ceil(end - 1e-4) + 1))
     src_bones = {strip_prefix(pb.name): pb for pb in src.pose.bones}
     order = depth_order(arm)
-    missing = [pb.name for pb in order if pb.name not in src_bones]
+    source_of = {pb.name: (flip_side(pb.name) if mirror else pb.name) for pb in order}
+    missing = [pb.name for pb in order if source_of[pb.name] not in src_bones]
     if "Hips" in missing:
         fail(f"{os.path.basename(path)}: the clip's skeleton has no Hips bone")
     if missing:
@@ -272,6 +305,14 @@ def take_action(path, arm, clip_id):
 
     to_char = arm.matrix_world.inverted() @ src.matrix_world
     rest = {pb.name: pb.bone.matrix_local for pb in order}
+    if mirror:
+        refl = mirror_matrix(arm)
+        flip_fix = {}
+        for pb in order:
+            opp = source_of[pb.name]
+            if opp not in rest:
+                fail(f"{clip_id}: no bone {opp} to mirror {pb.name} from")
+            flip_fix[pb.name] = rest[opp].inverted() @ refl @ rest[pb.name]
     data = {}
     for pb in order:
         pb.rotation_mode = "QUATERNION"
@@ -282,13 +323,15 @@ def take_action(path, arm, clip_id):
         scene.frame_set(f)
         posed = {}
         for pb in order:
-            sp = src_bones.get(pb.name)
+            sp = src_bones.get(source_of[pb.name])
             parent = pb.parent
             if sp is None:
                 # Held at rest under its (moving) parent.
                 local = Matrix.Identity(4)
             else:
                 target = to_char @ sp.matrix
+                if mirror:
+                    target = refl @ target @ flip_fix[pb.name]
                 if parent is None:
                     local = rest[pb.name].inverted() @ target
                 else:
@@ -384,7 +427,9 @@ def strip_root(arm, data, n, mode):
 
 def contact_frame(arm, action, n, cfg, clip):
     """The frame where the contact bone moves fastest, relative to the hips."""
-    bone = clip.get("contactBone", cfg["contactBone"])
+    bone = clip.get("contactBone")
+    if bone is None:
+        bone = flip_side(cfg["contactBone"]) if clip.get("mirror") else cfg["contactBone"]
     if bone not in arm.pose.bones:
         fail(f"contact bone {bone} is not in the skeleton")
     scene = bpy.context.scene
@@ -448,7 +493,7 @@ def assign(arm, action):
 
 
 def process_clip(arm, clip_id, path, clip, cfg):
-    act, data, n = take_action(path, arm, clip_id)
+    act, data, n = take_action(path, arm, clip_id, bool(clip.get("mirror")))
     if n < 2:
         fail(f"{clip_id}: the clip has fewer than two frames")
     trim = clip.get("trim")
@@ -537,14 +582,25 @@ def grips(arm, cfg):
     A config grip is a row-major 4x4 relative to the hand bone's rest frame with its scale
     removed. The result is column-major, the layout Three.js's `Matrix4.fromArray` reads.
     """
-    out = {}
+    out, world = {}, {}
     for side, rel in (cfg.get("grips") or {}).items():
         name = GRIP_HANDS.get(side)
         if name is None or name not in arm.data.bones or len(rel) != 16:
             fail(f"grips.{side}: needs 16 numbers and a {name or 'known'} hand bone")
         rel_m = Matrix([rel[i * 4:(i + 1) * 4] for i in range(4)])
         hand = (arm.matrix_world @ arm.data.bones[name].matrix_local).normalized()
-        m = TO_GLTF @ hand @ rel_m
+        world[side] = hand @ rel_m
+    if cfg.get("mirrorGrips"):
+        # The reflection in world space, and a flip of the weapon's own x so the mirrored
+        # grip stays a rotation (the blade's +Y and flat's +Z reflect with the hand).
+        to_world = arm.matrix_world
+        refl = to_world @ mirror_matrix(arm) @ to_world.inverted()
+        own_x = Matrix.Diagonal((-1.0, 1.0, 1.0, 1.0))
+        for side, other in (("L", "R"), ("R", "L")):
+            if side not in world and other in world:
+                world[side] = refl @ world[other] @ own_x
+    for side, m in world.items():
+        m = TO_GLTF @ m
         out[side] = [round(m[r][c], 6) for c in range(4) for r in range(4)]
     return out
 

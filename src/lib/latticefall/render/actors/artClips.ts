@@ -135,9 +135,28 @@ export const ART_CLIP_IDS = [
   'drink_end',
   'jump',
   'jump_run',
+  // More one-handed swings: an overhead chop in place and a low crouching cut.
+  'chop',
+  'low_cut',
+  // Two-handed (the Great Sword Pack): the idle, a three-swing light chain, a heavy slam
+  // and a spinning heavy, the running, rolling, and jumping attacks, and the guard.
   'twohand_idle',
   'twohand_slash',
+  'twohand_slash_b',
+  'twohand_slash_c',
+  'twohand_slam',
   'twohand_heavy',
+  'twohand_spin',
+  'twohand_slide',
+  'twohand_jump',
+  'twohand_guard',
+  // Fists (Mixamo's boxing clips): a lead jab (left hand), a cross, a hook, and an
+  // uppercut (right hand), and a heavy body blow.
+  'punch_jab',
+  'punch_cross',
+  'punch_hook',
+  'punch_uppercut',
+  'punch_heavy',
   // Enemies and bosses (see `ART_ANIMS`): a husk wakes with `rise`, and `stagger` plays while
   // an actor is locked out. The attacks are named for what they do, not for one enemy.
   'rise',
@@ -160,6 +179,18 @@ export const ART_GUARD: readonly StanceClip[] = [{ clip: 'block_idle' }, { clip:
 
 /** The two-handed stance: a two-handed idle that loops, with both hands on the grip. */
 export const ART_TWO_HAND: readonly StanceClip[] = [{ clip: 'twohand_idle' }];
+
+/** The guard while two-handing a weapon: the blade held across the body. */
+export const ART_GUARD_TWO_HAND: readonly StanceClip[] = [{ clip: 'twohand_guard' }];
+
+/**
+ * The suffix of a clip baked mirrored, left for right (`"mirror": true` in the character
+ * config): the left hand's swing of a right-hand clip, and the shield guard on the right arm.
+ */
+export const LEFT_SUFFIX = '_lh';
+
+/** The guard with a shield in the right hand: the left-arm guard, mirrored. */
+export const ART_GUARD_RIGHT: readonly StanceClip[] = [{ clip: `block_idle${LEFT_SUFFIX}` }];
 
 /** The reactions a character plays when struck, locked out, and killed, best first. */
 export const ART_REACTIONS = {
@@ -213,7 +244,67 @@ export type ArtChoice = string | ArtPart | readonly ArtPart[];
 /** The clips an attack with no listed mapping plays, best first. */
 const ATTACK_FALLBACK: readonly ArtChoice[] = ['slash_a', 'slash_b', 'slash_c', 'heavy', 'attack_a', 'slam'];
 
-/** Move `anim` names to art clips, best first. Today: the starting sword and shield. */
+/**
+ * The role of a move in its weapon's moveset, from its id: `ss_light_2` is `light_2`,
+ * `gs_heavy_charged` is `heavy_charged`. A shield's bashes are its light chain.
+ */
+export function moveRole(id: string | undefined): string | undefined {
+  if (!id) return undefined;
+  const i = id.indexOf('_');
+  if (i < 0) return undefined;
+  const role = id.slice(i + 1);
+  const bash = /^bash_(\d)$/.exec(role);
+  return bash ? `light_${bash[1]}` : role;
+}
+
+/**
+ * One-handed clips by move role, for a weapon class `ART_ANIMS` doesn't list (a dagger,
+ * an axe, a greatsword held in one hand). Elden Ring swings most one-handed weapons the
+ * same way, so one set of sword clips stands in for every class until each has its own.
+ */
+const ONE_HAND_ROLES: Readonly<Record<string, readonly ArtChoice[]>> = {
+  light_1: ['slash_a'],
+  light_2: ['slash_b', 'slash_a'],
+  light_3: ['slash_c', 'slash_a'],
+  light_4: ['slash_a'],
+  heavy: ['chop', 'heavy'],
+  heavy_charged: ['heavy', 'chop'],
+  running: ['slash_c', 'slash_a'],
+  rolling: ['low_cut', 'spin', 'slash_a'],
+  backstep: ['slash_a'],
+  jump_light: ['leap', 'slash_a'],
+  jump_heavy: ['leap', 'heavy'],
+  plunge: ['leap', 'heavy'],
+  guard_counter: ['lunge', 'slash_c'],
+  guard_bash: ['lunge', 'slash_c']
+};
+
+/**
+ * Two-handed clips by move role (the Great Sword Pack), tried before the one-handed ones
+ * while two-handing. A shield and fists keep their own clips: two-handing them in Elden
+ * Ring keeps their strikes.
+ */
+const TWO_HAND_ROLES: Readonly<Record<string, readonly ArtChoice[]>> = {
+  light_1: ['twohand_slash'],
+  light_2: ['twohand_slash_b', 'twohand_slash'],
+  light_3: ['twohand_slash_c', 'twohand_slash'],
+  light_4: ['twohand_slash'],
+  heavy: ['twohand_slam', 'twohand_heavy'],
+  heavy_charged: ['twohand_heavy', 'twohand_slam'],
+  running: ['twohand_spin', 'twohand_slash'],
+  rolling: ['twohand_slide', 'twohand_slash_c'],
+  backstep: ['twohand_slash_c', 'twohand_slash'],
+  jump_light: ['twohand_jump', 'twohand_slash'],
+  jump_heavy: ['twohand_jump', 'twohand_heavy'],
+  plunge: ['twohand_jump', 'twohand_heavy'],
+  guard_counter: ['twohand_heavy', 'twohand_slash'],
+  guard_bash: ['twohand_slash']
+};
+
+/** Move `anim` prefixes that keep their own clips while two-handing. */
+const ONE_HAND_ONLY = ['shield_', 'fist_'];
+
+/** Move `anim` names to art clips, best first: the sword, the shield, and the fists. */
 export const ART_ANIMS: Readonly<Record<string, readonly ArtChoice[]>> = {
   // Light chain: a forehand cut, a downward diagonal, then a thrust.
   sword_slash_r: ['slash_a'],
@@ -222,14 +313,14 @@ export const ART_ANIMS: Readonly<Record<string, readonly ArtChoice[]>> = {
   // The running attack is the same thrust; the clip starts at a run.
   sword_lunge_run: ['slash_c', 'slash_a'],
   sword_backstep_slash: ['slash_a'],
-  // Out of a roll and for Rending Sweep: a turning backhand.
-  sword_roll_slash: ['spin', 'slash_a'],
+  // Out of a roll, a low cut; for Rending Sweep, a turning backhand.
+  sword_roll_slash: ['low_cut', 'spin', 'slash_a'],
   spin_slash: ['spin', 'slash_b', 'slash_a'],
   // The guard counter steps in with a low horizontal cut.
   sword_counter: ['lunge', 'slash_c', 'slash_b'],
   sword_rising: ['slash_c', 'heavy'],
-  // Heavies and criticals.
-  sword_overhead: ['heavy', 'slash_a'],
+  // Heavies and criticals: an overhead chop, and the spinning cut once charged.
+  sword_overhead: ['chop', 'heavy', 'slash_a'],
   sword_overhead_charged: ['heavy', 'slash_a'],
   sword_riposte: ['heavy', 'slash_c'],
   sword_backstab: ['heavy', 'slash_c'],
@@ -237,10 +328,36 @@ export const ART_ANIMS: Readonly<Record<string, readonly ArtChoice[]>> = {
   sword_jump_slash: ['leap', 'slash_a'],
   sword_jump_overhead: ['leap', 'heavy', 'slash_a'],
   sword_plunge: ['leap', 'heavy', 'slash_a'],
-  // The shield: bashes push the guard out, parries and braces raise it.
-  shield_bash_r: ['lunge', 'slash_c', 'block'],
-  shield_bash_l: ['lunge', 'slash_c', 'block'],
-  shield_guard_bash: ['lunge', 'slash_c', 'block'],
+  // A shield in the right hand strikes like a fist: a hook, a backhand cross, then an
+  // overhead slam, with the sword clips standing in until the boxing clips are baked.
+  shield_bash_r: ['punch_hook', 'slash_a'],
+  shield_bash_l: ['punch_cross', 'slash_b'],
+  shield_slam: ['chop', 'heavy'],
+  shield_rush: ['punch_heavy', 'lunge'],
+  shield_rush_charged: ['punch_heavy', 'lunge'],
+  shield_guard_bash: ['punch_cross', 'lunge', 'slash_c', 'block'],
+  shield_counter: ['punch_uppercut', 'lunge'],
+  shield_run_swing: ['punch_hook', 'slash_c'],
+  shield_roll_swing: ['punch_uppercut', 'low_cut'],
+  shield_backstep_swing: ['punch_hook', 'slash_a'],
+  shield_jump_swing: ['leap'],
+  shield_jump_smash: ['leap', 'heavy'],
+  shield_plunge: ['leap', 'heavy'],
+  // Fists: a right cross, a left jab, a hook, then the heavies. Fists without the boxing
+  // clips fall back to the sword swings, the nearest arm motion the library has.
+  fist_jab_r: ['punch_cross', 'slash_a'],
+  fist_jab_l: ['punch_jab', 'slash_b'],
+  fist_hook: ['punch_hook', 'slash_a'],
+  fist_uppercut: ['punch_uppercut', 'slash_c'],
+  fist_haymaker: ['punch_heavy', 'chop'],
+  fist_haymaker_charged: ['punch_heavy', 'heavy'],
+  fist_counter: ['punch_uppercut', 'lunge'],
+  fist_run_swing: ['punch_cross', 'slash_c'],
+  fist_roll_swing: ['punch_uppercut', 'low_cut'],
+  fist_backstep_swing: ['punch_jab', 'slash_a'],
+  fist_jump_swing: ['punch_hook', 'leap'],
+  fist_jump_smash: ['punch_heavy', 'leap'],
+  fist_plunge: ['punch_heavy', 'leap'],
   parry_raise: ['block'],
   guard_brace: ['block'],
   // Everything else the player does.
@@ -361,25 +478,48 @@ function artParts(choice: ArtChoice): readonly ArtPart[] {
   return 'clip' in choice ? [choice] : choice;
 }
 
+/** How the actor holds what it swings, from the snapshot flags and the move's id. */
+export interface ArtHands {
+  /** Two-handing the right weapon (`FLAG_TWO_HANDING`). */
+  twoHanded?: boolean;
+  /** A left-hand swing (`FLAG_LEFT_HAND`): plays the mirrored clips. */
+  left?: boolean;
+  /** The move's id (`ss_light_2`), for its role in the moveset (`moveRole`). */
+  moveId?: string;
+}
+
+/** `choice` with every clip swapped for its mirrored, left-hand bake. */
+function mirrored(choice: ArtChoice): ArtChoice {
+  return artParts(choice).map((p) => ({ ...p, clip: p.clip + LEFT_SUFFIX }));
+}
+
 /**
  * The clip a move plays on an art character: the first listed choice whose clips the
- * character has, or for an attack without a listing, its first slash. `contact` comes from
- * the first clip's sidecar entry, counted from the stretch's start; a clip without one is
- * scaled to the move. Undefined means "hold the idle pose".
+ * character has. An attack without a listing plays the clips for its role in the moveset
+ * (`moveRole`), else its first slash. Two-handing tries the two-handed clips for the role
+ * first; a left-hand swing plays the mirrored bake of whatever it picks, or the right-hand
+ * clip when there's no mirrored one. `contact` comes from the first clip's sidecar entry,
+ * counted from the stretch's start; a clip without one is scaled to the move. Undefined
+ * means "hold the idle pose".
  */
 export function artSpecFor(
   anim: string,
   isAttack: boolean,
   clips: Readonly<Record<string, ArtClipInfo>>,
-  twoHanded = false
+  hands: boolean | ArtHands = false
 ): ClipSpec | undefined {
-  let choices: readonly ArtChoice[] = ART_ANIMS[anim] ?? (isAttack ? ATTACK_FALLBACK : []);
-  // Two-handed, an attack swings with both hands: heavies take the two-handed heavy, the
-  // rest the two-handed slash. A character without them keeps its one-handed clips.
-  if (twoHanded && isAttack) {
-    const own = choices[0] === 'heavy' ? ['twohand_heavy', 'twohand_slash'] : ['twohand_slash'];
+  const h: ArtHands = typeof hands === 'boolean' ? { twoHanded: hands } : hands;
+  const role = moveRole(h.moveId);
+  const byRole = role ? ONE_HAND_ROLES[role] : undefined;
+  let choices: readonly ArtChoice[] = ART_ANIMS[anim] ?? (isAttack ? [...(byRole ?? []), ...ATTACK_FALLBACK] : []);
+  // Two-handed, an attack swings with both hands: the two-handed clips for its role (a move
+  // with no known role counts its heavies by the clip it lists first). A character without
+  // them keeps its one-handed clips.
+  if (h.twoHanded && isAttack && !h.left && !ONE_HAND_ONLY.some((p) => anim.startsWith(p))) {
+    const own = (role && TWO_HAND_ROLES[role]) || (choices[0] === 'heavy' || choices[0] === 'chop' ? TWO_HAND_ROLES.heavy_charged : TWO_HAND_ROLES.light_1);
     choices = [...own, ...choices];
   }
+  if (h.left) choices = [...choices.map(mirrored), ...choices];
   const pick = choices.find((c) => artParts(c).every((p) => p.clip in clips)) ?? (anim in clips ? anim : undefined);
   if (pick === undefined) return undefined;
   const parts = artParts(pick);
@@ -406,4 +546,35 @@ export function artTwoHand(has: (clip: string) => boolean): StanceClip | undefin
 /** The guard stance clip for a character with these clips, or undefined. */
 export function artGuard(has: (clip: string) => boolean): StanceClip | undefined {
   return ART_GUARD.find((s) => has(s.clip));
+}
+
+/** The guard stances by grip, each undefined when the character lacks its clip. */
+export interface ArtGuards {
+  /** A shield (or nothing) in the left hand: the left arm raised. */
+  left: StanceClip | undefined;
+  /** A shield in the right hand: the left-arm guard, mirrored. */
+  right: StanceClip | undefined;
+  /** Two-handing a weapon: the blade across the body. */
+  twoHand: StanceClip | undefined;
+}
+
+/** Every guard stance for a character with these clips. */
+export function artGuards(has: (clip: string) => boolean): ArtGuards {
+  return {
+    left: artGuard(has),
+    right: ART_GUARD_RIGHT.find((s) => has(s.clip)),
+    twoHand: ART_GUARD_TWO_HAND.find((s) => has(s.clip))
+  };
+}
+
+/**
+ * The guard to raise: with the right weapon two-handed, the two-handed guard (a shield
+ * two-handed raises its own block); with a shield in the right hand and none in the left,
+ * the mirrored guard on the right arm; otherwise the left-arm guard. Each falls back to the
+ * left-arm guard when the character lacks its clip.
+ */
+export function pickGuard(g: ArtGuards, rightClass: string | undefined, leftClass: string | undefined, twoHanded: boolean): StanceClip | undefined {
+  if (twoHanded) return rightClass === 'Shield' ? (g.right ?? g.left) : (g.twoHand ?? g.left);
+  if (rightClass === 'Shield' && leftClass !== 'Shield') return g.right ?? g.left;
+  return g.left;
 }

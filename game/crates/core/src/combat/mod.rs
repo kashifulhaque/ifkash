@@ -10,6 +10,7 @@ pub mod dummy;
 pub mod guard;
 pub mod hitbox;
 pub mod hurtbox;
+pub mod left_hand;
 pub mod moves;
 pub mod poise;
 pub mod projectile;

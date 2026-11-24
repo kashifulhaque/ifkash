@@ -66,6 +66,23 @@ pub struct Capsule {
     pub radius: f32,
 }
 
+/// `shape` mirrored across the actor's center line (local x negated): the left hand's
+/// swing of a move authored for the right hand.
+pub fn mirror_x(shape: &Shape) -> Shape {
+    let m = |p: V3| [-p[0], p[1], p[2]];
+    match *shape {
+        Shape::Capsule { a, b, radius } => Shape::Capsule {
+            a: m(a),
+            b: m(b),
+            radius,
+        },
+        Shape::Sphere { center, radius } => Shape::Sphere {
+            center: m(center),
+            radius,
+        },
+    }
+}
+
 impl Capsule {
     /// A move-data shape placed at `pose`.
     pub fn from_shape(shape: &Shape, pose: &Pose) -> Self {

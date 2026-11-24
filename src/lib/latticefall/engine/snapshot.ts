@@ -21,6 +21,8 @@ export const FLAG_CLOAKED = 1 << 6;
 export const FLAG_HIDDEN = 1 << 7;
 /** Off the ground (jumping or falling), from the core's controller. */
 export const FLAG_AIRBORNE = 1 << 8;
+/** The current move is a left-hand swing: the renderer plays its mirrored clip. */
+export const FLAG_LEFT_HAND = 1 << 9;
 
 export interface ActorSnap {
   id: number;

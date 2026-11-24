@@ -24,6 +24,9 @@ pub mod flags {
     /// controller moves (the player and walking AI actors). The renderer picks the jump and
     /// fall poses from this bit, not from position deltas.
     pub const AIRBORNE: u16 = 1 << 8;
+    /// The current move is a left-hand swing (`MoveState::left_hand`): the renderer plays
+    /// its mirrored clip.
+    pub const LEFT_HAND: u16 = 1 << 9;
 }
 
 /// One actor as the renderer sees it. 40 bytes, 4-byte aligned, no padding. The TypeScript
@@ -144,6 +147,9 @@ pub fn write_snapshot(world: &World, out: &mut Vec<ActorSnap>) {
         }
         if actor.stats.two_handing {
             bits |= flags::TWO_HANDING;
+        }
+        if actor.moves.left_hand_now() {
+            bits |= flags::LEFT_HAND;
         }
         if crate::ai::special::shimmer::cloaked(world, actor) {
             bits |= flags::CLOAKED;

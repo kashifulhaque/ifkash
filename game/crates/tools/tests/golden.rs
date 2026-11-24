@@ -91,8 +91,10 @@ fn changing_one_input_fails_at_the_next_checkpoint() {
     let last = frames.len() - 1;
     // Each target, moved to the nearest tick where the stick steers inside the same
     // checkpoint window (forward first, then back), so the expected checkpoint stays the
-    // same. Attacks and dodges lock the stick for whole moves.
-    for target in [0usize, 29, 30, 1234, last] {
+    // same. Attacks and dodges lock the stick for whole moves. The mid-replay target sits
+    // where the random player is free to steer (around tick 1234 it now swings its left
+    // weapon through a whole checkpoint window).
+    for target in [0usize, 29, 30, 1500, last] {
         let window = target / 30 * 30..(target / 30 * 30 + 30).min(frames.len());
         let changed = (target..window.end)
             .find(|&i| steerable[i])

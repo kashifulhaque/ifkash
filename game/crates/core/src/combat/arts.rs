@@ -124,6 +124,14 @@ impl ArtTable {
         Ok(t)
     }
 
+    /// The class of the weapon with registry number `weapon`.
+    pub fn class_of(&self, weapon: NumId) -> Option<lf_content::weapons::WeaponClass> {
+        self.weapons
+            .binary_search_by_key(&weapon, |w| w.num)
+            .ok()
+            .map(|i| self.weapons[i].class)
+    }
+
     /// The Art with registry number `num`.
     pub fn get(&self, num: NumId) -> Option<&ArtRow> {
         self.arts

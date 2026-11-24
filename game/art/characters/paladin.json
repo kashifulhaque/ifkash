@@ -108,6 +108,14 @@
         0.85
       ]
     },
+    "chop": {
+      "file": "sword and shield attack (4).fbx",
+      "contact": "auto"
+    },
+    "low_cut": {
+      "file": "sword and shield slash (5).fbx",
+      "contact": "auto"
+    },
     "block": {
       "file": "sword and shield block.fbx"
     },
@@ -171,6 +179,114 @@
     "twohand_heavy": {
       "file": "twohand_heavy.fbx",
       "contact": "auto"
+    },
+    "twohand_slash_b": {
+      "file": "great sword slash (3).fbx",
+      "contact": "auto"
+    },
+    "twohand_slash_c": {
+      "file": "great sword slash (5).fbx",
+      "contact": "auto"
+    },
+    "twohand_slam": {
+      "file": "great sword attack.fbx",
+      "contact": "auto"
+    },
+    "twohand_spin": {
+      "file": "great sword high spin attack.fbx",
+      "contact": "auto"
+    },
+    "twohand_slide": {
+      "file": "great sword slide attack.fbx",
+      "contact": "auto"
+    },
+    "twohand_jump": {
+      "file": "great sword jump attack.fbx",
+      "contact": "auto",
+      "root": "lock"
+    },
+    "twohand_guard": {
+      "file": "great sword blocking (2).fbx",
+      "loop": true
+    },
+    "punch_jab": {
+      "file": "punch_jab.fbx",
+      "contact": "auto",
+      "contactBone": "LeftHand"
+    },
+    "punch_cross": {
+      "file": "punch_cross.fbx",
+      "contact": "auto"
+    },
+    "punch_hook": {
+      "file": "punch_hook.fbx",
+      "contact": "auto"
+    },
+    "punch_uppercut": {
+      "file": "punch_uppercut.fbx",
+      "contact": "auto"
+    },
+    "punch_heavy": {
+      "file": "punch_heavy.fbx",
+      "contact": "auto"
+    },
+    "slash_a_lh": {
+      "file": "sword and shield slash.fbx",
+      "contact": "auto",
+      "mirror": true
+    },
+    "slash_b_lh": {
+      "file": "sword and shield slash (2).fbx",
+      "trim": [
+        2,
+        29
+      ],
+      "contact": "auto",
+      "contactWindow": [
+        0.4,
+        0.85
+      ],
+      "mirror": true
+    },
+    "slash_c_lh": {
+      "file": "sword and shield attack (2).fbx",
+      "trim": [
+        3,
+        39
+      ],
+      "contact": "auto",
+      "mirror": true
+    },
+    "block_idle_lh": {
+      "file": "sword and shield block idle.fbx",
+      "loop": true,
+      "mirror": true
+    },
+    "punch_jab_lh": {
+      "file": "punch_jab.fbx",
+      "contact": "auto",
+      "contactBone": "RightHand",
+      "mirror": true
+    },
+    "punch_cross_lh": {
+      "file": "punch_cross.fbx",
+      "contact": "auto",
+      "mirror": true
+    },
+    "punch_hook_lh": {
+      "file": "punch_hook.fbx",
+      "contact": "auto",
+      "mirror": true
+    },
+    "punch_uppercut_lh": {
+      "file": "punch_uppercut.fbx",
+      "contact": "auto",
+      "mirror": true
+    },
+    "punch_heavy_lh": {
+      "file": "punch_heavy.fbx",
+      "contact": "auto",
+      "mirror": true
     }
   },
   "grips": {
@@ -193,5 +309,6 @@
       1.0
     ]
   },
-  "gripsFrom": "Paladin W/Prop J Nordstrom (Mixamo), measured with game/art/blender/measure_grip.py"
+  "gripsFrom": "Paladin W/Prop J Nordstrom (Mixamo), measured with game/art/blender/measure_grip.py",
+  "mirrorGrips": true
 }

@@ -98,11 +98,15 @@ import {
   MIXAMO_BONE_MAP,
   MIXAMO_FEET,
   artGuard,
+  artGuards,
   artTwoHand,
   artSpecFor,
+  pickGuard,
+  type ArtGuards,
   type ArtCharacter,
   type ArtJump,
   type ArtLantern,
+  type ArtHands,
   type ArtSidecar
 } from './artClips';
 import { parseDevParams } from '../../dev/params';
@@ -120,6 +124,7 @@ import {
   FLAG_DEAD,
   FLAG_GUARDING,
   FLAG_HIDDEN,
+  FLAG_LEFT_HAND,
   FLAG_STAGGERED,
   FLAG_TWO_HANDING
 } from '../../engine/snapshot';
@@ -216,6 +221,8 @@ interface ArtKit {
   sidecar: ArtSidecar;
   /** The guard stance clip, if the character has one. */
   guard: StanceClip | undefined;
+  /** The guard for each grip: the left arm, the right arm, and two-handed. */
+  guards: ArtGuards;
   /** The two-handed stance clip, if the character has one. */
   twoHand: StanceClip | undefined;
 }
@@ -318,6 +325,8 @@ interface Instance {
   /** The move being drawn and its fractional frame, for the lantern. Undefined between moves. */
   drawnMove: MoveAnimInfo | undefined;
   drawnFrame: number;
+  /** The drawn move is a left-hand swing (`FLAG_LEFT_HAND`): its trail follows the left weapon. */
+  leftSwing: boolean;
   lantern: { spec: ArtLantern; light: PointLight; flame: Mesh; material: MeshBasicMaterial; phase: number } | null;
   /** True once an enemy's weapon is attached. */
   armed: boolean;
@@ -508,7 +517,7 @@ async function loadArtTemplate(renderer: WebGLRenderer, name: string): Promise<T
     look,
     weaponLength: look?.weaponLength ?? WEAPON_LENGTH_M,
     loops: { ...ART_LOOPS, run: runClip, sprint: hasSprint ? ART_LOOPS.sprint : runClip },
-    art: { sidecar, guard: artGuard(has), twoHand: artTwoHand(has) },
+    art: { sidecar, guard: artGuard(has), guards: artGuards(has), twoHand: artTwoHand(has) },
     react: {
       hit: artFirst(ART_REACTIONS.hit, has),
       stagger: artFirst(ART_REACTIONS.stagger, has),
@@ -957,14 +966,16 @@ export class ActorRenderer {
     if (!inst || !inst.holder.visible) return false;
     const tpl = inst.tpl;
     inst.holder.updateMatrixWorld(true);
-    const held = this.gear.get(id)?.rightWeapon();
+    const gear = this.gear.get(id);
+    const held = inst.leftSwing ? gear?.leftWeapon() : gear?.rightWeapon();
     if (held) {
       held.model.group.getWorldPosition(base);
       held.model.group.localToWorld(tip.set(0, held.model.length, 0));
       return true;
     }
-    const hand = inst.bones[tpl.boneIndex.get('Hand.R')!];
-    const fore = inst.bones[tpl.boneIndex.get('LowerArm.R')!];
+    const side = inst.leftSwing ? 'L' : 'R';
+    const hand = inst.bones[tpl.boneIndex.get(`Hand.${side}`)!];
+    const fore = inst.bones[tpl.boneIndex.get(`LowerArm.${side}`)!];
     hand.getWorldPosition(base);
     fore.getWorldPosition(tip);
     tip.sub(base).negate().normalize().multiplyScalar(tpl.weaponLength).add(base);
@@ -1184,6 +1195,7 @@ export class ActorRenderer {
       moveRun: 0,
       guardW: 0,
       twoHandW: 0,
+      leftSwing: false,
       tpl,
       enemy,
       rise: enemy && tpl.clips.has('rise') ? 'dormant' : 'up',
@@ -1354,7 +1366,9 @@ export class ActorRenderer {
     if (info) {
       inst.hitT = null;
       const sig = `move:${info.anim}:${inst.moveRun}`;
-      const choice = this.pickSpec(tpl, info.anim, !!pv, info, (a.flags & FLAG_TWO_HANDING) !== 0);
+      const left = (a.flags & FLAG_LEFT_HAND) !== 0;
+      inst.leftSwing = left;
+      const choice = this.pickSpec(tpl, info.anim, !!pv, info, { twoHanded: (a.flags & FLAG_TWO_HANDING) !== 0, left, moveId: info.id });
       if (choice) {
         inst.drawnMove = info;
         inst.drawnFrame = frame;
@@ -1650,8 +1664,13 @@ export class ActorRenderer {
    * else the weapon guard, else the fitted offsets when the library lacks both clips.
    */
   private guardPose(inst: Instance, tpl: Template, a: DrawActor): Pose {
-    if (tpl.art?.guard) return this.clipPose(tpl, tpl.art.guard, inst.idleT);
-    const left = a.id === this.playerId && this.equipped ? weaponByNum(this.equipped.left) : undefined;
+    const mine = a.id === this.playerId && this.equipped;
+    const left = mine ? weaponByNum(this.equipped!.left) : undefined;
+    if (tpl.art?.guard) {
+      const right = mine ? weaponByNum(this.equipped!.right) : undefined;
+      const g = pickGuard(tpl.art.guards, right?.class, left?.class, (a.flags & FLAG_TWO_HANDING) !== 0) ?? tpl.art.guard;
+      return this.clipPose(tpl, g, inst.idleT);
+    }
     const shield = left?.class === 'Shield' && (a.flags & FLAG_TWO_HANDING) === 0;
     const pick = shield && tpl.clips.has(SHIELD_GUARD_CLIP.clip) ? SHIELD_GUARD_CLIP : WEAPON_GUARD_CLIP;
     if (tpl.clips.has(pick.clip)) return this.clipPose(tpl, pick, inst.idleT);
@@ -1808,8 +1827,8 @@ export class ActorRenderer {
    * The first clip choice for `anim` whose clips are all loaded. The dev preview also takes a
    * raw clip name (`&anim=move:Sword_Regular_A`).
    */
-  private pickSpec(tpl: Template, anim: string, preview: boolean, info?: MoveAnimInfo, twoHanded = false): ClipSpec | undefined {
-    if (tpl.art) return artSpecFor(anim, info?.strikeStart !== undefined, tpl.art.sidecar.clips, twoHanded);
+  private pickSpec(tpl: Template, anim: string, preview: boolean, info?: MoveAnimInfo, hands: ArtHands = {}): ClipSpec | undefined {
+    if (tpl.art) return artSpecFor(anim, info?.strikeStart !== undefined, tpl.art.sidecar.clips, hands);
     const found = clipsForAnim(anim)?.find((c) => c.segs.every((g) => tpl.clips.has(g.clip)));
     if (found || !preview || !tpl.clips.has(anim)) return found;
     return { segs: [{ clip: anim }], contact: 0 };

@@ -5,7 +5,10 @@ import assert from 'node:assert/strict';
 import {
   artAssetBase,
   artGuard,
+  artGuards,
   artSpecFor,
+  moveRole,
+  pickGuard,
   artTwoHand,
   enemyArt,
   ENEMY_ART,
@@ -51,6 +54,39 @@ describe('artSpecFor', () => {
     // One-handed, or not an attack, nothing changes.
     assert.equal(artSpecFor('sword_slash_r', true, two, false)?.segs[0].clip, 'slash_a');
     assert.equal(artSpecFor('roll', false, two, true)?.segs[0].clip, 'roll');
+  });
+
+  test('reads a move role from its id', () => {
+    assert.equal(moveRole('ss_light_2'), 'light_2');
+    assert.equal(moveRole('gs_heavy_charged'), 'heavy_charged');
+    assert.equal(moveRole('sh_bash_3'), 'light_3');
+    assert.equal(moveRole(undefined), undefined);
+  });
+
+  test('an unlisted class plays the clips for its role', () => {
+    const more = { ...CLIPS, slash_b: clip(18), chop: clip(12), leap: clip(20) };
+    assert.equal(artSpecFor('dagger_stab_l', true, more, { moveId: 'da_light_2' })?.segs[0].clip, 'slash_b');
+    assert.equal(artSpecFor('axe_chop', true, more, { moveId: 'ax_heavy' })?.segs[0].clip, 'chop');
+    assert.equal(artSpecFor('axe_jump', true, more, { moveId: 'ax_jump_light' })?.segs[0].clip, 'leap');
+  });
+
+  test('two-handed, each role takes its own two-handed clip', () => {
+    const two = { ...CLIPS, twohand_slash: clip(16), twohand_slash_b: clip(24), twohand_slam: clip(13), twohand_heavy: clip(9) };
+    const pick = (anim: string, id: string) => artSpecFor(anim, true, two, { twoHanded: true, moveId: id })?.segs[0].clip;
+    assert.equal(pick('greatsword_sweep_l', 'gs_light_2'), 'twohand_slash_b');
+    assert.equal(pick('greatsword_overhead', 'gs_heavy'), 'twohand_slam');
+    assert.equal(pick('greatsword_overhead_charged', 'gs_heavy_charged'), 'twohand_heavy');
+    // A shield and fists keep their own strikes.
+    assert.equal(pick('shield_bash_r', 'sh_bash_1'), 'slash_a');
+  });
+
+  test('a left-hand swing plays the mirrored clip, else the right-hand one', () => {
+    const both = { ...CLIPS, slash_a_lh: clip(13) };
+    assert.equal(artSpecFor('sword_slash_r', true, both, { left: true })?.segs[0].clip, 'slash_a_lh');
+    assert.equal(artSpecFor('sword_overhead', true, CLIPS, { left: true })?.segs[0].clip, 'heavy');
+    // Left-hand swings never take the two-handed clips.
+    const two = { ...both, twohand_slash: clip(16) };
+    assert.equal(artSpecFor('sword_slash_r', true, two, { left: true, twoHanded: true })?.segs[0].clip, 'slash_a_lh');
   });
 
   test('two-handed without two-handed clips keeps the one-handed ones', () => {
@@ -145,5 +181,26 @@ describe('enemy art', () => {
     assert.equal(lanternGlow(slam, 60), 1);
     assert.equal(lanternGlow(undefined, 10), 1);
     assert.equal(lanternGlow({ totalFrames: 30 }, 10), 1);
+  });
+});
+
+describe('pickGuard', () => {
+  const all = artGuards((c) => ['block_idle', 'block_idle_lh', 'twohand_guard'].includes(c));
+
+  test('a left shield raises the left arm, a right shield the right arm', () => {
+    assert.equal(pickGuard(all, 'StraightSword', 'Shield', false)?.clip, 'block_idle');
+    assert.equal(pickGuard(all, 'Shield', undefined, false)?.clip, 'block_idle_lh');
+    assert.equal(pickGuard(all, 'Shield', 'Shield', false)?.clip, 'block_idle');
+  });
+
+  test('two-handing guards with the blade, or with the shield held in both hands', () => {
+    assert.equal(pickGuard(all, 'Greatsword', 'Shield', true)?.clip, 'twohand_guard');
+    assert.equal(pickGuard(all, 'Shield', undefined, true)?.clip, 'block_idle_lh');
+  });
+
+  test('falls back to the left-arm guard without the other clips', () => {
+    const left = artGuards((c) => c === 'block_idle');
+    assert.equal(pickGuard(left, 'Greatsword', undefined, true)?.clip, 'block_idle');
+    assert.equal(pickGuard(left, 'Shield', undefined, false)?.clip, 'block_idle');
   });
 });

@@ -78,6 +78,10 @@ pub enum Action {
     /// `ART` pressed: the right-hand weapon's Art (docs/game/04-arsenal-and-builds.md,
     /// "Arts"). See `combat::arts`.
     Art,
+    /// `GUARD` pressed with a weapon in the left hand, or with both hands empty, while not
+    /// two-handing: the next swing of the left hand's light chain
+    /// (docs/game/03-combat.md, "Left-hand attacks").
+    LeftLight,
 }
 
 /// The most recent action that couldn't fire yet. See docs/game/03-combat.md,
@@ -125,6 +129,10 @@ pub struct MoveState {
     /// While above 0 the current move lets the actor walk at this percent of the walk
     /// speed instead of locking movement (a flask drink). Set at the end of each `step`.
     pub slow_walk_percent: u8,
+    /// The current move is swung with the left hand (`Action::LeftLight`): its hitboxes
+    /// mirror across the actor's center line, and its damage uses the left weapon. Cleared
+    /// when the move ends or is interrupted; read it through [`MoveState::left_hand_now`].
+    pub left_hand: bool,
 }
 
 impl MoveState {
@@ -139,6 +147,11 @@ impl MoveState {
                     .is_some_and(|c| c.frame.saturating_add(1) < c.free_from))
     }
 
+    /// True while the current move is a left-hand swing.
+    pub fn left_hand_now(&self) -> bool {
+        self.left_hand && self.current.is_some()
+    }
+
     /// True if the flag in [`flags`] is set for this tick's frame.
     pub fn has(&self, flag: u8) -> bool {
         self.flags & flag != 0
@@ -151,6 +164,7 @@ impl MoveState {
         self.buffer = None;
         self.flags = 0;
         self.slow_walk_percent = 0;
+        self.left_hand = false;
     }
 
     /// Queues `action`, replacing any older buffered action (only the most recent is
@@ -200,6 +214,12 @@ pub struct Moveset {
     /// The cast move `GUARD` starts, when a catalyst with a matching spell selected is in
     /// the left hand (`combat::spells` sets it; a weapon's moveset never has one).
     pub left_cast: Option<MoveNum>,
+    /// The light chain `GUARD` swings with the left hand: the left weapon's own light chain,
+    /// or the fists' when both hands are empty. Empty when the left hand guards instead (a
+    /// shield, an empty left hand beside a right weapon) or casts (a catalyst), or holds a
+    /// bow. Set by `World::sync_player_moveset`; a weapon's moveset never has one.
+    #[serde(default)]
+    pub left_chain: Vec<MoveNum>,
     /// The move `ART` starts: the right-hand weapon's Art (`combat::arts`). Set by
     /// `World::sync_player_moveset`; `None` for a weapon with no Art.
     pub art: Option<MoveNum>,
@@ -346,6 +366,7 @@ impl MoveTable {
                 plunge: defined(&s.plunge)?,
                 guard_counter: defined(&s.guard_counter)?,
                 left_cast: None,
+                left_chain: Vec::new(),
                 // The default Art (a weapon's Art scroll is applied at sync).
                 art: arts.default_move(num(&w.id)?, w.elemental.map(|e| e.element)),
                 roll_light: defined(&s.roll_light)?,
@@ -524,18 +545,19 @@ fn read_input(ms: &mut MoveState, f: ActionFrame, t: &Locomotion) {
 /// of cancel yet (docs/game/03-combat.md, "Input buffer").
 fn resolve(
     b: Buffered,
-    current: Option<ActiveMove>,
+    ms: &MoveState,
     sprinting: bool,
-    counter: bool,
-    guarding: bool,
     set: &Moveset,
     table: &MoveTable,
 ) -> Option<MoveNum> {
-    let cur = current.and_then(|c| table.get(c.num).map(|d| (c, d)));
+    let counter = ms.guard.counter > 0;
+    let guarding = ms.guard.active;
+    let left_now = ms.left_hand_now();
+    let cur = ms.current.and_then(|c| table.get(c.num).map(|d| (c, d)));
     if let Some((c, d)) = cur {
         let reached = |w: Option<u16>| w.is_some_and(|from| c.frame >= from);
         let window = match b.action {
-            Action::Light | Action::Heavy => d.data.cancel_attack_from,
+            Action::Light | Action::Heavy | Action::LeftLight => d.data.cancel_attack_from,
             Action::Dodge => d.data.cancel_dodge_from,
             Action::Cast | Action::Art => d.data.cancel_attack_from,
             Action::UseItem => None,
@@ -550,13 +572,19 @@ fn resolve(
         Action::Light => match cur {
             Some((c, _)) if dodge::is_roll(set, c.num) => set.rolling,
             Some((c, _)) if c.num == set.dodge_backstep => set.backstep,
-            Some((_, d)) if d.next_chain.is_some() => d.next_chain?,
+            // A left-hand swing's chain is the left weapon's: the right hand starts its own.
+            Some((_, d)) if d.next_chain.is_some() && !left_now => d.next_chain?,
             _ if sprinting => set.running,
             _ => *set.light_chain.first()?,
         },
         Action::Heavy if counter => set.guard_counter,
         Action::Heavy => set.heavy,
         Action::Cast => set.left_cast?,
+        // The left chain goes on while the left hand swings; otherwise it starts over.
+        Action::LeftLight => match cur {
+            Some((_, d)) if left_now && d.next_chain.is_some() => d.next_chain?,
+            _ => *set.left_chain.first()?,
+        },
         Action::Art => set.art?,
         Action::Dodge => dodge::select(set, set.load_tier, b.dir != [0, 0])?,
         // Items are resolved by `crate::items::drink_move` before this is called.
@@ -585,11 +613,25 @@ pub fn step(
         && input.is_some_and(|f| {
             f.pressed(buttons::GUARD) && a.moves.prev_buttons & buttons::GUARD == 0
         });
+    // `GUARD` swings the left hand instead of guarding when it holds a weapon (or both
+    // hands are empty), unless the right weapon is two-handed: then `GUARD` guards with it.
+    let left_attacks = set.is_some_and(|s| !s.left_chain.is_empty() && s.left_cast.is_none())
+        && !a.stats.two_handing;
+    let left_press = left_attacks
+        && input.is_some_and(|f| {
+            f.pressed(buttons::GUARD) && a.moves.prev_buttons & buttons::GUARD == 0
+        });
     if let Some(f) = input {
         read_input(&mut a.moves, f, t);
     }
     if cast_press {
         a.moves.press(Action::Cast, [0, 0]);
+    }
+    if left_press {
+        a.moves.press(
+            Action::LeftLight,
+            input.map_or([0, 0], |f| [f.move_x, f.move_z]),
+        );
     }
     let held = input.map_or(0, |f| f.buttons);
     let stick = input.is_some_and(|f| f.move_x != 0 || f.move_z != 0);
@@ -636,6 +678,7 @@ pub fn step(
         let total = table.get(c.num).map_or(0, |d| d.data.total_frames);
         let walked_out = stick && c.frame >= c.free_from;
         a.moves.current = if c.frame >= total || walked_out {
+            a.moves.left_hand = false;
             None
         } else {
             Some(c)
@@ -656,7 +699,7 @@ pub fn step(
     // An AI actor has no buttons; its `Guard` behavior raises the guard (WP-032).
     // A catalyst can't guard (docs/game/03-combat.md, "Spells").
     let casting_left = set.is_some_and(|s| s.left_cast.is_some());
-    let wants_guard = (held & buttons::GUARD != 0 && !casting_left)
+    let wants_guard = (held & buttons::GUARD != 0 && !casting_left && !left_attacks)
         || a.ai.as_ref().is_some_and(|b| b.guarding)
         || stance_now;
     // A guard attack keeps the guard up while it plays, so the guard sees the actor as
@@ -685,8 +728,6 @@ pub fn step(
         let airborne = !a.motor.grounded
             && a.moves.current.is_none()
             && matches!(b.action, Action::Light | Action::Heavy);
-        let counter = a.moves.guard.counter > 0;
-        let guarding = a.moves.guard.active;
         let num = if b.action == Action::UseItem {
             crate::items::inventory::drink_move(a, table)
         } else if airborne {
@@ -697,15 +738,7 @@ pub fn step(
                 s.jump_light
             })
         } else {
-            resolve(
-                b,
-                a.moves.current,
-                a.motor.sprinting,
-                counter,
-                guarding,
-                s,
-                table,
-            )
+            resolve(b, &a.moves, a.motor.sprinting, s, table)
         };
         if (grounded || airborne)
             && can_act
@@ -722,6 +755,7 @@ pub fn step(
             if d.num == s.guard_counter {
                 a.moves.guard.counter = 0;
             }
+            a.moves.left_hand = b.action == Action::LeftLight;
             if b.action == Action::Dodge && b.dir != [0, 0] {
                 a.yaw = atan2(f32::from(b.dir[0]), f32::from(b.dir[1]));
             } else if lock_pos.is_none()

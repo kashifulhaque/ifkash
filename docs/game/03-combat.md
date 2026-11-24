@@ -41,6 +41,7 @@ straight sword. Other weapon classes override these in their moveset files.
 | Backstep attack | `LIGHT` during backstep recovery | 6 | 3 | 15 | 12 | |
 | Jump attack | `LIGHT` or `HEAVY` in the air | 10 | 4 | 16 landing | 18 | Heavy version has hyperarmor; strong poise damage |
 | Plunge attack | Any attack while falling more than 3 m onto a target | 4 | 4 | 20 landing | 0 | Motion value 2.0; negates fall damage up to 12 m |
+| Left-hand attack | `GUARD` with a weapon in the left hand | per weapon | per weapon | per weapon | per weapon | The left weapon's light chain, mirrored. See [Left-hand attacks](#left-hand-attacks) |
 | Guard | `GUARD` hold | 3 to raise | held | 4 to lower | per hit | See [Guard](#guard-and-guard-counter) |
 | Guard counter | `HEAVY` within 12 ticks after blocking a hit | 8 | 4 | 18 | 18 | Motion value 1.4, stance damage 2.0x |
 | Parry | `GUARD` with a parry tool | 2 | 6 (window) | 20 | 10 | See [Parry](#parry-and-critical-hits) |
@@ -205,6 +206,24 @@ Replace the following:
 - When stance damage reaches the actor's `stance` value, the actor is **stance-broken**:
   it kneels for 60 ticks, and the attacker can perform a frontal critical.
 - Stance damage decays by 2 percent of the meter per tick after 120 ticks without a hit.
+
+### Left-hand attacks
+
+As in Elden Ring, what `GUARD` does depends on the left hand:
+
+- A weapon of any class except a shield, catalyst, or bow: `GUARD` swings the left
+  weapon through its own light chain, and the player can't guard. Each swing is the
+  right-hand move mirrored across the actor's center line, with the left weapon's attack
+  rating, held in one hand. `LIGHT` during a left swing starts the right hand's chain.
+- A shield: `GUARD` guards.
+- A catalyst: `GUARD` casts. See [Spells](#spells).
+- Nothing, beside a right-hand weapon: `GUARD` guards with the right weapon.
+- Nothing, with the right hand empty too: `GUARD` throws the fists' light chain with the
+  left hand.
+
+The left hand has no heavy attack; `ART` stays the right weapon's Art. While the player
+two-hands the right weapon, `GUARD` guards with it, whatever the left hand holds. The
+core implements this in `combat/left_hand.rs`.
 
 ## Guard and guard counter
 

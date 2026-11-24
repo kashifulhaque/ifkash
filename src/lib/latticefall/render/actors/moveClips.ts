@@ -6,6 +6,8 @@
 export interface MoveAnimInfo {
   /** The move's `anim` field. */
   anim: string;
+  /** The move's id (`ss_light_2`), when the digest has it: its role in the moveset. */
+  id?: string;
   /** The move's `total_frames`. */
   totalFrames: number;
   /** First frame of the strike (the first hitbox frame), if known. */

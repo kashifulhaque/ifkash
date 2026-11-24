@@ -7,6 +7,7 @@ import type { MoveAnimInfo, MoveResolver } from './moveClips';
 
 interface DigestMove {
   num: number;
+  id?: string;
   anim: string;
   totalFrames: number;
   strikeStart?: number | null;
@@ -19,6 +20,7 @@ export function digestMoveResolver(): MoveResolver {
   for (const m of (digest as { moves: DigestMove[] }).moves) {
     table.set(m.num, {
       anim: m.anim,
+      id: m.id,
       totalFrames: m.totalFrames,
       strikeStart: m.strikeStart ?? undefined,
       recoveryStart: m.recoveryStart ?? undefined

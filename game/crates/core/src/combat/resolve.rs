@@ -326,12 +326,19 @@ pub fn run(world: &mut World) {
         };
         let now = pose(a);
         let before = a.hit.prev.unwrap_or(now);
+        let left = a.moves.left_hand_now();
         for (i, hb) in def.data.hitboxes.iter().enumerate() {
             if !(hb.frames.0..=hb.frames.1).contains(&c.frame) {
                 continue;
             }
-            let hit0 = Capsule::from_shape(&hb.shape, &before);
-            let hit1 = Capsule::from_shape(&hb.shape, &now);
+            // A left-hand swing is the right hand's move mirrored across the center line.
+            let shape = if left {
+                hitbox::mirror_x(&hb.shape)
+            } else {
+                hb.shape
+            };
+            let hit0 = Capsule::from_shape(&shape, &before);
+            let hit1 = Capsule::from_shape(&shape, &now);
             // Under a low ceiling (WP-063) a swing that rises over it strikes the rock.
             if let Some(zone) = low_ceiling::struck_by(world, a.pos, &hit1) {
                 if aid == world.player && c.frame == hb.frames.0 {
@@ -428,20 +435,28 @@ pub fn run(world: &mut World) {
         let motion_value = crit::scale_motion(motion_value, a, c.num, &world.moves);
         // Damage, from the attacker's equipped weapon and stats, or the player's fists. An
         // actor with neither has no attack rating and deals the minimum of 1.
+        // A left-hand swing strikes with the left weapon, held in one hand.
+        let left = a.moves.left_hand_now();
+        let eq = &a.inventory.equipment;
+        let hand = if left {
+            eq.left_weapon()
+        } else {
+            eq.right_weapon()
+        };
         let ar = super::spells::power(world, a, c.num)
             .or_else(|| {
-                a.inventory.equipment.right_weapon().and_then(|w| {
+                hand.and_then(|w| {
                     crate::items::upgrade::weapon_rating(
                         world,
                         w,
                         &a.stats.attrs,
-                        a.stats.two_handing,
+                        a.stats.two_handing && !left,
                     )
                 })
             })
-            // An empty right hand: the player's fists (issue #76).
+            // An empty hand: the player's fists (issue #76).
             .or_else(|| {
-                (cand.attacker == world.player && a.inventory.equipment.right_weapon().is_none())
+                (cand.attacker == world.player && hand.is_none())
                     .then(|| crate::items::upgrade::unarmed_rating(world, &a.stats.attrs))
                     .flatten()
             })

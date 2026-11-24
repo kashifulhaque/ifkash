@@ -20,6 +20,10 @@ watch_dir = "src"
 pattern = "ifkash.dev/api/*"
 zone_name = "ifkash.dev"
 
+# Refresh the research radar (handlers/radar.rs) every day at 06:00 UTC.
+[triggers]
+crons = ["0 6 * * *"]
+
 [[kv_namespaces]]
 binding = "IFKASH_HN"
 id = "85ed35403df24a01942b9ed8d3bbf3f4"
@@ -54,8 +58,11 @@ ACCESS_AUD = "5d5a42191621ecc74645746eba4661361ae29a79ebb3c57823fdef6bc3163768"
 # Google OAuth client ID for the /game leaderboard (audience check on ID tokens).
 # Must match PUBLIC_GOOGLE_CLIENT_ID in the web app's environment.
 GOOGLE_CLIENT_ID = "589199944334-at0seduhfggnrnmncrnnke6asstd13fc.apps.googleusercontent.com"
+# The most the Exa features (handlers/exa.rs) may spend per UTC day, in dollars.
+EXA_DAILY_CAP_USD = "2"
 
 # Secrets (set via `wrangler secret put <NAME>`):
 #   WEATHER_UNION_API_KEY - /api/home_weather
+#   EXA_API_KEY           - /api/radar, /api/ask, /api/search, /api/fitness/research
 # The old POCKETBASE_EMAIL/PASSWORD secrets are no longer used and can be
 # removed with `wrangler secret delete POCKETBASE_EMAIL` (and ...PASSWORD).

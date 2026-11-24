@@ -36,6 +36,7 @@ export const navItems: NavItem[] = [
 	{ href: '/work', label: 'Work' },
 	{ href: '/projects', label: 'Projects' },
 	{ href: '/rl', label: 'RL' },
+	{ href: '/radar', label: 'Radar' },
 	{ href: '/roadmap', label: 'Roadmap' },
 	{ href: '/tools', label: 'Tools' },
 	{ href: '/education', label: 'Education' },

@@ -24,6 +24,7 @@
     "/work": "仕事",
     "/projects": "作品",
     "/rl": "学習",
+    "/radar": "探",
     "/roadmap": "道",
     "/tools": "道具",
     "/education": "学歴",

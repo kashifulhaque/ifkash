@@ -23,3 +23,12 @@ async fn fetch(req: Request, env: Env, _ctx: Context) -> Result<Response> {
 
     apply_cors(resp)
 }
+
+/// Daily cron (`[triggers]` in wrangler.toml): refresh the research radar.
+#[event(scheduled)]
+async fn scheduled(_event: ScheduledEvent, env: Env, _ctx: ScheduleContext) {
+    match handlers::radar::refresh(&env).await {
+        Ok(n) => console_log!("radar refresh stored up to {n} papers"),
+        Err(e) => console_error!("radar refresh failed: {e}"),
+    }
+}

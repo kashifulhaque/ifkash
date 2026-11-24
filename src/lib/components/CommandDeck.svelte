@@ -2,6 +2,8 @@
   import { goto } from "$app/navigation";
   import { page } from "$app/stores";
   import { tick } from "svelte";
+  import CitedAnswer from "$lib/components/CitedAnswer.svelte";
+  import { exaApi, type Answer, type SearchHit } from "$lib/exaApi";
 
   type Category = "Page" | "Project" | "Experiment" | "Tool";
 
@@ -19,6 +21,7 @@
     { label: "Work", description: "Roles, teams, and production systems", href: "/work", category: "Page", keywords: "rust c++ python llm" },
     { label: "Projects", description: "Open-source and independent builds", href: "/projects", category: "Page", keywords: "rust c++ python llm models" },
     { label: "Reinforcement learning", description: "Agents, environments, and training runs", href: "/rl", category: "Experiment" },
+    { label: "Research radar", description: "New papers on post-training, RL, and inference", href: "/radar", category: "Page", keywords: "papers arxiv research exa news" },
     { label: "Interview roadmap", description: "A practical ML systems study path", href: "/roadmap", category: "Page" },
     { label: "Tools", description: "Useful things that run in the browser", href: "/tools", category: "Page" },
     { label: "Education", description: "Academic background and foundations", href: "/education", category: "Page" },
@@ -56,6 +59,123 @@
         .map((match) => match.destination)
     : destinations;
 
+  // ── Site search and ask (Exa, through the Worker) ─────────────
+  // Local destinations come first. With 3+ characters the deck also offers two
+  // actions: search the site, blog, and GitHub, or ask a question about Kashif.
+  // A query ending in "?" puts Ask first. When nothing local matches, the site
+  // search runs on its own after a pause.
+
+  type Row =
+    | { kind: "dest"; d: Destination }
+    | { kind: "ask" }
+    | { kind: "search" }
+    | { kind: "web"; hit: SearchHit };
+
+  let webHits: SearchHit[] = [];
+  let webQuery = "";
+  let webLoading = false;
+  let webError = "";
+  let answer: Answer | null = null;
+  let answerQuery = "";
+  let askLoading = false;
+  let askError = "";
+  let autoTimer: ReturnType<typeof setTimeout> | undefined;
+
+  $: q = query.trim();
+  $: rows = buildRows(filtered, q, webQuery === q ? webHits : []);
+
+  function buildRows(local: Destination[], text: string, hits: SearchHit[]): Row[] {
+    const out: Row[] = local.map((d) => ({ kind: "dest", d }));
+    if (text.length >= 3) {
+      const actions: Row[] = text.endsWith("?")
+        ? [{ kind: "ask" }, { kind: "search" }]
+        : [{ kind: "search" }, { kind: "ask" }];
+      if (text.endsWith("?")) out.unshift(...actions);
+      else out.push(...actions);
+    }
+    for (const hit of hits) out.push({ kind: "web", hit });
+    return out;
+  }
+
+  function onQueryInput(): void {
+    activeIndex = 0;
+    webError = "";
+    askError = "";
+    if (answerQuery !== query.trim()) answer = null;
+    clearTimeout(autoTimer);
+    const text = query.trim();
+    if (text.length >= 3 && !text.endsWith("?") && filtered.length === 0) {
+      autoTimer = setTimeout(() => void runSearch(text), 700);
+    }
+  }
+
+  async function runSearch(text: string): Promise<void> {
+    if (webQuery === text || webLoading) return;
+    webLoading = true;
+    webError = "";
+    try {
+      const res = await exaApi.search(text);
+      webHits = res.results;
+      webQuery = text;
+      if (!res.results.length) webError = "Nothing on the site or blog matches that.";
+    } catch (e) {
+      webError = e instanceof Error ? e.message : "Search failed.";
+    } finally {
+      webLoading = false;
+    }
+  }
+
+  async function runAsk(text: string): Promise<void> {
+    if (askLoading) return;
+    askLoading = true;
+    askError = "";
+    answer = null;
+    try {
+      answer = await exaApi.ask(text);
+      answerQuery = text;
+    } catch (e) {
+      askError = e instanceof Error ? e.message : "Couldn't answer that.";
+    } finally {
+      askLoading = false;
+    }
+  }
+
+  /** Where a search hit lives, for its category column. */
+  function hitPlace(url: string): string {
+    try {
+      const host = new URL(url).hostname;
+      if (host === "blog.ifkash.dev") return "Blog";
+      if (host === "github.com") return "GitHub";
+      if (host.endsWith("ifkash.dev")) return "Site";
+    } catch {
+      /* fall through */
+    }
+    return "Web";
+  }
+
+  /** Same-site hits navigate in the app; everything else opens normally. */
+  function hitHref(url: string): string {
+    try {
+      const u = new URL(url);
+      if (u.hostname === "ifkash.dev" && !u.pathname.startsWith("/api/")) return u.pathname + u.search;
+    } catch {
+      /* fall through */
+    }
+    return url;
+  }
+
+  function activate(row: Row): void {
+    if (row.kind === "dest") visit(row.d);
+    else if (row.kind === "ask") void runAsk(q);
+    else if (row.kind === "search") void runSearch(q);
+    else {
+      const href = hitHref(row.hit.url);
+      closeDeck();
+      if (href.startsWith("/")) void goto(href);
+      else window.open(href, "_blank", "noopener");
+    }
+  }
+
   function score(destination: Destination, searchTerms: string[]): number {
     const label = destination.label.toLowerCase();
     let total = 0;
@@ -81,6 +201,9 @@
     previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     query = "";
     activeIndex = 0;
+    answer = null;
+    askError = "";
+    webError = "";
     dialog.showModal();
     isOpen = true;
     await tick();
@@ -108,8 +231,8 @@
   }
 
   function moveActive(delta: number): void {
-    if (!filtered.length) return;
-    activeIndex = (activeIndex + delta + filtered.length) % filtered.length;
+    if (!rows.length) return;
+    activeIndex = (activeIndex + delta + rows.length) % rows.length;
     revealActive();
   }
 
@@ -143,9 +266,9 @@
     } else if (event.key === "ArrowUp") {
       event.preventDefault();
       moveActive(-1);
-    } else if (event.key === "Enter" && event.target === searchInput && filtered[activeIndex]) {
+    } else if (event.key === "Enter" && event.target === searchInput && rows[activeIndex]) {
       event.preventDefault();
-      visit(filtered[activeIndex]);
+      activate(rows[activeIndex]);
     }
   }
 </script>
@@ -173,7 +296,7 @@
       <div>
         <p class="eyebrow">Portfolio signal deck</p>
         <h2 id="deck-title">Where should we jump?</h2>
-        <p id="deck-description">Search every corner, or let the site choose.</p>
+        <p id="deck-description">Jump to a page, search the site and blog, or ask about my work.</p>
       </div>
       <button class="close" type="button" on:click={closeDeck} aria-label="Close jump deck">
         <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -189,35 +312,91 @@
         bind:value={query}
         type="search"
         aria-label="Search portfolio"
-        placeholder="Try ‘rust’, ‘LLM’, or ‘tool’"
+        placeholder="Try ‘rust’, or ask ‘what has Kashif built with RL?’"
         autocomplete="off"
         spellcheck="false"
-        on:input={() => (activeIndex = 0)}
+        on:input={onQueryInput}
       />
       <kbd>esc</kbd>
     </label>
 
+    {#if askLoading || answer || askError}
+      <div class="answer-panel" aria-live="polite">
+        {#if askLoading}
+          <p class="answer-status">Reading ifkash.dev and the blog…</p>
+        {:else if askError}
+          <p class="answer-status error">{askError}</p>
+        {:else if answer}
+          <p class="answer-label">Answer · from my own pages</p>
+          <CitedAnswer answer={answer.answer} sources={answer.sources} />
+        {/if}
+      </div>
+    {/if}
+
     <div class="result-meta" aria-live="polite">
-      <span>{filtered.length} {filtered.length === 1 ? "signal" : "signals"}</span>
+      <span>
+        {filtered.length} {filtered.length === 1 ? "signal" : "signals"}
+        {#if webLoading}· searching…{:else if webQuery === q && webHits.length}· {webHits.length} from the web index{:else if webError}· {webError}{/if}
+      </span>
       <button type="button" on:click={surpriseMe}>Surprise me ↗</button>
     </div>
 
     <nav class="results" aria-label="Jump destinations">
-      {#each filtered as destination, index}
-        <a
-          href={destination.href}
-          class:active={index === activeIndex}
-          data-active={index === activeIndex}
-          on:click={closeDeck}
-          on:focus={() => (activeIndex = index)}
-        >
-          <span class="result-category">{destination.category}</span>
-          <span class="result-copy">
-            <strong>{destination.label}</strong>
-            <small>{destination.description}</small>
-          </span>
-          <span class="result-arrow" aria-hidden="true">↗</span>
-        </a>
+      {#each rows as row, index}
+        {#if row.kind === "dest"}
+          <a
+            href={row.d.href}
+            class:active={index === activeIndex}
+            data-active={index === activeIndex}
+            on:click={closeDeck}
+            on:focus={() => (activeIndex = index)}
+          >
+            <span class="result-category">{row.d.category}</span>
+            <span class="result-copy">
+              <strong>{row.d.label}</strong>
+              <small>{row.d.description}</small>
+            </span>
+            <span class="result-arrow" aria-hidden="true">↗</span>
+          </a>
+        {:else if row.kind === "web"}
+          <a
+            href={hitHref(row.hit.url)}
+            target={hitHref(row.hit.url).startsWith("/") ? undefined : "_blank"}
+            rel="noopener"
+            class:active={index === activeIndex}
+            data-active={index === activeIndex}
+            on:click={closeDeck}
+            on:focus={() => (activeIndex = index)}
+          >
+            <span class="result-category">{hitPlace(row.hit.url)}</span>
+            <span class="result-copy">
+              <strong>{row.hit.title}</strong>
+              <small>{row.hit.snippet || row.hit.url}</small>
+            </span>
+            <span class="result-arrow" aria-hidden="true">↗</span>
+          </a>
+        {:else}
+          <button
+            type="button"
+            class="row-action"
+            class:active={index === activeIndex}
+            data-active={index === activeIndex}
+            disabled={row.kind === "ask" ? askLoading : webLoading}
+            on:click={() => activate(row)}
+            on:focus={() => (activeIndex = index)}
+          >
+            <span class="result-category">{row.kind === "ask" ? "Ask" : "Search"}</span>
+            <span class="result-copy">
+              <strong>{row.kind === "ask" ? `Ask: “${q}”` : `Search the site and blog for “${q}”`}</strong>
+              <small>
+                {row.kind === "ask"
+                  ? "A short answer from my own pages, with sources"
+                  : "Pages, posts, and repos, through Exa"}
+              </small>
+            </span>
+            <span class="result-arrow" aria-hidden="true">↵</span>
+          </button>
+        {/if}
       {:else}
         <div class="empty">
           <span class="empty-mark" aria-hidden="true">?</span>
@@ -229,7 +408,7 @@
 
     <footer class="deck-footer" aria-hidden="true">
       <span><kbd>↑</kbd><kbd>↓</kbd> move</span>
-      <span><kbd>enter</kbd> jump</span>
+      <span><kbd>enter</kbd> jump or ask</span>
       <span><kbd>/</kbd> open anywhere</span>
     </footer>
   </section>
@@ -482,7 +661,8 @@
     border-top: 1px solid var(--line);
   }
 
-  .results a {
+  .results a,
+  .results .row-action {
     display: grid;
     grid-template-columns: 88px minmax(0, 1fr) 16px;
     align-items: center;
@@ -495,12 +675,65 @@
     transition: background-color var(--dur-fast) var(--ease);
   }
 
-  .results a:last-child {
+  .results a:last-child,
+  .results .row-action:last-child {
     border-bottom: 0;
   }
 
-  .results a:hover {
+  .results a:hover,
+  .results .row-action:hover {
     background: var(--hover-wash);
+  }
+
+  .results .row-action {
+    width: 100%;
+    border-top: 0;
+    border-right: 0;
+    border-left: 0;
+    background: transparent;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .results .row-action:disabled {
+    cursor: progress;
+    opacity: 0.6;
+  }
+
+  .results .row-action.active {
+    background: var(--fjord-wash);
+  }
+
+  .results .row-action.active strong {
+    color: var(--fjord);
+  }
+
+  .answer-panel {
+    max-height: 260px;
+    margin: var(--s-4) var(--s-5) 0;
+    padding: var(--s-4);
+    overflow-y: auto;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: var(--bg);
+  }
+
+  .answer-label {
+    margin: 0 0 var(--s-2);
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+  }
+
+  .answer-status {
+    margin: 0;
+    color: var(--ink-2);
+    font-size: var(--text-sm);
+  }
+
+  .answer-status.error {
+    color: var(--falu);
   }
 
   .results a:focus-visible {
@@ -665,7 +898,12 @@
       padding-inline: var(--s-4);
     }
 
-    .results a {
+    .answer-panel {
+      margin-inline: var(--s-4);
+    }
+
+    .results a,
+    .results .row-action {
       grid-template-columns: minmax(0, 1fr) 16px;
       gap: var(--s-3);
       padding-inline: var(--s-4);

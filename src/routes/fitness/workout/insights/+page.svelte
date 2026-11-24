@@ -25,6 +25,8 @@
   import LoadingState from '$lib/components/LoadingState.svelte';
   import WeightChart from '$lib/components/WeightChart.svelte';
   import WorkoutReport from '$lib/components/WorkoutReport.svelte';
+  import ResearchNotes from '$lib/components/ResearchNotes.svelte';
+  import { researchSuggestions } from '$lib/fitnessResearch';
   import { dropSession } from '$lib/workoutReport';
   import { setToken, loadToken, AuthError, OfflineError } from '$lib/splitterApi';
   import { isLocalDev } from '$lib/apiBase';
@@ -172,6 +174,16 @@
   // All the trend maths lives in `fitnessInsights.ts`; the page only formats it.
   $: insights = weightInsights(bodyweight, profile, weekly, today());
   $: cadence = trainingCadence(sessions, today());
+  // Research notes (Exa, through the Worker) wait for the full log.
+  $: suggestions = logLoading
+    ? []
+    : researchSuggestions({
+        log,
+        bodyweight,
+        today: today(),
+        band: insights.primary.band,
+        daysSinceLast: cadence.daysSinceLast
+      });
   /** Upper edge of the normal BMI range at this height — the chart's goal line. */
   $: normalBmiKg = weightForBmi(24.9, profile.height_cm);
 
@@ -469,6 +481,9 @@
     <!-- Training report: a day, week, or month read against the plan and
          compared with another period. -->
     <WorkoutReport {log} {bodyweight} today={today()} loading={logLoading} />
+
+    <!-- What the research says about the log's weakest signals. -->
+    <ResearchNotes {suggestions} />
 
     <!-- Everything the progress card left out: the fitted rates, projections,
          signals, weekly averages, cadence. Open by default — this page exists

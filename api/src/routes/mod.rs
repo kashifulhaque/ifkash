@@ -31,6 +31,12 @@ pub fn register_routes(router: Router<'_, ()>) -> Router<'_, ()> {
     .get_async("/api/resume/record/:id", resume_api::get_by_id)
     .post_async("/api/resume/upload", resume_api::upload)
     .get_async("/api/home_weather", home_weather::route)
+    // Exa-backed features (handlers/exa.rs). Public; live calls are rate limited per
+    // address, cached, and stop at a daily spending cap (EXA_DAILY_CAP_USD).
+    .get_async("/api/radar", handlers::radar::list)
+    .post_async("/api/ask", handlers::ask::ask)
+    .get_async("/api/search", handlers::ask::search)
+    .post_async("/api/fitness/research", handlers::fitness_research::research)
     .get_async("/api/edge-signal", edge_signal::route)
     .get_async("/api/whoami", whoami::route)
     // Private game art (Mixamo characters) from the ART_BUCKET R2 bucket.

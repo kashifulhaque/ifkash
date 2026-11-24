@@ -165,8 +165,20 @@ Sage fills `--moss`, and ochre ink fills `--clay`.
 The Almanac tokens are the base set in `src/app.css`: paper in `:root` and
 lamplight in `[data-theme="dark"]`. Radii are `2`, `4`, and `6`, and motion
 uses an ease-out cubic at `150`, `300`, and `600` ms. `almanac/design.css`
-restyles headlines, kickers, and the grain. The top bar, footer, and
-wordmark styles live in `almanac/Shell.svelte`.
+restyles headlines, kickers, inner pages, and the grain.
+
+- **Shell:** a masthead with a double-ruled title plate and a dateline that
+  shows the date, ISO week, moon phase, sunrise and sunset for Bengaluru, and
+  the IST clock (`astro.ts`, `MoonGlyph.svelte`). On desktop, the nav is a
+  sticky **Contents** column on the left with dotted leaders and folio
+  numbers. At 1200px and wider, a right margin holds the eyebrows and
+  breadcrumbs. On mobile, a **Contents** button unfolds the list. The
+  footer is a colophon. Page changes play a short page-turn wipe.
+- **Home:** an engraved orrery (`Plate.svelte`) draws itself and then turns
+  slowly. Next come the name, an opening paragraph with a drop cap, a table
+  of contents with leaders, and a table of particulars.
+- **Inner pages:** `.page-head` opens a chapter with a large folio numeral.
+  `.rows` read as ruled tables, and `.card` gets corner registration marks.
 
 The principles for Almanac:
 
@@ -176,7 +188,7 @@ The principles for Almanac:
   and 1px hairlines instead of shadows.
 - **Craft.** Align to the 4px grid. Use tabular numerals for numbers and dates
   and a 64ch reading measure.
-- **Calm motion.** Animate opacity and up to 8px of translation only.
+- **Calm motion.** Keep motion slow and quiet: line drawings, small lifts, and one page-turn wipe.
 
 Almanac only:
 
@@ -187,17 +199,46 @@ Almanac only:
 
 ## Japandi
 
-Japandi is a placeholder. It has a token block (washi paper, sumi ink, indigo
-and clay accents, charcoal in the dark theme) and a copy of the Almanac shell
-and home. It is meant to be redesigned inside `src/lib/designs/japandi/`.
-Fonts planned: Shippori Mincho and Zen Kaku Gothic New.
+Japandi mixes Japanese and Scandinavian design: plenty of empty space,
+natural materials, and a quiet palette. The light theme is Washi (warm paper
+with a fibre texture), and the dark theme is Sumi (charcoal with a lantern
+amber accent). Headlines use Shippori Mincho, body text uses Zen Kaku Gothic
+New, and small numbers use IBM Plex Mono.
+
+- **Shell:** there is no top bar. A rail on the right edge holds a red seal
+  (`Seal.svelte`), the wordmark set vertically, and the nav as vertical labels
+  with kanji captions. Below 900px, the nav moves into a bottom sheet that
+  slides up behind a shoji lattice.
+- **Home:** an ensō brush circle paints itself on load (`enso.ts`). The index
+  is a grid of 2:1 tiles, and the facts sit on raked-sand lines. A canvas
+  (`Drift.svelte`) drifts a few seasonal shapes, chosen by month.
+- **Inner pages:** `.page-head` splits into the title on the left and a
+  vertical eyebrow on the right. `.rows.list` becomes a two-column tile grid,
+  and content fades in with an ink-bleed blur.
 
 ## Ember
 
-Ember is a placeholder. It has a token block (near-black umber with a gold
-accent, parchment in the light theme) and a copy of the Almanac shell and
-home. It is meant to be redesigned inside `src/lib/designs/ember/`. Fonts
-planned: Cinzel and Cormorant Garamond.
+Ember is a dark-fantasy design in the style of souls-like game menus. It
+suits the site's own game, Cinderheart. The dark theme is Night (near-black
+umber, gold, and ash), and the light theme is Vellum (a parchment map with
+contour lines). Headlines use Cinzel in wide-tracked capitals, and body text
+uses Cormorant Garamond at 19px and weight 500, so that it stays readable on
+dark backgrounds. Ember raises the `--text-*` scale to match.
+
+- **Shell:** a fixed stage behind the content draws a halo, light rays, fog,
+  a vignette, and up to 24 drifting embers (`Embers.svelte`). On desktop, the
+  nav is a vertical menu on the left with a gold selector that follows hover
+  and arrow keys (`menu.ts`). Below 1000px, a **Menu** button opens a
+  full-screen menu, which Esc also opens. A hints bar at the bottom lists the
+  keyboard shortcuts.
+- **Home:** a title screen with the name in gold, a "Press any key" prompt, a
+  banner reveal, and the main menu. The menu also appears after five seconds,
+  or when it gets focus. The facts form a status sheet.
+- **Inner pages:** `.page-head` becomes a banner with filigree corners. At
+  1100px and wider, `.rows` becomes an inventory list, and a panel on the
+  right describes the hovered or focused row.
+- Ember evokes the genre, but it uses no names, terms, logos, or assets from
+  any game.
 
 ## Page patterns
 

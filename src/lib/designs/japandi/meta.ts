@@ -7,8 +7,8 @@ export const meta: DesignMeta<'japandi'> = {
 	themeColors: { light: '#f3efe7', dark: '#1b1b1a' },
 	themeCopy: {
 		toLight: 'Switch to washi',
-		toDark: 'Switch to charcoal',
+		toDark: 'Switch to sumi',
 		light: 'Washi',
-		dark: 'Charcoal',
+		dark: 'Sumi',
 	},
 };

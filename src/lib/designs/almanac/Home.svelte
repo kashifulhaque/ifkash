@@ -1,211 +1,369 @@
 <script>
   /**
-   * Almanac home page: an oversized Fraunces name, a short statement, the
-   * facts row, and the Horizon scene.
+   * Almanac home page: a title page with an engraved plate, the opening
+   * paragraph with a drop cap, a table of contents with dotted leaders, and a
+   * data table of particulars.
    */
   import { onMount } from "svelte";
-  import Horizon from "$lib/components/Horizon.svelte";
-  import { createTimeline } from "animejs";
-  import { countUp, magnetic, prefersReducedMotion, reveal, splitReveal } from "$lib/motion";
+  import { reveal, magnetic, prefersReducedMotion, splitReveal } from "$lib/motion";
+  import { animate, stagger } from "animejs";
   import { readRelicBadge } from "../relics";
-  import { facts, resumeUrl } from "../shared";
+  import { facts, indexRows, navItems, resumeUrl } from "../shared";
+  import Plate from "./Plate.svelte";
 
-  /**
-   * Brings the hero in as one sequence: eyebrow, then the name (rolled up by
-   * splitReveal), then the copy, the full stop, and the actions.
-   * @param {HTMLElement} node
-   */
-  function heroIntro(node) {
-    if (prefersReducedMotion()) return {};
-    const q = (/** @type {string} */ sel) => node.querySelector(sel);
-    const lift = { opacity: [0, 1], translateY: [14, 0], duration: 700, ease: "outExpo" };
-    const settle = () => node.querySelectorAll("[data-intro]").forEach((el) => {
-      /** @type {HTMLElement} */ (el).style.removeProperty("opacity");
-      /** @type {HTMLElement} */ (el).style.removeProperty("transform");
-    });
-    const tl = createTimeline({ onComplete: settle });
-    const parts = [".hero-eyebrow", ".hero-copy", ".period", ".hero-actions"];
-    parts.forEach((sel) => {
-      const el = /** @type {HTMLElement | null} */ (q(sel));
-      if (!el) return;
-      el.dataset.intro = "";
-      el.style.opacity = "0";
-    });
-    tl.add(".hero-eyebrow", lift, 0)
-      .add(".hero-copy", lift, 450)
-      .add(".period", { opacity: [0, 1], duration: 500, ease: "outQuad" }, 900)
-      .add(".hero-actions", lift, 600);
-    // Show the hero even if a throttled renderer never runs the frames.
-    const fallback = setTimeout(() => { tl.cancel(); settle(); }, 2500);
-    return {
-      destroy() {
-        clearTimeout(fallback);
-        tl.cancel();
-      },
-    };
-  }
+  // Page numbers follow the contents column; pages outside it continue the count.
+  let extra = navItems.length;
+  const toc = indexRows
+    .map((row) => {
+      const i = navItems.findIndex((n) => n.href === row.href);
+      return { ...row, folio: String(i >= 0 ? i + 1 : ++extra).padStart(2, "0"), at: i >= 0 ? i : extra };
+    })
+    .sort((a, b) => a.at - b.at);
 
   /** @type {{ text: string, href: string } | null} */
   let badge = null;
+  /** @type {HTMLElement | undefined} */
+  let title;
+
   onMount(() => {
     badge = readRelicBadge();
+    if (!title || prefersReducedMotion()) return;
+    const targets = title.querySelectorAll("[data-in]");
+    targets.forEach((el) => /** @type {HTMLElement} */ (el).style.setProperty("opacity", "0"));
+    const a = animate(targets, {
+      opacity: [0, 1],
+      translateY: [12, 0],
+      duration: 800,
+      delay: stagger(160, { start: 500 }),
+      ease: "outExpo",
+    });
+    const show = () => targets.forEach((el) => {
+      /** @type {HTMLElement} */ (el).style.removeProperty("opacity");
+      /** @type {HTMLElement} */ (el).style.removeProperty("transform");
+    });
+    const t = setTimeout(() => { a.cancel(); show(); }, 3000);
+    return () => { clearTimeout(t); a.cancel(); show(); };
   });
 </script>
 
+<article class="titlepage" bind:this={title}>
+  <div class="plate-wrap">
+    <Plate />
+  </div>
 
-<section class="hero" use:heroIntro>
-  <p class="eyebrow hero-eyebrow">ML engineer — ifkash.dev</p>
+  <p class="eyebrow" data-in>ML engineer · ifkash.dev</p>
 
   <h1 class="display">
-    <span use:splitReveal={{ delay: 120 }}>Kashiful Haque</span><a href="/fitness" class="period" aria-label="Fitness dashboard">.</a>
+    <span use:splitReveal={{ delay: 200 }}>Kashiful Haque</span><a href="/fitness" class="period" aria-label="Fitness dashboard">.</a>
   </h1>
+  <p class="subtitle" data-in><em class="serif">A set of notes on language models, learning, and fast inference.</em></p>
 
-  <div class="hero-body">
-    <p class="hero-copy">
-      I build <em class="serif">pre-training and post-training</em> systems for
-      large language models, reinforcement learning pipelines, and
-      high-performance inference software in C++ and Rust.
-    </p>
+  <p class="opening" data-in>
+    I build <em class="serif">pre-training and post-training</em> systems for
+    large language models, reinforcement learning pipelines, and
+    high-performance inference software in C++ and Rust.
+  </p>
 
-    <div class="hero-actions">
-      <a href={resumeUrl} class="btn btn-primary" use:magnetic>Read résumé</a>
-      <a href="/game" class="btn" use:magnetic>Play Cinderheart</a>
-      {#if badge}
-        <a href={badge.href} class="tag relic" title="Relics from the portfolio you have found in Cinderheart">
-          <span aria-hidden="true">✦</span>
-          {badge.text}
-        </a>
-      {/if}
-    </div>
+  <div class="actions" data-in>
+    <a href={resumeUrl} class="btn btn-primary" use:magnetic>Read résumé</a>
+    <a href="/game" class="btn" use:magnetic>Play Cinderheart</a>
   </div>
+</article>
+
+<section class="toc" aria-labelledby="toc-h">
+  <header class="sec-head">
+    <h2 id="toc-h">Table of contents</h2>
+    <span class="sec-note">Page</span>
+  </header>
+
+  <ol class="toc-list" use:reveal={{ children: "li", gap: 55 }}>
+    {#each toc as row}
+      <li>
+        <a href={row.href}>
+          <span class="t-main">
+            <span class="t-name">{row.name}</span>
+            <span class="t-leader" aria-hidden="true"></span>
+            <span class="t-folio">{row.folio}</span>
+          </span>
+          <span class="t-desc">{row.desc}</span>
+        </a>
+      </li>
+    {/each}
+  </ol>
+
+  {#if badge}
+    <aside class="marginal">
+      <span class="m-mark" aria-hidden="true">✦</span>
+      <a href={badge.href}>{badge.text}</a>
+      <span class="m-sub">Relics from the portfolio, found in Cinderheart.</span>
+    </aside>
+  {/if}
 </section>
 
-<Horizon />
-
-<dl class="facts" use:reveal={{ children: "div", gap: 80 }}>
-  {#each facts as f}
-    <div>
-      <dt>{f.k}</dt>
-      <dd use:countUp>{f.v}</dd>
-    </div>
-  {/each}
-</dl>
+<section class="particulars" aria-labelledby="part-h">
+  <header class="sec-head">
+    <h2 id="part-h">Particulars</h2>
+    <span class="sec-note">Table I</span>
+  </header>
+  <table use:reveal>
+    <tbody>
+      {#each facts as f}
+        <tr>
+          <th scope="row">{f.k}</th>
+          <td class="lead-cell" aria-hidden="true"></td>
+          <td class="val">{f.v}</td>
+        </tr>
+      {/each}
+    </tbody>
+  </table>
+</section>
 
 <style>
-  /* ── Hero ─────────────────────────────────────────────── */
-
-  .hero {
-    padding: clamp(56px, 9vw, 120px) 0 var(--s-7);
+  .titlepage {
+    position: relative;
+    padding: var(--s-5) 0 var(--s-7);
+    border-bottom: 1px solid var(--line);
+  }
+  .titlepage::after {
+    content: "";
+    display: block;
+    clear: both;
   }
 
-  .hero-eyebrow {
-    margin-bottom: var(--s-5);
+  /* The plate floats right and the text wraps around its circle. */
+  .plate-wrap {
+    float: right;
+    width: min(54%, 520px);
+    margin: 0 0 var(--s-5) var(--s-5);
+    shape-outside: circle(50% at 50% 46%);
+    shape-margin: 16px;
+  }
+
+  .eyebrow {
+    margin-top: var(--s-6);
+    color: var(--ink-3);
   }
 
   .display {
-    font-size: clamp(3rem, 1.2rem + 7.6vw, 7.5rem);
-    line-height: 0.95;
-    letter-spacing: -0.055em;
+    margin: var(--s-4) 0 0;
+    font-size: clamp(2.8rem, 1.4rem + 5vw, 5.6rem);
+    line-height: 0.98;
+    letter-spacing: -0.035em;
+    text-wrap: balance;
   }
-
   .period {
     color: var(--falu);
-    transition: opacity var(--dur-fast) var(--ease);
+    text-decoration: none;
   }
   .period:hover {
     color: var(--falu);
     opacity: 0.7;
   }
 
-  .hero-body {
-    display: grid;
-    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
-    align-items: end;
-    gap: var(--s-6) var(--s-8);
-    margin-top: var(--s-7);
-  }
-
-  .hero-copy {
-    max-width: 34ch;
-    margin: 0;
-    color: var(--ink);
-    font-size: clamp(1.25rem, 1rem + 0.9vw, 1.625rem);
+  .subtitle {
+    max-width: 30ch;
+    margin: var(--s-4) 0 0;
+    color: var(--ink-2);
+    font-size: 1.25rem;
     line-height: 1.35;
-    letter-spacing: -0.018em;
   }
 
-  .hero-copy .serif {
-    font-size: 1.06em;
+  .opening {
+    max-width: 38ch;
+    margin: var(--s-6) 0 0;
+    color: var(--ink);
+    font-size: 1.1rem;
+    line-height: 1.6;
+  }
+  .opening::first-letter {
+    float: left;
+    margin: 0.06em 0.1em -0.05em 0;
+    color: var(--ink);
+    font-family: var(--font-display);
+    font-size: 4.6em;
+    font-weight: 300;
+    line-height: 0.82;
+    font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 144, "wght" 300;
   }
 
-  .hero-actions {
+  .actions {
     display: flex;
     flex-wrap: wrap;
-    justify-content: flex-end;
-    align-items: center;
     gap: var(--s-2);
+    margin-top: var(--s-6);
   }
 
-  .relic {
-    height: 40px;
-    padding: 0 var(--s-4);
-    font-size: var(--text-xs);
-    text-decoration: none;
-  }
-  .relic span {
-    color: var(--clay);
-  }
-  .relic:hover {
-    border-color: var(--line-strong);
-    color: var(--ink);
-  }
+  /* ── Section heads ───────────────────────────────────────── */
 
-  /* ── Facts ────────────────────────────────────────────── */
-
-  .facts {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+  .sec-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--s-4);
+    padding-bottom: var(--s-2);
+    border-bottom: 3px double var(--ink);
+  }
+  .sec-head h2 {
     margin: 0;
-    border-bottom: 1px solid var(--line);
+    font-size: var(--text-xl);
+    font-style: italic;
   }
-
-  .facts div {
-    padding: var(--s-5) var(--s-5) var(--s-5) 0;
-  }
-  .facts div + div {
-    padding-left: var(--s-5);
-    border-left: 1px solid var(--line);
-  }
-
-  .facts dt {
-    margin-bottom: var(--s-1);
+  .sec-note {
     color: var(--ink-3);
     font-family: var(--font-mono);
-    font-size: var(--text-xs);
+    font-size: 10.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
   }
 
-  .facts dd {
+  /* ── Table of contents ───────────────────────────────────── */
+
+  .toc {
+    position: relative;
+    padding-top: var(--s-7);
+  }
+  .toc-list {
     margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .toc-list li {
+    border-bottom: 1px solid var(--line);
+  }
+  .toc-list a {
+    display: block;
+    padding: var(--s-3) 0;
     color: var(--ink);
-    font-size: 15px;
+    text-decoration: none;
+  }
+  .t-main {
+    display: flex;
+    align-items: baseline;
+    gap: var(--s-2);
+  }
+  .t-name {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 350;
+    font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 72, "wght" 350;
+    transition: font-style var(--dur-fast), letter-spacing var(--dur) var(--ease);
+  }
+  .t-leader {
+    flex: 1;
+    min-width: 16px;
+    border-bottom: 1px dotted var(--line-strong);
+    transform: translateY(-0.3em);
+  }
+  .t-folio {
+    color: var(--ink-2);
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    font-variant-numeric: tabular-nums lining-nums;
+    letter-spacing: 0.06em;
+  }
+  .t-desc {
+    display: block;
+    margin-top: 2px;
+    color: var(--ink-3);
+    font-size: 14px;
+  }
+  .toc-list a:hover .t-name {
+    font-style: italic;
+  }
+  .toc-list a:hover .t-folio {
+    color: var(--falu);
+  }
+  .toc-list a:focus-visible {
+    outline-offset: 2px;
   }
 
-  @media (max-width: 900px) {
-    .hero-body {
-      grid-template-columns: 1fr;
+  /* The relic count sits in the right margin on wide screens. */
+  .marginal {
+    display: grid;
+    gap: 2px;
+    margin-top: var(--s-5);
+    padding-left: var(--s-3);
+    border-left: 1px solid var(--falu);
+    font-size: 13px;
+  }
+  .marginal a {
+    color: var(--ink);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .m-mark {
+    color: var(--falu);
+  }
+  .m-sub {
+    color: var(--ink-3);
+    font-style: italic;
+  }
+  @media (min-width: 1200px) {
+    .marginal {
+      position: absolute;
+      top: calc(var(--s-7) + 54px);
+      right: -214px;
+      width: 180px;
+      margin-top: 0;
     }
-    .hero-actions {
-      justify-content: flex-start;
+  }
+
+  /* ── Particulars ─────────────────────────────────────────── */
+
+  .particulars {
+    padding-top: var(--s-7);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+  tr {
+    border-bottom: 1px solid var(--line);
+  }
+  th,
+  td {
+    padding: var(--s-3) 0;
+    vertical-align: baseline;
+  }
+  th {
+    width: 1%;
+    padding-right: var(--s-2);
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-align: left;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .lead-cell {
+    border-bottom: 1px dotted var(--line-strong);
+    transform: translateY(-0.3em);
+    background-clip: padding-box;
+  }
+  .val {
+    width: 1%;
+    padding-left: var(--s-2);
+    color: var(--ink);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  @media (max-width: 720px) {
+    .plate-wrap {
+      float: none;
+      width: min(100%, 420px);
+      margin: 0 auto var(--s-3);
+      shape-outside: none;
     }
-    .facts {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-    .facts div:nth-child(3) {
-      padding-left: 0;
-      border-left: 0;
-    }
-    .facts div:nth-child(n + 3) {
-      border-top: 1px solid var(--line);
+    .eyebrow {
+      margin-top: var(--s-4);
     }
   }
 </style>

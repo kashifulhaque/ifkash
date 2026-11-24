@@ -75,3 +75,153 @@ html[data-design="almanac"][data-theme="dark"] body::after {
   mix-blend-mode: screen;
   filter: invert(1) sepia(0.4);
 }
+
+/* ── Printed-almanac layout ────────────────────────────────────────
+   The shell (`Shell.svelte`) sets `--folio` on the content leaf, for
+   example `"02"` on /projects. The rules below turn the shared page
+   markup into chapter openers, ruled tables, and marginal notes. */
+
+html[data-design="almanac"] .page-head {
+  position: relative;
+  gap: var(--s-3);
+  padding: var(--s-5) 0 var(--s-6);
+  border-bottom: 3px double var(--ink);
+}
+
+/* The chapter numeral, with a rule under it. */
+html[data-design="almanac"] .page-head::before {
+  content: var(--folio, none);
+  display: block;
+  padding-bottom: var(--s-2);
+  border-bottom: 1px solid var(--line-strong);
+  color: var(--ink-3);
+  font-family: var(--font-display);
+  font-size: clamp(4rem, 3rem + 5vw, 7rem);
+  font-weight: 200;
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  font-variant-numeric: lining-nums;
+  font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 144, "wght" 200;
+}
+
+html[data-design="almanac"] .page-head .page-title {
+  margin-top: var(--s-2);
+  font-style: italic;
+  font-weight: 300;
+  font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 144, "wght" 300;
+}
+
+/* A raised initial: it reads well on one-line and multi-line leads. */
+html[data-design="almanac"] .page-head .lead {
+  font-size: var(--text-md);
+}
+html[data-design="almanac"] .page-head .lead::first-letter {
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: 1.9em;
+  font-weight: 300;
+  line-height: 0;
+  font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 144, "wght" 300;
+}
+
+/* Marginalia: the eyebrow and breadcrumb move to the right gutter on wide screens. */
+@media (min-width: 1200px) {
+  html[data-design="almanac"] .page-head > :is(.eyebrow, .breadcrumb) {
+    position: absolute;
+    top: var(--s-5);
+    left: calc(100% + var(--s-6));
+    width: 170px;
+    padding-left: var(--s-3);
+    border-left: 1px solid var(--line-strong);
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+}
+@media (max-width: 1199px) {
+  html[data-design="almanac"] .page-head > :is(.eyebrow, .breadcrumb) {
+    order: -1;
+  }
+}
+
+html[data-design="almanac"] :is(.eyebrow, .label) {
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+}
+html[data-design="almanac"] .breadcrumb {
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* Rows become almanac tables: double rules at the ends, dotted rules between. */
+html[data-design="almanac"] .rows {
+  border-top: 3px double var(--ink);
+  border-bottom: 1px solid var(--ink);
+  font-variant-numeric: tabular-nums lining-nums;
+}
+html[data-design="almanac"] .page-head + .rows {
+  border-top-width: 1px;
+}
+html[data-design="almanac"] .rows > li,
+html[data-design="almanac"] .rows > .row {
+  border-bottom: 1px dotted var(--line-strong);
+}
+html[data-design="almanac"] .rows > :last-child {
+  border-bottom: 0;
+}
+html[data-design="almanac"] .rows .row-n {
+  font-family: var(--font-mono);
+  letter-spacing: 0.06em;
+}
+
+/* Cards get two registration marks, like crop marks on a proof. */
+html[data-design="almanac"] .card {
+  position: relative;
+  border-radius: 0;
+  border-color: var(--line-strong);
+}
+html[data-design="almanac"] .card::before,
+html[data-design="almanac"] .card::after {
+  content: "";
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border: 0 solid var(--ink);
+  pointer-events: none;
+}
+html[data-design="almanac"] .card::before {
+  top: -4px;
+  left: -4px;
+  border-width: 1px 0 0 1px;
+}
+html[data-design="almanac"] .card::after {
+  right: -4px;
+  bottom: -4px;
+  border-width: 0 1px 1px 0;
+}
+
+/* Detail pages: the facts aside reads as a marginal note. */
+html[data-design="almanac"] .detail .facts dt {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+html[data-design="almanac"] .detail .facts {
+  border-left: 1px solid var(--line-strong);
+  padding-left: var(--s-4);
+}
+html[data-design="almanac"] .detail .facts dd {
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+html[data-design="almanac"] .tag {
+  border-radius: var(--radius-sm);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-design="almanac"] * {
+    scroll-behavior: auto;
+  }
+}

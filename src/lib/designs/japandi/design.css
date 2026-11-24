@@ -1,74 +1,471 @@
-/* Japandi. PLACEHOLDER tokens: warm washi paper, sumi ink, muted indigo
-   and clay accents; charcoal in the dark theme.
+/* Japandi. Japanese restraint and Scandinavian warmth: washi paper, sumi
+   ink, ash wood, and one red hanko seal. The light theme is Washi and the
+   dark theme is Sumi (charcoal with a lantern-amber accent).
 
-   Rules for this file:
-   - Scope every selector with `[data-design="japandi"]` (tokens) or
-     `html[data-design="japandi"]` (global-class overrides).
-   - Define each token in both the light block and the dark block. The dark
-     block must repeat every token the light block overrides, or the light
-     value leaks into dark mode.
-   - Import this design's fonts here, at the top, for example:
-     @import "@fontsource/shippori-mincho/400.css";
-     @import "@fontsource/zen-kaku-gothic-new/400.css"; */
+   Token blocks come first. Every other rule carries
+   `html[data-design="japandi"]` so it outranks scoped component styles in
+   pages. The rail, footer, and home layout live in `Shell.svelte` and
+   `Home.svelte`. */
+
+@import "@fontsource/shippori-mincho/400.css";
+@import "@fontsource/shippori-mincho/500.css";
+@import "@fontsource/shippori-mincho/700.css";
+@import "@fontsource/zen-kaku-gothic-new/400.css";
+@import "@fontsource/zen-kaku-gothic-new/500.css";
+@import "@fontsource/zen-kaku-gothic-new/700.css";
+
+/* ── Tokens: Washi (light) ──────────────────────────────────── */
 
 [data-design="japandi"] {
   --bg: #f3efe7;
-  --surface: #f8f5ee;
+  --surface: #f9f6ef;
   --surface-2: #e9e3d6;
-  --surface-ink: #2b2a27;
+  --surface-ink: #25231f;
 
-  --ink: #2b2a27;
-  --ink-2: #55524b;
-  --ink-3: #6b675d;
+  --ink: #25231f;
+  --ink-2: #48443d;
+  --ink-3: #6a6458;
   --ink-inverse: #f3efe7;
 
-  --line: #ddd6c7;
-  --line-strong: #b5ad9b;
+  --line: #ddd5c4;
+  --line-strong: #b2a78f;
 
-  --fjord: #3d4f6b;
-  --fjord-strong: #2b3a52;
-  --fjord-wash: rgb(61 79 107 / 10%);
-  --falu: #a8553a;
-  --moss: #66705a;
-  --moss-wash: rgb(102 112 90 / 12%);
-  --clay: #8f6238;
-  --danger: #9a3b34;
-  --success: #4c6b4a;
+  /* The accent slot is indigo (ai-zome). Red is reserved for the seal. */
+  --fjord: #2f4a6b;
+  --fjord-strong: #20354f;
+  --fjord-wash: rgb(47 74 107 / 10%);
+  --falu: #b0372a;
+  --moss: #596b4b;
+  --moss-wash: rgb(89 107 75 / 13%);
+  --clay: #96593a;
+  --danger: #a3302a;
+  --success: #46684a;
 
-  --hover-wash: rgb(43 42 39 / 4%);
-  --press-wash: rgb(43 42 39 / 8%);
-  --scrim: rgb(43 42 39 / 30%);
-  --code-surface: #e9e3d6;
-  --shadow-color: rgb(43 42 39 / 12%);
+  --hover-wash: rgb(37 35 31 / 4%);
+  --press-wash: rgb(37 35 31 / 8%);
+  --scrim: rgb(37 35 31 / 32%);
+  --code-surface: #ece6d9;
+  --shadow-color: rgb(60 48 30 / 40%);
+
+  --font-sans: "Zen Kaku Gothic New", "Hiragino Kaku Gothic ProN", "Hanken Grotesk Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Shippori Mincho", "Hiragino Mincho ProN", "Iowan Old Style", Georgia, serif;
+  --font-display: "Shippori Mincho", "Hiragino Mincho ProN", "Iowan Old Style", Georgia, serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  --radius-xs: 1px;
+  --radius-sm: 2px;
+  --radius-md: 3px;
+  --content-max: 920px;
+  --measure: 62ch;
 }
+
+/* ── Tokens: Sumi (dark) ────────────────────────────────────── */
 
 [data-design="japandi"][data-theme="dark"] {
   --bg: #1b1b1a;
-  --surface: #232321;
+  --surface: #242321;
   --surface-2: #151514;
-  --surface-ink: #ece7dc;
+  --surface-ink: #ece6d8;
 
-  --ink: #ece7dc;
-  --ink-2: #c4beb1;
-  --ink-3: #9d978a;
+  --ink: #ece6d8;
+  --ink-2: #c9c1b0;
+  --ink-3: #a29a8b;
   --ink-inverse: #1b1b1a;
 
-  --line: #34332f;
-  --line-strong: #55534c;
+  --line: #34322e;
+  --line-strong: #5f5a50;
 
-  --fjord: #9fb2d0;
-  --fjord-strong: #bccae0;
-  --fjord-wash: rgb(159 178 208 / 13%);
-  --falu: #d98a6c;
-  --moss: #a3b08f;
-  --moss-wash: rgb(163 176 143 / 13%);
-  --clay: #d6a672;
-  --danger: #e58f82;
-  --success: #9fbf98;
+  /* Lantern amber takes the accent slot. */
+  --fjord: #e3a857;
+  --fjord-strong: #f0c176;
+  --fjord-wash: rgb(227 168 87 / 13%);
+  --falu: #d95b44;
+  --moss: #9db38c;
+  --moss-wash: rgb(157 179 140 / 14%);
+  --clay: #d79a6a;
+  --danger: #f08a7a;
+  --success: #9db38c;
 
-  --hover-wash: rgb(236 231 220 / 5%);
-  --press-wash: rgb(236 231 220 / 9%);
+  --hover-wash: rgb(236 230 216 / 5%);
+  --press-wash: rgb(236 230 216 / 9%);
   --scrim: rgb(0 0 0 / 55%);
   --code-surface: #151514;
-  --shadow-color: rgb(0 0 0 / 45%);
+  --shadow-color: rgb(0 0 0 / 55%);
+
+  --font-sans: "Zen Kaku Gothic New", "Hiragino Kaku Gothic ProN", "Hanken Grotesk Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Shippori Mincho", "Hiragino Mincho ProN", "Iowan Old Style", Georgia, serif;
+  --font-display: "Shippori Mincho", "Hiragino Mincho ProN", "Iowan Old Style", Georgia, serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  --radius-xs: 1px;
+  --radius-sm: 2px;
+  --radius-md: 3px;
+  --content-max: 920px;
+  --measure: 62ch;
+}
+
+/* ── Paper ──────────────────────────────────────────────────── */
+
+/* Washi: long horizontal fibres from stretched noise, plus a warm glow
+   that reads as a low moon behind the paper. */
+html[data-design="japandi"] body {
+  background-color: var(--bg);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='320'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.03 0.5' numOctaves='2' seed='4' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.45 0 0 0 0 0.36 0 0 0 0 0.22 0 0 0 0.26 -0.1'/%3E%3C/filter%3E%3Crect width='320' height='320' filter='url(%23f)'/%3E%3C/svg%3E");
+  background-attachment: fixed;
+  line-height: 1.8;
+  letter-spacing: 0.015em;
+  font-feature-settings: normal;
+}
+html[data-design="japandi"][data-theme="dark"] body {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='320'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.03 0.5' numOctaves='2' seed='4' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.9 0 0 0 0 0.85 0 0 0 0 0.72 0 0 0 0.1 -0.04'/%3E%3C/filter%3E%3Crect width='320' height='320' filter='url(%23f)'/%3E%3C/svg%3E");
+}
+html[data-design="japandi"] body::before {
+  content: "";
+  position: fixed;
+  top: -20vmax;
+  left: -12vmax;
+  z-index: 0;
+  width: 60vmax;
+  height: 60vmax;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgb(255 250 235 / 55%), transparent);
+  pointer-events: none;
+}
+html[data-design="japandi"][data-theme="dark"] body::before {
+  background: radial-gradient(closest-side, rgb(227 168 87 / 8%), transparent);
+}
+html[data-design="japandi"] body::after {
+  opacity: 0.035;
+}
+html[data-design="japandi"][data-theme="dark"] body::after {
+  opacity: 0.03;
+}
+
+html[data-design="japandi"] ::selection {
+  background: color-mix(in srgb, var(--fjord) 28%, transparent);
+  color: var(--ink);
+}
+html[data-design="japandi"] :focus-visible {
+  outline: 1.5px solid var(--fjord);
+  outline-offset: 4px;
+}
+
+/* ── Type ───────────────────────────────────────────────────── */
+
+html[data-design="japandi"] :is(h1, h2, h3, h4, .page-title, .section-title, .display) {
+  font-family: var(--font-display);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+}
+html[data-design="japandi"] :is(h1, .page-title, .section-title) {
+  line-height: 1.2;
+}
+html[data-design="japandi"] .page-title,
+html[data-design="japandi"] .section-title {
+  font-size: clamp(2.5rem, 1.5rem + 3.8vw, 4.25rem);
+}
+html[data-design="japandi"] :is(em.serif, .serif) {
+  font-family: var(--font-display);
+  font-style: normal;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+}
+html[data-design="japandi"] :is(.lead, .section-subtitle) {
+  max-width: 44ch;
+  color: var(--ink-2);
+  font-size: 1.0625rem;
+  line-height: 2;
+}
+html[data-design="japandi"] :is(.eyebrow, .label) {
+  font-family: var(--font-mono);
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  text-transform: none;
+}
+html[data-design="japandi"] p {
+  line-height: 1.9;
+}
+
+/* ── Page head: title left, vertical eyebrow right ─────────── */
+
+html[data-design="japandi"] .page-head {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: var(--s-7);
+  row-gap: var(--s-4);
+  padding: clamp(40px, 7vw, 88px) 0 var(--s-8);
+  border-bottom: 0;
+}
+html[data-design="japandi"] .page-head > * {
+  grid-column: 1;
+}
+html[data-design="japandi"] .page-head > .eyebrow {
+  grid-column: 2;
+  grid-row: 1 / span 5;
+  align-self: start;
+  justify-self: end;
+  writing-mode: vertical-rl;
+  padding-top: var(--s-2);
+  color: var(--ink-3);
+  font-size: var(--text-sm);
+  letter-spacing: 0.35em;
+}
+/* A wooden-beam hairline closes the head. */
+html[data-design="japandi"] .page-head::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    var(--line-strong),
+    var(--line) 24%,
+    var(--line-strong) 52%,
+    var(--line) 78%,
+    transparent
+  );
+}
+html[data-design="japandi"] .breadcrumb {
+  letter-spacing: 0.08em;
+}
+
+/* ── Rows become a two-column tile grid ─────────────────────── */
+
+html[data-design="japandi"] .rows {
+  border-top: 0;
+}
+html[data-design="japandi"] .rows > li,
+html[data-design="japandi"] .rows > .row {
+  border-bottom-color: var(--line);
+}
+
+html[data-design="japandi"] .rows.list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--s-5);
+}
+html[data-design="japandi"] .rows.list > li {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  padding: var(--s-5);
+  border: 0;
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--line);
+  transition:
+    transform var(--dur) var(--ease-out),
+    box-shadow var(--dur) var(--ease-out);
+}
+html[data-design="japandi"] .rows.list > li::before,
+html[data-design="japandi"] .rows.list > li::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  left: 0;
+  height: 3px;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--line-strong) 0 11px,
+    var(--line) 11px 17px,
+    color-mix(in srgb, var(--line-strong) 70%, var(--line)) 17px 31px,
+    var(--line) 31px 36px
+  );
+  opacity: 0.7;
+  pointer-events: none;
+}
+html[data-design="japandi"] .rows.list > li::before {
+  top: 0;
+}
+html[data-design="japandi"] .rows.list > li::after {
+  bottom: 0;
+}
+html[data-design="japandi"] .rows.list > li:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    inset 0 0 0 1px var(--line-strong),
+    0 14px 22px -16px var(--shadow-color);
+}
+/* The project, RL, and education rows set their own grid inside the li.
+   Stack them inside a tile instead. */
+html[data-design="japandi"] .rows.list > li > :is(a, div, .row) {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+html[data-design="japandi"] .rows.list :is(.row-body, .row-meta, .row-links) {
+  margin-left: 0;
+  padding-left: 0;
+  justify-items: start;
+  align-items: flex-start;
+  text-align: left;
+}
+
+/* ── Work timeline: a vertical ink line with seal-red nodes ── */
+
+html[data-design="japandi"] .timeline {
+  border-top: 0;
+}
+
+/* ── Cards: paper with an uneven, deckled edge ──────────────── */
+
+html[data-design="japandi"] .card {
+  position: relative;
+  border: 0;
+  border-radius: 3px 1px 4px 2px / 2px 4px 1px 3px;
+  background-color: var(--surface);
+  box-shadow:
+    0 0 0 1px var(--line),
+    1px 2px 0 0 var(--surface-2),
+    2px 4px 0 -1px var(--line),
+    0 14px 22px -20px var(--shadow-color);
+}
+
+/* ── Buttons: flat, with an ink underline that grows ────────── */
+
+html[data-design="japandi"] .btn {
+  border: 0;
+  border-radius: 0;
+  background-color: color-mix(in srgb, var(--ink) 4%, transparent);
+  background-image: linear-gradient(var(--ink), var(--ink));
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 28% 1px;
+  color: var(--ink);
+  letter-spacing: 0.08em;
+  transition:
+    background-size var(--dur-slow) var(--ease-out),
+    background-color var(--dur-fast) var(--ease),
+    color var(--dur-fast) var(--ease);
+}
+html[data-design="japandi"] .btn:hover:not(:disabled) {
+  border: 0;
+  background-color: var(--hover-wash);
+  background-size: 100% 1px;
+}
+html[data-design="japandi"] :is(.btn-primary, .btn--primary, .btn--header) {
+  background-color: var(--ink);
+  background-image: linear-gradient(var(--falu), var(--falu));
+  background-size: 28% 2px;
+  color: var(--ink-inverse);
+}
+html[data-design="japandi"] :is(.btn-primary, .btn--primary, .btn--header):hover:not(:disabled) {
+  border: 0;
+  background-color: var(--ink);
+  background-size: 100% 2px;
+  color: var(--ink-inverse);
+}
+html[data-design="japandi"] :is(.btn--ghost, .btn-ghost) {
+  background-color: transparent;
+  background-size: 0 1px;
+  color: var(--ink-2);
+}
+html[data-design="japandi"] :is(.btn--ghost, .btn-ghost):hover:not(:disabled) {
+  background-size: 100% 1px;
+}
+
+/* ── Marks, tags, and fields ────────────────────────────────── */
+
+/* The dot becomes a small hanko square. */
+html[data-design="japandi"] .dot {
+  width: 0.55em;
+  height: 0.55em;
+  border-radius: 1px;
+  background: var(--falu);
+  transform: rotate(-5deg);
+}
+html[data-design="japandi"] .tag {
+  border-radius: 2px;
+  letter-spacing: 0.06em;
+}
+html[data-design="japandi"] :is(.field, .input-field) {
+  border-radius: 2px;
+}
+html[data-design="japandi"] :is(.field, .input-field):focus {
+  border-color: var(--fjord);
+  box-shadow: 0 0 0 3px var(--fjord-wash);
+}
+html[data-design="japandi"] a:hover {
+  color: var(--fjord);
+}
+html[data-design="japandi"][data-theme="dark"] a:hover {
+  color: var(--fjord-strong);
+}
+
+/* ── Ink-bleed page reveal ──────────────────────────────────── */
+
+html[data-design="japandi"] #main.bleed {
+  animation: japandi-bleed 1000ms var(--ease-out) backwards;
+}
+@keyframes japandi-bleed {
+  from {
+    opacity: 0;
+    filter: blur(9px);
+  }
+  60% {
+    filter: blur(1.5px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+
+@media (max-width: 760px) {
+  html[data-design="japandi"] .rows.list {
+    grid-template-columns: 1fr;
+  }
+  html[data-design="japandi"] .page-head {
+    column-gap: var(--s-4);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-design="japandi"] #main.bleed {
+    animation: none;
+  }
+}
+
+/* ── Tools in the rail ──────────────────────────────────────── */
+
+/* The search button is icon-only in the narrow rail. The label stays for
+   screen readers. */
+html[data-design="japandi"] .tools .deck-trigger {
+  width: 32px;
+  justify-content: center;
+  padding: 0;
+}
+html[data-design="japandi"] .tools .deck-trigger .trigger-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+html[data-design="japandi"] .tools .deck-trigger kbd {
+  display: none;
+}
+/* The weather panel opens beside the rail instead of below the button. */
+html[data-design="japandi"] .tools .weather-panel {
+  top: auto;
+  right: calc(100% + var(--s-4));
+  bottom: 0;
+}
+@media (max-width: 899px) {
+  html[data-design="japandi"] .tools .deck-trigger {
+    width: auto;
+    padding: 0 var(--s-3);
+  }
+  html[data-design="japandi"] .tools .weather-panel {
+    position: absolute;
+    top: auto;
+    right: auto;
+    bottom: calc(100% + var(--s-3));
+    left: 0;
+    width: min(296px, calc(100vw - 2 * var(--gutter)));
+  }
 }

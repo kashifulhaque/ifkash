@@ -1,74 +1,634 @@
-/* Ember. PLACEHOLDER tokens: near-black umber, gold accent, parchment in
-   the light theme.
+/* Ember. A dark-fantasy design: gold ink on warm black ("Night"), and a
+   hand-drawn map on vellum ("Vellum"). Cinzel capitals for headings,
+   Cormorant Garamond for body text.
+
+   The shell (rail, menu, background stage, hints bar) is styled in
+   `Shell.svelte`. This file holds the tokens and the rules that restyle the
+   global classes pages share: .page-head, .rows, .card, .btn, .field, and so on.
 
    Rules for this file:
-   - Scope every selector with `[data-design="ember"]` (tokens) or
-     `html[data-design="ember"]` (global-class overrides).
-   - Define each token in both the light block and the dark block. The dark
-     block must repeat every token the light block overrides, or the light
-     value leaks into dark mode.
-   - Import this design's fonts here, at the top, for example:
-     @import "@fontsource-variable/cinzel";
-     @import "@fontsource-variable/cormorant-garamond"; */
+   - Tokens sit under `[data-design="ember"]` (light) and
+     `[data-design="ember"][data-theme="dark"]`. The dark block repeats every
+     token the light block sets that differs.
+   - Every other selector starts with `html[data-design="ember"]`. */
+
+@import "@fontsource-variable/cinzel";
+@import "@fontsource-variable/cormorant-garamond";
+@import "@fontsource-variable/cormorant-garamond/wght-italic.css";
+
+/* ── Tokens: Vellum (light) ──────────────────────────────── */
 
 [data-design="ember"] {
-  --bg: #eee4cf;
-  --surface: #f6eedc;
-  --surface-2: #e3d6b8;
-  --surface-ink: #2a2116;
+  --bg: #e8dcc0;
+  --bg-deep: #cdbd98;
+  --surface: #f1e8d0;
+  --surface-2: #e0d2b0;
+  --surface-ink: #2a2118;
 
-  --ink: #2a2116;
-  --ink-2: #4d4129;
-  --ink-3: #66583d;
-  --ink-inverse: #eee4cf;
+  --ink: #2a2118;
+  --ink-2: #4a3d2f;
+  --ink-3: #66573f;
+  --ink-inverse: #f1e8d0;
 
-  --line: #d6c8a5;
-  --line-strong: #a99a74;
+  --line: rgb(90 64 24 / 34%);
+  --line-strong: rgb(90 64 24 / 58%);
 
-  --fjord: #7a5a12;
-  --fjord-strong: #5c4309;
-  --fjord-wash: rgb(122 90 18 / 11%);
-  --falu: #a8441c;
-  --moss: #4d6a3c;
-  --moss-wash: rgb(77 106 60 / 12%);
+  --fjord: #7a5c18;
+  --fjord-strong: #5b430d;
+  --fjord-wash: rgb(122 92 24 / 14%);
+  --falu: #8c241e;
+  --moss: #556b34;
+  --moss-wash: rgb(85 107 52 / 14%);
   --clay: #8a5a1e;
-  --danger: #9a2f25;
-  --success: #3d6a3a;
+  --danger: #8c241e;
+  --success: #44602f;
 
-  --hover-wash: rgb(42 33 22 / 5%);
-  --press-wash: rgb(42 33 22 / 9%);
-  --scrim: rgb(42 33 22 / 35%);
-  --code-surface: #e3d6b8;
-  --shadow-color: rgb(42 33 22 / 16%);
+  --hover-wash: rgb(90 64 24 / 8%);
+  --press-wash: rgb(90 64 24 / 14%);
+  --scrim: rgb(42 33 22 / 48%);
+  --code-surface: #dccfaa;
+  --shadow-color: rgb(60 40 10 / 28%);
+
+  /* Ember-only tokens. */
+  --ember-title: #5b3f0a;
+  --ember-ornament: #7a5c18;
+  --ember-glow-rgb: 138 106 34;
+  --ember-band: rgb(110 80 30 / 10%);
+  --ember-panel: rgb(241 232 208 / 90%);
+
+  /* Type. */
+  --font-sans: "Cormorant Garamond Variable", "Cormorant Garamond", "Iowan Old Style", Georgia, serif;
+  --font-serif: "Cormorant Garamond Variable", "Cormorant Garamond", Georgia, serif;
+  --font-display: "Cinzel Variable", Cinzel, "Trajan Pro", "Iowan Old Style", Georgia, serif;
+
+  /* Cormorant has a small x-height, so the scale runs larger than the base. */
+  --text-xs: 0.8125rem;
+  --text-sm: 1rem;
+  --text-base: 1.125rem;
+  --text-md: 1.25rem;
+  --text-lg: 1.5rem;
+  --text-xl: 1.875rem;
+  --text-2xl: clamp(2rem, 1.4rem + 2.2vw, 2.75rem);
+  --text-3xl: clamp(2.2rem, 1.4rem + 3.4vw, 3.6rem);
+
+  --radius-xs: 1px;
+  --radius-sm: 2px;
+  --radius-md: 3px;
 }
 
+/* ── Tokens: Night (dark) ────────────────────────────────── */
+
 [data-design="ember"][data-theme="dark"] {
-  --bg: #0e0c09;
-  --surface: #16130e;
-  --surface-2: #0a0907;
-  --surface-ink: #ece0c8;
+  --bg: #0b0a09;
+  --bg-deep: #050404;
+  --surface: #14110e;
+  --surface-2: #1c1813;
+  --surface-ink: #d9d0bd;
 
-  --ink: #ece0c8;
-  --ink-2: #c4b697;
-  --ink-3: #9a8c70;
-  --ink-inverse: #0e0c09;
+  --ink: #d9d0bd;
+  --ink-2: #b9b09b;
+  --ink-3: #928a78;
+  --ink-inverse: #0b0a09;
 
-  --line: #2c261b;
-  --line-strong: #4a402c;
+  --line: rgb(200 166 90 / 26%);
+  --line-strong: rgb(200 166 90 / 48%);
 
-  --fjord: #c9a959;
-  --fjord-strong: #e0c27a;
-  --fjord-wash: rgb(201 169 89 / 13%);
-  --falu: #d9692f;
+  --fjord: #c8a65a;
+  --fjord-strong: #f0d890;
+  --fjord-wash: rgb(200 166 90 / 14%);
+  --falu: #d6453a;
   --moss: #8fa573;
-  --moss-wash: rgb(143 165 115 / 13%);
+  --moss-wash: rgb(143 165 115 / 14%);
   --clay: #d08a4a;
-  --danger: #ef8a72;
+  --danger: #ef8a7c;
   --success: #9bbd86;
 
-  --hover-wash: rgb(236 224 200 / 5%);
-  --press-wash: rgb(236 224 200 / 9%);
-  --scrim: rgb(0 0 0 / 62%);
-  --code-surface: #0a0907;
-  --shadow-color: rgb(0 0 0 / 50%);
+  --hover-wash: rgb(240 216 144 / 6%);
+  --press-wash: rgb(240 216 144 / 10%);
+  --scrim: rgb(0 0 0 / 70%);
+  --code-surface: #0a0908;
+  --shadow-color: rgb(0 0 0 / 60%);
+
+  --ember-title: #f0d890;
+  --ember-ornament: #a88a48;
+  --ember-glow-rgb: 240 216 144;
+  --ember-band: rgb(0 0 0 / 42%);
+  --ember-panel: rgb(20 17 14 / 88%);
+}
+
+/* ── Ornaments ───────────────────────────────────────────────
+   Corner flourishes are drawn as mask layers over a solid color, so they
+   follow the theme. Each variable holds one corner of a 40px square. */
+
+html[data-design="ember"] {
+  --ember-c-tl: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'><g fill='none' stroke='black' stroke-width='1.2'><path d='M1 40V13Q1 1 13 1H40'/><path d='M7 40V16Q7 7 16 7H40' stroke-opacity='.55'/></g><path d='M13 9l4 4-4 4-4-4z'/><circle cx='1.5' cy='1.5' r='1.6'/></svg>");
+  --ember-c-tr: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'><g transform='matrix(-1 0 0 1 40 0)'><g fill='none' stroke='black' stroke-width='1.2'><path d='M1 40V13Q1 1 13 1H40'/><path d='M7 40V16Q7 7 16 7H40' stroke-opacity='.55'/></g><path d='M13 9l4 4-4 4-4-4z'/><circle cx='1.5' cy='1.5' r='1.6'/></g></svg>");
+  --ember-c-bl: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'><g transform='matrix(1 0 0 -1 0 40)'><g fill='none' stroke='black' stroke-width='1.2'><path d='M1 40V13Q1 1 13 1H40'/><path d='M7 40V16Q7 7 16 7H40' stroke-opacity='.55'/></g><path d='M13 9l4 4-4 4-4-4z'/><circle cx='1.5' cy='1.5' r='1.6'/></g></svg>");
+  --ember-c-br: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'><g transform='matrix(-1 0 0 -1 40 40)'><g fill='none' stroke='black' stroke-width='1.2'><path d='M1 40V13Q1 1 13 1H40'/><path d='M7 40V16Q7 7 16 7H40' stroke-opacity='.55'/></g><path d='M13 9l4 4-4 4-4-4z'/><circle cx='1.5' cy='1.5' r='1.6'/></g></svg>");
+  --ember-diamond: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'><path d='M6 0l6 6-6 6-6-6z'/></svg>");
+  --ember-taper: linear-gradient(90deg, transparent, #000 20%, #000 80%, transparent);
+}
+
+/* ── Base ────────────────────────────────────────────────── */
+
+html[data-design="ember"] {
+  scroll-padding-top: 24px;
+}
+
+html[data-design="ember"] body {
+  font-size: 1.1875rem;
+  font-weight: 500;
+  line-height: 1.6;
+  font-feature-settings: "lnum", "kern";
+  font-variant-numeric: lining-nums;
+  color: var(--ink-2);
+}
+
+html[data-design="ember"] ::selection {
+  background: rgb(var(--ember-glow-rgb) / 38%);
+  color: var(--ink);
+}
+
+html[data-design="ember"] :focus-visible {
+  outline: 2px solid var(--fjord-strong);
+  outline-offset: 3px;
+  border-radius: 1px;
+}
+
+html[data-design="ember"] body::after {
+  opacity: 0.035;
+}
+
+html[data-design="ember"]:not([data-theme="dark"]) body::after {
+  opacity: 0.07;
+}
+
+html[data-design="ember"][data-theme="dark"] :is(p, li, dd) {
+  text-shadow: 0 1px 6px rgb(0 0 0 / 70%);
+}
+
+html[data-design="ember"] a:hover {
+  color: var(--fjord-strong);
+}
+html[data-design="ember"]:not([data-theme="dark"]) a:hover {
+  color: var(--fjord-strong);
+}
+
+html[data-design="ember"] :is(h1, h2, h3, h4, h5, h6, .page-title, .section-title, .display) {
+  font-family: var(--font-display);
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+
+html[data-design="ember"] :is(h1, h2, h3) {
+  line-height: 1.25;
+}
+html[data-design="ember"] :is(h4, h5, h6) {
+  font-size: var(--text-sm);
+  letter-spacing: 0.14em;
+}
+
+html[data-design="ember"] :is(em.serif, .serif) {
+  font-family: var(--font-serif);
+  font-style: italic;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+html[data-design="ember"] :is(em, i):not(.fa) {
+  font-style: italic;
+}
+
+html[data-design="ember"] code,
+html[data-design="ember"] kbd,
+html[data-design="ember"] pre {
+  font-size: 0.8125rem;
+}
+html[data-design="ember"] code {
+  border: 1px solid var(--line);
+}
+
+/* Small labels: Cinzel capitals, wide tracking. */
+html[data-design="ember"] :is(.eyebrow, .label) {
+  color: var(--fjord);
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+}
+html[data-design="ember"][data-theme="dark"] :is(.eyebrow, .label) {
+  color: #d3b56a;
+}
+
+html[data-design="ember"] .lead,
+html[data-design="ember"] .section-subtitle {
+  color: var(--ink-2);
+  font-size: 1.375rem;
+  font-style: italic;
+  line-height: 1.45;
+}
+
+/* ── Page heading: a banner ──────────────────────────────── */
+
+html[data-design="ember"] .page-head {
+  position: relative;
+  justify-items: center;
+  gap: var(--s-3);
+  margin-top: 28px;
+  padding: 64px 28px 56px;
+  border-bottom: 0;
+  background: linear-gradient(180deg, transparent, var(--ember-band) 30%, var(--ember-band) 70%, transparent);
+  text-align: center;
+}
+
+html[data-design="ember"] .page-head > * {
+  position: relative;
+  max-width: 100%;
+  margin-inline: auto;
+}
+
+html[data-design="ember"] .page-head .page-title,
+html[data-design="ember"] .page-head .section-title {
+  color: var(--ember-title);
+  font-size: clamp(1.9rem, 1.1rem + 3.2vw, 3.1rem);
+  font-weight: 600;
+  line-height: 1.12;
+  letter-spacing: 0.2em;
+  /* The trailing letter-space would shift the centred text, so trim it. */
+  margin-right: -0.2em;
+  text-shadow: 0 0 22px rgb(var(--ember-glow-rgb) / 38%), 0 2px 10px rgb(0 0 0 / 50%);
+  animation: ember-banner 1.9s cubic-bezier(0.2, 0.6, 0.2, 1) both;
+}
+
+html[data-design="ember"]:not([data-theme="dark"]) .page-head .page-title,
+html[data-design="ember"]:not([data-theme="dark"]) .page-head .section-title {
+  text-shadow: 0 1px 0 rgb(255 248 225 / 55%);
+}
+
+html[data-design="ember"] .page-head .lead,
+html[data-design="ember"] .page-head .section-subtitle {
+  max-width: 52ch;
+  margin-top: var(--s-2);
+}
+
+html[data-design="ember"] .page-head .breadcrumb {
+  justify-content: center;
+}
+
+/* Frame: tapered rules, diamonds, and four corner flourishes. */
+html[data-design="ember"] :is(.page-head, .ember-frame)::before {
+  content: "";
+  position: absolute;
+  inset: -6px 0;
+  z-index: 0;
+  pointer-events: none;
+  background: var(--ember-ornament);
+  opacity: 0.85;
+  -webkit-mask-image: var(--ember-c-tl), var(--ember-c-tr), var(--ember-c-bl), var(--ember-c-br),
+    var(--ember-taper), var(--ember-taper), var(--ember-diamond), var(--ember-diamond);
+  mask-image: var(--ember-c-tl), var(--ember-c-tr), var(--ember-c-bl), var(--ember-c-br),
+    var(--ember-taper), var(--ember-taper), var(--ember-diamond), var(--ember-diamond);
+  -webkit-mask-size: 40px 40px, 40px 40px, 40px 40px, 40px 40px, 100% 1px, 100% 1px, 11px 11px, 11px 11px;
+  mask-size: 40px 40px, 40px 40px, 40px 40px, 40px 40px, 100% 1px, 100% 1px, 11px 11px, 11px 11px;
+  -webkit-mask-position: left 0 top 6px, right 0 top 6px, left 0 bottom 6px, right 0 bottom 6px,
+    center top 11px, center bottom 11px, center top 6px, center bottom 6px;
+  mask-position: left 0 top 6px, right 0 top 6px, left 0 bottom 6px, right 0 bottom 6px,
+    center top 11px, center bottom 11px, center top 6px, center bottom 6px;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+
+/* A soft gold glow behind the title. */
+html[data-design="ember"] .page-head::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(ellipse 55% 60% at 50% 50%, rgb(var(--ember-glow-rgb) / 12%), transparent 70%);
+}
+
+@keyframes ember-banner {
+  from {
+    opacity: 0;
+    letter-spacing: 0.06em;
+    filter: blur(5px);
+  }
+  to {
+    opacity: 1;
+    letter-spacing: 0.2em;
+    filter: none;
+  }
+}
+
+/* ── Inventory list ──────────────────────────────────────── */
+
+html[data-design="ember"] .rows {
+  border-top: 0;
+}
+
+html[data-design="ember"] .rows > li,
+html[data-design="ember"] .rows > .row {
+  position: relative;
+  padding-left: 28px;
+  border-bottom: 0;
+  transition: background var(--dur) var(--ease);
+}
+
+/* Tapered divider under each row. */
+html[data-design="ember"] .rows > li::after,
+html[data-design="ember"] .rows > .row::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--line-strong) 18%, var(--line-strong) 82%, transparent);
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+/* Selector: a diamond and a soft streak on the hovered, focused, or picked row. */
+html[data-design="ember"] .rows > li::before,
+html[data-design="ember"] .rows > .row::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 8px;
+  width: 8px;
+  height: 8px;
+  background: var(--fjord-strong);
+  box-shadow: 0 0 10px rgb(var(--ember-glow-rgb) / 70%);
+  opacity: 0;
+  transform: translate(-8px, -50%) rotate(45deg);
+  transition: opacity var(--dur-fast) var(--ease), transform var(--dur) var(--ease-out);
+  pointer-events: none;
+}
+
+html[data-design="ember"] .rows > li:hover,
+html[data-design="ember"] .rows > li:focus-within,
+html[data-design="ember"] .rows > .row:hover,
+html[data-design="ember"] .rows > li.ember-picked {
+  background: linear-gradient(90deg, transparent, var(--fjord-wash) 22%, var(--fjord-wash) 78%, transparent);
+}
+html[data-design="ember"] .rows > li:hover::before,
+html[data-design="ember"] .rows > li:focus-within::before,
+html[data-design="ember"] .rows > .row:hover::before,
+html[data-design="ember"] .rows > li.ember-picked::before {
+  opacity: 1;
+  transform: translate(0, -50%) rotate(45deg);
+}
+
+html[data-design="ember"] .rows :is(.row-name, .row-school, .row-title) {
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: 1.0625rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+html[data-design="ember"] .rows :is(li:hover, li:focus-within, .row:hover) .row-name,
+html[data-design="ember"] .rows :is(li:hover, li:focus-within, .row:hover) .row-school {
+  color: var(--ember-title);
+  text-shadow: 0 0 14px rgb(var(--ember-glow-rgb) / 45%);
+}
+
+html[data-design="ember"] .rows :is(.row-desc, .row-degree) {
+  color: var(--ink-2);
+  font-size: 1.1875rem;
+  font-style: italic;
+  line-height: 1.4;
+}
+
+html[data-design="ember"] .rows :is(.row-n, .row-path, .row-period, .row-location) {
+  color: var(--ink-3);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+}
+
+/* ── Tag, dot, led ───────────────────────────────────────── */
+
+html[data-design="ember"] .tag {
+  height: 26px;
+  border-color: var(--line-strong);
+  border-radius: 1px;
+  color: var(--ink-2);
+  font-family: var(--font-display);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  clip-path: polygon(6px 0, calc(100% - 6px) 0, 100% 50%, calc(100% - 6px) 100%, 6px 100%, 0 50%);
+  border-width: 0;
+  background: var(--fjord-wash);
+  padding: 0 14px;
+}
+
+html[data-design="ember"] .dot {
+  width: 0.5em;
+  height: 0.5em;
+  border-radius: 0;
+  transform: rotate(45deg);
+  background: var(--falu);
+  box-shadow: 0 0 8px var(--falu);
+}
+html[data-design="ember"] .led {
+  width: 7px;
+  height: 7px;
+  border-radius: 0;
+  transform: rotate(45deg);
+  background: var(--fjord-strong);
+  box-shadow: 0 0 8px rgb(var(--ember-glow-rgb) / 70%);
+}
+html[data-design="ember"] .led-hollow {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--ink-3);
+}
+
+html[data-design="ember"] .breadcrumb {
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+/* ── Cards: dark translucent panels with a gold hairline ─── */
+
+html[data-design="ember"] .card {
+  position: relative;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  background: linear-gradient(180deg, rgb(var(--ember-glow-rgb) / 5%), transparent 45%), var(--ember-panel);
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 25%), 0 10px 30px -12px var(--shadow-color);
+}
+html[data-design="ember"]:not([data-theme="dark"]) .card {
+  box-shadow: inset 0 0 0 1px rgb(255 248 225 / 50%), 0 8px 24px -14px var(--shadow-color);
+}
+
+/* ── Buttons: menu options ───────────────────────────────── */
+
+html[data-design="ember"] .btn {
+  position: relative;
+  min-height: 42px;
+  padding: 0 var(--s-5);
+  border: 1px solid var(--line-strong);
+  border-radius: 1px;
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  overflow: hidden;
+}
+html[data-design="ember"] .btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgb(var(--ember-glow-rgb) / 24%), transparent);
+  opacity: 0;
+  transition: opacity var(--dur-fast) var(--ease);
+  pointer-events: none;
+}
+html[data-design="ember"] .btn:hover:not(:disabled) {
+  border-color: var(--fjord-strong);
+  background: transparent;
+  color: var(--ember-title);
+  text-shadow: 0 0 12px rgb(var(--ember-glow-rgb) / 55%);
+}
+html[data-design="ember"] .btn:hover:not(:disabled)::before {
+  opacity: 1;
+}
+
+html[data-design="ember"] :is(.btn-primary, .btn--primary, .btn--header) {
+  border-color: var(--fjord);
+  background: var(--fjord);
+  color: var(--ink-inverse);
+}
+html[data-design="ember"] :is(.btn-primary, .btn--primary, .btn--header):hover:not(:disabled) {
+  border-color: var(--fjord-strong);
+  background: var(--fjord-strong);
+  color: var(--ink-inverse);
+  text-shadow: none;
+  box-shadow: 0 0 20px rgb(var(--ember-glow-rgb) / 40%);
+}
+html[data-design="ember"][data-theme="dark"] :is(.btn-primary, .btn--primary, .btn--header):hover:not(:disabled) {
+  color: var(--ink-inverse);
+}
+html[data-design="ember"] :is(.btn--ghost, .btn-ghost) {
+  border-color: transparent;
+  color: var(--ink-2);
+}
+html[data-design="ember"] .btn-sm {
+  min-height: 34px;
+  padding: 0 var(--s-4);
+  font-size: 0.7rem;
+}
+
+/* ── Forms ───────────────────────────────────────────────── */
+
+html[data-design="ember"] :is(.field, .input-field) {
+  border-radius: 1px;
+  border-color: var(--line-strong);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 1.125rem;
+  font-weight: 500;
+}
+html[data-design="ember"][data-theme="dark"] :is(.field, .input-field) {
+  background: rgb(0 0 0 / 38%);
+}
+html[data-design="ember"] :is(.field, .input-field)::placeholder {
+  color: var(--ink-3);
+}
+html[data-design="ember"] :is(.field, .input-field):focus {
+  border-color: var(--fjord-strong);
+  box-shadow: 0 0 0 3px var(--fjord-wash), 0 0 18px rgb(var(--ember-glow-rgb) / 22%);
+}
+
+html[data-design="ember"] :is(input, select, textarea):not(.field):not(.input-field):not([type="checkbox"]):not([type="radio"]):not([type="range"]) {
+  font-size: 1.0625rem;
+}
+
+html[data-design="ember"] option {
+  background: var(--surface);
+  color: var(--ink);
+}
+
+html[data-design="ember"] input[type="checkbox"],
+html[data-design="ember"] input[type="radio"],
+html[data-design="ember"] input[type="range"] {
+  accent-color: var(--fjord);
+}
+
+/* ── Meters: boss-bar style ──────────────────────────────── */
+
+html[data-design="ember"] progress,
+html[data-design="ember"] meter {
+  appearance: none;
+  -webkit-appearance: none;
+  display: block;
+  width: 100%;
+  height: 8px;
+  border: 1px solid var(--line-strong);
+  border-radius: 0;
+  background: rgb(0 0 0 / 45%);
+}
+html[data-design="ember"]:not([data-theme="dark"]) :is(progress, meter) {
+  background: rgb(90 64 24 / 14%);
+}
+html[data-design="ember"] progress::-webkit-progress-bar {
+  background: transparent;
+}
+html[data-design="ember"] progress::-webkit-progress-value {
+  background: linear-gradient(90deg, #7d1f1a, var(--falu));
+  box-shadow: 0 0 10px rgb(214 69 58 / 55%);
+}
+html[data-design="ember"] progress::-moz-progress-bar {
+  background: linear-gradient(90deg, #7d1f1a, var(--falu));
+}
+html[data-design="ember"] meter::-webkit-meter-bar {
+  background: transparent;
+  border: 0;
+}
+html[data-design="ember"] meter::-webkit-meter-optimum-value,
+html[data-design="ember"] meter::-webkit-meter-suboptimum-value,
+html[data-design="ember"] meter::-webkit-meter-even-less-good-value {
+  background: linear-gradient(90deg, var(--fjord), var(--fjord-strong));
+}
+
+/* ── Prose ───────────────────────────────────────────────── */
+
+html[data-design="ember"] .prose :is(p, li) {
+  font-size: 1.25rem;
+  line-height: 1.65;
+}
+html[data-design="ember"] .prose :is(h2, h3) {
+  margin-top: 2.2em;
+}
+html[data-design="ember"] .prose blockquote {
+  border-left: 1px solid var(--fjord);
+  color: var(--ink-2);
+  font-style: italic;
+}
+
+html[data-design="ember"] hr {
+  height: 1px;
+  border: 0;
+  background: linear-gradient(90deg, transparent, var(--line-strong) 20%, var(--line-strong) 80%, transparent);
+}
+
+/* ── Motion ──────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-design="ember"] .page-head .page-title,
+  html[data-design="ember"] .page-head .section-title {
+    animation: none;
+  }
 }

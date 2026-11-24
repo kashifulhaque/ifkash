@@ -1,4 +1,3 @@
-@import "@fontsource-variable/schibsted-grotesk";
 @import "@fontsource-variable/newsreader/opsz.css";
 @import "@fontsource-variable/newsreader/opsz-italic.css";
 @import "@fontsource-variable/fraunces/full.css";
@@ -11,19 +10,17 @@
 @plugin "@tailwindcss/typography";
 
 /* ────────────────────────────────────────────────────────────────
-   ifkash.dev design system. Four designs, one token set.
+   ifkash.dev design system. The tokens below are the Almanac tokens:
+   ink on warm paper, oxblood accent, Fraunces headlines, Hanken
+   Grotesk body, IBM Plex Mono marginalia. Lamplight is the dark theme.
+   Pages that don't know about designs render as Almanac.
 
-   Almanac (default): ink on warm paper, oxblood accent, Fraunces
-   headlines, Hanken Grotesk body, IBM Plex Mono marginalia. Lamplight
-   is the dark theme.
-   Nordisk: birch-paper ground, charcoal ink, one fjord-blue
-   accent, and a single Falu-red dot. Polar night is the same system
-   at dusk — slate ground, snow ink, glacier accent, ember dot.
-   Broadsheet: newsprint, crimson accent, square corners, serif headlines.
-   Atelier: sage plaster, indigo accent, softer corners, Fraunces
-   headlines, and a persimmon ring. Lamp light and kiln are the themes.
-   `data-design` on <html> selects the design; `data-theme` selects light
-   or dark. See DESIGN.md.
+   Each design lives in `src/lib/designs/<id>/`. Its `design.css`
+   overrides these tokens under `[data-design="<id>"]` and
+   `[data-design="<id>"][data-theme="dark"]`. `+layout.svelte` imports
+   every `design.css` after this file, so the overrides win.
+   `data-design` on <html> selects the design; `data-theme` selects
+   light or dark. See DESIGN.md.
 
    Rules: hairlines instead of shadows, small radii, one accent at a
    time, generous whitespace, quiet motion. See DESIGN.md.
@@ -31,44 +28,43 @@
 
 :root {
   /* Surfaces */
-  --bg: #f4f1ea;
-  --surface: #fbfaf6;
-  --surface-2: #ebe6dc;
-  --surface-ink: #25221f;
+  --bg: #f6f1e7;
+  --surface: #fbf8f2;
+  --surface-2: #efe8db;
+  --surface-ink: #2a2420;
 
   /* Ink */
-  --ink: #25221f;
-  --ink-2: #57524b;
-  --ink-3: #6b665e;
-  --ink-inverse: #f4f1ea;
+  --ink: #2a2420;
+  --ink-2: #4f463e;
+  --ink-3: #6e645a;
+  --ink-inverse: #f6f1e7;
 
   /* Lines */
-  --line: #dcd5c8;
-  --line-strong: #bfb6a6;
+  --line: #e2d9c8;
+  --line-strong: #b3a693;
 
-  /* Colour — use one at a time */
-  --fjord: #2f5d74;
-  --fjord-strong: #22475a;
-  --fjord-wash: rgb(47 93 116 / 9%);
-  --falu: #a8392b;
-  --moss: #4f6340;
-  --moss-wash: rgb(79 97 70 / 11%);
-  --clay: #a4502f;
-  --danger: #8a2e3b;
-  --success: #3f6b3a;
+  /* Colour — use one at a time. The --fjord slot is the accent. */
+  --fjord: #a23b2a;
+  --fjord-strong: #7c2b1e;
+  --fjord-wash: rgb(162 59 42 / 9%);
+  --falu: #a23b2a;
+  --moss: #4f6b5a;
+  --moss-wash: rgb(79 107 90 / 12%);
+  --clay: #86621f;
+  --danger: #9e2b25;
+  --success: #3e6b4e;
 
-  --hover-wash: rgb(37 34 31 / 4.5%);
-  --press-wash: rgb(37 34 31 / 8%);
-  --scrim: rgb(37 34 31 / 38%);
-  --code-surface: #efebe2;
+  --hover-wash: rgb(42 36 32 / 4%);
+  --press-wash: rgb(42 36 32 / 8%);
+  --scrim: rgb(42 36 32 / 28%);
+  --code-surface: #efe8db;
 
-  /* Type. --font-display follows --font-sans in Nordisk, the serif
-     stack in Broadsheet, and Fraunces in Atelier, so headlines can
-     change face without restyling buttons and body copy. */
-  --font-sans: "Schibsted Grotesk Variable", "Schibsted Grotesk", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  /* Type. --font-display carries headlines, so a design can change
+     the headline face without restyling buttons and body copy. */
+  --font-sans: "Hanken Grotesk Variable", "Hanken Grotesk", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-serif: "Newsreader Variable", "Newsreader", "Iowan Old Style", Georgia, serif;
-  --font-mono: "JetBrains Mono Variable", "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
-  --font-display: var(--font-sans);
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --font-display: "Fraunces Variable", Fraunces, "Iowan Old Style", Georgia, serif;
 
   --text-xs: 0.75rem;   /* 12 */
   --text-sm: 0.8125rem; /* 13 */
@@ -102,20 +98,14 @@
   --radius-pill: 999px;
 
   /* Motion */
-  --ease: cubic-bezier(0.2, 0, 0, 1);
-  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-  --dur-fast: 140ms;
-  --dur: 220ms;
-  --dur-slow: 480ms;
+  --ease: cubic-bezier(0.33, 1, 0.68, 1);
+  --ease-out: cubic-bezier(0.25, 1, 0.5, 1);
+  --dur-fast: 150ms;
+  --dur: 300ms;
+  --dur-slow: 600ms;
 
-  --shadow-color: rgb(37 34 31 / 12%);
 }
 
-@media (min-width: 768px) {
-  :root {
-    --gutter: 40px;
-  }
-}
 
 @media (min-width: 1200px) {
   :root {
@@ -123,231 +113,9 @@
   }
 }
 
-/* Polar night */
+
+/* Lamplight */
 [data-theme="dark"] {
-  --bg: #15181b;
-  --surface: #1b1f23;
-  --surface-2: #101315;
-  --surface-ink: #ece8e0;
-
-  --ink: #ece8e0;
-  --ink-2: #b5b1a9;
-  --ink-3: #8f8c84;
-  --ink-inverse: #15181b;
-
-  --line: #2b3035;
-  --line-strong: #3d444a;
-
-  --fjord: #8fb6cf;
-  --fjord-strong: #b3cfe0;
-  --fjord-wash: rgb(143 182 207 / 11%);
-  --falu: #e0735c;
-  --moss: #a3b597;
-  --moss-wash: rgb(163 181 151 / 12%);
-  --clay: #d99a72;
-  --danger: #f08a7e;
-  --success: #9cc28f;
-
-  --hover-wash: rgb(236 232 224 / 5%);
-  --press-wash: rgb(236 232 224 / 9%);
-  --scrim: rgb(8 10 12 / 62%);
-  --code-surface: #101315;
-  --shadow-color: rgb(0 0 0 / 40%);
-}
-
-/* Broadsheet — day edition. Newsprint, crimson accent, square corners.
-   UI chrome stays in the sans; headlines use --font-display. */
-[data-design="broadsheet"] {
-  --bg: #f3ecdf;
-  --surface: #fbf7ef;
-  --surface-2: #e6dcc9;
-  --surface-ink: #1a140f;
-
-  --ink: #1a140f;
-  --ink-2: #4e433a;
-  --ink-3: #5c5146;
-  --ink-inverse: #f3ecdf;
-
-  --line: #d4c6af;
-  --line-strong: #6f6254;
-
-  --fjord: #8f1d1d;
-  --fjord-strong: #6e1212;
-  --fjord-wash: rgb(143 29 29 / 10%);
-  --falu: #9c2b1a;
-  --moss: #2f6b45;
-  --moss-wash: rgb(47 107 69 / 12%);
-  --clay: #9a4e1a;
-  --danger: #8f1d2a;
-  --success: #2a6840;
-
-  --hover-wash: rgb(26 20 15 / 5%);
-  --press-wash: rgb(26 20 15 / 9%);
-  --scrim: rgb(26 20 15 / 45%);
-  --code-surface: #efe6d4;
-  --shadow-color: rgb(26 20 15 / 18%);
-
-  --font-display: var(--font-serif);
-  --radius-xs: 0px;
-  --radius-sm: 0px;
-  --radius-md: 0px;
-  --radius-pill: 0px;
-}
-
-/* Broadsheet — night edition. */
-[data-design="broadsheet"][data-theme="dark"] {
-  --bg: #14110e;
-  --surface: #1c1814;
-  --surface-2: #0e0c0a;
-  --surface-ink: #f3ecdf;
-
-  --ink: #f3ecdf;
-  --ink-2: #cbbfae;
-  --ink-3: #a89884;
-  --ink-inverse: #14110e;
-
-  --line: #3a322a;
-  --line-strong: #5c5146;
-
-  --fjord: #f0a090;
-  --fjord-strong: #f6c4b4;
-  --fjord-wash: rgb(240 160 144 / 14%);
-  --falu: #e07058;
-  --moss: #9dbea4;
-  --moss-wash: rgb(157 190 164 / 14%);
-  --clay: #e0a56a;
-  --danger: #f0a098;
-  --success: #a8c9a0;
-
-  --hover-wash: rgb(243 236 223 / 6%);
-  --press-wash: rgb(243 236 223 / 10%);
-  --scrim: rgb(8 6 4 / 68%);
-  --code-surface: #0e0c0a;
-  --shadow-color: rgb(0 0 0 / 45%);
-}
-
-/* Atelier — lamp light. Sage plaster, pine ink, indigo accent,
-   persimmon seal. UI chrome stays in the sans; headlines use
-   --font-display (Fraunces). Corners are softer than Nordisk. */
-[data-design="atelier"] {
-  --bg: #eef2ea;
-  --surface: #f7f9f4;
-  --surface-2: #dce3d6;
-  --surface-ink: #1a211c;
-
-  --ink: #1a211c;
-  --ink-2: #3d4b3f;
-  --ink-3: #4c5b4e;
-  --ink-inverse: #f7f9f4;
-
-  --line: #c9d4c4;
-  --line-strong: #8b9e88;
-
-  --fjord: #2a3878;
-  --fjord-strong: #1c2758;
-  --fjord-wash: rgb(42 56 120 / 10%);
-  --falu: #b33e22;
-  --moss: #2a6842;
-  --moss-wash: rgb(42 104 66 / 12%);
-  --clay: #9a5a22;
-  --danger: #8e2e3b;
-  --success: #2a6840;
-
-  --hover-wash: rgb(26 33 28 / 5%);
-  --press-wash: rgb(26 33 28 / 9%);
-  --scrim: rgb(26 33 28 / 42%);
-  --code-surface: #e4ebdf;
-  --shadow-color: rgb(26 33 28 / 14%);
-
-  --font-display: "Fraunces Variable", Fraunces, "Iowan Old Style", Palatino, "Palatino Linotype", Georgia, serif;
-  --radius-xs: 6px;
-  --radius-sm: 10px;
-  --radius-md: 16px;
-  --radius-pill: 999px;
-}
-
-/* Atelier — kiln. Pine ground, pale plaster ink, soft indigo. */
-[data-design="atelier"][data-theme="dark"] {
-  --bg: #121614;
-  --surface: #1a201c;
-  --surface-2: #0c100e;
-  --surface-ink: #e8f0e4;
-
-  --ink: #e8f0e4;
-  --ink-2: #b7c6b4;
-  --ink-3: #8fa58c;
-  --ink-inverse: #121614;
-
-  --line: #2a342e;
-  --line-strong: #445246;
-
-  --fjord: #b4c0f2;
-  --fjord-strong: #d5dbf8;
-  --fjord-wash: rgb(180 192 242 / 16%);
-  --falu: #f09a7c;
-  --moss: #a3c9a8;
-  --moss-wash: rgb(163 201 168 / 14%);
-  --clay: #e2b17a;
-  --danger: #f0a3a8;
-  --success: #a8cba6;
-
-  --hover-wash: rgb(232 240 228 / 6%);
-  --press-wash: rgb(232 240 228 / 10%);
-  --scrim: rgb(6 8 7 / 68%);
-  --code-surface: #0c100e;
-  --shadow-color: rgb(0 0 0 / 45%);
-}
-
-/* Almanac — paper. Ink on warm paper, one oxblood accent, Fraunces
-   headlines, Hanken Grotesk body, and IBM Plex Mono marginalia.
-   Hairlines instead of boxes, small radii, calm ease-out motion. */
-[data-design="almanac"] {
-  --bg: #f6f1e7;
-  --surface: #fbf8f2;
-  --surface-2: #efe8db;
-  --surface-ink: #2a2420;
-
-  --ink: #2a2420;
-  --ink-2: #4f463e;
-  --ink-3: #6e645a;
-  --ink-inverse: #f6f1e7;
-
-  --line: #e2d9c8;
-  --line-strong: #b3a693;
-
-  --fjord: #a23b2a;
-  --fjord-strong: #7c2b1e;
-  --fjord-wash: rgb(162 59 42 / 9%);
-  --falu: #a23b2a;
-  --moss: #4f6b5a;
-  --moss-wash: rgb(79 107 90 / 12%);
-  --clay: #86621f;
-  --danger: #9e2b25;
-  --success: #3e6b4e;
-
-  --hover-wash: rgb(42 36 32 / 4%);
-  --press-wash: rgb(42 36 32 / 8%);
-  --scrim: rgb(42 36 32 / 28%);
-  --code-surface: #efe8db;
-  --shadow-color: rgb(42 36 32 / 12%);
-
-  --font-sans: "Hanken Grotesk Variable", "Hanken Grotesk", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
-  --font-display: "Fraunces Variable", Fraunces, "Iowan Old Style", Georgia, serif;
-
-  --radius-xs: 2px;
-  --radius-sm: 4px;
-  --radius-md: 6px;
-
-  --ease: cubic-bezier(0.33, 1, 0.68, 1);
-  --ease-out: cubic-bezier(0.25, 1, 0.5, 1);
-  --dur-fast: 150ms;
-  --dur: 300ms;
-  --dur-slow: 600ms;
-}
-
-/* Almanac — lamplight. Lamplight on dark walnut. */
-[data-design="almanac"][data-theme="dark"] {
   --bg: #1a1714;
   --surface: #23201c;
   --surface-2: #141210;
@@ -379,9 +147,15 @@
 }
 
 @theme {
-  --font-sans: "Schibsted Grotesk Variable", "Schibsted Grotesk", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-sans: "Hanken Grotesk Variable", "Hanken Grotesk", ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-serif: "Newsreader Variable", "Newsreader", Georgia, serif;
-  --font-mono: "JetBrains Mono Variable", "JetBrains Mono", ui-monospace, monospace;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+
+/* Hides the page until the saved design's shell renders. app.html sets
+   the attribute and the root layout removes it. */
+html[data-shell-pending] body {
+  visibility: hidden;
 }
 
 /* ── Base ────────────────────────────────────────────────────────── */
@@ -945,243 +719,4 @@ body::after {
 /* The tiny planet draws its own world; keep the grain off it. */
 body:has(.game-root)::after {
   display: none;
-}
-
-/* ── Broadsheet structure ──────────────────────────────────────────
-   Same markup as Nordisk. Serif headlines, tracked kickers, and square
-   corners (from the radius tokens). The double rule on the top bar and
-   footer lives in +layout.svelte, where it can outrank scoped styles. */
-
-html[data-design="broadsheet"] :is(
-  h1,
-  h2,
-  h3,
-  .page-title,
-  .section-title,
-  .display,
-  .wordmark,
-  .footer-name
-) {
-  font-family: var(--font-display);
-  font-weight: 450;
-  letter-spacing: -0.02em;
-  font-variation-settings: "opsz" 32;
-}
-
-html[data-design="broadsheet"] :is(h1, .page-title, .section-title, .display) {
-  font-variation-settings: "opsz" 60;
-  letter-spacing: -0.025em;
-}
-
-html[data-design="broadsheet"] .display {
-  line-height: 0.96;
-  letter-spacing: -0.03em;
-  font-variation-settings: "opsz" 72;
-}
-
-html[data-design="broadsheet"] :is(.lead, .section-subtitle, .hero-copy, .footer-line) {
-  font-family: var(--font-display);
-  font-weight: 400;
-  letter-spacing: -0.011em;
-}
-
-html[data-design="broadsheet"] :is(.eyebrow, .label) {
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
-html[data-design="broadsheet"] .dot {
-  border-radius: 0;
-}
-
-html[data-design="broadsheet"] .card {
-  border-color: var(--line-strong);
-}
-
-html[data-design="broadsheet"] .index-row .name {
-  font-family: var(--font-display);
-  font-weight: 450;
-  letter-spacing: -0.02em;
-}
-
-html[data-design="broadsheet"] body::after {
-  opacity: 0.07;
-}
-
-html[data-design="broadsheet"][data-theme="dark"] body::after {
-  opacity: 0.05;
-  mix-blend-mode: screen;
-  filter: invert(1);
-}
-
-/* ── Atelier structure ─────────────────────────────────────────────
-   Same markup as Nordisk. Fraunces headlines, a softer radius (from
-   the radius tokens), and a hollow persimmon ring for the signature
-   mark. The top bar and footer live in +layout.svelte. */
-
-html[data-design="atelier"] :is(
-  h1,
-  h2,
-  h3,
-  .page-title,
-  .section-title,
-  .display,
-  .footer-name
-) {
-  font-family: var(--font-display);
-  font-weight: 560;
-  letter-spacing: -0.028em;
-  font-optical-sizing: none;
-  font-variation-settings: "SOFT" 20, "WONK" 0, "opsz" 48, "wght" 560;
-}
-
-html[data-design="atelier"] :is(h1, .page-title, .section-title, .display) {
-  letter-spacing: -0.032em;
-  font-variation-settings: "SOFT" 40, "WONK" 1, "opsz" 144, "wght" 560;
-}
-
-html[data-design="atelier"] .display {
-  line-height: 1;
-  letter-spacing: -0.034em;
-  font-variation-settings: "SOFT" 45, "WONK" 1, "opsz" 144, "wght" 560;
-}
-
-html[data-design="atelier"] .wordmark {
-  font-family: var(--font-display);
-  font-style: italic;
-  font-weight: 520;
-  letter-spacing: -0.02em;
-  font-optical-sizing: none;
-  font-variation-settings: "SOFT" 70, "WONK" 1, "opsz" 48, "wght" 520;
-}
-
-html[data-design="atelier"] :is(em.serif, .serif) {
-  font-family: var(--font-display);
-  font-style: italic;
-  font-weight: 500;
-  font-optical-sizing: none;
-  font-variation-settings: "SOFT" 80, "WONK" 1, "opsz" 36, "wght" 500;
-}
-
-html[data-design="atelier"] :is(.eyebrow, .label) {
-  letter-spacing: 0.06em;
-}
-
-html[data-design="atelier"] .dot:not(circle) {
-  background: transparent;
-  box-shadow: inset 0 0 0 1.5px var(--falu);
-}
-
-html[data-design="atelier"] .index-row .name {
-  font-family: var(--font-display);
-  font-weight: 520;
-  letter-spacing: -0.02em;
-  font-optical-sizing: none;
-  font-variation-settings: "SOFT" 30, "WONK" 1, "opsz" 32, "wght" 520;
-}
-
-html[data-design="atelier"] body::after {
-  opacity: 0.06;
-}
-
-html[data-design="atelier"][data-theme="dark"] body::after {
-  opacity: 0.05;
-  mix-blend-mode: screen;
-  filter: invert(1);
-}
-
-/* ── Almanac structure ─────────────────────────────────────────────
-   Same markup as Nordisk. Light Fraunces headlines, mono marginalia
-   in tracked uppercase, a solid paper top bar with a hairline, and a
-   faint grain. The selectors carry `html[data-design]` so they outrank
-   the scoped component styles in +layout.svelte and +page.svelte. */
-
-html[data-design="almanac"] :is(
-  h1,
-  h2,
-  h3,
-  .page-title,
-  .section-title,
-  .display,
-  .footer-name
-) {
-  font-family: var(--font-display);
-  font-weight: 380;
-  letter-spacing: -0.012em;
-  font-optical-sizing: none;
-  font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 72, "wght" 380;
-}
-
-html[data-design="almanac"] :is(h1, .page-title, .section-title, .display) {
-  font-weight: 350;
-  font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 144, "wght" 350;
-}
-
-html[data-design="almanac"] .display {
-  line-height: 1;
-  letter-spacing: -0.02em;
-  font-weight: 300;
-  font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 144, "wght" 300;
-}
-
-html[data-design="almanac"] .wordmark {
-  font-family: var(--font-display);
-  font-style: italic;
-  font-weight: 400;
-  letter-spacing: -0.01em;
-  font-optical-sizing: none;
-  font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 48, "wght" 400;
-}
-
-html[data-design="almanac"] :is(em.serif, .serif) {
-  font-family: var(--font-display);
-  font-style: italic;
-  font-weight: 300;
-  font-optical-sizing: none;
-  font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 36, "wght" 300;
-}
-
-html[data-design="almanac"] :is(.eyebrow, .label) {
-  font-family: var(--font-mono);
-  font-weight: 500;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
-}
-
-html[data-design="almanac"] .index-row .name {
-  font-family: var(--font-display);
-  font-weight: 400;
-  letter-spacing: -0.012em;
-  font-optical-sizing: none;
-  font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 72, "wght" 400;
-}
-
-html[data-design="almanac"] .topbar {
-  background: var(--bg);
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  border-bottom: 1px solid var(--line);
-}
-
-html[data-design="almanac"] .footer {
-  background: var(--bg);
-  border-top: 1px solid var(--line);
-}
-
-html[data-design="almanac"] .card {
-  box-shadow: none;
-}
-
-html[data-design="almanac"] ::selection {
-  background: color-mix(in srgb, var(--fjord) 22%, transparent);
-}
-
-html[data-design="almanac"] body::after {
-  opacity: 0.04;
-}
-
-html[data-design="almanac"][data-theme="dark"] body::after {
-  opacity: 0.025;
-  mix-blend-mode: screen;
-  filter: invert(1) sepia(0.4);
 }

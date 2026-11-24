@@ -6,7 +6,7 @@
 
 	export let value: string = '';
 	export let language: string = 'plaintext';
-	/** 'auto' follows the site theme (Nordisk daylight / polar night).
+	/** 'auto' follows the site theme (the active design's light or dark tokens).
 	 *  Any other value is passed to Monaco as a theme name. */
 	export let theme: string = 'auto';
 	export let onChange: ((value: string) => void) | undefined = undefined;
@@ -25,8 +25,8 @@
 		return /^#[0-9a-f]{6}$/i.test(v) ? v : undefined;
 	}
 
-	function defineNordiskTheme(mode: 'light' | 'dark'): string {
-		const name = `nordisk-${mode}`;
+	function defineSiteTheme(mode: 'light' | 'dark'): string {
+		const name = `site-${mode}`;
 		const t = (n: string) => token(n);
 		const bare = (n: string) => t(n)?.slice(1);
 		const alpha = (n: string, a: string) => (t(n) ? t(n) + a : undefined);
@@ -80,7 +80,7 @@
 	}
 
 	function resolveTheme(mode: 'light' | 'dark'): string {
-		return theme === 'auto' ? defineNordiskTheme(mode) : theme;
+		return theme === 'auto' ? defineSiteTheme(mode) : theme;
 	}
 
 	onMount(async () => {

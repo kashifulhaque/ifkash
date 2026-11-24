@@ -1,24 +1,23 @@
 /**
- * Browser chrome color for each design and theme.
- * Keep these hex values in sync with the inline script in `src/app.html`.
+ * Browser chrome color for each design and theme. The values come from
+ * each design's `meta.ts`. Keep them in sync with the inline script in
+ * `src/app.html`. This file must not import Svelte components.
  */
-export type Theme = 'light' | 'dark';
-export type Design = 'almanac' | 'nordisk' | 'broadsheet' | 'atelier';
+import { DEFAULT_DESIGN, DESIGN_METAS, isDesign, themeColor, type Design } from '$lib/designs/metas';
+import type { Theme } from '$lib/designs/shared';
+
+export type { Design, Theme };
+export { isDesign };
 
 export const THEME_COLORS: Record<Design, Record<Theme, string>> = {
-	almanac: { light: '#f6f1e7', dark: '#1a1714' },
-	nordisk: { light: '#f4f1ea', dark: '#15181b' },
-	broadsheet: { light: '#f3ecdf', dark: '#14110e' },
-	atelier: { light: '#eef2ea', dark: '#121614' },
+	almanac: DESIGN_METAS.almanac.themeColors,
+	japandi: DESIGN_METAS.japandi.themeColors,
+	ember: DESIGN_METAS.ember.themeColors,
 };
-
-export function isDesign(value: string | null): value is Design {
-	return value === 'almanac' || value === 'nordisk' || value === 'broadsheet' || value === 'atelier';
-}
 
 export function readDesign(): Design {
 	const value = document.documentElement.getAttribute('data-design');
-	return isDesign(value) ? value : 'almanac';
+	return isDesign(value) ? value : DEFAULT_DESIGN;
 }
 
 export function readTheme(): Theme {
@@ -27,5 +26,5 @@ export function readTheme(): Theme {
 
 export function applyThemeColor(design: Design, theme: Theme): void {
 	const meta = document.querySelector('meta[name="theme-color"]');
-	if (meta) meta.setAttribute('content', THEME_COLORS[design][theme]);
+	if (meta) meta.setAttribute('content', themeColor(design, theme));
 }

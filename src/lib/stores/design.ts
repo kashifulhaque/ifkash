@@ -1,25 +1,20 @@
 import { writable } from 'svelte/store';
 import { browser } from '$app/environment';
+import { DEFAULT_DESIGN, DESIGNS } from '$lib/designs/metas';
 import { applyThemeColor, isDesign, readTheme, type Design } from './appearance';
 
 export type { Design };
-export { isDesign };
-
-export const DESIGNS: { id: Design; label: string; short: string }[] = [
-	{ id: 'almanac', label: 'Almanac', short: 'Al' },
-	{ id: 'nordisk', label: 'Nordisk', short: 'N' },
-	{ id: 'broadsheet', label: 'Broadsheet', short: 'B' },
-	{ id: 'atelier', label: 'Atelier', short: 'A' },
-];
+export { isDesign, DESIGNS };
 
 const KEY = 'ifkash-design';
 
 function initial(): Design {
-	if (!browser) return 'almanac';
+	if (!browser) return DEFAULT_DESIGN;
 	// The inline script in app.html has already resolved the saved choice
-	// onto <html data-design>, so read it back from there.
+	// onto <html data-design>, so read it back from there. A removed design
+	// id falls back to the default.
 	const saved = document.documentElement.getAttribute('data-design');
-	return isDesign(saved) ? saved : 'almanac';
+	return isDesign(saved) ? saved : DEFAULT_DESIGN;
 }
 
 function apply(design: Design): void {
@@ -37,6 +32,10 @@ if (browser) {
 
 export function setDesign(next: Design): void {
 	if (!browser) return;
-	localStorage.setItem(KEY, next);
+	try {
+		localStorage.setItem(KEY, next);
+	} catch {
+		// The choice still applies for this visit.
+	}
 	design.set(next);
 }

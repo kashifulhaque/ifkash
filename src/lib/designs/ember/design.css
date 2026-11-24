@@ -1,0 +1,74 @@
+/* Ember. PLACEHOLDER tokens: near-black umber, gold accent, parchment in
+   the light theme.
+
+   Rules for this file:
+   - Scope every selector with `[data-design="ember"]` (tokens) or
+     `html[data-design="ember"]` (global-class overrides).
+   - Define each token in both the light block and the dark block. The dark
+     block must repeat every token the light block overrides, or the light
+     value leaks into dark mode.
+   - Import this design's fonts here, at the top, for example:
+     @import "@fontsource-variable/cinzel";
+     @import "@fontsource-variable/cormorant-garamond"; */
+
+[data-design="ember"] {
+  --bg: #eee4cf;
+  --surface: #f6eedc;
+  --surface-2: #e3d6b8;
+  --surface-ink: #2a2116;
+
+  --ink: #2a2116;
+  --ink-2: #4d4129;
+  --ink-3: #66583d;
+  --ink-inverse: #eee4cf;
+
+  --line: #d6c8a5;
+  --line-strong: #a99a74;
+
+  --fjord: #7a5a12;
+  --fjord-strong: #5c4309;
+  --fjord-wash: rgb(122 90 18 / 11%);
+  --falu: #a8441c;
+  --moss: #4d6a3c;
+  --moss-wash: rgb(77 106 60 / 12%);
+  --clay: #8a5a1e;
+  --danger: #9a2f25;
+  --success: #3d6a3a;
+
+  --hover-wash: rgb(42 33 22 / 5%);
+  --press-wash: rgb(42 33 22 / 9%);
+  --scrim: rgb(42 33 22 / 35%);
+  --code-surface: #e3d6b8;
+  --shadow-color: rgb(42 33 22 / 16%);
+}
+
+[data-design="ember"][data-theme="dark"] {
+  --bg: #0e0c09;
+  --surface: #16130e;
+  --surface-2: #0a0907;
+  --surface-ink: #ece0c8;
+
+  --ink: #ece0c8;
+  --ink-2: #c4b697;
+  --ink-3: #9a8c70;
+  --ink-inverse: #0e0c09;
+
+  --line: #2c261b;
+  --line-strong: #4a402c;
+
+  --fjord: #c9a959;
+  --fjord-strong: #e0c27a;
+  --fjord-wash: rgb(201 169 89 / 13%);
+  --falu: #d9692f;
+  --moss: #8fa573;
+  --moss-wash: rgb(143 165 115 / 13%);
+  --clay: #d08a4a;
+  --danger: #ef8a72;
+  --success: #9bbd86;
+
+  --hover-wash: rgb(236 224 200 / 5%);
+  --press-wash: rgb(236 224 200 / 9%);
+  --scrim: rgb(0 0 0 / 62%);
+  --code-surface: #0a0907;
+  --shadow-color: rgb(0 0 0 / 50%);
+}

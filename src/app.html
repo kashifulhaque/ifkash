@@ -7,12 +7,12 @@
     <meta name="theme-color" content="#f6f1e7" />
     <script>
       (function () {
-        // Keep the color table in sync with THEME_COLORS in src/lib/stores/appearance.ts.
+        // Keep the ids and colors in sync with `meta.ts` in each folder of
+        // src/lib/designs. A saved id that isn't listed here falls back to almanac.
         var colors = {
           almanac: { light: "#f6f1e7", dark: "#1a1714" },
-          nordisk: { light: "#f4f1ea", dark: "#15181b" },
-          broadsheet: { light: "#f3ecdf", dark: "#14110e" },
-          atelier: { light: "#eef2ea", dark: "#121614" }
+          japandi: { light: "#f3efe7", dark: "#1b1b1a" },
+          ember: { light: "#eee4cf", dark: "#0e0c09" }
         };
         var theme = "light";
         var design = "almanac";
@@ -22,11 +22,18 @@
           if (savedTheme === "light" || savedTheme === "dark") theme = savedTheme;
           else if (matchMedia("(prefers-color-scheme: dark)").matches) theme = "dark";
           var savedDesign = localStorage.getItem("ifkash-design");
-          if (savedDesign === "almanac" || savedDesign === "nordisk" || savedDesign === "broadsheet" || savedDesign === "atelier") design = savedDesign;
+          if (savedDesign && Object.prototype.hasOwnProperty.call(colors, savedDesign)) design = savedDesign;
         } catch (e) {}
         var root = document.documentElement;
         root.setAttribute("data-theme", theme);
         root.setAttribute("data-design", design);
+        // The server renders the almanac shell. For any other design, hide the
+        // page until the root layout mounts that design's shell. The timeout
+        // keeps the page visible if the script never runs.
+        if (design !== "almanac") {
+          root.setAttribute("data-shell-pending", "");
+          setTimeout(function () { root.removeAttribute("data-shell-pending"); }, 1500);
+        }
         var meta = document.querySelector('meta[name="theme-color"]');
         if (meta) meta.setAttribute("content", colors[design][theme]);
       })();

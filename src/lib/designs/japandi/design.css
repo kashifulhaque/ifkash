@@ -1,0 +1,74 @@
+/* Japandi. PLACEHOLDER tokens: warm washi paper, sumi ink, muted indigo
+   and clay accents; charcoal in the dark theme.
+
+   Rules for this file:
+   - Scope every selector with `[data-design="japandi"]` (tokens) or
+     `html[data-design="japandi"]` (global-class overrides).
+   - Define each token in both the light block and the dark block. The dark
+     block must repeat every token the light block overrides, or the light
+     value leaks into dark mode.
+   - Import this design's fonts here, at the top, for example:
+     @import "@fontsource/shippori-mincho/400.css";
+     @import "@fontsource/zen-kaku-gothic-new/400.css"; */
+
+[data-design="japandi"] {
+  --bg: #f3efe7;
+  --surface: #f8f5ee;
+  --surface-2: #e9e3d6;
+  --surface-ink: #2b2a27;
+
+  --ink: #2b2a27;
+  --ink-2: #55524b;
+  --ink-3: #6b675d;
+  --ink-inverse: #f3efe7;
+
+  --line: #ddd6c7;
+  --line-strong: #b5ad9b;
+
+  --fjord: #3d4f6b;
+  --fjord-strong: #2b3a52;
+  --fjord-wash: rgb(61 79 107 / 10%);
+  --falu: #a8553a;
+  --moss: #66705a;
+  --moss-wash: rgb(102 112 90 / 12%);
+  --clay: #8f6238;
+  --danger: #9a3b34;
+  --success: #4c6b4a;
+
+  --hover-wash: rgb(43 42 39 / 4%);
+  --press-wash: rgb(43 42 39 / 8%);
+  --scrim: rgb(43 42 39 / 30%);
+  --code-surface: #e9e3d6;
+  --shadow-color: rgb(43 42 39 / 12%);
+}
+
+[data-design="japandi"][data-theme="dark"] {
+  --bg: #1b1b1a;
+  --surface: #232321;
+  --surface-2: #151514;
+  --surface-ink: #ece7dc;
+
+  --ink: #ece7dc;
+  --ink-2: #c4beb1;
+  --ink-3: #9d978a;
+  --ink-inverse: #1b1b1a;
+
+  --line: #34332f;
+  --line-strong: #55534c;
+
+  --fjord: #9fb2d0;
+  --fjord-strong: #bccae0;
+  --fjord-wash: rgb(159 178 208 / 13%);
+  --falu: #d98a6c;
+  --moss: #a3b08f;
+  --moss-wash: rgb(163 176 143 / 13%);
+  --clay: #d6a672;
+  --danger: #e58f82;
+  --success: #9fbf98;
+
+  --hover-wash: rgb(236 231 220 / 5%);
+  --press-wash: rgb(236 231 220 / 9%);
+  --scrim: rgb(0 0 0 / 55%);
+  --code-surface: #151514;
+  --shadow-color: rgb(0 0 0 / 45%);
+}

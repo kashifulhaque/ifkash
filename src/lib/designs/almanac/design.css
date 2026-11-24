@@ -1,0 +1,77 @@
+/* Almanac. Ink on warm paper, one oxblood accent, light Fraunces
+   headlines, Hanken Grotesk body, IBM Plex Mono marginalia.
+
+   The Almanac tokens are the base set in `src/app.css` (`:root` and
+   `[data-theme="dark"]`), so this file has no token block. It holds the
+   rules that restyle global classes. They carry `html[data-design="almanac"]`
+   so they outrank scoped component styles in pages. The top bar,
+   footer, and wordmark rules live in `Shell.svelte`. */
+
+html[data-design="almanac"] :is(
+  h1,
+  h2,
+  h3,
+  .page-title,
+  .section-title,
+  .display,
+  .footer-name
+) {
+  font-family: var(--font-display);
+  font-weight: 380;
+  letter-spacing: -0.012em;
+  font-optical-sizing: none;
+  font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 72, "wght" 380;
+}
+
+html[data-design="almanac"] :is(h1, .page-title, .section-title, .display) {
+  font-weight: 350;
+  font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 144, "wght" 350;
+}
+
+html[data-design="almanac"] .display {
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-weight: 300;
+  font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 144, "wght" 300;
+}
+
+html[data-design="almanac"] :is(em.serif, .serif) {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 300;
+  font-optical-sizing: none;
+  font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 36, "wght" 300;
+}
+
+html[data-design="almanac"] :is(.eyebrow, .label) {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+html[data-design="almanac"] .index-row .name {
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: -0.012em;
+  font-optical-sizing: none;
+  font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 72, "wght" 400;
+}
+
+html[data-design="almanac"] .card {
+  box-shadow: none;
+}
+
+html[data-design="almanac"] ::selection {
+  background: color-mix(in srgb, var(--fjord) 22%, transparent);
+}
+
+html[data-design="almanac"] body::after {
+  opacity: 0.04;
+}
+
+html[data-design="almanac"][data-theme="dark"] body::after {
+  opacity: 0.025;
+  mix-blend-mode: screen;
+  filter: invert(1) sepia(0.4);
+}

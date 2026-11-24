@@ -4,6 +4,11 @@
 //! cap and records what Exa reports it charged. Public endpoints also call
 //! [`within_rate`] before a live call and use [`cache_get`] and [`cache_put`] so a
 //! repeated question costs nothing. The key is the `EXA_API_KEY` secret.
+//!
+//! The cache has two layers. Cloudflare's edge cache (the Workers Cache API) answers
+//! first; it is free, but each data center keeps its own copy. D1 is the shared
+//! record that outlives it. A D1 hit refills the edge, so Exa is called only when
+//! neither layer has the answer.
 
 use serde::Deserialize;
 use serde_json::Value;
@@ -14,7 +19,13 @@ const EXA_BASE: &str = "https://api.exa.ai";
 const D1: &str = "IFKASH_D1";
 
 /// Daily spending cap in dollars when `EXA_DAILY_CAP_USD` is unset.
-const DEFAULT_DAILY_CAP_USD: f64 = 2.0;
+const DEFAULT_DAILY_CAP_USD: f64 = 0.25;
+
+/// The longest an edge copy lives; D1 keeps the full TTL.
+const EDGE_MAX_TTL_SECS: i64 = 6 * 3600;
+
+/// Edge cache keys are synthetic GET URLs on this host. They are never fetched.
+const EDGE_KEY_BASE: &str = "https://ifkash.dev/__exa-cache/";
 
 /// The domains that "ask" and site search are limited to. `ifkash.dev` also matches
 /// its subdomains, such as the blog.
@@ -186,34 +197,76 @@ pub async fn within_rate(env: &Env, key: &str, limit: i64) -> Result<bool> {
 }
 
 /// Lowercase, trim, and collapse whitespace so near-identical queries share a cache row.
+/// Lowercase, drop punctuation other than `-`, `+`, `#`, and `.` inside words, and
+/// collapse whitespace, so "What is smol-llama?" and "what is smol-llama" share a row.
 pub fn normalize(q: &str) -> String {
-    q.split_whitespace()
+    q.to_lowercase()
+        .chars()
+        .map(|c| if c.is_alphanumeric() || "-+#.".contains(c) { c } else { ' ' })
+        .collect::<String>()
+        .split_whitespace()
+        .map(|w| w.trim_matches('.'))
+        .filter(|w| !w.is_empty())
         .collect::<Vec<_>>()
         .join(" ")
-        .to_lowercase()
         .chars()
         .take(300)
         .collect()
 }
 
+fn edge_key(key: &str) -> String {
+    format!("{EDGE_KEY_BASE}{}", urlencoding::encode(key))
+}
+
+pub async fn edge_get(key: &str) -> Option<Value> {
+    let mut resp = Cache::default().get(edge_key(key), false).await.ok()??;
+    resp.json().await.ok()
+}
+
+pub async fn edge_put(key: &str, value: &Value, ttl_secs: i64) {
+    let ttl = ttl_secs.min(EDGE_MAX_TTL_SECS);
+    let Ok(mut resp) = Response::from_json(value) else { return };
+    if resp
+        .headers_mut()
+        .set("Cache-Control", &format!("public, max-age={ttl}"))
+        .is_err()
+    {
+        return;
+    }
+    if let Err(e) = Cache::default().put(edge_key(key), resp).await {
+        console_warn!("edge cache put failed: {e}");
+    }
+}
+
+/// A cached answer from the edge, or from D1 (which then refills the edge).
 pub async fn cache_get(env: &Env, key: &str) -> Option<Value> {
+    if let Some(hit) = edge_get(key).await {
+        return Some(hit);
+    }
     #[derive(Deserialize)]
     struct Row {
         body: String,
+        expires: i64,
     }
     let d1 = env.d1(D1).ok()?;
+    let now = now_secs();
     let row: Option<Row> = d1
-        .prepare("SELECT body FROM exa_cache WHERE key = ?1 AND expires > ?2")
-        .bind(&[key.into(), n(now_secs())])
+        .prepare("SELECT body, expires FROM exa_cache WHERE key = ?1 AND expires > ?2")
+        .bind(&[key.into(), n(now)])
         .ok()?
         .first(None)
         .await
         .ok()?;
-    row.and_then(|r| serde_json::from_str(&r.body).ok())
+    let row = row?;
+    let value: Value = serde_json::from_str(&row.body).ok()?;
+    edge_put(key, &value, row.expires - now).await;
+    Some(value)
 }
 
-/// Store `value` for `ttl_secs`, and clear expired rows. A failure never fails the request.
+/// Store `value` for `ttl_secs` in both layers, and clear expired D1 rows. A failure
+/// never fails the request.
 pub async fn cache_put(env: &Env, key: &str, value: &Value, ttl_secs: i64) {
+    edge_put(key, value, ttl_secs).await;
     let Ok(d1) = env.d1(D1) else { return };
     let now = now_secs();
     let put = d1

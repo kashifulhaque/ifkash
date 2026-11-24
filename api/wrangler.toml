@@ -59,7 +59,7 @@ ACCESS_AUD = "5d5a42191621ecc74645746eba4661361ae29a79ebb3c57823fdef6bc3163768"
 # Must match PUBLIC_GOOGLE_CLIENT_ID in the web app's environment.
 GOOGLE_CLIENT_ID = "589199944334-at0seduhfggnrnmncrnnke6asstd13fc.apps.googleusercontent.com"
 # The most the Exa features (handlers/exa.rs) may spend per UTC day, in dollars.
-EXA_DAILY_CAP_USD = "2"
+EXA_DAILY_CAP_USD = "0.25"
 
 # Secrets (set via `wrangler secret put <NAME>`):
 #   WEATHER_UNION_API_KEY - /api/home_weather

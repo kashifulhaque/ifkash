@@ -17,6 +17,8 @@ const LOOKBACK_DAYS: i64 = 7;
 const RETAIN_DAYS: i64 = 60;
 const PER_TOPIC: u32 = 8;
 const MAX_ITEMS: i64 = 120;
+const EDGE_KEY: &str = "radar:list";
+const EDGE_TTL_SECS: i64 = 15 * 60;
 
 /// (id, label, search query)
 const TOPICS: [(&str, &str, &str); 4] = [
@@ -182,6 +184,10 @@ pub async fn refresh(env: &Env) -> Result<usize> {
 #[utoipa::path(get, path = "/api/radar", tag = "Exa",
     responses((status = 200, description = "Recent papers by topic", body = RadarResponse)))]
 pub async fn list(_req: Request, ctx: RouteContext<()>) -> Result<Response> {
+    // The edge copy saves the D1 reads and the staleness check for 15 minutes.
+    if let Some(hit) = exa::edge_get(EDGE_KEY).await {
+        return with_browser_cache(Response::from_json(&hit)?);
+    }
     let d1 = ctx.env.d1("IFKASH_D1")?;
     if now_secs() - last_refresh(&d1).await? > STALE_SECS {
         if let Err(e) = refresh(&ctx.env).await {
@@ -201,11 +207,16 @@ pub async fn list(_req: Request, ctx: RouteContext<()>) -> Result<Response> {
         .iter()
         .map(|(id, label, _)| RadarTopic { id: id.to_string(), label: label.to_string() })
         .collect();
-    let mut resp = Response::from_json(&RadarResponse {
+    let body = serde_json::to_value(RadarResponse {
         updated: last_refresh(&d1).await?,
         topics,
         items,
     })?;
+    exa::edge_put(EDGE_KEY, &body, EDGE_TTL_SECS).await;
+    with_browser_cache(Response::from_json(&body)?)
+}
+
+fn with_browser_cache(mut resp: Response) -> Result<Response> {
     resp.headers_mut().set("Cache-Control", "public, max-age=900")?;
     Ok(resp)
 }

@@ -55,6 +55,12 @@ const ASK_INSTRUCTIONS: &str = "Answer in at most 70 words (2 to 4 sentences, on
 the ML engineer who owns ifkash.dev. Write in the third person and use only these sources. \
 If the sources don't answer the question, say that the site doesn't cover it.";
 
+/// Let the browser reuse a search result for an hour without asking the Worker.
+fn browser_cached(mut resp: Response) -> Result<Response> {
+    resp.headers_mut().set("Cache-Control", "public, max-age=3600")?;
+    Ok(resp)
+}
+
 fn with_cached(mut v: Value, cached: bool) -> Value {
     v["cached"] = Value::Bool(cached);
     v
@@ -127,7 +133,7 @@ pub async fn search(req: Request, ctx: RouteContext<()>) -> Result<Response> {
     }
     let key = format!("search:{}", exa::normalize(&q));
     if let Some(hit) = exa::cache_get(&ctx.env, &key).await {
-        return Response::from_json(&with_cached(hit, true));
+        return browser_cached(Response::from_json(&with_cached(hit, true))?);
     }
     let ip = exa::client_ip(&req);
     if !exa::within_rate(&ctx.env, &format!("search:{ip}"), SEARCH_PER_HOUR).await? {
@@ -179,5 +185,5 @@ pub async fn search(req: Request, ctx: RouteContext<()>) -> Result<Response> {
         .collect();
     let out = json!({ "results": results });
     exa::cache_put(&ctx.env, &key, &out, SEARCH_TTL_SECS).await;
-    Response::from_json(&with_cached(out, false))
+    browser_cached(Response::from_json(&with_cached(out, false))?)
 }

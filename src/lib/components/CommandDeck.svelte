@@ -318,12 +318,18 @@
         on:input={onQueryInput}
       />
       <kbd>esc</kbd>
+      {#if webLoading || askLoading}
+        <span class="search-progress" aria-hidden="true"></span>
+      {/if}
     </label>
 
     {#if askLoading || answer || askError}
       <div class="answer-panel" aria-live="polite">
         {#if askLoading}
-          <p class="answer-status">Reading ifkash.dev and the blog…</p>
+          <p class="answer-status working">Reading ifkash.dev and the blog</p>
+          <div class="skeleton" aria-hidden="true">
+            <span></span><span></span><span class="short"></span>
+          </div>
         {:else if askError}
           <p class="answer-status error">{askError}</p>
         {:else if answer}
@@ -336,7 +342,7 @@
     <div class="result-meta" aria-live="polite">
       <span>
         {filtered.length} {filtered.length === 1 ? "signal" : "signals"}
-        {#if webLoading}· searching…{:else if webQuery === q && webHits.length}· {webHits.length} from the web index{:else if webError}· {webError}{/if}
+        {#if webLoading}· <span class="working">searching the site and blog</span>{:else if webQuery === q && webHits.length}· {webHits.length} from the web index{:else if webError}· {webError}{/if}
       </span>
       <button type="button" on:click={surpriseMe}>Surprise me ↗</button>
     </div>
@@ -387,7 +393,13 @@
           >
             <span class="result-category">{row.kind === "ask" ? "Ask" : "Search"}</span>
             <span class="result-copy">
-              <strong>{row.kind === "ask" ? `Ask: “${q}”` : `Search the site and blog for “${q}”`}</strong>
+              <strong>
+                {#if row.kind === "ask"}
+                  {askLoading ? "Asking" : `Ask: “${q}”`}
+                {:else}
+                  {webLoading ? "Searching the site and blog" : `Search the site and blog for “${q}”`}
+                {/if}
+              </strong>
               <small>
                 {row.kind === "ask"
                   ? "A short answer from my own pages, with sources"
@@ -404,6 +416,14 @@
           <button type="button" on:click={surpriseMe}>Take me somewhere unexpected</button>
         </div>
       {/each}
+      {#if webLoading}
+        {#each [0, 1, 2] as i}
+          <div class="row-skeleton" aria-hidden="true" style:--delay="{i * 120}ms">
+            <span class="sk-cat"></span>
+            <span class="sk-copy"><span></span><span class="short"></span></span>
+          </div>
+        {/each}
+      {/if}
     </nav>
 
     <footer class="deck-footer" aria-hidden="true">
@@ -577,7 +597,11 @@
   /* ── Search field ────────────────────────────────────────── */
 
   .search-shell {
+    position: relative;
     display: grid;
+    /* overflow: hidden (for the progress bar) would let the deck's flex column
+       squeeze the field; keep it at full height. */
+    flex-shrink: 0;
     grid-template-columns: auto minmax(0, 1fr) auto;
     align-items: center;
     gap: var(--s-3);
@@ -585,6 +609,7 @@
     padding: 0 var(--s-2) 0 var(--s-3);
     border: 1px solid var(--line-strong);
     border-radius: var(--radius-sm);
+    overflow: hidden;
     background: var(--bg);
     transition: border-color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
   }
@@ -697,8 +722,113 @@
   }
 
   .results .row-action:disabled {
-    cursor: progress;
-    opacity: 0.6;
+    cursor: default;
+  }
+
+  /* ── Working state: search or ask in flight ──────────────── */
+
+  /* An indeterminate bar along the bottom of the field. */
+  .search-progress {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 2px;
+    overflow: hidden;
+    background: var(--fjord-wash);
+  }
+
+  .search-progress::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 35%;
+    background: var(--fjord);
+    animation: deck-progress 1.1s var(--ease) infinite;
+  }
+
+  /* Animated ellipsis after a working label. */
+  .working::after {
+    content: "…";
+    display: inline-block;
+    width: 1.2em;
+    overflow: hidden;
+    vertical-align: bottom;
+    animation: deck-dots 1.2s steps(4, end) infinite;
+  }
+
+  .answer-status.working::after {
+    content: "...";
+  }
+
+  .skeleton {
+    display: grid;
+    gap: var(--s-2);
+    margin-top: var(--s-3);
+  }
+
+  .skeleton span,
+  .row-skeleton .sk-cat,
+  .row-skeleton .sk-copy span {
+    display: block;
+    height: 10px;
+    border-radius: var(--radius-xs);
+    background: linear-gradient(90deg, var(--line) 0%, var(--hover-wash) 50%, var(--line) 100%);
+    background-size: 200% 100%;
+    animation: deck-shimmer 1.4s linear infinite;
+    animation-delay: var(--delay, 0ms);
+  }
+
+  .skeleton .short,
+  .row-skeleton .short {
+    width: 60%;
+  }
+
+  .row-skeleton {
+    display: grid;
+    grid-template-columns: 88px minmax(0, 1fr) 16px;
+    align-items: center;
+    gap: var(--s-4);
+    min-height: 56px;
+    padding: var(--s-3) var(--s-5);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .row-skeleton .sk-cat {
+    width: 44px;
+  }
+
+  .row-skeleton .sk-copy {
+    display: grid;
+    gap: var(--s-2);
+  }
+
+  @keyframes deck-progress {
+    from {
+      left: -35%;
+    }
+    to {
+      left: 100%;
+    }
+  }
+
+  @keyframes deck-dots {
+    from {
+      width: 0;
+    }
+    to {
+      width: 1.2em;
+    }
+  }
+
+  @keyframes deck-shimmer {
+    from {
+      background-position: 200% 0;
+    }
+    to {
+      background-position: -200% 0;
+    }
   }
 
   .results .row-action.active {
@@ -710,6 +840,7 @@
   }
 
   .answer-panel {
+    flex-shrink: 0;
     max-height: 260px;
     margin: var(--s-4) var(--s-5) 0;
     padding: var(--s-4);
@@ -902,6 +1033,15 @@
       margin-inline: var(--s-4);
     }
 
+    .row-skeleton {
+      grid-template-columns: minmax(0, 1fr);
+      padding-inline: var(--s-4);
+    }
+
+    .row-skeleton .sk-cat {
+      display: none;
+    }
+
     .results a,
     .results .row-action {
       grid-template-columns: minmax(0, 1fr) 16px;
@@ -919,7 +1059,21 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .deck {
+    .deck,
+    .working::after {
+      animation: none;
+    }
+
+    .search-progress::after {
+      left: 0;
+      width: 100%;
+      animation: none;
+      opacity: 0.6;
+    }
+
+    .skeleton span,
+    .row-skeleton .sk-cat,
+    .row-skeleton .sk-copy span {
       animation: none;
     }
   }

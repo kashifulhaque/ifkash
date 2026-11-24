@@ -12,6 +12,12 @@ jobs:
   deploy:
     runs-on: avrea-ubuntu-latest-2-vcpu
     name: Deploy
+    env:
+      # wrangler-action runs npm install from the repository root (api/ has no
+      # package.json), which pulls onnxruntime-node from the frontend. Its install
+      # script downloads an optional CUDA build that the Worker never uses, and a
+      # failed download fails the deploy.
+      ONNXRUNTIME_NODE_INSTALL_CUDA: skip
     steps:
       - uses: actions/checkout@v4
 

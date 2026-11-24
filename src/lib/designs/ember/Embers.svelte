@@ -1,13 +1,18 @@
 <script lang="ts">
   /**
-   * A canvas of slow, drifting embers. At most 24 particles, device pixel
-   * ratio 1. It pauses when the tab is hidden or the canvas is offscreen,
+   * A canvas of slow, drifting embers. About 11 particles on the home page (6 on small screens), and 3 on inner
+   * pages (none on small screens). Device pixel ratio 1. It pauses when the tab is hidden or the canvas is offscreen,
    * and draws one still frame under reduced motion.
    */
   import { onMount } from "svelte";
   import { prefersReducedMotion } from "$lib/motion";
 
+  /** Inner pages pass true, which thins the embers out. */
+  export let calm = false;
+
   let canvas: HTMLCanvasElement;
+  let refit: (() => void) | undefined;
+  $: calm, refit?.();
 
   onMount(() => {
     const ctx = canvas.getContext("2d");
@@ -35,18 +40,19 @@
     let onscreen = true;
     let running = false;
 
-    const target = () => (window.innerWidth < 640 ? 12 : 24);
+    const small = () => window.innerWidth < 640;
+    const target = () => (calm ? (small() ? 0 : 3) : small() ? 6 : 11);
 
     function spawn(initial: boolean): Mote {
-      const life = 7 + Math.random() * 7;
+      const life = 11 + Math.random() * 9;
       return {
         x: Math.random() * w,
         y: initial ? Math.random() * h : h + 10,
-        vy: 24 + Math.random() * 56,
-        r: 0.8 + Math.random() * 1.7,
-        sway: 12 + Math.random() * 26,
+        vy: 10 + Math.random() * 20,
+        r: 0.6 + Math.random() * 0.9,
+        sway: 8 + Math.random() * 18,
         phase: Math.random() * Math.PI * 2,
-        alpha: 0.25 + Math.random() * 0.45,
+        alpha: 0.12 + Math.random() * 0.2,
         age: initial ? Math.random() * life : 0,
         life,
       };
@@ -69,10 +75,10 @@
         const t = m.age / m.life;
         const fade = Math.min(1, t * 6) * Math.min(1, (1 - t) * 3);
         const a = m.alpha * fade * (dark ? 1 : 0.55);
-        const x = m.x + Math.sin(m.phase + m.age * 0.9) * m.sway;
-        context.fillStyle = `rgba(${rgb}, ${a * 0.18})`;
+        const x = m.x + Math.sin(m.phase + m.age * 0.5) * m.sway;
+        context.fillStyle = `rgba(${rgb}, ${a * 0.12})`;
         context.beginPath();
-        context.arc(x, m.y, m.r * 3.2, 0, 6.2832);
+        context.arc(x, m.y, m.r * 2.6, 0, 6.2832);
         context.fill();
         context.fillStyle = `rgba(${rgb}, ${a})`;
         context.beginPath();
@@ -110,6 +116,7 @@
       onscreen = entries.some((e) => e.isIntersecting);
       sync();
     });
+    refit = resize;
     observer.observe(canvas);
     document.addEventListener("visibilitychange", sync);
     window.addEventListener("resize", resize);
@@ -117,6 +124,7 @@
     sync();
 
     return () => {
+      refit = undefined;
       running = false;
       cancelAnimationFrame(raf);
       observer.disconnect();

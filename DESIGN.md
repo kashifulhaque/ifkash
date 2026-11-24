@@ -226,13 +226,13 @@ uses Cormorant Garamond at 19px and weight 500, so that it stays readable on
 dark backgrounds. Ember raises the `--text-*` scale to match.
 
 - **Shell:** a fixed stage behind the content draws a halo, light rays, fog,
-  a vignette, and up to 24 drifting embers (`Embers.svelte`). On desktop, the
+  a vignette, and a few drifting embers (`Embers.svelte`). On desktop, the
   nav is a vertical menu on the left with a gold selector that follows hover
   and arrow keys (`menu.ts`). Below 1000px, a **Menu** button opens a
   full-screen menu, which Esc also opens. A hints bar at the bottom lists the
   keyboard shortcuts.
 - **Home:** a title screen with the name in gold, a "Press any key" prompt, a
-  banner reveal, and the main menu. The menu also appears after five seconds,
+  banner reveal, and the main menu. The banner plays once per session, and the menu also appears after two seconds,
   or when it gets focus. The facts form a status sheet.
 - **Inner pages:** `.page-head` becomes a banner with filigree corners. At
   1100px and wider, `.rows` becomes an inventory list, and a panel on the

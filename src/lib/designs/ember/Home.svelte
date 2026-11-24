@@ -1,8 +1,9 @@
 <script lang="ts">
   /**
-   * Ember home, a title screen: a gold logo with a light sweep, a pulsing
-   * "Press any key" prompt, and the main menu. Pressing a key or clicking
-   * plays the banner reveal and shows the menu. The menu is never locked
+   * Ember home, a title screen: a gold logo with one slow light sweep, a
+   * softly pulsing "Press any key" prompt, and the main menu. Pressing a key or
+   * clicking plays the banner reveal and shows the menu. The title screen and
+   * the reveal play once per browser session; later visits show the menu at once. The menu is never locked
    * away: it appears after a short delay, and moving focus into it shows it
    * at once. Without JavaScript or with reduced motion it is always visible.
    */
@@ -12,7 +13,8 @@
   import { readRelicBadge, type RelicBadge } from "../relics";
   import { facts, indexRows, resumeUrl } from "../shared";
 
-  const AUTO_REVEAL_MS = 5200;
+  const AUTO_REVEAL_MS = 2000;
+  const SEEN_KEY = "ember-title-seen";
 
   let armed = false;
   let revealed = false;
@@ -25,6 +27,11 @@
   function reveal() {
     if (revealed) return;
     revealed = true;
+    try {
+      sessionStorage.setItem(SEEN_KEY, "1");
+    } catch {
+      /* Storage can be blocked; the reveal then plays again next visit. */
+    }
   }
 
   function onKey(e: KeyboardEvent) {
@@ -49,6 +56,16 @@
       clearTimeout(toastTimer);
       clearTimeout(toastHide);
     };
+    try {
+      if (sessionStorage.getItem(SEEN_KEY)) {
+        return () => {
+          clearTimeout(toastTimer);
+          clearTimeout(toastHide);
+        };
+      }
+    } catch {
+      /* Treat blocked storage as a first visit. */
+    }
     armed = true;
     const auto = setTimeout(reveal, AUTO_REVEAL_MS);
     return () => {
@@ -153,8 +170,8 @@
     color: var(--fjord);
     font-family: var(--font-display);
     font-size: 0.78rem;
-    letter-spacing: 0.5em;
-    margin-right: -0.5em;
+    letter-spacing: 0.3em;
+    margin-right: -0.3em;
     text-transform: uppercase;
   }
   :global(html[data-design="ember"][data-theme="dark"]) .kicker {
@@ -167,10 +184,10 @@
     font-size: clamp(2.1rem, 0.6rem + 7.4vw, 5.6rem);
     font-weight: 600;
     line-height: 1.05;
-    letter-spacing: 0.2em;
-    margin-right: -0.2em;
+    letter-spacing: 0.1em;
+    margin-right: -0.1em;
     text-transform: uppercase;
-    filter: drop-shadow(0 0 18px rgb(var(--ember-glow-rgb) / 38%));
+    filter: drop-shadow(0 0 10px rgb(var(--ember-glow-rgb) / 14%));
   }
   .logo-ink {
     background: linear-gradient(
@@ -187,15 +204,15 @@
     background-clip: text;
     -webkit-text-fill-color: transparent;
     color: var(--ember-title);
-    animation: sweep 9s ease-in-out 1.5s infinite;
+    animation: sweep 7s ease-in-out 2.5s 1 both;
   }
   .screen {
     --logo-a: #9a741c;
     --logo-c: #5b3f0a;
   }
   :global(html[data-design="ember"][data-theme="dark"]) .screen {
-    --logo-a: #c8a65a;
-    --logo-c: #fff4cf;
+    --logo-a: #c2a35e;
+    --logo-c: #eadba8;
   }
 
   .sub {
@@ -216,7 +233,7 @@
     width: min(520px, 80%);
     height: 1px;
     margin-top: 6px;
-    background: linear-gradient(90deg, transparent, var(--fjord) 22%, var(--fjord-strong) 50%, var(--fjord) 78%, transparent);
+    background: linear-gradient(90deg, transparent, var(--line-strong) 22%, var(--line-strong) 78%, transparent);
   }
   .rule span {
     position: absolute;
@@ -225,10 +242,9 @@
     width: 9px;
     height: 9px;
     margin-left: -4.5px;
-    border: 1px solid var(--fjord-strong);
+    border: 1px solid var(--fjord);
     background: var(--bg);
     transform: rotate(45deg);
-    box-shadow: 0 0 12px rgb(var(--ember-glow-rgb) / 60%);
   }
 
   .streak {
@@ -238,8 +254,8 @@
     width: min(900px, 96vw);
     height: 2px;
     margin: -1px 0 0 calc(min(900px, 96vw) / -2);
-    background: linear-gradient(90deg, transparent, var(--fjord-strong), transparent);
-    box-shadow: 0 0 24px 4px rgb(var(--ember-glow-rgb) / 45%);
+    background: linear-gradient(90deg, transparent, var(--fjord), transparent);
+    box-shadow: 0 0 16px 2px rgb(var(--ember-glow-rgb) / 12%);
     opacity: 0;
     transform: scaleX(0);
     pointer-events: none;
@@ -254,11 +270,11 @@
     background: transparent;
     color: var(--ember-title);
     font-family: var(--font-display);
-    font-size: 0.9rem;
-    letter-spacing: 0.4em;
+    font-size: 0.85rem;
+    letter-spacing: 0.2em;
     text-transform: uppercase;
     cursor: pointer;
-    animation: prompt 2.6s ease-in-out infinite;
+    animation: prompt 4.5s ease-in-out infinite;
   }
 
   /* ── Main menu ───────────────────────────────────────────── */
@@ -278,26 +294,28 @@
     padding: 9px 28px;
     color: var(--ink-2);
     font-family: var(--font-display);
-    font-size: 1.05rem;
+    font-size: 1rem;
     font-weight: 500;
-    letter-spacing: 0.3em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
-    transition: color var(--dur-fast) var(--ease), text-shadow var(--dur-fast) var(--ease);
+    transition: color var(--dur-fast) var(--ease);
   }
   .mainmenu a:hover,
   .mainmenu a:focus-visible {
     color: var(--ember-title);
-    text-shadow: 0 0 16px rgb(var(--ember-glow-rgb) / 60%);
   }
   .mainmenu a:focus-visible {
     outline: none;
   }
   .mainmenu .game a {
-    color: var(--fjord-strong);
-    animation: game-pulse 3.4s ease-in-out infinite;
+    color: var(--fjord);
   }
   :global(html[data-design="ember"]:not([data-theme="dark"])) .mainmenu .game a {
-    color: #8c241e;
+    color: var(--fjord-strong);
+  }
+  .mainmenu .game a:hover,
+  .mainmenu .game a:focus-visible {
+    color: var(--ember-title);
   }
 
   .selector {
@@ -308,7 +326,7 @@
     z-index: 0;
     height: var(--sh, 0);
     transform: translateY(var(--sy, 0));
-    background: linear-gradient(90deg, transparent, rgb(var(--ember-glow-rgb) / 22%) 25%, rgb(var(--ember-glow-rgb) / 22%) 75%, transparent);
+    background: linear-gradient(90deg, transparent, rgb(var(--ember-glow-rgb) / 10%) 25%, rgb(var(--ember-glow-rgb) / 10%) 75%, transparent);
     opacity: 0;
     pointer-events: none;
     transition: transform 280ms var(--ease-out), height 280ms var(--ease-out), opacity 200ms var(--ease);
@@ -324,11 +342,10 @@
     content: "";
     position: absolute;
     top: 50%;
-    width: 7px;
-    height: 7px;
-    margin-top: -3.5px;
+    width: 6px;
+    height: 6px;
+    margin-top: -3px;
     background: var(--fjord-strong);
-    box-shadow: 0 0 12px rgb(var(--ember-glow-rgb) / 85%);
     transform: rotate(45deg);
   }
   .selector::before {
@@ -352,14 +369,14 @@
     animation: logo-in 1.6s ease-out both;
   }
   .armed:not(.revealed) .logo {
-    letter-spacing: 0.08em;
-    margin-right: -0.08em;
+    letter-spacing: 0.05em;
+    margin-right: -0.05em;
   }
   .armed.revealed .logo {
-    animation: banner 2.4s cubic-bezier(0.2, 0.6, 0.2, 1) both;
+    animation: banner 2s cubic-bezier(0.2, 0.6, 0.2, 1) both;
   }
   .armed.revealed .streak {
-    animation: streak 1.9s cubic-bezier(0.2, 0.6, 0.2, 1) both;
+    animation: streak 2.2s cubic-bezier(0.2, 0.6, 0.2, 1) both;
   }
   .armed:not(.revealed) .mainmenu,
   .armed:not(.revealed) .desc {
@@ -375,17 +392,16 @@
   }
 
   @keyframes logo-in {
-    from { opacity: 0; filter: blur(6px) drop-shadow(0 0 18px rgb(var(--ember-glow-rgb) / 0%)); }
+    from { opacity: 0; filter: blur(4px); }
     to { opacity: 1; }
   }
   @keyframes banner {
-    from { letter-spacing: 0.08em; margin-right: -0.08em; filter: blur(3px) drop-shadow(0 0 4px rgb(var(--ember-glow-rgb) / 20%)); }
-    35% { filter: blur(0) drop-shadow(0 0 40px rgb(var(--ember-glow-rgb) / 75%)); }
-    to { letter-spacing: 0.2em; margin-right: -0.2em; filter: drop-shadow(0 0 18px rgb(var(--ember-glow-rgb) / 38%)); }
+    from { letter-spacing: 0.05em; margin-right: -0.05em; filter: blur(2px); }
+    to { letter-spacing: 0.1em; margin-right: -0.1em; filter: drop-shadow(0 0 10px rgb(var(--ember-glow-rgb) / 14%)); }
   }
   @keyframes streak {
     0% { opacity: 0; transform: scaleX(0); }
-    30% { opacity: 1; }
+    30% { opacity: 0.45; }
     100% { opacity: 0; transform: scaleX(1); }
   }
   @keyframes item-in {
@@ -397,12 +413,8 @@
     55%, 100% { background-position: 0% 0; }
   }
   @keyframes prompt {
-    0%, 100% { opacity: 0.35; }
-    50% { opacity: 1; text-shadow: 0 0 18px rgb(var(--ember-glow-rgb) / 70%); }
-  }
-  @keyframes game-pulse {
-    0%, 100% { text-shadow: 0 0 0 transparent; }
-    50% { text-shadow: 0 0 14px rgb(var(--ember-glow-rgb) / 55%); }
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 0.9; }
   }
 
   /* ── Status sheet ────────────────────────────────────────── */
@@ -417,17 +429,16 @@
   }
   .status-title {
     margin: 0;
-    color: var(--ember-title);
-    font-size: 1.1rem;
-    letter-spacing: 0.4em;
+    color: var(--ink);
+    font-size: 1.05rem;
+    letter-spacing: 0.2em;
     text-align: center;
-    text-shadow: 0 0 16px rgb(var(--ember-glow-rgb) / 35%);
   }
   .status-rule {
     position: relative;
     height: 1px;
     margin: 14px 0 12px;
-    background: linear-gradient(90deg, transparent, var(--fjord) 20%, var(--fjord) 80%, transparent);
+    background: linear-gradient(90deg, transparent, var(--line-strong) 20%, var(--line-strong) 80%, transparent);
   }
   .sheet {
     margin: 0;
@@ -442,14 +453,14 @@
     color: var(--ink-3);
     font-family: var(--font-display);
     font-size: 0.74rem;
-    letter-spacing: 0.24em;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
     white-space: nowrap;
   }
   .leader {
     flex: 1;
     min-width: 12px;
-    border-bottom: 1px dotted var(--line-strong);
+    border-bottom: 1px dotted var(--line);
     transform: translateY(-4px);
   }
   .attr dd {
@@ -487,8 +498,7 @@
   .toast-gem {
     width: 12px;
     height: 12px;
-    background: var(--fjord-strong);
-    box-shadow: 0 0 14px rgb(var(--ember-glow-rgb) / 80%);
+    background: var(--fjord);
     transform: rotate(45deg);
   }
   .toast-text {
@@ -499,7 +509,7 @@
     color: var(--fjord);
     font-family: var(--font-display);
     font-size: 0.64rem;
-    letter-spacing: 0.26em;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
   }
   .toast-line {
@@ -527,29 +537,28 @@
 
   @media (max-width: 480px) {
     .logo {
-      letter-spacing: 0.12em;
-      margin-right: -0.12em;
+      letter-spacing: 0.07em;
+      margin-right: -0.07em;
     }
     .armed:not(.revealed) .logo {
-      letter-spacing: 0.05em;
+      letter-spacing: 0.04em;
+      margin-right: -0.04em;
     }
     @keyframes banner {
-      from { letter-spacing: 0.05em; filter: blur(3px); }
-      35% { filter: blur(0) drop-shadow(0 0 30px rgb(var(--ember-glow-rgb) / 75%)); }
-      to { letter-spacing: 0.12em; filter: drop-shadow(0 0 18px rgb(var(--ember-glow-rgb) / 38%)); }
+      from { letter-spacing: 0.04em; filter: blur(2px); }
+      to { letter-spacing: 0.07em; filter: drop-shadow(0 0 10px rgb(var(--ember-glow-rgb) / 14%)); }
     }
     .status {
       padding: 34px 22px 26px;
     }
     .mainmenu a {
-      letter-spacing: 0.22em;
+      letter-spacing: 0.1em;
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
     .logo-ink,
     .press,
-    .mainmenu .game a,
     .toast {
       animation: none;
     }

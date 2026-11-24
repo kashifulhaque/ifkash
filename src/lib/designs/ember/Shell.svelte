@@ -81,6 +81,7 @@
   }
 
   function onKey(e: KeyboardEvent) {
+    if (!hintsAwake && e.key.length > 0 && !e.metaKey && !e.ctrlKey && !e.altKey) hintsAwake = true;
     if (fullWidth || e.defaultPrevented || e.metaKey || e.ctrlKey || e.altKey) return;
     const t = e.target as HTMLElement | null;
     const typing =
@@ -107,11 +108,14 @@
 
   let veil: HTMLElement | undefined;
 
+  // The hints bar stays hidden on inner pages until a key press (or hover).
+  let hintsAwake = false;
+
   onNavigate((nav) => {
     if (fullWidth || !veil || prefersReducedMotion()) return;
     if (nav.from?.url.pathname === nav.to?.url.pathname) return;
     veil.dataset.phase = "in";
-    return new Promise<void>((resolve) => setTimeout(resolve, 200));
+    return new Promise<void>((resolve) => setTimeout(resolve, 110));
   });
 
   afterNavigate(async () => {
@@ -121,7 +125,7 @@
       const el = veil;
       setTimeout(() => {
         if (el.dataset.phase === "out") el.dataset.phase = "";
-      }, 1000);
+      }, 500);
     }
     await tick();
     setupPanel();
@@ -243,7 +247,7 @@
     <div class="rays"></div>
     <div class="fog fog-a"></div>
     <div class="fog fog-b"></div>
-    <Embers />
+    <Embers calm={!isHome} />
     <div class="vignette"></div>
   </div>
 
@@ -343,7 +347,7 @@
     {/if}
   </div>
 
-  <div class="hints" aria-label="Keyboard shortcuts">
+  <div class="hints" class:awake={hintsAwake} aria-label="Keyboard shortcuts">
     <span><i class="diamond" aria-hidden="true"></i><kbd>↑</kbd><kbd>↓</kbd> Select</span>
     <span><i class="diamond" aria-hidden="true"></i><kbd>Enter</kbd> Open</span>
     <span><i class="diamond" aria-hidden="true"></i><kbd>Esc</kbd> Menu</span>
@@ -449,15 +453,17 @@
     position: absolute;
     left: var(--halo-x);
     top: var(--halo-y);
-    width: min(120vw, 900px);
+    width: min(90vw, 560px);
     aspect-ratio: 1;
-    margin: calc(min(120vw, 900px) / -2) 0 0 calc(min(120vw, 900px) / -2);
-    background: radial-gradient(closest-side, rgb(var(--ember-glow-rgb) / 26%), rgb(var(--ember-glow-rgb) / 7%) 55%, transparent 72%);
-    animation: breathe 9s ease-in-out infinite;
+    margin: calc(min(90vw, 560px) / -2) 0 0 calc(min(90vw, 560px) / -2);
+    background: radial-gradient(closest-side, rgb(var(--ember-glow-rgb) / 9%), rgb(var(--ember-glow-rgb) / 2.5%) 55%, transparent 72%);
+    opacity: 0.6;
+    animation: breathe 16s ease-in-out infinite;
     will-change: transform;
   }
   .stage.home .halo {
-    background: radial-gradient(closest-side, rgb(var(--ember-glow-rgb) / 34%), rgb(var(--ember-glow-rgb) / 9%) 55%, transparent 72%);
+    background: radial-gradient(closest-side, rgb(var(--ember-glow-rgb) / 15%), rgb(var(--ember-glow-rgb) / 4%) 55%, transparent 72%);
+    opacity: 1;
   }
 
   /* Faint rays fanning out from the halo. */
@@ -467,16 +473,16 @@
     background: repeating-conic-gradient(
       from 188deg at var(--halo-x) var(--halo-y),
       rgb(var(--ember-glow-rgb) / 0%) 0deg 3deg,
-      rgb(var(--ember-glow-rgb) / 9%) 4.5deg,
+      rgb(var(--ember-glow-rgb) / 4%) 4.5deg,
       rgb(var(--ember-glow-rgb) / 0%) 6.5deg 10deg
     );
     -webkit-mask-image: radial-gradient(ellipse 70% 80% at var(--halo-x) var(--halo-y), #000, transparent 75%);
     mask-image: radial-gradient(ellipse 70% 80% at var(--halo-x) var(--halo-y), #000, transparent 75%);
-    opacity: 0.8;
-    animation: pulse 14s ease-in-out infinite;
+    opacity: 0.5;
+    animation: pulse 28s ease-in-out infinite;
   }
   .stage:not(.home) .rays {
-    opacity: 0.45;
+    display: none;
   }
 
   .fog {
@@ -484,7 +490,7 @@
     left: 0;
     width: 200%;
     height: 46%;
-    opacity: 0.8;
+    opacity: 0.4;
     will-change: transform;
   }
   .fog-a {
@@ -494,7 +500,7 @@
       radial-gradient(ellipse 18% 40% at 38% 50%, rgb(140 130 110 / 9%), transparent),
       radial-gradient(ellipse 24% 50% at 66% 62%, rgb(120 130 150 / 10%), transparent),
       radial-gradient(ellipse 18% 40% at 90% 52%, rgb(140 130 110 / 8%), transparent);
-    animation: drift 85s linear infinite;
+    animation: drift 160s linear infinite;
   }
   .fog-b {
     bottom: 8%;
@@ -503,14 +509,21 @@
       radial-gradient(ellipse 20% 42% at 20% 50%, rgb(110 120 140 / 8%), transparent),
       radial-gradient(ellipse 22% 46% at 52% 58%, rgb(150 135 105 / 7%), transparent),
       radial-gradient(ellipse 18% 40% at 80% 48%, rgb(110 120 140 / 8%), transparent);
-    animation: drift 120s linear infinite reverse;
+    animation: drift 220s linear infinite reverse;
+  }
+
+  .stage:not(.home) .fog-b {
+    display: none;
+  }
+  .stage:not(.home) .fog-a {
+    opacity: 0.5;
   }
 
   .vignette {
     position: absolute;
     inset: 0;
-    background: radial-gradient(ellipse at 50% 45%, transparent 42%, var(--bg-deep) 135%);
-    opacity: 0.95;
+    background: radial-gradient(ellipse at 50% 45%, transparent 55%, var(--bg-deep) 150%);
+    opacity: 0.6;
   }
 
   .contours {
@@ -518,7 +531,7 @@
     inset: 0;
     display: none;
     color: #5a4018;
-    opacity: 0.2;
+    opacity: 0.1;
   }
   .contours svg {
     width: 100%;
@@ -529,25 +542,25 @@
     display: block;
   }
   :global(html[data-design="ember"]:not([data-theme="dark"])) .halo {
-    opacity: 0.7;
+    opacity: 0.45;
   }
   :global(html[data-design="ember"]:not([data-theme="dark"])) .fog {
     display: none;
   }
   :global(html[data-design="ember"]:not([data-theme="dark"])) .rays {
-    opacity: 0.35;
+    opacity: 0.25;
   }
   :global(html[data-design="ember"]:not([data-theme="dark"])) .vignette {
-    opacity: 0.55;
+    opacity: 0.35;
   }
 
   @keyframes breathe {
     0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.06); }
+    50% { transform: scale(1.03); }
   }
   @keyframes pulse {
-    0%, 100% { opacity: 0.55; }
-    50% { opacity: 0.9; }
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 0.7; }
   }
   @keyframes drift {
     from { transform: translateX(0); }
@@ -569,28 +582,28 @@
     content: "";
     position: absolute;
     inset: 0;
-    background: radial-gradient(circle at 50% 48%, rgb(240 200 110 / 55%), rgb(240 160 70 / 18%) 22%, transparent 42%);
+    background: radial-gradient(circle at 50% 48%, rgb(240 200 110 / 10%), transparent 40%);
     opacity: 0;
   }
   .veil:global([data-phase="in"]) {
     visibility: visible;
     opacity: 1;
-    transition: opacity 200ms ease-in;
+    transition: opacity 110ms ease-in;
   }
   .veil:global([data-phase="out"]) {
     visibility: visible;
-    animation: veil-out 800ms ease-out forwards;
+    animation: veil-out 380ms ease-out forwards;
   }
   .veil:global([data-phase="out"])::after {
-    animation: flare 800ms ease-out forwards;
+    animation: flare 380ms ease-out forwards;
   }
   @keyframes veil-out {
     from { opacity: 1; }
     to { opacity: 0; visibility: hidden; }
   }
   @keyframes flare {
-    0% { opacity: 0.9; transform: scale(0.5); }
-    100% { opacity: 0; transform: scale(1.8); }
+    0% { opacity: 0.5; }
+    100% { opacity: 0; }
   }
 
   /* ── Frame ───────────────────────────────────────────────── */
@@ -620,10 +633,10 @@
     gap: 28px;
     height: 100vh;
     padding: 36px 22px 64px 28px;
-    background: linear-gradient(90deg, rgb(0 0 0 / 48%), transparent);
+    background: linear-gradient(90deg, rgb(0 0 0 / 30%), transparent);
   }
   :global(html[data-design="ember"]:not([data-theme="dark"])) .rail {
-    background: linear-gradient(90deg, rgb(110 80 30 / 14%), transparent);
+    background: linear-gradient(90deg, rgb(110 80 30 / 8%), transparent);
   }
   .rail::after {
     content: "";
@@ -632,7 +645,7 @@
     right: 0;
     bottom: 6%;
     width: 1px;
-    background: linear-gradient(180deg, transparent, var(--line-strong) 25%, var(--line-strong) 75%, transparent);
+    background: linear-gradient(180deg, transparent, var(--line) 25%, var(--line) 75%, transparent);
   }
 
   .menu-btn {
@@ -652,7 +665,7 @@
     width: 26px;
     height: 26px;
     color: var(--fjord-strong);
-    filter: drop-shadow(0 0 6px rgb(var(--ember-glow-rgb) / 55%));
+    
   }
   .brand-text {
     display: grid;
@@ -660,9 +673,9 @@
   }
   .brand-name {
     font-family: var(--font-display);
-    font-size: 1.05rem;
+    font-size: 1rem;
     font-weight: 600;
-    letter-spacing: 0.2em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     line-height: 1;
   }
@@ -670,7 +683,7 @@
     color: var(--ink-3);
     font-family: var(--font-display);
     font-size: 0.6rem;
-    letter-spacing: 0.3em;
+    letter-spacing: 0.18em;
     text-transform: uppercase;
   }
 
@@ -690,14 +703,13 @@
     font-family: var(--font-display);
     font-size: 0.86rem;
     font-weight: 500;
-    letter-spacing: 0.24em;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
-    transition: color var(--dur-fast) var(--ease), text-shadow var(--dur-fast) var(--ease);
+    transition: color var(--dur-fast) var(--ease);
   }
   .menu a:hover,
   .menu a:focus-visible {
     color: var(--ember-title);
-    text-shadow: 0 0 14px rgb(var(--ember-glow-rgb) / 55%);
   }
   .menu a:focus-visible {
     outline: none;
@@ -706,10 +718,15 @@
     color: var(--ember-title);
   }
   .menu li.game a {
-    color: var(--fjord-strong);
+    color: var(--ink-2);
+  }
+  .menu li.game a:hover,
+  .menu li.game a:focus-visible,
+  .menu li.game a[aria-current="page"] {
+    color: var(--ember-title);
   }
   :global(html[data-design="ember"]:not([data-theme="dark"])) .menu li.game a {
-    color: #8c241e;
+    color: var(--ink-2);
   }
 
   .selector {
@@ -720,9 +737,9 @@
     z-index: 0;
     height: var(--sh, 0);
     transform: translateY(var(--sy, 0));
-    background: linear-gradient(90deg, rgb(var(--ember-glow-rgb) / 24%), rgb(var(--ember-glow-rgb) / 10%) 55%, transparent);
+    background: linear-gradient(90deg, rgb(var(--ember-glow-rgb) / 11%), rgb(var(--ember-glow-rgb) / 4%) 55%, transparent);
     border-bottom: 1px solid transparent;
-    border-image: linear-gradient(90deg, var(--fjord-strong), transparent 85%) 1;
+    border-image: linear-gradient(90deg, var(--fjord), transparent 70%) 1;
     opacity: 0;
     pointer-events: none;
     transition:
@@ -734,7 +751,7 @@
     transition: none;
   }
   .selector:global([data-state="rest"]) {
-    opacity: 0.6;
+    opacity: 0.5;
   }
   .selector::before {
     content: "";
@@ -745,7 +762,6 @@
     height: 7px;
     margin-top: -3.5px;
     background: var(--fjord-strong);
-    box-shadow: 0 0 10px rgb(var(--ember-glow-rgb) / 80%);
     transform: rotate(45deg);
   }
 
@@ -774,13 +790,12 @@
     font-family: var(--font-display);
     font-size: 0.72rem;
     font-weight: 500;
-    letter-spacing: 0.24em;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
   }
   .tools :global(.design-switch select:hover) {
     background: transparent;
     color: var(--ember-title);
-    text-shadow: 0 0 12px rgb(var(--ember-glow-rgb) / 55%);
   }
   .tools :global(.design-switch select option) {
     background: var(--surface);
@@ -811,13 +826,12 @@
     font-family: var(--font-display);
     font-size: 0.72rem;
     font-weight: 500;
-    letter-spacing: 0.24em;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
   }
   .tools :global(.theme-toggle.opt:hover) {
     background: transparent;
     color: var(--ember-title);
-    text-shadow: 0 0 12px rgb(var(--ember-glow-rgb) / 55%);
   }
   .opt-inner {
     display: inline-flex;
@@ -828,7 +842,6 @@
     width: 6px;
     height: 6px;
     background: var(--fjord);
-    box-shadow: 0 0 8px rgb(var(--ember-glow-rgb) / 70%);
   }
   .tools :global(.weather-trigger),
   .tools :global(.command-trigger) {
@@ -861,8 +874,8 @@
     margin: 40px 36px 0 0;
     padding: 34px 28px 30px;
     border: 1px solid var(--line);
-    background: linear-gradient(180deg, rgb(var(--ember-glow-rgb) / 7%), transparent 40%), var(--ember-panel);
-    box-shadow: 0 18px 40px -20px var(--shadow-color);
+    background: linear-gradient(180deg, rgb(var(--ember-glow-rgb) / 3%), transparent 40%), var(--ember-panel);
+    box-shadow: 0 18px 40px -22px var(--shadow-color);
   }
   .ip-body {
     animation: ip-in 220ms var(--ease-out) both;
@@ -876,7 +889,7 @@
     color: var(--fjord);
     font-family: var(--font-mono);
     font-size: 0.7rem;
-    letter-spacing: 0.2em;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
   }
   .ip-title {
@@ -884,14 +897,13 @@
     color: var(--ember-title);
     font-size: 1.2rem;
     line-height: 1.3;
-    letter-spacing: 0.14em;
-    text-shadow: 0 0 16px rgb(var(--ember-glow-rgb) / 35%);
+    letter-spacing: 0.08em;
   }
   .ip-rule {
     position: relative;
     height: 1px;
     margin: 16px 0 14px;
-    background: linear-gradient(90deg, var(--fjord), transparent);
+    background: linear-gradient(90deg, var(--line-strong), transparent);
   }
   .ip-rule::after {
     content: "";
@@ -917,7 +929,7 @@
     color: var(--ink-3);
     font-family: var(--font-display);
     font-size: 0.68rem;
-    letter-spacing: 0.2em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     white-space: nowrap;
     padding-top: 4px;
@@ -943,7 +955,7 @@
     color: var(--fjord);
     font-family: var(--font-display);
     font-size: 0.68rem;
-    letter-spacing: 0.22em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
   }
   .ip-open .diamond {
@@ -963,7 +975,7 @@
     position: relative;
     height: 1px;
     margin-bottom: 26px;
-    background: linear-gradient(90deg, transparent, var(--line-strong) 20%, var(--line-strong) 80%, transparent);
+    background: linear-gradient(90deg, transparent, var(--line) 20%, var(--line) 80%, transparent);
   }
   .footer-rule::after {
     content: "";
@@ -973,7 +985,7 @@
     width: 8px;
     height: 8px;
     margin-left: -4px;
-    border: 1px solid var(--fjord);
+    border: 1px solid var(--line-strong);
     background: var(--bg);
     transform: rotate(45deg);
   }
@@ -987,7 +999,7 @@
     color: var(--ink-2);
     font-family: var(--font-display);
     font-size: 0.7rem;
-    letter-spacing: 0.22em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
   }
   .footer-links a:hover {
@@ -1019,16 +1031,28 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 34px;
-    height: 44px;
+    gap: 28px;
+    height: 36px;
     padding: 0 28px;
     background: linear-gradient(0deg, var(--bg-deep), transparent);
-    color: var(--ink-2);
+    color: var(--ink-3);
     font-family: var(--font-display);
-    font-size: 0.68rem;
-    letter-spacing: 0.22em;
+    font-size: 0.62rem;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
+    opacity: 0.85;
+    transition: opacity 400ms var(--ease);
     pointer-events: none;
+  }
+  /* Inner pages: hidden until a key press, or while the pointer is at the bottom edge. */
+  .frame:not(.home) ~ .hints:not(.awake) {
+    opacity: 0;
+  }
+  .frame:not(.home) ~ .hints:not(.awake):hover {
+    opacity: 0.7;
+  }
+  .hints:hover {
+    opacity: 1;
   }
   .hints span {
     display: inline-flex;
@@ -1040,7 +1064,7 @@
     height: 5px;
     margin-right: 4px;
     background: transparent;
-    border: 1px solid var(--fjord);
+    border: 1px solid var(--line-strong);
   }
   .hints kbd {
     min-width: 0;
@@ -1049,9 +1073,9 @@
     border-bottom-width: 1px;
     border-radius: 1px;
     background: transparent;
-    color: var(--ink);
+    color: var(--ink-2);
     font-family: var(--font-mono);
-    font-size: 0.66rem;
+    font-size: 0.62rem;
     letter-spacing: 0.04em;
     text-transform: none;
   }
@@ -1073,7 +1097,7 @@
     overflow-y: auto;
     padding: 24px;
     background:
-      radial-gradient(ellipse at 50% 30%, rgb(var(--ember-glow-rgb) / 14%), transparent 60%),
+      radial-gradient(ellipse at 50% 30%, rgb(var(--ember-glow-rgb) / 6%), transparent 60%),
       color-mix(in srgb, var(--bg-deep) 94%, transparent);
     animation: overlay-in 260ms var(--ease-out) both;
   }
@@ -1093,15 +1117,14 @@
     font-family: var(--font-display);
     font-size: 1.5rem;
     font-weight: 600;
-    letter-spacing: 0.4em;
-    margin-right: -0.4em;
+    letter-spacing: 0.16em;
+    margin-right: -0.16em;
     text-transform: uppercase;
-    text-shadow: 0 0 20px rgb(var(--ember-glow-rgb) / 45%);
   }
   .overlay-rule {
     width: 100%;
     height: 1px;
-    background: linear-gradient(90deg, transparent, var(--fjord) 25%, var(--fjord) 75%, transparent);
+    background: linear-gradient(90deg, transparent, var(--line-strong) 25%, var(--line-strong) 75%, transparent);
   }
   .overlay-menu {
     width: 100%;
@@ -1127,7 +1150,7 @@
     color: var(--ink-2);
     font-family: var(--font-display);
     font-size: 0.72rem;
-    letter-spacing: 0.24em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     cursor: pointer;
   }
@@ -1207,14 +1230,13 @@
       color: var(--ember-title);
       font-family: var(--font-display);
       font-size: 0.78rem;
-      letter-spacing: 0.24em;
+      letter-spacing: 0.12em;
       text-transform: uppercase;
       cursor: pointer;
     }
     .menu-btn .diamond {
       width: 7px;
       height: 7px;
-      box-shadow: 0 0 8px rgb(var(--ember-glow-rgb) / 70%);
     }
     .brand-sub,
     .rail > .menu {

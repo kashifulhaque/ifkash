@@ -237,6 +237,7 @@ uv run plot.py    # render checkpoints/log.csv -&gt; progress.png</code></pre>
 
   .prose {
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     gap: var(--s-8);
     min-width: 0;
   }

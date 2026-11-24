@@ -124,9 +124,11 @@ html[data-design="almanac"] .page-head .lead::first-letter {
   font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 144, "wght" 300;
 }
 
-/* Marginalia: the eyebrow and breadcrumb move to the right gutter on wide screens. */
+/* Marginalia: the eyebrow and breadcrumb move to the right gutter on wide screens.
+   Only inside the sheet (#main): full-width pages such as /tools/token-lens
+   have no gutter, so the note would sit off-screen. */
 @media (min-width: 1200px) {
-  html[data-design="almanac"] .page-head > :is(.eyebrow, .breadcrumb) {
+  html[data-design="almanac"] #main .page-head > :is(.eyebrow, .breadcrumb) {
     position: absolute;
     top: var(--s-5);
     left: calc(100% + var(--s-6));

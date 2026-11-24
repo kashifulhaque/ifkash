@@ -1210,6 +1210,11 @@
       padding: 0 12px;
       background: color-mix(in srgb, var(--bg-deep) 88%, transparent);
     }
+    /* The Vellum rail tint above is more specific than `.rail`, so restate
+       the solid bar for light mode, or page text scrolls through it. */
+    :global(html[data-design="ember"]:not([data-theme="dark"])) .rail {
+      background: color-mix(in srgb, var(--bg-deep) 88%, transparent);
+    }
     .rail::after {
       top: auto;
       right: 8%;

@@ -214,8 +214,12 @@
 
   .p-body {
     display: grid;
+    /* An explicit column, or the one-line author list sets the track to its
+       full width and pushes the row past a phone screen. */
+    grid-template-columns: minmax(0, 1fr);
     gap: var(--s-2);
     min-width: 0;
+    overflow-wrap: anywhere;
   }
 
   .p-title {

@@ -95,6 +95,14 @@
     text-decoration: none;
   }
 
+  /* Long titles and hosts are often one unbroken string; let them wrap
+     instead of pushing the page wider than a phone screen. */
+  .sources li,
+  .sources a > span {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
   .sources a:hover .s-title {
     color: var(--fjord);
   }

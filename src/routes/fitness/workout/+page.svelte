@@ -1510,6 +1510,11 @@
     gap: var(--s-6);
     padding-top: var(--s-7);
     animation: rise var(--dur-slow) var(--ease-out) both;
+    /* The split below keys off this column's own width, not the viewport:
+       some designs keep a sidebar beside the content, so a wide window can
+       still leave a narrow column. */
+    container-type: inline-size;
+    container-name: wk;
   }
 
   /* Signed out: one calm column. Signed in, on wide screens: the logger on
@@ -1529,7 +1534,7 @@
     min-width: 0;
   }
 
-  @media (min-width: 1024px) {
+  @container wk (min-width: 900px) {
     .split .layout {
       grid-template-columns: minmax(0, 1fr) 340px;
       gap: var(--s-7);
@@ -2360,7 +2365,7 @@
   }
 
   /* Mid widths: the side column is full width, so spread the stats out. */
-  @media (min-width: 641px) and (max-width: 1023px) {
+  @container wk (min-width: 520px) and (max-width: 899px) {
     .rate-grid { grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); }
     .rate-cell.total { grid-column: auto; }
   }
